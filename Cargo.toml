@@ -1,0 +1,18 @@
+[package]
+name = "cxx-qt-demo"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
+edition = "2018"
+
+# Don't touch this, the CMake file expects a static lib with a specific name
+[lib]
+name = "rust"
+crate-type = ["staticlib"]
+
+[dependencies]
+cxx = "1.0"
+cxx-qt = { path = "cxx-qt" }
+
+[build-dependencies]
+proc-macro2 = "1.0"
+cxx-gen = "0.7"
