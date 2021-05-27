@@ -58,3 +58,9 @@ add_dependencies(${APP_NAME} rustlib)
 # The Rust lib also needs to be linked to pthread and dl
 # TODO: figure out the equivalent on windows
 target_link_libraries(${APP_NAME} ${RUST_PART_LIB} pthread dl)
+
+# Add cargo tests
+add_test(NAME cargo_tests COMMAND cargo test)
+
+# Enable testing
+enable_testing()
