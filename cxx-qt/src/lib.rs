@@ -1,6 +1,7 @@
 use derivative::*;
 use proc_macro::TokenStream;
 use quote::*;
+use std::result::Result;
 use syn::{spanned::Spanned, *};
 
 /// Describes a function paramter
@@ -25,6 +26,16 @@ struct Invokable {
     _original_method: ImplItemMethod,
 }
 
+/// Describes a property that can be used from QML
+#[derive(Debug)]
+struct Property {
+    /// The ident of the property
+    ident: Ident,
+    /// The type of the property
+    type_ident: Ident,
+    // TODO: later we will have possibility for custom setter, getter, notify, constant etc
+}
+
 /// Describes all the properties of a QObject class
 #[derive(Debug)]
 struct QObject {
@@ -34,10 +45,46 @@ struct QObject {
     ident: Ident,
     /// All the methods that can be invoked from QML
     invokables: Vec<Invokable>,
+    /// All the properties that can be used from QML
+    properties: Vec<Property>,
+}
+
+/// Describe the error type from extract_type_ident
+enum ExtractTypeIdentError {
+    InvalidSegments,
+    InvalidType,
+}
+
+/// Extract the type ident from a given syn::Type
+fn extract_type_ident(ty: &syn::Type) -> Result<Ident, ExtractTypeIdentError> {
+    let ty_path;
+
+    match ty {
+        Type::Path(path) => {
+            ty_path = path;
+        }
+        Type::Reference(TypeReference { elem, .. }) => {
+            if let Type::Path(path) = &**elem {
+                ty_path = path;
+            } else {
+                return Err(ExtractTypeIdentError::InvalidType);
+            }
+        }
+        _others => {
+            return Err(ExtractTypeIdentError::InvalidType);
+        }
+    }
+
+    let segments = &ty_path.path.segments;
+    if segments.len() != 1 {
+        return Err(ExtractTypeIdentError::InvalidSegments);
+    }
+
+    Ok(segments[0].ident.to_owned())
 }
 
 /// Extracts all the member functions from a module and generates invokables from them
-fn extract_invokables(items: &[ImplItem]) -> std::result::Result<Vec<Invokable>, TokenStream> {
+fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream> {
     let mut invokables = Vec::new();
 
     for item in items {
@@ -64,49 +111,32 @@ fn extract_invokables(items: &[ImplItem]) -> std::result::Result<Vec<Invokable>,
                     arg_ident = ident;
                     _arg_by_ref = by_ref;
                 } else {
-                    return Err(Error::new(arg.span(), "Invalid argument ident format")
+                    return Err(Error::new(arg.span(), "Invalid argument ident format.")
                         .to_compile_error()
                         .into());
                 }
 
-                let ty_path;
-
-                match &**ty {
-                    Type::Path(path) => {
-                        ty_path = path;
-                    }
-                    Type::Reference(TypeReference { elem, .. }) => {
-                        if let Type::Path(path) = &**elem {
-                            ty_path = path;
-                        } else {
-                            return Err(Error::new(arg.span(), "Invalid argument type format")
-                                .to_compile_error()
-                                .into());
-                        }
-                    }
-                    _others => {
-                        return Err(Error::new(arg.span(), "Invalid argument type format")
+                match extract_type_ident(ty) {
+                    Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidType) => {
+                        return Err(Error::new(arg.span(), "Invalid argument ident format.")
                             .to_compile_error()
-                            .into());
+                            .into())
+                    }
+                    Err(ExtractTypeIdentError::InvalidSegments) => {
+                        return Err(Error::new(
+                            arg.span(),
+                            "Argument should only have one segment.",
+                        )
+                        .to_compile_error()
+                        .into());
                     }
                 }
-
-                let segments = &ty_path.path.segments;
-
-                if segments.len() != 1 {
-                    return Err(
-                        Error::new(arg.span(), "Argument should only have one segment.")
-                            .to_compile_error()
-                            .into(),
-                    );
-                }
-
-                type_ident = &segments[0].ident;
 
                 // TODO: we probably need to track if parameters are by reference two
                 let parameter = Parameter {
                     ident: arg_ident.to_owned(),
-                    type_ident: type_ident.to_owned(),
+                    type_ident,
                 };
                 parameters.push(parameter);
             }
@@ -123,8 +153,58 @@ fn extract_invokables(items: &[ImplItem]) -> std::result::Result<Vec<Invokable>,
     Ok(invokables)
 }
 
+/// Extracts all the attributes from a struct and generates properties from them
+fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
+    let mut properties = Vec::new();
+
+    // Read the properties from the struct
+    if let ItemStruct {
+        fields: Fields::Named(FieldsNamed { named, .. }),
+        ..
+    } = s
+    {
+        for name in named {
+            if let Field {
+                // TODO: later we'll need to read the attributes (eg qt_property) here
+                // attrs,
+                ident: Some(ident),
+                ty,
+                ..
+            } = name
+            {
+                let type_ident;
+
+                match extract_type_ident(ty) {
+                    Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidType) => {
+                        return Err(Error::new(name.span(), "Invalid name field ident format.")
+                            .to_compile_error()
+                            .into())
+                    }
+                    Err(ExtractTypeIdentError::InvalidSegments) => {
+                        return Err(Error::new(
+                            name.span(),
+                            "Named field should only have one segment.",
+                        )
+                        .to_compile_error()
+                        .into());
+                    }
+                }
+
+                // TODO: read attrs to see if there are any non default qt_property options
+                properties.push(Property {
+                    ident: ident.to_owned(),
+                    type_ident,
+                });
+            }
+        }
+    }
+
+    Ok(properties)
+}
+
 /// Parses a module in order to extract a QObject description from it
-fn extract_qobject(module: ItemMod) -> std::result::Result<QObject, TokenStream> {
+fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     let module_ident = &module.ident;
 
     let items = &module
@@ -144,6 +224,13 @@ fn extract_qobject(module: ItemMod) -> std::result::Result<QObject, TokenStream>
     let struct_ident = &original_struct.ident;
 
     let object_invokables;
+    let object_properties;
+
+    // Read properties from the struct
+    match extract_properties(original_struct) {
+        Err(err) => return Err(err),
+        Ok(properties) => object_properties = properties,
+    }
 
     match items.len() {
         1 => {
@@ -190,6 +277,7 @@ fn extract_qobject(module: ItemMod) -> std::result::Result<QObject, TokenStream>
         module_ident: module_ident.to_owned(),
         ident: struct_ident.to_owned(),
         invokables: object_invokables,
+        properties: object_properties,
     })
 }
 
@@ -217,6 +305,22 @@ mod tests {
     use super::*;
 
     #[test]
+    fn parses_basic_invokable_and_properties() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the invokables and properties
+        // We only check the counts as the only_invokables and only_properties
+        // will test more than the number.
+        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.properties.len(), 2);
+    }
+
+    #[test]
     fn parses_basic_only_invokable() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
@@ -232,5 +336,26 @@ mod tests {
         // Check that it got the invokables
         // TODO: check more than just the number
         assert_eq!(qobject.invokables.len(), 1);
+    }
+
+    #[test]
+    fn parses_basic_only_properties() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_only_properties.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the properties and that the idents are correct
+        assert_eq!(qobject.properties.len(), 2);
+
+        let prop_first = &qobject.properties[0];
+        assert_eq!(prop_first.ident.to_string(), "string");
+        assert_eq!(prop_first.type_ident.to_string(), "String");
+
+        let prop_second = &qobject.properties[1];
+        assert_eq!(prop_second.ident.to_string(), "number");
+        assert_eq!(prop_second.type_ident.to_string(), "i32");
     }
 }
