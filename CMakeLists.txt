@@ -60,7 +60,7 @@ add_dependencies(${APP_NAME} rustlib)
 target_link_libraries(${APP_NAME} ${RUST_PART_LIB} pthread dl)
 
 # Add cargo tests
-add_test(NAME cargo_tests COMMAND cargo test)
+add_test(NAME cargo_cxx_qt_tests COMMAND cargo test --manifest-path ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml)
 
 # Enable testing
 enable_testing()

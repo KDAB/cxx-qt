@@ -123,10 +123,8 @@ fn extract_invokables(items: &[ImplItem]) -> std::result::Result<Vec<Invokable>,
     Ok(invokables)
 }
 
-#[proc_macro_attribute]
-pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let module = parse_macro_input!(input as ItemMod);
-
+/// Parses a module in order to extract a QObject description from it
+fn extract_qobject(module: ItemMod) -> std::result::Result<QObject, TokenStream> {
     let module_ident = &module.ident;
 
     let items = &module
@@ -167,19 +165,19 @@ pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
                 let impl_ident = &path.segments[0].ident;
                 if *impl_ident != *struct_ident {
-                    return Error::new(
+                    return Err(Error::new(
                         impl_ident.span(),
                         "The impl block needs to match the struct.",
                     )
                     .to_compile_error()
-                    .into();
+                    .into());
                 }
             }
 
             let invokables = extract_invokables(&original_impl.items);
 
             match invokables {
-                Err(err) => return err,
+                Err(err) => return Err(err),
                 Ok(i) => object_invokables = i,
             }
         }
@@ -188,11 +186,22 @@ pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
     }
 
-    let qobject = QObject {
+    Ok(QObject {
         module_ident: module_ident.to_owned(),
         ident: struct_ident.to_owned(),
         invokables: object_invokables,
-    };
+    })
+}
+
+#[proc_macro_attribute]
+pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let module = parse_macro_input!(input as ItemMod);
+
+    let qobject;
+    match extract_qobject(module) {
+        Ok(o) => qobject = o,
+        Err(e) => return e,
+    }
 
     // TODO: remove this print once the qobject is actually used
     println!("Parsed QObject: {:#?}", qobject);
@@ -201,4 +210,27 @@ pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
         // TODO: put something back :)
     };
     TokenStream::from(expanded)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_basic_only_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_only_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the names right
+        assert_eq!(qobject.ident.to_string(), "MyObject");
+        assert_eq!(qobject.module_ident.to_string(), "my_object");
+
+        // Check that it got the invokables
+        // TODO: check more than just the number
+        assert_eq!(qobject.invokables.len(), 1);
+    }
 }
