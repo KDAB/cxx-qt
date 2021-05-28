@@ -334,8 +334,24 @@ mod tests {
         assert_eq!(qobject.module_ident.to_string(), "my_object");
 
         // Check that it got the invokables
-        // TODO: check more than just the number
         assert_eq!(qobject.invokables.len(), 1);
+
+        // Check invokable ident
+        let invokable = &qobject.invokables[0];
+        assert_eq!(invokable.ident.to_string(), "say_hi");
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable.parameters.len(), 2);
+
+        let param_first = &invokable.parameters[0];
+        assert_eq!(param_first.ident.to_string(), "string");
+        // TODO: add extra checks when we read if this is a & or &mut
+        // eg this would need to also check an is_reference field
+        assert_eq!(param_first.type_ident.to_string(), "str");
+
+        let param_second = &invokable.parameters[1];
+        assert_eq!(param_second.ident.to_string(), "number");
+        assert_eq!(param_second.type_ident.to_string(), "i32");
     }
 
     #[test]
