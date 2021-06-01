@@ -59,9 +59,20 @@ add_dependencies(${APP_NAME} rustlib)
 # TODO: figure out the equivalent on windows
 target_link_libraries(${APP_NAME} ${RUST_PART_LIB} pthread dl)
 
-# Add cargo tests
-add_test(NAME cargo_cxx_qt_tests COMMAND cargo test --manifest-path ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml)
-add_test(NAME cargo_cxx_qt_gen_tests COMMAND cargo test --manifest-path ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml)
+# Create helper method which adds relevent cargo tests for a given manifest
+function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH)
+    # Add cargo as a test
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --all-features --manifest-path ${MANIFEST_PATH})
+    # Add clippy as a test
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --all-features --manifest-path ${MANIFEST_PATH} -- -D warnings)
+    # Add rustfmt as a test
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
+endfunction()
+
+# Add cargo tests for all our manifests
+add_test_cargo(root "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml")
+add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml")
+add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml")
 
 # Enable testing
 enable_testing()
