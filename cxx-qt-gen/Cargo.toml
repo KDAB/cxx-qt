@@ -1,14 +1,16 @@
 [package]
-name = "cxx-qt"
+name = "cxx-qt-gen"
 version = "0.1.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
 edition = "2018"
 
-[lib]
-proc-macro = true
-
 [dependencies]
-cxx-qt-gen = { path = "../cxx-qt-gen" }
+convert_case = "0.4"
+derivative = "2.2"
+indoc = "1.0"
+itertools = "0.10"
 proc-macro2 = "1.0"
-quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
+
+[dev-dependencies]
+pretty_assertions = "0.7"
