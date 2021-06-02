@@ -32,6 +32,8 @@ trait CppType {
     fn convert(&self, ident: &str) -> Option<CppTypeConverted>;
     /// Any includes that are required for the CppType
     fn include(&self) -> Option<&'static str>;
+    /// Whether this type is a reference
+    fn is_ref(&self) -> bool;
     /// The C++ type name of the CppType
     fn type_ident(&self) -> &'static str;
 }
@@ -66,11 +68,19 @@ impl CppType for CppTypes {
         }
     }
 
+    /// Whether this type is a reference
+    fn is_ref(&self) -> bool {
+        match self {
+            Self::I32 => false,
+            Self::String => true,
+        }
+    }
+
     /// The C++ type name of the CppType
     fn type_ident(&self) -> &'static str {
         match self {
             Self::I32 => "int",
-            Self::String => "const QString&",
+            Self::String => "const QString",
         }
     }
 }
@@ -160,8 +170,13 @@ fn generate_invokables_cpp(
                     |mut acc, parameter| {
                         // Build the parameter as a type argument
                         acc.args.push(format!(
-                            "{type_ident} {ident}",
+                            "{type_ident} {is_ref}{ident}",
                             ident = parameter.ident,
+                            is_ref = if parameter.type_ident.is_ref() {
+                                "&"
+                            } else {
+                                ""
+                            },
                             type_ident = parameter.type_ident.type_ident()
                         ));
                         // If there is a converter then build our converter and new name

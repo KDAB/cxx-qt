@@ -9,7 +9,7 @@ MyObject::MyObject(QObject *parent)
 
 MyObject::~MyObject() = default;
 
-void MyObject::say_hi(const QString& string, int number) const
+void MyObject::say_hi(const QString &string, int number) const
 {
     auto rustString = rust::string(string.toUtf8().data(), bytes.length());
     m_rustObj->say_hi(std::move(rustString), number);
