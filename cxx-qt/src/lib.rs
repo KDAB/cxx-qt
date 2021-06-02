@@ -2,10 +2,14 @@ use proc_macro::TokenStream;
 use quote::*;
 use syn::*;
 
-use cxx_qt_gen::{extract_qobject, generate_qobject_cpp};
+use cxx_qt_gen::{extract_qobject, generate_format, generate_qobject_cpp};
 
 #[proc_macro_attribute]
 pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    // TODO: call in build.rs helper
+    // default will be set in helper there
+    let _ = generate_format(None);
+
     let module = parse_macro_input!(input as ItemMod);
 
     let qobject;

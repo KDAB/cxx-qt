@@ -5,6 +5,7 @@ authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard
 edition = "2018"
 
 [dependencies]
+clang-format = { path = "../clang-format" }
 convert_case = "0.4"
 derivative = "2.2"
 indoc = "1.0"

@@ -1,3 +1,4 @@
+use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
 use convert_case::{Case, Casing};
 use indoc::formatdoc;
 use itertools::join;
@@ -8,17 +9,6 @@ use syn::*;
 
 use crate::extract::{Invokable, Parameter, QObject};
 
-/// Describes a result of a CppType which has been converted
-#[derive(Debug)]
-struct CppTypeConverted {
-    /// The ident of the converted data
-    ident: String,
-    /// Whether this type recommends using std::move
-    should_move: bool,
-    /// The source which converts an input into data as ident
-    source: String,
-}
-
 /// Describes a C++ type
 #[derive(Debug)]
 enum CppTypes {
@@ -28,8 +18,8 @@ enum CppTypes {
 
 /// A trait which CppTypes implements allowing retrieval of attributes of the enum value.
 trait CppType {
-    /// Generates any conversion code for the CppType using the given ident
-    fn convert(&self, ident: &str) -> Option<CppTypeConverted>;
+    /// Any converter that is required to convert this type into rust
+    fn convert_into_rust(&self) -> Option<&'static str>;
     /// Any includes that are required for the CppType
     fn include(&self) -> Option<&'static str>;
     /// Whether this type is a reference
@@ -39,23 +29,11 @@ trait CppType {
 }
 
 impl CppType for CppTypes {
-    /// Generates any conversion code for the CppType using the given ident
-    fn convert(&self, ident: &str) -> Option<CppTypeConverted> {
+    /// Any converter that is required to convert this type into rust
+    fn convert_into_rust(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
-            Self::String => {
-                let rust_ident = format!("rust{}", ident.to_case(Case::Title));
-                let source = format!(
-                    "auto {rust_ident} = rust::string({ident}.toUtf8().data(), bytes.length());",
-                    ident = ident,
-                    rust_ident = rust_ident
-                );
-                Some(CppTypeConverted {
-                    ident: rust_ident,
-                    should_move: true,
-                    source,
-                })
-            }
+            Self::String => Some("qStringToRustString"),
         }
     }
 
@@ -151,9 +129,8 @@ fn generate_invokables_cpp(
         // A helper which allows us to flatten data from vec of parameters
         struct CppParameterHelper {
             args: Vec<String>,
-            converters: Vec<String>,
-            names: Vec<String>,
             includes: Vec<String>,
+            names: Vec<String>,
         }
 
         for invokable in invokables {
@@ -163,9 +140,8 @@ fn generate_invokables_cpp(
                 .fold(
                     CppParameterHelper {
                         args: vec![],
-                        converters: vec![],
-                        names: vec![],
                         includes: vec![],
+                        names: vec![],
                     },
                     |mut acc, parameter| {
                         // Build the parameter as a type argument
@@ -179,15 +155,10 @@ fn generate_invokables_cpp(
                             },
                             type_ident = parameter.type_ident.type_ident()
                         ));
-                        // If there is a converter then build our converter and new name
-                        if let Some(converted) = parameter.type_ident.convert(&parameter.ident) {
-                            acc.converters.push(converted.source);
-                            // Consider if the ident needs to be moved
-                            if converted.should_move {
-                                acc.names.push(format!("std::move({})", converted.ident));
-                            } else {
-                                acc.names.push(converted.ident);
-                            }
+                        // If there is a converter then use it
+                        if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
+                            acc.names
+                                .push(format!("{}({})", converter_ident, parameter.ident));
                         } else {
                             // No converter so use the same name
                             acc.names.push(parameter.ident);
@@ -209,21 +180,17 @@ fn generate_invokables_cpp(
                     ident = invokable.ident.to_string(),
                     parameter_types = parameter_arg_line
                 ),
-                source: formatdoc!(
+                source: formatdoc! {
                     r#"
                     void {struct_ident}::{ident}({parameter_types}) const
                     {{
-                        {converters}
                         m_rustObj->{ident}({parameter_names});
                     }}"#,
-                    // TODO: if converters is empty, we'll get an extra empty line
-                    // can we remove this?
-                    converters = parameters.converters.join("\n"),
                     ident = invokable.ident.to_string(),
                     parameter_names = parameters.names.join(", "),
                     parameter_types = parameter_arg_line,
                     struct_ident = struct_ident.to_string(),
-                ),
+                },
                 includes: parameters.includes,
             });
         }
@@ -270,6 +237,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         {includes}
 
         #include "rust/cxx.h"
+        #include "rust/cxx_qt.h"
 
         class {ident}{rust_suffix};
 
@@ -280,7 +248,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             {ident}(QObject *parent = nullptr);
             ~{ident}();
 
-            {invokables}
+        {invokables}
 
         private:
             rust::Box<{ident}{rust_suffix}> m_rustObj;
@@ -317,10 +285,18 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         "#,
         ident = struct_ident_str,
         ident_snake = struct_ident_str.to_case(Case::Snake),
-        invokables = invokables.sources.join("\n")
+        invokables = invokables.sources.join("\n"),
     };
 
-    Ok(CppObject { header, source })
+    Ok(CppObject {
+        // TODO: handle clang-format errors?
+        header: clang_format(&header).unwrap_or(header),
+        source: clang_format(&source).unwrap_or(source),
+    })
+}
+
+pub fn generate_format(style: Option<ClangFormatStyle>) -> Result<(), ClangFormatStyle> {
+    CLANG_FORMAT_STYLE.set(style.unwrap_or(ClangFormatStyle::Mozilla))
 }
 
 #[cfg(test)]
@@ -341,8 +317,12 @@ mod tests {
         let module: ItemMod = syn::parse_str(source).unwrap();
         let qobject = extract_qobject(module).unwrap();
 
-        let expected_header = fs::read_to_string("test_outputs/basic_only_invokable.h").unwrap();
-        let expected_source = fs::read_to_string("test_outputs/basic_only_invokable.cpp").unwrap();
+        let expected_header =
+            clang_format(&fs::read_to_string("test_outputs/basic_only_invokable.h").unwrap())
+                .unwrap();
+        let expected_source =
+            clang_format(&fs::read_to_string("test_outputs/basic_only_invokable.cpp").unwrap())
+                .unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);
