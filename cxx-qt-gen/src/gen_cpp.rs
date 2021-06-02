@@ -78,7 +78,7 @@ struct CppInvokable {
     /// The header definition of the invokable
     header: String,
     /// Any includes which this invokable requires
-    includes: Vec<String>,
+    includes: BTreeSet<&'static str>,
     /// The source implementation of the invokable
     source: String,
 }
@@ -129,7 +129,7 @@ fn generate_invokables_cpp(
         // A helper which allows us to flatten data from vec of parameters
         struct CppParameterHelper {
             args: Vec<String>,
-            includes: Vec<String>,
+            includes: BTreeSet<&'static str>,
             names: Vec<String>,
         }
 
@@ -140,7 +140,7 @@ fn generate_invokables_cpp(
                 .fold(
                     CppParameterHelper {
                         args: vec![],
-                        includes: vec![],
+                        includes: BTreeSet::new(),
                         names: vec![],
                     },
                     |mut acc, parameter| {
@@ -165,7 +165,7 @@ fn generate_invokables_cpp(
                         }
                         // See if there are any includes for the type
                         if let Some(include) = parameter.type_ident.include() {
-                            acc.includes.push(include.to_owned());
+                            acc.includes.insert(include);
                         }
                         acc
                     },
@@ -201,15 +201,15 @@ fn generate_invokables_cpp(
 
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
-    let mut generic_includes: BTreeSet<String> = BTreeSet::new();
-    generic_includes.insert("#include <QObject>".to_owned());
+    let mut generic_includes: BTreeSet<&'static str> = BTreeSet::new();
+    generic_includes.insert("#include <QObject>");
     let rust_suffix = "Rs";
     let struct_ident_str = obj.ident.to_string();
 
     // A helper which allows us to flatten data from vec of invokables
     struct CppInvokableHelper {
         headers: Vec<String>,
-        includes: BTreeSet<String>,
+        includes: BTreeSet<&'static str>,
         sources: Vec<String>,
     }
 
