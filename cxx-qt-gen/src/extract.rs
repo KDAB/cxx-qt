@@ -342,11 +342,11 @@ mod tests {
         assert_eq!(qobject.properties.len(), 2);
 
         let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.to_string(), "string");
-        assert_eq!(prop_first.type_ident.to_string(), "String");
+        assert_eq!(prop_first.ident.to_string(), "number");
+        assert_eq!(prop_first.type_ident.to_string(), "i32");
 
         let prop_second = &qobject.properties[1];
-        assert_eq!(prop_second.ident.to_string(), "number");
-        assert_eq!(prop_second.type_ident.to_string(), "i32");
+        assert_eq!(prop_second.ident.to_string(), "string");
+        assert_eq!(prop_second.type_ident.to_string(), "String");
     }
 }
