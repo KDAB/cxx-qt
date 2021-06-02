@@ -13,7 +13,7 @@ class MyObject : public QObject
   Q_OBJECT
 
 public:
-  MyObject(QObject* parent = nullptr);
+  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
   Q_INVOKABLE void say_hi(const QString& string, int number) const;

@@ -245,7 +245,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             Q_OBJECT
 
         public:
-            {ident}(QObject *parent = nullptr);
+            explicit {ident}(QObject *parent = nullptr);
             ~{ident}();
 
         {invokables}
