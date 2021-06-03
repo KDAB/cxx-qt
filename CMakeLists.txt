@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.16)
 project(cxx_example)
 set(APP_NAME hello)
 
+# Find the threads package for the system
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+
 # TODO: figure out if RelWithDebInfo is a thing in Rust and fix accordingly
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CARGO_CMD cargo build)
@@ -57,7 +61,7 @@ add_dependencies(${APP_NAME} rustlib)
 
 # The Rust lib also needs to be linked to pthread and dl
 # TODO: figure out the equivalent on windows
-target_link_libraries(${APP_NAME} ${RUST_PART_LIB} pthread dl)
+target_link_libraries(${APP_NAME} ${RUST_PART_LIB} Threads::Threads ${CMAKE_DL_LIBS})
 
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
