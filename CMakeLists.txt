@@ -60,9 +60,14 @@ add_dependencies(${APP_NAME} rustlib)
 target_link_libraries(${APP_NAME} ${RUST_PART_LIB} pthread dl)
 
 # Create helper method which adds relevent cargo tests for a given manifest
-function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH)
+function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --all-features --manifest-path ${MANIFEST_PATH})
+    # Check if we should enable doc tests
+    if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
+        # Add cargo docs as a test
+        add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --doc --manifest-path ${MANIFEST_PATH})
+    endif()
     # Add clippy as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --all-features --manifest-path ${MANIFEST_PATH} -- -D warnings)
     # Add rustfmt as a test
@@ -70,9 +75,12 @@ function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH)
 endfunction()
 
 # Add cargo tests for all our manifests
-add_test_cargo(root "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml")
-add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml")
-add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml")
+#
+# Note doctests are not supported on the staticlib in root
+add_test_cargo(root "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml" DOCTESTS_OFF)
+add_test_cargo(clang_format "${CMAKE_CURRENT_SOURCE_DIR}/clang-format/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
 
 # Enable testing
 enable_testing()

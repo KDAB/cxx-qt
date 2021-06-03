@@ -1,0 +1,8 @@
+[package]
+name = "clang-format"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
+edition = "2018"
+
+[dependencies]
+once_cell = "1.7"
