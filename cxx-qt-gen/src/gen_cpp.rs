@@ -430,9 +430,11 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             ~{ident}();
 
         {properties_public}
+
         {invokables}
 
         {public_slots}
+
         {signals}
 
         private:
@@ -464,6 +466,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         {ident}::~{ident}() = default;
 
         {properties}
+
         {invokables}
 
         std::unique_ptr<{ident}> new_{ident}()
@@ -496,6 +499,28 @@ mod tests {
 
     use pretty_assertions::assert_eq;
     use std::fs;
+
+    #[test]
+    fn generates_basic_invokable_and_properties() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header = clang_format(
+            &fs::read_to_string("test_outputs/basic_invokable_and_properties.h").unwrap(),
+        )
+        .unwrap();
+        let expected_source = clang_format(
+            &fs::read_to_string("test_outputs/basic_invokable_and_properties.cpp").unwrap(),
+        )
+        .unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
 
     #[test]
     fn generates_basic_only_invokables() {
