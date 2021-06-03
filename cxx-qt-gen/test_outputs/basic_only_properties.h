@@ -1,9 +1,5 @@
 #pragma once
 
-#include <QObject>
-#include <QString>
-
-#include "rust/cxx.h"
 #include "rust/cxx_qt.h"
 
 class MyObjectRs;

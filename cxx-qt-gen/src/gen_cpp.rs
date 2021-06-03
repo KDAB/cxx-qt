@@ -1,9 +1,7 @@
 use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
 use convert_case::{Case, Casing};
 use indoc::formatdoc;
-use itertools::join;
 use proc_macro2::TokenStream;
-use std::collections::BTreeSet;
 use std::result::Result;
 use syn::*;
 
@@ -22,8 +20,6 @@ trait CppType {
     fn convert_into_cpp(&self) -> Option<&'static str>;
     /// Any converter that is required to convert this type into rust
     fn convert_into_rust(&self) -> Option<&'static str>;
-    /// Any includes that are required for the CppType
-    fn include(&self) -> Option<&'static str>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
     /// Whether this type is a reference
@@ -46,15 +42,6 @@ impl CppType for CppTypes {
         match self {
             Self::I32 => None,
             Self::String => Some("qStringToRustString"),
-        }
-    }
-
-    /// Any includes that are required for the CppType
-    fn include(&self) -> Option<&'static str> {
-        match self {
-            Self::I32 => None,
-            // We convert between a rust::String and QString so we can always use const QString&
-            Self::String => Some("#include <QString>"),
         }
     }
 
@@ -92,13 +79,11 @@ struct CppParameter {
     type_ident: CppTypes,
 }
 
-/// Describes a C++ invokable, with header, source, and include parts
+/// Describes a C++ invokable with header and source parts
 #[derive(Debug)]
 struct CppInvokable {
     /// The header definition of the invokable
     header: String,
-    /// Any includes which this invokable requires
-    includes: BTreeSet<&'static str>,
     /// The source implementation of the invokable
     source: String,
 }
@@ -112,8 +97,6 @@ struct CppProperty {
     header_signals: String,
     /// The header slots definition of the invokable
     header_slots: String,
-    /// Any include which this invokable requires
-    include: Option<&'static str>,
     /// The source implementation of the invokable
     source: String,
 }
@@ -166,7 +149,6 @@ fn generate_invokables_cpp(
         // A helper which allows us to flatten data from vec of parameters
         struct CppParameterHelper {
             args: Vec<String>,
-            includes: BTreeSet<&'static str>,
             names: Vec<String>,
         }
 
@@ -177,7 +159,6 @@ fn generate_invokables_cpp(
                 .fold(
                     CppParameterHelper {
                         args: vec![],
-                        includes: BTreeSet::new(),
                         names: vec![],
                     },
                     |mut acc, parameter| {
@@ -205,10 +186,6 @@ fn generate_invokables_cpp(
                             // No converter so use the same name
                             acc.names.push(parameter.ident);
                         }
-                        // See if there are any includes for the type
-                        if let Some(include) = parameter.type_ident.include() {
-                            acc.includes.insert(include);
-                        }
                         acc
                     },
                 );
@@ -233,7 +210,6 @@ fn generate_invokables_cpp(
                     parameter_types = parameter_arg_line,
                     struct_ident = struct_ident.to_string(),
                 },
-                includes: parameters.includes,
             });
         }
     }
@@ -295,7 +271,6 @@ fn generate_properties_cpp(
                 is_ref = is_ref,
                 type_ident = type_ident,
             ),
-            include: parameter.type_ident.include(),
             // TODO: {converter_setter} needs to start on the same line as the { so that when
             // there is no converter we don't have an empty line at the start of the setter.
             // As clang-format doesn't remove this empty line. Is there a better way ?
@@ -364,8 +339,6 @@ fn generate_properties_cpp(
 
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
-    let mut includes: BTreeSet<&'static str> = BTreeSet::new();
-    includes.insert("#include <QObject>");
     let rust_suffix = "Rs";
     let struct_ident_str = obj.ident.to_string();
 
@@ -375,12 +348,11 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         headers_public: Vec<String>,
         headers_signals: Vec<String>,
         headers_slots: Vec<String>,
-        includes: BTreeSet<&'static str>,
         sources: Vec<String>,
     }
 
     // Query for properties
-    let mut properties = generate_properties_cpp(&obj.ident, &obj.properties)?
+    let properties = generate_properties_cpp(&obj.ident, &obj.properties)?
         .drain(..)
         .fold(
             CppPropertyHelper {
@@ -388,7 +360,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
                 headers_public: vec![],
                 headers_signals: vec![],
                 headers_slots: vec![],
-                includes: BTreeSet::new(),
                 sources: vec![],
             },
             |mut acc, property| {
@@ -396,39 +367,31 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
                 acc.headers_public.push(property.header_public);
                 acc.headers_signals.push(property.header_signals);
                 acc.headers_slots.push(property.header_slots);
-                if let Some(include) = property.include {
-                    acc.includes.insert(include);
-                }
                 acc.sources.push(property.source);
                 acc
             },
         );
-    includes.append(&mut properties.includes);
 
     // A helper which allows us to flatten data from vec of invokables
     struct CppInvokableHelper {
         headers: Vec<String>,
-        includes: BTreeSet<&'static str>,
         sources: Vec<String>,
     }
 
     // Query for invokables and flatten them into a helper
-    let mut invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
+    let invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
         .drain(..)
         .fold(
             CppInvokableHelper {
                 headers: vec![],
-                includes: BTreeSet::new(),
                 sources: vec![],
             },
             |mut acc, invokable| {
                 acc.headers.push(invokable.header);
-                acc.includes.extend(invokable.includes);
                 acc.sources.push(invokable.source);
                 acc
             },
         );
-    includes.append(&mut invokables.includes);
 
     // Generate C++ header part
     let signals = if properties.headers_signals.is_empty() {
@@ -454,9 +417,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let header = formatdoc! {r#"
         #pragma once
 
-        {includes}
-
-        #include "rust/cxx.h"
         #include "rust/cxx_qt.h"
 
         class {ident}{rust_suffix};
@@ -482,7 +442,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         std::unique_ptr<{ident}> new_{ident}();
         "#,
     ident = struct_ident_str,
-    includes = join(includes, "\n"),
     invokables = invokables.headers.join("\n"),
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),

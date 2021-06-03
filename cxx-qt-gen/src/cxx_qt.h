@@ -1,3 +1,4 @@
+#include <QObject>
 #include <QString>
 
 #include "rust/cxx.h"
