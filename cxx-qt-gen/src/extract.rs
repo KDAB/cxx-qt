@@ -291,7 +291,7 @@ mod tests {
         // Check that it got the invokables and properties
         // We only check the counts as the only_invokables and only_properties
         // will test more than the number.
-        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.invokables.len(), 2);
         assert_eq!(qobject.properties.len(), 2);
     }
 
@@ -309,7 +309,7 @@ mod tests {
         assert_eq!(qobject.module_ident.to_string(), "my_object");
 
         // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.invokables.len(), 2);
 
         // Check invokable ident
         let invokable = &qobject.invokables[0];
@@ -327,6 +327,13 @@ mod tests {
         let param_second = &invokable.parameters[1];
         assert_eq!(param_second.ident.to_string(), "number");
         assert_eq!(param_second.type_ident.to_string(), "i32");
+
+        // Check invokable ident
+        let invokable_second = &qobject.invokables[1];
+        assert_eq!(invokable_second.ident.to_string(), "say_bye");
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable_second.parameters.len(), 0);
     }
 
     #[test]

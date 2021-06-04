@@ -11,5 +11,9 @@ mod my_object {
                 string, number
             );
         }
+
+        fn say_bye(&self) {
+            println!("Bye from Rust!");
+        }
     }
 }

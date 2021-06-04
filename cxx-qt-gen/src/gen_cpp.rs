@@ -203,7 +203,8 @@ fn generate_invokables_cpp(
                 void {struct_ident}::{ident}({parameter_types}) const
                 {{
                     m_rustObj->{ident}({parameter_names});
-                }}"#,
+                }}
+                "#,
                 ident = invokable.ident.to_string(),
                 parameter_names = parameters.names.join(", "),
                 parameter_types = parameter_arg_line,

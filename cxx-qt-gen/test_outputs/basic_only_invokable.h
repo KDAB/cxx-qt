@@ -13,6 +13,7 @@ public:
   ~MyObject();
 
   Q_INVOKABLE void say_hi(const QString& string, int number) const;
+  Q_INVOKABLE void say_bye() const;
 
 private:
   rust::Box<MyObjectRs> m_rustObj;

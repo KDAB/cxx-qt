@@ -14,6 +14,12 @@ MyObject::say_hi(const QString& string, int number) const
   m_rustObj->say_hi(qStringToRustString(string), number);
 }
 
+void
+MyObject::say_bye() const
+{
+  m_rustObj->say_bye();
+}
+
 std::unique_ptr<MyObject>
 new_MyObject()
 {
