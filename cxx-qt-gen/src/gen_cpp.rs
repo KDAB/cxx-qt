@@ -87,7 +87,8 @@ struct CppInvokable {
     /// The source implementation of the invokable
     source: String,
 }
-
+/// Describes a C++ property with header and source parts
+#[derive(Debug)]
 struct CppProperty {
     /// The header meta definition of the invokable
     header_meta: String,
@@ -486,6 +487,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     })
 }
 
+/// Set the clang-format style to the given ClangFormatStyle or fallback to using Mozilla
+/// This is used for formatting any resultant C++ headers or sources.
 pub fn generate_format(style: Option<ClangFormatStyle>) -> Result<(), ClangFormatStyle> {
     CLANG_FORMAT_STYLE.set(style.unwrap_or(ClangFormatStyle::Mozilla))
 }

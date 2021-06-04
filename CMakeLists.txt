@@ -84,6 +84,7 @@ endfunction()
 add_test_cargo(root "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(clang_format "${CMAKE_CURRENT_SOURCE_DIR}/clang-format/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
 
 # Enable testing

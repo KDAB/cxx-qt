@@ -14,5 +14,5 @@ cxx = "1.0"
 cxx-qt = { path = "cxx-qt" }
 
 [build-dependencies]
-proc-macro2 = "1.0"
-cxx-gen = "0.7"
+clang-format = { path = "clang-format" }
+cxx-qt-build = { path = "cxx-qt-build" }

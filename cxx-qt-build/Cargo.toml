@@ -1,0 +1,11 @@
+[package]
+name = "cxx-qt-build"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
+edition = "2018"
+
+[dependencies]
+clang-format = { path = "../clang-format" }
+cxx-gen = "0.7"
+cxx-qt-gen = { path = "../cxx-qt-gen" }
+proc-macro2 = "1.0"
