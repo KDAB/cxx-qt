@@ -145,73 +145,71 @@ fn generate_invokables_cpp(
 ) -> Result<Vec<CppInvokable>, TokenStream> {
     let mut items: Vec<CppInvokable> = vec![];
 
-    if !invokables.is_empty() {
-        // A helper which allows us to flatten data from vec of parameters
-        struct CppParameterHelper {
-            args: Vec<String>,
-            names: Vec<String>,
-        }
+    // A helper which allows us to flatten data from vec of parameters
+    struct CppParameterHelper {
+        args: Vec<String>,
+        names: Vec<String>,
+    }
 
-        for invokable in invokables {
-            // Query for parameters and flatten them into a helper
-            let parameters = generate_parameters_cpp(&invokable.parameters)?
-                .drain(..)
-                .fold(
-                    CppParameterHelper {
-                        args: vec![],
-                        names: vec![],
-                    },
-                    |mut acc, parameter| {
-                        // Build the parameter as a type argument
-                        acc.args.push(format!(
-                            "{is_const} {type_ident}{is_ref} {ident}",
-                            ident = parameter.ident,
-                            is_const = if parameter.type_ident.is_const() {
-                                "const"
-                            } else {
-                                ""
-                            },
-                            is_ref = if parameter.type_ident.is_ref() {
-                                "&"
-                            } else {
-                                ""
-                            },
-                            type_ident = parameter.type_ident.type_ident()
-                        ));
-                        // If there is a converter then use it
-                        if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
-                            acc.names
-                                .push(format!("{}({})", converter_ident, parameter.ident));
-                        } else {
-                            // No converter so use the same name
-                            acc.names.push(parameter.ident);
-                        }
-                        acc
-                    },
-                );
-            let parameter_arg_line = parameters.args.join(", ");
-
-            // Prepare the CppInvokable
-            items.push(CppInvokable {
-                // TODO: detect if method is const from whether we have &self or &mut self in rust
-                header: format!(
-                    "Q_INVOKABLE void {ident}({parameter_types}) const;",
-                    ident = invokable.ident.to_string(),
-                    parameter_types = parameter_arg_line
-                ),
-                source: formatdoc! {
-                    r#"
-                    void {struct_ident}::{ident}({parameter_types}) const
-                    {{
-                        m_rustObj->{ident}({parameter_names});
-                    }}"#,
-                    ident = invokable.ident.to_string(),
-                    parameter_names = parameters.names.join(", "),
-                    parameter_types = parameter_arg_line,
-                    struct_ident = struct_ident.to_string(),
+    for invokable in invokables {
+        // Query for parameters and flatten them into a helper
+        let parameters = generate_parameters_cpp(&invokable.parameters)?
+            .drain(..)
+            .fold(
+                CppParameterHelper {
+                    args: vec![],
+                    names: vec![],
                 },
-            });
-        }
+                |mut acc, parameter| {
+                    // Build the parameter as a type argument
+                    acc.args.push(format!(
+                        "{is_const} {type_ident}{is_ref} {ident}",
+                        ident = parameter.ident,
+                        is_const = if parameter.type_ident.is_const() {
+                            "const"
+                        } else {
+                            ""
+                        },
+                        is_ref = if parameter.type_ident.is_ref() {
+                            "&"
+                        } else {
+                            ""
+                        },
+                        type_ident = parameter.type_ident.type_ident()
+                    ));
+                    // If there is a converter then use it
+                    if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
+                        acc.names
+                            .push(format!("{}({})", converter_ident, parameter.ident));
+                    } else {
+                        // No converter so use the same name
+                        acc.names.push(parameter.ident);
+                    }
+                    acc
+                },
+            );
+        let parameter_arg_line = parameters.args.join(", ");
+
+        // Prepare the CppInvokable
+        items.push(CppInvokable {
+            // TODO: detect if method is const from whether we have &self or &mut self in rust
+            header: format!(
+                "Q_INVOKABLE void {ident}({parameter_types}) const;",
+                ident = invokable.ident.to_string(),
+                parameter_types = parameter_arg_line
+            ),
+            source: formatdoc! {
+                r#"
+                void {struct_ident}::{ident}({parameter_types}) const
+                {{
+                    m_rustObj->{ident}({parameter_names});
+                }}"#,
+                ident = invokable.ident.to_string(),
+                parameter_names = parameters.names.join(", "),
+                parameter_types = parameter_arg_line,
+                struct_ident = struct_ident.to_string(),
+            },
+        });
     }
 
     Ok(items)
