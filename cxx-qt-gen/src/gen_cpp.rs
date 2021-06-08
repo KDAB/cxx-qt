@@ -500,7 +500,6 @@ mod tests {
     use crate::extract_qobject;
 
     use pretty_assertions::assert_eq;
-    use std::fs;
 
     #[test]
     fn generates_basic_invokable_and_properties() {
@@ -511,13 +510,13 @@ mod tests {
         let module: ItemMod = syn::parse_str(source).unwrap();
         let qobject = extract_qobject(module).unwrap();
 
-        let expected_header = clang_format(
-            &fs::read_to_string("test_outputs/basic_invokable_and_properties.h").unwrap(),
-        )
+        let expected_header = clang_format(include_str!(
+            "../test_outputs/basic_invokable_and_properties.h"
+        ))
         .unwrap();
-        let expected_source = clang_format(
-            &fs::read_to_string("test_outputs/basic_invokable_and_properties.cpp").unwrap(),
-        )
+        let expected_source = clang_format(include_str!(
+            "../test_outputs/basic_invokable_and_properties.cpp"
+        ))
         .unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
@@ -534,11 +533,9 @@ mod tests {
         let qobject = extract_qobject(module).unwrap();
 
         let expected_header =
-            clang_format(&fs::read_to_string("test_outputs/basic_only_invokable.h").unwrap())
-                .unwrap();
+            clang_format(include_str!("../test_outputs/basic_only_invokable.h")).unwrap();
         let expected_source =
-            clang_format(&fs::read_to_string("test_outputs/basic_only_invokable.cpp").unwrap())
-                .unwrap();
+            clang_format(include_str!("../test_outputs/basic_only_invokable.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);
@@ -554,11 +551,9 @@ mod tests {
         let qobject = extract_qobject(module).unwrap();
 
         let expected_header =
-            clang_format(&fs::read_to_string("test_outputs/basic_only_properties.h").unwrap())
-                .unwrap();
+            clang_format(include_str!("../test_outputs/basic_only_properties.h")).unwrap();
         let expected_source =
-            clang_format(&fs::read_to_string("test_outputs/basic_only_properties.cpp").unwrap())
-                .unwrap();
+            clang_format(include_str!("../test_outputs/basic_only_properties.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);
