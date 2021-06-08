@@ -22,7 +22,7 @@ pub(crate) struct Invokable {
     pub(crate) parameters: Vec<Parameter>,
     /// The original Rust method for the invokable
     #[derivative(Debug = "ignore")]
-    _original_method: ImplItemMethod,
+    pub(crate) original_method: ImplItemMethod,
 }
 
 /// Describes a property that can be used from QML
@@ -42,10 +42,14 @@ pub struct QObject {
     pub(crate) module_ident: Ident,
     /// The ident of the original struct and name of the C++ class that represents the QObject
     pub(crate) ident: Ident,
+    /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
+    pub(crate) rust_struct_ident: Ident,
     /// All the methods that can be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
+    /// The original Rust struct that the object was generated from
+    pub(crate) original_struct: ItemStruct,
 }
 
 /// Describe the error type from extract_type_ident
@@ -140,7 +144,7 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
         let invokable = Invokable {
             ident: method_ident.to_owned(),
             parameters,
-            _original_method: method.to_owned(),
+            original_method: method.to_owned(),
         };
         invokables.push(invokable);
     }
@@ -216,6 +220,9 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     }
     let struct_ident = &original_struct.ident;
 
+    const RUST_SUFFIX: &str = "Rs";
+    let rust_struct_ident = quote::format_ident!("{}{}", struct_ident, RUST_SUFFIX);
+
     let object_invokables;
     let object_properties;
 
@@ -268,8 +275,10 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     Ok(QObject {
         module_ident: module_ident.to_owned(),
         ident: struct_ident.to_owned(),
+        rust_struct_ident,
         invokables: object_invokables,
         properties: object_properties,
+        original_struct: original_struct.to_owned(),
     })
 }
 

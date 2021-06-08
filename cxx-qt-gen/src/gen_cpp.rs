@@ -339,8 +339,8 @@ fn generate_properties_cpp(
 
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
-    let rust_suffix = "Rs";
     let struct_ident_str = obj.ident.to_string();
+    let rust_struct_ident_str = obj.rust_struct_ident.to_string();
 
     // A helper which allows us to flatten data from vec of properties
     struct CppPropertyHelper {
@@ -419,7 +419,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         #include "rust/cxx_qt.h"
 
-        class {ident}{rust_suffix};
+        class {rust_struct_ident};
 
         class {ident} : public QObject {{
             Q_OBJECT
@@ -438,7 +438,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         {signals}
 
         private:
-            rust::Box<{ident}{rust_suffix}> m_rustObj;
+            rust::Box<{rust_struct_ident}> m_rustObj;
         }};
 
         std::unique_ptr<{ident}> new_{ident}();
@@ -447,7 +447,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     invokables = invokables.headers.join("\n"),
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
-    rust_suffix = rust_suffix,
+    rust_struct_ident = rust_struct_ident_str,
     signals = signals,
     public_slots = public_slots,
     };

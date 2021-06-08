@@ -11,6 +11,7 @@ derivative = "2.2"
 indoc = "1.0"
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
+quote = "1.0"
 
 [dev-dependencies]
 pretty_assertions = "0.7"
