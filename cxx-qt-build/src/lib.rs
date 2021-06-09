@@ -1,4 +1,4 @@
-use cxx_qt_gen::extract_qobject;
+use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::env;
 use std::fs::File;
@@ -6,7 +6,9 @@ use std::io::Write;
 use syn::*;
 
 use clang_format::ClangFormatStyle;
-use cxx_qt_gen::{generate_format, generate_qobject_cxx};
+use cxx_qt_gen::{
+    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
+};
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name
@@ -115,19 +117,57 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
     extracted
 }
 
-/// Generate C++ files from a given Rust file, returning the generated path
-fn gen_cxx_for_file(rs_path: &str) -> String {
+/// Write the generated cpp and h files for a qobject out to files
+fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+
+    let h_path = format!(
+        "{}/target/cxx-qt-gen/include/{}.h",
+        dir_manifest, snake_name
+    );
+    let cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", dir_manifest, snake_name);
+
+    let mut file = File::create(&h_path).expect("Could not create .h file");
+    write!(file, "{}", obj.header).expect("Failed to write .h file");
+
+    let mut file = File::create(&cpp_path).expect("Could not create .cpp file");
+    write!(file, "{}", obj.source).expect("Failed to write .cpp file");
+
+    vec![h_path, cpp_path]
+}
+
+/// Generate C++ files from a given Rust file, returning the generated paths
+fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
+    let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+    let mut generated_cpp_paths = Vec::new();
 
     let path = format!("{}/src/{}", dir_manifest, rs_path);
     let content = std::fs::read_to_string(path).expect("Could not read Rust file");
     let extracted = extract_modules(&content, rs_path);
 
+    let h_path;
+    let cpp_path;
+
     let tokens = {
         match extracted {
-            ExtractedModule::Cxx(m) => m.into_token_stream(),
+            ExtractedModule::Cxx(m) => {
+                h_path = format!("{}/target/cxx-qt-gen/include/{}.h", dir_manifest, rs_path);
+                cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", dir_manifest, rs_path);
+
+                m.into_token_stream()
+            }
             ExtractedModule::CxxQt(m) => {
                 let qobject = extract_qobject(m).unwrap();
+                let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+                let snake_name = qobject.ident.to_string().to_case(Case::Snake);
+
+                h_path = format!("{}/target/cxx-qt-gen/src/{}.rs.h", dir_manifest, snake_name);
+                cpp_path = format!(
+                    "{}/target/cxx-qt-gen/src/{}.rs.cpp",
+                    dir_manifest, snake_name
+                );
+
+                generated_cpp_paths.append(&mut write_qobject_cpp_files(cpp_object, &snake_name));
                 generate_qobject_cxx(&qobject).unwrap()
             }
             _others => panic!(
@@ -141,18 +181,19 @@ fn gen_cxx_for_file(rs_path: &str) -> String {
     let gen_result = cxx_gen::generate_header_and_cc(tokens, &opt)
         .expect("Could not generate C++ from Rust file");
 
-    let header_path = format!("{}/target/cxx-qt-gen/include/{}.h", dir_manifest, rs_path);
-    let mut header = File::create(header_path).expect("Could not create header file");
+    let mut header = File::create(&h_path).expect("Could not create header file");
     header
         .write_all(&gen_result.header)
         .expect("Could not write header file");
 
-    let cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", dir_manifest, rs_path);
     let mut cpp = File::create(&cpp_path).expect("Could not create cpp file");
     cpp.write_all(&gen_result.implementation)
         .expect("Could not write cpp file");
 
-    cpp_path
+    // TODO: find a "nice" way to write this
+    generated_cpp_paths.push(h_path);
+    generated_cpp_paths.push(cpp_path);
+    generated_cpp_paths
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
@@ -168,15 +209,14 @@ fn gen_cxx_for_files(rs_source: &[String]) -> Vec<String> {
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        let cpp_path = gen_cxx_for_file(rs_path);
-        cpp_files.push(cpp_path);
+        cpp_files.append(&mut gen_cxx_for_file(rs_path));
     }
 
     cpp_files
 }
 
 /// Write the list of C++ paths to the file
-fn write_cpp_sources(paths: &[String]) {
+fn write_cpp_sources_list(paths: &[String]) {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
 
     let path = format!("{}/target/cxx-qt-gen", dir_manifest);
@@ -188,6 +228,22 @@ fn write_cpp_sources(paths: &[String]) {
     for path in paths {
         writeln!(file, "{}", path).unwrap();
     }
+}
+
+/// Write out the static header files for both the cxx and cxx-qt libraries
+fn write_static_headers() {
+    let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+
+    let path = format!("{}/target/cxx-qt-gen/statics/rust", dir_manifest);
+    std::fs::create_dir_all(&path).expect("Could not create static header dir");
+
+    let h_path = format!("{}/cxx.h", path);
+    let mut header = File::create(h_path).expect("Could not create cxx.h");
+    write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
+
+    let h_path = format!("{}/cxx_qt.h", path);
+    let mut header = File::create(h_path).expect("Could not create cxx_qt.h");
+    write!(header, "{}", cxx_qt_gen::HEADER).expect("Could not write cxx_qt.h");
 }
 
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
@@ -222,6 +278,7 @@ impl CxxQtBuilder {
         let cpp_paths = gen_cxx_for_files(&rs_sources);
 
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
-        write_cpp_sources(&cpp_paths);
+        write_cpp_sources_list(&cpp_paths);
+        write_static_headers();
     }
 }

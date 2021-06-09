@@ -41,7 +41,7 @@ pub struct QObject {
     /// The ident of the Rust module that represents the QObject
     pub(crate) module_ident: Ident,
     /// The ident of the original struct and name of the C++ class that represents the QObject
-    pub(crate) ident: Ident,
+    pub ident: Ident,
     /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
     pub(crate) rust_struct_ident: Ident,
     /// All the methods that can be invoked from QML

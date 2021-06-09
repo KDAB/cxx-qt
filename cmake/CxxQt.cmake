@@ -38,6 +38,7 @@ function(cxx_qt_cmake APP_NAME RUST_SOURCES CPP_SOURCES)
     add_executable(${APP_NAME} ${CPP_SOURCES} ${GEN_SOURCES})
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target")
+    target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/statics")
 
     # We also list the .a produced by cargo as a dependency so that cargo gets a
     # chance to rebuild the .a every time that a cmake build is run.
