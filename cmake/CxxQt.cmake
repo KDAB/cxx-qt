@@ -22,8 +22,8 @@ function(cxx_qt_cmake APP_NAME RUST_SOURCES CPP_SOURCES)
     # We list the rust source files that lead to generated C++ files here
     # so that CMake is forced to re-run cargo and parse the list it produces
     # during the config stage when this list of source files changes.
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt")
-    file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt/rust_sources.txt" "${RUST_SOURCES}")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen")
+    file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/rust_sources.txt" "${RUST_SOURCES}")
 
     # Run cargo during config to ensure the cpp source file list is created
     execute_process(
@@ -32,12 +32,12 @@ function(cxx_qt_cmake APP_NAME RUST_SOURCES CPP_SOURCES)
     )
 
     # Now we can read the list of C++ files that cargo produced
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt/cpp_sources.txt" GEN_SOURCES)
+    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
 
     # And specify that we want CMake to build these sources
     add_executable(${APP_NAME} ${CPP_SOURCES} ${GEN_SOURCES})
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt/include")
+    target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target")
 
     # We also list the .a produced by cargo as a dependency so that cargo gets a
     # chance to rebuild the .a every time that a cmake build is run.

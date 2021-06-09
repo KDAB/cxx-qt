@@ -2,7 +2,7 @@
 #include "doctest.h"
 
 #include "main.h"
-#include "lib.rs.h"
+#include "cxx-qt-gen/include/lib.rs.h"
 
 int hidden_num = 100;
 
