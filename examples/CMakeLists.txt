@@ -1,1 +1,1 @@
-add_subdirectory(basic)
+add_subdirectory(basic_cxx_only)

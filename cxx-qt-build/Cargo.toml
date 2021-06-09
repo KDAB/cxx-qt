@@ -9,3 +9,5 @@ clang-format = { path = "../clang-format" }
 cxx-gen = "0.7"
 cxx-qt-gen = { path = "../cxx-qt-gen" }
 proc-macro2 = "1.0"
+syn = { version = "1.0", features = ["extra-traits", "full", "parsing"] }
+quote = "1.0"
