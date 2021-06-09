@@ -17,5 +17,5 @@ set(
     src/main.cpp
 )
 
-cxx_qt_cmake(${APP_NAME} ${RUST_SOURCES} ${CPP_SOURCES} ${CPP_SOURCES})
+cxx_qt_cmake(${APP_NAME} ${RUST_SOURCES} ${CPP_SOURCES})
 target_link_libraries(${APP_NAME} doctest)
