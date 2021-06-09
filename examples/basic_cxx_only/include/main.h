@@ -1,3 +1,4 @@
 #pragma once
 
-int get_cpp_number();
+int
+get_cpp_number();

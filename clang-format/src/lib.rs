@@ -21,7 +21,7 @@ pub static CLANG_FORMAT_STYLE: OnceCell<ClangFormatStyle> = OnceCell::new();
 pub enum ClangFormatStyle {
     Chromium,
     Default,
-    // TODO: add File ? but can you specify where the file comes from?
+    File,
     Google,
     Llvm,
     Mozilla,
@@ -33,7 +33,10 @@ impl ClangFormatStyle {
     fn as_str(&self) -> &'static str {
         match self {
             Self::Chromium => "Chromium",
-            Self::Default => "",
+            // Will use clang-format default options
+            Self::Default => "{}",
+            // Will look in parent directories for a .clang-format file
+            Self::File => "file",
             Self::Google => "Google",
             Self::Llvm => "LLVM",
             Self::Mozilla => "Mozilla",
@@ -57,15 +60,13 @@ fn clang_format_with_style(
     input: &str,
     style: &ClangFormatStyle,
 ) -> Result<String, ClangFormatError> {
-    // Create the clang-format command
-    let mut command = &mut Command::new("clang-format");
-    // Determine if there is a style specified
-    if style != &ClangFormatStyle::Default {
-        command = command.arg(format!("--style={}", style.as_str()));
-    }
-
-    // Try to spawn the command
-    if let Ok(mut child) = command.stdin(Stdio::piped()).stdout(Stdio::piped()).spawn() {
+    // Create and try to spawn the command with the specified style
+    if let Ok(mut child) = Command::new("clang-format")
+        .arg(format!("--style={}", style.as_str()))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+    {
         // Try to take the stdin pipe
         if let Some(mut stdin) = child.stdin.take() {
             // Write the input to the stdin

@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(cxx_qt)
 
+# Enable testing (this needs to be called before subdirs are added to detect tests in them)
+enable_testing()
+
 # Define doctest as a library that the examples can link to in order to run their internal tests
 add_library(doctest INTERFACE)
 target_include_directories(doctest INTERFACE ${CMAKE_SOURCE_DIR}/doctest)
@@ -46,6 +49,3 @@ endfunction()
 # TODO: we probably want to move tests of examples into the CMakeLists under the examples folder
 add_example_tests(basic_cxx_only)
 add_example_tests(basic_cxx_qt)
-
-# Enable testing
-enable_testing()
