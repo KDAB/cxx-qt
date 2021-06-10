@@ -3,13 +3,22 @@ use proc_macro2::TokenStream;
 use std::result::Result;
 use syn::{spanned::Spanned, *};
 
+/// Describes a type
+#[derive(Debug)]
+pub(crate) struct ParameterType {
+    /// The type of the parameter
+    pub(crate) ident: Ident,
+    /// If this parameter is a reference
+    pub(crate) is_ref: bool,
+}
+
 /// Describes a function parameter
 #[derive(Debug)]
 pub(crate) struct Parameter {
     /// The ident of the parameter
     pub(crate) ident: Ident,
     /// The type of the parameter
-    pub(crate) type_ident: Ident,
+    pub(crate) type_ident: ParameterType,
 }
 
 /// Describes a function that can be invoked from QML
@@ -31,7 +40,7 @@ pub(crate) struct Property {
     /// The ident of the property
     pub(crate) ident: Ident,
     /// The type of the property
-    pub(crate) type_ident: Ident,
+    pub(crate) type_ident: ParameterType,
     // TODO: later we will have possibility for custom setter, getter, notify, constant etc
 }
 
@@ -59,15 +68,18 @@ enum ExtractTypeIdentError {
 }
 
 /// Extract the type ident from a given syn::Type
-fn extract_type_ident(ty: &syn::Type) -> Result<Ident, ExtractTypeIdentError> {
+fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentError> {
     let ty_path;
+    let is_ref;
 
     match ty {
         Type::Path(path) => {
+            is_ref = false;
             ty_path = path;
         }
         Type::Reference(TypeReference { elem, .. }) => {
             if let Type::Path(path) = &**elem {
+                is_ref = true;
                 ty_path = path;
             } else {
                 return Err(ExtractTypeIdentError::InvalidType);
@@ -83,7 +95,10 @@ fn extract_type_ident(ty: &syn::Type) -> Result<Ident, ExtractTypeIdentError> {
         return Err(ExtractTypeIdentError::InvalidSegments);
     }
 
-    Ok(segments[0].ident.to_owned())
+    Ok(ParameterType {
+        ident: segments[0].ident.to_owned(),
+        is_ref,
+    })
 }
 
 /// Extracts all the member functions from a module and generates invokables from them
@@ -329,13 +344,14 @@ mod tests {
 
         let param_first = &invokable.parameters[0];
         assert_eq!(param_first.ident.to_string(), "string");
-        // TODO: add extra checks when we read if this is a & or &mut
-        // eg this would need to also check an is_reference field
-        assert_eq!(param_first.type_ident.to_string(), "str");
+        // TODO: add extra checks when we read if this is a mut or not
+        assert_eq!(param_first.type_ident.ident.to_string(), "str");
+        assert_eq!(param_first.type_ident.is_ref, true);
 
         let param_second = &invokable.parameters[1];
         assert_eq!(param_second.ident.to_string(), "number");
-        assert_eq!(param_second.type_ident.to_string(), "i32");
+        assert_eq!(param_second.type_ident.ident.to_string(), "i32");
+        assert_eq!(param_second.type_ident.is_ref, false);
 
         // Check invokable ident
         let invokable_second = &qobject.invokables[1];
@@ -359,10 +375,12 @@ mod tests {
 
         let prop_first = &qobject.properties[0];
         assert_eq!(prop_first.ident.to_string(), "number");
-        assert_eq!(prop_first.type_ident.to_string(), "i32");
+        assert_eq!(prop_first.type_ident.ident.to_string(), "i32");
+        assert_eq!(prop_first.type_ident.is_ref, false);
 
         let prop_second = &qobject.properties[1];
         assert_eq!(prop_second.ident.to_string(), "string");
-        assert_eq!(prop_second.type_ident.to_string(), "String");
+        assert_eq!(prop_second.type_ident.ident.to_string(), "String");
+        assert_eq!(prop_second.type_ident.is_ref, false);
     }
 }

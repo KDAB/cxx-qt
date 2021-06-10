@@ -6,16 +6,13 @@ mod my_object {
 
             type MyObject;
 
-            fn say_hi(self: &MyObject);
-            fn say_bye(self: &MyObject);
-
             fn new_MyObject() -> UniquePtr<MyObject>;
         }
 
         extern "Rust" {
             type MyObjectRs;
 
-            fn say_hi(self: &MyObjectRs);
+            fn say_hi(self: &MyObjectRs, string: &str, number: i32);
             fn say_bye(self: &MyObjectRs);
 
             fn create_my_object_rs() -> Box<MyObjectRs>;

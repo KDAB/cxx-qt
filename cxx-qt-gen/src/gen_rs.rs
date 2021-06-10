@@ -13,22 +13,44 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let ident_snake = class_name.to_string().to_case(Case::Snake);
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
 
-    let mut cpp_functions = Vec::new();
+    let cpp_functions: Vec<TokenStream> = Vec::new();
     let mut rs_functions = Vec::new();
 
+    // Invokables are only added to extern rust side
     for i in &obj.invokables {
         let ident = &i.ident;
+        let parameters = &i.parameters;
 
-        // TODO: also support parameters
+        if parameters.is_empty() {
+            rs_functions.push(quote! {
+                fn #ident(self: &#rust_class_name);
+            });
+        } else {
+            let mut parameters_quotes = Vec::new();
+            for p in parameters {
+                let ident = &p.ident;
+                let type_ident = &p.type_ident.ident;
+                if p.type_ident.is_ref {
+                    parameters_quotes.push(quote! {
+                        #ident: &#type_ident
+                    });
+                } else {
+                    parameters_quotes.push(quote! {
+                        #ident: #type_ident
+                    });
+                }
+            }
 
-        cpp_functions.push(quote! {
-            fn #ident(self: &#class_name);
-        });
+            // TODO: add cpp functions for the invokable so that it can be called
+            // consider how the different types for strings work here
 
-        rs_functions.push(quote! {
-            fn #ident(self: &#rust_class_name);
-        });
+            rs_functions.push(quote! {
+                fn #ident(self: &#rust_class_name, #(#parameters_quotes, )*);
+            });
+        }
     }
+
+    // TODO: add properties getter/setter these will be in both rust and C++ sides?
 
     let new_object_ident = format_ident!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);

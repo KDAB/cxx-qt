@@ -9,7 +9,7 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   // this test should be updated to do something useful
 
   MyObject obj;
-  obj.say_hi();
+  obj.say_hi(QStringLiteral("Hello World!"), 32);
 
   CHECK(true == true);
 }

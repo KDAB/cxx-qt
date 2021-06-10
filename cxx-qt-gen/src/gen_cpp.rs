@@ -5,7 +5,7 @@ use proc_macro2::TokenStream;
 use std::result::Result;
 use syn::*;
 
-use crate::extract::{Invokable, Parameter, Property, QObject};
+use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject};
 
 /// Describes a C++ type
 #[derive(Debug)]
@@ -54,6 +54,10 @@ impl CppType for CppTypes {
     }
 
     /// Whether this type is a reference
+    ///
+    /// TODO: read from the extract ParameterType if it's a ref first
+    /// so that we can return or take &int, but also consider that String is
+    /// always ref in arguments?
     fn is_ref(&self) -> bool {
         match self {
             Self::I32 => false,
@@ -112,13 +116,13 @@ pub struct CppObject {
 }
 
 /// Generate a C++ type for a given rust ident
-fn generate_type_cpp(type_ident: &Ident) -> Result<CppTypes, TokenStream> {
-    match type_ident.to_string().as_str() {
+fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream> {
+    match type_ident.ident.to_string().as_str() {
         "str" => Ok(CppTypes::String),
         "String" => Ok(CppTypes::String),
         "i32" => Ok(CppTypes::I32),
         other => Err(Error::new(
-            type_ident.span(),
+            type_ident.ident.span(),
             format!("Unknown type ident to convert to C++: {}", other),
         )
         .to_compile_error()),
