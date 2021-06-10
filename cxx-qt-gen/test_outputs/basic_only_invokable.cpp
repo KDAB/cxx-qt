@@ -11,7 +11,7 @@ MyObject::~MyObject() = default;
 void
 MyObject::say_hi(const QString& string, int number) const
 {
-  m_rustObj->say_hi(qStringToRustString(string), number);
+  m_rustObj->say_hi(qStringToRustStr(string), number);
 }
 
 void

@@ -11,6 +11,7 @@ use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject};
 #[derive(Debug)]
 enum CppTypes {
     String,
+    Str,
     I32,
 }
 
@@ -33,6 +34,7 @@ impl CppType for CppTypes {
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
         }
     }
@@ -41,6 +43,7 @@ impl CppType for CppTypes {
     fn convert_into_rust(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Str => Some("qStringToRustStr"),
             Self::String => Some("qStringToRustString"),
         }
     }
@@ -49,6 +52,7 @@ impl CppType for CppTypes {
     fn is_const(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Str => true,
             Self::String => true,
         }
     }
@@ -61,6 +65,7 @@ impl CppType for CppTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Str => true,
             Self::String => true,
         }
     }
@@ -69,6 +74,7 @@ impl CppType for CppTypes {
     fn type_ident(&self) -> &'static str {
         match self {
             Self::I32 => "int",
+            Self::Str => "QString",
             Self::String => "QString",
         }
     }
@@ -118,7 +124,7 @@ pub struct CppObject {
 /// Generate a C++ type for a given rust ident
 fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream> {
     match type_ident.ident.to_string().as_str() {
-        "str" => Ok(CppTypes::String),
+        "str" => Ok(CppTypes::Str),
         "String" => Ok(CppTypes::String),
         "i32" => Ok(CppTypes::I32),
         other => Err(Error::new(
