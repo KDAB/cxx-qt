@@ -29,6 +29,8 @@ pub(crate) struct Invokable {
     pub(crate) ident: Ident,
     /// The parameters that the function takes in
     pub(crate) parameters: Vec<Parameter>,
+    /// The return type information
+    pub(crate) return_type: Option<ParameterType>,
     /// The original Rust method for the invokable
     #[derivative(Debug = "ignore")]
     pub(crate) original_method: ImplItemMethod,
@@ -115,17 +117,16 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
 
         let method_ident = &method.sig.ident;
         let inputs = &method.sig.inputs;
+        let output = &method.sig.output;
         let mut parameters = Vec::new();
 
         for arg in inputs {
             if let FnArg::Typed(PatType { pat, ty, .. }) = arg {
                 let arg_ident;
-                let _arg_by_ref;
                 let type_ident;
 
-                if let Pat::Ident(PatIdent { ident, by_ref, .. }) = &**pat {
+                if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
                     arg_ident = ident;
-                    _arg_by_ref = by_ref;
                 } else {
                     return Err(
                         Error::new(arg.span(), "Invalid argument ident format.").to_compile_error()
@@ -147,7 +148,6 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
                     }
                 }
 
-                // TODO: we probably need to track if parameters are by reference two
                 let parameter = Parameter {
                     ident: arg_ident.to_owned(),
                     type_ident,
@@ -156,9 +156,30 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
             }
         }
 
+        let return_type = if let ReturnType::Type(_, ty) = output {
+            match extract_type_ident(ty) {
+                Ok(result) => Some(result),
+                Err(ExtractTypeIdentError::InvalidType) => {
+                    return Err(
+                        Error::new(output.span(), "Invalid return type format.").to_compile_error()
+                    )
+                }
+                Err(ExtractTypeIdentError::InvalidSegments) => {
+                    return Err(Error::new(
+                        output.span(),
+                        "Return type should only have one segment.",
+                    )
+                    .to_compile_error());
+                }
+            }
+        } else {
+            None
+        };
+
         let invokable = Invokable {
             ident: method_ident.to_owned(),
             parameters,
+            return_type,
             original_method: method.to_owned(),
         };
         invokables.push(invokable);

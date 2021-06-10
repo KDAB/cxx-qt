@@ -22,9 +22,23 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         let parameters = &i.parameters;
 
         if parameters.is_empty() {
-            rs_functions.push(quote! {
-                fn #ident(self: &#rust_class_name);
-            });
+            // Determine if there is a return type and if it's a reference
+            if let Some(return_type) = &i.return_type {
+                let type_ident = &return_type.ident;
+                if return_type.is_ref {
+                    rs_functions.push(quote! {
+                        fn #ident(self: &#rust_class_name) -> &#type_ident;
+                    });
+                } else {
+                    rs_functions.push(quote! {
+                        fn #ident(self: &#rust_class_name) -> #type_ident;
+                    });
+                }
+            } else {
+                rs_functions.push(quote! {
+                    fn #ident(self: &#rust_class_name);
+                });
+            }
         } else {
             let mut parameters_quotes = Vec::new();
             for p in parameters {
@@ -44,9 +58,23 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             // TODO: add cpp functions for the invokable so that it can be called
             // consider how the different types for strings work here
 
-            rs_functions.push(quote! {
-                fn #ident(self: &#rust_class_name, #(#parameters_quotes, )*);
-            });
+            // Determine if there is a return type and if it's a reference
+            if let Some(return_type) = &i.return_type {
+                let type_ident = &return_type.ident;
+                if return_type.is_ref {
+                    rs_functions.push(quote! {
+                        fn #ident(self: &#rust_class_name, #(#parameters_quotes, )*) -> &#type_ident;
+                    });
+                } else {
+                    rs_functions.push(quote! {
+                        fn #ident(self: &#rust_class_name, #(#parameters_quotes, )*) -> #type_ident;
+                    });
+                }
+            } else {
+                rs_functions.push(quote! {
+                    fn #ident(self: &#rust_class_name, #(#parameters_quotes, )*);
+                });
+            }
         }
     }
 
@@ -177,6 +205,24 @@ mod tests {
         let qobject = extract_qobject(module).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_invokable.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_basic_only_invokables_with_return() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_only_invokable_return.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();

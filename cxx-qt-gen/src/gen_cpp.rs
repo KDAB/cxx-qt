@@ -201,25 +201,57 @@ fn generate_invokables_cpp(
             );
         let parameter_arg_line = parameters.args.join(", ");
 
+        // Extract the return type of the invokable if there is one
+        let return_type = if let Some(return_type) = &invokable.return_type {
+            Some(generate_type_cpp(&return_type)?)
+        } else {
+            None
+        };
+
+        // Prepare the body of the invokable, we may return or wrap this later
+        let body = format!(
+            "m_rustObj->{ident}({parameter_names})",
+            ident = invokable.ident.to_string(),
+            parameter_names = parameters.names.join(", ")
+        );
+
+        // Cache the return ident as it's used in both header and source
+        let return_ident = if let Some(return_type) = &return_type {
+            return_type.type_ident()
+        } else {
+            "void"
+        };
+
         // Prepare the CppInvokable
         items.push(CppInvokable {
             // TODO: detect if method is const from whether we have &self or &mut self in rust
             header: format!(
-                "Q_INVOKABLE void {ident}({parameter_types}) const;",
+                "Q_INVOKABLE {return_ident} {ident}({parameter_types}) const;",
                 ident = invokable.ident.to_string(),
-                parameter_types = parameter_arg_line
+                parameter_types = parameter_arg_line,
+                return_ident = return_ident,
             ),
             source: formatdoc! {
                 r#"
-                void {struct_ident}::{ident}({parameter_types}) const
+                {return_ident} {struct_ident}::{ident}({parameter_types}) const
                 {{
-                    m_rustObj->{ident}({parameter_names});
+                    {body};
                 }}
                 "#,
+                // Decide if the body needs a return or converter
+                body = if let Some(return_type) = &return_type {
+                    if let Some(converter_ident) = return_type.convert_into_cpp() {
+                        format!("return {converter}({body})", converter = converter_ident, body = body)
+                    } else {
+                        format!("return {body}", body = body)
+                    }
+                } else {
+                    body
+                },
                 ident = invokable.ident.to_string(),
-                parameter_names = parameters.names.join(", "),
                 parameter_types = parameter_arg_line,
                 struct_ident = struct_ident.to_string(),
+                return_ident = return_ident,
             },
         });
     }
@@ -546,6 +578,28 @@ mod tests {
             clang_format(include_str!("../test_outputs/basic_only_invokable.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/basic_only_invokable.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_basic_only_invokables_with_return() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header = clang_format(include_str!(
+            "../test_outputs/basic_only_invokable_return.h"
+        ))
+        .unwrap();
+        let expected_source = clang_format(include_str!(
+            "../test_outputs/basic_only_invokable_return.cpp"
+        ))
+        .unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);
