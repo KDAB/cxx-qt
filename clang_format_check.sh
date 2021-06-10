@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e
+
+DIR=$1
+echo "Executing clang-format on directory: $DIR"
+
+function clang_format_files() {
+    while IFS= read -r -d '' file
+    do
+        if ! git check-ignore -q "$file"; then
+            clang-format --dry-run -Werror "$file"
+        fi
+    done < <(find "$DIR" -type f -name "$1" -a -not -path './.git/*' -print0)
+}
+
+clang_format_files "*.cpp"
+clang_format_files "*.h"

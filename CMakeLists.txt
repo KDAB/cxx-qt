@@ -49,3 +49,6 @@ endfunction()
 # TODO: we probably want to move tests of examples into the CMakeLists under the examples folder
 add_example_tests(basic_cxx_only)
 add_example_tests(basic_cxx_qt)
+
+# Add test which scans for all .cpp and .h files in this project and runs clang-format
+add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
