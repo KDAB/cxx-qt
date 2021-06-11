@@ -1,7 +1,17 @@
+use convert_case::{Case, Casing};
 use derivative::*;
 use proc_macro2::TokenStream;
 use std::result::Result;
 use syn::{spanned::Spanned, *};
+
+/// Describes an ident which has a different name in C++ and Rust
+#[derive(Debug)]
+pub(crate) struct CppRustIdent {
+    /// The ident for C++
+    pub(crate) cpp_ident: Ident,
+    /// The ident for rust
+    pub(crate) rust_ident: Ident,
+}
 
 /// Describes a type
 #[derive(Debug)]
@@ -43,7 +53,13 @@ pub(crate) struct Property {
     pub(crate) ident: Ident,
     /// The type of the property
     pub(crate) type_ident: ParameterType,
-    // TODO: later we will have possibility for custom setter, getter, notify, constant etc
+    /// The getter ident of the property (used for READ)
+    pub(crate) getter: Option<CppRustIdent>,
+    /// The setter ident of the property (used for WRITE)
+    pub(crate) setter: Option<CppRustIdent>,
+    /// The notify ident of the property (used for NOTIFY)
+    pub(crate) notify: Option<CppRustIdent>,
+    // TODO: later we will further possibilities such as CONSTANT or FINAL
 }
 
 /// Describes all the properties of a QObject class
@@ -224,10 +240,32 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                     }
                 }
 
-                // TODO: read attrs to see if there are any non default qt_property options
+                // Build the getter/setter/notify idents
+                //
+                // TODO: later these can be optional and have custom names from macro attributes
+                // we might also need to store whether a custom method is already implemented or
+                // whether a method needs to be auto generated on the rust side
+                let ident_str = ident.to_string();
+                let getter = Some(CppRustIdent {
+                    cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Title)),
+                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+                });
+                let setter = Some(CppRustIdent {
+                    cpp_ident: quote::format_ident!("set{}", ident_str.to_case(Case::Title)),
+                    rust_ident: quote::format_ident!("set_{}", ident_str.to_case(Case::Snake)),
+                });
+                let notify = Some(CppRustIdent {
+                    cpp_ident: quote::format_ident!("{}Changed", ident_str.to_case(Case::Camel)),
+                    // TODO: rust doesn't have notify on it's side?
+                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+                });
+
                 properties.push(Property {
                     ident: ident.to_owned(),
                     type_ident,
+                    getter,
+                    setter,
+                    notify,
                 });
             }
         }
@@ -394,14 +432,48 @@ mod tests {
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 2);
 
+        // Check first property
         let prop_first = &qobject.properties[0];
         assert_eq!(prop_first.ident.to_string(), "number");
         assert_eq!(prop_first.type_ident.ident.to_string(), "i32");
         assert_eq!(prop_first.type_ident.is_ref, false);
 
+        assert_eq!(prop_first.getter.is_some(), true);
+        let getter = prop_first.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getNumber");
+        assert_eq!(getter.rust_ident.to_string(), "number");
+
+        assert_eq!(prop_first.setter.is_some(), true);
+        let setter = prop_first.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setNumber");
+        assert_eq!(setter.rust_ident.to_string(), "set_number");
+
+        assert_eq!(prop_first.notify.is_some(), true);
+        let notify = prop_first.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "numberChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "number");
+
+        // Check second property
         let prop_second = &qobject.properties[1];
         assert_eq!(prop_second.ident.to_string(), "string");
         assert_eq!(prop_second.type_ident.ident.to_string(), "String");
         assert_eq!(prop_second.type_ident.is_ref, false);
+
+        assert_eq!(prop_second.getter.is_some(), true);
+        let getter = prop_second.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getString");
+        assert_eq!(getter.rust_ident.to_string(), "string");
+
+        assert_eq!(prop_second.setter.is_some(), true);
+        let setter = prop_second.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setString");
+        assert_eq!(setter.rust_ident.to_string(), "set_string");
+
+        assert_eq!(prop_second.notify.is_some(), true);
+        let notify = prop_second.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "stringChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "string");
     }
 }

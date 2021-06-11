@@ -273,11 +273,12 @@ fn generate_properties_cpp(
         };
         let converter_getter = parameter.type_ident.convert_into_cpp();
         let converter_setter = parameter.type_ident.convert_into_rust();
-        let ident_getter = format!("get{}", parameter.ident.to_case(Case::Title));
-        let ident_getter_rust = parameter.ident.to_case(Case::Snake);
-        let ident_setter = format!("set{}", parameter.ident.to_case(Case::Title));
-        let ident_setter_rust = ident_setter.to_case(Case::Snake);
-        let ident_changed = format!("{}Changed", parameter.ident.to_case(Case::Camel));
+        // TODO: for now we assume that all properties have a getter/setter/notify
+        let ident_getter = property.getter.as_ref().unwrap().cpp_ident.to_string();
+        let ident_getter_rust = property.getter.as_ref().unwrap().rust_ident.to_string();
+        let ident_setter = property.setter.as_ref().unwrap().cpp_ident.to_string();
+        let ident_setter_rust = property.setter.as_ref().unwrap().rust_ident.to_string();
+        let ident_changed = property.notify.as_ref().unwrap().cpp_ident.to_string();
         let is_const = if parameter.type_ident.is_const() {
             "const"
         } else {
