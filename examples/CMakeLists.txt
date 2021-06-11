@@ -1,2 +1,3 @@
 add_subdirectory(basic_cxx_only)
 add_subdirectory(basic_cxx_qt)
+add_subdirectory(basic_cxx_qt_qml)
