@@ -36,5 +36,5 @@ Window {
         }
     }
 
-    Component.onCompleted: myObject.say_hi(myObject.number, myObject.string)
+    Component.onCompleted: myObject.say_hi(myObject.string, myObject.number)
 }
