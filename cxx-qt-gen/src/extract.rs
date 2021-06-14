@@ -79,6 +79,8 @@ pub struct QObject {
     pub(crate) original_struct: ItemStruct,
     /// The original Rust trait impls for the struct
     pub(crate) original_trait_impls: Vec<ItemImpl>,
+    /// The original Rust use declarations from the mod
+    pub(crate) original_use_decls: Vec<ItemUse>,
 }
 
 /// Describe the error type from extract_type_ident
@@ -278,93 +280,90 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 
 /// Parses a module in order to extract a QObject description from it
 pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
-    let module_ident = &module.ident;
+    // Static internal rust suffix name
+    const RUST_SUFFIX: &str = "Rs";
 
-    let items = &module
+    // Find the items from the module
+    let module_ident = &module.ident;
+    let items = &mut module
         .content
         .expect("Incorrect module format encountered.")
         .1;
-    if items.is_empty() {
-        panic!("Empty modules are not supported.");
-    }
 
-    let original_struct;
-    if let Item::Struct(s) = &items[0] {
-        original_struct = s;
-    } else {
-        panic!("The first item in the module needs to be a struct with the name of the C++ class.");
-    }
-    let struct_ident = &original_struct.ident;
+    // Prepare variables to store struct, invokables, and other data
+    let mut original_struct = None;
+    let mut struct_ident = None;
+    let mut rust_struct_ident = None;
 
-    const RUST_SUFFIX: &str = "Rs";
-    let rust_struct_ident = quote::format_ident!("{}{}", struct_ident, RUST_SUFFIX);
-
-    let mut object_invokables;
-    let object_properties;
+    let mut object_invokables = vec![];
     let mut original_trait_impls = vec![];
+    let mut original_use_decls = vec![];
 
-    // Read properties from the struct
-    match extract_properties(original_struct) {
-        Err(err) => return Err(err),
-        Ok(properties) => object_properties = properties,
-    }
-
-    match items.len() {
-        1 => {
-            // If there is only a struct then there are no invokables
-            object_invokables = vec![];
-        }
-        _ => {
-            object_invokables = vec![];
-
-            // Loop over remaining items
-            for item in items.iter().skip(1) {
-                let original_impl;
-                if let Item::Impl(i) = &item {
-                    original_impl = i;
+    // Process each of the items in the mod
+    for item in items.drain(..) {
+        match item {
+            // We are a struct, ensure we are the first struct
+            Item::Struct(s) => {
+                if original_struct.is_none() {
+                    struct_ident = Some(s.ident.to_owned());
+                    original_struct = Some(s);
+                    rust_struct_ident = Some(quote::format_ident!(
+                        "{}{}",
+                        struct_ident.as_ref().unwrap(),
+                        RUST_SUFFIX
+                    ));
                 } else {
-                    panic!("If the module has a extra items, it has to be a struct impl.");
+                    return Err(
+                        Error::new(s.span(), "Only one struct is supported per mod.")
+                            .to_compile_error(),
+                    );
+                }
+            }
+            // We are an impl
+            Item::Impl(mut original_impl) => {
+                // Ensure that the struct block has already happened
+                if original_struct.is_none() {
+                    return Err(Error::new(
+                        original_impl.span(),
+                        "Impl can only be declared after a struct.",
+                    )
+                    .to_compile_error());
                 }
 
-                if let Type::Path(TypePath { path, .. }) = &*original_impl.self_ty {
+                // Extract the path from the type (this leads to the struct name)
+                if let Type::Path(TypePath { path, .. }) = &mut *original_impl.self_ty {
+                    // Check that the path contains segments
                     if path.segments.len() != 1 {
-                        panic!("Invalid path on impl block.");
+                        return Err(Error::new(
+                            original_impl.span(),
+                            "Invalid path on impl block.",
+                        )
+                        .to_compile_error());
                     }
 
+                    // Retrieve the impl struct name and check it's the same as the declared struct
                     let impl_ident = &path.segments[0].ident;
-                    if *impl_ident != *struct_ident {
+                    // We can assume that struct_ident exists as we checked there was a struct
+                    if impl_ident != struct_ident.as_ref().unwrap() {
                         return Err(Error::new(
                             impl_ident.span(),
                             "The impl block needs to match the struct.",
                         )
                         .to_compile_error());
                     }
-                }
 
-                // Add invokables if this is just an impl block
-                if original_impl.trait_.is_none() {
-                    let mut invokables = extract_invokables(&original_impl.items);
-
-                    match invokables {
-                        Err(err) => return Err(err),
-                        Ok(ref mut invokables) => object_invokables.append(invokables),
-                    }
-                } else {
-                    // This is a trait impl, so rename struct and store for later
-                    let mut original_trait_impl = original_impl.to_owned();
-
-                    // TODO: this block is similar to above, but works on our owned impl
-                    // so that we can rename the ident. Can the code be combined / simplifed?
-                    if let Type::Path(TypePath { path, .. }) = &mut *original_trait_impl.self_ty {
-                        if path.segments.len() != 1 {
-                            panic!("Invalid path on impl block.");
-                        }
-
+                    // Check if this impl is a impl or impl Trait
+                    if original_impl.trait_.is_none() {
+                        // Add invokables if this is just an impl block
+                        object_invokables.append(&mut extract_invokables(&original_impl.items)?);
+                    } else {
+                        // We are a impl trait so rename the struct and add to vec
                         let impl_ident = &mut path.segments[0].ident;
-                        if *impl_ident == *struct_ident {
+                        // We can assume that struct_ident exists as we checked there was a struct
+                        if impl_ident == struct_ident.as_ref().unwrap() {
                             // Rename the ident of the struct
-                            *impl_ident = quote::format_ident!("{}{}", struct_ident, RUST_SUFFIX);
-                            original_trait_impls.push(original_trait_impl);
+                            *impl_ident = quote::format_ident!("{}{}", impl_ident, RUST_SUFFIX);
+                            original_trait_impls.push(original_impl.to_owned());
                         } else {
                             return Err(Error::new(
                                 impl_ident.span(),
@@ -372,22 +371,46 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                             )
                             .to_compile_error());
                         }
-                    } else {
-                        panic!("Invalid");
                     }
+                } else {
+                    return Err(Error::new(
+                        original_impl.span(),
+                        "Expected a TypePath impl to parse.",
+                    )
+                    .to_compile_error());
                 }
+            }
+            // We are a use so pass to use declaration list
+            Item::Use(u) => {
+                original_use_decls.push(u.to_owned());
+            }
+            // TODO: consider what other items we allow in the mod, we may just pass through all
+            // the remaining types as an unknown list which the gen side can put at the end?
+            // Are all the remaining types safe to pass through or do we need to exclude any?
+            other => {
+                return Err(Error::new(other.span(), "Unsupported item in mod.").to_compile_error());
             }
         }
     }
 
+    // Check that we found a struct
+    if original_struct.is_none() {
+        panic!("There must be at least one struct per mod");
+    }
+    let original_struct = original_struct.unwrap();
+
+    // Read properties from the struct
+    let object_properties = extract_properties(&original_struct)?;
+
     Ok(QObject {
         module_ident: module_ident.to_owned(),
-        ident: struct_ident.to_owned(),
-        rust_struct_ident,
+        ident: struct_ident.unwrap(),
+        rust_struct_ident: rust_struct_ident.unwrap(),
         invokables: object_invokables,
         properties: object_properties,
-        original_struct: original_struct.to_owned(),
+        original_struct,
         original_trait_impls,
+        original_use_decls,
     })
 }
 
@@ -535,5 +558,22 @@ mod tests {
         assert_eq!(notify.cpp_ident.to_string(), "stringChanged");
         // TODO: does rust need a notify ident?
         assert_eq!(notify.rust_ident.to_string(), "string");
+    }
+
+    #[test]
+    fn parses_basic_mod_use() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_mod_use.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the inovkables and properties
+        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.properties.len(), 1);
+
+        // Check that there is a use declaration
+        assert_eq!(qobject.original_use_decls.len(), 1);
     }
 }
