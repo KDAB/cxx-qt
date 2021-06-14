@@ -214,6 +214,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let methods = obj.invokables.iter().map(|m| &m.original_method);
     let property_methods = generate_property_methods_rs(obj)?;
+    let original_trait_impls = &obj.original_trait_impls;
 
     let creator_fn = generate_rust_object_creator(obj)?;
 
@@ -227,6 +228,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 #(#methods)*
                 #(#property_methods)*
             }
+
+            #(#original_trait_impls)*
 
             #creator_fn
         }
@@ -268,6 +271,24 @@ mod tests {
         // Quote does not retain empty lines so we throw them away in the case of the
         // reference string as to not cause clashes
         output.replace("\n\n", "\n")
+    }
+
+    #[test]
+    fn generates_basic_custom_default() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_custom_default.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_custom_default.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
     }
 
     #[test]
