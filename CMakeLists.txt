@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 # TODO: figure out what the actual hard minimum is
 cmake_minimum_required(VERSION 3.16)
 
@@ -54,3 +60,6 @@ add_test_cargo(basic_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format
 add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Add test which checks all files have a valid license
+add_test(NAME reuse_lint COMMAND reuse lint)

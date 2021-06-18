@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 # TODO: does minimum version need to be set in the module as well?
 # TODO: have further parameters for different options and folders etc
 # TODO: will all builds want an executable? this might need to be separate

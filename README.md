@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+
 # cxx-qt
 
 cxx-qt is a library that automatically generates code to transfer data between Rust and C++ through common interfaces
@@ -42,6 +50,8 @@ make -j$(nproc)
 ## Testing
 
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
+
+It also assumes that you have `reuse` installed (eg via `pip3 --install reuse`).
 
 ```bash
 cd build/
