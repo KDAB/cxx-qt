@@ -118,7 +118,7 @@ mod tests {
             };
         "#;
         let output = clang_format_with_style(input, &ClangFormatStyle::Default);
-        assert_eq!(output.is_ok(), true);
+        assert!(output.is_ok());
         assert_eq!(output.unwrap(), "\nstruct Test {};\n");
     }
 
@@ -130,7 +130,7 @@ mod tests {
             };
         "#;
         let output = clang_format_with_style(input, &ClangFormatStyle::Mozilla);
-        assert_eq!(output.is_ok(), true);
+        assert!(output.is_ok());
         assert_eq!(output.unwrap(), "\nstruct Test\n{};\n");
     }
 }
