@@ -41,10 +41,10 @@ cmake ../
 make -j$(nproc)
 ```
 
-## Run the basic example
+## Run the basic QML example
 
 ```bash
-./build/examples/basic/hello
+./build/examples/basic_cxx_qt_qml/example_basic_cxx_qt_qml
 ```
 
 ## Testing
