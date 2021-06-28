@@ -40,26 +40,18 @@ set(
 
 # Generate the C++ code
 cxx_qt_generate_cpp(${RUST_SOURCES} GEN_SOURCES)
-
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} ${CPP_SOURCES} ${GEN_SOURCES} ${RESOURCES})
-
 # Include generated sources
 cxx_qt_include(${APP_NAME})
 # Link to generated rust library
 cxx_qt_link_rustlib(${APP_NAME})
-
 target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
 
 #
 # Unit test
 #
 
-# TODO: Once we can make a QQmlExtensionPlugin we won't need this C++ helper
-# as we'll be able to import the .so + qmldir from QML directly
-#
-# When that happens we can then use qmltestrunner directly on the QML test files
-# rather than building this extra executable
 set(
     CPP_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.cpp

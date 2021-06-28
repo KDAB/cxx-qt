@@ -5,10 +5,9 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include <QtCore/QDir>
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
-
-#include "cxx-qt-gen/include/my_object.h"
 
 int
 main(int argc, char* argv[])
@@ -16,6 +15,9 @@ main(int argc, char* argv[])
   QGuiApplication app(argc, argv);
 
   QQmlApplicationEngine engine;
+  // Add qml dir in runtime folder to QML import paths
+  engine.addImportPath(QDir(QCoreApplication::applicationDirPath())
+                         .filePath(QStringLiteral("qml")));
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
   QObject::connect(
@@ -27,8 +29,6 @@ main(int argc, char* argv[])
         QCoreApplication::exit(-1);
     },
     Qt::QueuedConnection);
-
-  qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
 
   engine.load(url);
 

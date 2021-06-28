@@ -8,6 +8,10 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
+        .qqqmlextensionplugin(
+            "com.kdab.cxx_qt.demo",
+            "example_basic_cxx_qt_qml_plugin_qmlplugin",
+        )
         .cpp_format(ClangFormatStyle::Mozilla)
         .build();
 }
