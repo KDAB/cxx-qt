@@ -13,7 +13,26 @@ use syn::*;
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
     extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
+    QQmlExtensionPluginData,
 };
+
+/// The type of build to perform on the sources
+#[derive(PartialEq)]
+enum BuildMode {
+    /// Generate a normal build
+    Plain,
+    /// Generate qmldir and QQmlExtensionPlugin with the parameters
+    QQmlExtensionPlugin {
+        module_ident: &'static str,
+        cpp_plugin_name: &'static str,
+    },
+}
+
+impl Default for BuildMode {
+    fn default() -> Self {
+        BuildMode::Plain
+    }
+}
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name
@@ -142,7 +161,10 @@ fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
 }
 
 /// Generate C++ files from a given Rust file, returning the generated paths
-fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
+fn gen_cxx_for_file(
+    rs_path: &str,
+    ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
+) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     let mut generated_cpp_paths = Vec::new();
 
@@ -165,6 +187,11 @@ fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
                 let qobject = extract_qobject(m).unwrap();
                 let cpp_object = generate_qobject_cpp(&qobject).unwrap();
                 let snake_name = qobject.ident.to_string().to_case(Case::Snake);
+
+                // If there is a QQmlExtensionPlugin then add our QObject type to it
+                if let Some(ext_plugin) = ext_plugin {
+                    ext_plugin.push_type(&qobject);
+                }
 
                 h_path = format!("{}/target/cxx-qt-gen/src/{}.rs.h", dir_manifest, snake_name);
                 cpp_path = format!(
@@ -202,7 +229,10 @@ fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
-fn gen_cxx_for_files(rs_source: &[String]) -> Vec<String> {
+fn gen_cxx_for_files(
+    rs_source: &[String],
+    ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
+) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
 
     let path = format!("{}/target/cxx-qt-gen/include", dir_manifest);
@@ -214,7 +244,7 @@ fn gen_cxx_for_files(rs_source: &[String]) -> Vec<String> {
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(rs_path));
+        cpp_files.append(&mut gen_cxx_for_file(rs_path, ext_plugin));
     }
 
     cpp_files
@@ -233,6 +263,36 @@ fn write_cpp_sources_list(paths: &[String]) {
     for path in paths {
         writeln!(file, "{}", path).unwrap();
     }
+}
+
+/// Write out the qmldir and plugin.cpp for a QQmlExtensionPlugin with the given data
+fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec<String> {
+    let mut paths = vec![];
+
+    if let Some(ext_plugin) = ext_plugin {
+        let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+
+        // Ensure that a plugin folder exists
+        // We put qqmlextensionplugin data in it's own folder so we can assume filenames
+        let path = format!("{}/target/cxx-qt-gen/plugin", dir_manifest);
+        std::fs::create_dir_all(path).expect("Could not create cxx-qt plugin dir");
+
+        // Generate the qqmlextensionplugin and qmldir
+        let plugin_source = ext_plugin.gen_qqmlextensionplugin();
+        let qmldir_source = ext_plugin.gen_qmldir();
+
+        // We can assume plugin.cpp here because we are writing to our own directory
+        let cpp_path = format!("{}/target/cxx-qt-gen/plugin/plugin.cpp", dir_manifest);
+        let mut plugin = File::create(&cpp_path).expect("Could not create cpp file");
+        write!(plugin, "{}", plugin_source).expect("Could not write cpp file");
+        paths.push(cpp_path);
+
+        let qmldir_path = format!("{}/target/cxx-qt-gen/plugin/qmldir", dir_manifest);
+        let mut qmldir = File::create(&qmldir_path).expect("Could not create qmldir file");
+        write!(qmldir, "{}", qmldir_source).expect("Could not write qmldir file");
+    }
+
+    paths
 }
 
 /// Write out the static header files for both the cxx and cxx-qt libraries
@@ -254,17 +314,34 @@ fn write_static_headers() {
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
 #[derive(Default)]
 pub struct CxxQtBuilder {
+    build_mode: BuildMode,
     cpp_format: Option<ClangFormatStyle>,
 }
 
 impl CxxQtBuilder {
     /// Create a new builder
     pub fn new() -> Self {
-        Self { cpp_format: None }
+        Self {
+            build_mode: BuildMode::Plain,
+            cpp_format: None,
+        }
+    }
+
+    /// Create a new builder as a QQmlExtensionPlugin
+    pub fn qqqmlextensionplugin(
+        mut self,
+        module_ident: &'static str,
+        cpp_plugin_name: &'static str,
+    ) -> Self {
+        self.build_mode = BuildMode::QQmlExtensionPlugin {
+            module_ident,
+            cpp_plugin_name,
+        };
+        self
     }
 
     /// Choose the ClangFormatStyle to use for generated C++ files
-    pub fn cpp_format(mut self, format: ClangFormatStyle) -> CxxQtBuilder {
+    pub fn cpp_format(mut self, format: ClangFormatStyle) -> Self {
         self.cpp_format = Some(format);
         self
     }
@@ -279,8 +356,20 @@ impl CxxQtBuilder {
         // Read sources
         let rs_sources = read_rs_sources();
 
+        // Prepare a QQmlExtensionPlugin if the build mode is set
+        let mut ext_plugin = match self.build_mode {
+            BuildMode::QQmlExtensionPlugin {
+                module_ident,
+                cpp_plugin_name,
+            } => Some(QQmlExtensionPluginData::new(module_ident, cpp_plugin_name)),
+            _others => None,
+        };
+
         // Generate files
-        let cpp_paths = gen_cxx_for_files(&rs_sources);
+        let mut cpp_paths = gen_cxx_for_files(&rs_sources, &mut ext_plugin.as_mut());
+
+        // Write any qqmlextensionplugin if there is one and read any C++ files it creates
+        cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));
 
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
         write_cpp_sources_list(&cpp_paths);
