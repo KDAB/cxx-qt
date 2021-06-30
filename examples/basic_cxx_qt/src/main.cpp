@@ -12,20 +12,24 @@
 #include "doctest.h"
 
 #include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/sub_object.h"
 
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
   MyObject obj;
   obj.say_hi(QStringLiteral("Hello World!"), 32);
 
+  SubObject sub;
+
   // Check that an invokable can be called and the return value is correct
   const auto value = obj.double_number(32);
   qInfo() << "Double of 32 is:" << value;
   CHECK(value == 64);
 
-  // Track the signal count of numberChanged and stringChanged
+  // Track the signal count of numberChanged, stringChanged, and subChanged
   QSignalSpy numberSpy(&obj, &MyObject::numberChanged);
   QSignalSpy stringSpy(&obj, &MyObject::stringChanged);
+  QSignalSpy subSpy(&obj, &MyObject::subChanged);
 
   // Check the number property
   CHECK(obj.getNumber() == 0);
@@ -40,6 +44,13 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   obj.setString(QStringLiteral("Hello"));
   CHECK(stringSpy.count() == 1);
   CHECK(obj.getString() == QStringLiteral("Hello"));
+
+  // Check the sub property
+  CHECK(obj.getSub() == nullptr);
+  CHECK(subSpy.count() == 0);
+  obj.setSub(&sub);
+  CHECK(subSpy.count() == 1);
+  CHECK(obj.getSub() == &sub);
 
   qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
 }

@@ -22,7 +22,9 @@ mod my_object {
         }
     }
 
-    struct MyObjectRs {}
+    pub type CppObj = ffi::MyObject;
+
+    struct MyObjectRs;
 
     impl MyObjectRs {
         fn double_number(&self, number: i32) -> i32 {

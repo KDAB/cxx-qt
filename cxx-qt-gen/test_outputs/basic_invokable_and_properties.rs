@@ -31,6 +31,8 @@ mod my_object {
         }
     }
 
+    pub type CppObj = ffi::MyObject;
+
     #[derive(Default)]
     struct MyObjectRs {
         number: i32,

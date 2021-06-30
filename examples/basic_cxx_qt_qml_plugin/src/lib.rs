@@ -5,12 +5,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
+pub mod sub;
+
 #[make_qobject]
 mod my_object {
     #[derive(Default)]
     struct MyObject {
         number: i32,
         string: String,
+        sub: crate::sub::sub_object::SubObject,
     }
 
     impl MyObject {

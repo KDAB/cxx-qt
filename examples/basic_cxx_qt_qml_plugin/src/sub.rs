@@ -5,18 +5,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
-pub mod sub;
-
 #[make_qobject]
-mod my_object {
+pub mod sub_object {
     #[derive(Default)]
-    struct MyObject {
+    pub struct SubObject {
         number: i32,
         string: String,
-        sub: crate::sub::sub_object::SubObject,
     }
 
-    impl MyObject {
+    impl SubObject {
         fn increment_number(&self, number: i32) -> i32 {
             number + 1
         }

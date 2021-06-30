@@ -22,7 +22,7 @@ pub(crate) struct CppRustIdent {
 #[derive(Debug)]
 pub(crate) struct ParameterType {
     /// The type of the parameter
-    pub(crate) ident: Ident,
+    pub(crate) idents: Vec<Ident>,
     /// If this parameter is a reference
     pub(crate) is_ref: bool,
 }
@@ -70,8 +70,6 @@ pub(crate) struct Property {
 /// Describes all the properties of a QObject class
 #[derive(Debug)]
 pub struct QObject {
-    /// The ident of the Rust module that represents the QObject
-    pub(crate) module_ident: Ident,
     /// The ident of the original struct and name of the C++ class that represents the QObject
     pub ident: Ident,
     /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
@@ -80,6 +78,8 @@ pub struct QObject {
     pub(crate) invokables: Vec<Invokable>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
+    /// The original Rust mod for the struct
+    pub(crate) original_mod: ItemMod,
     /// The original Rust struct that the object was generated from
     pub(crate) original_struct: ItemStruct,
     /// The original Rust trait impls for the struct
@@ -90,7 +90,7 @@ pub struct QObject {
 
 /// Describe the error type from extract_type_ident
 enum ExtractTypeIdentError {
-    InvalidSegments,
+    InvalidArguments,
     InvalidType,
 }
 
@@ -117,13 +117,23 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
         }
     }
 
-    let segments = &ty_path.path.segments;
-    if segments.len() != 1 {
-        return Err(ExtractTypeIdentError::InvalidSegments);
-    }
-
     Ok(ParameterType {
-        ident: segments[0].ident.to_owned(),
+        idents: ty_path
+            .path
+            .segments
+            .iter()
+            .map(|segment| {
+                // We do not support PathArguments for types in properties or arguments
+                //
+                // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
+                // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
+                if segment.arguments == PathArguments::None {
+                    Ok(segment.ident.to_owned())
+                } else {
+                    Err(ExtractTypeIdentError::InvalidArguments)
+                }
+            })
+            .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()?,
         is_ref,
     })
 }
@@ -160,16 +170,16 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
 
                 match extract_type_ident(ty) {
                     Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidArguments) => {
+                        return Err(Error::new(
+                            arg.span(),
+                            "Argument should not be angle bracketed or parenthesized.",
+                        )
+                        .to_compile_error());
+                    }
                     Err(ExtractTypeIdentError::InvalidType) => {
                         return Err(Error::new(arg.span(), "Invalid argument ident format.")
                             .to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::InvalidSegments) => {
-                        return Err(Error::new(
-                            arg.span(),
-                            "Argument should only have one segment.",
-                        )
-                        .to_compile_error());
                     }
                 }
 
@@ -184,17 +194,17 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
         let return_type = if let ReturnType::Type(_, ty) = output {
             match extract_type_ident(ty) {
                 Ok(result) => Some(result),
+                Err(ExtractTypeIdentError::InvalidArguments) => {
+                    return Err(Error::new(
+                        output.span(),
+                        "Return type should not be angle bracketed or parenthesized.",
+                    )
+                    .to_compile_error());
+                }
                 Err(ExtractTypeIdentError::InvalidType) => {
                     return Err(
                         Error::new(output.span(), "Invalid return type format.").to_compile_error()
                     )
-                }
-                Err(ExtractTypeIdentError::InvalidSegments) => {
-                    return Err(Error::new(
-                        output.span(),
-                        "Return type should only have one segment.",
-                    )
-                    .to_compile_error());
                 }
             }
         } else {
@@ -236,16 +246,16 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 
                 match extract_type_ident(ty) {
                     Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidArguments) => {
+                        return Err(Error::new(
+                            name.span(),
+                            "Named field should not be angle bracketed or parenthesized.",
+                        )
+                        .to_compile_error());
+                    }
                     Err(ExtractTypeIdentError::InvalidType) => {
                         return Err(Error::new(name.span(), "Invalid name field ident format.")
                             .to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::InvalidSegments) => {
-                        return Err(Error::new(
-                            name.span(),
-                            "Named field should only have one segment.",
-                        )
-                        .to_compile_error());
                     }
                 }
 
@@ -289,7 +299,7 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     const RUST_SUFFIX: &str = "Rs";
 
     // Find the items from the module
-    let module_ident = &module.ident;
+    let original_mod = module.to_owned();
     let items = &mut module
         .content
         .expect("Incorrect module format encountered.")
@@ -408,11 +418,11 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     let object_properties = extract_properties(&original_struct)?;
 
     Ok(QObject {
-        module_ident: module_ident.to_owned(),
         ident: struct_ident.unwrap(),
         rust_struct_ident: rust_struct_ident.unwrap(),
         invokables: object_invokables,
         properties: object_properties,
+        original_mod,
         original_struct,
         original_trait_impls,
         original_use_decls,
@@ -476,7 +486,7 @@ mod tests {
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
-        assert_eq!(qobject.module_ident.to_string(), "my_object");
+        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
         assert_eq!(qobject.rust_struct_ident.to_string(), "MyObjectRs");
 
         // Check that it got the invokables
@@ -492,12 +502,14 @@ mod tests {
         let param_first = &invokable.parameters[0];
         assert_eq!(param_first.ident.to_string(), "string");
         // TODO: add extra checks when we read if this is a mut or not
-        assert_eq!(param_first.type_ident.ident.to_string(), "str");
+        assert_eq!(param_first.type_ident.idents.len(), 1);
+        assert_eq!(param_first.type_ident.idents[0].to_string(), "str");
         assert_eq!(param_first.type_ident.is_ref, true);
 
         let param_second = &invokable.parameters[1];
         assert_eq!(param_second.ident.to_string(), "number");
-        assert_eq!(param_second.type_ident.ident.to_string(), "i32");
+        assert_eq!(param_second.type_ident.idents.len(), 1);
+        assert_eq!(param_second.type_ident.idents[0].to_string(), "i32");
         assert_eq!(param_second.type_ident.is_ref, false);
 
         // Check invokable ident
@@ -523,7 +535,8 @@ mod tests {
         // Check first property
         let prop_first = &qobject.properties[0];
         assert_eq!(prop_first.ident.to_string(), "number");
-        assert_eq!(prop_first.type_ident.ident.to_string(), "i32");
+        assert_eq!(prop_first.type_ident.idents.len(), 1);
+        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
         assert_eq!(prop_first.type_ident.is_ref, false);
 
         assert_eq!(prop_first.getter.is_some(), true);
@@ -545,7 +558,8 @@ mod tests {
         // Check second property
         let prop_second = &qobject.properties[1];
         assert_eq!(prop_second.ident.to_string(), "string");
-        assert_eq!(prop_second.type_ident.ident.to_string(), "String");
+        assert_eq!(prop_second.type_ident.idents.len(), 1);
+        assert_eq!(prop_second.type_ident.idents[0].to_string(), "String");
         assert_eq!(prop_second.type_ident.is_ref, false);
 
         assert_eq!(prop_second.getter.is_some(), true);

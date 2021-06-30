@@ -356,6 +356,9 @@ impl CxxQtBuilder {
         // Read sources
         let rs_sources = read_rs_sources();
 
+        // TODO: somewhere check that we don't have duplicate class names
+        // TODO: later use the module::object to turn into module/object.h and namespace
+
         // Prepare a QQmlExtensionPlugin if the build mode is set
         let mut ext_plugin = match self.build_mode {
             BuildMode::QQmlExtensionPlugin {

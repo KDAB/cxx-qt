@@ -26,6 +26,7 @@ include(CxxQt)
 set(
     RUST_SOURCES
     lib.rs
+    sub.rs
 )
 
 set(
@@ -39,9 +40,9 @@ set(
 )
 
 # Generate the C++ code
-cxx_qt_generate_cpp(${RUST_SOURCES} GEN_SOURCES)
+cxx_qt_generate_cpp("${RUST_SOURCES}" GEN_SOURCES)
 # Define our executable with our QML resource files
-add_executable(${APP_NAME} ${CPP_SOURCES} ${GEN_SOURCES} ${RESOURCES})
+add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 # Include generated sources
 cxx_qt_include(${APP_NAME})
 # Link to generated rust library
@@ -53,15 +54,15 @@ target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJ
 #
 
 set(
-    CPP_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.cpp
+   CPP_TEST_SOURCES
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.cpp
 )
 
 # Copy QML unit test to build folder
 # this is so that our tst_myobject executable can find the QML files
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.qml ${CMAKE_CURRENT_BINARY_DIR}/tst_myobject.qml COPYONLY)
 
-cxx_qt_cmake(${APP_NAME}_test ${RUST_SOURCES} ${CPP_TEST_SOURCES})
+cxx_qt_cmake(${APP_NAME}_test "${RUST_SOURCES}" "${CPP_TEST_SOURCES}")
 target_link_libraries(${APP_NAME}_test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickTest)
 
 add_test(NAME ${APP_NAME}_test COMMAND ${APP_NAME}_test)

@@ -10,6 +10,7 @@
 #include <QtQuickTest/quicktest.h>
 
 #include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/sub_object.h"
 
 class Setup : public QObject
 {
@@ -19,6 +20,7 @@ public:
   Setup()
   {
     qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+    qmlRegisterType<SubObject>("com.kdab.cxx_qt.demo", 1, 0, "SubObject");
   }
 };
 

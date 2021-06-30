@@ -19,6 +19,13 @@ Window {
         id: myObject
         number: 1
         string: "My String " + myObject.number
+        sub: subObject
+    }
+
+    SubObject {
+        id: subObject
+        number: 2
+        string: "substr"
     }
 
     Column {
@@ -27,11 +34,11 @@ Window {
         spacing: 10
 
         Label {
-            text: "Number: " + myObject.number
+            text: "Number: " + myObject.number + " SubNumber: " + myObject.sub.number
         }
 
         Label {
-            text: "String: " + myObject.string
+            text: "String: " + myObject.string + " SubString: " + myObject.sub.string
         }
 
         Button {

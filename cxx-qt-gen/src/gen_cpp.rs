@@ -11,13 +11,15 @@ use std::result::Result;
 use syn::*;
 
 use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject};
+use crate::utils::is_type_ident_ptr;
 
 /// Describes a C++ type
 #[derive(Debug)]
 enum CppTypes {
+    I32,
+    Ptr { ident_str: String },
     String,
     Str,
-    I32,
 }
 
 /// A trait which CppTypes implements allowing retrieval of attributes of the enum value.
@@ -26,12 +28,17 @@ trait CppType {
     fn convert_into_cpp(&self) -> Option<&'static str>;
     /// Any converter that is required to convert this type into rust
     fn convert_into_rust(&self) -> Option<&'static str>;
+    /// Any include paths for this type, this is used for Ptr types
+    /// for example so that when Object uses SubObject it includes sub_object.h
+    fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
+    /// Whether this type is a pointer
+    fn is_ptr(&self) -> bool;
     /// The C++ type name of the CppType
-    fn type_ident(&self) -> &'static str;
+    fn type_ident(&self) -> &str;
 }
 
 impl CppType for CppTypes {
@@ -39,6 +46,7 @@ impl CppType for CppTypes {
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Ptr { .. } => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
         }
@@ -48,8 +56,21 @@ impl CppType for CppTypes {
     fn convert_into_rust(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Ptr { .. } => None,
             Self::Str => Some("qStringToRustStr"),
             Self::String => Some("qStringToRustString"),
+        }
+    }
+
+    /// Any include paths for this type, this is used for Ptr types
+    /// for example so that when Object uses SubObject it includes sub_object.h
+    fn include_paths(&self) -> Vec<String> {
+        match self {
+            Self::Ptr { ident_str } => vec![format!(
+                "#include \"cxx-qt-gen/include/{}.h\"",
+                ident_str.to_case(Case::Snake)
+            )],
+            _others => vec![],
         }
     }
 
@@ -57,6 +78,7 @@ impl CppType for CppTypes {
     fn is_const(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
         }
@@ -70,15 +92,25 @@ impl CppType for CppTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
         }
     }
 
+    /// Whether this type is a pointer
+    fn is_ptr(&self) -> bool {
+        match self {
+            Self::Ptr { .. } => true,
+            _other => false,
+        }
+    }
+
     /// The C++ type name of the CppType
-    fn type_ident(&self) -> &'static str {
+    fn type_ident(&self) -> &str {
         match self {
             Self::I32 => "int",
+            Self::Ptr { ident_str } => ident_str,
             Self::Str => "QString",
             Self::String => "QString",
         }
@@ -105,16 +137,20 @@ struct CppInvokable {
 /// Describes a C++ property with header and source parts
 #[derive(Debug)]
 struct CppProperty {
+    /// Any extra include that is required for the property
+    header_includes: Vec<String>,
+    /// Any members that are required for the property
+    header_members: Vec<String>,
     /// The header meta definition of the invokable
-    header_meta: String,
+    header_meta: Vec<String>,
     /// The header public definition of the invokable
-    header_public: String,
+    header_public: Vec<String>,
     /// The header signals definition of the invokable
-    header_signals: String,
+    header_signals: Vec<String>,
     /// The header slots definition of the invokable
-    header_slots: String,
+    header_slots: Vec<String>,
     /// The source implementation of the invokable
-    source: String,
+    source: Vec<String>,
 }
 
 /// Describes a C++ header and source files of a C++ class
@@ -128,15 +164,50 @@ pub struct CppObject {
 
 /// Generate a C++ type for a given rust ident
 fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream> {
-    match type_ident.ident.to_string().as_str() {
-        "str" => Ok(CppTypes::Str),
-        "String" => Ok(CppTypes::String),
-        "i32" => Ok(CppTypes::I32),
-        other => Err(Error::new(
-            type_ident.ident.span(),
-            format!("Unknown type ident to convert to C++: {}", other),
+    // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
+    // so that QML can set a C++/QML type into the property ? or is that not useful?
+    if type_ident.idents.is_empty() {
+        Err(Error::new(
+            type_ident.idents[0].span(),
+            "Type ident must have at least one segment",
         )
-        .to_compile_error()),
+        .to_compile_error())
+    } else if type_ident.idents.len() == 1 {
+        // We can assume that idents has an entry at index zero, because there is one entry
+        match type_ident.idents[0].to_string().as_str() {
+            "str" => Ok(CppTypes::Str),
+            "String" => Ok(CppTypes::String),
+            "i32" => Ok(CppTypes::I32),
+            other => Err(Error::new(
+                type_ident.idents[0].span(),
+                format!("Unknown type ident to convert to C++: {}", other),
+            )
+            .to_compile_error()),
+        }
+    // As this type ident has more than one segment, check if it is a pointer
+    } else if is_type_ident_ptr(&type_ident.idents) {
+        Ok(CppTypes::Ptr {
+            // TODO: on the C++ side we only have the last segment always? crate::sub_object::SubObject -> SubObject?
+            // maybe if we do namespacing this will then become important?
+            // ident_str: type_ident
+            //     .idents
+            //     .iter()
+            //     .map(|ident| ident.to_string())
+            //     .collect::<Vec<String>>()
+            //     .join("::"),
+            //
+            // TODO: do we need to track is_ref here?
+            //
+            // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
+            ident_str: type_ident.idents.last().unwrap().to_string(),
+        })
+    } else {
+        Err(Error::new(
+            // We can assume that idents has an entry at index zero, because it is not empty
+            type_ident.idents[0].span(),
+            "First type ident segment must start with 'crate' if there are multiple",
+        )
+        .to_compile_error())
     }
 }
 
@@ -179,7 +250,7 @@ fn generate_invokables_cpp(
                 |mut acc, parameter| {
                     // Build the parameter as a type argument
                     acc.args.push(format!(
-                        "{is_const} {type_ident}{is_ref} {ident}",
+                        "{is_const} {type_ident}{is_ref}{is_ptr} {ident}",
                         ident = parameter.ident,
                         is_const = if parameter.type_ident.is_const() {
                             "const"
@@ -188,6 +259,11 @@ fn generate_invokables_cpp(
                         },
                         is_ref = if parameter.type_ident.is_ref() {
                             "&"
+                        } else {
+                            ""
+                        },
+                        is_ptr = if parameter.type_ident.is_ptr() {
+                            "*"
                         } else {
                             ""
                         },
@@ -292,41 +368,161 @@ fn generate_properties_cpp(
         } else {
             ""
         };
+        let is_ptr = if parameter.type_ident.is_ptr() {
+            "*"
+        } else {
+            ""
+        };
         let rust_getter = format!("m_rustObj->{ident_getter}()", ident_getter = ident_getter);
         let type_ident = parameter.type_ident.type_ident();
 
-        items.push(CppProperty {
-            header_meta: format!("Q_PROPERTY({type_ident} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_changed})",
+        let mut cpp_property = CppProperty {
+            header_includes: parameter.type_ident.include_paths(),
+            header_members: vec![],
+            header_meta: vec![format!("Q_PROPERTY({type_ident}{is_ptr} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_changed})",
                 ident = parameter.ident,
                 ident_changed = ident_changed,
                 ident_getter = ident_getter,
                 ident_setter = ident_setter,
+                is_ptr = is_ptr,
                 type_ident = type_ident,
-            ),
-            header_public: format!("{type_ident} {ident_getter}() const;",
+            )],
+            header_public: vec![format!("{type_ident}{is_ptr} {ident_getter}() const;",
                 ident_getter = ident_getter,
+                is_ptr = is_ptr,
                 type_ident = type_ident,
-            ),
-            header_signals: format!("void {ident_changed}();", ident_changed = ident_changed),
-            header_slots: format!("void {ident_setter}({is_const} {type_ident}{is_ref} value);",
+            )],
+            header_signals: vec![format!("void {ident_changed}();", ident_changed = ident_changed)],
+            header_slots: vec![format!("void {ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value);",
                 ident_setter = ident_setter,
                 is_const = is_const,
                 is_ref = is_ref,
+                is_ptr = is_ptr,
                 type_ident = type_ident,
-            ),
+            )],
+            source: vec![],
+        };
+
+        // If we are a pointer type then add specific methods
+        if parameter.type_ident.is_ptr() {
+            let parameter_ident_pascal = parameter.ident.to_case(Case::Pascal);
+            let member_ident = format!("m_{}", parameter.ident);
+            let member_owned_ident = format!("m_owned{}", parameter_ident_pascal);
+
+            // Add raw pointer getter and setter
+            cpp_property.source.push(formatdoc! {
+                r#"
+                {type_ident}{is_ptr}
+                {struct_ident}::{ident_getter}() const
+                {{
+                    return {member_ident};
+                }}
+
+                void
+                {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value)
+                {{{converter_setter}
+                    if (value != {member_ident}) {{
+                        if ({member_owned_ident}) {{
+                            {member_owned_ident}.reset();
+                        }}
+
+                        {member_ident} = value;
+
+                        Q_EMIT {ident_changed}();
+                    }}
+                }}
+                "#,
+                // Build a converter which creates rustValue if required
+                converter_setter = if let Some(converter_ident) = converter_setter {
+                    format!("auto rustValue = {converter_ident}(value);",
+                        converter_ident = converter_ident,
+                    )
+                } else {
+                    "".to_owned()
+                },
+                ident_changed = ident_changed,
+                ident_getter = ident_getter,
+                ident_setter = ident_setter,
+                is_const = is_const,
+                is_ref = is_ref,
+                is_ptr = is_ptr,
+                member_ident = member_ident,
+                member_owned_ident = member_owned_ident,
+                struct_ident = struct_ident.to_string(),
+                type_ident = type_ident,
+            });
+
+            // Add members to the reference and own it
+            cpp_property.header_members.push(format!(
+                "{type_ident}* m_{ident} = nullptr;",
+                ident = parameter.ident,
+                type_ident = type_ident
+            ));
+            cpp_property.header_members.push(format!(
+                "std::unique_ptr<{type_ident}> m_owned{ident};",
+                ident = parameter_ident_pascal,
+                type_ident = type_ident
+            ));
+
+            // Add a unique_ptr getter for taking the object
+            cpp_property.header_public.push(format!(
+                "std::unique_ptr<{type_ident}> take{ident}();",
+                type_ident = type_ident,
+                ident = parameter_ident_pascal,
+            ));
+
+            // Add a unique_ptr setter
+            // Note that this cannot be added to the Q_SLOTS as moc can't handle the unique_ptr
+            cpp_property.header_public.push(format!(
+                "void give{ident}(std::unique_ptr<{type_ident}> value);",
+                type_ident = type_ident,
+                ident = parameter_ident_pascal,
+            ));
+
+            // Add unique_ptr getter/setter
+            cpp_property.source.push(formatdoc!(
+                r#"
+                std::unique_ptr<{type_ident}>
+                {struct_ident}::take{ident_pascal}()
+                {{
+                  auto value = std::move({member_owned_ident});
+                  {ident_setter}(nullptr);
+                  return value;
+                }}
+
+                void
+                {struct_ident}::give{ident_pascal}(std::unique_ptr<{type_ident}> value)
+                {{
+                  Q_ASSERT(value.get() != {member_ident});
+
+                  {member_owned_ident} = std::move(value);
+                  {member_ident} = {member_owned_ident}.get();
+
+                  Q_EMIT {ident_changed}();
+                }}
+                "#,
+                ident_changed = ident_changed,
+                ident_pascal = parameter_ident_pascal,
+                ident_setter = ident_setter,
+                member_ident = member_ident,
+                member_owned_ident = member_owned_ident,
+                struct_ident = struct_ident.to_string(),
+                type_ident = type_ident,
+            ));
+        } else {
             // TODO: {converter_setter} needs to start on the same line as the { so that when
             // there is no converter we don't have an empty line at the start of the setter.
             // As clang-format doesn't remove this empty line. Is there a better way ?
-            source: formatdoc! {
+            cpp_property.source.push(formatdoc! {
                 r#"
-                {type_ident}
+                {type_ident}{is_ptr}
                 {struct_ident}::{ident_getter}() const
                 {{
                     {converter_getter}
                 }}
 
                 void
-                {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref} value)
+                {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value)
                 {{{converter_setter}
                     if ({converter_setter_ident} != m_rustObj->{ident_getter}()) {{
                         m_rustObj->{ident_setter}({converter_setter_ident_move});
@@ -369,10 +565,13 @@ fn generate_properties_cpp(
                 ident_setter = ident_setter,
                 is_const = is_const,
                 is_ref = is_ref,
+                is_ptr = is_ptr,
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
-            },
-        });
+            });
+        }
+
+        items.push(cpp_property);
     }
 
     Ok(items)
@@ -385,6 +584,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // A helper which allows us to flatten data from vec of properties
     struct CppPropertyHelper {
+        headers_includes: Vec<String>,
+        headers_members: Vec<String>,
         headers_meta: Vec<String>,
         headers_public: Vec<String>,
         headers_signals: Vec<String>,
@@ -397,18 +598,22 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         .drain(..)
         .fold(
             CppPropertyHelper {
+                headers_includes: vec![],
+                headers_members: vec![],
                 headers_meta: vec![],
                 headers_public: vec![],
                 headers_signals: vec![],
                 headers_slots: vec![],
                 sources: vec![],
             },
-            |mut acc, property| {
-                acc.headers_meta.push(property.header_meta);
-                acc.headers_public.push(property.header_public);
-                acc.headers_signals.push(property.header_signals);
-                acc.headers_slots.push(property.header_slots);
-                acc.sources.push(property.source);
+            |mut acc, mut property| {
+                acc.headers_includes.append(&mut property.header_includes);
+                acc.headers_meta.append(&mut property.header_meta);
+                acc.headers_members.append(&mut property.header_members);
+                acc.headers_public.append(&mut property.header_public);
+                acc.headers_signals.append(&mut property.header_signals);
+                acc.headers_slots.append(&mut property.header_slots);
+                acc.sources.append(&mut property.source);
                 acc
             },
         );
@@ -460,6 +665,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         #include "rust/cxx_qt.h"
 
+        {properties_includes}
+
         class {rust_struct_ident};
 
         class {ident} : public QObject {{
@@ -480,12 +687,16 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         private:
             rust::Box<{rust_struct_ident}> m_rustObj;
+
+            {members_private}
         }};
 
         std::unique_ptr<{ident}> new{ident}();
         "#,
     ident = struct_ident_str,
     invokables = invokables.headers.join("\n"),
+    members_private = properties.headers_members.join("\n"),
+    properties_includes = properties.headers_includes.join("\n"),
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
     rust_struct_ident = rust_struct_ident_str,
@@ -617,6 +828,24 @@ mod tests {
             clang_format(include_str!("../test_outputs/basic_only_properties.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/basic_only_properties.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_subobject_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/subobject_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/subobject_property.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/subobject_property.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

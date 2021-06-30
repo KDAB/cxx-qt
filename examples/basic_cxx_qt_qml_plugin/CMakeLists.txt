@@ -30,6 +30,7 @@ include(CxxQt)
 set(
     RUST_SOURCES
     lib.rs
+    sub.rs
 )
 
 set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/qml)
@@ -37,10 +38,10 @@ set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/qml)
 set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
 
 # Generate the C++ code
-cxx_qt_generate_cpp(${RUST_SOURCES} GEN_SOURCES)
+cxx_qt_generate_cpp("${RUST_SOURCES}" GEN_SOURCES)
 
 # Define our executable with our QML resource files
-add_library(${APP_NAME}_qmlplugin SHARED ${GEN_SOURCES})
+add_library(${APP_NAME}_qmlplugin SHARED "${GEN_SOURCES}")
 # Set directory for our library
 set_target_properties(${APP_NAME}_qmlplugin PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUTPUT_DIR}
@@ -69,7 +70,7 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
 )
 
-add_executable(${APP_NAME} ${CPP_SOURCES} ${RESOURCES})
+add_executable(${APP_NAME} "${CPP_SOURCES}" "${RESOURCES}")
 target_link_libraries(${APP_NAME} ${APP_NAME}_qmlplugin Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
 
 #

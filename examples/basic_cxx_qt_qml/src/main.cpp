@@ -9,6 +9,7 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/sub_object.h"
 
 int
 main(int argc, char* argv[])
@@ -29,6 +30,7 @@ main(int argc, char* argv[])
     Qt::QueuedConnection);
 
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+  qmlRegisterType<SubObject>("com.kdab.cxx_qt.demo", 1, 0, "SubObject");
 
   engine.load(url);
 

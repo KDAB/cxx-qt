@@ -20,6 +20,14 @@ TestCase {
     }
 
     Component {
+        id: componentSubObject
+
+        SubObject {
+
+        }
+    }
+
+    Component {
         id: componentSpy
 
         SignalSpy {
@@ -63,6 +71,29 @@ TestCase {
         myObject.string = "world";
 
         compare(myObject.string, "world");
+        compare(spy.count, 1);
+    }
+
+    function test_sub_object() {
+        const myObject = createTemporaryObject(componentMyObject, null, {
+            string: "hello",
+        });
+        const subObject = createTemporaryObject(componentSubObject, null, {
+            string: "world",
+        });
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "subChanged",
+            target: myObject,
+        });
+        compare(myObject.string, "hello");
+        compare(myObject.sub, null);
+        compare(subObject.string, "world");
+        compare(spy.count, 0);
+
+        myObject.sub = subObject;
+
+        compare(myObject.sub, subObject);
+        compare(myObject.sub.string, "world");
         compare(spy.count, 1);
     }
 }

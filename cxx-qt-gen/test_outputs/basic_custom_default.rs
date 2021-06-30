@@ -25,6 +25,8 @@ mod my_object {
         }
     }
 
+    pub type CppObj = ffi::MyObject;
+
     struct MyObjectRs {
         number: i32,
     }
