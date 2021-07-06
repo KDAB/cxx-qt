@@ -15,3 +15,17 @@ pub use gen_rs::{generate_qobject_cxx, generate_qobject_rs};
 
 /// The complete contents of the "rust/cxx_qt.h" header.
 pub static HEADER: &str = include_str!("cxx_qt.h");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use clang_format::ClangFormatStyle;
+
+    #[ctor::ctor]
+    fn init_tests() {
+        // Set the ClangFormatStyle to be Mozilla for our tests
+        // so that when they fail the format in the assertions is the same as the files.
+        assert!(generate_format(Some(ClangFormatStyle::Mozilla)).is_ok());
+    }
+}
