@@ -256,11 +256,11 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                 // whether a method needs to be auto generated on the rust side
                 let ident_str = ident.to_string();
                 let getter = Some(CppRustIdent {
-                    cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Title)),
+                    cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Pascal)),
                     rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
                 });
                 let setter = Some(CppRustIdent {
-                    cpp_ident: quote::format_ident!("set{}", ident_str.to_case(Case::Title)),
+                    cpp_ident: quote::format_ident!("set{}", ident_str.to_case(Case::Pascal)),
                     rust_ident: quote::format_ident!("set_{}", ident_str.to_case(Case::Snake)),
                 });
                 let notify = Some(CppRustIdent {
