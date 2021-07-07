@@ -121,10 +121,11 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
     }
 
-    let new_object_ident = format_ident!("new_{}", class_name);
+    let new_object_ident_cpp = format_ident!("new{}", class_name);
+    let new_object_rust = format!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);
+    let create_object_cpp = create_object_ident.to_string().to_case(Case::Camel);
 
-    // TODO: use cxx_name to rename constructor methods to camel case for C++
     let output = quote! {
         #[cxx::bridge]
         mod ffi {
@@ -135,7 +136,8 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
                 #(#cpp_functions)*
 
-                fn #new_object_ident() -> UniquePtr<#class_name>;
+                #[rust_name = #new_object_rust]
+                fn #new_object_ident_cpp() -> UniquePtr<#class_name>;
             }
 
             extern "Rust" {
@@ -143,6 +145,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
                 #(#rs_functions)*
 
+                #[cxx_name = #create_object_cpp]
                 fn #create_object_ident() -> Box<#rust_class_name>;
             }
         }

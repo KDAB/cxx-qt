@@ -8,7 +8,8 @@ mod my_object {
 
             type MyObject;
 
-            fn new_MyObject() -> UniquePtr<MyObject>;
+            #[rust_name = "new_MyObject"]
+            fn newMyObject() -> UniquePtr<MyObject>;
         }
 
         extern "Rust" {
@@ -21,6 +22,7 @@ mod my_object {
             #[cxx_name = "setNumber"]
             fn set_number(self: &mut MyObjectRs, value: i32);
 
+            #[cxx_name = "createMyObjectRs"]
             fn create_my_object_rs() -> Box<MyObjectRs>;
         }
     }

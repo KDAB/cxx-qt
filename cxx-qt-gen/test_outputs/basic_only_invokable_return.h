@@ -21,4 +21,4 @@ private:
 };
 
 std::unique_ptr<MyObject>
-new_MyObject();
+newMyObject();

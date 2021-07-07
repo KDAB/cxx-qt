@@ -482,7 +482,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             rust::Box<{rust_struct_ident}> m_rustObj;
         }};
 
-        std::unique_ptr<{ident}> new_{ident}();
+        std::unique_ptr<{ident}> new{ident}();
         "#,
     ident = struct_ident_str,
     invokables = invokables.headers.join("\n"),
@@ -500,7 +500,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {ident}::{ident}(QObject *parent)
             : QObject(parent)
-            , m_rustObj(create_{ident_snake}_rs())
+            , m_rustObj(create{ident}Rs())
         {{
         }}
 
@@ -510,7 +510,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {invokables}
 
-        std::unique_ptr<{ident}> new_{ident}()
+        std::unique_ptr<{ident}> new{ident}()
         {{
             return std::make_unique<{ident}>();
         }}

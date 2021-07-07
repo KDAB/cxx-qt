@@ -3,7 +3,7 @@
 
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
-  , m_rustObj(create_my_object_rs())
+  , m_rustObj(createMyObjectRs())
 {}
 
 MyObject::~MyObject() = default;
@@ -21,7 +21,7 @@ MyObject::say_bye() const
 }
 
 std::unique_ptr<MyObject>
-new_MyObject()
+newMyObject()
 {
   return std::make_unique<MyObject>();
 }
