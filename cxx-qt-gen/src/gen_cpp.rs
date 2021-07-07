@@ -280,9 +280,7 @@ fn generate_properties_cpp(
         let converter_setter = parameter.type_ident.convert_into_rust();
         // TODO: for now we assume that all properties have a getter/setter/notify
         let ident_getter = property.getter.as_ref().unwrap().cpp_ident.to_string();
-        let ident_getter_rust = property.getter.as_ref().unwrap().rust_ident.to_string();
         let ident_setter = property.setter.as_ref().unwrap().cpp_ident.to_string();
-        let ident_setter_rust = property.setter.as_ref().unwrap().rust_ident.to_string();
         let ident_changed = property.notify.as_ref().unwrap().cpp_ident.to_string();
         let is_const = if parameter.type_ident.is_const() {
             "const"
@@ -294,10 +292,7 @@ fn generate_properties_cpp(
         } else {
             ""
         };
-        let rust_getter = format!(
-            "m_rustObj->{ident_getter_rust}()",
-            ident_getter_rust = ident_getter_rust
-        );
+        let rust_getter = format!("m_rustObj->{ident_getter}()", ident_getter = ident_getter);
         let type_ident = parameter.type_ident.type_ident();
 
         items.push(CppProperty {
@@ -333,8 +328,8 @@ fn generate_properties_cpp(
                 void
                 {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref} value)
                 {{{converter_setter}
-                    if ({converter_setter_ident} != m_rustObj->{ident_getter_rust}()) {{
-                        m_rustObj->{ident_setter_rust}({converter_setter_ident_move});
+                    if ({converter_setter_ident} != m_rustObj->{ident_getter}()) {{
+                        m_rustObj->{ident_setter}({converter_setter_ident_move});
 
                         Q_EMIT {ident_changed}();
                     }}
@@ -371,11 +366,9 @@ fn generate_properties_cpp(
                 },
                 ident_changed = ident_changed,
                 ident_getter = ident_getter,
-                ident_getter_rust = ident_getter_rust,
                 ident_setter = ident_setter,
                 is_const = is_const,
                 is_ref = is_ref,
-                ident_setter_rust = ident_setter_rust,
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
             },

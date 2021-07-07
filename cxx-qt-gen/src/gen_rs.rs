@@ -22,6 +22,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let mut rs_functions = Vec::new();
 
     // Invokables are only added to extern rust side
+    //
+    // TODO: later support a cxx_qt_name attribute on invokables to allow for renaming
+    // an invokable from snake to camel case for C++
     for i in &obj.invokables {
         let ident = &i.ident;
         let parameters = &i.parameters;
@@ -95,7 +98,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         // do we always return a ref of the same type as the property?
         if let Some(getter) = &property.getter {
             let getter_ident = &getter.rust_ident;
+            let getter_cpp_ident = getter.cpp_ident.to_string();
             rs_functions.push(quote! {
+                #[cxx_name = #getter_cpp_ident]
                 fn #getter_ident(self: &#rust_class_name) -> &#type_ident;
             });
         }
@@ -108,7 +113,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         // do we always take by value of the same type as the property?
         if let Some(setter) = &property.setter {
             let setter_ident = &setter.rust_ident;
+            let setter_cpp_ident = setter.cpp_ident.to_string();
             rs_functions.push(quote! {
+                #[cxx_name = #setter_cpp_ident]
                 fn #setter_ident(self: &mut #rust_class_name, value: #type_ident);
             });
         }
@@ -117,6 +124,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let new_object_ident = format_ident!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);
 
+    // TODO: use cxx_name to rename constructor methods to camel case for C++
     let output = quote! {
         #[cxx::bridge]
         mod ffi {

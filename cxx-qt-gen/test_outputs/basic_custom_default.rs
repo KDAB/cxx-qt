@@ -14,7 +14,9 @@ mod my_object {
 
             fn invokable(self: &MyObjectRs);
 
+            #[cxx_name = "getNumber"]
             fn number(self: &MyObjectRs) -> &i32;
+            #[cxx_name = "setNumber"]
             fn set_number(self: &mut MyObjectRs, value: i32);
 
             fn create_my_object_rs() -> Box<MyObjectRs>;
