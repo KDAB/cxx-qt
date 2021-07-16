@@ -25,6 +25,8 @@ pub(crate) struct ParameterType {
     pub(crate) idents: Vec<Ident>,
     /// If this parameter is a reference
     pub(crate) is_ref: bool,
+    /// The original type, this allows us to annotate an error with a span later
+    pub(crate) original_ty: syn::Type,
 }
 
 /// Describes a function parameter
@@ -96,15 +98,20 @@ enum ExtractTypeIdentError {
 
 /// Extract the type ident from a given syn::Type
 fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentError> {
+    // Temporary storage of the current syn::TypePath if one is found
     let ty_path;
+    // Whether this syn::Type is a reference or not
     let is_ref;
 
     match ty {
+        // The type is simply a path (eg std::slice::Iter)
         Type::Path(path) => {
             is_ref = false;
             ty_path = path;
         }
+        // The type is a reference, so see if it contains a path
         Type::Reference(TypeReference { elem, .. }) => {
+            // If the type is a path then extract it and mark is_ref
             if let Type::Path(path) = &**elem {
                 is_ref = true;
                 ty_path = path;
@@ -117,7 +124,10 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
         }
     }
 
+    // Create and return a ParameterType
     Ok(ParameterType {
+        // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
+        // into an owned Vec<Ident>
         idents: ty_path
             .path
             .segments
@@ -135,6 +145,8 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
             })
             .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()?,
         is_ref,
+        // We need to have the original type so that errors can Span if there are no idents
+        original_ty: ty.to_owned(),
     })
 }
 
@@ -142,7 +154,12 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
 fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream> {
     let mut invokables = Vec::new();
 
+    // Process each impl item and turn into an Invokable or error
     for item in items {
+        // Check if this item is a method
+        //
+        // TODO: later should we pass through unknown items
+        // or should they have an attribute to ignore
         let method;
         if let ImplItem::Method(m) = item {
             method = m;
@@ -150,48 +167,68 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
             return Err(Error::new(item.span(), "Only methods are supported.").to_compile_error());
         }
 
+        // Extract the ident, parameters, return type of the method
         let method_ident = &method.sig.ident;
         let inputs = &method.sig.inputs;
         let output = &method.sig.output;
+
+        // Prepare a vector to store the processed parameters of the method
         let mut parameters = Vec::new();
 
-        for arg in inputs {
-            if let FnArg::Typed(PatType { pat, ty, .. }) = arg {
-                let arg_ident;
+        // Process each input (parameters) of the method adding Parameter's to parameters
+        for parameter in inputs {
+            // Check that the parameter is typed
+            //
+            // If it is not typed (it is a syn::Receiver) then this means it is the self parameter
+            // but without a type, eg self: Box<Self> would be Typed
+            //
+            // TODO: does this mean that if self is Typed we need to skip it?
+            // so should we ignore the first parameter if it is named "self"?
+            if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
+                // The name ident of the parameter
+                let parameter_ident;
+                // The type ident of the parameter
                 let type_ident;
 
+                // Try to extract the name of the parameter
                 if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                    arg_ident = ident;
+                    parameter_ident = ident;
                 } else {
                     return Err(
-                        Error::new(arg.span(), "Invalid argument ident format.").to_compile_error()
+                        Error::new(parameter.span(), "Invalid argument ident format.")
+                            .to_compile_error(),
                     );
                 }
 
+                // Try to extract the type of the parameter
                 match extract_type_ident(ty) {
                     Ok(result) => type_ident = result,
                     Err(ExtractTypeIdentError::InvalidArguments) => {
                         return Err(Error::new(
-                            arg.span(),
+                            parameter.span(),
                             "Argument should not be angle bracketed or parenthesized.",
                         )
                         .to_compile_error());
                     }
                     Err(ExtractTypeIdentError::InvalidType) => {
-                        return Err(Error::new(arg.span(), "Invalid argument ident format.")
-                            .to_compile_error())
+                        return Err(
+                            Error::new(parameter.span(), "Invalid argument ident format.")
+                                .to_compile_error(),
+                        )
                     }
                 }
 
-                let parameter = Parameter {
-                    ident: arg_ident.to_owned(),
+                // Build and push the parameter
+                parameters.push(Parameter {
+                    ident: parameter_ident.to_owned(),
                     type_ident,
-                };
-                parameters.push(parameter);
+                });
             }
         }
 
+        // Process the output and determine if it has a return type
         let return_type = if let ReturnType::Type(_, ty) = output {
+            // This output has a return type, so extract the type
             match extract_type_ident(ty) {
                 Ok(result) => Some(result),
                 Err(ExtractTypeIdentError::InvalidArguments) => {
@@ -211,6 +248,7 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
             None
         };
 
+        // Build and push the invokable
         let invokable = Invokable {
             ident: method_ident.to_owned(),
             parameters,
@@ -228,12 +266,17 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
     let mut properties = Vec::new();
 
     // Read the properties from the struct
+    //
+    // Extract only the named fields (eg "Point { x: f64, y: f64 }") and ignore any
+    // unnamed fields (eg "Some(T)") or units (eg "None")
     if let ItemStruct {
         fields: Fields::Named(FieldsNamed { named, .. }),
         ..
     } = s
     {
+        // Process each named field individually
         for name in named {
+            // Extract only fields with an ident (should be all as these are named fields).
             if let Field {
                 // TODO: later we'll need to read the attributes (eg qt_property) here
                 // attrs,
@@ -242,6 +285,7 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                 ..
             } = name
             {
+                // Extract the type of the field
                 let type_ident;
 
                 match extract_type_ident(ty) {
@@ -259,11 +303,12 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                     }
                 }
 
-                // Build the getter/setter/notify idents
+                // Build the getter/setter/notify idents with their Rust and C++ idents
                 //
                 // TODO: later these can be optional and have custom names from macro attributes
-                // we might also need to store whether a custom method is already implemented or
-                // whether a method needs to be auto generated on the rust side
+                //
+                // TODO: we might also need to store whether a custom method is already implemented
+                // or whether a method needs to be auto generated on the rust side
                 let ident_str = ident.to_string();
                 let getter = Some(CppRustIdent {
                     cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Pascal)),
@@ -279,6 +324,7 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                     rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
                 });
 
+                // Build and push the property
                 properties.push(Property {
                     ident: ident.to_owned(),
                     type_ident,
@@ -306,22 +352,33 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
         .1;
 
     // Prepare variables to store struct, invokables, and other data
+    //
+    // The original Item::Struct if one is found
     let mut original_struct = None;
+    // The name of the struct if one was found
     let mut struct_ident = None;
+    // The name we will use for the rust generated struct if find one
     let mut rust_struct_ident = None;
 
+    // A list of the invokables for the struct
     let mut object_invokables = vec![];
+    // A list of original trait impls for the struct (eg impl Default for Struct)
     let mut original_trait_impls = vec![];
+    // A list of original use declarations for the mod (eg use crate::thing)
     let mut original_use_decls = vec![];
 
     // Process each of the items in the mod
     for item in items.drain(..) {
         match item {
-            // We are a struct, ensure we are the first struct
+            // We are a struct
             Item::Struct(s) => {
+                // Check that we are the first struct
                 if original_struct.is_none() {
+                    // Make a copy of the ident
                     struct_ident = Some(s.ident.to_owned());
+                    // Move the original struct
                     original_struct = Some(s);
+                    // Build a rust version of the struct ident
                     rust_struct_ident = Some(quote::format_ident!(
                         "{}{}",
                         struct_ident.as_ref().unwrap(),
@@ -357,6 +414,8 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                     }
 
                     // Retrieve the impl struct name and check it's the same as the declared struct
+                    //
+                    // We can assume that segments[0] works as we have checked length to be 1
                     let impl_ident = &path.segments[0].ident;
                     // We can assume that struct_ident exists as we checked there was a struct
                     if impl_ident != struct_ident.as_ref().unwrap() {
@@ -373,6 +432,7 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                         object_invokables.append(&mut extract_invokables(&original_impl.items)?);
                     } else {
                         // We are a impl trait so rename the struct and add to vec
+                        // We can assume that segments[0] works as we have checked length to be 1
                         let impl_ident = &mut path.segments[0].ident;
                         // We can assume that struct_ident exists as we checked there was a struct
                         if impl_ident == struct_ident.as_ref().unwrap() {

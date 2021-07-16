@@ -30,6 +30,7 @@ enum BuildMode {
 
 impl Default for BuildMode {
     fn default() -> Self {
+        // Default to a normal build, users need to opt-in for a QQmlExtensionPlugin build
         BuildMode::Plain
     }
 }

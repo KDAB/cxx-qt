@@ -12,13 +12,16 @@ use crate::utils::is_type_ident_ptr;
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
 pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
+    // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
     let rust_class_name = &obj.rust_struct_ident;
 
+    // Build a snake version of the class name, this is used for rust method names
+    //
     // TODO: Abstract this calculation to make it common to gen_rs and gen_cpp
     let ident_snake = class_name.to_string().to_case(Case::Snake);
-    let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
 
+    // Lists of functions we generate for the CXX bridge
     let mut cpp_functions = Vec::new();
     let mut rs_functions = Vec::new();
 
@@ -27,13 +30,18 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // TODO: later support a cxx_qt_name attribute on invokables to allow for renaming
     // an invokable from snake to camel case for C++
     for i in &obj.invokables {
+        // Cache the ident and parameters as they are used multiple times later
         let ident = &i.ident;
         let parameters = &i.parameters;
 
+        // Determine if the invokable has any parameter
         if parameters.is_empty() {
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
+                // Cache the return type
                 let type_idents = &return_type.idents;
+
+                // Determine if the return type is a ref
                 if return_type.is_ref {
                     rs_functions.push(quote! {
                         fn #ident(self: &#rust_class_name) -> &#(#type_idents)::*;
@@ -49,10 +57,14 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 });
             }
         } else {
+            // Build a list of quotes of the parameter name and type
             let mut parameters_quotes = Vec::new();
             for p in parameters {
+                // Cache the name and type
                 let ident = &p.ident;
                 let type_idents = &p.type_ident.idents;
+
+                // Determine if the type is a ref
                 if p.type_ident.is_ref {
                     parameters_quotes.push(quote! {
                         #ident: &#(#type_idents)::*
@@ -69,7 +81,10 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
+                // Cache the return type
                 let type_idents = &return_type.idents;
+
+                // Determine if the return type is a ref
                 if return_type.is_ref {
                     rs_functions.push(quote! {
                         fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
@@ -89,6 +104,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     // Add getters/setters/notify from properties
     for property in &obj.properties {
+        // Cache the type of the property
         let type_idents = &property.type_ident.idents;
 
         // This type is a pointer, so special case the C++ functions and no Rust functions
@@ -101,9 +117,10 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 )
                 .to_compile_error());
             }
-            // We can assume that unwrap will work here as we have checked that type_idents is not empty
-            //
+
             // Build the class name of the pointer, eg Object in crate::module::Object
+            //
+            // We can assume that unwrap will work here as we have checked that type_idents is not empty
             let ptr_class_name = type_idents.last().unwrap();
 
             // Swap the last type segment to be CppObj
@@ -114,17 +131,22 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             type_idents_ffi.pop();
             type_idents_ffi.push(format_ident!("CppObj"));
 
+            // Add type definition for the class name we are a pointer for to the C++ bridge
             cpp_functions.push(quote! {
                 type #ptr_class_name = #(#type_idents_ffi)::*;
             });
 
-            // Build the C++ method declarations
+            // cache the snake and pascal case
             let property_ident_snake = property.ident.to_string().to_case(Case::Snake);
             let property_ident_pascal = property.ident.to_string().to_case(Case::Pascal);
+
+            // Build the C++ method declarations names
             let getter = format!("take_{}", property_ident_snake);
             let getter_cpp = format_ident!("take{}", property_ident_pascal);
             let setter = format!("give_{}", property_ident_snake);
             let setter_cpp = format_ident!("give{}", property_ident_pascal);
+
+            // Add the getter and setter to C++ bridge
             cpp_functions.push(quote! {
                 #[rust_name = #getter]
                 fn #getter_cpp(self: Pin<&mut #class_name>) -> UniquePtr<#ptr_class_name>;
@@ -165,11 +187,16 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
     }
 
+    // Build the methods to create the class
     let new_object_ident_cpp = format_ident!("new{}", class_name);
     let new_object_rust = format!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);
     let create_object_cpp = create_object_ident.to_string().to_case(Case::Camel);
 
+    // Build the import path for the C++ header
+    let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
+
+    // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge]
         mod ffi {
@@ -196,15 +223,19 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
         pub type CppObj = ffi::#class_name;
     };
+
     Ok(output.into_token_stream())
 }
 
 /// Generate a Rust function that heap constructs the Rust object corresponding to the QObject
 fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    let class_name = &obj.ident;
+    // Cache the rust class name, this is used multiple times later
     let rust_class_name = &obj.rust_struct_ident;
 
-    let ident_snake = class_name.to_string().to_case(Case::Snake);
+    // Build the ident as snake case, then build the rust creator method
+    //
+    // TODO: can this code be shared with generate_qobject_cxx as they both create this fn name?
+    let ident_snake = &obj.ident.to_string().to_case(Case::Snake);
     let fn_ident = format_ident!("create_{}_rs", ident_snake);
 
     // TODO: check if the original object had an explicit constructor and if so ensure that the create
@@ -230,14 +261,19 @@ fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStrea
             }
         }
     };
+
     Ok(output.into_token_stream())
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
-    let mut property_methods = Vec::new();
+    // Cache the rust class name, this is used multiple times later
     let rust_class_name = &obj.rust_struct_ident;
 
+    // Build a list of property methods impls
+    let mut property_methods = Vec::new();
+
     for property in &obj.properties {
+        // Cache the property name and type
         let property_ident = &property.ident;
         let type_idents = &property.type_ident.idents;
 
@@ -246,7 +282,9 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
         if !is_type_ident_ptr(type_idents) {
             // TODO: later we might need consider if the struct has already implemented custom getters
             if let Some(getter) = &property.getter {
+                // Generate a getter using the rust ident
                 let getter_ident = &getter.rust_ident;
+
                 property_methods.push(quote! {
                     fn #getter_ident(self: &#rust_class_name) -> &#(#type_idents)::* {
                         &self.#property_ident
@@ -256,7 +294,9 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
             // TODO: later we might need consider if the struct has already implemented custom setters
             if let Some(setter) = &property.setter {
+                // Generate a setter using the rust ident
                 let setter_ident = &setter.rust_ident;
+
                 property_methods.push(quote! {
                     fn #setter_ident(self: &mut #rust_class_name, value: #(#type_idents)::*) {
                         self.#property_ident = value;
@@ -271,7 +311,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Load module information
+    // Load macro attributes that were on the module, excluding #[make_qobject]
     let mod_attrs = obj
         .original_mod
         .attrs
@@ -294,13 +334,17 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             }
         })
         .collect::<Vec<syn::Attribute>>();
+
+    // Cache the original module ident and visiblity
     let mod_ident = &obj.original_mod.ident;
     let mod_vis = &obj.original_mod.vis;
+
+    // Cache the rust class name
+    let rust_class_name = &obj.rust_struct_ident;
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj)?;
 
-    let rust_class_name = &obj.rust_struct_ident;
     // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
     let renamed_struct = {
         // Filter the fields of the struct to remove any pointer fields
@@ -310,6 +354,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .fields
             .iter()
             .filter(|field| {
+                // Determine the type of the field
                 let ty_path;
                 match &field.ty {
                     syn::Type::Path(path) => {
@@ -340,6 +385,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 )
             })
             .collect::<Vec<&syn::Field>>();
+
+        // Capture the attributes, generics, visibility as local vars so they can be used by quote
         let original_attributes = &obj.original_struct.attrs;
         let original_generics = &obj.original_struct.generics;
         let original_visibility = &obj.original_struct.vis;
@@ -362,11 +409,15 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
     };
 
+    // Generate property methods from the object
     let property_methods = generate_property_methods_rs(obj)?;
+
+    // Capture original methods, trait impls, use decls so they can used by quote
     let original_methods = obj.invokables.iter().map(|m| &m.original_method);
     let original_trait_impls = &obj.original_trait_impls;
     let original_use_decls = &obj.original_use_decls;
 
+    // Generate the rust creator function
     let creator_fn = generate_rust_object_creator(obj)?;
 
     // Determine if we need an impl block on the renamed struct
@@ -381,6 +432,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         quote! {}
     };
 
+    // Build our rewritten module that replaces the input from the macro
     let output = quote! {
         #(#mod_attrs)*
         #mod_vis mod #mod_ident {
@@ -397,6 +449,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #creator_fn
         }
     };
+
     Ok(output.into_token_stream())
 }
 

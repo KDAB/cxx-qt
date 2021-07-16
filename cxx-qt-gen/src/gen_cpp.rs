@@ -7,8 +7,7 @@ use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
 use convert_case::{Case, Casing};
 use indoc::formatdoc;
 use proc_macro2::TokenStream;
-use std::result::Result;
-use syn::*;
+use syn::{spanned::Spanned, Error, Ident};
 
 use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject};
 use crate::utils::is_type_ident_ptr;
@@ -75,6 +74,9 @@ impl CppType for CppTypes {
     }
 
     /// Whether this type is a const (when used as an input to methods)
+    ///
+    /// For now this means that we consider the type in C++ to be const
+    /// eg String => const QString and not whether the rust type was const.
     fn is_const(&self) -> bool {
         match self {
             Self::I32 => false,
@@ -84,7 +86,10 @@ impl CppType for CppTypes {
         }
     }
 
-    /// Whether this type is a reference
+    /// Whether this type is a reference (when used as an input to methods)
+    ///
+    /// For now this means that we consider the type in C++ to be a ref
+    /// eg String => QString& and not whether the rust type was a ref.
     ///
     /// TODO: read from the extract ParameterType if it's a ref first
     /// so that we can return or take &int, but also consider that String is
@@ -166,12 +171,15 @@ pub struct CppObject {
 fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream> {
     // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
     // so that QML can set a C++/QML type into the property ? or is that not useful?
+
+    // Check that the type has at least one ident
     if type_ident.idents.is_empty() {
         Err(Error::new(
-            type_ident.idents[0].span(),
+            type_ident.original_ty.span(),
             "Type ident must have at least one segment",
         )
         .to_compile_error())
+    // If there is one entry then try to convert using our defined types
     } else if type_ident.idents.len() == 1 {
         // We can assume that idents has an entry at index zero, because there is one entry
         match type_ident.idents[0].to_string().as_str() {
@@ -201,6 +209,7 @@ fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream
             // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
             ident_str: type_ident.idents.last().unwrap().to_string(),
         })
+    // This is an unknown type that did not start with crate and has multiple parts
     } else {
         Err(Error::new(
             // We can assume that idents has an entry at index zero, because it is not empty
@@ -215,6 +224,7 @@ fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream
 fn generate_parameters_cpp(parameters: &[Parameter]) -> Result<Vec<CppParameter>, TokenStream> {
     let mut items: Vec<CppParameter> = vec![];
 
+    // Extract the ident and type_ident from each parameter
     for parameter in parameters {
         items.push(CppParameter {
             ident: parameter.ident.to_string(),
@@ -234,7 +244,13 @@ fn generate_invokables_cpp(
 
     // A helper which allows us to flatten data from vec of parameters
     struct CppParameterHelper {
+        // These are a list of definitions for the parameters
+        // This includes the const, ref, ptr, type, and ident of the parameter
+        // eg this could be "const QString& string" or "MyObject* object"
         args: Vec<String>,
+        // These are a list of names of the parameters
+        // If the parameter has a converter then it could be the name wrapped in a converted
+        // eg this could be "arg1" or "converter(arg1)"
         names: Vec<String>,
     }
 
@@ -269,17 +285,22 @@ fn generate_invokables_cpp(
                         },
                         type_ident = parameter.type_ident.type_ident()
                     ));
-                    // If there is a converter then use it
+
+                    // Build the parameter names
                     if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
+                        // If there is a converter then use it
                         acc.names
                             .push(format!("{}({})", converter_ident, parameter.ident));
                     } else {
                         // No converter so use the same name
                         acc.names.push(parameter.ident);
                     }
+
                     acc
                 },
             );
+
+        // Cache an argument line of all the parameters as this is used in both header and source
         let parameter_arg_line = parameters.args.join(", ");
 
         // Extract the return type of the invokable if there is one
@@ -348,16 +369,24 @@ fn generate_properties_cpp(
     let mut items: Vec<CppProperty> = vec![];
 
     for property in properties {
+        // Build a CppParameter for the name and type of the property
         let parameter = CppParameter {
             ident: property.ident.to_string(),
             type_ident: generate_type_cpp(&property.type_ident)?,
         };
+
+        // Collect the converters for the getter and setter of the property
         let converter_getter = parameter.type_ident.convert_into_cpp();
         let converter_setter = parameter.type_ident.convert_into_rust();
+
+        // Collect the C++ idents for the getter, setter, notify of the property
+        //
         // TODO: for now we assume that all properties have a getter/setter/notify
         let ident_getter = property.getter.as_ref().unwrap().cpp_ident.to_string();
         let ident_setter = property.setter.as_ref().unwrap().cpp_ident.to_string();
         let ident_changed = property.notify.as_ref().unwrap().cpp_ident.to_string();
+
+        // Build the C++ strings for whether the const, ref, and ptr are set for this property
         let is_const = if parameter.type_ident.is_const() {
             "const"
         } else {
@@ -373,12 +402,22 @@ fn generate_properties_cpp(
         } else {
             ""
         };
+
+        // Build a getter for the rust property
+        // Cache this is here as potentially wrapped later and simplifies that code
         let rust_getter = format!("m_rustObj->{ident_getter}()", ident_getter = ident_getter);
+
+        // Cache the type ident of the property as this is used multiple times
         let type_ident = parameter.type_ident.type_ident();
 
+        // Build a basic C++ property with parts that are defined if the property is a pointer or not
         let mut cpp_property = CppProperty {
+            // Set any includes from the type of the property
+            // eg this is used if the type is a pointer to include that type
             header_includes: parameter.type_ident.include_paths(),
+            // Members are defined later for only the pointer
             header_members: vec![],
+            // Set the Q_PROPERTY for the C++ class
             header_meta: vec![format!("Q_PROPERTY({type_ident}{is_ptr} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_changed})",
                 ident = parameter.ident,
                 ident_changed = ident_changed,
@@ -387,12 +426,15 @@ fn generate_properties_cpp(
                 is_ptr = is_ptr,
                 type_ident = type_ident,
             )],
+            // Set basic getter, more are added later for only pointer
             header_public: vec![format!("{type_ident}{is_ptr} {ident_getter}() const;",
                 ident_getter = ident_getter,
                 is_ptr = is_ptr,
                 type_ident = type_ident,
             )],
+            // Set the notify signals
             header_signals: vec![format!("void {ident_changed}();", ident_changed = ident_changed)],
+            // Set the slots for the setter
             header_slots: vec![format!("void {ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value);",
                 ident_setter = ident_setter,
                 is_const = is_const,
@@ -400,16 +442,23 @@ fn generate_properties_cpp(
                 is_ptr = is_ptr,
                 type_ident = type_ident,
             )],
+            // The source is created later
             source: vec![],
         };
 
         // If we are a pointer type then add specific methods
         if parameter.type_ident.is_ptr() {
+            // Build as pascal version of the ident
+            // this is used for the owned member and extra pointer specific methods
             let parameter_ident_pascal = parameter.ident.to_case(Case::Pascal);
+
+            // Pointers are stored in the C++ object, so build a member and owned ident
             let member_ident = format!("m_{}", parameter.ident);
             let member_owned_ident = format!("m_owned{}", parameter_ident_pascal);
 
             // Add raw pointer getter and setter
+            //
+            // Note that the setter is different to the non-pointer source
             cpp_property.source.push(formatdoc! {
                 r#"
                 {type_ident}{is_ptr}
@@ -459,8 +508,8 @@ fn generate_properties_cpp(
                 type_ident = type_ident
             ));
             cpp_property.header_members.push(format!(
-                "std::unique_ptr<{type_ident}> m_owned{ident};",
-                ident = parameter_ident_pascal,
+                "std::unique_ptr<{type_ident}> {member_owned_ident};",
+                member_owned_ident = member_owned_ident,
                 type_ident = type_ident
             ));
 
@@ -593,7 +642,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         sources: Vec<String>,
     }
 
-    // Query for properties
+    // Build CppProperty's for the object, then drain them into our CppPropertyHelper
     let properties = generate_properties_cpp(&obj.ident, &obj.properties)?
         .drain(..)
         .fold(
@@ -624,7 +673,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         sources: Vec<String>,
     }
 
-    // Query for invokables and flatten them into a helper
+    // Build CppInvokable's for the object, then drain them into our CppInvokableHelper
     let invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
         .drain(..)
         .fold(
@@ -639,7 +688,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             },
         );
 
-    // Generate C++ header part
+    // If there are signals then prepare a string otherwise leave an empty string
+    // We need to do this otherwise we are left with a Q_SIGNALS with nothing after it
     let signals = if properties.headers_signals.is_empty() {
         "".to_owned()
     } else {
@@ -650,6 +700,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             properties_signals = properties.headers_signals.join("\n"),
         }
     };
+    // If there are public slots then prepare a string otherwise leave an empty string
+    // We need to do this otherwise we are left with a Q_SLOTS with nothing after it
     let public_slots = if properties.headers_slots.is_empty() {
         "".to_owned()
     } else {
@@ -660,6 +712,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             properties_slots = properties.headers_slots.join("\n"),
         }
     };
+
+    // Generate the C++ header part
     let header = formatdoc! {r#"
         #pragma once
 
@@ -752,6 +806,7 @@ mod tests {
     use crate::extract_qobject;
 
     use pretty_assertions::assert_eq;
+    use syn::ItemMod;
 
     #[test]
     fn generates_basic_invokable_and_properties() {

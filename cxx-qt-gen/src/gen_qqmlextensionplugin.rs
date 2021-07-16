@@ -119,7 +119,9 @@ impl QQmlExtensionPluginData {
             #include "plugin.moc"
             "#,
             cpp_class_name = self.cpp_class_name,
+            // Join the qml register types together separated by a new line
             qml_register_types = self.register_types.iter().map(|data| data.as_qml_register_type()).collect::<Vec<String>>().join("\n"),
+            // Join the type includes together separated by a new line
             type_includes = self.register_types.iter().map(|data| data.as_include()).collect::<Vec<String>>().join("\n"),
         };
 
