@@ -11,6 +11,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
+#include "cxx-qt-gen/include/my_data.h"
 #include "cxx-qt-gen/include/my_object.h"
 #include "cxx-qt-gen/include/sub_object.h"
 
@@ -53,4 +54,34 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(obj.getSub() == &sub);
 
   qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
+}
+
+TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
+          "using Serde")
+{
+  MyData data;
+
+  // Track the signal count of numberChanged, stringChanged, and subChanged
+  QSignalSpy numberSpy(&data, &MyData::numberChanged);
+  QSignalSpy stringSpy(&data, &MyData::stringChanged);
+
+  // Check that initial value of the deserialised data
+  CHECK(data.getNumber() == 4);
+  CHECK(data.getString() == QStringLiteral("Hello World!"));
+
+  // Check the number changed property
+  CHECK(numberSpy.count() == 0);
+  data.setNumber(16);
+  CHECK(numberSpy.count() == 1);
+  CHECK(data.getNumber() == 16);
+
+  // Check the string property
+  CHECK(stringSpy.count() == 0);
+  data.setString(QStringLiteral("Hello"));
+  CHECK(stringSpy.count() == 1);
+  CHECK(data.getString() == QStringLiteral("Hello"));
+
+  // Check that initial value of the deserialised data
+  CHECK(data.as_json_str() ==
+        QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
 }

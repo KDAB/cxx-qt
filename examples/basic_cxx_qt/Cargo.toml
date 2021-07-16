@@ -18,6 +18,8 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx = "1.0"
 cxx-qt = { path = "../../cxx-qt" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [build-dependencies]
 clang-format = { path = "../../clang-format" }

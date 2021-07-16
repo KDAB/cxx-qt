@@ -15,6 +15,12 @@ Window {
     visible: true
     width: 640
 
+    MyData {
+        id: myData
+        number: myObject.number
+        string: myObject.string
+    }
+
     MyObject {
         id: myObject
         number: 1
@@ -45,6 +51,12 @@ Window {
             text: "Increment Number"
 
             onClicked: myObject.number = myObject.increment_number(myObject.number)
+        }
+
+        Button {
+            text: "Print Data"
+
+            onClicked: console.warn(myData.as_json_str())
         }
     }
 

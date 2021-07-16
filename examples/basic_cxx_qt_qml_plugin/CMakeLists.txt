@@ -29,6 +29,7 @@ include(CxxQt)
 
 set(
     RUST_SOURCES
+    data.rs
     lib.rs
     sub.rs
 )

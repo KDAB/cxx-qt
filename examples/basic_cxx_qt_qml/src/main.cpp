@@ -8,6 +8,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
+#include "cxx-qt-gen/include/my_data.h"
 #include "cxx-qt-gen/include/my_object.h"
 #include "cxx-qt-gen/include/sub_object.h"
 
@@ -29,6 +30,7 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
+  qmlRegisterType<MyData>("com.kdab.cxx_qt.demo", 1, 0, "MyData");
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   qmlRegisterType<SubObject>("com.kdab.cxx_qt.demo", 1, 0, "SubObject");
 

@@ -25,6 +25,7 @@ include(CxxQt)
 
 set(
     RUST_SOURCES
+    data.rs
     lib.rs
     sub.rs
 )
@@ -53,16 +54,20 @@ target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJ
 # Unit test
 #
 
-set(
-   CPP_TEST_SOURCES
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.cpp
-)
+function(add_qml_test TEST_NAME)
+    # Copy QML unit test to build folder
+    # this is so that our tst_${TEST_NAME} executable can find the QML files
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
-# Copy QML unit test to build folder
-# this is so that our tst_myobject executable can find the QML files
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/tst_myobject.qml ${CMAKE_CURRENT_BINARY_DIR}/tst_myobject.qml COPYONLY)
+    cxx_qt_cmake(${APP_NAME}_${TEST_NAME}_test "${RUST_SOURCES}" "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    target_link_libraries(${APP_NAME}_${TEST_NAME}_test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickTest)
 
-cxx_qt_cmake(${APP_NAME}_test "${RUST_SOURCES}" "${CPP_TEST_SOURCES}")
-target_link_libraries(${APP_NAME}_test Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickTest)
+    add_test(NAME ${APP_NAME}_${TEST_NAME}_test COMMAND ${APP_NAME}_${TEST_NAME}_test WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
 
-add_test(NAME ${APP_NAME}_test COMMAND ${APP_NAME}_test)
+    set_target_properties(${APP_NAME}_${TEST_NAME}_test PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+    )
+endfunction()
+
+add_qml_test(myobject)
+add_qml_test(mydata)
