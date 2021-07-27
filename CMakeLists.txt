@@ -73,6 +73,7 @@ endfunction()
 # Add tests for all the examples
 # TODO: we probably want to move tests of examples into the CMakeLists under the examples folder
 add_example_tests(basic_cxx_only)
+add_example_tests(update_requester_standalone)
 add_example_tests(basic_cxx_qt)
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
 add_test_cargo(basic_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_qt_qml/Cargo.toml" DOCTESTS_OFF)

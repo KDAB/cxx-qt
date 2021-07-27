@@ -13,6 +13,12 @@ set(APP_NAME ${PROJECT_NAME})
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 include(CxxQt)
 
+# TODO: at some point we want to transform cxx-qt-build into cxx-cmake-build
+# to clarify that qt support is optional. At this point it would make more
+# sense to never generate files with Qt code rather than to #ifdef it out using
+# this flag as we currently do for cases where the application doesn't link to Qt.
+add_compile_definitions(NO_QT)
+
 set(
     RUST_SOURCES
     lib.rs

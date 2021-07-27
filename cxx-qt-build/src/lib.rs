@@ -296,20 +296,31 @@ fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec
     paths
 }
 
-/// Write out the static header files for both the cxx and cxx-qt libraries
-fn write_static_headers() {
+/// Write out the static header files for both the cxx and cxx-qt libraries, returns a list
+/// of paths for the written files that need to be sent back to CMake for processing by MOC
+fn write_static_headers() -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+    let mut paths = vec![];
 
     let path = format!("{}/target/cxx-qt-gen/statics/rust", dir_manifest);
     std::fs::create_dir_all(&path).expect("Could not create static header dir");
 
     let h_path = format!("{}/cxx.h", path);
-    let mut header = File::create(h_path).expect("Could not create cxx.h");
+    let mut header = File::create(&h_path).expect("Could not create cxx.h");
     write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
 
     let h_path = format!("{}/cxx_qt.h", path);
-    let mut header = File::create(h_path).expect("Could not create cxx_qt.h");
+    let mut header = File::create(&h_path).expect("Could not create cxx_qt.h");
     write!(header, "{}", cxx_qt_gen::HEADER).expect("Could not write cxx_qt.h");
+    paths.push(h_path);
+
+    let cpp_path = format!("{}/update_requester.cpp", path);
+    let mut cpp = File::create(&cpp_path).expect("Could not create update_requester.cpp");
+    write!(cpp, "{}", cxx_qt_gen::UPDATE_REQUESTER_SOURCE)
+        .expect("Could not write update_requester.cpp");
+    paths.push(cpp_path);
+
+    paths
 }
 
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
@@ -375,8 +386,12 @@ impl CxxQtBuilder {
         // Write any qqmlextensionplugin if there is one and read any C++ files it creates
         cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));
 
+        // TODO: in large projects where where CXX-Qt is used in multiple individual
+        // components that end up being linked together, having these same static
+        // files in each one could cause issues.
+        cpp_paths.append(&mut write_static_headers());
+
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
         write_cpp_sources_list(&cpp_paths);
-        write_static_headers();
     }
 }
