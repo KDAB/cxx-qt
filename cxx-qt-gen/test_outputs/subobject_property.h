@@ -6,7 +6,7 @@
 
 class MyObjectRs;
 
-class MyObject : public QObject
+class MyObject : public CxxQObject
 {
   Q_OBJECT
   Q_PROPERTY(SubObject* obj READ getObj WRITE setObj NOTIFY objChanged)

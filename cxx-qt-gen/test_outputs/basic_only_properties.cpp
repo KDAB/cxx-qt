@@ -2,7 +2,7 @@
 #include "cxx-qt-gen/src/my_object.rs.h"
 
 MyObject::MyObject(QObject* parent)
-  : QObject(parent)
+  : CxxQObject(parent)
   , m_rustObj(createMyObjectRs())
 {}
 

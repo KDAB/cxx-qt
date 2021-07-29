@@ -4,7 +4,7 @@
 
 class MyObjectRs;
 
-class MyObject : public QObject
+class MyObject : public CxxQObject
 {
   Q_OBJECT
 

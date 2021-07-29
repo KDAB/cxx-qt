@@ -11,6 +11,7 @@
 #include <memory>
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QEvent>
 #include <QObject>
 #include <QPointer>
@@ -89,7 +90,16 @@ Q_SIGNALS:
   void changed();
 
 protected:
-  virtual void updateState() = 0;
+  // TODO: once we have implemented code generation for updateState functions we
+  // might want to consider making the function pure virtual. Objects that want
+  // to opt out of the state mechanism should then instead derive from an
+  // entirely different base class as to have less overhead overall.
+  virtual void updateState()
+  {
+    qWarning()
+      << "An UpdateStateEvent event was posted to a CxxQObject that does not "
+         "override updateState(), this likely indicates a bug.";
+  };
 
 private:
   std::atomic_bool m_waitingForUpdate{ false };

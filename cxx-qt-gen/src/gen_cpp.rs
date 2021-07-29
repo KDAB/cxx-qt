@@ -723,7 +723,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         class {rust_struct_ident};
 
-        class {ident} : public QObject {{
+        class {ident} : public CxxQObject {{
             Q_OBJECT
         {properties_meta}
 
@@ -764,7 +764,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         #include "cxx-qt-gen/src/{ident_snake}.rs.h"
 
         {ident}::{ident}(QObject *parent)
-            : QObject(parent)
+            : CxxQObject(parent)
             , m_rustObj(create{ident}Rs())
         {{
         }}
