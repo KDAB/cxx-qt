@@ -6,16 +6,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include <QtCore/QTimer>
 #include <QtTest/QSignalSpy>
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
-#include "cxx-qt-gen/include/lib.rs.h"
 #include "TestObject.h"
+#include "cxx-qt-gen/include/lib.rs.h"
 
 static TestObject* testObject = nullptr;
 
