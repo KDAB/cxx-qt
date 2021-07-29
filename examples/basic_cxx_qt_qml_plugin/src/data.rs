@@ -18,7 +18,7 @@ mod data {
     impl Default for MyData {
         fn default() -> Self {
             let data = r#"{"number": 4, "string": "Hello World!"}"#;
-            serde_json::from_str(&data).unwrap()
+            serde_json::from_str(data).unwrap()
         }
     }
 

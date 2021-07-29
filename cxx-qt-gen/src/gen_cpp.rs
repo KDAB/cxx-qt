@@ -305,7 +305,7 @@ fn generate_invokables_cpp(
 
         // Extract the return type of the invokable if there is one
         let return_type = if let Some(return_type) = &invokable.return_type {
-            Some(generate_type_cpp(&return_type)?)
+            Some(generate_type_cpp(return_type)?)
         } else {
             None
         };
