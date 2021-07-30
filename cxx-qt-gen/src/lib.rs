@@ -17,8 +17,8 @@ pub use gen_rs::{generate_qobject_cxx, generate_qobject_rs};
 /// The complete contents of the "rust/cxx_qt.h" header.
 pub static HEADER: &str = include_str!("cxx_qt.h");
 
-/// The complete contents of the "rust/update_requester.cpp" source file.
-pub static UPDATE_REQUESTER_SOURCE: &str = include_str!("update_requester.cpp");
+/// The complete contents of the "rust/cxx_qt.cpp" source file.
+pub static UPDATE_REQUESTER_SOURCE: &str = include_str!("cxx_qt.cpp");
 
 #[cfg(test)]
 mod test {

@@ -11,3 +11,6 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+cxx = { git = "https://github.com/Gerharddc/cxx.git" }
+
+# TODO: remove github once https://github.com/dtolnay/cxx/pull/906 lands

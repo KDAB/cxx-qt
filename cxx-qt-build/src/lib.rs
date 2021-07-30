@@ -314,10 +314,9 @@ fn write_static_headers() -> Vec<String> {
     write!(header, "{}", cxx_qt_gen::HEADER).expect("Could not write cxx_qt.h");
     paths.push(h_path);
 
-    let cpp_path = format!("{}/update_requester.cpp", path);
-    let mut cpp = File::create(&cpp_path).expect("Could not create update_requester.cpp");
-    write!(cpp, "{}", cxx_qt_gen::UPDATE_REQUESTER_SOURCE)
-        .expect("Could not write update_requester.cpp");
+    let cpp_path = format!("{}/cxx_qt.cpp", path);
+    let mut cpp = File::create(&cpp_path).expect("Could not create cxx_qt.cpp");
+    write!(cpp, "{}", cxx_qt_gen::UPDATE_REQUESTER_SOURCE).expect("Could not write cxx_qt.cpp");
     paths.push(cpp_path);
 
     paths

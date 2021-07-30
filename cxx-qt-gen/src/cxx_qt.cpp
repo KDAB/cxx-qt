@@ -11,6 +11,9 @@
 
 #include <QPointer>
 
+// TODO: for UpdateRequester also use funky C function names with lots of $
+// signs like CXX to prevent possible symbol collisions.
+
 using QPtr = QPointer<CxxQObject>;
 
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
@@ -32,19 +35,19 @@ using QPtr = QPointer<CxxQObject>;
 
 extern "C"
 {
-  QPtr* cxx_qt_update_requester_new(CxxQObject* qobject_ptr)
+  QPtr* cxx_qt_update_requester_new(CxxQObject* qobject_ptr) noexcept
   {
     Q_ASSERT(qobject_ptr != nullptr);
     return new QPtr(qobject_ptr);
   }
 
-  void cxx_qt_update_requester_drop(QPtr* self)
+  void cxx_qt_update_requester_drop(QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
     delete self;
   }
 
-  bool cxx_qt_update_requester_request_update(const QPtr* self)
+  bool cxx_qt_update_requester_request_update(const QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
 
@@ -55,11 +58,52 @@ extern "C"
     return true;
   }
 
-  QPtr* cxx_qt_update_requester_clone(const QPtr* self)
+  QPtr* cxx_qt_update_requester_clone(const QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
     return new QPtr(*self);
   }
+}
+
+namespace {
+
+// We do these checks to ensure that we can safely store a QString
+// inside a block of memory that Rust thinks contains as usize.
+//
+// We assume that std::size_t is the same size as Rust's usize.
+// cxx.cc has some asserts to ensure that is true.
+
+static_assert(alignof(QString) <= alignof(std::size_t),
+              "unexpectedly large QString alignment");
+
+static_assert(sizeof(QString) <= sizeof(std::size_t),
+              "unexpectedly large QString size");
+
+// We also assume that C++ char and Rust u8 are the same
+
+static_assert(sizeof(char) == sizeof(std::uint8_t));
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qstring$init(QString* self,
+                           const char* ptr,
+                           std::size_t len) noexcept
+  {
+    new (self) QString();
+    *self = QString::fromUtf8(ptr, len);
+  }
+
+  void cxxqt1$qstring$to_rust_string(const QString& qt,
+                                     rust::String& rust) noexcept
+  {
+    static_assert(sizeof(char16_t) == sizeof(QChar));
+    rust = rust::String(reinterpret_cast<const char16_t*>(qt.constData()),
+                        qt.size());
+  }
+
+  void cxxqt1$qstring$drop(QString* self) noexcept { self->~QString(); }
 }
 
 #endif // NO_QT

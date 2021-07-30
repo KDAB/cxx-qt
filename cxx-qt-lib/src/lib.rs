@@ -5,3 +5,20 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 pub mod update_requester;
+
+mod qstring;
+pub use qstring::QString;
+
+/// This mod contains private things that need to technically be pub so that
+/// they can be used inside macros. You should not use anything inside here
+/// from another crate even though that would compile.
+pub mod private {
+    pub use crate::qstring::StackQString;
+}
+
+mod actually_private {
+    /// This is a dummy struct. If you add it as a template parameter to new()
+    /// inside a struct that you have been forced to make public then outside
+    /// users won't be able to construct such a struct themselves.
+    pub trait Private {}
+}
