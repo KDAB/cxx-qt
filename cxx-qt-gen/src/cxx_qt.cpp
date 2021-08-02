@@ -11,11 +11,6 @@
 
 #include <QPointer>
 
-// TODO: for UpdateRequester also use funky C function names with lots of $
-// signs like CXX to prevent possible symbol collisions.
-
-using QPtr = QPointer<CxxQObject>;
-
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
 // post an event to a specific CxxQObject.
 //
@@ -33,21 +28,23 @@ using QPtr = QPointer<CxxQObject>;
 // result from Rust trying to move said memory. If we only give a pointer to
 // Rust though, it is free to move that in memory as much as it likes.
 
+using QPtr = QPointer<CxxQObject>;
+
 extern "C"
 {
-  QPtr* cxx_qt_update_requester_new(CxxQObject* qobject_ptr) noexcept
+  QPtr* cxxqt1$update_requester$new(CxxQObject* qobject_ptr) noexcept
   {
     Q_ASSERT(qobject_ptr != nullptr);
     return new QPtr(qobject_ptr);
   }
 
-  void cxx_qt_update_requester_drop(QPtr* self) noexcept
+  void cxxqt1$update_requester$drop(QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
     delete self;
   }
 
-  bool cxx_qt_update_requester_request_update(const QPtr* self) noexcept
+  bool cxxqt1$update_requester$request_update(const QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
 
@@ -58,7 +55,7 @@ extern "C"
     return true;
   }
 
-  QPtr* cxx_qt_update_requester_clone(const QPtr* self) noexcept
+  QPtr* cxxqt1$update_requester$clone(const QPtr* self) noexcept
   {
     Q_ASSERT(self != nullptr);
     return new QPtr(*self);
