@@ -16,11 +16,9 @@ name = "rust"
 crate-type = ["staticlib"]
 
 [dependencies]
-cxx = { git = "https://github.com/Gerharddc/cxx.git" }
+cxx = "1.0"
 cxx-qt = { path = "../../cxx-qt" }
 
 [build-dependencies]
 clang-format = { path = "../../clang-format" }
 cxx-qt-build = { path = "../../cxx-qt-build" }
-
-# TODO: remove github once https://github.com/dtolnay/cxx/pull/906 lands

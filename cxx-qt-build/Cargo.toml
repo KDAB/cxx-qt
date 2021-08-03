@@ -12,11 +12,9 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 clang-format = { path = "../clang-format" }
-cxx-gen = { git = "https://github.com/Gerharddc/cxx.git" }
+cxx-gen = "0.7"
 cxx-qt-gen = { path = "../cxx-qt-gen" }
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full", "parsing"] }
 quote = "1.0"
 convert_case = "0.4"
-
-# TODO: remove github once https://github.com/dtolnay/cxx/pull/906 lands
