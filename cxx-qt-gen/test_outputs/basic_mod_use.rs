@@ -45,11 +45,29 @@ mod my_object {
         }
     }
 
+    struct MyObjectData {
+        number: i32,
+    }
+
+    impl From<MyObjectData> for MyObjectRs {
+        fn from(value: MyObjectData) -> Self {
+            Self {
+                number: value.number,
+            }
+        }
+    }
+
+    impl From<&MyObjectRs> for MyObjectData {
+        fn from(value: &MyObjectRs) -> Self {
+            Self {
+                number: value.number.clone(),
+            }
+        }
+    }
+
     impl Default for MyObjectRs {
         fn default() -> Self {
-            Self {
-                number: 32,
-            }
+            Self { number: 32 }
         }
     }
 

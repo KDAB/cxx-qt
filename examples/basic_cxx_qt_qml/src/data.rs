@@ -17,14 +17,16 @@ mod data {
 
     impl Default for MyData {
         fn default() -> Self {
-            let data = r#"{"number": 4, "string": "Hello World!"}"#;
-            serde_json::from_str(data).unwrap()
+            let string = r#"{"number": 4, "string": "Hello World!"}"#;
+            let data: MyDataData = serde_json::from_str(string).unwrap();
+            data.into()
         }
     }
 
     impl MyData {
         fn as_json_str(&self) -> String {
-            serde_json::to_string(&self).unwrap()
+            let data = MyDataData::from(self);
+            serde_json::to_string(&data).unwrap()
         }
     }
 }

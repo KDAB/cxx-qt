@@ -29,6 +29,9 @@ mod my_object {
     #[derive(Default)]
     struct MyObjectRs;
 
+    #[derive(Default)]
+    struct MyObjectData;
+
     fn create_my_object_rs() -> Box<MyObjectRs> {
         Box::new(MyObjectRs::default())
     }

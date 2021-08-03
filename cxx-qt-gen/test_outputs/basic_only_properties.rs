@@ -54,6 +54,30 @@ mod my_object {
         }
     }
 
+    #[derive(Default)]
+    struct MyObjectData {
+        number: i32,
+        string: String,
+    }
+
+    impl From<MyObjectData> for MyObjectRs {
+        fn from(value: MyObjectData) -> Self {
+            Self {
+                number: value.number,
+                string: value.string,
+            }
+        }
+    }
+
+    impl From<&MyObjectRs> for MyObjectData {
+        fn from(value: &MyObjectRs) -> Self {
+            Self {
+                number: value.number.clone(),
+                string: value.string.clone(),
+            }
+        }
+    }
+
     fn create_my_object_rs() -> Box<MyObjectRs> {
         Box::new(MyObjectRs::default())
     }

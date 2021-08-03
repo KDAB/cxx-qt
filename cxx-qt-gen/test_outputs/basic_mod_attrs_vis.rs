@@ -24,6 +24,8 @@ pub mod my_object {
 
     struct MyObjectRs;
 
+    struct MyObjectData;
+
     fn create_my_object_rs() -> Box<MyObjectRs> {
         Box::new(MyObjectRs {})
     }

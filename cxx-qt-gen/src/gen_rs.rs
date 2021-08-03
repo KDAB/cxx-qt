@@ -309,6 +309,73 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
     Ok(property_methods)
 }
 
+fn is_field_ptr(field: &syn::Field) -> bool {
+    // Determine the type of the field
+    let ty_path;
+    match &field.ty {
+        syn::Type::Path(path) => {
+            ty_path = path;
+        }
+        syn::Type::Reference(syn::TypeReference { elem, .. }) => {
+            if let syn::Type::Path(path) = &**elem {
+                ty_path = path;
+            } else {
+                // Unknown type, just ignore so we pass through
+                return true;
+            }
+        }
+        _others => {
+            // Unknown type, just ignore so we pass through
+            return true;
+        }
+    }
+
+    // Filter any fields that have a type which is a pointer
+    !is_type_ident_ptr(
+        &ty_path
+            .path
+            .segments
+            .iter()
+            .map(|segment| segment.ident.to_owned())
+            .collect::<Vec<syn::Ident>>(),
+    )
+}
+
+fn rename_filter_struct(
+    original_struct: &syn::ItemStruct,
+    struct_ident: &syn::Ident,
+) -> TokenStream {
+    // Filter the fields of the struct to remove any pointer fields
+    // as they are instead stored in the C++ object and not owned by the rust side
+    let filtered_fields = original_struct
+        .fields
+        .iter()
+        .filter(|field| is_field_ptr(field))
+        .collect::<Vec<&syn::Field>>();
+
+    // Capture the attributes, generics, visibility as local vars so they can be used by quote
+    let original_attributes = &original_struct.attrs;
+    let original_generics = &original_struct.generics;
+    let original_visibility = &original_struct.vis;
+
+    // Finally build the renamed struct
+    //
+    // If there are no fields then use semi-colon instead of brackets
+    if filtered_fields.is_empty() {
+        quote! {
+            #(#original_attributes)*
+            #original_visibility struct #struct_ident #original_generics;
+        }
+    } else {
+        quote! {
+            #(#original_attributes)*
+            #original_visibility struct #struct_ident #original_generics {
+                #(#filtered_fields),*
+            }
+        }
+    }
+}
+
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Load macro attributes that were on the module, excluding #[make_qobject]
@@ -346,64 +413,59 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let cxx_block = generate_qobject_cxx(obj)?;
 
     // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
-    let renamed_struct = {
-        // Filter the fields of the struct to remove any pointer fields
-        // as they are instead stored in the C++ object and not owned by the rust side
-        let filtered_fields = obj
-            .original_struct
-            .fields
-            .iter()
-            .filter(|field| {
-                // Determine the type of the field
-                let ty_path;
-                match &field.ty {
-                    syn::Type::Path(path) => {
-                        ty_path = path;
-                    }
-                    syn::Type::Reference(syn::TypeReference { elem, .. }) => {
-                        if let syn::Type::Path(path) = &**elem {
-                            ty_path = path;
-                        } else {
-                            // Unknown type, just ignore so we pass through
-                            return true;
-                        }
-                    }
-                    _others => {
-                        // Unknown type, just ignore so we pass through
-                        return true;
+    let renamed_struct = rename_filter_struct(&obj.original_struct, rust_class_name);
+
+    // Generate the data struct
+    //
+    // TODO: what happens with sub objects / pointers,
+    // do we need to rewrite the field to their data struct?
+    //
+    // TODO: what happens if the original struct has no fields?
+    // Do we then skip the data struct? Or do we always want a data struct
+    // for simplicity?
+    let data_struct_name = format_ident!("{}Data", obj.ident);
+    let data_struct = rename_filter_struct(&obj.original_struct, &data_struct_name);
+
+    // TODO: should we instead pass this around, as we do this filter multiple times
+    let filtered_fields = obj
+        .original_struct
+        .fields
+        .iter()
+        .filter(|field| is_field_ptr(field))
+        .collect::<Vec<&syn::Field>>();
+
+    // Determine if we need a impl block on the data struct
+    //
+    // TODO: if there are original impl Default for struct then do we need to copy them?
+    let data_struct_impl = if filtered_fields.is_empty() {
+        quote! {}
+    } else {
+        let mut fields = vec![];
+        let mut fields_clone = vec![];
+        for field in filtered_fields {
+            if let Some(field_ident) = &field.ident {
+                let field_name = field_ident.clone();
+                fields.push(quote! { #field_name: value.#field_name });
+                // TODO: here we assume that all fields in the struct that are in the data struct
+                // implement Clone.
+                fields_clone.push(quote! { #field_name: value.#field_name.clone() });
+            }
+        }
+
+        quote! {
+            impl From<#data_struct_name> for #rust_class_name {
+                fn from(value: #data_struct_name) -> Self {
+                    Self {
+                        #(#fields),*
                     }
                 }
-
-                // Filter any fields that have a type which is a pointer
-                !is_type_ident_ptr(
-                    &ty_path
-                        .path
-                        .segments
-                        .iter()
-                        .map(|segment| segment.ident.to_owned())
-                        .collect::<Vec<syn::Ident>>(),
-                )
-            })
-            .collect::<Vec<&syn::Field>>();
-
-        // Capture the attributes, generics, visibility as local vars so they can be used by quote
-        let original_attributes = &obj.original_struct.attrs;
-        let original_generics = &obj.original_struct.generics;
-        let original_visibility = &obj.original_struct.vis;
-
-        // Finally build the renamed struct
-        //
-        // If there are no fields then use semi-colon instead of brackets
-        if filtered_fields.is_empty() {
-            quote! {
-                #(#original_attributes)*
-                #original_visibility struct #rust_class_name #original_generics;
             }
-        } else {
-            quote! {
-                #(#original_attributes)*
-                #original_visibility struct #rust_class_name #original_generics {
-                    #(#filtered_fields),*
+
+            impl From<&#rust_class_name> for #data_struct_name {
+                fn from(value: &#rust_class_name) -> Self {
+                    Self {
+                        #(#fields_clone),*
+                    }
                 }
             }
         }
@@ -443,6 +505,10 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #renamed_struct
 
             #renamed_struct_impl
+
+            #data_struct
+
+            #data_struct_impl
 
             #(#original_trait_impls)*
 
