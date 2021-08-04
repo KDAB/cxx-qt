@@ -51,7 +51,7 @@ make -j$(nproc)
 
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
-It also assumes that you have `reuse` installed (eg via `pip3 --install reuse`).
+It also assumes that you have `reuse` installed (eg via `pip3 --install reuse`) and `valgrind`.
 
 ```bash
 cd build/

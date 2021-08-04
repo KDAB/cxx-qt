@@ -85,9 +85,16 @@ else()
     message(CRITICAL "qmltestrunner not found: tests disabled")
 endif()
 
+set(test_cmd ${QMLTESTRUNNER_BIN} -import ${QML_IMPORT_DIR} -input ${CMAKE_CURRENT_SOURCE_DIR}/src/tests)
 add_test(NAME ${APP_NAME}_test
-    COMMAND ${QMLTESTRUNNER_BIN} -import ${QML_IMPORT_DIR} -input ${CMAKE_CURRENT_SOURCE_DIR}/src/tests
+    COMMAND ${test_cmd}
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
+
+# TODO: can't use add_valgrind_test so cmake gets confused by the spaces in test_cmd, write manually for now
+add_test(NAME ${APP_NAME}_${TEST_NAME}_test_valgrind
+    COMMAND ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} --suppressions=${MEMORYCHECK_SUPPRESSIONS_FILE} ${test_cmd}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
 # TODO: test needs to depend on the app ? which depends on the plugin?
