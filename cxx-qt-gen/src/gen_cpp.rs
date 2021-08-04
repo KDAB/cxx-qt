@@ -7,25 +7,15 @@ use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
 use convert_case::{Case, Casing};
 use indoc::formatdoc;
 use proc_macro2::TokenStream;
-use syn::{spanned::Spanned, Error, Ident};
+use syn::Ident;
 
-use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject};
-use crate::utils::is_type_ident_ptr;
-
-/// Describes a C++ type
-#[derive(Debug)]
-enum CppTypes {
-    I32,
-    Ptr { ident_str: String },
-    String,
-    Str,
-}
+use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes};
 
 // TODO: we probably want to remove convert_into_cpp and convert_into_rust
 // once we have completed the move to full C++ data ownership.
 // For now they are still required for invokables.
 
-/// A trait which CppTypes implements allowing retrieval of attributes of the enum value.
+/// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str>;
@@ -44,7 +34,7 @@ trait CppType {
     fn type_ident(&self) -> &str;
 }
 
-impl CppType for CppTypes {
+impl CppType for QtTypes {
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
@@ -128,11 +118,11 @@ impl CppType for CppTypes {
 
 /// Describes a C++ parameter, which is a name combined with a type
 #[derive(Debug)]
-struct CppParameter {
+struct CppParameter<'a> {
     /// The ident of the parameter
     ident: String,
     /// The type of the parameter
-    type_ident: CppTypes,
+    type_ident: &'a QtTypes,
 }
 
 /// Describes a C++ invokable with header and source parts
@@ -171,59 +161,6 @@ pub struct CppObject {
     pub source: String,
 }
 
-/// Generate a C++ type for a given rust ident
-fn generate_type_cpp(type_ident: &ParameterType) -> Result<CppTypes, TokenStream> {
-    // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
-    // so that QML can set a C++/QML type into the property ? or is that not useful?
-
-    // Check that the type has at least one ident
-    if type_ident.idents.is_empty() {
-        Err(Error::new(
-            type_ident.original_ty.span(),
-            "Type ident must have at least one segment",
-        )
-        .to_compile_error())
-    // If there is one entry then try to convert using our defined types
-    } else if type_ident.idents.len() == 1 {
-        // We can assume that idents has an entry at index zero, because there is one entry
-        match type_ident.idents[0].to_string().as_str() {
-            "str" => Ok(CppTypes::Str),
-            "String" => Ok(CppTypes::String),
-            "i32" => Ok(CppTypes::I32),
-            other => Err(Error::new(
-                type_ident.idents[0].span(),
-                format!("Unknown type ident to convert to C++: {}", other),
-            )
-            .to_compile_error()),
-        }
-    // As this type ident has more than one segment, check if it is a pointer
-    } else if is_type_ident_ptr(&type_ident.idents) {
-        Ok(CppTypes::Ptr {
-            // TODO: on the C++ side we only have the last segment always? crate::sub_object::SubObject -> SubObject?
-            // maybe if we do namespacing this will then become important?
-            // ident_str: type_ident
-            //     .idents
-            //     .iter()
-            //     .map(|ident| ident.to_string())
-            //     .collect::<Vec<String>>()
-            //     .join("::"),
-            //
-            // TODO: do we need to track is_ref here?
-            //
-            // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
-            ident_str: type_ident.idents.last().unwrap().to_string(),
-        })
-    // This is an unknown type that did not start with crate and has multiple parts
-    } else {
-        Err(Error::new(
-            // We can assume that idents has an entry at index zero, because it is not empty
-            type_ident.idents[0].span(),
-            "First type ident segment must start with 'crate' if there are multiple",
-        )
-        .to_compile_error())
-    }
-}
-
 /// Generate a string of parameters with their type in C++ style from a given list of rust parameters
 fn generate_parameters_cpp(parameters: &[Parameter]) -> Result<Vec<CppParameter>, TokenStream> {
     let mut items: Vec<CppParameter> = vec![];
@@ -232,7 +169,7 @@ fn generate_parameters_cpp(parameters: &[Parameter]) -> Result<Vec<CppParameter>
     for parameter in parameters {
         items.push(CppParameter {
             ident: parameter.ident.to_string(),
-            type_ident: generate_type_cpp(&parameter.type_ident)?,
+            type_ident: &parameter.type_ident.qt_type,
         });
     }
 
@@ -308,11 +245,10 @@ fn generate_invokables_cpp(
         let parameter_arg_line = parameters.args.join(", ");
 
         // Extract the return type of the invokable if there is one
-        let return_type = if let Some(return_type) = &invokable.return_type {
-            Some(generate_type_cpp(return_type)?)
-        } else {
-            None
-        };
+        let return_type = invokable
+            .return_type
+            .as_ref()
+            .map(|return_type| &return_type.qt_type);
 
         // Prepare the body of the invokable, we may return or wrap this later
         let body = format!(
@@ -376,7 +312,7 @@ fn generate_properties_cpp(
         // Build a CppParameter for the name and type of the property
         let parameter = CppParameter {
             ident: property.ident.cpp_ident.to_string(),
-            type_ident: generate_type_cpp(&property.type_ident)?,
+            type_ident: &property.type_ident.qt_type,
         };
 
         // Collect the C++ idents for the getter, setter, notify of the property

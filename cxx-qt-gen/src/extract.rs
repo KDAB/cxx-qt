@@ -3,9 +3,10 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::utils::is_type_ident_ptr;
 use convert_case::{Case, Casing};
 use derivative::*;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use std::result::Result;
 use syn::{spanned::Spanned, *};
 
@@ -18,6 +19,16 @@ pub(crate) struct CppRustIdent {
     pub(crate) rust_ident: Ident,
 }
 
+/// Describes a Qt type
+#[derive(Debug)]
+pub enum QtTypes {
+    I32,
+    Ptr { ident_str: String },
+    // TODO: these will become QString in the future
+    String,
+    Str,
+}
+
 /// Describes a type
 #[derive(Debug)]
 pub(crate) struct ParameterType {
@@ -27,6 +38,8 @@ pub(crate) struct ParameterType {
     pub(crate) is_ref: bool,
     /// The original type, this allows us to annotate an error with a span later
     pub(crate) original_ty: syn::Type,
+    /// The detected Qt type of the parameter
+    pub(crate) qt_type: QtTypes,
 }
 
 /// Describes a function parameter
@@ -90,10 +103,62 @@ pub struct QObject {
     pub(crate) original_use_decls: Vec<ItemUse>,
 }
 
-/// Describe the error type from extract_type_ident
+/// Describe the error type from extract_qt_type and extract_type_ident
 enum ExtractTypeIdentError {
-    InvalidArguments,
-    InvalidType,
+    /// We do not support AngleBracketed or Parenthesized rust types
+    InvalidArguments(Span),
+    /// This is not a valid rust type
+    InvalidType(Span),
+    /// There are no idents in the type
+    IdentEmpty(Span),
+    /// There are multiple idents but didn't start with crate::
+    UnknownAndNotCrate(Span),
+    /// There is one ident but it's unknown to our converters
+    UnknownIdent(Span),
+}
+
+/// Extract the Qt type from a list of Ident's
+fn extract_qt_type(
+    idents: &[Ident],
+    original_ty: &syn::Type,
+) -> Result<QtTypes, ExtractTypeIdentError> {
+    // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
+    // so that QML can set a C++/QML type into the property ? or is that not useful?
+
+    // Check that the type has at least one ident
+    if idents.is_empty() {
+        Err(ExtractTypeIdentError::IdentEmpty(original_ty.span()))
+    // If there is one entry then try to convert using our defined types
+    } else if idents.len() == 1 {
+        // We can assume that idents has an entry at index zero, because there is one entry
+        match idents[0].to_string().as_str() {
+            // TODO: these will become QString in the future
+            "str" => Ok(QtTypes::Str),
+            "String" => Ok(QtTypes::String),
+            "i32" => Ok(QtTypes::I32),
+            _other => Err(ExtractTypeIdentError::UnknownIdent(idents[0].span())),
+        }
+    // As this type ident has more than one segment, check if it is a pointer
+    } else if is_type_ident_ptr(idents) {
+        Ok(QtTypes::Ptr {
+            // TODO: on the C++ side we only have the last segment always? crate::sub_object::SubObject -> SubObject?
+            // maybe if we do namespacing this will then become important?
+            // ident_str: idents
+            //     .iter()
+            //     .map(|ident| ident.to_string())
+            //     .collect::<Vec<String>>()
+            //     .join("::"),
+            //
+            // TODO: do we need to track is_ref here?
+            //
+            // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
+            ident_str: idents.last().unwrap().to_string(),
+        })
+    // This is an unknown type that did not start with crate and has multiple parts
+    } else {
+        // We can assume that idents has an entry at index zero, because it is not empty
+        Err(ExtractTypeIdentError::UnknownAndNotCrate(idents[0].span()))
+    }
 }
 
 /// Extract the type ident from a given syn::Type
@@ -116,37 +181,43 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
                 is_ref = true;
                 ty_path = path;
             } else {
-                return Err(ExtractTypeIdentError::InvalidType);
+                return Err(ExtractTypeIdentError::InvalidType(ty.span()));
             }
         }
         _others => {
-            return Err(ExtractTypeIdentError::InvalidType);
+            return Err(ExtractTypeIdentError::InvalidType(ty.span()));
         }
     }
+
+    let idents = ty_path
+        .path
+        .segments
+        .iter()
+        .map(|segment| {
+            // We do not support PathArguments for types in properties or arguments
+            //
+            // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
+            // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
+            if segment.arguments == PathArguments::None {
+                Ok(segment.ident.to_owned())
+            } else {
+                Err(ExtractTypeIdentError::InvalidArguments(segment.span()))
+            }
+        })
+        .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()?;
+
+    // Extract the Qt type this is used in C++ and Rust generation
+    let qt_type = extract_qt_type(&idents, ty)?;
 
     // Create and return a ParameterType
     Ok(ParameterType {
         // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
         // into an owned Vec<Ident>
-        idents: ty_path
-            .path
-            .segments
-            .iter()
-            .map(|segment| {
-                // We do not support PathArguments for types in properties or arguments
-                //
-                // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
-                // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
-                if segment.arguments == PathArguments::None {
-                    Ok(segment.ident.to_owned())
-                } else {
-                    Err(ExtractTypeIdentError::InvalidArguments)
-                }
-            })
-            .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()?,
+        idents,
         is_ref,
         // We need to have the original type so that errors can Span if there are no idents
         original_ty: ty.to_owned(),
+        qt_type,
     })
 }
 
@@ -207,18 +278,26 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
                 // Try to extract the type of the parameter
                 match extract_type_ident(ty) {
                     Ok(result) => type_ident = result,
-                    Err(ExtractTypeIdentError::InvalidArguments) => {
+                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
-                            parameter.span(),
+                            span,
                             "Argument should not be angle bracketed or parenthesized.",
                         )
                         .to_compile_error());
                     }
-                    Err(ExtractTypeIdentError::InvalidType) => {
+                    Err(ExtractTypeIdentError::InvalidType(span)) => {
                         return Err(
-                            Error::new(parameter.span(), "Invalid argument ident format.")
-                                .to_compile_error(),
+                            Error::new(span, "Invalid argument ident format.").to_compile_error()
                         )
+                    }
+                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                        return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                        return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownIdent(span)) => {
+                        return Err(Error::new(span, "Unknown argument type ident to parse").to_compile_error())
                     }
                 }
 
@@ -235,16 +314,31 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
             // This output has a return type, so extract the type
             match extract_type_ident(ty) {
                 Ok(result) => Some(result),
-                Err(ExtractTypeIdentError::InvalidArguments) => {
+                Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                     return Err(Error::new(
-                        output.span(),
+                        span,
                         "Return type should not be angle bracketed or parenthesized.",
                     )
                     .to_compile_error());
                 }
-                Err(ExtractTypeIdentError::InvalidType) => {
+                Err(ExtractTypeIdentError::InvalidType(span)) => {
+                    return Err(Error::new(span, "Invalid return type format.").to_compile_error())
+                }
+                Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                    return Err(Error::new(
+                        span,
+                        "Return type ident must have at least one segment",
+                    )
+                    .to_compile_error())
+                }
+                Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => return Err(Error::new(
+                    span,
+                    "First return type ident segment must start with 'crate' if there are multiple",
+                )
+                .to_compile_error()),
+                Err(ExtractTypeIdentError::UnknownIdent(span)) => {
                     return Err(
-                        Error::new(output.span(), "Invalid return type format.").to_compile_error()
+                        Error::new(span, "Unknown return type ident to parse").to_compile_error()
                     )
                 }
             }
@@ -305,16 +399,26 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 
                 match extract_type_ident(ty) {
                     Ok(result) => type_ident = result,
-                    Err(ExtractTypeIdentError::InvalidArguments) => {
+                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
-                            name.span(),
+                            span,
                             "Named field should not be angle bracketed or parenthesized.",
                         )
                         .to_compile_error());
                     }
-                    Err(ExtractTypeIdentError::InvalidType) => {
-                        return Err(Error::new(name.span(), "Invalid name field ident format.")
-                            .to_compile_error())
+                    Err(ExtractTypeIdentError::InvalidType(span)) => {
+                        return Err(
+                            Error::new(span, "Invalid name field ident format.").to_compile_error()
+                        )
+                    }
+                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                        return Err(Error::new(span, "Named field type ident must have at least one segment").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                        return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownIdent(span)) => {
+                        return Err(Error::new(span, "Unknown named field type ident to parse").to_compile_error())
                     }
                 }
 
