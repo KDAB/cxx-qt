@@ -5,6 +5,7 @@ mod my_object {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+            type QString = cxx_qt_lib::QString;
             type SubObject = crate::sub_object::CppObj;
 
             #[rust_name = "take_obj"]

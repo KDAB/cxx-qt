@@ -196,6 +196,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
 
+    // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QString;"
+    // if we actually generate some code that uses QString.
+
     // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge]
@@ -204,6 +207,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 include!(#import_path);
 
                 type #class_name;
+                type QString = cxx_qt_lib::QString;
 
                 #(#cpp_functions)*
 
