@@ -317,7 +317,7 @@ fn generate_invokables_cpp(
         // Prepare the body of the invokable, we may return or wrap this later
         let body = format!(
             "m_rustObj->{ident}({parameter_names})",
-            ident = invokable.ident.to_string(),
+            ident = invokable.ident.cpp_ident.to_string(),
             parameter_names = parameters.names.join(", ")
         );
 
@@ -333,7 +333,7 @@ fn generate_invokables_cpp(
             // TODO: detect if method is const from whether we have &self or &mut self in rust
             header: format!(
                 "Q_INVOKABLE {return_ident} {ident}({parameter_types}) const;",
-                ident = invokable.ident.to_string(),
+                ident = invokable.ident.cpp_ident.to_string(),
                 parameter_types = parameter_arg_line,
                 return_ident = return_ident,
             ),
@@ -354,7 +354,7 @@ fn generate_invokables_cpp(
                 } else {
                     body
                 },
-                ident = invokable.ident.to_string(),
+                ident = invokable.ident.cpp_ident.to_string(),
                 parameter_types = parameter_arg_line,
                 struct_ident = struct_ident.to_string(),
                 return_ident = return_ident,
@@ -375,7 +375,7 @@ fn generate_properties_cpp(
     for property in properties {
         // Build a CppParameter for the name and type of the property
         let parameter = CppParameter {
-            ident: property.ident.to_string(),
+            ident: property.ident.cpp_ident.to_string(),
             type_ident: generate_type_cpp(&property.type_ident)?,
         };
 
@@ -796,6 +796,24 @@ mod tests {
             "../test_outputs/basic_invokable_and_properties.cpp"
         ))
         .unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_basic_ident_changes() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_ident_changes.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/basic_ident_changes.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/basic_ident_changes.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

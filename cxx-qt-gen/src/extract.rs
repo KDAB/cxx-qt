@@ -43,7 +43,7 @@ pub(crate) struct Parameter {
 #[derivative(Debug)]
 pub(crate) struct Invokable {
     /// The ident of the function
-    pub(crate) ident: Ident,
+    pub(crate) ident: CppRustIdent,
     /// The parameters that the function takes in
     pub(crate) parameters: Vec<Parameter>,
     /// The return type information
@@ -57,7 +57,7 @@ pub(crate) struct Invokable {
 #[derive(Debug)]
 pub(crate) struct Property {
     /// The ident of the property
-    pub(crate) ident: Ident,
+    pub(crate) ident: CppRustIdent,
     /// The type of the property
     pub(crate) type_ident: ParameterType,
     /// The getter ident of the property (used for READ)
@@ -252,9 +252,16 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
             None
         };
 
+        // TODO: later support an attribute to keep original or override renaming
+        let ident_str = method_ident.to_string();
+        let ident_method = CppRustIdent {
+            cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
+            rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+        };
+
         // Build and push the invokable
         let invokable = Invokable {
-            ident: method_ident.to_owned(),
+            ident: ident_method,
             parameters,
             return_type,
             original_method: method.to_owned(),
@@ -317,7 +324,13 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                 //
                 // TODO: we might also need to store whether a custom method is already implemented
                 // or whether a method needs to be auto generated on the rust side
+                //
+                // TODO: later support an attribute to keep original or override renaming
                 let ident_str = ident.to_string();
+                let ident_prop = CppRustIdent {
+                    cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
+                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+                };
                 let getter = Some(CppRustIdent {
                     cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Pascal)),
                     rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
@@ -334,7 +347,7 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 
                 // Build and push the property
                 properties.push(Property {
-                    ident: ident.to_owned(),
+                    ident: ident_prop,
                     type_ident,
                     getter,
                     setter,
@@ -528,6 +541,54 @@ mod tests {
     }
 
     #[test]
+    fn parses_basic_ident_changes() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_ident_changes.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the properties and that the idents are correct
+        assert_eq!(qobject.properties.len(), 1);
+
+        // Check first property
+        let prop_first = &qobject.properties[0];
+        assert_eq!(prop_first.ident.cpp_ident.to_string(), "myNumber");
+        assert_eq!(prop_first.ident.rust_ident.to_string(), "my_number");
+        assert_eq!(prop_first.type_ident.idents.len(), 1);
+        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
+        assert_eq!(prop_first.type_ident.is_ref, false);
+
+        assert_eq!(prop_first.getter.is_some(), true);
+        let getter = prop_first.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getMyNumber");
+        assert_eq!(getter.rust_ident.to_string(), "my_number");
+
+        assert_eq!(prop_first.setter.is_some(), true);
+        let setter = prop_first.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setMyNumber");
+        assert_eq!(setter.rust_ident.to_string(), "set_my_number");
+
+        assert_eq!(prop_first.notify.is_some(), true);
+        let notify = prop_first.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "myNumberChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "my_number");
+
+        // Check that it got the invokables
+        assert_eq!(qobject.invokables.len(), 1);
+
+        // Check invokable ident
+        let invokable = &qobject.invokables[0];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayBye");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "say_bye");
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable.parameters.len(), 0);
+    }
+
+    #[test]
     fn parses_basic_invokable_and_properties() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
@@ -562,7 +623,8 @@ mod tests {
 
         // Check invokable ident
         let invokable = &qobject.invokables[0];
-        assert_eq!(invokable.ident.to_string(), "say_hi");
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayHi");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "say_hi");
 
         // Check invokable parameters ident and type ident
         assert_eq!(invokable.parameters.len(), 2);
@@ -582,7 +644,8 @@ mod tests {
 
         // Check invokable ident
         let invokable_second = &qobject.invokables[1];
-        assert_eq!(invokable_second.ident.to_string(), "say_bye");
+        assert_eq!(invokable_second.ident.cpp_ident.to_string(), "sayBye");
+        assert_eq!(invokable_second.ident.rust_ident.to_string(), "say_bye");
 
         // Check invokable parameters ident and type ident
         assert_eq!(invokable_second.parameters.len(), 0);
@@ -602,7 +665,8 @@ mod tests {
 
         // Check first property
         let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.to_string(), "number");
+        assert_eq!(prop_first.ident.cpp_ident.to_string(), "number");
+        assert_eq!(prop_first.ident.rust_ident.to_string(), "number");
         assert_eq!(prop_first.type_ident.idents.len(), 1);
         assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
         assert_eq!(prop_first.type_ident.is_ref, false);
@@ -625,7 +689,8 @@ mod tests {
 
         // Check second property
         let prop_second = &qobject.properties[1];
-        assert_eq!(prop_second.ident.to_string(), "string");
+        assert_eq!(prop_second.ident.cpp_ident.to_string(), "string");
+        assert_eq!(prop_second.ident.rust_ident.to_string(), "string");
         assert_eq!(prop_second.type_ident.idents.len(), 1);
         assert_eq!(prop_second.type_ident.idents[0].to_string(), "String");
         assert_eq!(prop_second.type_ident.is_ref, false);

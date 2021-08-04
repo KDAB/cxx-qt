@@ -14,8 +14,11 @@ mod my_object {
         extern "Rust" {
             type MyObjectRs;
 
+            #[cxx_name = "doubleNumber"]
             fn double_number(self: &MyObjectRs, number: i32) -> i32;
+            #[cxx_name = "helloMessage"]
             fn hello_message(self: &MyObjectRs, msg: &str) -> String;
+            #[cxx_name = "staticMessage"]
             fn static_message(self: &MyObjectRs) -> &str;
 
             #[cxx_name = "createMyObjectRs"]

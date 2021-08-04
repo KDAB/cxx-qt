@@ -14,7 +14,9 @@ mod my_object {
         extern "Rust" {
             type MyObjectRs;
 
+            #[cxx_name = "sayHi"]
             fn say_hi(self: &MyObjectRs, string: &str, number: i32);
+            #[cxx_name = "sayBye"]
             fn say_bye(self: &MyObjectRs);
 
             #[cxx_name = "getNumber"]

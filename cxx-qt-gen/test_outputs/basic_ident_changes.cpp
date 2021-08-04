@@ -8,10 +8,20 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-void
-MyObject::sayHi(const QString& string, int number) const
+int
+MyObject::getMyNumber() const
 {
-  m_rustObj->sayHi(qStringToRustStr(string), number);
+  return m_myNumber;
+}
+
+void
+MyObject::setMyNumber(int value)
+{
+  if (value != m_myNumber) {
+    m_myNumber = value;
+
+    Q_EMIT myNumberChanged();
+  }
 }
 
 void

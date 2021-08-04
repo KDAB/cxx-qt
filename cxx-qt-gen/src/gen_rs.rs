@@ -28,10 +28,11 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Invokables are only added to extern rust side
     //
     // TODO: later support a cxx_qt_name attribute on invokables to allow for renaming
-    // an invokable from snake to camel case for C++
+    // to a custom name for C++ or Rust side?
     for i in &obj.invokables {
         // Cache the ident and parameters as they are used multiple times later
-        let ident = &i.ident;
+        let ident = &i.ident.rust_ident;
+        let ident_cpp_str = &i.ident.cpp_ident.to_string();
         let parameters = &i.parameters;
 
         // Determine if the invokable has any parameter
@@ -44,15 +45,18 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 // Determine if the return type is a ref
                 if return_type.is_ref {
                     rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name) -> &#(#type_idents)::*;
                     });
                 } else {
                     rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name) -> #(#type_idents)::*;
                     });
                 }
             } else {
                 rs_functions.push(quote! {
+                    #[cxx_name = #ident_cpp_str]
                     fn #ident(self: &#rust_class_name);
                 });
             }
@@ -87,15 +91,18 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 // Determine if the return type is a ref
                 if return_type.is_ref {
                     rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
                     });
                 } else {
                     rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> #(#type_idents)::*;
                     });
                 }
             } else {
                 rs_functions.push(quote! {
+                    #[cxx_name = #ident_cpp_str]
                     fn #ident(self: &#rust_class_name, #(#parameters_quotes),*);
                 });
             }
@@ -112,7 +119,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             // Check that type_idents is not empty
             if type_idents.is_empty() {
                 return Err(syn::Error::new(
-                    property.ident.span(),
+                    property.ident.rust_ident.span(),
                     "Property type needs at least one type ident.",
                 )
                 .to_compile_error());
@@ -137,20 +144,20 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             });
 
             // cache the snake and pascal case
-            let property_ident_snake = property.ident.to_string().to_case(Case::Snake);
-            let property_ident_pascal = property.ident.to_string().to_case(Case::Pascal);
+            let property_ident_snake = property.ident.rust_ident.to_string().to_case(Case::Snake);
+            let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
 
             // Build the C++ method declarations names
-            let getter = format!("take_{}", property_ident_snake);
+            let getter_str = format!("take_{}", property_ident_snake);
             let getter_cpp = format_ident!("take{}", property_ident_pascal);
-            let setter = format!("give_{}", property_ident_snake);
+            let setter_str = format!("give_{}", property_ident_snake);
             let setter_cpp = format_ident!("give{}", property_ident_pascal);
 
             // Add the getter and setter to C++ bridge
             cpp_functions.push(quote! {
-                #[rust_name = #getter]
+                #[rust_name = #getter_str]
                 fn #getter_cpp(self: Pin<&mut #class_name>) -> UniquePtr<#ptr_class_name>;
-                #[rust_name = #setter]
+                #[rust_name = #setter_str]
                 fn #setter_cpp(self: Pin<&mut #class_name>, value: UniquePtr<#ptr_class_name>);
             });
         // This is a normal primitive type so add Rust getters and setters
@@ -163,9 +170,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             // do we always return a ref of the same type as the property?
             if let Some(getter) = &property.getter {
                 let getter_ident = &getter.rust_ident;
-                let getter_cpp_ident = getter.cpp_ident.to_string();
+                let getter_cpp_ident_str = getter.cpp_ident.to_string();
                 rs_functions.push(quote! {
-                    #[cxx_name = #getter_cpp_ident]
+                    #[cxx_name = #getter_cpp_ident_str]
                     fn #getter_ident(self: &#rust_class_name) -> &#(#type_idents)::*;
                 });
             }
@@ -178,9 +185,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             // do we always take by value of the same type as the property?
             if let Some(setter) = &property.setter {
                 let setter_ident = &setter.rust_ident;
-                let setter_cpp_ident = setter.cpp_ident.to_string();
+                let setter_cpp_ident_str = setter.cpp_ident.to_string();
                 rs_functions.push(quote! {
-                    #[cxx_name = #setter_cpp_ident]
+                    #[cxx_name = #setter_cpp_ident_str]
                     fn #setter_ident(self: &mut #rust_class_name, value: #(#type_idents)::*);
                 });
             }
@@ -189,9 +196,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     // Build the methods to create the class
     let new_object_ident_cpp = format_ident!("new{}", class_name);
-    let new_object_rust = format!("new_{}", class_name);
+    let new_object_rust_str = format!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);
-    let create_object_cpp = create_object_ident.to_string().to_case(Case::Camel);
+    let create_object_cpp_str = create_object_ident.to_string().to_case(Case::Camel);
 
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
@@ -211,7 +218,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
                 #(#cpp_functions)*
 
-                #[rust_name = #new_object_rust]
+                #[rust_name = #new_object_rust_str]
                 fn #new_object_ident_cpp() -> UniquePtr<#class_name>;
             }
 
@@ -220,7 +227,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
                 #(#rs_functions)*
 
-                #[cxx_name = #create_object_cpp]
+                #[cxx_name = #create_object_cpp_str]
                 fn #create_object_ident() -> Box<#rust_class_name>;
             }
         }
@@ -278,7 +285,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
     for property in &obj.properties {
         // Cache the property name and type
-        let property_ident = &property.ident;
+        let property_ident = &property.ident.rust_ident;
         let type_idents = &property.type_ident.idents;
 
         // Only add Rust getters and setters if we are not a special case of a pointer
@@ -569,6 +576,24 @@ mod tests {
         let qobject = extract_qobject(module).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_custom_default.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_basic_ident_changes() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_ident_changes.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_ident_changes.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();

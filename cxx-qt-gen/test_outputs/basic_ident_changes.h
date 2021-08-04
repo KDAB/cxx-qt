@@ -7,17 +7,27 @@ class MyObjectRs;
 class MyObject : public CxxQObject
 {
   Q_OBJECT
+  Q_PROPERTY(
+    int myNumber READ getMyNumber WRITE setMyNumber NOTIFY myNumberChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  Q_INVOKABLE int doubleNumber(int number) const;
-  Q_INVOKABLE QString helloMessage(const QString& msg) const;
-  Q_INVOKABLE QString staticMessage() const;
+  int getMyNumber() const;
+
+  Q_INVOKABLE void sayBye() const;
+
+public Q_SLOTS:
+  void setMyNumber(int value);
+
+Q_SIGNALS:
+  void myNumberChanged();
 
 private:
   rust::Box<MyObjectRs> m_rustObj;
+
+  int m_myNumber;
 };
 
 std::unique_ptr<MyObject>

@@ -53,7 +53,7 @@ TestCase {
         compare(spyString.count, 0);
 
         // Test initial values from serialization
-        const data = myData.as_json_str();
+        const data = myData.asJsonStr();
         compare(data, `{"number":4,"string":"Hello World!"}`);
 
         // Change some values
@@ -66,7 +66,7 @@ TestCase {
         compare(spyString.count, 1);
 
         // Test these new values appear in the serialization
-        const newData = myData.as_json_str();
+        const newData = myData.asJsonStr();
         compare(newData, `{"number":2,"string":"Test!"}`);
     }
 }

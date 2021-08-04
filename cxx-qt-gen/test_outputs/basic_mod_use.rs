@@ -16,6 +16,7 @@ mod my_object {
         extern "Rust" {
             type MyObjectRs;
 
+            #[cxx_name = "invokable"]
             fn invokable(self: &MyObjectRs);
 
             #[cxx_name = "getNumber"]

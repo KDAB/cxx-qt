@@ -50,15 +50,15 @@ Window {
         Button {
             text: "Increment Number"
 
-            onClicked: myObject.number = myObject.increment_number(myObject.number)
+            onClicked: myObject.number = myObject.incrementNumber(myObject.number)
         }
 
         Button {
             text: "Print Data"
 
-            onClicked: console.warn(myData.as_json_str())
+            onClicked: console.warn(myData.asJsonStr())
         }
     }
 
-    Component.onCompleted: myObject.say_hi(myObject.string, myObject.number)
+    Component.onCompleted: myObject.sayHi(myObject.string, myObject.number)
 }

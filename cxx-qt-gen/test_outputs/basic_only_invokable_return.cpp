@@ -9,21 +9,21 @@ MyObject::MyObject(QObject* parent)
 MyObject::~MyObject() = default;
 
 int
-MyObject::double_number(int number) const
+MyObject::doubleNumber(int number) const
 {
-  return m_rustObj->double_number(number);
+  return m_rustObj->doubleNumber(number);
 }
 
 QString
-MyObject::hello_message(const QString& msg) const
+MyObject::helloMessage(const QString& msg) const
 {
-  return rustStringToQString(m_rustObj->hello_message(qStringToRustStr(msg)));
+  return rustStringToQString(m_rustObj->helloMessage(qStringToRustStr(msg)));
 }
 
 QString
-MyObject::static_message() const
+MyObject::staticMessage() const
 {
-  return rustStrToQString(m_rustObj->static_message());
+  return rustStrToQString(m_rustObj->staticMessage());
 }
 
 std::unique_ptr<MyObject>

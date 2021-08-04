@@ -14,13 +14,13 @@ mod my_object {
         extern "Rust" {
             type MyObjectRs;
 
-            #[cxx_name = "invokable"]
-            fn invokable(self: &MyObjectRs);
+            #[cxx_name = "sayBye"]
+            fn say_bye(self: &MyObjectRs);
 
-            #[cxx_name = "getNumber"]
-            fn number(self: &MyObjectRs) -> &i32;
-            #[cxx_name = "setNumber"]
-            fn set_number(self: &mut MyObjectRs, value: i32);
+            #[cxx_name = "getMyNumber"]
+            fn my_number(self: &MyObjectRs) -> &i32;
+            #[cxx_name = "setMyNumber"]
+            fn set_my_number(self: &mut MyObjectRs, value: i32);
 
             #[cxx_name = "createMyObjectRs"]
             fn create_my_object_rs() -> Box<MyObjectRs>;
@@ -29,30 +29,34 @@ mod my_object {
 
     pub type CppObj = ffi::MyObject;
 
+    #[derive(Default)]
     struct MyObjectRs {
-        number: i32,
+        my_number: i32,
     }
 
     impl MyObjectRs {
-        fn invokable(&self) {}
-
-        fn number(self: &MyObjectRs) -> &i32 {
-            &self.number
+        fn say_bye(&self) {
+            println!("Bye from Rust!");
         }
 
-        fn set_number(self: &mut MyObjectRs, value: i32) {
-            self.number = value;
+        fn my_number(self: &MyObjectRs) -> &i32 {
+            &self.my_number
+        }
+
+        fn set_my_number(self: &mut MyObjectRs, value: i32) {
+            self.my_number = value;
         }
     }
 
+    #[derive(Default)]
     struct MyObjectData {
-        number: i32,
+        my_number: i32,
     }
 
     impl From<MyObjectData> for MyObjectRs {
         fn from(value: MyObjectData) -> Self {
             Self {
-                number: value.number,
+                my_number: value.my_number,
             }
         }
     }
@@ -60,14 +64,8 @@ mod my_object {
     impl From<&MyObjectRs> for MyObjectData {
         fn from(value: &MyObjectRs) -> Self {
             Self {
-                number: value.number.clone(),
+                my_number: value.my_number.clone(),
             }
-        }
-    }
-
-    impl Default for MyObjectRs {
-        fn default() -> Self {
-            Self { number: 32 }
         }
     }
 

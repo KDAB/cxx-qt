@@ -41,15 +41,15 @@ MyObject::setString(const QString& value)
 }
 
 void
-MyObject::say_hi(const QString& string, int number) const
+MyObject::sayHi(const QString& string, int number) const
 {
-  m_rustObj->say_hi(qStringToRustStr(string), number);
+  m_rustObj->sayHi(qStringToRustStr(string), number);
 }
 
 void
-MyObject::say_bye() const
+MyObject::sayBye() const
 {
-  m_rustObj->say_bye();
+  m_rustObj->sayBye();
 }
 
 std::unique_ptr<MyObject>

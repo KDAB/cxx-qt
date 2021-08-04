@@ -18,12 +18,12 @@
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
   MyObject obj;
-  obj.say_hi(QStringLiteral("Hello World!"), 32);
+  obj.sayHi(QStringLiteral("Hello World!"), 32);
 
   SubObject sub;
 
   // Check that an invokable can be called and the return value is correct
-  const auto value = obj.double_number(32);
+  const auto value = obj.doubleNumber(32);
   qInfo() << "Double of 32 is:" << value;
   CHECK(value == 64);
 
@@ -85,6 +85,6 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
   CHECK(data.getString() == QStringLiteral("Hello"));
 
   // Check that initial value of the deserialised data
-  CHECK(data.as_json_str() ==
+  CHECK(data.asJsonStr() ==
         QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
 }
