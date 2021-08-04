@@ -24,7 +24,7 @@ MyObject::setNumber(int value)
   }
 }
 
-QString
+const QString&
 MyObject::getString() const
 {
   return m_string;

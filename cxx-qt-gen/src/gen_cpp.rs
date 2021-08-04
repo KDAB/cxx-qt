@@ -386,6 +386,9 @@ fn generate_properties_cpp(
         let ident_setter = property.setter.as_ref().unwrap().cpp_ident.to_string();
         let ident_changed = property.notify.as_ref().unwrap().cpp_ident.to_string();
 
+        // We shouldn't currently have a case where ref and ptr together makes any sense
+        assert!(!(parameter.type_ident.is_ref() && parameter.type_ident.is_ptr()));
+
         // Build the C++ strings for whether the const, ref, and ptr are set for this property
         let is_const = if parameter.type_ident.is_const() {
             "const"
@@ -423,9 +426,11 @@ fn generate_properties_cpp(
                 type_ident = type_ident,
             )],
             // Set basic getter, more are added later for only pointer
-            header_public: vec![format!("{type_ident}{is_ptr} {ident_getter}() const;",
+            header_public: vec![format!("{is_const} {type_ident}{is_ptr}{is_ref} {ident_getter}() const;",
                 ident_getter = ident_getter,
+                is_const = is_const,
                 is_ptr = is_ptr,
+                is_ref = is_ref,
                 type_ident = type_ident,
             )],
             // Set the notify signals
@@ -457,7 +462,7 @@ fn generate_properties_cpp(
             // Note that the setter is different to the non-pointer source
             cpp_property.source.push(formatdoc! {
                 r#"
-                {type_ident}{is_ptr}
+                {is_const} {type_ident}{is_ptr}{is_ref}
                 {struct_ident}::{ident_getter}() const
                 {{
                     return {member_ident};
@@ -549,7 +554,7 @@ fn generate_properties_cpp(
         } else {
             cpp_property.source.push(formatdoc! {
                 r#"
-                {type_ident}{is_ptr}
+                {is_const} {type_ident}{is_ptr}{is_ref}
                 {struct_ident}::{ident_getter}() const
                 {{
                     return {member_ident};

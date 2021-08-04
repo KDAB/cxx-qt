@@ -15,7 +15,7 @@ public:
   ~MyObject();
 
   int getNumber() const;
-  QString getString() const;
+  const QString& getString() const;
 
 public Q_SLOTS:
   void setNumber(int value);

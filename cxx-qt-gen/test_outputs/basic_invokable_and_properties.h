@@ -15,7 +15,7 @@ public:
   ~MyObject();
 
   int getNumber() const;
-  QString getString() const;
+  const QString& getString() const;
 
   Q_INVOKABLE void say_hi(const QString& string, int number) const;
   Q_INVOKABLE void say_bye() const;
