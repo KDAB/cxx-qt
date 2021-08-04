@@ -154,6 +154,10 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
 fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream> {
     let mut invokables = Vec::new();
 
+    // TODO: we need to set up an exclude list of invokable names and give
+    // the user an error if they use one of those names.
+    // This is to avoid name collisions with CxxQObject standard functions.
+
     // Process each impl item and turn into an Invokable or error
     for item in items {
         // Check if this item is a method
@@ -264,6 +268,10 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
 /// Extracts all the attributes from a struct and generates properties from them
 fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
     let mut properties = Vec::new();
+
+    // TODO: we need to set up an exclude list of properties names and give
+    // the user an error if they use one of those names.
+    // For instance "rustObj" is not allowed as that would cause a collision.
 
     // Read the properties from the struct
     //

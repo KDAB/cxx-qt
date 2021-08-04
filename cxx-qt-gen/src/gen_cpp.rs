@@ -618,6 +618,15 @@ fn generate_properties_cpp(
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
             });
+
+            // Own the member on the C++ side
+            // TODO: start using these in the getters and setters
+            // TODO: remove Rust side ownership
+            cpp_property.header_members.push(format!(
+                "{type_ident} m_{ident};",
+                ident = parameter.ident,
+                type_ident = type_ident
+            ));
         }
 
         items.push(cpp_property);

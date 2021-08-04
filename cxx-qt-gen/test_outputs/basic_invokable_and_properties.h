@@ -30,6 +30,9 @@ Q_SIGNALS:
 
 private:
   rust::Box<MyObjectRs> m_rustObj;
+
+  int m_number;
+  QString m_string;
 };
 
 std::unique_ptr<MyObject>
