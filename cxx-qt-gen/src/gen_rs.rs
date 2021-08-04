@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use convert_case::{Case, Casing};
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 
 use crate::extract::{QObject, QtTypes};
@@ -14,6 +14,8 @@ use crate::utils::is_type_ident_ptr;
 trait RustType {
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
+    /// The ident of the type when used as a parameter on a function
+    fn param_type_ident(&self) -> Ident;
 }
 
 impl RustType for QtTypes {
@@ -22,6 +24,15 @@ impl RustType for QtTypes {
         match self {
             Self::Str | Self::String => true,
             _others => false,
+        }
+    }
+    /// The ident of the type when used as a parameter on a function
+    fn param_type_ident(&self) -> Ident {
+        match self {
+            Self::I32 => format_ident!("i32"),
+            Self::Str | Self::String => format_ident!("QString"),
+            // Pointer types should not use this function
+            _others => unreachable!(),
         }
     }
 }
@@ -130,6 +141,10 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         // Cache the type of the property
         let type_idents = &property.type_ident.idents;
 
+        // cache the snake and pascal case
+        let property_ident_snake = property.ident.rust_ident.to_string().to_case(Case::Snake);
+        let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
+
         // This type is a pointer, so special case the C++ functions and no Rust functions
         if is_type_ident_ptr(type_idents) {
             // Check that type_idents is not empty
@@ -159,10 +174,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 type #ptr_class_name = #(#type_idents_ffi)::*;
             });
 
-            // cache the snake and pascal case
-            let property_ident_snake = property.ident.rust_ident.to_string().to_case(Case::Snake);
-            let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
-
             // Build the C++ method declarations names
             let getter_str = format!("take_{}", property_ident_snake);
             let getter_cpp = format_ident!("take{}", property_ident_pascal);
@@ -180,8 +191,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         } else {
             // Build the getter
             //
-            // TODO: do we need the setter on the cpp side?
-            //
             // TODO: what should happen with refs in the type here?
             // do we always return a ref of the same type as the property?
             if let Some(getter) = &property.getter {
@@ -195,8 +204,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
             // Build the setter
             //
-            // TODO: do we need the setter on the cpp side?
-            //
             // TODO: what should happen with refs in the type here?
             // do we always take by value of the same type as the property?
             if let Some(setter) = &property.setter {
@@ -207,6 +214,28 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                     fn #setter_ident(self: &mut #rust_class_name, value: #(#type_idents)::*);
                 });
             }
+
+            // Build the C++ method declarations names
+            let getter_str = &property_ident_snake;
+            let getter_cpp = format_ident!("get{}", property_ident_pascal);
+            let setter_str = format!("set_{}", property_ident_snake);
+            let setter_cpp = format_ident!("set{}", property_ident_pascal);
+
+            let qt_type = &property.type_ident.qt_type;
+            let param_type = qt_type.param_type_ident();
+            let param_type = if qt_type.is_ref() {
+                quote! {&#param_type}
+            } else {
+                quote! {#param_type}
+            };
+
+            // Add the getter and setter to C++ bridge
+            cpp_functions.push(quote! {
+                #[rust_name = #getter_str]
+                fn #getter_cpp(self: &#class_name) -> #param_type;
+                #[rust_name = #setter_str]
+                fn #setter_cpp(self: Pin<&mut #class_name>, value: #param_type);
+            });
         }
     }
 

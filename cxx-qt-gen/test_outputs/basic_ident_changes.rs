@@ -7,6 +7,11 @@ mod my_object {
             type MyObject;
             type QString = cxx_qt_lib::QString;
 
+            #[rust_name = "my_number"]
+            fn getMyNumber(self: &MyObject) -> i32;
+            #[rust_name = "set_my_number"]
+            fn setMyNumber(self: Pin<&mut MyObject>, value: i32);
+
             #[rust_name = "new_MyObject"]
             fn newMyObject() -> UniquePtr<MyObject>;
         }
