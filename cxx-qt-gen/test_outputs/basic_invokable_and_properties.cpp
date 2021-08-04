@@ -11,14 +11,14 @@ MyObject::~MyObject() = default;
 int
 MyObject::getNumber() const
 {
-  return m_rustObj->getNumber();
+  return m_number;
 }
 
 void
 MyObject::setNumber(int value)
 {
-  if (value != m_rustObj->getNumber()) {
-    m_rustObj->setNumber(value);
+  if (value != m_number) {
+    m_number = value;
 
     Q_EMIT numberChanged();
   }
@@ -27,15 +27,14 @@ MyObject::setNumber(int value)
 QString
 MyObject::getString() const
 {
-  return rustStringToQString(m_rustObj->getString());
+  return m_string;
 }
 
 void
 MyObject::setString(const QString& value)
 {
-  auto rustValue = qStringToRustString(value);
-  if (rustValue != m_rustObj->getString()) {
-    m_rustObj->setString(std::move(rustValue));
+  if (value != m_string) {
+    m_string = value;
 
     Q_EMIT stringChanged();
   }

@@ -21,6 +21,10 @@ enum CppTypes {
     Str,
 }
 
+// TODO: we probably want to remove convert_into_cpp and convert_into_rust
+// once we have completed the move to full C++ data ownership.
+// For now they are still required for invokables.
+
 /// A trait which CppTypes implements allowing retrieval of attributes of the enum value.
 trait CppType {
     /// Any converter that is required to convert this type into C++
@@ -375,10 +379,6 @@ fn generate_properties_cpp(
             type_ident: generate_type_cpp(&property.type_ident)?,
         };
 
-        // Collect the converters for the getter and setter of the property
-        let converter_getter = parameter.type_ident.convert_into_cpp();
-        let converter_setter = parameter.type_ident.convert_into_rust();
-
         // Collect the C++ idents for the getter, setter, notify of the property
         //
         // TODO: for now we assume that all properties have a getter/setter/notify
@@ -402,10 +402,6 @@ fn generate_properties_cpp(
         } else {
             ""
         };
-
-        // Build a getter for the rust property
-        // Cache this is here as potentially wrapped later and simplifies that code
-        let rust_getter = format!("m_rustObj->{ident_getter}()", ident_getter = ident_getter);
 
         // Cache the type ident of the property as this is used multiple times
         let type_ident = parameter.type_ident.type_ident();
@@ -469,7 +465,7 @@ fn generate_properties_cpp(
 
                 void
                 {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value)
-                {{{converter_setter}
+                {{
                     if (value != {member_ident}) {{
                         if ({member_owned_ident}) {{
                             {member_owned_ident}.reset();
@@ -481,14 +477,6 @@ fn generate_properties_cpp(
                     }}
                 }}
                 "#,
-                // Build a converter which creates rustValue if required
-                converter_setter = if let Some(converter_ident) = converter_setter {
-                    format!("auto rustValue = {converter_ident}(value);",
-                        converter_ident = converter_ident,
-                    )
-                } else {
-                    "".to_owned()
-                },
                 ident_changed = ident_changed,
                 ident_getter = ident_getter,
                 ident_setter = ident_setter,
@@ -559,56 +547,24 @@ fn generate_properties_cpp(
                 type_ident = type_ident,
             ));
         } else {
-            // TODO: {converter_setter} needs to start on the same line as the { so that when
-            // there is no converter we don't have an empty line at the start of the setter.
-            // As clang-format doesn't remove this empty line. Is there a better way ?
             cpp_property.source.push(formatdoc! {
                 r#"
                 {type_ident}{is_ptr}
                 {struct_ident}::{ident_getter}() const
                 {{
-                    {converter_getter}
+                    return {member_ident};
                 }}
 
                 void
                 {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value)
-                {{{converter_setter}
-                    if ({converter_setter_ident} != m_rustObj->{ident_getter}()) {{
-                        m_rustObj->{ident_setter}({converter_setter_ident_move});
+                {{
+                    if (value != {member_ident}) {{
+                        {member_ident} = value;
 
                         Q_EMIT {ident_changed}();
                     }}
                 }}
                 "#,
-                converter_getter = if let Some(converter_ident) = converter_getter {
-                    format!("return {converter_ident}({value});",
-                        converter_ident = converter_ident,
-                        value = rust_getter,
-                    )
-                } else {
-                    format!("return {rust_getter};", rust_getter = rust_getter)
-                },
-                // Build a converter which creates rustValue if required
-                converter_setter = if let Some(converter_ident) = converter_setter {
-                    format!("auto rustValue = {converter_ident}(value);",
-                        converter_ident = converter_ident,
-                    )
-                } else {
-                    "".to_owned()
-                },
-                // Determine if we should be using rustValue or value
-                converter_setter_ident = if converter_setter.is_some() {
-                    "rustValue"
-                } else {
-                    "value"
-                },
-                // If there is a setter converter then it means we have created a named variable
-                // so then we should use std::move
-                converter_setter_ident_move = if converter_setter.is_some() {
-                    "std::move(rustValue)"
-                } else {
-                    "value"
-                },
                 ident_changed = ident_changed,
                 ident_getter = ident_getter,
                 ident_setter = ident_setter,
@@ -617,6 +573,7 @@ fn generate_properties_cpp(
                 is_ptr = is_ptr,
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
+                member_ident = format!("m_{}", parameter.ident),
             });
 
             // Own the member on the C++ side
