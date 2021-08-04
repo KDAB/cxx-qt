@@ -7,8 +7,24 @@ use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 
-use crate::extract::QObject;
+use crate::extract::{QObject, QtTypes};
 use crate::utils::is_type_ident_ptr;
+
+/// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
+trait RustType {
+    /// Whether this type is a reference
+    fn is_ref(&self) -> bool;
+}
+
+impl RustType for QtTypes {
+    /// Whether this type should be a reference when used in Rust methods
+    fn is_ref(&self) -> bool {
+        match self {
+            Self::Str | Self::String => true,
+            _others => false,
+        }
+    }
+}
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
 pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
