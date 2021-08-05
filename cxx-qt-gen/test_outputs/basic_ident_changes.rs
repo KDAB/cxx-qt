@@ -22,11 +22,6 @@ mod my_object {
             #[cxx_name = "sayBye"]
             fn say_bye(self: &MyObjectRs);
 
-            #[cxx_name = "getMyNumber"]
-            fn my_number(self: &MyObjectRs) -> &i32;
-            #[cxx_name = "setMyNumber"]
-            fn set_my_number(self: &mut MyObjectRs, value: i32);
-
             #[cxx_name = "createMyObjectRs"]
             fn create_my_object_rs() -> Box<MyObjectRs>;
         }

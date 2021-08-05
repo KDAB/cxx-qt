@@ -189,32 +189,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             });
         // This is a normal primitive type so add Rust getters and setters
         } else {
-            // Build the getter
-            //
-            // TODO: what should happen with refs in the type here?
-            // do we always return a ref of the same type as the property?
-            if let Some(getter) = &property.getter {
-                let getter_ident = &getter.rust_ident;
-                let getter_cpp_ident_str = getter.cpp_ident.to_string();
-                rs_functions.push(quote! {
-                    #[cxx_name = #getter_cpp_ident_str]
-                    fn #getter_ident(self: &#rust_class_name) -> &#(#type_idents)::*;
-                });
-            }
-
-            // Build the setter
-            //
-            // TODO: what should happen with refs in the type here?
-            // do we always take by value of the same type as the property?
-            if let Some(setter) = &property.setter {
-                let setter_ident = &setter.rust_ident;
-                let setter_cpp_ident_str = setter.cpp_ident.to_string();
-                rs_functions.push(quote! {
-                    #[cxx_name = #setter_cpp_ident_str]
-                    fn #setter_ident(self: &mut #rust_class_name, value: #(#type_idents)::*);
-                });
-            }
-
             // Build the C++ method declarations names
             let getter_str = &property_ident_snake;
             let getter_cpp = format_ident!("get{}", property_ident_pascal);
