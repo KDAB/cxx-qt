@@ -18,6 +18,11 @@
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
   MyObject obj;
+
+  // TODO: fix this test once we have the "Data" struct ready
+  // TODO: this should not be required as derive(Default) should do this
+  obj.setNumber(0);
+
   obj.sayHi(QStringLiteral("Hello World!"), 32);
 
   SubObject sub;
@@ -31,6 +36,7 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   QSignalSpy numberSpy(&obj, &MyObject::numberChanged);
   QSignalSpy stringSpy(&obj, &MyObject::stringChanged);
   QSignalSpy subSpy(&obj, &MyObject::subChanged);
+  QSignalSpy subNumberSpy(&sub, &SubObject::numberChanged);
 
   // Check the number property
   CHECK(obj.getNumber() == 0);
@@ -46,12 +52,34 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(stringSpy.count() == 1);
   CHECK(obj.getString() == QStringLiteral("Hello"));
 
+  // Check the double number self
+  CHECK(obj.getNumber() == 16);
+  CHECK(numberSpy.count() == 1);
+  obj.doubleNumberSelf();
+  CHECK(obj.getNumber() == 32);
+  CHECK(numberSpy.count() == 2);
+
   // Check the sub property
   CHECK(obj.getSub() == nullptr);
   CHECK(subSpy.count() == 0);
   obj.setSub(&sub);
   CHECK(subSpy.count() == 1);
   CHECK(obj.getSub() == &sub);
+
+  // Check the sub increment number self
+  sub.setNumber(1);
+  CHECK(sub.getNumber() == 1);
+  CHECK(subNumberSpy.count() == 1);
+  sub.incrementNumberSelf();
+  CHECK(sub.getNumber() == 2);
+  CHECK(subNumberSpy.count() == 2);
+
+  // Check the double number sub
+  CHECK(sub.getNumber() == 2);
+  CHECK(subNumberSpy.count() == 2);
+  obj.doubleNumberSub(&sub);
+  CHECK(sub.getNumber() == 4);
+  CHECK(subNumberSpy.count() == 3);
 
   qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
 }

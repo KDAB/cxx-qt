@@ -6,14 +6,20 @@
 use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
+use std::collections::HashSet;
+use syn::spanned::Spanned;
 
 use crate::extract::{QObject, QtTypes};
 use crate::utils::is_type_ident_ptr;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
+    /// Whether this type is a Pin<T>
+    fn is_pin(&self) -> bool;
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
+    /// Whether this type is a this (eg the T in Pin<T>)
+    fn is_this(&self) -> bool;
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
@@ -21,10 +27,27 @@ trait RustType {
 }
 
 impl RustType for QtTypes {
+    /// Whether this type is a Pin<T>, this is used to find args to rename Pin to std::pin::Pin
+    fn is_pin(&self) -> bool {
+        match self {
+            Self::Pin { .. } => true,
+            _others => false,
+        }
+    }
+
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
+            Self::Pin { .. } => unreachable!(),
             Self::Str | Self::String => true,
+            _others => false,
+        }
+    }
+
+    /// Whether this type is_this, this is used to determine if the type needs to be rewritten
+    fn is_this(&self) -> bool {
+        match self {
+            Self::Pin { is_this, .. } => is_this == &true,
             _others => false,
         }
     }
@@ -33,9 +56,10 @@ impl RustType for QtTypes {
     fn param_type_ident(&self) -> Ident {
         match self {
             Self::I32 => format_ident!("i32"),
-            Self::Str | Self::String => format_ident!("QString"),
+            Self::Pin { .. } => unreachable!(),
             // Pointer types do not use this function (TODO: yet?)
             Self::Ptr { .. } => unreachable!(),
+            Self::Str | Self::String => format_ident!("QString"),
         }
     }
 
@@ -43,11 +67,12 @@ impl RustType for QtTypes {
     fn full_param_type(&self) -> TokenStream {
         match self {
             Self::I32 => quote! {i32},
-            Self::Str | Self::String => quote! {cxx_qt_lib::QString},
+            Self::Pin { .. } => unreachable!(),
             Self::Ptr { ident_str } => {
                 let ident = format_ident!("{}", ident_str);
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
+            Self::Str | Self::String => quote! {cxx_qt_lib::QString},
         }
     }
 }
@@ -65,7 +90,39 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     // Lists of functions we generate for the CXX bridge
     let mut cpp_functions = Vec::new();
+    let mut cpp_types = HashSet::new();
     let mut rs_functions = Vec::new();
+
+    // Closure which allows for adding a type to cpp functions but ensures no duplicates
+    let cpp_types_push_unique = |cpp_functions: &mut Vec<TokenStream>,
+                                 cpp_types: &mut HashSet<String>,
+                                 ptr_class_name: &Ident,
+                                 type_idents_ffi: Vec<Ident>| {
+        if !cpp_types.contains(&ptr_class_name.to_string()) {
+            cpp_functions.push(quote! {
+                type #ptr_class_name = #(#type_idents_ffi)::*;
+            });
+
+            cpp_types.insert(ptr_class_name.to_string());
+        }
+    };
+    // Closure which retrieves Object from crate::module::Object and swaps to crate::module::CppObj
+    let type_idents_to_ptr_class_name_and_ffi_type = |type_idents: &Vec<Ident>| {
+        // Build the class name of the pointer, eg Object in crate::module::Object
+        //
+        // We can assume that unwrap will work here as we have checked that type_idents is not empty
+        let ptr_class_name = type_idents.last().unwrap().clone();
+
+        // Swap the last type segment to be CppObj
+        // so that crate::module::Object becomes crate::module::CppObj
+        //
+        // As we will generate a public type which points to the ffi type at the module level
+        let mut type_idents_ffi = type_idents.clone();
+        type_idents_ffi.pop();
+        type_idents_ffi.push(format_ident!("CppObj"));
+
+        (ptr_class_name, type_idents_ffi)
+    };
 
     // Invokables are only added to extern rust side
     //
@@ -116,18 +173,61 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
             for p in parameters {
                 // Cache the name and type
                 let ident = &p.ident;
-                let type_idents = &p.type_ident.idents;
 
-                // Determine if the type is a ref
-                if p.type_ident.is_ref {
-                    parameters_quotes.push(quote! {
-                        #ident: &#(#type_idents)::*
-                    });
-                } else {
-                    parameters_quotes.push(quote! {
-                        #ident: #(#type_idents)::*
-                    });
-                }
+                // If the type is Pin<T> then we need to change extract differently
+                match &p.type_ident.qt_type {
+                    QtTypes::Pin {
+                        is_mut,
+                        is_this,
+                        type_idents,
+                        ..
+                    } => {
+                        // If the Pin<T> is to our own type, then we refer to the C++ class name
+                        // not the external crate (when it is a sub object)
+                        if *is_this {
+                            if *is_mut {
+                                parameters_quotes.push(quote! { #ident: Pin<&mut #class_name> });
+                            } else {
+                                parameters_quotes.push(quote! { #ident: Pin<&#class_name> });
+                            }
+                        } else {
+                            // Retrieve Object from crate::module::Object and swap to crate::module::CppObj
+                            let (ptr_class_name, type_idents_ffi) =
+                                type_idents_to_ptr_class_name_and_ffi_type(type_idents);
+
+                            // Add type definition for the struct name we are a Pin for to the Rust bridge
+                            //
+                            // Ensure that we only do this once
+                            cpp_types_push_unique(
+                                &mut cpp_functions,
+                                &mut cpp_types,
+                                &ptr_class_name,
+                                type_idents_ffi,
+                            );
+
+                            if *is_mut {
+                                parameters_quotes
+                                    .push(quote! { #ident: Pin<&mut #ptr_class_name> });
+                            } else {
+                                parameters_quotes.push(quote! { #ident: Pin<&#ptr_class_name> });
+                            }
+                        }
+                    }
+                    _others => {
+                        let type_idents = &p.type_ident.idents;
+
+                        // Determine if the type is a ref
+                        if p.type_ident.is_ref {
+                            parameters_quotes.push(quote! {
+                                #ident: &#(#type_idents)::*
+                            });
+                        } else {
+                            parameters_quotes.push(quote! {
+                                #ident: #(#type_idents)::*
+                            });
+                        }
+                    }
+                };
             }
 
             // Determine if there is a return type and if it's a reference
@@ -176,23 +276,19 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 .to_compile_error());
             }
 
-            // Build the class name of the pointer, eg Object in crate::module::Object
-            //
-            // We can assume that unwrap will work here as we have checked that type_idents is not empty
-            let ptr_class_name = type_idents.last().unwrap();
-
-            // Swap the last type segment to be CppObj
-            // so that crate::module::Object becomes crate::module::CppObj
-            //
-            // As we will generate a public type which points to the ffi type at the module level
-            let mut type_idents_ffi = type_idents.clone();
-            type_idents_ffi.pop();
-            type_idents_ffi.push(format_ident!("CppObj"));
+            // Retrieve Object from crate::module::Object and swap to crate::module::CppObj
+            let (ptr_class_name, type_idents_ffi) =
+                type_idents_to_ptr_class_name_and_ffi_type(type_idents);
 
             // Add type definition for the class name we are a pointer for to the C++ bridge
-            cpp_functions.push(quote! {
-                type #ptr_class_name = #(#type_idents_ffi)::*;
-            });
+            //
+            // Ensure that we only do this once
+            cpp_types_push_unique(
+                &mut cpp_functions,
+                &mut cpp_types,
+                &ptr_class_name,
+                type_idents_ffi,
+            );
 
             // Build the C++ method declarations names
             let getter_str = format!("take_{}", property_ident_snake);
@@ -551,7 +647,96 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let property_methods = generate_property_methods_rs(obj)?;
 
     // Capture original methods, trait impls, use decls so they can used by quote
-    let original_methods = obj.invokables.iter().map(|m| &m.original_method);
+    let original_methods = obj
+        .invokables
+        .iter()
+        .map(|m| {
+            // Find which arguments are using Pin<T>
+            let pin_args = m
+                .parameters
+                .iter()
+                .enumerate()
+                .filter(|(_, parameter)| parameter.type_ident.qt_type.is_pin())
+                .map(|(index, _)| index)
+                .collect::<Vec<usize>>();
+
+            let mut method = m.original_method.clone();
+            if !pin_args.is_empty() {
+                // Rewrite args
+                method
+                    .sig
+                    .inputs
+                    .iter_mut()
+                    // We can skip self as that's not in our parameters above
+                    //
+                    // TODO: note this assumes that the first argument is self
+                    .skip(1)
+                    // We only want to rewrite pinned args
+                    .enumerate()
+                    .filter(|(index, _)| pin_args.contains(index))
+                    // Rewrite the type
+                    //
+                    // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to CppObj
+                    .map(|(_, item)| {
+                        if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
+                            let ty_path;
+
+                            match ty.as_mut() {
+                                syn::Type::Path(ref mut path) => {
+                                    ty_path = path;
+                                }
+                                // TODO: do we support TypeReference for &Pin<T>?
+                                // Type::Reference(TypeReference { elem, .. }) => {
+                                //     // If the type is a path then extract it and mark is_ref
+                                //     if let Type::Path(path) = &**elem {
+                                //         ty_path = path;
+                                //     }
+                                // }
+                                //
+                                _others => return Err(syn::Error::new(
+                                    item.span(),
+                                    "Pin<T> argument must be a path, we do not support reference yet",
+                                )
+                                .to_compile_error()),
+                            }
+
+                            // Add std::pin to Pin
+                            ty_path.path.segments.insert(0, format_ident!("std").into());
+                            ty_path.path.segments.insert(1, format_ident!("pin").into());
+
+                            // From a::Pin<&b::T> we want Pin<&b::T> (we ultimately want to get to T)
+                            if let Some(segment) = ty_path.path.segments.last_mut() {
+                                // From Pin<&b::T> we want &b::T
+                                if let syn::PathArguments::AngleBracketed(arguments) =
+                                    &mut segment.arguments
+                                {
+                                    // From &b::T we want b::T
+                                    //
+                                    // TODO: do we need to support non reference? or will it always be reference?
+                                    if let Some(syn::GenericArgument::Type(syn::Type::Reference(
+                                        syn::TypeReference { elem, .. },
+                                    ))) = arguments.args.first_mut()
+                                    {
+                                        if let syn::Type::Path(arg_path) = &mut **elem {
+                                            // From b::T we want T
+                                            if let Some(segment) = arg_path.path.segments.last_mut()
+                                            {
+                                                // Always set last type in Pin<T> to CppObj
+                                                segment.ident = format_ident!("CppObj");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Ok(item)
+                    })
+                    .collect::<Result<Vec<_>, TokenStream>>()?;
+            }
+            Ok(method)
+        })
+        .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
+
     let original_trait_impls = &obj.original_trait_impls;
     let original_use_decls = &obj.original_use_decls;
 
@@ -559,7 +744,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let creator_fn = generate_rust_object_creator(obj)?;
 
     // Determine if we need an impl block on the renamed struct
-    let renamed_struct_impl = if original_methods.len() != 0 {
+    let renamed_struct_impl = if !original_methods.is_empty() {
         quote! {
             impl #rust_class_name {
                 #(#original_methods)*
@@ -789,6 +974,24 @@ mod tests {
     }
 
     #[test]
+    fn generates_basic_pin_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_pin_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_pin_invokable.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
     fn generates_subobject_property() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
@@ -798,6 +1001,24 @@ mod tests {
         let qobject = extract_qobject(module).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_property.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_subobject_pin_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_output = include_str!("../test_outputs/subobject_pin_invokable.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();

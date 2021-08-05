@@ -25,7 +25,7 @@ MyObject::setMyNumber(int value)
 }
 
 void
-MyObject::sayBye() const
+MyObject::sayBye()
 {
   m_rustObj->sayBye();
 }

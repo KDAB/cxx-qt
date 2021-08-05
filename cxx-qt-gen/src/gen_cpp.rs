@@ -17,6 +17,12 @@ use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
+    /// String representation of the const part of this type
+    fn as_const_str(&self) -> &str;
+    /// String representation of the pointer part of this type
+    fn as_ptr_str(&self) -> &str;
+    /// String representation of the ref part of this type
+    fn as_ref_str(&self) -> &str;
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str>;
     /// Any converter that is required to convert this type into rust
@@ -26,19 +32,51 @@ trait CppType {
     fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
-    /// Whether this type is a reference
-    fn is_ref(&self) -> bool;
+    /// Whether this type is a Pin<T>
+    fn is_pin(&self) -> bool;
     /// Whether this type is a pointer
     fn is_ptr(&self) -> bool;
+    /// Whether this type is a reference
+    fn is_ref(&self) -> bool;
+    /// Whether this type is a this (eg the T in Pin<T>)
+    fn is_this(&self) -> bool;
     /// The C++ type name of the CppType
     fn type_ident(&self) -> &str;
 }
 
 impl CppType for QtTypes {
+    /// String representation of the const part of this type
+    fn as_const_str(&self) -> &str {
+        if self.is_const() {
+            "const"
+        } else {
+            ""
+        }
+    }
+
+    /// String representation of the pointer part of this type
+    fn as_ptr_str(&self) -> &str {
+        if self.is_ptr() {
+            "*"
+        } else {
+            ""
+        }
+    }
+
+    /// String representation of the ref part of this type
+    fn as_ref_str(&self) -> &str {
+        if self.is_ref() {
+            "&"
+        } else {
+            ""
+        }
+    }
+
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Pin { .. } => None,
             Self::Ptr { .. } => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
@@ -49,6 +87,7 @@ impl CppType for QtTypes {
     fn convert_into_rust(&self) -> Option<&'static str> {
         match self {
             Self::I32 => None,
+            Self::Pin { .. } => None,
             Self::Ptr { .. } => None,
             Self::Str => Some("qStringToRustStr"),
             Self::String => Some("qStringToRustString"),
@@ -59,6 +98,15 @@ impl CppType for QtTypes {
     /// for example so that when Object uses SubObject it includes sub_object.h
     fn include_paths(&self) -> Vec<String> {
         match self {
+            // If we are Pin<T> not to "this" then include the T
+            Self::Pin {
+                is_this,
+                type_idents,
+                ..
+            } if is_this == &false && !type_idents.is_empty() => vec![format!(
+                "#include \"cxx-qt-gen/include/{}.h\"",
+                type_idents.last().unwrap().to_string().to_case(Case::Snake)
+            )],
             Self::Ptr { ident_str } => vec![format!(
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 ident_str.to_case(Case::Snake)
@@ -74,9 +122,28 @@ impl CppType for QtTypes {
     fn is_const(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
+        }
+    }
+
+    /// Whether this type is a Pin<T> this is then used in method definitions
+    /// to add *this to this or *arg to arg.
+    fn is_pin(&self) -> bool {
+        match self {
+            Self::Pin { .. } => true,
+            _others => false,
+        }
+    }
+
+    /// Whether this type is a pointer
+    fn is_ptr(&self) -> bool {
+        match self {
+            Self::Pin { .. } => true,
+            Self::Ptr { .. } => true,
+            _other => false,
         }
     }
 
@@ -91,17 +158,19 @@ impl CppType for QtTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::I32 => false,
+            Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
         }
     }
 
-    /// Whether this type is a pointer
-    fn is_ptr(&self) -> bool {
+    /// Whether this type is_this, this is used to determine if the ident is changed in method
+    /// definitions and if the parameter should be skipped in method declarations
+    fn is_this(&self) -> bool {
         match self {
-            Self::Ptr { .. } => true,
-            _other => false,
+            Self::Pin { is_this, .. } => is_this == &true,
+            _others => false,
         }
     }
 
@@ -109,6 +178,12 @@ impl CppType for QtTypes {
     fn type_ident(&self) -> &str {
         match self {
             Self::I32 => "int",
+            // Pin<T> where T is not is_this should use T as the CppType
+            Self::Pin {
+                ident_str, is_this, ..
+            } if is_this == &false => ident_str,
+            // Pin<T> where T is_this should not be used as a CppType argument as it's internal
+            Self::Pin { .. } => unreachable!(),
             Self::Ptr { ident_str } => ident_str,
             Self::Str => "QString",
             Self::String => "QString",
@@ -128,6 +203,8 @@ struct CppParameter<'a> {
 /// Describes a C++ invokable with header and source parts
 #[derive(Debug)]
 struct CppInvokable {
+    /// Any extra include that is required for the invokable
+    header_includes: Vec<String>,
     /// The header definition of the invokable
     header: String,
     /// The source implementation of the invokable
@@ -168,7 +245,15 @@ fn generate_parameters_cpp(parameters: &[Parameter]) -> Result<Vec<CppParameter>
     // Extract the ident and type_ident from each parameter
     for parameter in parameters {
         items.push(CppParameter {
-            ident: parameter.ident.to_string(),
+            // If the Pin<T> is "this" then we need to rename to using "this" as the ident
+            //
+            // Note the * for method definitions is added later when generating CppParameterHelper's
+            // We don't add the * here otherwise we'll have double * in the method declaration.
+            ident: if parameter.type_ident.qt_type.is_this() {
+                "this".to_owned()
+            } else {
+                parameter.ident.to_string()
+            },
             type_ident: &parameter.type_ident.qt_type,
         });
     }
@@ -189,9 +274,12 @@ fn generate_invokables_cpp(
         // This includes the const, ref, ptr, type, and ident of the parameter
         // eg this could be "const QString& string" or "MyObject* object"
         args: Vec<String>,
+        // These are a list of the include paths for the parameters types
+        // This is used for if a SubObject is in a parameter.
+        include_paths: Vec<String>,
         // These are a list of names of the parameters
         // If the parameter has a converter then it could be the name wrapped in a converted
-        // eg this could be "arg1" or "converter(arg1)"
+        // eg this could be "arg1" or "converter(arg1)" or "*this"
         names: Vec<String>,
     }
 
@@ -202,39 +290,48 @@ fn generate_invokables_cpp(
             .fold(
                 CppParameterHelper {
                     args: vec![],
+                    include_paths: vec![],
                     names: vec![],
                 },
                 |mut acc, parameter| {
-                    // Build the parameter as a type argument
-                    acc.args.push(format!(
-                        "{is_const} {type_ident}{is_ref}{is_ptr} {ident}",
-                        ident = parameter.ident,
-                        is_const = if parameter.type_ident.is_const() {
-                            "const"
-                        } else {
-                            ""
-                        },
-                        is_ref = if parameter.type_ident.is_ref() {
-                            "&"
-                        } else {
-                            ""
-                        },
-                        is_ptr = if parameter.type_ident.is_ptr() {
-                            "*"
-                        } else {
-                            ""
-                        },
-                        type_ident = parameter.type_ident.type_ident()
-                    ));
+                    // Only add to args if we are not is_this
+                    // Because we use *this and do not take an argument in the declaration
+                    //
+                    // If we are Pin<T> but not "this" then we can continue as normal as we want *T
+                    if !parameter.type_ident.is_this() {
+                        // Build the parameter as a type argument
+                        acc.args.push(format!(
+                            "{is_const} {type_ident}{is_ref}{is_ptr} {ident}",
+                            ident = parameter.ident,
+                            is_const = parameter.type_ident.as_const_str(),
+                            is_ref = parameter.type_ident.as_ref_str(),
+                            is_ptr = parameter.type_ident.as_ptr_str(),
+                            type_ident = parameter.type_ident.type_ident()
+                        ));
+
+                        // Add any includes paths for the type
+                        //
+                        // We do not need to do this when we are "this"
+                        acc.include_paths
+                            .append(&mut parameter.type_ident.include_paths());
+                    }
 
                     // Build the parameter names
+                    //
+                    // When a Pin<T> is used in a method we need to use *name to get a reference
+                    let param_ident = if parameter.type_ident.is_pin() {
+                        format!("*{}", parameter.ident)
+                    } else {
+                        parameter.ident
+                    };
+
                     if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
                         // If there is a converter then use it
                         acc.names
-                            .push(format!("{}({})", converter_ident, parameter.ident));
+                            .push(format!("{}({})", converter_ident, param_ident));
                     } else {
                         // No converter so use the same name
-                        acc.names.push(parameter.ident);
+                        acc.names.push(param_ident);
                     }
 
                     acc
@@ -266,16 +363,19 @@ fn generate_invokables_cpp(
 
         // Prepare the CppInvokable
         items.push(CppInvokable {
+            header_includes:  parameters.include_paths,
             // TODO: detect if method is const from whether we have &self or &mut self in rust
+            // TODO: also needs to consider if there is a Pin<&mut T> as we need non-const if
+            // we are passing *this across for cpp objects in rust.
             header: format!(
-                "Q_INVOKABLE {return_ident} {ident}({parameter_types}) const;",
+                "Q_INVOKABLE {return_ident} {ident}({parameter_types});",
                 ident = invokable.ident.cpp_ident.to_string(),
                 parameter_types = parameter_arg_line,
                 return_ident = return_ident,
             ),
             source: formatdoc! {
                 r#"
-                {return_ident} {struct_ident}::{ident}({parameter_types}) const
+                {return_ident} {struct_ident}::{ident}({parameter_types})
                 {{
                     {body};
                 }}
@@ -326,21 +426,9 @@ fn generate_properties_cpp(
         assert!(!(parameter.type_ident.is_ref() && parameter.type_ident.is_ptr()));
 
         // Build the C++ strings for whether the const, ref, and ptr are set for this property
-        let is_const = if parameter.type_ident.is_const() {
-            "const"
-        } else {
-            ""
-        };
-        let is_ref = if parameter.type_ident.is_ref() {
-            "&"
-        } else {
-            ""
-        };
-        let is_ptr = if parameter.type_ident.is_ptr() {
-            "*"
-        } else {
-            ""
-        };
+        let is_const = parameter.type_ident.as_const_str();
+        let is_ref = parameter.type_ident.as_ref_str();
+        let is_ptr = parameter.type_ident.as_ptr_str();
 
         // Cache the type ident of the property as this is used multiple times
         let type_ident = parameter.type_ident.type_ident();
@@ -576,19 +664,22 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // A helper which allows us to flatten data from vec of invokables
     struct CppInvokableHelper {
+        headers_includes: Vec<String>,
         headers: Vec<String>,
         sources: Vec<String>,
     }
 
     // Build CppInvokable's for the object, then drain them into our CppInvokableHelper
-    let invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
+    let mut invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
         .drain(..)
         .fold(
             CppInvokableHelper {
+                headers_includes: vec![],
                 headers: vec![],
                 sources: vec![],
             },
-            |mut acc, invokable| {
+            |mut acc, mut invokable| {
+                acc.headers_includes.append(&mut invokable.header_includes);
                 acc.headers.push(invokable.header);
                 acc.sources.push(invokable.source);
                 acc
@@ -626,7 +717,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         #include "rust/cxx_qt.h"
 
-        {properties_includes}
+        {includes}
 
         class {rust_struct_ident};
 
@@ -657,7 +748,14 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     ident = struct_ident_str,
     invokables = invokables.headers.join("\n"),
     members_private = properties.headers_members.join("\n"),
-    properties_includes = properties.headers_includes.join("\n"),
+    includes = {
+        let mut includes = properties.headers_includes;
+        includes.append(&mut invokables.headers_includes);
+        // Sort and remove duplicates
+        includes.sort();
+        includes.dedup();
+        includes.join("\n")
+    },
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
     rust_struct_ident = rust_struct_ident_str,
@@ -814,6 +912,24 @@ mod tests {
     }
 
     #[test]
+    fn generates_basic_pin_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_pin_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/basic_pin_invokable.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/basic_pin_invokable.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
     fn generates_subobject_property() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
@@ -826,6 +942,24 @@ mod tests {
             clang_format(include_str!("../test_outputs/subobject_property.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/subobject_property.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_subobject_pin_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/subobject_pin_invokable.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/subobject_pin_invokable.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

@@ -16,7 +16,7 @@ public:
 
   int getMyNumber() const;
 
-  Q_INVOKABLE void sayBye() const;
+  Q_INVOKABLE void sayBye();
 
 public Q_SLOTS:
   void setMyNumber(int value);

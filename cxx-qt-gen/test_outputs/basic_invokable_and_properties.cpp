@@ -41,13 +41,13 @@ MyObject::setString(const QString& value)
 }
 
 void
-MyObject::sayHi(const QString& string, int number) const
+MyObject::sayHi(const QString& string, int number)
 {
   m_rustObj->sayHi(qStringToRustStr(string), number);
 }
 
 void
-MyObject::sayBye() const
+MyObject::sayBye()
 {
   m_rustObj->sayBye();
 }

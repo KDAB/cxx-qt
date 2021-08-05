@@ -18,6 +18,16 @@ mod my_object {
     }
 
     impl MyObject {
+        fn double_number_self(&self, cpp: Pin<&mut CppObj>) {
+            let value = cpp.number() * 2;
+            cpp.set_number(value);
+        }
+
+        fn double_number_sub(&self, sub: Pin<&mut crate::sub::sub_object::SubObject>) {
+            let value = sub.number() * 2;
+            sub.set_number(value);
+        }
+
         fn double_number(&self, number: i32) -> i32 {
             number * 2
         }

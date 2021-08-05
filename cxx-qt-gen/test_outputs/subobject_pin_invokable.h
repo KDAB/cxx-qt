@@ -2,6 +2,8 @@
 
 #include "rust/cxx_qt.h"
 
+#include "cxx-qt-gen/include/sub_object.h"
+
 class MyObjectRs;
 
 class MyObject : public CxxQObject
@@ -12,9 +14,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  Q_INVOKABLE int doubleNumber(int number);
-  Q_INVOKABLE QString helloMessage(const QString& msg);
-  Q_INVOKABLE QString staticMessage();
+  Q_INVOKABLE void subTest(SubObject* sub);
 
 private:
   rust::Box<MyObjectRs> m_rustObj;

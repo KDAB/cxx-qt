@@ -17,8 +17,8 @@ public:
   int getNumber() const;
   const QString& getString() const;
 
-  Q_INVOKABLE void sayHi(const QString& string, int number) const;
-  Q_INVOKABLE void sayBye() const;
+  Q_INVOKABLE void sayHi(const QString& string, int number);
+  Q_INVOKABLE void sayBye();
 
 public Q_SLOTS:
   void setNumber(int value);

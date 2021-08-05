@@ -40,6 +40,23 @@ TestCase {
         compare(myObject.incrementNumber(1), 2);
     }
 
+    function test_increment_self() {
+        const myObject = createTemporaryObject(componentMyObject, null, {
+            number: 1,
+        });
+        myObject.incrementNumberSelf();
+        compare(myObject.number, 2);
+    }
+
+    function test_increment_sub() {
+        const myObject = createTemporaryObject(componentMyObject, null, {});
+        const subObject = createTemporaryObject(componentSubObject, null, {
+            number: 1,
+        });
+        myObject.incrementNumberSub(subObject);
+        compare(subObject.number, 2);
+    }
+
     function test_number() {
         const myObject = createTemporaryObject(componentMyObject, null, {
             number: 1,
@@ -95,5 +112,15 @@ TestCase {
         compare(myObject.sub, subObject);
         compare(myObject.sub.string, "world");
         compare(spy.count, 1);
+    }
+
+    function test_subobject_increment_self() {
+        const myObject = createTemporaryObject(componentMyObject, null, {});
+        const subObject = createTemporaryObject(componentSubObject, null, {
+            number: 1,
+        });
+        myObject.sub = subObject;
+        myObject.sub.incrementNumberSelf();
+        compare(myObject.sub.number, 2);
     }
 }

@@ -9,15 +9,9 @@ MyObject::MyObject(QObject* parent)
 MyObject::~MyObject() = default;
 
 void
-MyObject::sayHi(const QString& string, int number)
+MyObject::subTest(SubObject* sub)
 {
-  m_rustObj->sayHi(qStringToRustStr(string), number);
-}
-
-void
-MyObject::sayBye()
-{
-  m_rustObj->sayBye();
+  m_rustObj->subTest(*this, *sub);
 }
 
 std::unique_ptr<MyObject>

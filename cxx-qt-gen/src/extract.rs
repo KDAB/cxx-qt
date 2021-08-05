@@ -23,7 +23,20 @@ pub(crate) struct CppRustIdent {
 #[derive(Debug)]
 pub enum QtTypes {
     I32,
-    Ptr { ident_str: String },
+    Pin {
+        /// Cache of the last type_idents as a str for C++ to reference
+        ident_str: String,
+        /// Whether the inner type of this Pin is mut
+        is_mut: bool,
+        /// Whether the inner type of this Pin is the current type, and therefore "this" in C++
+        is_this: bool,
+        /// The ident of the inner type (eg the T of Pin<T>)
+        type_idents: Vec<Ident>,
+    },
+    Ptr {
+        /// Cache of the last type ident as a str for C++ to reference
+        ident_str: String,
+    },
     // TODO: these will become QString in the future
     String,
     Str,
@@ -117,6 +130,8 @@ enum ExtractTypeIdentError {
     UnknownAndNotCrate(Span),
     /// There is one ident but it's unknown to our converters
     UnknownIdent(Span),
+    /// There is a Pin<T> but the T is unknown to our converters
+    UnknownPinType(Span),
 }
 
 /// Extract the Qt type from a list of Ident's
@@ -163,6 +178,24 @@ fn extract_qt_type(
     }
 }
 
+/// Converts a given path to a vector of idents
+fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError> {
+    path.segments
+        .iter()
+        .map(|segment| {
+            // We do not support PathArguments for types in properties or arguments
+            //
+            // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
+            // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
+            if segment.arguments == PathArguments::None {
+                Ok(segment.ident.to_owned())
+            } else {
+                Err(ExtractTypeIdentError::InvalidArguments(segment.span()))
+            }
+        })
+        .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()
+}
+
 /// Extract the type ident from a given syn::Type
 fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentError> {
     // Temporary storage of the current syn::TypePath if one is found
@@ -191,23 +224,84 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
         }
     }
 
-    let idents = ty_path
-        .path
-        .segments
-        .iter()
-        .map(|segment| {
-            // We do not support PathArguments for types in properties or arguments
-            //
-            // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
-            // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
-            if segment.arguments == PathArguments::None {
-                Ok(segment.ident.to_owned())
-            } else {
-                Err(ExtractTypeIdentError::InvalidArguments(segment.span()))
-            }
-        })
-        .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()?;
+    // Check if this type is a Pin<T>, if it is then attempt to extract it
+    if let Some(segment) = ty_path.path.segments.first() {
+        if segment.ident.to_string().as_str() == "Pin" {
+            match &segment.arguments {
+                PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. })
+                    if args.len() == 1 =>
+                {
+                    let is_mut;
+                    let ty_path;
 
+                    // We have already checked that args is of len 1
+                    match &args[0] {
+                        // We are &mut T
+                        GenericArgument::Type(Type::Reference(TypeReference {
+                            elem,
+                            mutability,
+                            ..
+                        })) => {
+                            is_mut = mutability.is_some();
+
+                            if let Type::Path(path) = &**elem {
+                                ty_path = path;
+                            } else {
+                                return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
+                            }
+                        }
+                        // TODO: later we might want extra cases to handle non ref versions? Pin<T>
+                        _others => {
+                            return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
+                        }
+                    }
+
+                    // Convert our inner type to a list of idents
+                    let type_idents = path_to_idents(&ty_path.path)?;
+                    // Create the Qt type for the Pin
+                    let qt_type = QtTypes::Pin {
+                        ident_str: if let Some(ident) = type_idents.last() {
+                            ident.to_string()
+                        } else {
+                            // There was no T part of Pin<T>
+                            //
+                            // TODO: could be it's own enum error? InvalidPinType?
+                            return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
+                        },
+                        is_mut,
+                        // If the T in Pin<T> is CppObj, then it is "this"
+                        is_this: if let Some(ident) = type_idents.first() {
+                            ident.to_string().as_str() == "CppObj"
+                        } else {
+                            false
+                        },
+                        type_idents,
+                    };
+                    // We put the Pin as our idents, the inner type goes into the QtType
+                    //
+                    // The gen_cpp and gen_rs don't use this as they'll special case Pin<T> when
+                    // it's an invokable argument to use the inner type.
+                    // It is only used in return types or Q_PROPERTY in gen_rs
+                    //
+                    // TODO: should Pin<T> be accepted for return types and Q_PROPERTY?
+                    let idents = vec![segment.ident.to_owned()];
+
+                    return Ok(ParameterType {
+                        // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
+                        // into an owned Vec<Ident>
+                        idents,
+                        is_ref,
+                        // We need to have the original type so that errors can Span if there are no idents
+                        original_ty: ty.to_owned(),
+                        qt_type,
+                    });
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let idents = path_to_idents(&ty_path.path)?;
     // Extract the Qt type this is used in C++ and Rust generation
     let qt_type = extract_qt_type(&idents, ty)?;
 
@@ -301,6 +395,9 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
                     Err(ExtractTypeIdentError::UnknownIdent(span)) => {
                         return Err(Error::new(span, "Unknown argument type ident to parse").to_compile_error())
                     }
+                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                        return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
+                    }
                 }
 
                 // Build and push the parameter
@@ -341,6 +438,12 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
                 Err(ExtractTypeIdentError::UnknownIdent(span)) => {
                     return Err(
                         Error::new(span, "Unknown return type ident to parse").to_compile_error()
+                    )
+                }
+                Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                    return Err(
+                        Error::new(span, "Unknown return Pin<T> type ident to parse")
+                            .to_compile_error(),
                     )
                 }
             }
@@ -421,6 +524,9 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                     }
                     Err(ExtractTypeIdentError::UnknownIdent(span)) => {
                         return Err(Error::new(span, "Unknown named field type ident to parse").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                        return Err(Error::new(span, "Unknown named field Pin<T> type ident to parse").to_compile_error())
                     }
                 }
 
@@ -842,5 +948,94 @@ mod tests {
 
         // Check that there is a use declaration
         assert_eq!(qobject.original_use_decls.len(), 1);
+    }
+
+    #[test]
+    fn parses_basic_pin_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_pin_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let qobject = extract_qobject(module).unwrap();
+
+        // Check that it got the names right
+        assert_eq!(qobject.ident.to_string(), "MyObject");
+        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
+        assert_eq!(qobject.rust_struct_ident.to_string(), "MyObjectRs");
+
+        // Check that it got the invokables
+        assert_eq!(qobject.invokables.len(), 2);
+
+        // Check invokable ident
+        let invokable = &qobject.invokables[0];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayHi");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "say_hi");
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable.parameters.len(), 3);
+
+        let param_first = &invokable.parameters[0];
+        assert_eq!(param_first.ident.to_string(), "_cpp");
+        assert_eq!(param_first.type_ident.idents.len(), 1);
+        assert_eq!(param_first.type_ident.idents[0].to_string(), "Pin");
+        assert_eq!(param_first.type_ident.is_ref, false);
+        if let QtTypes::Pin {
+            ident_str,
+            is_mut,
+            is_this,
+            type_idents,
+        } = &param_first.type_ident.qt_type
+        {
+            assert_eq!(ident_str, "CppObj");
+            assert_eq!(is_mut, &true);
+            assert_eq!(is_this, &true);
+            assert_eq!(type_idents.len(), 1);
+            assert_eq!(type_idents[0].to_string(), "CppObj");
+        } else {
+            panic!();
+        }
+
+        let param_second = &invokable.parameters[1];
+        assert_eq!(param_second.ident.to_string(), "string");
+        // TODO: add extra checks when we read if this is a mut or not
+        assert_eq!(param_second.type_ident.idents.len(), 1);
+        assert_eq!(param_second.type_ident.idents[0].to_string(), "str");
+        assert_eq!(param_second.type_ident.is_ref, true);
+
+        let param_third = &invokable.parameters[2];
+        assert_eq!(param_third.ident.to_string(), "number");
+        assert_eq!(param_third.type_ident.idents.len(), 1);
+        assert_eq!(param_third.type_ident.idents[0].to_string(), "i32");
+        assert_eq!(param_third.type_ident.is_ref, false);
+
+        // Check invokable ident
+        let invokable_second = &qobject.invokables[1];
+        assert_eq!(invokable_second.ident.cpp_ident.to_string(), "sayBye");
+        assert_eq!(invokable_second.ident.rust_ident.to_string(), "say_bye");
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable_second.parameters.len(), 1);
+
+        let param_first = &invokable_second.parameters[0];
+        assert_eq!(param_first.ident.to_string(), "_cpp");
+        assert_eq!(param_first.type_ident.idents.len(), 1);
+        assert_eq!(param_first.type_ident.idents[0].to_string(), "Pin");
+        assert_eq!(param_first.type_ident.is_ref, false);
+        if let QtTypes::Pin {
+            ident_str,
+            is_mut,
+            is_this,
+            type_idents,
+        } = &param_first.type_ident.qt_type
+        {
+            assert_eq!(ident_str, "CppObj");
+            assert_eq!(is_mut, &true);
+            assert_eq!(is_this, &true);
+            assert_eq!(type_idents.len(), 1);
+            assert_eq!(type_idents[0].to_string(), "CppObj");
+        } else {
+            panic!();
+        }
     }
 }

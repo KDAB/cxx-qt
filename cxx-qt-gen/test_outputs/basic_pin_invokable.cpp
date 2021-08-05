@@ -8,22 +8,16 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-int
-MyObject::doubleNumber(int number)
+void
+MyObject::sayHi(const QString& string, int number)
 {
-  return m_rustObj->doubleNumber(number);
+  m_rustObj->sayHi(*this, qStringToRustStr(string), number);
 }
 
-QString
-MyObject::helloMessage(const QString& msg)
+void
+MyObject::sayBye()
 {
-  return rustStringToQString(m_rustObj->helloMessage(qStringToRustStr(msg)));
-}
-
-QString
-MyObject::staticMessage()
-{
-  return rustStrToQString(m_rustObj->staticMessage());
+  m_rustObj->sayBye(*this);
 }
 
 std::unique_ptr<MyObject>

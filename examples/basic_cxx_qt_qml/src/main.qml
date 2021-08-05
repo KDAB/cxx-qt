@@ -54,6 +54,24 @@ Window {
         }
 
         Button {
+            text: "Increment Number (self)"
+
+            onClicked: myObject.incrementNumberSelf()
+        }
+
+        Button {
+            text: "Increment Number (sub) from myObject"
+
+            onClicked: myObject.incrementNumberSub(myObject.sub)
+        }
+
+        Button {
+            text: "Increment Number (sub) from sub"
+
+            onClicked: myObject.sub.incrementNumberSelf()
+        }
+
+        Button {
             text: "Print Data"
 
             onClicked: console.warn(myData.asJsonStr())

@@ -14,6 +14,11 @@ pub mod sub_object {
     }
 
     impl SubObject {
+        fn increment_number_self(&self, cpp: Pin<&mut CppObj>) {
+            let value = cpp.number();
+            cpp.set_number(value + 1);
+        }
+
         fn increment_number(&self, number: i32) -> i32 {
             number + 1
         }
