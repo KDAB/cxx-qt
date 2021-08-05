@@ -38,13 +38,23 @@ mod my_object {
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }
+    }
 
-        fn my_number(self: &MyObjectRs) -> &i32 {
-            &self.my_number
+    struct MyObjectWrapper<'a> {
+        cpp: std::pin::Pin<&'a mut CppObj>,
+    }
+
+    impl<'a> MyObjectWrapper<'a> {
+        fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+            Self { cpp }
         }
 
-        fn set_my_number(self: &mut MyObjectRs, value: i32) {
-            self.my_number = value;
+        fn my_number(&self) -> i32 {
+            self.cpp.my_number()
+        }
+
+        fn set_my_number(&mut self, value: i32) {
+            self.cpp.as_mut().set_my_number(value);
         }
     }
 

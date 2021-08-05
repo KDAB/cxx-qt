@@ -16,6 +16,8 @@ trait RustType {
     fn is_ref(&self) -> bool;
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident;
+    /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
+    fn full_param_type(&self) -> TokenStream;
 }
 
 impl RustType for QtTypes {
@@ -26,13 +28,26 @@ impl RustType for QtTypes {
             _others => false,
         }
     }
+
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident {
         match self {
             Self::I32 => format_ident!("i32"),
             Self::Str | Self::String => format_ident!("QString"),
-            // Pointer types should not use this function
-            _others => unreachable!(),
+            // Pointer types do not use this function (TODO: yet?)
+            Self::Ptr { .. } => unreachable!(),
+        }
+    }
+
+    /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
+    fn full_param_type(&self) -> TokenStream {
+        match self {
+            Self::I32 => quote! {i32},
+            Self::Str | Self::String => quote! {cxx_qt_lib::QString},
+            Self::Ptr { ident_str } => {
+                let ident = format_ident!("{}", ident_str);
+                quote! {cxx::UniquePtr<ffi::#ident>}
+            }
         }
     }
 }
@@ -61,6 +76,14 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         let ident = &i.ident.rust_ident;
         let ident_cpp_str = &i.ident.cpp_ident.to_string();
         let parameters = &i.parameters;
+
+        // TODO: invokables need to also become freestanding functions that
+        // take as input a reference to both the Rs class and the CppObject
+        // inside a wrapper. The functions that are impl'ed on the Rs class
+        // will then simply create the wrapper and call the free functions.
+        //
+        // As a first step we could maybe just add a `cpp: Pin<&mut CppObj>`
+        // argument to invokables so that users can manually wrap it.
 
         // Determine if the invokable has any parameter
         if parameters.is_empty() {
@@ -106,9 +129,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                     });
                 }
             }
-
-            // TODO: add cpp functions for the invokable so that it can be called
-            // consider how the different types for strings work here
 
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
@@ -296,40 +316,56 @@ fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStrea
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
-    // Cache the rust class name, this is used multiple times later
-    let rust_class_name = &obj.rust_struct_ident;
-
     // Build a list of property methods impls
     let mut property_methods = Vec::new();
 
     for property in &obj.properties {
-        // Cache the property name and type
-        let property_ident = &property.ident.rust_ident;
-        let type_idents = &property.type_ident.idents;
+        let qt_type = &property.type_ident.qt_type;
+        let param_type = qt_type.full_param_type();
+        let param_type = if qt_type.is_ref() {
+            quote! {&#param_type}
+        } else {
+            quote! {#param_type}
+        };
 
-        // Only add Rust getters and setters if we are not a special case of a pointer
-        // If the type is a pointer then the getters are setters are on the C++ side
-        if !is_type_ident_ptr(type_idents) {
-            // TODO: later we might need consider if the struct has already implemented custom getters
+        let cpp_getter_ident = &property.getter.as_ref().unwrap().rust_ident;
+        let cpp_setter_ident = &property.setter.as_ref().unwrap().rust_ident;
+
+        if is_type_ident_ptr(&property.type_ident.idents) {
+            let ident = &property.ident.rust_ident;
+            let take_ident = format_ident!("take_{}", ident);
+            let give_ident = format_ident!("give_{}", ident);
+
+            property_methods.push(quote! {
+                fn #take_ident(&mut self) -> #param_type {
+                    self.cpp.as_mut().#take_ident()
+                }
+            });
+
+            property_methods.push(quote! {
+                fn #give_ident(&mut self, value: #param_type) {
+                    self.cpp.as_mut().#give_ident(value);
+                }
+            });
+        } else {
             if let Some(getter) = &property.getter {
                 // Generate a getter using the rust ident
                 let getter_ident = &getter.rust_ident;
 
                 property_methods.push(quote! {
-                    fn #getter_ident(self: &#rust_class_name) -> &#(#type_idents)::* {
-                        &self.#property_ident
+                    fn #getter_ident(&self) -> #param_type {
+                        self.cpp.#cpp_getter_ident()
                     }
                 });
             }
 
-            // TODO: later we might need consider if the struct has already implemented custom setters
             if let Some(setter) = &property.setter {
                 // Generate a setter using the rust ident
                 let setter_ident = &setter.rust_ident;
 
                 property_methods.push(quote! {
-                    fn #setter_ident(self: &mut #rust_class_name, value: #(#type_idents)::*) {
-                        self.#property_ident = value;
+                    fn #setter_ident(&mut self, value: #param_type) {
+                        self.cpp.as_mut().#cpp_setter_ident(value);
                     }
                 });
             }
@@ -432,18 +468,28 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         })
         .collect::<Vec<syn::Attribute>>();
 
-    // Cache the original module ident and visiblity
+    // Cache the original module ident and visibility
     let mod_ident = &obj.original_mod.ident;
     let mod_vis = &obj.original_mod.vis;
 
     // Cache the rust class name
     let rust_class_name = &obj.rust_struct_ident;
+    let rust_wrapper_name = &obj.rust_wrapper_ident;
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj)?;
 
     // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
+    //
+    // TODO: we need to update this to only store fields defined as "private" once we have an API for that
     let renamed_struct = rename_filter_struct(&obj.original_struct, rust_class_name);
+
+    // Create a struct that wraps the CppObject with a nicer interface
+    let wrapper_struct = quote! {
+        struct #rust_wrapper_name<'a> {
+            cpp: std::pin::Pin<&'a mut CppObj>,
+        }
+    };
 
     // Generate the data struct
     //
@@ -513,15 +559,24 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let creator_fn = generate_rust_object_creator(obj)?;
 
     // Determine if we need an impl block on the renamed struct
-    let renamed_struct_impl = if original_methods.len() != 0 || !property_methods.is_empty() {
+    let renamed_struct_impl = if original_methods.len() != 0 {
         quote! {
             impl #rust_class_name {
                 #(#original_methods)*
-                #(#property_methods)*
             }
         }
     } else {
         quote! {}
+    };
+
+    let wrapper_struct_impl = quote! {
+        impl<'a> #rust_wrapper_name<'a> {
+            fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+                Self { cpp }
+            }
+
+            #(#property_methods)*
+        }
     };
 
     // Build our rewritten module that replaces the input from the macro
@@ -535,6 +590,10 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #renamed_struct
 
             #renamed_struct_impl
+
+            #wrapper_struct
+
+            #wrapper_struct_impl
 
             #data_struct
 

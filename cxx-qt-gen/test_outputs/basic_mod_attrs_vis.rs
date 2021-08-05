@@ -25,6 +25,16 @@ pub mod my_object {
 
     struct MyObjectRs;
 
+    struct MyObjectWrapper<'a> {
+        cpp: std::pin::Pin<&'a mut CppObj>,
+    }
+
+    impl<'a> MyObjectWrapper<'a> {
+        fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+            Self { cpp }
+        }
+    }
+
     struct MyObjectData;
 
     fn create_my_object_rs() -> Box<MyObjectRs> {

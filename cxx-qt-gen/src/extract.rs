@@ -89,6 +89,8 @@ pub struct QObject {
     pub ident: Ident,
     /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
     pub(crate) rust_struct_ident: Ident,
+    /// The ident of the new Rust wrapper that will be generated and will provide a nice interface to the CppObject
+    pub(crate) rust_wrapper_ident: Ident,
     /// All the methods that can be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
     /// All the properties that can be used from QML
@@ -468,6 +470,7 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     // Static internal rust suffix name
     const RUST_SUFFIX: &str = "Rs";
+    const RUST_WRAPPER_SUFFIX: &str = "Wrapper";
 
     // Find the items from the module
     let original_mod = module.to_owned();
@@ -482,8 +485,10 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     let mut original_struct = None;
     // The name of the struct if one was found
     let mut struct_ident = None;
-    // The name we will use for the rust generated struct if find one
+    // The name we will use for the rust generated struct if we find one
     let mut rust_struct_ident = None;
+    // The name we will use for the rust generated wrapper if we find one
+    let mut rust_wrapper_ident = None;
 
     // A list of the invokables for the struct
     let mut object_invokables = vec![];
@@ -503,11 +508,16 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                     struct_ident = Some(s.ident.to_owned());
                     // Move the original struct
                     original_struct = Some(s);
-                    // Build a rust version of the struct ident
+                    // Build rust versions of the struct ident
                     rust_struct_ident = Some(quote::format_ident!(
                         "{}{}",
                         struct_ident.as_ref().unwrap(),
                         RUST_SUFFIX
+                    ));
+                    rust_wrapper_ident = Some(quote::format_ident!(
+                        "{}{}",
+                        struct_ident.as_ref().unwrap(),
+                        RUST_WRAPPER_SUFFIX
                     ));
                 } else {
                     return Err(
@@ -605,6 +615,7 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
     Ok(QObject {
         ident: struct_ident.unwrap(),
         rust_struct_ident: rust_struct_ident.unwrap(),
+        rust_wrapper_ident: rust_wrapper_ident.unwrap(),
         invokables: object_invokables,
         properties: object_properties,
         original_mod,

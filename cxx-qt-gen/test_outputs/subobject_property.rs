@@ -30,6 +30,24 @@ mod my_object {
     #[derive(Default)]
     struct MyObjectRs;
 
+    struct MyObjectWrapper<'a> {
+        cpp: std::pin::Pin<&'a mut CppObj>,
+    }
+
+    impl<'a> MyObjectWrapper<'a> {
+        fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+            Self { cpp }
+        }
+
+        fn take_obj(&mut self) -> cxx::UniquePtr<ffi::SubObject> {
+            self.cpp.as_mut().take_obj()
+        }
+
+        fn give_obj(&mut self, value: cxx::UniquePtr<ffi::SubObject>) {
+            self.cpp.as_mut().give_obj(value);
+        }
+    }
+
     #[derive(Default)]
     struct MyObjectData;
 

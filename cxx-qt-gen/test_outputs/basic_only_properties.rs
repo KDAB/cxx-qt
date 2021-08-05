@@ -37,21 +37,29 @@ mod my_object {
         string: String,
     }
 
-    impl MyObjectRs {
-        fn number(self: &MyObjectRs) -> &i32 {
-            &self.number
+    struct MyObjectWrapper<'a> {
+        cpp: std::pin::Pin<&'a mut CppObj>,
+    }
+
+    impl<'a> MyObjectWrapper<'a> {
+        fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+            Self { cpp }
         }
 
-        fn set_number(self: &mut MyObjectRs, value: i32) {
-            self.number = value;
+        fn number(&self) -> i32 {
+            self.cpp.number()
         }
 
-        fn string(self: &MyObjectRs) -> &String {
-            &self.string
+        fn set_number(&mut self, value: i32) {
+            self.cpp.as_mut().set_number(value);
         }
 
-        fn set_string(self: &mut MyObjectRs, value: String) {
-            self.string = value;
+        fn string(&self) -> &cxx_qt_lib::QString {
+            self.cpp.string()
+        }
+
+        fn set_string(&mut self, value: &cxx_qt_lib::QString) {
+            self.cpp.as_mut().set_string(value);
         }
     }
 
