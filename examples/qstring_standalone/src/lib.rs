@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt_lib::{let_qstring, QString};
+use cxx_qt_lib::{let_qstring, MapQtValue, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -22,6 +22,7 @@ mod ffi {
         fn can_construct_qstring(slice: bool) -> bool;
         fn can_read_qstring(s: &QString) -> bool;
         fn modify_qstring(s: Pin<&mut QString>);
+        fn modify_qstring_with_map(s: Pin<&mut QString>);
         fn can_handle_qstring_change() -> bool;
     }
 }
@@ -45,6 +46,13 @@ fn can_read_qstring(s: &QString) -> bool {
 fn modify_qstring(s: Pin<&mut QString>) {
     let_qstring!(v = "Updated string value");
     ffi::assign_to_qstring(s, &v);
+}
+
+fn modify_qstring_with_map(s: Pin<&mut QString>) {
+    "Updated string value".map_qt_value(
+        |context, converted| ffi::assign_to_qstring(context, converted),
+        s,
+    );
 }
 
 fn can_handle_qstring_change() -> bool {
