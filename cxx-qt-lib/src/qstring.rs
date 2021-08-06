@@ -169,3 +169,9 @@ unsafe impl ExternType for QString {
     type Id = type_id!("QString");
     type Kind = cxx::kind::Opaque;
 }
+
+impl From<&QString> for String {
+    fn from(qstring: &QString) -> Self {
+        qstring.to_rust()
+    }
+}
