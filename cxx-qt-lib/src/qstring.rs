@@ -42,17 +42,21 @@ pub struct QString {
     _pinned: PhantomData<PhantomPinned>,
 }
 
-/// Construct a Qt QString on the Rust stack.
+// TODO: figure out how to make Syntax and Example compile as code
+// and then change ```ignore back to ```
+
+/// Construct a QString on the Rust stack.
 ///
 /// # Syntax
 ///
 /// In statement position:
 ///
-/// ```
+/// ```ignore
 /// # use cxx_qt_lib::let_qstring;
 /// # let expression = "";
 /// let_qstring!(var = expression);
 /// ```
+///
 ///
 /// The `expression` may have any type that implements `AsRef<[u8]>`. Commonly
 /// it will be a string literal, but for example `&[u8]` and `String` would work
@@ -63,13 +67,14 @@ pub struct QString {
 ///
 /// # Example
 ///
-/// ```
-/// use cxx::{let_qstring, QString};
+/// ```ignore
+/// use cxx_qt_lib::{let_qstring, QString};
+///
 ///
 /// fn f(s: &QString) {/* ... */}
 ///
 /// fn main() {
-///     let_cxx_string!(s = "example");
+///     let_qstring!(s = "example");
 ///     f(&s);
 /// }
 /// ```
@@ -132,12 +137,12 @@ impl StackQString {
         }
     }
 
-    // Safety:
-    //
-    // Calling this function twice on the same StackQString is unsafe
-    // and leads to undefined behaviour. It is therefore recommended
-    // to not use this function directly and instead use the [`let_qstring!`]
-    // macro which ensures that safe behaviour.
+    /// # Safety
+    ///
+    /// Calling this function twice on the same StackQString is unsafe
+    /// and leads to undefined behaviour. It is therefore recommended
+    /// to not use this function directly and instead use the [`let_qstring!`]
+    /// macro which ensures that safe behaviour.
     pub unsafe fn init(&mut self, value: impl AsRef<[u8]>) -> Pin<&mut QString> {
         let value = value.as_ref();
         let this = &mut *self.space.as_mut_ptr().cast::<MaybeUninit<QString>>();
@@ -146,9 +151,15 @@ impl StackQString {
     }
 }
 
+impl Default for StackQString {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Drop for StackQString {
     fn drop(&mut self) {
-        // Safety:
+        // # Safety
         //
         // This simply calls ~QString on self.space which is safe as long
         // as self.space contains a valid QString. Using the [`let_qstring!`]

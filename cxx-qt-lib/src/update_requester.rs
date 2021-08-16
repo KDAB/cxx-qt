@@ -37,7 +37,7 @@ pub struct UpdateRequester {
 }
 
 impl UpdateRequester {
-    /// Safety:
+    /// # Safety
     ///
     /// You may only call this if qobject_ptr is a valid pointer to a
     /// C++ object that derives from CxxQObject. Once constructed, you
@@ -49,7 +49,7 @@ impl UpdateRequester {
     }
 
     pub fn request_update(&self) -> bool {
-        // Safety:
+        // # Safety
         //
         // The caller should ensure that a valid pointer is called during new,
         // which is why only that function is marked unsafe.
@@ -59,7 +59,7 @@ impl UpdateRequester {
 
 impl Drop for UpdateRequester {
     fn drop(&mut self) {
-        // Safety:
+        // # Safety
         //
         // The caller should ensure that a valid pointer is called during new,
         // which is why only that function is marked unsafe.
@@ -71,7 +71,7 @@ impl Drop for UpdateRequester {
 
 impl Clone for UpdateRequester {
     fn clone(&self) -> UpdateRequester {
-        // Safety:
+        // # Safety
         //
         // The caller should ensure that a valid pointer is called during new,
         // which is why only that function is marked unsafe.
@@ -83,7 +83,7 @@ impl Clone for UpdateRequester {
     }
 }
 
-// Safety:
+// # Safety
 //
 // The underlying C++ class has been designed to be thread safe and we only
 // store a pointer to it which is valid from any thread.
