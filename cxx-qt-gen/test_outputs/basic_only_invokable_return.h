@@ -4,7 +4,7 @@
 
 namespace cxx_qt::my_object {
 
-class MyObjectRs;
+class RustObj;
 
 class MyObject : public CxxQObject
 {
@@ -19,7 +19,7 @@ public:
   Q_INVOKABLE QString staticMessage();
 
 private:
-  rust::Box<MyObjectRs> m_rustObj;
+  rust::Box<RustObj> m_rustObj;
 };
 
 std::unique_ptr<MyObject>

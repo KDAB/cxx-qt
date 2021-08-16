@@ -4,7 +4,7 @@
 
 namespace cxx_qt::my_object {
 
-class MyObjectRs;
+class RustObj;
 
 class MyObject : public CxxQObject
 {
@@ -27,7 +27,7 @@ Q_SIGNALS:
   void myNumberChanged();
 
 private:
-  rust::Box<MyObjectRs> m_rustObj;
+  rust::Box<RustObj> m_rustObj;
 
   int m_myNumber;
 };

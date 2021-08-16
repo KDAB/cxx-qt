@@ -18,33 +18,33 @@ mod my_object {
         }
 
         extern "Rust" {
-            type MyObjectRs;
+            type RustObj;
 
             #[cxx_name = "sayBye"]
-            fn say_bye(self: &MyObjectRs);
+            fn say_bye(self: &RustObj);
 
             #[cxx_name = "createMyObjectRs"]
-            fn create_my_object_rs() -> Box<MyObjectRs>;
+            fn create_my_object_rs() -> Box<RustObj>;
         }
     }
 
     pub type CppObj = ffi::MyObject;
 
-    struct MyObjectRs {
+    struct RustObj {
         my_number: i32,
     }
 
-    impl MyObjectRs {
+    impl RustObj {
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }
     }
 
-    struct MyObjectWrapper<'a> {
+    struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
-    impl<'a> MyObjectWrapper<'a> {
+    impl<'a> CppObjWrapper<'a> {
         fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
             Self { cpp }
         }
@@ -63,7 +63,7 @@ mod my_object {
         my_number: i32,
     }
 
-    impl From<Data> for MyObjectRs {
+    impl From<Data> for RustObj {
         fn from(value: Data) -> Self {
             Self {
                 my_number: value.my_number,
@@ -71,15 +71,15 @@ mod my_object {
         }
     }
 
-    impl From<&MyObjectRs> for Data {
-        fn from(value: &MyObjectRs) -> Self {
+    impl From<&RustObj> for Data {
+        fn from(value: &RustObj) -> Self {
             Self {
                 my_number: value.my_number.clone(),
             }
         }
     }
 
-    fn create_my_object_rs() -> Box<MyObjectRs> {
+    fn create_my_object_rs() -> Box<RustObj> {
         Box::new(Data::default().into())
     }
 }

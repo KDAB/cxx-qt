@@ -84,7 +84,7 @@ pub fn generate_qobject_cxx(
 ) -> Result<TokenStream, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
-    let rust_class_name = &obj.rust_struct_ident;
+    let rust_class_name = format_ident!("RustObj");
 
     // Build a snake version of the class name, this is used for rust method names
     //
@@ -411,7 +411,7 @@ pub fn generate_qobject_cxx(
 fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Cache the data and rust class name, this is used multiple times later
     let data_class_name = &obj.original_data_struct.ident;
-    let rust_class_name = &obj.rust_struct_ident;
+    let rust_class_name = format_ident!("RustObj");
 
     // Build the ident as snake case, then build the rust creator method
     //
@@ -538,27 +538,35 @@ fn is_field_ptr(field: &syn::Field) -> bool {
     )
 }
 
-fn rename_filter_struct(
+/// Return the fields of the struct filtered by the given closure
+fn filter_fields<F: Fn(&syn::Field) -> bool>(
     original_struct: &syn::ItemStruct,
-    struct_ident: &syn::Ident,
-) -> TokenStream {
+    filter_closure: F,
+) -> Vec<&syn::Field> {
     // Filter the fields of the struct to remove any pointer fields
     // as they are instead stored in the C++ object and not owned by the rust side
-    let filtered_fields = original_struct
+    original_struct
         .fields
         .iter()
-        .filter(|field| is_field_ptr(field))
-        .collect::<Vec<&syn::Field>>();
+        .filter(|field| filter_closure(field))
+        .collect::<Vec<&syn::Field>>()
+}
 
+/// Builds a struct with th given new fields
+fn build_struct_with_fields(
+    original_struct: &syn::ItemStruct,
+    new_fields: &[&syn::Field],
+) -> TokenStream {
     // Capture the attributes, generics, visibility as local vars so they can be used by quote
     let original_attributes = &original_struct.attrs;
     let original_generics = &original_struct.generics;
     let original_visibility = &original_struct.vis;
+    let struct_ident = &original_struct.ident;
 
     // Finally build the renamed struct
     //
     // If there are no fields then use semi-colon instead of brackets
-    if filtered_fields.is_empty() {
+    if new_fields.is_empty() {
         quote! {
             #(#original_attributes)*
             #original_visibility struct #struct_ident #original_generics;
@@ -567,7 +575,7 @@ fn rename_filter_struct(
         quote! {
             #(#original_attributes)*
             #original_visibility struct #struct_ident #original_generics {
-                #(#filtered_fields),*
+                #(#new_fields),*
             }
         }
     }
@@ -607,55 +615,34 @@ pub fn generate_qobject_rs(
     let mod_vis = &obj.original_mod.vis;
 
     // Cache the rust class name
-    let rust_class_name = &obj.rust_struct_ident;
-    let rust_wrapper_name = &obj.rust_wrapper_ident;
+    let rust_class_name = format_ident!("RustObj");
+    let rust_wrapper_name = format_ident!("CppObjWrapper");
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj, cpp_namespace_prefix)?;
-
-    // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
-    //
-    // TODO: we need to update this to only store fields defined as "private" once we have an API for that
-    let renamed_struct = rename_filter_struct(&obj.original_rust_struct, rust_class_name);
-
-    // Create a struct that wraps the CppObject with a nicer interface
-    let wrapper_struct = quote! {
-        struct #rust_wrapper_name<'a> {
-            cpp: std::pin::Pin<&'a mut CppObj>,
-        }
-    };
 
     // Generate the data struct
     //
     // TODO: what happens with sub objects / pointers,
     // do we need to rewrite the field to their data struct?
-    //
-    // TODO: what happens if the original struct has no fields?
-    // Do we then skip the data struct? Or do we always want a data struct
-    // for simplicity?
     let data_struct_name = &obj.original_data_struct.ident;
-    let data_struct = rename_filter_struct(&obj.original_data_struct, data_struct_name);
-
-    // TODO: should we instead pass this around, as we do this filter multiple times
-    let filtered_fields = obj
-        .original_data_struct
-        .fields
-        .iter()
-        .filter(|field| is_field_ptr(field))
-        .collect::<Vec<&syn::Field>>();
+    // Build a list of the fields that aren't pointers as they are stored on C++ side
+    let data_fields_no_ptr = filter_fields(&obj.original_data_struct, is_field_ptr);
+    // TODO: we need to update this to only store fields defined as "private" once we have an API for that
+    let data_struct = build_struct_with_fields(&obj.original_data_struct, &data_fields_no_ptr);
 
     // Build the converters between the Data struct and RustObj
     let data_struct_impl = {
         let mut fields = vec![];
         let mut fields_clone = vec![];
         // If there are no filtered fields then use _value
-        let value_ident = if filtered_fields.is_empty() {
+        let value_ident = if data_fields_no_ptr.is_empty() {
             format_ident!("_value")
         } else {
             format_ident!("value")
         };
 
-        for field in filtered_fields {
+        for field in data_fields_no_ptr {
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
                 fields.push(quote! { #field_name: #value_ident.#field_name });
@@ -784,8 +771,16 @@ pub fn generate_qobject_rs(
     // Generate the rust creator function
     let creator_fn = generate_rust_object_creator(obj)?;
 
-    // Determine if we need an impl block on the renamed struct
-    let renamed_struct_impl = if !original_methods.is_empty() {
+    // Build our filtered rust struct
+    //
+    // TODO: once fields are stored on this C++ side, this can change
+    let rust_struct = build_struct_with_fields(
+        &obj.original_rust_struct,
+        &filter_fields(&obj.original_rust_struct, is_field_ptr),
+    );
+
+    // Determine if we need an impl block on the rust struct
+    let rust_struct_impl = if !original_methods.is_empty() {
         quote! {
             impl #rust_class_name {
                 #(#original_methods)*
@@ -793,6 +788,13 @@ pub fn generate_qobject_rs(
         }
     } else {
         quote! {}
+    };
+
+    // Create a struct that wraps the CppObject with a nicer interface
+    let wrapper_struct = quote! {
+        struct #rust_wrapper_name<'a> {
+            cpp: std::pin::Pin<&'a mut CppObj>,
+        }
     };
 
     let wrapper_struct_impl = quote! {
@@ -813,9 +815,9 @@ pub fn generate_qobject_rs(
 
             #cxx_block
 
-            #renamed_struct
+            #rust_struct
 
-            #renamed_struct_impl
+            #rust_struct_impl
 
             #wrapper_struct
 

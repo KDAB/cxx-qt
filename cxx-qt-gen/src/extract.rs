@@ -102,10 +102,6 @@ pub(crate) struct Property {
 pub struct QObject {
     /// The ident of the C++ class that represents the QObject
     pub ident: Ident,
-    /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
-    pub(crate) rust_struct_ident: Ident,
-    /// The ident of the new Rust wrapper that will be generated and will provide a nice interface to the CppObject
-    pub(crate) rust_wrapper_ident: Ident,
     /// All the methods that can be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
     /// All the properties that can be used from QML
@@ -608,10 +604,6 @@ pub fn extract_qobject(
     module: ItemMod,
     cpp_namespace_prefix: &[String],
 ) -> Result<QObject, TokenStream> {
-    // Static internal rust suffix name
-    const RUST_SUFFIX: &str = "Rs";
-    const RUST_WRAPPER_SUFFIX: &str = "Wrapper";
-
     // Find the items from the module
     let original_mod = module.to_owned();
     let items = &mut module
@@ -627,10 +619,6 @@ pub fn extract_qobject(
     let mut original_rust_struct = None;
     // The name of the Qt object we are creating
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
-    // The name we will use for the rust generated struct if we find one
-    let mut rust_struct_ident = None;
-    // The name we will use for the rust generated wrapper if we find one
-    let mut rust_wrapper_ident = None;
 
     // A list of the invokables for the struct
     let mut object_invokables = vec![];
@@ -658,15 +646,9 @@ pub fn extract_qobject(
                             .to_compile_error());
                         }
                     }
-                    // TODO: later we will only accept RustObj as the other struct
-                    _others => {
+                    "RustObj" => {
                         // Check that we are the first other struct
                         if original_rust_struct.is_none() {
-                            // Build rust versions of the struct ident
-                            rust_struct_ident =
-                                Some(quote::format_ident!("{}{}", s.ident, RUST_SUFFIX));
-                            rust_wrapper_ident =
-                                Some(quote::format_ident!("{}{}", s.ident, RUST_WRAPPER_SUFFIX));
                             // Move the original struct
                             original_rust_struct = Some(s);
                         } else {
@@ -676,6 +658,11 @@ pub fn extract_qobject(
                             )
                             .to_compile_error());
                         }
+                    }
+                    _others => {
+                        return Err(
+                            Error::new(s.span(), "Unknown struct for QObject.").to_compile_error()
+                        );
                     }
                 }
             }
@@ -715,8 +702,7 @@ pub fn extract_qobject(
                                 .to_compile_error());
                             }
                         }
-                        // TODO: later we will only accept RustObj as the other struct
-                        _other => {
+                        "RustObj" => {
                             // Ensure that the struct block has already happened
                             if original_rust_struct.is_none() {
                                 return Err(Error::new(
@@ -739,16 +725,8 @@ pub fn extract_qobject(
                                 .to_compile_error());
                             }
 
-                            // Can have custom traits, these are renamed to MyObjectRs for now
-                            //
-                            // TODO: later this renaming will be removed as we have just RustObj ?
+                            // Can have custom traits, these are on the RustObj
                             if original_impl.trait_.is_some() {
-                                // We are a impl trait so rename the struct and add to vec
-                                //
-                                // We can assume that segments[0] works as we have checked length to be 1
-                                let impl_ident = &mut path.segments[0].ident;
-                                // Rename the ident of the struct
-                                *impl_ident = quote::format_ident!("{}{}", impl_ident, RUST_SUFFIX);
                                 original_trait_impls.push(original_impl.to_owned());
                             } else {
                                 // Add invokables from RustObj
@@ -759,6 +737,13 @@ pub fn extract_qobject(
                                     cpp_namespace_prefix,
                                 )?);
                             }
+                        }
+                        _others => {
+                            return Err(Error::new(
+                                path.span(),
+                                "Unknown struct for impl block for QObject.",
+                            )
+                            .to_compile_error());
                         }
                     }
                 } else {
@@ -811,10 +796,6 @@ pub fn extract_qobject(
 
     Ok(QObject {
         ident: qt_ident,
-        rust_struct_ident: rust_struct_ident
-            .unwrap_or(quote::format_ident!("RustObj{}", RUST_SUFFIX)),
-        rust_wrapper_ident: rust_wrapper_ident
-            .unwrap_or(quote::format_ident!("RustObj{}", RUST_WRAPPER_SUFFIX)),
         invokables: object_invokables,
         properties: object_properties,
         namespace,
@@ -938,7 +919,7 @@ mod tests {
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
         assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.rust_struct_ident.to_string(), "MyObjectRs");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
 
         // Check that it got the invokables
         assert_eq!(qobject.invokables.len(), 2);
@@ -985,6 +966,7 @@ mod tests {
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 2);
+        assert_eq!(qobject.original_data_struct.ident.to_string(), "Data");
 
         // Check first property
         let prop_first = &qobject.properties[0];
@@ -1066,7 +1048,7 @@ mod tests {
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
         assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.rust_struct_ident.to_string(), "MyObjectRs");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
 
         // Check that it got the invokables
         assert_eq!(qobject.invokables.len(), 2);

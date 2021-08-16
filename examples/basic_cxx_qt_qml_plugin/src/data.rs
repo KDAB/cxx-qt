@@ -22,12 +22,12 @@ mod my_data {
         }
     }
 
-    struct MyData {
+    struct RustObj {
         number: i32,
         string: String,
     }
 
-    impl MyData {
+    impl RustObj {
         fn as_json_str(&self) -> String {
             let data = Data::from(self);
             serde_json::to_string(&data).unwrap()

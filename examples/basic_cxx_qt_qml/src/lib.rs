@@ -17,13 +17,13 @@ mod my_object {
         sub: crate::sub::sub_object::SubObject,
     }
 
-    struct MyObject {
+    struct RustObj {
         number: i32,
         string: String,
         sub: crate::sub::sub_object::SubObject,
     }
 
-    impl MyObject {
+    impl RustObj {
         fn increment_number_self(&self, cpp: Pin<&mut CppObj>) {
             let value = cpp.number() + 1;
             cpp.set_number(value);

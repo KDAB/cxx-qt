@@ -20,31 +20,31 @@ mod my_object {
         }
 
         extern "Rust" {
-            type MyObjectRs;
+            type RustObj;
 
             #[cxx_name = "invokable"]
-            fn invokable(self: &MyObjectRs);
+            fn invokable(self: &RustObj);
 
             #[cxx_name = "createMyObjectRs"]
-            fn create_my_object_rs() -> Box<MyObjectRs>;
+            fn create_my_object_rs() -> Box<RustObj>;
         }
     }
 
     pub type CppObj = ffi::MyObject;
 
-    struct MyObjectRs {
+    struct RustObj {
         number: i32,
     }
 
-    impl MyObjectRs {
+    impl RustObj {
         fn invokable(&self) {}
     }
 
-    struct MyObjectWrapper<'a> {
+    struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
-    impl<'a> MyObjectWrapper<'a> {
+    impl<'a> CppObjWrapper<'a> {
         fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
             Self { cpp }
         }
@@ -62,7 +62,7 @@ mod my_object {
         number: i32,
     }
 
-    impl From<Data> for MyObjectRs {
+    impl From<Data> for RustObj {
         fn from(value: Data) -> Self {
             Self {
                 number: value.number,
@@ -70,8 +70,8 @@ mod my_object {
         }
     }
 
-    impl From<&MyObjectRs> for Data {
-        fn from(value: &MyObjectRs) -> Self {
+    impl From<&RustObj> for Data {
+        fn from(value: &RustObj) -> Self {
             Self {
                 number: value.number.clone(),
             }
@@ -84,13 +84,13 @@ mod my_object {
         }
     }
 
-    impl MyTrait for MyObjectRs {
+    impl MyTrait for RustObj {
         fn my_func() -> String {
             "Hello".to_owned()
         }
     }
 
-    fn create_my_object_rs() -> Box<MyObjectRs> {
+    fn create_my_object_rs() -> Box<RustObj> {
         Box::new(Data::default().into())
     }
 }

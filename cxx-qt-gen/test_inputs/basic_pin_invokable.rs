@@ -1,7 +1,7 @@
 mod my_object {
-    struct MyObject;
+    struct RustObj;
 
-    impl MyObject {
+    impl RustObj {
         fn say_hi(&self, _cpp: Pin<&mut CppObj>, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",

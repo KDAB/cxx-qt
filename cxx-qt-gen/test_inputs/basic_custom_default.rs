@@ -9,11 +9,11 @@ mod my_object {
         }
     }
 
-    struct MyObject {
+    struct RustObj {
         number: i32,
     }
 
-    impl MyObject {
+    impl RustObj {
         fn invokable(&self) {}
     }
 }

@@ -5,7 +5,7 @@ mod my_object {
         string: String,
     }
 
-    struct MyObject {
+    struct RustObj {
         number: i32,
         string: String,
     }

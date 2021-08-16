@@ -11,17 +11,17 @@ mod my_object {
         }
     }
 
-    struct MyObject {
+    struct RustObj {
         number: i32,
     }
 
-    impl MyTrait for MyObject {
+    impl MyTrait for RustObj {
         fn my_func() -> String {
             "Hello".to_owned()
         }
     }
 
-    impl MyObject {
+    impl RustObj {
         fn invokable(&self) {}
     }
 }

@@ -13,12 +13,12 @@ pub mod sub_object {
         string: String,
     }
 
-    pub struct SubObject {
+    pub struct RustObj {
         number: i32,
         string: String,
     }
 
-    impl SubObject {
+    impl RustObj {
         fn increment_number_self(&self, cpp: Pin<&mut CppObj>) {
             let value = cpp.number();
             cpp.set_number(value + 1);

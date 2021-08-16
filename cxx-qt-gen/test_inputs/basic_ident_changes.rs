@@ -4,11 +4,11 @@ mod my_object {
         my_number: i32,
     }
 
-    struct MyObject {
+    struct RustObj {
         my_number: i32,
     }
 
-    impl MyObject {
+    impl RustObj {
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }

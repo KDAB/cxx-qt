@@ -1,7 +1,7 @@
 mod my_object {
-    struct MyObject;
+    struct RustObj;
 
-    impl MyObject {
+    impl RustObj {
         fn double_number(&self, number: i32) -> i32 {
             number * 2
         }

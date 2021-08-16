@@ -629,7 +629,7 @@ fn generate_properties_cpp(
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let struct_ident_str = obj.ident.to_string();
-    let rust_struct_ident_str = obj.rust_struct_ident.to_string();
+    const RUST_STRUCT_IDENT_STR: &str = "RustObj";
 
     // A helper which allows us to flatten data from vec of properties
     struct CppPropertyHelper {
@@ -770,7 +770,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     namespace = namespace,
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
-    rust_struct_ident = rust_struct_ident_str,
+    rust_struct_ident = RUST_STRUCT_IDENT_STR,
     signals = signals,
     public_slots = public_slots,
     };

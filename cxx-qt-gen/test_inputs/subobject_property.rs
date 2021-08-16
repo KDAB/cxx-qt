@@ -4,7 +4,7 @@ mod my_object {
         obj: crate::sub_object::SubObject,
     }
 
-    struct MyObject {
+    struct RustObj {
         obj: crate::sub_object::SubObject,
     }
 }

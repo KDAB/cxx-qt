@@ -13,23 +13,23 @@ mod my_object {
         }
 
         extern "Rust" {
-            type MyObjectRs;
+            type RustObj;
 
             #[cxx_name = "sayHi"]
-            fn say_hi(self: &MyObjectRs, string: &str, number: i32);
+            fn say_hi(self: &RustObj, string: &str, number: i32);
             #[cxx_name = "sayBye"]
-            fn say_bye(self: &MyObjectRs);
+            fn say_bye(self: &RustObj);
 
             #[cxx_name = "createMyObjectRs"]
-            fn create_my_object_rs() -> Box<MyObjectRs>;
+            fn create_my_object_rs() -> Box<RustObj>;
         }
     }
 
     pub type CppObj = ffi::MyObject;
 
-    struct MyObjectRs;
+    struct RustObj;
 
-    impl MyObjectRs {
+    impl RustObj {
         fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
@@ -42,11 +42,11 @@ mod my_object {
         }
     }
 
-    struct MyObjectWrapper<'a> {
+    struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
-    impl<'a> MyObjectWrapper<'a> {
+    impl<'a> CppObjWrapper<'a> {
         fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
             Self { cpp }
         }
@@ -54,19 +54,19 @@ mod my_object {
 
     struct Data;
 
-    impl From<Data> for MyObjectRs {
+    impl From<Data> for RustObj {
         fn from(_value: Data) -> Self {
             Self {}
         }
     }
 
-    impl From<&MyObjectRs> for Data {
-        fn from(_value: &MyObjectRs) -> Self {
+    impl From<&RustObj> for Data {
+        fn from(_value: &RustObj) -> Self {
             Self {}
         }
     }
 
-    fn create_my_object_rs() -> Box<MyObjectRs> {
+    fn create_my_object_rs() -> Box<RustObj> {
         Box::new(Data {}.into())
     }
 }

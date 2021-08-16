@@ -6,7 +6,7 @@
 
 namespace cxx_qt::my_object {
 
-class MyObjectRs;
+class RustObj;
 
 class MyObject : public CxxQObject
 {
@@ -29,7 +29,7 @@ Q_SIGNALS:
   void objChanged();
 
 private:
-  rust::Box<MyObjectRs> m_rustObj;
+  rust::Box<RustObj> m_rustObj;
 
   cxx_qt::sub_object::SubObject* m_obj = nullptr;
   std::unique_ptr<cxx_qt::sub_object::SubObject> m_ownedObj;
