@@ -1,5 +1,5 @@
 mod my_object {
-    struct MyObject {}
+    struct MyObject;
 
     impl MyObject {
         fn say_hi(&self, string: &str, number: i32) {

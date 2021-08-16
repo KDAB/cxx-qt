@@ -8,6 +8,11 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 pub mod sub_object {
     #[derive(Default)]
+    pub struct Data {
+        number: i32,
+        string: String,
+    }
+
     pub struct SubObject {
         number: i32,
         string: String,

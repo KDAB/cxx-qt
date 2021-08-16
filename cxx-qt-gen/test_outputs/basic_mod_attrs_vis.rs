@@ -14,30 +14,42 @@ pub mod my_object {
         }
 
         extern "Rust" {
-            type MyObjectRs;
+            type RustObjRs;
 
             #[cxx_name = "createMyObjectRs"]
-            fn create_my_object_rs() -> Box<MyObjectRs>;
+            fn create_my_object_rs() -> Box<RustObjRs>;
         }
     }
 
     pub type CppObj = ffi::MyObject;
 
-    struct MyObjectRs;
+    struct RustObjRs;
 
-    struct MyObjectWrapper<'a> {
+    struct RustObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
-    impl<'a> MyObjectWrapper<'a> {
+    impl<'a> RustObjWrapper<'a> {
         fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
             Self { cpp }
         }
     }
 
-    struct MyObjectData;
+    struct Data;
 
-    fn create_my_object_rs() -> Box<MyObjectRs> {
-        Box::new(MyObjectRs {})
+    impl From<Data> for RustObjRs {
+        fn from(_value: Data) -> Self {
+            Self {}
+        }
+    }
+
+    impl From<&RustObjRs> for Data {
+        fn from(_value: &RustObjRs) -> Self {
+            Self {}
+        }
+    }
+
+    fn create_my_object_rs() -> Box<RustObjRs> {
+        Box::new(Data {}.into())
     }
 }

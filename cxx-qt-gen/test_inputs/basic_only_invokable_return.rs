@@ -1,5 +1,5 @@
 mod my_object {
-    struct MyObject {}
+    struct MyObject;
 
     impl MyObject {
         fn double_number(&self, number: i32) -> i32 {

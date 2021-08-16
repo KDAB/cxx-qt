@@ -57,19 +57,19 @@ mod my_object {
         }
     }
 
-    struct MyObjectData {
+    struct Data {
         number: i32,
     }
 
-    impl From<MyObjectData> for MyObjectRs {
-        fn from(value: MyObjectData) -> Self {
+    impl From<Data> for MyObjectRs {
+        fn from(value: Data) -> Self {
             Self {
                 number: value.number,
             }
         }
     }
 
-    impl From<&MyObjectRs> for MyObjectData {
+    impl From<&MyObjectRs> for Data {
         fn from(value: &MyObjectRs) -> Self {
             Self {
                 number: value.number.clone(),
@@ -77,7 +77,7 @@ mod my_object {
         }
     }
 
-    impl Default for MyObjectRs {
+    impl Default for Data {
         fn default() -> Self {
             Self { number: 32 }
         }
@@ -90,6 +90,6 @@ mod my_object {
     }
 
     fn create_my_object_rs() -> Box<MyObjectRs> {
-        Box::new(MyObjectRs::default())
+        Box::new(Data::default().into())
     }
 }

@@ -54,9 +54,21 @@ mod my_object {
         }
     }
 
-    struct MyObjectData;
+    struct Data;
+
+    impl From<Data> for MyObjectRs {
+        fn from(_value: Data) -> Self {
+            Self {}
+        }
+    }
+
+    impl From<&MyObjectRs> for Data {
+        fn from(_value: &MyObjectRs) -> Self {
+            Self {}
+        }
+    }
 
     fn create_my_object_rs() -> Box<MyObjectRs> {
-        Box::new(MyObjectRs {})
+        Box::new(Data {}.into())
     }
 }

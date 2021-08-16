@@ -29,7 +29,6 @@ mod my_object {
 
     pub type CppObj = ffi::MyObject;
 
-    #[derive(Default)]
     struct MyObjectRs {
         my_number: i32,
     }
@@ -59,19 +58,19 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct MyObjectData {
+    struct Data {
         my_number: i32,
     }
 
-    impl From<MyObjectData> for MyObjectRs {
-        fn from(value: MyObjectData) -> Self {
+    impl From<Data> for MyObjectRs {
+        fn from(value: Data) -> Self {
             Self {
                 my_number: value.my_number,
             }
         }
     }
 
-    impl From<&MyObjectRs> for MyObjectData {
+    impl From<&MyObjectRs> for Data {
         fn from(value: &MyObjectRs) -> Self {
             Self {
                 my_number: value.my_number.clone(),
@@ -80,6 +79,6 @@ mod my_object {
     }
 
     fn create_my_object_rs() -> Box<MyObjectRs> {
-        Box::new(MyObjectRs::default())
+        Box::new(Data::default().into())
     }
 }

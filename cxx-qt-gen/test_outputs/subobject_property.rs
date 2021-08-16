@@ -27,7 +27,6 @@ mod my_object {
 
     pub type CppObj = ffi::MyObject;
 
-    #[derive(Default)]
     struct MyObjectRs;
 
     struct MyObjectWrapper<'a> {
@@ -49,9 +48,21 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct MyObjectData;
+    struct Data;
+
+    impl From<Data> for MyObjectRs {
+        fn from(_value: Data) -> Self {
+            Self {}
+        }
+    }
+
+    impl From<&MyObjectRs> for Data {
+        fn from(_value: &MyObjectRs) -> Self {
+            Self {}
+        }
+    }
 
     fn create_my_object_rs() -> Box<MyObjectRs> {
-        Box::new(MyObjectRs::default())
+        Box::new(Data::default().into())
     }
 }

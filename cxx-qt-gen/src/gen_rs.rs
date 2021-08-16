@@ -375,7 +375,8 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
 /// Generate a Rust function that heap constructs the Rust object corresponding to the QObject
 fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Cache the rust class name, this is used multiple times later
+    // Cache the data and rust class name, this is used multiple times later
+    let data_class_name = &obj.original_data_struct.ident;
     let rust_class_name = &obj.rust_struct_ident;
 
     // Build the ident as snake case, then build the rust creator method
@@ -397,13 +398,13 @@ fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStrea
     let output = if obj.properties.is_empty() {
         quote! {
             fn #fn_ident() -> Box<#rust_class_name> {
-                Box::new(#rust_class_name {})
+                Box::new(#data_class_name {}.into())
             }
         }
     } else {
         quote! {
             fn #fn_ident() -> Box<#rust_class_name> {
-                Box::new(#rust_class_name::default())
+                Box::new(#data_class_name::default().into())
             }
         }
     };
@@ -578,7 +579,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
     //
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
-    let renamed_struct = rename_filter_struct(&obj.original_struct, rust_class_name);
+    let renamed_struct = rename_filter_struct(&obj.original_rust_struct, rust_class_name);
 
     // Create a struct that wraps the CppObject with a nicer interface
     let wrapper_struct = quote! {
@@ -595,38 +596,41 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // TODO: what happens if the original struct has no fields?
     // Do we then skip the data struct? Or do we always want a data struct
     // for simplicity?
-    let data_struct_name = format_ident!("{}Data", obj.ident);
-    let data_struct = rename_filter_struct(&obj.original_struct, &data_struct_name);
+    let data_struct_name = &obj.original_data_struct.ident;
+    let data_struct = rename_filter_struct(&obj.original_data_struct, data_struct_name);
 
     // TODO: should we instead pass this around, as we do this filter multiple times
     let filtered_fields = obj
-        .original_struct
+        .original_data_struct
         .fields
         .iter()
         .filter(|field| is_field_ptr(field))
         .collect::<Vec<&syn::Field>>();
 
-    // Determine if we need a impl block on the data struct
-    //
-    // TODO: if there are original impl Default for struct then do we need to copy them?
-    let data_struct_impl = if filtered_fields.is_empty() {
-        quote! {}
-    } else {
+    // Build the converters between the Data struct and RustObj
+    let data_struct_impl = {
         let mut fields = vec![];
         let mut fields_clone = vec![];
+        // If there are no filtered fields then use _value
+        let value_ident = if filtered_fields.is_empty() {
+            format_ident!("_value")
+        } else {
+            format_ident!("value")
+        };
+
         for field in filtered_fields {
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
-                fields.push(quote! { #field_name: value.#field_name });
+                fields.push(quote! { #field_name: #value_ident.#field_name });
                 // TODO: here we assume that all fields in the struct that are in the data struct
                 // implement Clone.
-                fields_clone.push(quote! { #field_name: value.#field_name.clone() });
+                fields_clone.push(quote! { #field_name: #value_ident.#field_name.clone() });
             }
         }
 
         quote! {
             impl From<#data_struct_name> for #rust_class_name {
-                fn from(value: #data_struct_name) -> Self {
+                fn from(#value_ident: #data_struct_name) -> Self {
                     Self {
                         #(#fields),*
                     }
@@ -634,7 +638,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             }
 
             impl From<&#rust_class_name> for #data_struct_name {
-                fn from(value: &#rust_class_name) -> Self {
+                fn from(#value_ident: &#rust_class_name) -> Self {
                     Self {
                         #(#fields_clone),*
                     }

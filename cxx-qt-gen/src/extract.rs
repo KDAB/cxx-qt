@@ -98,7 +98,7 @@ pub(crate) struct Property {
 /// Describes all the properties of a QObject class
 #[derive(Debug)]
 pub struct QObject {
-    /// The ident of the original struct and name of the C++ class that represents the QObject
+    /// The ident of the C++ class that represents the QObject
     pub ident: Ident,
     /// The ident of the new Rust struct that will be generated and will form the internals of the QObject
     pub(crate) rust_struct_ident: Ident,
@@ -110,8 +110,10 @@ pub struct QObject {
     pub(crate) properties: Vec<Property>,
     /// The original Rust mod for the struct
     pub(crate) original_mod: ItemMod,
+    /// The original Data struct that the object was generated from
+    pub(crate) original_data_struct: ItemStruct,
     /// The original Rust struct that the object was generated from
-    pub(crate) original_struct: ItemStruct,
+    pub(crate) original_rust_struct: ItemStruct,
     /// The original Rust trait impls for the struct
     pub(crate) original_trait_impls: Vec<ItemImpl>,
     /// The original Rust use declarations from the mod
@@ -587,10 +589,12 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
 
     // Prepare variables to store struct, invokables, and other data
     //
-    // The original Item::Struct if one is found
-    let mut original_struct = None;
-    // The name of the struct if one was found
-    let mut struct_ident = None;
+    // The original Data Item::Struct if one is found
+    let mut original_data_struct = None;
+    // The original RustObj Item::Struct if one is found
+    let mut original_rust_struct = None;
+    // The name of the Qt object we are creating
+    let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
     // The name we will use for the rust generated struct if we find one
     let mut rust_struct_ident = None;
     // The name we will use for the rust generated wrapper if we find one
@@ -608,41 +612,43 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
         match item {
             // We are a struct
             Item::Struct(s) => {
-                // Check that we are the first struct
-                if original_struct.is_none() {
-                    // Make a copy of the ident
-                    struct_ident = Some(s.ident.to_owned());
-                    // Move the original struct
-                    original_struct = Some(s);
-                    // Build rust versions of the struct ident
-                    rust_struct_ident = Some(quote::format_ident!(
-                        "{}{}",
-                        struct_ident.as_ref().unwrap(),
-                        RUST_SUFFIX
-                    ));
-                    rust_wrapper_ident = Some(quote::format_ident!(
-                        "{}{}",
-                        struct_ident.as_ref().unwrap(),
-                        RUST_WRAPPER_SUFFIX
-                    ));
-                } else {
-                    return Err(
-                        Error::new(s.span(), "Only one struct is supported per mod.")
-                            .to_compile_error(),
-                    );
+                match s.ident.to_string().as_str() {
+                    // This is the Data struct
+                    "Data" => {
+                        // Check that we are the first Data struct
+                        if original_data_struct.is_none() {
+                            original_data_struct = Some(s);
+                        } else {
+                            return Err(Error::new(
+                                s.span(),
+                                "Only one Data struct is supported per mod.",
+                            )
+                            .to_compile_error());
+                        }
+                    }
+                    // TODO: later we will only accept RustObj as the other struct
+                    _others => {
+                        // Check that we are the first other struct
+                        if original_rust_struct.is_none() {
+                            // Build rust versions of the struct ident
+                            rust_struct_ident =
+                                Some(quote::format_ident!("{}{}", s.ident, RUST_SUFFIX));
+                            rust_wrapper_ident =
+                                Some(quote::format_ident!("{}{}", s.ident, RUST_WRAPPER_SUFFIX));
+                            // Move the original struct
+                            original_rust_struct = Some(s);
+                        } else {
+                            return Err(Error::new(
+                                s.span(),
+                                "Only one RustObj struct is supported per mod.",
+                            )
+                            .to_compile_error());
+                        }
+                    }
                 }
             }
             // We are an impl
             Item::Impl(mut original_impl) => {
-                // Ensure that the struct block has already happened
-                if original_struct.is_none() {
-                    return Err(Error::new(
-                        original_impl.span(),
-                        "Impl can only be declared after a struct.",
-                    )
-                    .to_compile_error());
-                }
-
                 // Extract the path from the type (this leads to the struct name)
                 if let Type::Path(TypePath { path, .. }) = &mut *original_impl.self_ty {
                     // Check that the path contains segments
@@ -654,38 +660,71 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                         .to_compile_error());
                     }
 
-                    // Retrieve the impl struct name and check it's the same as the declared struct
+                    // Read the name of the struct that the impl is for
                     //
                     // We can assume that segments[0] works as we have checked length to be 1
-                    let impl_ident = &path.segments[0].ident;
-                    // We can assume that struct_ident exists as we checked there was a struct
-                    if impl_ident != struct_ident.as_ref().unwrap() {
-                        return Err(Error::new(
-                            impl_ident.span(),
-                            "The impl block needs to match the struct.",
-                        )
-                        .to_compile_error());
-                    }
+                    match path.segments[0].ident.to_string().as_str() {
+                        "Data" => {
+                            // Can have a trait, eg impl Default for Data
+                            if original_impl.trait_.is_some() {
+                                // Push the original trait impl
+                                //
+                                // TODO: have original_data_trait_impls so that we can keep
+                                // impl Data close to struct Data
+                                original_trait_impls.push(original_impl.to_owned());
+                            } else {
+                                // Cannot have methods
+                                //
+                                // TODO: later should we pass through any Data impl methods?
+                                return Err(Error::new(
+                                    original_impl.span(),
+                                    "Data struct cannot have impl methods.",
+                                )
+                                .to_compile_error());
+                            }
+                        }
+                        // TODO: later we will only accept RustObj as the other struct
+                        _other => {
+                            // Ensure that the struct block has already happened
+                            if original_rust_struct.is_none() {
+                                return Err(Error::new(
+                                    original_impl.span(),
+                                    "Impl can only be declared after a RustObj struct.",
+                                )
+                                .to_compile_error());
+                            }
 
-                    // Check if this impl is a impl or impl Trait
-                    if original_impl.trait_.is_none() {
-                        // Add invokables if this is just an impl block
-                        object_invokables.append(&mut extract_invokables(&original_impl.items)?);
-                    } else {
-                        // We are a impl trait so rename the struct and add to vec
-                        // We can assume that segments[0] works as we have checked length to be 1
-                        let impl_ident = &mut path.segments[0].ident;
-                        // We can assume that struct_ident exists as we checked there was a struct
-                        if impl_ident == struct_ident.as_ref().unwrap() {
-                            // Rename the ident of the struct
-                            *impl_ident = quote::format_ident!("{}{}", impl_ident, RUST_SUFFIX);
-                            original_trait_impls.push(original_impl.to_owned());
-                        } else {
-                            return Err(Error::new(
-                                impl_ident.span(),
-                                "The impl Trait block needs to match the struct.",
-                            )
-                            .to_compile_error());
+                            // Needs to match the original struct name, later this check won't be needed
+                            //
+                            // We can assume that original_rust_struct exists as we checked it above
+                            if path.segments[0].ident
+                                != original_rust_struct.as_ref().unwrap().ident
+                            {
+                                return Err(Error::new(
+                                    path.span(),
+                                    "The impl block needs to match the RustObj struct.",
+                                )
+                                .to_compile_error());
+                            }
+
+                            // Can have custom traits, these are renamed to MyObjectRs for now
+                            //
+                            // TODO: later this renaming will be removed as we have just RustObj ?
+                            if original_impl.trait_.is_some() {
+                                // We are a impl trait so rename the struct and add to vec
+                                //
+                                // We can assume that segments[0] works as we have checked length to be 1
+                                let impl_ident = &mut path.segments[0].ident;
+                                // Rename the ident of the struct
+                                *impl_ident = quote::format_ident!("{}{}", impl_ident, RUST_SUFFIX);
+                                original_trait_impls.push(original_impl.to_owned());
+                            } else {
+                                // Add invokables from RustObj
+                                //
+                                // TODO: later we might filter these to only ones marked as invokable
+                                object_invokables
+                                    .append(&mut extract_invokables(&original_impl.items)?);
+                            }
                         }
                     }
                 } else {
@@ -709,23 +748,26 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
         }
     }
 
-    // Check that we found a struct
-    if original_struct.is_none() {
-        panic!("There must be at least one struct per mod");
-    }
-    let original_struct = original_struct.unwrap();
-
-    // Read properties from the struct
-    let object_properties = extract_properties(&original_struct)?;
+    // Read properties from the Data struct
+    let object_properties = if let Some(ref original_struct) = original_data_struct {
+        extract_properties(original_struct)?
+    } else {
+        vec![]
+    };
 
     Ok(QObject {
-        ident: struct_ident.unwrap(),
-        rust_struct_ident: rust_struct_ident.unwrap(),
-        rust_wrapper_ident: rust_wrapper_ident.unwrap(),
+        ident: qt_ident,
+        rust_struct_ident: rust_struct_ident
+            .unwrap_or(quote::format_ident!("RustObj{}", RUST_SUFFIX)),
+        rust_wrapper_ident: rust_wrapper_ident
+            .unwrap_or(quote::format_ident!("RustObj{}", RUST_WRAPPER_SUFFIX)),
         invokables: object_invokables,
         properties: object_properties,
         original_mod,
-        original_struct,
+        original_data_struct: original_data_struct
+            .unwrap_or_else(|| syn::parse_str("struct Data;").unwrap()),
+        original_rust_struct: original_rust_struct
+            .unwrap_or_else(|| syn::parse_str("struct RustObj;").unwrap()),
         original_trait_impls,
         original_use_decls,
     })
@@ -755,7 +797,7 @@ mod tests {
         let trait_impl = &qobject.original_trait_impls[0];
         if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
             assert_eq!(path.segments.len(), 1);
-            assert_eq!(path.segments[0].ident.to_string(), "MyObjectRs");
+            assert_eq!(path.segments[0].ident.to_string(), "Data");
         } else {
             panic!("Trait impl was not a TypePath");
         }
