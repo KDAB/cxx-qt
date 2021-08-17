@@ -1,6 +1,8 @@
 #include "cxx-qt-gen/include/my_object.h"
 #include "cxx-qt-gen/src/my_object.rs.h"
 
+namespace cxx_qt::my_object {
+
 MyObject::MyObject(QObject* parent)
   : CxxQObject(parent)
   , m_rustObj(createMyObjectRs())
@@ -8,14 +10,14 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-SubObject*
+cxx_qt::sub_object::SubObject*
 MyObject::getObj() const
 {
   return m_obj;
 }
 
 void
-MyObject::setObj(SubObject* value)
+MyObject::setObj(cxx_qt::sub_object::SubObject* value)
 {
   if (value != m_obj) {
     if (m_ownedObj) {
@@ -28,7 +30,7 @@ MyObject::setObj(SubObject* value)
   }
 }
 
-std::unique_ptr<SubObject>
+std::unique_ptr<cxx_qt::sub_object::SubObject>
 MyObject::takeObj()
 {
   auto value = std::move(m_ownedObj);
@@ -37,7 +39,7 @@ MyObject::takeObj()
 }
 
 void
-MyObject::giveObj(std::unique_ptr<SubObject> value)
+MyObject::giveObj(std::unique_ptr<cxx_qt::sub_object::SubObject> value)
 {
   Q_ASSERT(value.get() != m_obj);
 
@@ -52,3 +54,5 @@ newMyObject()
 {
   return std::make_unique<MyObject>();
 }
+
+} // namespace cxx_qt::my_object

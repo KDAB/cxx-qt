@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use syn::spanned::Spanned;
 
 use crate::extract::{QObject, QtTypes};
-use crate::utils::is_type_ident_ptr;
+use crate::utils::{is_type_ident_ptr, type_to_namespace};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
@@ -68,7 +68,7 @@ impl RustType for QtTypes {
         match self {
             Self::I32 => quote! {i32},
             Self::Pin { .. } => unreachable!(),
-            Self::Ptr { ident_str } => {
+            Self::Ptr { ident_str, .. } => {
                 let ident = format_ident!("{}", ident_str);
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
@@ -78,7 +78,10 @@ impl RustType for QtTypes {
 }
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
-pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
+pub fn generate_qobject_cxx(
+    obj: &QObject,
+    cpp_namespace_prefix: &[String],
+) -> Result<TokenStream, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
     let rust_class_name = &obj.rust_struct_ident;
@@ -94,17 +97,43 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let mut rs_functions = Vec::new();
 
     // Closure which allows for adding a type to cpp functions but ensures no duplicates
+    //
+    // This is useful when the same external C++ type is used in multiple properties or invokables
     let cpp_types_push_unique = |cpp_functions: &mut Vec<TokenStream>,
                                  cpp_types: &mut HashSet<String>,
                                  ptr_class_name: &Ident,
-                                 type_idents_ffi: Vec<Ident>| {
+                                 type_idents_ffi: Vec<Ident>|
+     -> Result<_, TokenStream> {
+        // Ensure that this type doesn't exist in our set already
+        //
+        // TODO: when we skip adding a type for ptr_class_name's that are the same but with
+        // different type_idents, other parts of the system will likely fail.
+        // This is likely a good place to catch the error.
+        // Eg if we had moduleA::Object and moduleB::Object?
         if !cpp_types.contains(&ptr_class_name.to_string()) {
+            // Build the namespace for our type
+            let namespace = type_to_namespace(cpp_namespace_prefix, &type_idents_ffi)
+                .map_err(|msg| {
+                    syn::Error::new(
+                        ptr_class_name.span(),
+                        format!(
+                            "Could not generate namespace with type idents {:#?}: {}",
+                            type_idents_ffi, msg
+                        ),
+                    )
+                    .to_compile_error()
+                })?
+                .join("::");
+            // Add the type definition to the C++ part of the cxx bridge
             cpp_functions.push(quote! {
+                #[namespace = #namespace]
                 type #ptr_class_name = #(#type_idents_ffi)::*;
             });
-
+            // Track that we have added this type
             cpp_types.insert(ptr_class_name.to_string());
         }
+
+        Ok(())
     };
     // Closure which retrieves Object from crate::module::Object and swaps to crate::module::CppObj
     let type_idents_to_ptr_class_name_and_ffi_type = |type_idents: &Vec<Ident>| {
@@ -203,7 +232,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                                 &mut cpp_types,
                                 &ptr_class_name,
                                 type_idents_ffi,
-                            );
+                            )?;
 
                             if *is_mut {
                                 parameters_quotes
@@ -288,7 +317,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 &mut cpp_types,
                 &ptr_class_name,
                 type_idents_ffi,
-            );
+            )?;
 
             // Build the C++ method declarations names
             let getter_str = format!("take_{}", property_ident_snake);
@@ -341,14 +370,19 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QString;"
     // if we actually generate some code that uses QString.
 
+    // Build the namespace string, rust::module
+    let namespace = obj.namespace.join("::");
+
     // Build the CXX bridge
     let output = quote! {
-        #[cxx::bridge]
+        #[cxx::bridge(namespace = #namespace)]
         mod ffi {
             unsafe extern "C++" {
                 include!(#import_path);
 
                 type #class_name;
+
+                #[namespace = ""]
                 type QString = cxx_qt_lib::QString;
 
                 #(#cpp_functions)*
@@ -540,7 +574,10 @@ fn rename_filter_struct(
 }
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
-pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
+pub fn generate_qobject_rs(
+    obj: &QObject,
+    cpp_namespace_prefix: &[String],
+) -> Result<TokenStream, TokenStream> {
     // Load macro attributes that were on the module, excluding #[make_qobject]
     let mod_attrs = obj
         .original_mod
@@ -574,7 +611,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let rust_wrapper_name = &obj.rust_wrapper_ident;
 
     // Generate cxx block
-    let cxx_block = generate_qobject_cxx(obj)?;
+    let cxx_block = generate_qobject_cxx(obj, cpp_namespace_prefix)?;
 
     // Create our renamed struct eg MyObject -> MyObjectRs with any filtering required
     //
@@ -840,12 +877,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_custom_default.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -858,12 +898,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_ident_changes.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_ident_changes.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -876,12 +919,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_invokable_and_properties.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -894,12 +940,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_invokable.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -912,12 +961,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_invokable_return.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -930,12 +982,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_properties.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -948,12 +1003,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_attrs_vis.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_mod_attrs_vis.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -966,12 +1024,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_use.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_mod_use.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -984,12 +1045,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_pin_invokable.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -1002,12 +1066,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_property.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);
@@ -1020,12 +1087,15 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_pin_invokable.rs");
         let expected_output = format_rs_source(expected_output);
 
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
         assert_eq!(generated_rs, expected_output);

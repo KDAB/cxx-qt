@@ -2,6 +2,8 @@
 
 #include "rust/cxx_qt.h"
 
+namespace cxx_qt::my_object {
+
 class MyObjectRs;
 
 class MyObject : public CxxQObject
@@ -37,3 +39,5 @@ private:
 
 std::unique_ptr<MyObject>
 newMyObject();
+
+} // namespace cxx_qt::my_object

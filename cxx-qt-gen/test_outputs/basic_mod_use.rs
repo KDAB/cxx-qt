@@ -1,12 +1,13 @@
 mod my_object {
     use super::MyTrait;
 
-    #[cxx::bridge]
+    #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+            #[namespace = ""]
             type QString = cxx_qt_lib::QString;
 
             #[rust_name = "number"]

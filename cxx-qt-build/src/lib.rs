@@ -165,6 +165,7 @@ fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
 fn gen_cxx_for_file(
     rs_path: &str,
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
+    cpp_namespace_prefix: &[String],
 ) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     let mut generated_cpp_paths = Vec::new();
@@ -185,7 +186,7 @@ fn gen_cxx_for_file(
                 m.into_token_stream()
             }
             ExtractedModule::CxxQt(m) => {
-                let qobject = extract_qobject(m).unwrap();
+                let qobject = extract_qobject(m, cpp_namespace_prefix).unwrap();
                 let cpp_object = generate_qobject_cpp(&qobject).unwrap();
                 let snake_name = qobject.ident.to_string().to_case(Case::Snake);
 
@@ -201,7 +202,7 @@ fn gen_cxx_for_file(
                 );
 
                 generated_cpp_paths.append(&mut write_qobject_cpp_files(cpp_object, &snake_name));
-                generate_qobject_cxx(&qobject).unwrap()
+                generate_qobject_cxx(&qobject, cpp_namespace_prefix).unwrap()
             }
             _others => panic!(
                 "No module to generate cxx code from could be found in {}",
@@ -233,6 +234,7 @@ fn gen_cxx_for_file(
 fn gen_cxx_for_files(
     rs_source: &[String],
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
+    cpp_namespace_prefix: &[String],
 ) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
 
@@ -245,10 +247,26 @@ fn gen_cxx_for_files(
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(rs_path, ext_plugin));
+        cpp_files.append(&mut gen_cxx_for_file(
+            rs_path,
+            ext_plugin,
+            cpp_namespace_prefix,
+        ));
     }
 
     cpp_files
+}
+
+fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[String]) {
+    let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+
+    let path = format!(
+        "{}/target/cxx-qt-gen/cpp_namespace_prefix.txt",
+        dir_manifest
+    );
+    let mut file = File::create(&path).expect("Could not create cpp_namespace_prefix file");
+    write!(file, "{}", cpp_namespace_prefix.join("::"))
+        .expect("Could not write cpp_namespace_prefix file");
 }
 
 /// Write the list of C++ paths to the file
@@ -327,6 +345,7 @@ fn write_static_headers() -> Vec<String> {
 pub struct CxxQtBuilder {
     build_mode: BuildMode,
     cpp_format: Option<ClangFormatStyle>,
+    cpp_namespace_prefix: Vec<String>,
 }
 
 impl CxxQtBuilder {
@@ -335,11 +354,12 @@ impl CxxQtBuilder {
         Self {
             build_mode: BuildMode::Plain,
             cpp_format: None,
+            cpp_namespace_prefix: vec!["cxx_qt".to_owned()],
         }
     }
 
     /// Create a new builder as a QQmlExtensionPlugin
-    pub fn qqqmlextensionplugin(
+    pub fn qqmlextensionplugin(
         mut self,
         module_ident: &'static str,
         cpp_plugin_name: &'static str,
@@ -357,12 +377,25 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Choose the C++ namespace prefix that generated objects should be created inside
+    ///
+    /// Defaults to `cxx_qt`.
+    pub fn cpp_namespace_prefix(mut self, namespace: Vec<String>) -> Self {
+        self.cpp_namespace_prefix = namespace;
+        self
+    }
+
     /// Perform the build task, for example parsing and generating sources
     pub fn build(self) {
         // Set clang-format format
         if generate_format(self.cpp_format).is_err() {
             panic!("Failed to set clang-format.");
         }
+
+        // Set the cpp namespace prefix to a file
+        //
+        // This is so that the make_qobject macro can read this back later
+        write_cpp_namespace_prefix(&self.cpp_namespace_prefix);
 
         // Read sources
         let rs_sources = read_rs_sources();
@@ -380,7 +413,11 @@ impl CxxQtBuilder {
         };
 
         // Generate files
-        let mut cpp_paths = gen_cxx_for_files(&rs_sources, &mut ext_plugin.as_mut());
+        let mut cpp_paths = gen_cxx_for_files(
+            &rs_sources,
+            &mut ext_plugin.as_mut(),
+            &self.cpp_namespace_prefix,
+        );
 
         // Write any qqmlextensionplugin if there is one and read any C++ files it creates
         cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));

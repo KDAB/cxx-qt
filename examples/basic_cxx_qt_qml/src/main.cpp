@@ -30,9 +30,12 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
-  qmlRegisterType<MyData>("com.kdab.cxx_qt.demo", 1, 0, "MyData");
-  qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-  qmlRegisterType<SubObject>("com.kdab.cxx_qt.demo", 1, 0, "SubObject");
+  qmlRegisterType<cxx_qt::my_data::MyData>(
+    "com.kdab.cxx_qt.demo", 1, 0, "MyData");
+  qmlRegisterType<cxx_qt::my_object::MyObject>(
+    "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+  qmlRegisterType<cxx_qt::sub_object::SubObject>(
+    "com.kdab.cxx_qt.demo", 1, 0, "SubObject");
 
   engine.load(url);
 

@@ -107,7 +107,7 @@ impl CppType for QtTypes {
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 type_idents.last().unwrap().to_string().to_case(Case::Snake)
             )],
-            Self::Ptr { ident_str } => vec![format!(
+            Self::Ptr { ident_str, .. } => vec![format!(
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 ident_str.to_case(Case::Snake)
             )],
@@ -180,11 +180,16 @@ impl CppType for QtTypes {
             Self::I32 => "int",
             // Pin<T> where T is not is_this should use T as the CppType
             Self::Pin {
-                ident_str, is_this, ..
-            } if is_this == &false => ident_str,
+                ident_namespace_str,
+                is_this,
+                ..
+            } if is_this == &false => ident_namespace_str,
             // Pin<T> where T is_this should not be used as a CppType argument as it's internal
             Self::Pin { .. } => unreachable!(),
-            Self::Ptr { ident_str } => ident_str,
+            Self::Ptr {
+                ident_namespace_str,
+                ..
+            } => ident_namespace_str,
             Self::Str => "QString",
             Self::String => "QString",
         }
@@ -711,6 +716,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }
     };
 
+    let namespace = obj.namespace.join("::");
+
     // Generate the C++ header part
     let header = formatdoc! {r#"
         #pragma once
@@ -718,6 +725,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         #include "rust/cxx_qt.h"
 
         {includes}
+
+        namespace {namespace} {{
 
         class {rust_struct_ident};
 
@@ -744,6 +753,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }};
 
         std::unique_ptr<{ident}> new{ident}();
+
+        }} // namespace {namespace}
         "#,
     ident = struct_ident_str,
     invokables = invokables.headers.join("\n"),
@@ -756,6 +767,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         includes.dedup();
         includes.join("\n")
     },
+    namespace = namespace,
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
     rust_struct_ident = rust_struct_ident_str,
@@ -767,6 +779,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let source = formatdoc! {r#"
         #include "cxx-qt-gen/include/{ident_snake}.h"
         #include "cxx-qt-gen/src/{ident_snake}.rs.h"
+
+        namespace {namespace} {{
 
         {ident}::{ident}(QObject *parent)
             : CxxQObject(parent)
@@ -784,10 +798,13 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         {{
             return std::make_unique<{ident}>();
         }}
+
+        }} // namespace {namespace}
         "#,
         ident = struct_ident_str,
         ident_snake = struct_ident_str.to_case(Case::Snake),
         invokables = invokables.sources.join("\n"),
+        namespace = namespace,
         properties = properties.sources.join("\n"),
     };
 
@@ -820,7 +837,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!(
             "../test_outputs/basic_invokable_and_properties.h"
@@ -842,7 +860,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_ident_changes.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/basic_ident_changes.h")).unwrap();
@@ -860,7 +879,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/basic_only_invokable.h")).unwrap();
@@ -878,7 +898,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!(
             "../test_outputs/basic_only_invokable_return.h"
@@ -900,7 +921,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/basic_only_properties.h")).unwrap();
@@ -918,7 +940,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/basic_pin_invokable.h")).unwrap();
@@ -936,7 +959,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/subobject_property.h")).unwrap();
@@ -954,7 +978,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/subobject_pin_invokable.h")).unwrap();

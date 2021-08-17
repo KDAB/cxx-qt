@@ -17,7 +17,7 @@
 
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
-  MyObject obj;
+  cxx_qt::my_object::MyObject obj;
 
   // TODO: fix this test once we have the "Data" struct ready
   // TODO: this should not be required as derive(Default) should do this
@@ -25,7 +25,7 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 
   obj.sayHi(QStringLiteral("Hello World!"), 32);
 
-  SubObject sub;
+  cxx_qt::sub_object::SubObject sub;
 
   // Check that an invokable can be called and the return value is correct
   const auto value = obj.doubleNumber(32);
@@ -33,10 +33,10 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(value == 64);
 
   // Track the signal count of numberChanged, stringChanged, and subChanged
-  QSignalSpy numberSpy(&obj, &MyObject::numberChanged);
-  QSignalSpy stringSpy(&obj, &MyObject::stringChanged);
-  QSignalSpy subSpy(&obj, &MyObject::subChanged);
-  QSignalSpy subNumberSpy(&sub, &SubObject::numberChanged);
+  QSignalSpy numberSpy(&obj, &cxx_qt::my_object::MyObject::numberChanged);
+  QSignalSpy stringSpy(&obj, &cxx_qt::my_object::MyObject::stringChanged);
+  QSignalSpy subSpy(&obj, &cxx_qt::my_object::MyObject::subChanged);
+  QSignalSpy subNumberSpy(&sub, &cxx_qt::sub_object::SubObject::numberChanged);
 
   // Check the number property
   CHECK(obj.getNumber() == 0);
@@ -90,11 +90,11 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
   // TODO: fix this test once we have the "Data" struct ready
   return;
 
-  MyData data;
+  cxx_qt::my_data::MyData data;
 
   // Track the signal count of numberChanged, stringChanged, and subChanged
-  QSignalSpy numberSpy(&data, &MyData::numberChanged);
-  QSignalSpy stringSpy(&data, &MyData::stringChanged);
+  QSignalSpy numberSpy(&data, &cxx_qt::my_data::MyData::numberChanged);
+  QSignalSpy stringSpy(&data, &cxx_qt::my_data::MyData::stringChanged);
 
   // Check that initial value of the deserialised data
   CHECK(data.getNumber() == 4);

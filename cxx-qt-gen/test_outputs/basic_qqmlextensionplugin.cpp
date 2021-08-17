@@ -11,7 +11,7 @@ class CppPluginNamePlugin : public QQmlExtensionPlugin
 public:
   void registerTypes(const char* uri) override
   {
-    qmlRegisterType<MyObject>(uri, 1, 0, "MyObject");
+    qmlRegisterType<cxx_qt::my_object::MyObject>(uri, 1, 0, "MyObject");
   }
 };
 

@@ -16,7 +16,11 @@ class Setup : public QObject
   Q_OBJECT
 
 public:
-  Setup() { qmlRegisterType<MyData>("com.kdab.cxx_qt.demo", 1, 0, "MyData"); }
+  Setup()
+  {
+    qmlRegisterType<cxx_qt::my_data::MyData>(
+      "com.kdab.cxx_qt.demo", 1, 0, "MyData");
+  }
 };
 
 QUICK_TEST_MAIN_WITH_SETUP(mydata, Setup)

@@ -3,7 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::utils::is_type_ident_ptr;
+use crate::utils::{is_type_ident_ptr, type_to_namespace};
 use convert_case::{Case, Casing};
 use derivative::*;
 use proc_macro2::{Span, TokenStream};
@@ -24,8 +24,8 @@ pub(crate) struct CppRustIdent {
 pub enum QtTypes {
     I32,
     Pin {
-        /// Cache of the last type_idents as a str for C++ to reference
-        ident_str: String,
+        /// Cache of the last type_idents as a str with it's namespace for C++ to reference
+        ident_namespace_str: String,
         /// Whether the inner type of this Pin is mut
         is_mut: bool,
         /// Whether the inner type of this Pin is the current type, and therefore "this" in C++
@@ -34,8 +34,10 @@ pub enum QtTypes {
         type_idents: Vec<Ident>,
     },
     Ptr {
-        /// Cache of the last type ident as a str for C++ to reference
+        /// Cache of the last type ident as a str C++ and Rust to reference
         ident_str: String,
+        /// Cache of the last type ident as a str with it's namespace for C++ to reference
+        ident_namespace_str: String,
     },
     // TODO: these will become QString in the future
     String,
@@ -108,6 +110,8 @@ pub struct QObject {
     pub(crate) invokables: Vec<Invokable>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
+    /// The namespace to use for C++
+    pub(crate) namespace: Vec<String>,
     /// The original Rust mod for the struct
     pub(crate) original_mod: ItemMod,
     /// The original Data struct that the object was generated from
@@ -140,6 +144,7 @@ enum ExtractTypeIdentError {
 fn extract_qt_type(
     idents: &[Ident],
     original_ty: &syn::Type,
+    cpp_namespace_prefix: &[String],
 ) -> Result<QtTypes, ExtractTypeIdentError> {
     // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
     // so that QML can set a C++/QML type into the property ? or is that not useful?
@@ -159,19 +164,17 @@ fn extract_qt_type(
         }
     // As this type ident has more than one segment, check if it is a pointer
     } else if is_type_ident_ptr(idents) {
+        // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
+        let ident_str = idents.last().unwrap().to_string();
+        let mut namespace = type_to_namespace(cpp_namespace_prefix, idents)
+            // TODO: should we have our own error type? UnknownPtrNamespace?
+            .map_err(|_| ExtractTypeIdentError::InvalidType(original_ty.span()))?;
+        namespace.push(ident_str.clone());
+
         Ok(QtTypes::Ptr {
-            // TODO: on the C++ side we only have the last segment always? crate::sub_object::SubObject -> SubObject?
-            // maybe if we do namespacing this will then become important?
-            // ident_str: idents
-            //     .iter()
-            //     .map(|ident| ident.to_string())
-            //     .collect::<Vec<String>>()
-            //     .join("::"),
-            //
+            ident_str,
             // TODO: do we need to track is_ref here?
-            //
-            // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
-            ident_str: idents.last().unwrap().to_string(),
+            ident_namespace_str: namespace.join("::"),
         })
     // This is an unknown type that did not start with crate and has multiple parts
     } else {
@@ -199,7 +202,10 @@ fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError>
 }
 
 /// Extract the type ident from a given syn::Type
-fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentError> {
+fn extract_type_ident(
+    ty: &syn::Type,
+    cpp_namespace_prefix: &[String],
+) -> Result<ParameterType, ExtractTypeIdentError> {
     // Temporary storage of the current syn::TypePath if one is found
     let ty_path;
     // Whether this syn::Type is a reference or not
@@ -262,8 +268,25 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
                     let type_idents = path_to_idents(&ty_path.path)?;
                     // Create the Qt type for the Pin
                     let qt_type = QtTypes::Pin {
-                        ident_str: if let Some(ident) = type_idents.last() {
-                            ident.to_string()
+                        // For a given Pin<crate::A::T> we want to make it cxx_qt::A::T
+                        ident_namespace_str: if let Some(ident) = type_idents.last() {
+                            let ident_str = ident.to_string();
+                            // Ignore Pin<&mut CppObj> from our namespaces for now
+                            //
+                            // TODO: does this need to be considered?
+                            if type_idents.len() == 1 && ident_str.as_str() == "CppObj" {
+                                ident_str
+                            } else {
+                                // Extract the namespace of the type
+                                let mut namespace =
+                                    type_to_namespace(cpp_namespace_prefix, &type_idents)
+                                        // TODO: should we have our own error type? UnknownPtrNamespace?
+                                        .map_err(|_| {
+                                            ExtractTypeIdentError::InvalidType(ty_path.span())
+                                        })?;
+                                namespace.push(ident_str);
+                                namespace.join("::")
+                            }
                         } else {
                             // There was no T part of Pin<T>
                             //
@@ -305,7 +328,7 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
 
     let idents = path_to_idents(&ty_path.path)?;
     // Extract the Qt type this is used in C++ and Rust generation
-    let qt_type = extract_qt_type(&idents, ty)?;
+    let qt_type = extract_qt_type(&idents, ty, cpp_namespace_prefix)?;
 
     // Create and return a ParameterType
     Ok(ParameterType {
@@ -320,7 +343,10 @@ fn extract_type_ident(ty: &syn::Type) -> Result<ParameterType, ExtractTypeIdentE
 }
 
 /// Extracts all the member functions from a module and generates invokables from them
-fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream> {
+fn extract_invokables(
+    items: &[ImplItem],
+    cpp_namespace_prefix: &[String],
+) -> Result<Vec<Invokable>, TokenStream> {
     let mut invokables = Vec::new();
 
     // TODO: we need to set up an exclude list of invokable names and give
@@ -374,7 +400,7 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
                 }
 
                 // Try to extract the type of the parameter
-                match extract_type_ident(ty) {
+                match extract_type_ident(ty, cpp_namespace_prefix) {
                     Ok(result) => type_ident = result,
                     Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
@@ -413,7 +439,7 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
         // Process the output and determine if it has a return type
         let return_type = if let ReturnType::Type(_, ty) = output {
             // This output has a return type, so extract the type
-            match extract_type_ident(ty) {
+            match extract_type_ident(ty, cpp_namespace_prefix) {
                 Ok(result) => Some(result),
                 Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                     return Err(Error::new(
@@ -474,7 +500,10 @@ fn extract_invokables(items: &[ImplItem]) -> Result<Vec<Invokable>, TokenStream>
 }
 
 /// Extracts all the attributes from a struct and generates properties from them
-fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
+fn extract_properties(
+    s: &ItemStruct,
+    cpp_namespace_prefix: &[String],
+) -> Result<Vec<Property>, TokenStream> {
     let mut properties = Vec::new();
 
     // TODO: we need to set up an exclude list of properties names and give
@@ -504,7 +533,7 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
                 // Extract the type of the field
                 let type_ident;
 
-                match extract_type_ident(ty) {
+                match extract_type_ident(ty, cpp_namespace_prefix) {
                     Ok(result) => type_ident = result,
                     Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
@@ -575,7 +604,10 @@ fn extract_properties(s: &ItemStruct) -> Result<Vec<Property>, TokenStream> {
 }
 
 /// Parses a module in order to extract a QObject description from it
-pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
+pub fn extract_qobject(
+    module: ItemMod,
+    cpp_namespace_prefix: &[String],
+) -> Result<QObject, TokenStream> {
     // Static internal rust suffix name
     const RUST_SUFFIX: &str = "Rs";
     const RUST_WRAPPER_SUFFIX: &str = "Wrapper";
@@ -722,8 +754,10 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
                                 // Add invokables from RustObj
                                 //
                                 // TODO: later we might filter these to only ones marked as invokable
-                                object_invokables
-                                    .append(&mut extract_invokables(&original_impl.items)?);
+                                object_invokables.append(&mut extract_invokables(
+                                    &original_impl.items,
+                                    cpp_namespace_prefix,
+                                )?);
                             }
                         }
                     }
@@ -750,10 +784,30 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
 
     // Read properties from the Data struct
     let object_properties = if let Some(ref original_struct) = original_data_struct {
-        extract_properties(original_struct)?
+        extract_properties(original_struct, cpp_namespace_prefix)?
     } else {
         vec![]
     };
+
+    // Build the namespace for this QObject
+    //
+    // We build a fake valid type here, crate::module::Object
+    // so that we can use our namespace helper to retieve cxx_qt::module etc.
+    let namespace = type_to_namespace(
+        cpp_namespace_prefix,
+        &[
+            quote::format_ident!("crate"),
+            original_mod.ident.clone(),
+            qt_ident.clone(),
+        ],
+    )
+    .map_err(|msg| {
+        Error::new(
+            original_mod.ident.span(),
+            format!("Could not generate namespace with module name: {}", msg),
+        )
+        .to_compile_error()
+    })?;
 
     Ok(QObject {
         ident: qt_ident,
@@ -763,6 +817,7 @@ pub fn extract_qobject(module: ItemMod) -> Result<QObject, TokenStream> {
             .unwrap_or(quote::format_ident!("RustObj{}", RUST_WRAPPER_SUFFIX)),
         invokables: object_invokables,
         properties: object_properties,
+        namespace,
         original_mod,
         original_data_struct: original_data_struct
             .unwrap_or_else(|| syn::parse_str("struct Data;").unwrap()),
@@ -786,7 +841,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 1);
@@ -810,7 +866,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_ident_changes.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 1);
@@ -858,7 +915,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
         // We only check the counts as the only_invokables and only_properties
@@ -874,7 +932,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -921,7 +980,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 2);
@@ -982,7 +1042,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_use.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 1);
@@ -999,7 +1060,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1023,13 +1085,13 @@ mod tests {
         assert_eq!(param_first.type_ident.idents[0].to_string(), "Pin");
         assert_eq!(param_first.type_ident.is_ref, false);
         if let QtTypes::Pin {
-            ident_str,
+            ident_namespace_str,
             is_mut,
             is_this,
             type_idents,
         } = &param_first.type_ident.qt_type
         {
-            assert_eq!(ident_str, "CppObj");
+            assert_eq!(ident_namespace_str, "CppObj");
             assert_eq!(is_mut, &true);
             assert_eq!(is_this, &true);
             assert_eq!(type_idents.len(), 1);
@@ -1065,13 +1127,13 @@ mod tests {
         assert_eq!(param_first.type_ident.idents[0].to_string(), "Pin");
         assert_eq!(param_first.type_ident.is_ref, false);
         if let QtTypes::Pin {
-            ident_str,
+            ident_namespace_str,
             is_mut,
             is_this,
             type_idents,
         } = &param_first.type_ident.qt_type
         {
-            assert_eq!(ident_str, "CppObj");
+            assert_eq!(ident_namespace_str, "CppObj");
             assert_eq!(is_mut, &true);
             assert_eq!(is_this, &true);
             assert_eq!(type_idents.len(), 1);

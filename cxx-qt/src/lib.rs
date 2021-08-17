@@ -8,6 +8,14 @@ use syn::{parse_macro_input, ItemMod};
 
 use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 
+/// Read the C++ namespace prefix that cxx-qt-build has set for us
+fn read_cpp_namespace_prefix() -> Vec<String> {
+    let dir_target = std::env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
+    let path = format!("{}/target/cxx-qt-gen/cpp_namespace_prefix.txt", dir_target);
+    let contents = std::fs::read_to_string(path).expect("Could not read cpp namespace prefix");
+    contents.split("::").map(|s| s.to_string()).collect()
+}
+
 /// A procedural macro which generates a QObject for a struct inside a module.
 ///
 /// # Example
@@ -33,16 +41,19 @@ pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // this triggers a compile failure if the tokens fail to parse.
     let module = parse_macro_input!(input as ItemMod);
 
+    // Read the C++ namespace prefix set by cxx-qt-build
+    let cpp_namespace_prefix = read_cpp_namespace_prefix();
+
     // Attempt to extract information about a QObject inside the module
     let qobject;
-    match extract_qobject(module) {
+    match extract_qobject(module, &cpp_namespace_prefix) {
         Ok(o) => qobject = o,
         Err(e) => return e.into(),
     }
 
     // From the extracted QObject, generate the rust code that replaces the original code
     // for the given QObject.
-    let gen_result = generate_qobject_rs(&qobject);
+    let gen_result = generate_qobject_rs(&qobject, &cpp_namespace_prefix);
     match gen_result {
         Ok(tokens) => tokens.into(),
         Err(tokens) => tokens.into(),

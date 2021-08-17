@@ -13,6 +13,8 @@ use crate::extract::QObject;
 struct QMLType {
     /// The name of C++ type which is being registered
     cpp_type: String,
+    /// The C++ type with its namespaces
+    cpp_type_namespace: String,
     /// The name to use for QML when registering the type
     qml_name: String,
     // FIXME: can versions be negative? C++ type is just int?
@@ -36,7 +38,7 @@ impl QMLType {
     fn as_qml_register_type(&self) -> String {
         format!(
             "qmlRegisterType<{cpp_type}>(uri, {version_major}, {version_minor}, \"{qml_name}\");",
-            cpp_type = self.cpp_type,
+            cpp_type = self.cpp_type_namespace,
             qml_name = self.qml_name,
             version_major = self.version_major,
             version_minor = self.version_minor
@@ -71,8 +73,13 @@ impl QQmlExtensionPluginData {
 
     /// Adds a given QObject as a QML type that will be registered in the QQmlExtensionPlugin
     pub fn push_type(&mut self, object: &QObject) {
+        // Build the C++ type with a namespace
+        let mut cpp_type_namespace = object.namespace.clone();
+        cpp_type_namespace.push(object.ident.to_string());
+
         self.register_types.push(QMLType {
             cpp_type: object.ident.to_string(),
+            cpp_type_namespace: cpp_type_namespace.join("::"),
             qml_name: object.ident.to_string(),
             // TODO: these should be optionally read from the macro attributes
             // eg #[make_qobject(version_major=1, version_minor=0)]
@@ -145,7 +152,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_qmldir = include_str!("../test_outputs/basic_qmldir");
 
@@ -163,7 +171,8 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(module).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_source = clang_format(include_str!(
             "../test_outputs/basic_qqmlextensionplugin.cpp"
