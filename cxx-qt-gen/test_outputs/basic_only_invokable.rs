@@ -60,8 +60,8 @@ mod my_object {
         }
     }
 
-    impl From<&RustObj> for Data {
-        fn from(_value: &RustObj) -> Self {
+    impl<'a> From<&CppObjWrapper<'a>> for Data {
+        fn from(_value: &CppObjWrapper<'a>) -> Self {
             Self {}
         }
     }

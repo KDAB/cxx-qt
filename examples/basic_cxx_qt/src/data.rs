@@ -28,8 +28,9 @@ mod my_data {
     }
 
     impl RustObj {
-        fn as_json_str(&self) -> String {
-            let data = Data::from(self);
+        fn as_json_str(&self, cpp: Pin<&mut CppObj>) -> String {
+            let wrapper = CppObjWrapper::new(cpp);
+            let data = Data::from(&wrapper);
             serde_json::to_string(&data).unwrap()
         }
     }

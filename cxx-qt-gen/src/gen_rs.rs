@@ -634,7 +634,7 @@ pub fn generate_qobject_rs(
     // Build the converters between the Data struct and RustObj
     let data_struct_impl = {
         let mut fields = vec![];
-        let mut fields_clone = vec![];
+        let mut fields_into = vec![];
         // If there are no filtered fields then use _value
         let value_ident = if data_fields_no_ptr.is_empty() {
             format_ident!("_value")
@@ -646,9 +646,10 @@ pub fn generate_qobject_rs(
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
                 fields.push(quote! { #field_name: #value_ident.#field_name });
-                // TODO: here we assume that all fields in the struct that are in the data struct
-                // implement Clone.
-                fields_clone.push(quote! { #field_name: #value_ident.#field_name.clone() });
+
+                // The Data struct should only contain "Qt-compatible" fields defined by
+                // us so we will insure that From is implemented where necessary.
+                fields_into.push(quote! { #field_name: #value_ident.#field_name().into() });
             }
         }
 
@@ -661,10 +662,10 @@ pub fn generate_qobject_rs(
                 }
             }
 
-            impl From<&#rust_class_name> for #data_struct_name {
-                fn from(#value_ident: &#rust_class_name) -> Self {
+            impl<'a> From<&#rust_wrapper_name<'a>> for #data_struct_name {
+                fn from(#value_ident: &#rust_wrapper_name<'a>) -> Self {
                     Self {
-                        #(#fields_clone),*
+                        #(#fields_into),*
                     }
                 }
             }

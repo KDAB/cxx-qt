@@ -3,6 +3,11 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+// TODO: remove this once we have cleanup things enough so that Data
+// and RustObj no longer need duplicate fields
+#![allow(dead_code)]
+
 use cxx_qt::make_qobject;
 
 mod data;

@@ -71,10 +71,10 @@ mod my_object {
         }
     }
 
-    impl From<&RustObj> for Data {
-        fn from(value: &RustObj) -> Self {
+    impl<'a> From<&CppObjWrapper<'a>> for Data {
+        fn from(value: &CppObjWrapper<'a>) -> Self {
             Self {
-                my_number: value.my_number.clone(),
+                my_number: value.my_number().into(),
             }
         }
     }

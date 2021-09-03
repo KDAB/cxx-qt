@@ -78,11 +78,11 @@ mod my_object {
         }
     }
 
-    impl From<&RustObj> for Data {
-        fn from(value: &RustObj) -> Self {
+    impl<'a> From<&CppObjWrapper<'a>> for Data {
+        fn from(value: &CppObjWrapper<'a>) -> Self {
             Self {
-                number: value.number.clone(),
-                string: value.string.clone(),
+                number: value.number().into(),
+                string: value.string().into(),
             }
         }
     }
