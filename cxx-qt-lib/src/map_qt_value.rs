@@ -7,19 +7,26 @@
 use crate::let_qstring;
 use crate::qstring::QString;
 
-pub trait MapQtValue<Out> {
-    fn map_qt_value<C>(&self, map_func: fn(C, &Out), context: C);
+pub trait MapQtValue<C, F, R> {
+    fn map_qt_value(&self, map_func: F, context: &mut C) -> R;
 }
 
-impl MapQtValue<QString> for &str {
-    fn map_qt_value<C>(&self, map_func: fn(C, &QString), context: C) {
+impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for &str {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QString) -> R, context: &mut C) -> R {
         let_qstring!(s = self);
         map_func(context, &s)
     }
 }
 
-impl MapQtValue<i32> for i32 {
-    fn map_qt_value<C>(&self, map_func: fn(C, &i32), context: C) {
-        map_func(context, self)
+impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QString) -> R, context: &mut C) -> R {
+        let_qstring!(s = self);
+        map_func(context, &s)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, i32) -> R, R> for i32 {
+    fn map_qt_value(&self, map_func: fn(&mut C, i32) -> R, context: &mut C) -> R {
+        map_func(context, *self)
     }
 }

@@ -22,7 +22,7 @@ mod ffi {
         fn can_construct_qstring(slice: bool) -> bool;
         fn can_read_qstring(s: &QString) -> bool;
         fn modify_qstring(s: Pin<&mut QString>);
-        fn modify_qstring_with_map(s: Pin<&mut QString>);
+        fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
     }
 }
@@ -48,11 +48,11 @@ fn modify_qstring(s: Pin<&mut QString>) {
     ffi::assign_to_qstring(s, &v);
 }
 
-fn modify_qstring_with_map(s: Pin<&mut QString>) {
-    "Updated string value".map_qt_value(
-        |context, converted| ffi::assign_to_qstring(context, converted),
-        s,
-    );
+fn can_map_to_qstring() -> bool {
+    "String constructed by Rust".map_qt_value(
+        |_, converted| ffi::test_constructed_qstring(converted),
+        &mut (),
+    )
 }
 
 fn can_handle_qstring_change() -> bool {

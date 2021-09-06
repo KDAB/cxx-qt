@@ -642,7 +642,7 @@ pub fn generate_qobject_rs(
             format_ident!("value")
         };
 
-        for field in data_fields_no_ptr {
+        for field in &data_fields_no_ptr {
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
                 fields.push(quote! { #field_name: #value_ident.#field_name });
@@ -798,6 +798,20 @@ pub fn generate_qobject_rs(
         }
     };
 
+    // TODO: eventually we want so support grabbing values from sub objects too
+    let mut grab_values = vec![];
+    for field in &data_fields_no_ptr {
+        if let Some(field_ident) = &field.ident {
+            let field_name = field_ident.clone();
+            let setter_name = format_ident!("set_{}", field_name);
+
+            grab_values.push(quote! {
+                data.#field_name.
+                    map_qt_value(|context, converted| context.#setter_name(converted), self);
+            });
+        }
+    }
+
     let wrapper_struct_impl = quote! {
         impl<'a> #rust_wrapper_name<'a> {
             fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
@@ -805,6 +819,12 @@ pub fn generate_qobject_rs(
             }
 
             #(#property_methods)*
+
+            fn grab_values_from_data(&mut self, data: &#data_struct_name) {
+                use cxx_qt_lib::MapQtValue;
+
+                #(#grab_values)*
+            }
         }
     };
 

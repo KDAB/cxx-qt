@@ -50,6 +50,10 @@ mod my_object {
         fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
             Self { cpp }
         }
+
+        fn grab_values_from_data(&mut self, data: &Data) {
+            use cxx_qt_lib::MapQtValue;
+        }
     }
 
     struct Data;

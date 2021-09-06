@@ -47,6 +47,10 @@ mod my_object {
         fn give_obj(&mut self, value: cxx::UniquePtr<ffi::SubObject>) {
             self.cpp.as_mut().give_obj(value);
         }
+
+        fn grab_values_from_data(&mut self, data: &Data) {
+            use cxx_qt_lib::MapQtValue;
+        }
     }
 
     #[derive(Default)]

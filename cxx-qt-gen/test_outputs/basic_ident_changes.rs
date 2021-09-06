@@ -56,6 +56,13 @@ mod my_object {
         fn set_my_number(&mut self, value: i32) {
             self.cpp.as_mut().set_my_number(value);
         }
+
+        fn grab_values_from_data(&mut self, data: &Data) {
+            use cxx_qt_lib::MapQtValue;
+
+            data.my_number
+                .map_qt_value(|context, converted| context.set_my_number(converted), self);
+        }
     }
 
     #[derive(Default)]

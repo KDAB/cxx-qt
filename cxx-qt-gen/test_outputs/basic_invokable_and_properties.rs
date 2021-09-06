@@ -79,6 +79,15 @@ mod my_object {
         fn set_string(&mut self, value: &cxx_qt_lib::QString) {
             self.cpp.as_mut().set_string(value);
         }
+
+        fn grab_values_from_data(&mut self, data: &Data) {
+            use cxx_qt_lib::MapQtValue;
+
+            data.number
+                .map_qt_value(|context, converted| context.set_number(converted), self);
+            data.string
+                .map_qt_value(|context, converted| context.set_string(converted), self);
+        }
     }
 
     #[derive(Default)]
