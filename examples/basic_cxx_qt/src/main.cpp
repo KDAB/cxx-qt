@@ -19,10 +19,6 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
   cxx_qt::my_object::MyObject obj;
 
-  // TODO: fix this test once we have the "Data" struct ready
-  // TODO: this should not be required as derive(Default) should do this
-  obj.setNumber(0);
-
   obj.sayHi(QStringLiteral("Hello World!"), 32);
 
   cxx_qt::sub_object::SubObject sub;
@@ -87,9 +83,6 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
           "using Serde")
 {
-  // TODO: fix this test once we have the "Data" struct ready
-  return;
-
   cxx_qt::my_data::MyData data;
 
   // Track the signal count of numberChanged, stringChanged, and subChanged

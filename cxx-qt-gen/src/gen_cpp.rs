@@ -786,6 +786,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             : CxxQObject(parent)
             , m_rustObj(create{ident}Rs())
         {{
+            initialise{ident}Cpp(*this);
         }}
 
         {ident}::~{ident}() = default;

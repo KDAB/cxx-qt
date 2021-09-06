@@ -22,6 +22,9 @@ mod my_object {
 
             #[cxx_name = "createMyObjectRs"]
             fn create_my_object_rs() -> Box<RustObj>;
+
+            #[cxx_name = "initialiseMyObjectCpp"]
+            fn initialise_my_object_cpp(cpp: Pin<&mut MyObject>);
         }
     }
 
@@ -72,5 +75,10 @@ mod my_object {
 
     fn create_my_object_rs() -> Box<RustObj> {
         Box::new(Data {}.into())
+    }
+
+    fn initialise_my_object_cpp(cpp: std::pin::Pin<&mut CppObj>) {
+        let mut wrapper = CppObjWrapper::new(cpp);
+        wrapper.grab_values_from_data(&Data::default());
     }
 }

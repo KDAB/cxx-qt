@@ -6,7 +6,9 @@ namespace cxx_qt::my_object {
 MyObject::MyObject(QObject* parent)
   : CxxQObject(parent)
   , m_rustObj(createMyObjectRs())
-{}
+{
+  initialiseMyObjectCpp(*this);
+}
 
 MyObject::~MyObject() = default;
 

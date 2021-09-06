@@ -363,6 +363,8 @@ pub fn generate_qobject_cxx(
     let new_object_rust_str = format!("new_{}", class_name);
     let create_object_ident = format_ident!("create_{}_rs", ident_snake);
     let create_object_cpp_str = create_object_ident.to_string().to_case(Case::Camel);
+    let initialise_object_ident = format_ident!("initialise_{}_cpp", ident_snake);
+    let initialise_object_cpp_str = initialise_object_ident.to_string().to_case(Case::Camel);
 
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
@@ -398,6 +400,9 @@ pub fn generate_qobject_cxx(
 
                 #[cxx_name = #create_object_cpp_str]
                 fn #create_object_ident() -> Box<#rust_class_name>;
+
+                #[cxx_name = #initialise_object_cpp_str]
+                fn #initialise_object_ident(cpp: Pin<&mut #class_name>);
             }
         }
 
@@ -444,6 +449,27 @@ fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStrea
     };
 
     Ok(output.into_token_stream())
+}
+
+/// Generate a Rust function that initialises a QObject with the values from Data::default()
+fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
+    let data_class_name = &obj.original_data_struct.ident;
+
+    // Build the ident as snake case, then build the rust creator method
+    //
+    // TODO: Simplify things to  initialiseCpp, createRs, newCppObject etc. now that we have namespaces
+    let ident_snake = &obj.ident.to_string().to_case(Case::Snake);
+    let fn_ident = format_ident!("initialise_{}_cpp", ident_snake);
+
+    // We assume that all Data classes implement default
+    let output = quote! {
+        fn #fn_ident(cpp: std::pin::Pin<&mut CppObj>) {
+            let mut wrapper = CppObjWrapper::new(cpp);
+            wrapper.grab_values_from_data(&#data_class_name::default());
+        }
+    };
+
+    output.into_token_stream()
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
@@ -772,6 +798,9 @@ pub fn generate_qobject_rs(
     // Generate the rust creator function
     let creator_fn = generate_rust_object_creator(obj)?;
 
+    // Generate the cpp initialser function
+    let initialiser_fn = generate_cpp_object_initialiser(obj);
+
     // Build our filtered rust struct
     //
     // TODO: once fields are stored on this C++ side, this can change
@@ -851,6 +880,8 @@ pub fn generate_qobject_rs(
             #(#original_trait_impls)*
 
             #creator_fn
+
+            #initialiser_fn
         }
     };
 

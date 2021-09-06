@@ -28,18 +28,12 @@ TestCase {
     }
 
     function test_deserialise() {
-        // TODO: fix this test once we have the "Data" struct ready
-        return;
-
         const myData = createTemporaryObject(componentMyData, null, {});
         compare(myData.number, 4);
         compare(myData.string, "Hello World!");
     }
 
     function test_serialize() {
-        // TODO: fix this test once we have the "Data" struct ready
-        return;
-
         const myData = createTemporaryObject(componentMyData, null, {});
         const spyNumber = createTemporaryObject(componentSpy, null, {
             signalName: "numberChanged",
