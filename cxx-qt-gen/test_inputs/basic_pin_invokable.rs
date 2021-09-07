@@ -3,7 +3,7 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn say_hi(&self, _cpp: Pin<&mut CppObj>, string: &str, number: i32) {
+        fn say_hi(&self, _cpp: Pin<&mut CppObj>, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

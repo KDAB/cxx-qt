@@ -18,7 +18,7 @@ mod my_object {
             #[cxx_name = "doubleNumber"]
             fn double_number(self: &RustObj, number: i32) -> i32;
             #[cxx_name = "helloMessage"]
-            fn hello_message(self: &RustObj, msg: &str) -> String;
+            fn hello_message(self: &RustObj, msg: &QString) -> String;
             #[cxx_name = "staticMessage"]
             fn static_message(self: &RustObj) -> &str;
 
@@ -40,7 +40,7 @@ mod my_object {
             number * 2
         }
 
-        fn hello_message(&self, msg: &str) -> String {
+        fn hello_message(&self, msg: &cxx_qt_lib::QString) -> String {
             format!("Hello {}", msg)
         }
 

@@ -16,7 +16,7 @@ mod my_object {
             type RustObj;
 
             #[cxx_name = "sayHi"]
-            fn say_hi(self: &RustObj, _cpp: Pin<&mut MyObject>, string: &str, number: i32);
+            fn say_hi(self: &RustObj, _cpp: Pin<&mut MyObject>, string: &QString, number: i32);
             #[cxx_name = "sayBye"]
             fn say_bye(self: &RustObj, _cpp: Pin<&mut MyObject>);
 
@@ -34,7 +34,12 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn say_hi(&self, _cpp: std::pin::Pin<&mut CppObj>, string: &str, number: i32) {
+        fn say_hi(
+            &self,
+            _cpp: std::pin::Pin<&mut CppObj>,
+            string: &cxx_qt_lib::QString,
+            number: i32,
+        ) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

@@ -59,7 +59,7 @@ impl RustType for QtTypes {
             Self::Pin { .. } => unreachable!(),
             // Pointer types do not use this function (TODO: yet?)
             Self::Ptr { .. } => unreachable!(),
-            Self::Str | Self::String => format_ident!("QString"),
+            Self::Str | Self::String | Self::QString => format_ident!("QString"),
         }
     }
 
@@ -72,7 +72,7 @@ impl RustType for QtTypes {
                 let ident = format_ident!("{}", ident_str);
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
-            Self::Str | Self::String => quote! {cxx_qt_lib::QString},
+            Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
         }
     }
 }
@@ -688,6 +688,15 @@ pub fn generate_qobject_rs(
                 .map(|(index, _)| index)
                 .collect::<Vec<usize>>();
 
+            // Find which arguments are using QString
+            let qstring_args = m
+                .parameters
+                .iter()
+                .enumerate()
+                .filter(|(_, parameter)| parameter.type_ident.qt_type == QtTypes::QString)
+                .map(|(index, _)| index)
+                .collect::<Vec<usize>>();
+
             let mut method = m.original_method.clone();
             if !pin_args.is_empty() {
                 // Rewrite args
@@ -756,6 +765,50 @@ pub fn generate_qobject_rs(
                                     }
                                 }
                             }
+                        }
+                        Ok(item)
+                    })
+                    .collect::<Result<Vec<_>, TokenStream>>()?;
+            }
+            if !qstring_args.is_empty() {
+                // Rewrite args
+                method
+                    .sig
+                    .inputs
+                    .iter_mut()
+                    // We can skip self as that's not in our parameters above
+                    //
+                    // TODO: note this assumes that the first argument is self
+                    .skip(1)
+                    .enumerate()
+                    .filter(|(index, _)| qstring_args.contains(index))
+                    // Rewrite the type
+                    //
+                    // We add cxx_qt_lib to QString
+                    .map(|(_, item)| {
+                        if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
+                            let ty_path;
+
+                            match ty.as_mut() {
+                                syn::Type::Reference(syn::TypeReference { elem, .. }) => {
+                                    // If the type is a path then extract it and mark is_ref
+                                    if let syn::Type::Path(ref mut path) = &mut **elem {
+                                        ty_path = path;
+                                    } else {
+                                        return Err(syn::Error::new(
+                                            item.span(),
+                                            "QString args must be valid references.",
+                                        ).to_compile_error());
+                                    }
+                                }
+                                _others => return Err(syn::Error::new(
+                                    item.span(),
+                                    "QString args must be references.",
+                                )
+                                .to_compile_error()),
+                            }
+
+                            ty_path.path.segments.insert(0, format_ident!("cxx_qt_lib").into());
                         }
                         Ok(item)
                     })

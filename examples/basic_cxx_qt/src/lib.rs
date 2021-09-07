@@ -35,11 +35,9 @@ mod my_object {
             number * 2
         }
 
-        fn say_hi(&self, string: &str, number: i32) {
-            println!(
-                "Hi from Rust! String is {} and number is {}",
-                string, number
-            );
+        fn say_hi(&self, string: &QString, number: i32) {
+            let s: String = string.into();
+            println!("Hi from Rust! String is {} and number is {}", s, number);
         }
 
         fn request_update(&self, cpp: Pin<&mut CppObj>) {

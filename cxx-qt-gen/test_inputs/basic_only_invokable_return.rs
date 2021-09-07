@@ -7,7 +7,7 @@ mod my_object {
             number * 2
         }
 
-        fn hello_message(&self, msg: &str) -> String {
+        fn hello_message(&self, msg: &QString) -> String {
             format!("Hello {}", msg)
         }
 

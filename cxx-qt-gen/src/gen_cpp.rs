@@ -11,10 +11,6 @@ use syn::Ident;
 
 use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes};
 
-// TODO: we probably want to remove convert_into_cpp and convert_into_rust
-// once we have completed the move to full C++ data ownership.
-// For now they are still required for invokables.
-
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
     /// String representation of the const part of this type
@@ -25,8 +21,6 @@ trait CppType {
     fn as_ref_str(&self) -> &str;
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str>;
-    /// Any converter that is required to convert this type into rust
-    fn convert_into_rust(&self) -> Option<&'static str>;
     /// Any include paths for this type, this is used for Ptr types
     /// for example so that when Object uses SubObject it includes sub_object.h
     fn include_paths(&self) -> Vec<String>;
@@ -80,17 +74,7 @@ impl CppType for QtTypes {
             Self::Ptr { .. } => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
-        }
-    }
-
-    /// Any converter that is required to convert this type into rust
-    fn convert_into_rust(&self) -> Option<&'static str> {
-        match self {
-            Self::I32 => None,
-            Self::Pin { .. } => None,
-            Self::Ptr { .. } => None,
-            Self::Str => Some("qStringToRustStr"),
-            Self::String => Some("qStringToRustString"),
+            _others => unreachable!(),
         }
     }
 
@@ -126,6 +110,7 @@ impl CppType for QtTypes {
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
+            Self::QString => true,
         }
     }
 
@@ -162,6 +147,7 @@ impl CppType for QtTypes {
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
+            Self::QString => true,
         }
     }
 
@@ -190,8 +176,7 @@ impl CppType for QtTypes {
                 ident_namespace_str,
                 ..
             } => ident_namespace_str,
-            Self::Str => "QString",
-            Self::String => "QString",
+            Self::Str | Self::String | Self::QString => "QString",
         }
     }
 }
@@ -330,15 +315,7 @@ fn generate_invokables_cpp(
                         parameter.ident
                     };
 
-                    if let Some(converter_ident) = parameter.type_ident.convert_into_rust() {
-                        // If there is a converter then use it
-                        acc.names
-                            .push(format!("{}({})", converter_ident, param_ident));
-                    } else {
-                        // No converter so use the same name
-                        acc.names.push(param_ident);
-                    }
-
+                    acc.names.push(param_ident);
                     acc
                 },
             );
@@ -368,7 +345,7 @@ fn generate_invokables_cpp(
 
         // Prepare the CppInvokable
         items.push(CppInvokable {
-            header_includes:  parameters.include_paths,
+            header_includes: parameters.include_paths,
             // TODO: detect if method is const from whether we have &self or &mut self in rust
             // TODO: also needs to consider if there is a Pin<&mut T> as we need non-const if
             // we are passing *this across for cpp objects in rust.

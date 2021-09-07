@@ -19,20 +19,6 @@
 
 #include "rust/cxx.h"
 
-inline rust::string
-qStringToRustString(const QString& value)
-{
-  const auto bytes = value.toUtf8();
-  return rust::string(bytes.data(), bytes.length());
-}
-
-inline rust::str
-qStringToRustStr(const QString& value)
-{
-  const auto bytes = value.toUtf8();
-  return rust::str(bytes.data(), bytes.length());
-}
-
 inline QString
 rustStringToQString(const rust::string& value)
 {

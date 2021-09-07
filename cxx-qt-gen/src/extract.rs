@@ -20,7 +20,7 @@ pub(crate) struct CppRustIdent {
 }
 
 /// Describes a Qt type
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum QtTypes {
     I32,
     Pin {
@@ -39,7 +39,7 @@ pub enum QtTypes {
         /// Cache of the last type ident as a str with it's namespace for C++ to reference
         ident_namespace_str: String,
     },
-    // TODO: these will become QString in the future
+    QString,
     String,
     Str,
 }
@@ -152,7 +152,7 @@ fn extract_qt_type(
     } else if idents.len() == 1 {
         // We can assume that idents has an entry at index zero, because there is one entry
         match idents[0].to_string().as_str() {
-            // TODO: these will become QString in the future
+            "QString" => Ok(QtTypes::QString),
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),
             "i32" => Ok(QtTypes::I32),
@@ -936,7 +936,7 @@ mod tests {
         assert_eq!(param_first.ident.to_string(), "string");
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_first.type_ident.idents.len(), 1);
-        assert_eq!(param_first.type_ident.idents[0].to_string(), "str");
+        assert_eq!(param_first.type_ident.idents[0].to_string(), "QString");
         assert_eq!(param_first.type_ident.is_ref, true);
 
         let param_second = &invokable.parameters[1];
@@ -1086,7 +1086,7 @@ mod tests {
         assert_eq!(param_second.ident.to_string(), "string");
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_second.type_ident.idents.len(), 1);
-        assert_eq!(param_second.type_ident.idents[0].to_string(), "str");
+        assert_eq!(param_second.type_ident.idents[0].to_string(), "QString");
         assert_eq!(param_second.type_ident.is_ref, true);
 
         let param_third = &invokable.parameters[2];

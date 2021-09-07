@@ -22,7 +22,7 @@ MyObject::doubleNumber(int number)
 QString
 MyObject::helloMessage(const QString& msg)
 {
-  return rustStringToQString(m_rustObj->helloMessage(qStringToRustStr(msg)));
+  return rustStringToQString(m_rustObj->helloMessage(msg));
 }
 
 QString
