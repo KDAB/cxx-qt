@@ -81,6 +81,13 @@ mod my_object {
             self.cpp.as_mut().set_string(value);
         }
 
+        fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+            use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
+
+            let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
+            unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
+        }
+
         fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
 

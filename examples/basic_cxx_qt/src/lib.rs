@@ -41,5 +41,11 @@ mod my_object {
                 string, number
             );
         }
+
+        fn request_update(&self, cpp: Pin<&mut CppObj>) {
+            let wrapper = CppObjWrapper::new(cpp);
+            let update_requester = wrapper.update_requester();
+            update_requester.request_update();
+        }
     }
 }

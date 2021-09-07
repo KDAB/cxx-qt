@@ -5,15 +5,31 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include <QtCore/QDebug>
-#include <QtTest/QSignalSpy>
+#include <QDebug>
+#include <QSignalSpy>
+#include <QTimer>
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
 #include "cxx-qt-gen/include/my_data.h"
 #include "cxx-qt-gen/include/my_object.h"
 #include "cxx-qt-gen/include/sub_object.h"
+
+int
+main(int argc, char** argv)
+{
+  QCoreApplication app{ argc, argv };
+
+  QTimer::singleShot(0, [&]() {
+    doctest::Context context;
+    context.applyCommandLine(argc, argv);
+    const auto result = context.run();
+    app.exit(result);
+  });
+
+  return app.exec();
+}
 
 TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 {
@@ -109,3 +125,37 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
   CHECK(data.asJsonStr() ==
         QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
 }
+
+class UpdateEventCatcher : public QObject
+{
+  Q_OBJECT
+
+public:
+  bool eventFilter(QObject* object, QEvent* event) override
+  {
+    if (event->type() == CxxQObject::UpdateStateEvent) {
+      Q_EMIT receivedUpdateRequest();
+      return true;
+    }
+
+    return false;
+  }
+
+Q_SIGNALS:
+  void receivedUpdateRequest();
+};
+
+TEST_CASE("CXX-Qt allows Rust code to request an update")
+{
+  UpdateEventCatcher catcher;
+  QSignalSpy updateSpy(&catcher, &UpdateEventCatcher::receivedUpdateRequest);
+
+  cxx_qt::my_object::MyObject obj;
+  obj.installEventFilter(&catcher);
+
+  obj.requestUpdate();
+  CHECK(updateSpy.wait());
+  CHECK(updateSpy.count() == 1);
+}
+
+#include "main.moc"

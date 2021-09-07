@@ -814,6 +814,16 @@ pub fn generate_qobject_rs(
         }
     }
 
+    // # Safety
+    //
+    // We only generate wrapper code for objects that derive from CxxQObject
+    // so casting self.cpp to a CxxObject pointer is valid. We cast from *const
+    // to *mut so that update_requester() can be called on const wrappers. This
+    // is okay because only C++ code ever uses the pointer so the "const_cast" cannot
+    // result in Rust UB. Since the wrapper was constructed from a non-const reference
+    // in the first place, the underlying pointer does not refer to a const object
+    // as far as C++ is concerned so we are not invoking C++ UB either.
+
     let wrapper_struct_impl = quote! {
         impl<'a> #rust_wrapper_name<'a> {
             fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
@@ -821,6 +831,13 @@ pub fn generate_qobject_rs(
             }
 
             #(#property_methods)*
+
+            fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+                use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
+
+                let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
+                unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
+            }
 
             fn grab_values_from_data(&mut self, data: &#data_struct_name) {
                 use cxx_qt_lib::MapQtValue;
