@@ -20,6 +20,7 @@ public:
 
 private:
   rust::Box<RustObj> m_rustObj;
+  bool m_initialised = false;
 };
 
 std::unique_ptr<MyObject>

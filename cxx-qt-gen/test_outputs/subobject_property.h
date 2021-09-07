@@ -30,6 +30,7 @@ Q_SIGNALS:
 
 private:
   rust::Box<RustObj> m_rustObj;
+  bool m_initialised = false;
 
   cxx_qt::sub_object::SubObject* m_obj = nullptr;
   std::unique_ptr<cxx_qt::sub_object::SubObject> m_ownedObj;

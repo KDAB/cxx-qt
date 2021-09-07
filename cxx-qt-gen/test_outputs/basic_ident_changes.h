@@ -28,6 +28,7 @@ Q_SIGNALS:
 
 private:
   rust::Box<RustObj> m_rustObj;
+  bool m_initialised = false;
 
   int m_myNumber;
 };

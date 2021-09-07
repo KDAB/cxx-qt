@@ -8,6 +8,7 @@ MyObject::MyObject(QObject* parent)
   , m_rustObj(createMyObjectRs())
 {
   initialiseMyObjectCpp(*this);
+  m_initialised = true;
 }
 
 MyObject::~MyObject() = default;
@@ -21,6 +22,11 @@ MyObject::getNumber() const
 void
 MyObject::setNumber(int value)
 {
+  if (!m_initialised) {
+    m_number = value;
+    return;
+  }
+
   if (value != m_number) {
     m_number = value;
 
@@ -37,6 +43,11 @@ MyObject::getString() const
 void
 MyObject::setString(const QString& value)
 {
+  if (!m_initialised) {
+    m_string = value;
+    return;
+  }
+
   if (value != m_string) {
     m_string = value;
 

@@ -8,6 +8,7 @@ MyObject::MyObject(QObject* parent)
   , m_rustObj(createMyObjectRs())
 {
   initialiseMyObjectCpp(*this);
+  m_initialised = true;
 }
 
 MyObject::~MyObject() = default;

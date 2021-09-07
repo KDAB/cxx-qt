@@ -592,6 +592,11 @@ fn generate_properties_cpp(
                 void
                 {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref}{is_ptr} value)
                 {{
+                    if (!m_initialised) {{
+                        {member_ident} = value;
+                        return;
+                    }}
+
                     if (value != {member_ident}) {{
                         {member_ident} = value;
 
@@ -748,6 +753,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         private:
             rust::Box<{rust_struct_ident}> m_rustObj;
+            bool m_initialised = false;
 
             {members_private}
         }};
@@ -787,6 +793,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             , m_rustObj(create{ident}Rs())
         {{
             initialise{ident}Cpp(*this);
+            m_initialised = true;
         }}
 
         {ident}::~{ident}() = default;
