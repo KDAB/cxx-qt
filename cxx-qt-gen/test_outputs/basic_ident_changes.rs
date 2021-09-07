@@ -33,9 +33,8 @@ mod my_object {
 
     pub type CppObj = ffi::MyObject;
 
-    struct RustObj {
-        my_number: i32,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn say_bye(&self) {
@@ -73,14 +72,6 @@ mod my_object {
         my_number: i32,
     }
 
-    impl From<Data> for RustObj {
-        fn from(value: Data) -> Self {
-            Self {
-                my_number: value.my_number,
-            }
-        }
-    }
-
     impl<'a> From<&CppObjWrapper<'a>> for Data {
         fn from(value: &CppObjWrapper<'a>) -> Self {
             Self {
@@ -89,8 +80,8 @@ mod my_object {
         }
     }
 
-    fn create_my_object_rs() -> Box<RustObj> {
-        Box::new(Data::default().into())
+    fn create_my_object_rs() -> std::boxed::Box<RustObj> {
+        std::default::Default::default()
     }
 
     fn initialise_my_object_cpp(cpp: std::pin::Pin<&mut CppObj>) {

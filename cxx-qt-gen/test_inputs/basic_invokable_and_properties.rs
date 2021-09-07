@@ -5,10 +5,8 @@ mod my_object {
         string: String,
     }
 
-    struct RustObj {
-        number: i32,
-        string: String,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn say_hi(&self, string: &str, number: i32) {

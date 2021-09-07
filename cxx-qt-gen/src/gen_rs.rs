@@ -414,37 +414,20 @@ pub fn generate_qobject_cxx(
 
 /// Generate a Rust function that heap constructs the Rust object corresponding to the QObject
 fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Cache the data and rust class name, this is used multiple times later
-    let data_class_name = &obj.original_data_struct.ident;
+    // Cache the rust class name, this is used multiple times later
     let rust_class_name = format_ident!("RustObj");
 
     // Build the ident as snake case, then build the rust creator method
     //
-    // TODO: can this code be shared with generate_qobject_cxx as they both create this fn name?
+    // TODO: simplify this function name now that we have namespaces
     let ident_snake = &obj.ident.to_string().to_case(Case::Snake);
     let fn_ident = format_ident!("create_{}_rs", ident_snake);
 
-    // TODO: check if the original object had an explicit constructor and if so ensure that the create
-    // function also takes the same parameters so that it can call this constructor. The C++ object will
-    // also need to take the same parameters in its constructor. If the object is not default constructable
-    // and does not provide a constructor then we need to throw an error.
-    //
-    // TODO: for now we assume that any object with properties implements Default. This likely means
-    // for now it needs to derive from Default. As we don't (?) currently rename multiple impl
-    // blocks - eg if there was a impl Default for Struct.
-
-    // If an object has properties, we assume that it implements Default.
-    let output = if obj.properties.is_empty() {
-        quote! {
-            fn #fn_ident() -> Box<#rust_class_name> {
-                Box::new(#data_class_name {}.into())
-            }
-        }
-    } else {
-        quote! {
-            fn #fn_ident() -> Box<#rust_class_name> {
-                Box::new(#data_class_name::default().into())
-            }
+    // We assume that RustObj implements Default otherwise it can't be constructed from QML
+    // TODO: throw an error if we can determine this to not be the case
+    let output = quote! {
+        fn #fn_ident() -> std::boxed::Box<#rust_class_name> {
+            std::default::Default::default()
         }
     };
 
@@ -657,9 +640,8 @@ pub fn generate_qobject_rs(
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
     let data_struct = build_struct_with_fields(&obj.original_data_struct, &data_fields_no_ptr);
 
-    // Build the converters between the Data struct and RustObj
+    // Build a converter for Data -> CppObjWrapper
     let data_struct_impl = {
-        let mut fields = vec![];
         let mut fields_into = vec![];
         // If there are no filtered fields then use _value
         let value_ident = if data_fields_no_ptr.is_empty() {
@@ -671,7 +653,6 @@ pub fn generate_qobject_rs(
         for field in &data_fields_no_ptr {
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
-                fields.push(quote! { #field_name: #value_ident.#field_name });
 
                 // The Data struct should only contain "Qt-compatible" fields defined by
                 // us so we will insure that From is implemented where necessary.
@@ -680,14 +661,6 @@ pub fn generate_qobject_rs(
         }
 
         quote! {
-            impl From<#data_struct_name> for #rust_class_name {
-                fn from(#value_ident: #data_struct_name) -> Self {
-                    Self {
-                        #(#fields),*
-                    }
-                }
-            }
-
             impl<'a> From<&#rust_wrapper_name<'a>> for #data_struct_name {
                 fn from(#value_ident: &#rust_wrapper_name<'a>) -> Self {
                     Self {

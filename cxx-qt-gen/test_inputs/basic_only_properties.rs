@@ -5,8 +5,6 @@ mod my_object {
         string: String,
     }
 
-    struct RustObj {
-        number: i32,
-        string: String,
-    }
+    #[derive(Default)]
+    struct RustObj;
 }

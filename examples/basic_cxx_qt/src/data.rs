@@ -22,10 +22,8 @@ mod my_data {
         }
     }
 
-    struct RustObj {
-        number: i32,
-        string: String,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn as_json_str(&self, cpp: Pin<&mut CppObj>) -> String {

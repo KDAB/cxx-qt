@@ -1,4 +1,5 @@
 mod my_object {
+    #[derive(Default)]
     struct RustObj;
 
     impl RustObj {

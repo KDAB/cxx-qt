@@ -4,7 +4,6 @@ mod my_object {
         obj: crate::sub_object::SubObject,
     }
 
-    struct RustObj {
-        obj: crate::sub_object::SubObject,
-    }
+    #[derive(Default)]
+    struct RustObj;
 }

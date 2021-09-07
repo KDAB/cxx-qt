@@ -11,9 +11,8 @@ mod my_object {
         }
     }
 
-    struct RustObj {
-        number: i32,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl MyTrait for RustObj {
         fn my_func() -> String {

@@ -3,11 +3,6 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
-// TODO: remove this once we have cleanup things enough so that Data
-// and RustObj no longer need duplicate fields
-#![allow(dead_code)]
-
 use cxx_qt::make_qobject;
 
 mod data;
@@ -22,11 +17,8 @@ mod my_object {
         sub: crate::sub::sub_object::SubObject,
     }
 
-    struct RustObj {
-        number: i32,
-        string: String,
-        sub: crate::sub::sub_object::SubObject,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn double_number_self(&self, cpp: Pin<&mut CppObj>) {

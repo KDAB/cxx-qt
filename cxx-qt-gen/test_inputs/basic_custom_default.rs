@@ -9,9 +9,8 @@ mod my_object {
         }
     }
 
-    struct RustObj {
-        number: i32,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn invokable(&self) {}

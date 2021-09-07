@@ -13,10 +13,8 @@ pub mod sub_object {
         string: String,
     }
 
-    pub struct RustObj {
-        number: i32,
-        string: String,
-    }
+    #[derive(Default)]
+    pub struct RustObj;
 
     impl RustObj {
         fn increment_number_self(&self, cpp: Pin<&mut CppObj>) {

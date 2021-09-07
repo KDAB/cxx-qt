@@ -4,9 +4,8 @@ mod my_object {
         my_number: i32,
     }
 
-    struct RustObj {
-        my_number: i32,
-    }
+    #[derive(Default)]
+    struct RustObj;
 
     impl RustObj {
         fn say_bye(&self) {
