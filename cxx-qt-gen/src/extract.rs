@@ -118,6 +118,8 @@ pub struct QObject {
     pub(crate) original_trait_impls: Vec<ItemImpl>,
     /// The original Rust use declarations from the mod
     pub(crate) original_use_decls: Vec<ItemUse>,
+    /// The Rust impl that has optionally been provided to handle updates
+    pub(crate) handle_updates_impl: Option<ItemImpl>,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -627,6 +629,9 @@ pub fn extract_qobject(
     // A list of original use declarations for the mod (eg use crate::thing)
     let mut original_use_decls = vec![];
 
+    // Determines if this object can respond to update requests
+    let mut handle_updates_impl = None;
+
     // Process each of the items in the mod
     for item in items.drain(..) {
         match item {
@@ -726,8 +731,14 @@ pub fn extract_qobject(
                             }
 
                             // Can have custom traits, these are on the RustObj
-                            if original_impl.trait_.is_some() {
-                                original_trait_impls.push(original_impl.to_owned());
+                            if let Some(trait_) = &original_impl.trait_ {
+                                // We should always have at least one segments as something is unlikely
+                                // to have been parsed as a "trait" in the first place otherwise
+                                if trait_.1.segments[0].ident == "UpdateRequestHandler" {
+                                    handle_updates_impl = Some(original_impl.to_owned());
+                                } else {
+                                    original_trait_impls.push(original_impl.to_owned());
+                                }
                             } else {
                                 // Add invokables from RustObj
                                 //
@@ -806,6 +817,7 @@ pub fn extract_qobject(
             .unwrap_or_else(|| syn::parse_str("struct RustObj;").unwrap()),
         original_trait_impls,
         original_use_decls,
+        handle_updates_impl,
     })
 }
 

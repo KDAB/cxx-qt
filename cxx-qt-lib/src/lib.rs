@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 pub mod update_requester;
+pub use update_requester::UpdateRequestHandler;
 
 mod qstring;
 pub use qstring::QString;

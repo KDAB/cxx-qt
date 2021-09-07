@@ -158,4 +158,13 @@ TEST_CASE("CXX-Qt allows Rust code to request an update")
   CHECK(updateSpy.count() == 1);
 }
 
+TEST_CASE("CXX-Qt allows Rust code to handle an update request")
+{
+  cxx_qt::my_object::MyObject obj;
+  CHECK(obj.updateCallCount() == 0);
+  obj.requestUpdate();
+  QCoreApplication::processEvents();
+  CHECK(obj.updateCallCount() == 1);
+}
+
 #include "main.moc"

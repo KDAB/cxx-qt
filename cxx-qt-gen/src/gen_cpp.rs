@@ -698,6 +698,26 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }
     };
 
+    let private_overrides = if obj.handle_updates_impl.is_some() {
+        r#"
+        void updateState() override;
+        "#
+    } else {
+        ""
+    };
+
+    let overrides = if obj.handle_updates_impl.is_some() {
+        formatdoc! {r#"
+            void {ident}::updateState() {{
+                m_rustObj->handleUpdateRequest(*this);
+            }}
+        "#,
+        ident = struct_ident_str,
+        }
+    } else {
+        "".to_owned()
+    };
+
     let namespace = obj.namespace.join("::");
 
     // Generate the C++ header part
@@ -733,6 +753,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             bool m_initialised = false;
 
             {members_private}
+
+            {private_overrides}
         }};
 
         std::unique_ptr<{ident}> new{ident}();
@@ -756,6 +778,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     rust_struct_ident = RUST_STRUCT_IDENT_STR,
     signals = signals,
     public_slots = public_slots,
+    private_overrides = private_overrides,
     };
 
     // Generate C++ source part
@@ -779,6 +802,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {invokables}
 
+        {overrides}
+
         std::unique_ptr<{ident}> new{ident}()
         {{
             return std::make_unique<{ident}>();
@@ -791,6 +816,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         invokables = invokables.sources.join("\n"),
         namespace = namespace,
         properties = properties.sources.join("\n"),
+        overrides = overrides,
     };
 
     Ok(CppObject {
@@ -970,6 +996,25 @@ mod tests {
             clang_format(include_str!("../test_outputs/subobject_pin_invokable.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/subobject_pin_invokable.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_basic_update_requester() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_update_requester.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/basic_update_requester.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/basic_update_requester.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

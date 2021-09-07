@@ -18,7 +18,9 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    struct RustObj {
+        update_call_count: i32,
+    }
 
     impl RustObj {
         fn double_number_self(&self, cpp: Pin<&mut CppObj>) {
@@ -44,6 +46,16 @@ mod my_object {
             let wrapper = CppObjWrapper::new(cpp);
             let update_requester = wrapper.update_requester();
             update_requester.request_update();
+        }
+
+        fn update_call_count(&self) -> i32 {
+            self.update_call_count
+        }
+    }
+
+    impl UpdateRequestHandler<CppObj> for RustObj {
+        fn handle_update_request(&mut self, _cpp: Pin<&mut CppObj>) {
+            self.update_call_count += 1;
         }
     }
 }

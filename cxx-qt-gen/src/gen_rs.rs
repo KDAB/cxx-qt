@@ -8,6 +8,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
 use syn::spanned::Spanned;
+use syn::ImplItemMethod;
 
 use crate::extract::{QObject, QtTypes};
 use crate::utils::{is_type_ident_ptr, type_to_namespace};
@@ -358,6 +359,16 @@ pub fn generate_qobject_cxx(
         }
     }
 
+    // Define a function to handle update requests if we have one
+    let handle_update_request = if obj.handle_updates_impl.is_some() {
+        quote! {
+            #[cxx_name = "handleUpdateRequest"]
+            fn call_handle_update_request(self: &mut #rust_class_name, cpp: Pin<&mut #class_name>);
+        }
+    } else {
+        quote! {}
+    };
+
     // Build the methods to create the class
     let new_object_ident_cpp = format_ident!("new{}", class_name);
     let new_object_rust_str = format!("new_{}", class_name);
@@ -403,6 +414,8 @@ pub fn generate_qobject_cxx(
 
                 #[cxx_name = #initialise_object_cpp_str]
                 fn #initialise_object_ident(cpp: Pin<&mut #class_name>);
+
+                #handle_update_request
             }
         }
 
@@ -590,6 +603,98 @@ fn build_struct_with_fields(
     }
 }
 
+/// Add std::pin to Pin arguments in a method
+fn fix_pin_path(method: &mut ImplItemMethod, pin_args: &[usize]) -> Result<(), TokenStream> {
+    // Rewrite args
+    method
+        .sig
+        .inputs
+        .iter_mut()
+        // We can skip self as that's not in our parameters above
+        //
+        // TODO: note this assumes that the first argument is self
+        .skip(1)
+        // We only want to rewrite pinned args
+        .enumerate()
+        .filter(|(index, _)| pin_args.contains(index))
+        // Rewrite the type
+        //
+        // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to CppObj
+        .map(|(_, item)| {
+            if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
+                let ty_path;
+
+                match ty.as_mut() {
+                    syn::Type::Path(ref mut path) => {
+                        ty_path = path;
+                    }
+                    // TODO: do we support TypeReference for &Pin<T>?
+                    // Type::Reference(TypeReference { elem, .. }) => {
+                    //     // If the type is a path then extract it and mark is_ref
+                    //     if let Type::Path(path) = &**elem {
+                    //         ty_path = path;
+                    //     }
+                    // }
+                    //
+                    _others => {
+                        return Err(syn::Error::new(
+                            item.span(),
+                            "Pin<T> argument must be a path, we do not support reference yet",
+                        )
+                        .to_compile_error())
+                    }
+                }
+
+                // Add std::pin to Pin
+                ty_path.path.segments.insert(0, format_ident!("std").into());
+                ty_path.path.segments.insert(1, format_ident!("pin").into());
+
+                // From a::Pin<&b::T> we want Pin<&b::T> (we ultimately want to get to T)
+                if let Some(segment) = ty_path.path.segments.last_mut() {
+                    // From Pin<&b::T> we want &b::T
+                    if let syn::PathArguments::AngleBracketed(arguments) = &mut segment.arguments {
+                        // From &b::T we want b::T
+                        //
+                        // TODO: do we need to support non reference? or will it always be reference?
+                        if let Some(syn::GenericArgument::Type(syn::Type::Reference(
+                            syn::TypeReference { elem, .. },
+                        ))) = arguments.args.first_mut()
+                        {
+                            if let syn::Type::Path(arg_path) = &mut **elem {
+                                // From b::T we want T
+                                if let Some(segment) = arg_path.path.segments.last_mut() {
+                                    // Always set last type in Pin<T> to CppObj
+                                    segment.ident = format_ident!("CppObj");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Ok(item)
+        })
+        .collect::<Result<Vec<_>, TokenStream>>()?;
+
+    Ok(())
+}
+
+/// Add std::pin to Pin arguments for all impl methods. Only works if Pin argument is the first one.
+fn fix_pin_paths_in_impl(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
+    let mut cloned = impl_.to_owned();
+
+    for mut item in &mut cloned.items {
+        if let syn::ImplItem::Method(m) = &mut item {
+            fix_pin_path(m, &[0])?;
+        } else {
+            return Err(
+                syn::Error::new(item.span(), "Only methods are supported.").to_compile_error()
+            );
+        }
+    }
+
+    Ok(quote! { #cloned })
+}
+
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(
     obj: &QObject,
@@ -699,76 +804,7 @@ pub fn generate_qobject_rs(
 
             let mut method = m.original_method.clone();
             if !pin_args.is_empty() {
-                // Rewrite args
-                method
-                    .sig
-                    .inputs
-                    .iter_mut()
-                    // We can skip self as that's not in our parameters above
-                    //
-                    // TODO: note this assumes that the first argument is self
-                    .skip(1)
-                    // We only want to rewrite pinned args
-                    .enumerate()
-                    .filter(|(index, _)| pin_args.contains(index))
-                    // Rewrite the type
-                    //
-                    // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to CppObj
-                    .map(|(_, item)| {
-                        if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
-                            let ty_path;
-
-                            match ty.as_mut() {
-                                syn::Type::Path(ref mut path) => {
-                                    ty_path = path;
-                                }
-                                // TODO: do we support TypeReference for &Pin<T>?
-                                // Type::Reference(TypeReference { elem, .. }) => {
-                                //     // If the type is a path then extract it and mark is_ref
-                                //     if let Type::Path(path) = &**elem {
-                                //         ty_path = path;
-                                //     }
-                                // }
-                                //
-                                _others => return Err(syn::Error::new(
-                                    item.span(),
-                                    "Pin<T> argument must be a path, we do not support reference yet",
-                                )
-                                .to_compile_error()),
-                            }
-
-                            // Add std::pin to Pin
-                            ty_path.path.segments.insert(0, format_ident!("std").into());
-                            ty_path.path.segments.insert(1, format_ident!("pin").into());
-
-                            // From a::Pin<&b::T> we want Pin<&b::T> (we ultimately want to get to T)
-                            if let Some(segment) = ty_path.path.segments.last_mut() {
-                                // From Pin<&b::T> we want &b::T
-                                if let syn::PathArguments::AngleBracketed(arguments) =
-                                    &mut segment.arguments
-                                {
-                                    // From &b::T we want b::T
-                                    //
-                                    // TODO: do we need to support non reference? or will it always be reference?
-                                    if let Some(syn::GenericArgument::Type(syn::Type::Reference(
-                                        syn::TypeReference { elem, .. },
-                                    ))) = arguments.args.first_mut()
-                                    {
-                                        if let syn::Type::Path(arg_path) = &mut **elem {
-                                            // From b::T we want T
-                                            if let Some(segment) = arg_path.path.segments.last_mut()
-                                            {
-                                                // Always set last type in Pin<T> to CppObj
-                                                segment.ident = format_ident!("CppObj");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Ok(item)
-                    })
-                    .collect::<Result<Vec<_>, TokenStream>>()?;
+                fix_pin_path(&mut method, &pin_args)?;
             }
             if !qstring_args.is_empty() {
                 // Rewrite args
@@ -798,17 +834,23 @@ pub fn generate_qobject_rs(
                                         return Err(syn::Error::new(
                                             item.span(),
                                             "QString args must be valid references.",
-                                        ).to_compile_error());
+                                        )
+                                        .to_compile_error());
                                     }
                                 }
-                                _others => return Err(syn::Error::new(
-                                    item.span(),
-                                    "QString args must be references.",
-                                )
-                                .to_compile_error()),
+                                _others => {
+                                    return Err(syn::Error::new(
+                                        item.span(),
+                                        "QString args must be references.",
+                                    )
+                                    .to_compile_error())
+                                }
                             }
 
-                            ty_path.path.segments.insert(0, format_ident!("cxx_qt_lib").into());
+                            ty_path
+                                .path
+                                .segments
+                                .insert(0, format_ident!("cxx_qt_lib").into());
                         }
                         Ok(item)
                     })
@@ -835,11 +877,24 @@ pub fn generate_qobject_rs(
         &filter_fields(&obj.original_rust_struct, is_field_ptr),
     );
 
+    // Define a function to handle update requests if we have one
+    let handle_update_request = if obj.handle_updates_impl.is_some() {
+        quote! {
+            fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut CppObj>) {
+                self.handle_update_request(cpp);
+            }
+        }
+    } else {
+        quote! {}
+    };
+
     // Determine if we need an impl block on the rust struct
     let rust_struct_impl = if !original_methods.is_empty() {
         quote! {
             impl #rust_class_name {
                 #(#original_methods)*
+
+                #handle_update_request
             }
         }
     } else {
@@ -900,11 +955,25 @@ pub fn generate_qobject_rs(
         }
     };
 
+    let use_traits = if obj.handle_updates_impl.is_some() {
+        quote! { use cxx_qt_lib::UpdateRequestHandler; }
+    } else {
+        quote! {}
+    };
+
+    let handle_updates_impl = if let Some(impl_) = &obj.handle_updates_impl {
+        fix_pin_paths_in_impl(impl_)?
+    } else {
+        quote! {}
+    };
+
     // Build our rewritten module that replaces the input from the macro
     let output = quote! {
         #(#mod_attrs)*
         #mod_vis mod #mod_ident {
             #(#original_use_decls)*
+
+            #use_traits
 
             #cxx_block
 
@@ -921,6 +990,8 @@ pub fn generate_qobject_rs(
             #data_struct_impl
 
             #(#original_trait_impls)*
+
+            #handle_updates_impl
 
             #creator_fn
 
@@ -1188,6 +1259,27 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_pin_invokable.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_basic_update_requester() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_update_requester.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_update_requester.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
