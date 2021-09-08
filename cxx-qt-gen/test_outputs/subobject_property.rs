@@ -35,7 +35,7 @@ mod my_object {
     #[derive(Default)]
     struct RustObj;
 
-    struct CppObjWrapper<'a> {
+    pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
@@ -44,22 +44,22 @@ mod my_object {
             Self { cpp }
         }
 
-        fn take_obj(&mut self) -> cxx::UniquePtr<ffi::SubObject> {
+        pub fn take_obj(&mut self) -> cxx::UniquePtr<ffi::SubObject> {
             self.cpp.as_mut().take_obj()
         }
 
-        fn give_obj(&mut self, value: cxx::UniquePtr<ffi::SubObject>) {
+        pub fn give_obj(&mut self, value: cxx::UniquePtr<ffi::SubObject>) {
             self.cpp.as_mut().give_obj(value);
         }
 
-        fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+        pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
             let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
-        fn grab_values_from_data(&mut self, data: &Data) {
+        pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
         }
     }

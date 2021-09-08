@@ -10,7 +10,7 @@ mod my_data {
     use serde::{Deserialize, Serialize};
 
     #[derive(Deserialize, Serialize)]
-    struct Data {
+    pub struct Data {
         number: i32,
         string: String,
     }

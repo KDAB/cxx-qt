@@ -42,7 +42,7 @@ mod my_object {
         }
     }
 
-    struct CppObjWrapper<'a> {
+    pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
@@ -51,22 +51,22 @@ mod my_object {
             Self { cpp }
         }
 
-        fn my_number(&self) -> i32 {
+        pub fn my_number(&self) -> i32 {
             self.cpp.my_number()
         }
 
-        fn set_my_number(&mut self, value: i32) {
+        pub fn set_my_number(&mut self, value: i32) {
             self.cpp.as_mut().set_my_number(value);
         }
 
-        fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+        pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
             let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
-        fn grab_values_from_data(&mut self, data: &Data) {
+        pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
 
             data.my_number

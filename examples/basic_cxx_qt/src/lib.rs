@@ -11,7 +11,7 @@ pub mod sub;
 #[make_qobject]
 mod my_object {
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         number: i32,
         string: String,
         sub: crate::sub::sub_object::SubObject,

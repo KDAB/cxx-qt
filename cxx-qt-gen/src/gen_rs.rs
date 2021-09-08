@@ -490,13 +490,13 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             let give_ident = format_ident!("give_{}", ident);
 
             property_methods.push(quote! {
-                fn #take_ident(&mut self) -> #param_type {
+                pub fn #take_ident(&mut self) -> #param_type {
                     self.cpp.as_mut().#take_ident()
                 }
             });
 
             property_methods.push(quote! {
-                fn #give_ident(&mut self, value: #param_type) {
+                pub fn #give_ident(&mut self, value: #param_type) {
                     self.cpp.as_mut().#give_ident(value);
                 }
             });
@@ -506,7 +506,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                 let getter_ident = &getter.rust_ident;
 
                 property_methods.push(quote! {
-                    fn #getter_ident(&self) -> #param_type {
+                    pub fn #getter_ident(&self) -> #param_type {
                         self.cpp.#cpp_getter_ident()
                     }
                 });
@@ -517,7 +517,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                 let setter_ident = &setter.rust_ident;
 
                 property_methods.push(quote! {
-                    fn #setter_ident(&mut self, value: #param_type) {
+                    pub fn #setter_ident(&mut self, value: #param_type) {
                         self.cpp.as_mut().#cpp_setter_ident(value);
                     }
                 });
@@ -903,7 +903,7 @@ pub fn generate_qobject_rs(
 
     // Create a struct that wraps the CppObject with a nicer interface
     let wrapper_struct = quote! {
-        struct #rust_wrapper_name<'a> {
+        pub struct #rust_wrapper_name<'a> {
             cpp: std::pin::Pin<&'a mut CppObj>,
         }
     };
@@ -940,14 +940,14 @@ pub fn generate_qobject_rs(
 
             #(#property_methods)*
 
-            fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+            pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
                 use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
                 let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
                 unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
             }
 
-            fn grab_values_from_data(&mut self, data: &#data_struct_name) {
+            pub fn grab_values_from_data(&mut self, data: &#data_struct_name) {
                 use cxx_qt_lib::MapQtValue;
 
                 #(#grab_values)*

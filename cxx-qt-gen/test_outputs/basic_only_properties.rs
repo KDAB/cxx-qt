@@ -38,7 +38,7 @@ mod my_object {
     #[derive(Default)]
     struct RustObj;
 
-    struct CppObjWrapper<'a> {
+    pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
@@ -47,30 +47,30 @@ mod my_object {
             Self { cpp }
         }
 
-        fn number(&self) -> i32 {
+        pub fn number(&self) -> i32 {
             self.cpp.number()
         }
 
-        fn set_number(&mut self, value: i32) {
+        pub fn set_number(&mut self, value: i32) {
             self.cpp.as_mut().set_number(value);
         }
 
-        fn string(&self) -> &cxx_qt_lib::QString {
+        pub fn string(&self) -> &cxx_qt_lib::QString {
             self.cpp.string()
         }
 
-        fn set_string(&mut self, value: &cxx_qt_lib::QString) {
+        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
             self.cpp.as_mut().set_string(value);
         }
 
-        fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+        pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
             let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
-        fn grab_values_from_data(&mut self, data: &Data) {
+        pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
 
             data.number

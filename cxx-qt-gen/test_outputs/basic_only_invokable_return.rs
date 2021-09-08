@@ -49,7 +49,7 @@ mod my_object {
         }
     }
 
-    struct CppObjWrapper<'a> {
+    pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
     }
 
@@ -58,14 +58,14 @@ mod my_object {
             Self { cpp }
         }
 
-        fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
+        pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
             let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
-        fn grab_values_from_data(&mut self, data: &Data) {
+        pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
         }
     }
