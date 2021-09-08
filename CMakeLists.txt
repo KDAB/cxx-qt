@@ -30,7 +30,9 @@ endif()
 
 find_program(MEMORYCHECK_COMMAND valgrind)
 # Set our extra command options for valgrind
-set(MEMORYCHECK_COMMAND_OPTIONS --error-exitcode=1 --leak-check=full --trace-children=yes --track-origins=yes)
+# TODO: we need to come up with a better way to suppress "possibly lost" errors.
+# Suppression file doesn't work because there is a ton of mangled names that won't remain stable.
+set(MEMORYCHECK_COMMAND_OPTIONS --error-exitcode=1 --errors-for-leak-kinds=definite --leak-check=full --trace-children=yes --track-origins=yes --show-possibly-lost=no)
 # A suppressions file which silences errors from other libs like QtCore
 set(MEMORYCHECK_SUPPRESSIONS_FILE "${CMAKE_SOURCE_DIR}/valgrind_suppressions.txt")
 
@@ -97,6 +99,7 @@ add_example_tests(basic_cxx_qt)
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
 add_test_cargo(basic_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_qt_qml/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(basic_cxx_qt_qml_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_qt_qml_plugin/Cargo.toml" DOCTESTS_OFF)
+add_test_cargo(qml_with_threaded_logic "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_with_threaded_logic/Cargo.toml" DOCTESTS_OFF)
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format
 add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
