@@ -380,6 +380,9 @@ pub fn generate_qobject_cxx(
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
 
+    // Generate an enum representing all the properties that the object has
+    let property_enum = generate_property_enum(obj);
+
     // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QString;"
     // if we actually generate some code that uses QString.
 
@@ -390,6 +393,8 @@ pub fn generate_qobject_cxx(
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
         mod ffi {
+            #property_enum
+
             unsafe extern "C++" {
                 include!(#import_path);
 
@@ -466,6 +471,21 @@ fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
     };
 
     output.into_token_stream()
+}
+
+/// Generate an enum representing all the properties that a QObject has
+fn generate_property_enum(obj: &QObject) -> TokenStream {
+    let properties = obj.properties.iter().map(|property| {
+        let ident_str = &property.ident.rust_ident.to_string();
+        let ident = format_ident!("{}", ident_str.to_case(Case::Pascal));
+        quote! { #ident }
+    });
+
+    quote! {
+        enum Property {
+            #(#properties),*
+        }
+    }
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {

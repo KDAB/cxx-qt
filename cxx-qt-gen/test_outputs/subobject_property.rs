@@ -1,6 +1,10 @@
 mod my_object {
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
+        enum Property {
+            Obj,
+        }
+
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.h");
 
