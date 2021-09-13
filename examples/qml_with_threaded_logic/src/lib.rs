@@ -23,7 +23,11 @@ mod website {
         FutureExt, StreamExt,
     };
     use futures_timer::Delay;
-    use std::{thread, time::Duration};
+    use std::{
+        sync::atomic::{AtomicBool, Ordering},
+        thread,
+        time::Duration,
+    };
 
     pub struct Data {
         url: String,
@@ -42,6 +46,7 @@ mod website {
     struct RustObj {
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,
+        loading: AtomicBool,
     }
 
     impl Default for RustObj {
@@ -51,6 +56,7 @@ mod website {
             Self {
                 event_sender,
                 event_queue,
+                loading: AtomicBool::new(false),
             }
         }
     }
@@ -68,6 +74,15 @@ mod website {
 
         fn refresh_title(&self, cpp: Pin<&mut CppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
+
+            // TODO: SeqCst is probably not the most efficient solution
+            let new_load =
+                self.loading
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
+            if new_load.is_err() {
+                println!("Skipped refresh_title request, because already in progress.");
+                return;
+            }
 
             let_qstring!(s = "Loading...");
             wrapper.set_title(&s);
@@ -101,8 +116,24 @@ mod website {
 
             while let Some(event) = self.event_queue.next().now_or_never() {
                 if let Some(event) = event {
-                    super::process_event(event, &mut wrapper);
+                    super::process_event(&event, &mut wrapper);
+
+                    // TODO: this makes more sense inside process_event, but can only be moved there once
+                    // we can implement process_event as a non-invokable member.
+                    if matches!(event, Event::TitleArrived(_)) {
+                        self.loading.store(false, Ordering::Relaxed);
+                    }
                 }
+            }
+        }
+    }
+
+    impl PropertyChangeHandler<CppObj, Property> for RustObj {
+        fn handle_property_change(&mut self, cpp: Pin<&mut CppObj>, property: Property) {
+            match property {
+                Property::Url => self.refresh_title(cpp),
+                Property::Title => println!("title changed"),
+                _ => unreachable!(),
             }
         }
     }
@@ -110,7 +141,7 @@ mod website {
 
 // TODO: convert this to a member function we can have "private" RustObj methods
 // TODO: maybe we want to make it possible to define a free function inside the mod?
-fn process_event(event: Event, cpp: &mut website::CppObjWrapper) {
+fn process_event(event: &Event, cpp: &mut website::CppObjWrapper) {
     match event {
         Event::TitleArrived(title) => {
             use cxx_qt_lib::let_qstring;

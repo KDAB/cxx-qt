@@ -68,4 +68,24 @@ TestCase {
         compare(website.url, "unknown");
         compare(spy.count, 1);
     }
+
+    function test_property_change_detection() {
+        const website = createTemporaryObject(componentWebsite, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "titleChanged",
+            target: website,
+        });
+
+        compare(spy.count, 0);
+
+        website.changeUrl();
+
+        spy.wait();
+        compare(website.title, "Loading...");
+        compare(spy.count, 1);
+
+        spy.wait();
+        compare(website.title, "Unknown website");
+        compare(spy.count, 2);
+    }
 }

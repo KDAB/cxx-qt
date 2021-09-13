@@ -120,6 +120,8 @@ pub struct QObject {
     pub(crate) original_use_decls: Vec<ItemUse>,
     /// The Rust impl that has optionally been provided to handle updates
     pub(crate) handle_updates_impl: Option<ItemImpl>,
+    /// The Rust impl that has optionally been provided to handle property changes
+    pub(crate) handle_property_change_impl: Option<ItemImpl>,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -629,8 +631,11 @@ pub fn extract_qobject(
     // A list of original use declarations for the mod (eg use crate::thing)
     let mut original_use_decls = vec![];
 
-    // Determines if this object can respond to update requests
+    // Determines if (and how) this object can respond to update requests
     let mut handle_updates_impl = None;
+
+    // Determines if (and how) this object can respond to property changes
+    let mut handle_property_change_impl = None;
 
     // Process each of the items in the mod
     for item in items.drain(..) {
@@ -734,10 +739,14 @@ pub fn extract_qobject(
                             if let Some(trait_) = &original_impl.trait_ {
                                 // We should always have at least one segments as something is unlikely
                                 // to have been parsed as a "trait" in the first place otherwise
-                                if trait_.1.segments[0].ident == "UpdateRequestHandler" {
-                                    handle_updates_impl = Some(original_impl.to_owned());
-                                } else {
-                                    original_trait_impls.push(original_impl.to_owned());
+                                match trait_.1.segments[0].ident.to_string().as_str() {
+                                    "UpdateRequestHandler" => {
+                                        handle_updates_impl = Some(original_impl.to_owned())
+                                    }
+                                    "PropertyChangeHandler" => {
+                                        handle_property_change_impl = Some(original_impl.to_owned())
+                                    }
+                                    _others => original_trait_impls.push(original_impl.to_owned()),
                                 }
                             } else {
                                 // Add invokables from RustObj
@@ -818,6 +827,7 @@ pub fn extract_qobject(
         original_trait_impls,
         original_use_decls,
         handle_updates_impl,
+        handle_property_change_impl,
     })
 }
 

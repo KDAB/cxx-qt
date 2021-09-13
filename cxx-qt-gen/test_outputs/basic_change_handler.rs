@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::PropertyChangeHandler;
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {
@@ -35,6 +37,13 @@ mod my_object {
 
             #[cxx_name = "initialiseMyObjectCpp"]
             fn initialise_my_object_cpp(cpp: Pin<&mut MyObject>);
+
+            #[cxx_name = "handlePropertyChange"]
+            fn call_handle_property_change(
+                self: &mut RustObj,
+                cpp: Pin<&mut MyObject>,
+                property: Property,
+            );
         }
     }
 
@@ -44,7 +53,15 @@ mod my_object {
     #[derive(Default)]
     struct RustObj;
 
-    impl RustObj {}
+    impl RustObj {
+        fn call_handle_property_change(
+            &mut self,
+            cpp: std::pin::Pin<&mut CppObj>,
+            property: Property,
+        ) {
+            self.handle_property_change(cpp, property);
+        }
+    }
 
     pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,
@@ -100,6 +117,16 @@ mod my_object {
                 number: value.number().into(),
                 string: value.string().into(),
             }
+        }
+    }
+
+    impl PropertyChangeHandler<CppObj, Property> for RustObj {
+        fn handle_property_change(
+            &mut self,
+            _cpp: std::pin::Pin<&mut CppObj>,
+            _property: Property,
+        ) {
+            println!("change")
         }
     }
 

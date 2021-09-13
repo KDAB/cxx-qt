@@ -44,6 +44,7 @@ mod my_object {
     }
 
     pub type CppObj = ffi::MyObject;
+    pub type Property = ffi::Property;
 
     #[derive(Default)]
     struct RustObj;

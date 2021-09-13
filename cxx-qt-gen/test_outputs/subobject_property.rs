@@ -35,9 +35,12 @@ mod my_object {
     }
 
     pub type CppObj = ffi::MyObject;
+    pub type Property = ffi::Property;
 
     #[derive(Default)]
     struct RustObj;
+
+    impl RustObj {}
 
     pub struct CppObjWrapper<'a> {
         cpp: std::pin::Pin<&'a mut CppObj>,

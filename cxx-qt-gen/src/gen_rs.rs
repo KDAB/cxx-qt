@@ -369,6 +369,16 @@ pub fn generate_qobject_cxx(
         quote! {}
     };
 
+    // Define a function to handle property changes if we have one
+    let handle_property_change = if obj.handle_property_change_impl.is_some() {
+        quote! {
+            #[cxx_name = "handlePropertyChange"]
+            fn call_handle_property_change(self: &mut #rust_class_name, cpp: Pin<&mut #class_name>, property: Property);
+        }
+    } else {
+        quote! {}
+    };
+
     // Build the methods to create the class
     let new_object_ident_cpp = format_ident!("new{}", class_name);
     let new_object_rust_str = format!("new_{}", class_name);
@@ -421,10 +431,12 @@ pub fn generate_qobject_cxx(
                 fn #initialise_object_ident(cpp: Pin<&mut #class_name>);
 
                 #handle_update_request
+                #handle_property_change
             }
         }
 
         pub type CppObj = ffi::#class_name;
+        pub type Property = ffi::Property;
     };
 
     Ok(output.into_token_stream())
@@ -908,17 +920,24 @@ pub fn generate_qobject_rs(
         quote! {}
     };
 
-    // Determine if we need an impl block on the rust struct
-    let rust_struct_impl = if !original_methods.is_empty() {
+    // Define a function to handle property changes if we have one
+    let handle_property_change = if obj.handle_property_change_impl.is_some() {
         quote! {
-            impl #rust_class_name {
-                #(#original_methods)*
-
-                #handle_update_request
+            fn call_handle_property_change(&mut self, cpp: std::pin::Pin<&mut CppObj>, property: Property) {
+                self.handle_property_change(cpp, property);
             }
         }
     } else {
         quote! {}
+    };
+
+    let rust_struct_impl = quote! {
+        impl #rust_class_name {
+            #(#original_methods)*
+
+            #handle_update_request
+            #handle_property_change
+        }
     };
 
     // Create a struct that wraps the CppObject with a nicer interface
@@ -975,13 +994,21 @@ pub fn generate_qobject_rs(
         }
     };
 
-    let use_traits = if obj.handle_updates_impl.is_some() {
-        quote! { use cxx_qt_lib::UpdateRequestHandler; }
+    let mut use_traits = Vec::new();
+    if obj.handle_updates_impl.is_some() {
+        use_traits.push(quote! { use cxx_qt_lib::UpdateRequestHandler; });
+    }
+    if obj.handle_property_change_impl.is_some() {
+        use_traits.push(quote! { use cxx_qt_lib::PropertyChangeHandler; });
+    }
+
+    let handle_updates_impl = if let Some(impl_) = &obj.handle_updates_impl {
+        fix_pin_paths_in_impl(impl_)?
     } else {
         quote! {}
     };
 
-    let handle_updates_impl = if let Some(impl_) = &obj.handle_updates_impl {
+    let handle_property_change_impl = if let Some(impl_) = &obj.handle_property_change_impl {
         fix_pin_paths_in_impl(impl_)?
     } else {
         quote! {}
@@ -993,7 +1020,7 @@ pub fn generate_qobject_rs(
         #mod_vis mod #mod_ident {
             #(#original_use_decls)*
 
-            #use_traits
+            #(#use_traits)*
 
             #cxx_block
 
@@ -1012,6 +1039,8 @@ pub fn generate_qobject_rs(
             #(#original_trait_impls)*
 
             #handle_updates_impl
+
+            #handle_property_change_impl
 
             #creator_fn
 
@@ -1300,6 +1329,27 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_update_requester.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_basic_change_handler() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_change_handler.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_change_handler.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
