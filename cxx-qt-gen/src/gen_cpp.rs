@@ -111,6 +111,7 @@ impl CppType for QtTypes {
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            _other => unreachable!(),
         }
     }
 
@@ -148,6 +149,7 @@ impl CppType for QtTypes {
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            _other => unreachable!(),
         }
     }
 
@@ -177,6 +179,7 @@ impl CppType for QtTypes {
                 ..
             } => ident_namespace_str,
             Self::Str | Self::String | Self::QString => "QString",
+            _other => unreachable!(),
         }
     }
 }

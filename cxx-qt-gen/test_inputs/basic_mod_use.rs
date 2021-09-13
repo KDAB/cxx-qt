@@ -21,6 +21,7 @@ mod my_object {
     }
 
     impl RustObj {
+        #[invokable]
         fn invokable(&self) {}
     }
 }

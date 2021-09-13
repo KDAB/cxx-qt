@@ -62,6 +62,7 @@ mod website {
     }
 
     impl RustObj {
+        #[invokable]
         fn change_url(&self, cpp: Pin<&mut CppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
 
@@ -72,6 +73,7 @@ mod website {
             wrapper.set_url(&new_url);
         }
 
+        #[invokable]
         fn refresh_title(&self, cpp: Pin<&mut CppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
 
@@ -108,6 +110,16 @@ mod website {
             };
             thread::spawn(move || block_on(fetch_title));
         }
+
+        fn process_event(&mut self, event: &Event, cpp: &mut CppObjWrapper) {
+            match event {
+                Event::TitleArrived(title) => {
+                    let_qstring!(s = title);
+                    cpp.set_title(&s);
+                    self.loading.store(false, Ordering::Relaxed);
+                }
+            }
+        }
     }
 
     impl UpdateRequestHandler<CppObj> for RustObj {
@@ -116,13 +128,7 @@ mod website {
 
             while let Some(event) = self.event_queue.next().now_or_never() {
                 if let Some(event) = event {
-                    super::process_event(&event, &mut wrapper);
-
-                    // TODO: this makes more sense inside process_event, but can only be moved there once
-                    // we can implement process_event as a non-invokable member.
-                    if matches!(event, Event::TitleArrived(_)) {
-                        self.loading.store(false, Ordering::Relaxed);
-                    }
+                    self.process_event(&event, &mut wrapper);
                 }
             }
         }
@@ -135,19 +141,6 @@ mod website {
                 Property::Title => println!("title changed"),
                 _ => unreachable!(),
             }
-        }
-    }
-}
-
-// TODO: convert this to a member function we can have "private" RustObj methods
-// TODO: maybe we want to make it possible to define a free function inside the mod?
-fn process_event(event: &Event, cpp: &mut website::CppObjWrapper) {
-    match event {
-        Event::TitleArrived(title) => {
-            use cxx_qt_lib::let_qstring;
-
-            let_qstring!(s = title);
-            cpp.set_title(&s);
         }
     }
 }

@@ -23,31 +23,37 @@ mod my_object {
     }
 
     impl RustObj {
+        #[invokable]
         fn double_number_self(&self, cpp: Pin<&mut CppObj>) {
             let value = cpp.number() * 2;
             cpp.set_number(value);
         }
 
+        #[invokable]
         fn double_number_sub(&self, sub: Pin<&mut crate::sub::sub_object::SubObject>) {
             let value = sub.number() * 2;
             sub.set_number(value);
         }
 
+        #[invokable]
         fn double_number(&self, number: i32) -> i32 {
             number * 2
         }
 
+        #[invokable]
         fn say_hi(&self, string: &QString, number: i32) {
             let s: String = string.into();
             println!("Hi from Rust! String is {} and number is {}", s, number);
         }
 
+        #[invokable]
         fn request_update(&self, cpp: Pin<&mut CppObj>) {
             let wrapper = CppObjWrapper::new(cpp);
             let update_requester = wrapper.update_requester();
             update_requester.request_update();
         }
 
+        #[invokable]
         fn update_call_count(&self) -> i32 {
             self.update_call_count
         }

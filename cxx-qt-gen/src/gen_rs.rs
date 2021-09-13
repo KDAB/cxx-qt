@@ -61,6 +61,7 @@ impl RustType for QtTypes {
             // Pointer types do not use this function (TODO: yet?)
             Self::Ptr { .. } => unreachable!(),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
+            _others => unreachable!(),
         }
     }
 
@@ -74,6 +75,7 @@ impl RustType for QtTypes {
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
+            _other => unreachable!(),
         }
     }
 }
@@ -710,13 +712,13 @@ fn fix_pin_path(method: &mut ImplItemMethod, pin_args: &[usize]) -> Result<(), T
     Ok(())
 }
 
-/// Add std::pin to Pin arguments for all impl methods. Only works if Pin argument is the first one.
-fn fix_pin_paths_in_impl(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
+/// Add std::pin to Pin and cxx_qt_lib::qstring to QString arguments for all impl methods
+fn fix_impl_methods(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
     let mut cloned = impl_.to_owned();
 
     for mut item in &mut cloned.items {
         if let syn::ImplItem::Method(m) = &mut item {
-            fix_pin_path(m, &[0])?;
+            *m = fix_method_params(m)?;
         } else {
             return Err(
                 syn::Error::new(item.span(), "Only methods are supported.").to_compile_error()
@@ -725,6 +727,88 @@ fn fix_pin_paths_in_impl(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStre
     }
 
     Ok(quote! { #cloned })
+}
+
+/// Add std::pin to Pin and cxx_qt_lib::qstring to QString arguments
+fn fix_method_params(method: &ImplItemMethod) -> Result<ImplItemMethod, TokenStream> {
+    let mut method = method.clone();
+
+    // TODO: update this once extract_invokables is split in two
+    let invokable = crate::extract::extract_invokable(&method, &["".to_owned()])?;
+
+    // Find which arguments are using Pin<T>
+    let pin_args = invokable
+        .parameters
+        .iter()
+        .enumerate()
+        .filter(|(_, parameter)| parameter.type_ident.qt_type.is_pin())
+        .map(|(index, _)| index)
+        .collect::<Vec<usize>>();
+
+    let qstring_args = invokable
+        .parameters
+        .iter()
+        .enumerate()
+        .filter(|(_, parameter)| parameter.type_ident.qt_type == QtTypes::QString)
+        .map(|(index, _)| index)
+        .collect::<Vec<usize>>();
+
+    if !pin_args.is_empty() {
+        fix_pin_path(&mut method, &pin_args)?;
+    }
+
+    if !qstring_args.is_empty() {
+        // Rewrite args
+        method
+            .sig
+            .inputs
+            .iter_mut()
+            // We can skip self as that's not in our parameters above
+            //
+            // TODO: note this assumes that the first argument is self
+            .skip(1)
+            .enumerate()
+            .filter(|(index, _)| qstring_args.contains(index))
+            // Rewrite the type
+            //
+            // We add cxx_qt_lib to QString
+            .map(|(_, item)| {
+                if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
+                    let ty_path;
+
+                    match ty.as_mut() {
+                        syn::Type::Reference(syn::TypeReference { elem, .. }) => {
+                            // If the type is a path then extract it and mark is_ref
+                            if let syn::Type::Path(ref mut path) = &mut **elem {
+                                ty_path = path;
+                            } else {
+                                return Err(syn::Error::new(
+                                    item.span(),
+                                    "QString args must be valid references.",
+                                )
+                                .to_compile_error());
+                            }
+                        }
+                        _others => {
+                            return Err(syn::Error::new(
+                                item.span(),
+                                "QString args must be references.",
+                            )
+                            .to_compile_error())
+                        }
+                    }
+
+                    ty_path
+                        .path
+                        .segments
+                        .insert(0, format_ident!("cxx_qt_lib").into());
+                }
+                Ok(item)
+            })
+            .collect::<Result<Vec<_>, TokenStream>>()?;
+    }
+
+    Ok(method)
 }
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
@@ -811,85 +895,17 @@ pub fn generate_qobject_rs(
     // Generate property methods from the object
     let property_methods = generate_property_methods_rs(obj)?;
 
-    // Capture original methods, trait impls, use decls so they can used by quote
-    let original_methods = obj
+    // Capture methods, trait impls, use decls so they can used by quote
+    let invokable_methods = obj
         .invokables
         .iter()
-        .map(|m| {
-            // Find which arguments are using Pin<T>
-            let pin_args = m
-                .parameters
-                .iter()
-                .enumerate()
-                .filter(|(_, parameter)| parameter.type_ident.qt_type.is_pin())
-                .map(|(index, _)| index)
-                .collect::<Vec<usize>>();
+        .map(|m| fix_method_params(&m.original_method))
+        .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
 
-            // Find which arguments are using QString
-            let qstring_args = m
-                .parameters
-                .iter()
-                .enumerate()
-                .filter(|(_, parameter)| parameter.type_ident.qt_type == QtTypes::QString)
-                .map(|(index, _)| index)
-                .collect::<Vec<usize>>();
-
-            let mut method = m.original_method.clone();
-            if !pin_args.is_empty() {
-                fix_pin_path(&mut method, &pin_args)?;
-            }
-            if !qstring_args.is_empty() {
-                // Rewrite args
-                method
-                    .sig
-                    .inputs
-                    .iter_mut()
-                    // We can skip self as that's not in our parameters above
-                    //
-                    // TODO: note this assumes that the first argument is self
-                    .skip(1)
-                    .enumerate()
-                    .filter(|(index, _)| qstring_args.contains(index))
-                    // Rewrite the type
-                    //
-                    // We add cxx_qt_lib to QString
-                    .map(|(_, item)| {
-                        if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
-                            let ty_path;
-
-                            match ty.as_mut() {
-                                syn::Type::Reference(syn::TypeReference { elem, .. }) => {
-                                    // If the type is a path then extract it and mark is_ref
-                                    if let syn::Type::Path(ref mut path) = &mut **elem {
-                                        ty_path = path;
-                                    } else {
-                                        return Err(syn::Error::new(
-                                            item.span(),
-                                            "QString args must be valid references.",
-                                        )
-                                        .to_compile_error());
-                                    }
-                                }
-                                _others => {
-                                    return Err(syn::Error::new(
-                                        item.span(),
-                                        "QString args must be references.",
-                                    )
-                                    .to_compile_error())
-                                }
-                            }
-
-                            ty_path
-                                .path
-                                .segments
-                                .insert(0, format_ident!("cxx_qt_lib").into());
-                        }
-                        Ok(item)
-                    })
-                    .collect::<Result<Vec<_>, TokenStream>>()?;
-            }
-            Ok(method)
-        })
+    let normal_methods = obj
+        .normal_methods
+        .iter()
+        .map(|m| fix_method_params(m))
         .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
 
     let original_trait_impls = &obj.original_trait_impls;
@@ -898,7 +914,7 @@ pub fn generate_qobject_rs(
     // Generate the rust creator function
     let creator_fn = generate_rust_object_creator(obj)?;
 
-    // Generate the cpp initialser function
+    // Generate the cpp initialiser function
     let initialiser_fn = generate_cpp_object_initialiser(obj);
 
     // Build our filtered rust struct
@@ -933,7 +949,8 @@ pub fn generate_qobject_rs(
 
     let rust_struct_impl = quote! {
         impl #rust_class_name {
-            #(#original_methods)*
+            #(#invokable_methods)*
+            #(#normal_methods)*
 
             #handle_update_request
             #handle_property_change
@@ -1003,13 +1020,13 @@ pub fn generate_qobject_rs(
     }
 
     let handle_updates_impl = if let Some(impl_) = &obj.handle_updates_impl {
-        fix_pin_paths_in_impl(impl_)?
+        fix_impl_methods(impl_)?
     } else {
         quote! {}
     };
 
     let handle_property_change_impl = if let Some(impl_) = &obj.handle_property_change_impl {
-        fix_pin_paths_in_impl(impl_)?
+        fix_impl_methods(impl_)?
     } else {
         quote! {}
     };

@@ -42,6 +42,7 @@ pub enum QtTypes {
     QString,
     String,
     Str,
+    Unknown, // TODO: remove this after we have split the extract_invokable function
 }
 
 /// Describes a type
@@ -102,8 +103,10 @@ pub(crate) struct Property {
 pub struct QObject {
     /// The ident of the C++ class that represents the QObject
     pub ident: Ident,
-    /// All the methods that can be invoked from QML
+    /// All the methods that can also be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
+    /// All the methods that cannot be invoked from QML
+    pub(crate) normal_methods: Vec<ImplItemMethod>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
     /// The namespace to use for C++
@@ -134,8 +137,6 @@ enum ExtractTypeIdentError {
     IdentEmpty(Span),
     /// There are multiple idents but didn't start with crate::
     UnknownAndNotCrate(Span),
-    /// There is one ident but it's unknown to our converters
-    UnknownIdent(Span),
     /// There is a Pin<T> but the T is unknown to our converters
     UnknownPinType(Span),
 }
@@ -160,7 +161,7 @@ fn extract_qt_type(
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),
             "i32" => Ok(QtTypes::I32),
-            _other => Err(ExtractTypeIdentError::UnknownIdent(idents[0].span())),
+            _other => Ok(QtTypes::Unknown),
         }
     // As this type ident has more than one segment, check if it is a pointer
     } else if is_type_ident_ptr(idents) {
@@ -342,12 +343,22 @@ fn extract_type_ident(
     })
 }
 
+/// The result of extracting invokables from an impl block.
+/// Only intended for internal use for now.
+struct ExtractedInvokables {
+    /// Impl methods that will also be exposed as invokables to Qt
+    invokables: Vec<Invokable>,
+    /// Impl methods that will only be visible on the Rust side
+    normal_methods: Vec<ImplItemMethod>,
+}
+
 /// Extracts all the member functions from a module and generates invokables from them
 fn extract_invokables(
     items: &[ImplItem],
     cpp_namespace_prefix: &[String],
-) -> Result<Vec<Invokable>, TokenStream> {
+) -> Result<ExtractedInvokables, TokenStream> {
     let mut invokables = Vec::new();
+    let mut normal_methods = Vec::new();
 
     // TODO: we need to set up an exclude list of invokable names and give
     // the user an error if they use one of those names.
@@ -359,144 +370,170 @@ fn extract_invokables(
         //
         // TODO: later should we pass through unknown items
         // or should they have an attribute to ignore
-        let method;
+        let mut method;
         if let ImplItem::Method(m) = item {
-            method = m;
+            method = m.clone();
         } else {
             return Err(Error::new(item.span(), "Only methods are supported.").to_compile_error());
         }
 
-        // Extract the ident, parameters, return type of the method
-        let method_ident = &method.sig.ident;
-        let inputs = &method.sig.inputs;
-        let output = &method.sig.output;
+        let filtered_attrs: Vec<syn::Attribute> = method
+            .attrs
+            .iter()
+            .filter(|a| {
+                let segments = &a.path.segments;
 
-        // Prepare a vector to store the processed parameters of the method
-        let mut parameters = Vec::new();
-
-        // Process each input (parameters) of the method adding Parameter's to parameters
-        for parameter in inputs {
-            // Check that the parameter is typed
-            //
-            // If it is not typed (it is a syn::Receiver) then this means it is the self parameter
-            // but without a type, eg self: Box<Self> would be Typed
-            //
-            // TODO: does this mean that if self is Typed we need to skip it?
-            // so should we ignore the first parameter if it is named "self"?
-            if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
-                // The name ident of the parameter
-                let parameter_ident;
-                // The type ident of the parameter
-                let type_ident;
-
-                // Try to extract the name of the parameter
-                if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                    parameter_ident = ident;
-                } else {
-                    return Err(
-                        Error::new(parameter.span(), "Invalid argument ident format.")
-                            .to_compile_error(),
-                    );
+                if segments.len() != 1 {
+                    return true;
                 }
 
-                // Try to extract the type of the parameter
-                match extract_type_ident(ty, cpp_namespace_prefix) {
-                    Ok(result) => type_ident = result,
-                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
-                        return Err(Error::new(
-                            span,
-                            "Argument should not be angle bracketed or parenthesized.",
-                        )
-                        .to_compile_error());
-                    }
-                    Err(ExtractTypeIdentError::InvalidType(span)) => {
-                        return Err(
-                            Error::new(span, "Invalid argument ident format.").to_compile_error()
-                        )
-                    }
-                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                        return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
-                        return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownIdent(span)) => {
-                        return Err(Error::new(span, "Unknown argument type ident to parse").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                        return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
-                    }
-                }
+                segments[0].ident != "invokable"
+            })
+            .cloned()
+            .collect();
 
-                // Build and push the parameter
-                parameters.push(Parameter {
-                    ident: parameter_ident.to_owned(),
-                    type_ident,
-                });
-            }
+        // Skip non-invokable members
+        if filtered_attrs.len() == method.attrs.len() {
+            normal_methods.push(method);
+            continue;
         }
 
-        // Process the output and determine if it has a return type
-        let return_type = if let ReturnType::Type(_, ty) = output {
-            // This output has a return type, so extract the type
+        // Remove the #[invokable tag for the output]
+        method.attrs = filtered_attrs;
+
+        // Extract the ident, parameters, return type of the method
+        let invokable = extract_invokable(&method, cpp_namespace_prefix)?;
+        invokables.push(invokable);
+    }
+
+    Ok(ExtractedInvokables {
+        invokables,
+        normal_methods,
+    })
+}
+
+// TODO: we want to split this into two functions so that gen_rs::fix_method_params
+// can extract only the information that it needs.
+//
+// TODO: remove pub(crate) once extract_invokable is split
+pub(crate) fn extract_invokable(
+    method: &ImplItemMethod,
+    cpp_namespace_prefix: &[String],
+) -> Result<Invokable, TokenStream> {
+    let method_ident = &method.sig.ident;
+    let inputs = &method.sig.inputs;
+    let output = &method.sig.output;
+
+    let mut parameters = Vec::new();
+
+    for parameter in inputs {
+        // Check that the parameter is typed
+        //
+        // If it is not typed (it is a syn::Receiver) then this means it is the self parameter
+        // but without a type, eg self: Box<Self> would be Typed
+        //
+        // TODO: does this mean that if self is Typed we need to skip it?
+        // so should we ignore the first parameter if it is named "self"?
+        if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
+            // The name ident of the parameter
+            let parameter_ident;
+            // The type ident of the parameter
+            let type_ident;
+
+            // Try to extract the name of the parameter
+            if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                parameter_ident = ident;
+            } else {
+                return Err(
+                    Error::new(parameter.span(), "Invalid argument ident format.")
+                        .to_compile_error(),
+                );
+            }
+
+            // Try to extract the type of the parameter
             match extract_type_ident(ty, cpp_namespace_prefix) {
-                Ok(result) => Some(result),
+                Ok(result) => type_ident = result,
                 Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                     return Err(Error::new(
                         span,
-                        "Return type should not be angle bracketed or parenthesized.",
+                        "Argument should not be angle bracketed or parenthesized.",
                     )
                     .to_compile_error());
                 }
                 Err(ExtractTypeIdentError::InvalidType(span)) => {
-                    return Err(Error::new(span, "Invalid return type format.").to_compile_error())
+                    return Err(
+                        Error::new(span, "Invalid argument ident format.").to_compile_error()
+                    )
                 }
                 Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                    return Err(Error::new(
-                        span,
-                        "Return type ident must have at least one segment",
-                    )
-                    .to_compile_error())
+                    return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
                 }
-                Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => return Err(Error::new(
+                Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                    return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                }
+                Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                    return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
+                }
+            }
+
+            // Build and push the parameter
+            parameters.push(Parameter {
+                ident: parameter_ident.to_owned(),
+                type_ident,
+            });
+        }
+    }
+
+    let return_type = if let ReturnType::Type(_, ty) = output {
+        // This output has a return type, so extract the type
+        match extract_type_ident(ty, cpp_namespace_prefix) {
+            Ok(result) => Some(result),
+            Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+                return Err(Error::new(
+                    span,
+                    "Return type should not be angle bracketed or parenthesized.",
+                )
+                .to_compile_error());
+            }
+            Err(ExtractTypeIdentError::InvalidType(span)) => {
+                return Err(Error::new(span, "Invalid return type format.").to_compile_error())
+            }
+            Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                return Err(
+                    Error::new(span, "Return type ident must have at least one segment")
+                        .to_compile_error(),
+                )
+            }
+            Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                return Err(Error::new(
                     span,
                     "First return type ident segment must start with 'crate' if there are multiple",
                 )
-                .to_compile_error()),
-                Err(ExtractTypeIdentError::UnknownIdent(span)) => {
-                    return Err(
-                        Error::new(span, "Unknown return type ident to parse").to_compile_error()
-                    )
-                }
-                Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                    return Err(
-                        Error::new(span, "Unknown return Pin<T> type ident to parse")
-                            .to_compile_error(),
-                    )
-                }
+                .to_compile_error())
             }
-        } else {
-            None
-        };
+            Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                return Err(
+                    Error::new(span, "Unknown return Pin<T> type ident to parse")
+                        .to_compile_error(),
+                )
+            }
+        }
+    } else {
+        None
+    };
 
-        // TODO: later support an attribute to keep original or override renaming
-        let ident_str = method_ident.to_string();
-        let ident_method = CppRustIdent {
-            cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
-            rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-        };
+    let ident_str = method_ident.to_string();
+    let ident_method = CppRustIdent {
+        cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
+        rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+    };
 
-        // Build and push the invokable
-        let invokable = Invokable {
-            ident: ident_method,
-            parameters,
-            return_type,
-            original_method: method.to_owned(),
-        };
-        invokables.push(invokable);
-    }
-
-    Ok(invokables)
+    Ok(Invokable {
+        ident: ident_method,
+        parameters,
+        return_type,
+        original_method: method.to_owned(), // TODO: remove to_owned once extract_invokable is split
+    })
 }
 
 /// Extracts all the attributes from a struct and generates properties from them
@@ -552,9 +589,6 @@ fn extract_properties(
                     }
                     Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
                         return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownIdent(span)) => {
-                        return Err(Error::new(span, "Unknown named field type ident to parse").to_compile_error())
                     }
                     Err(ExtractTypeIdentError::UnknownPinType(span)) => {
                         return Err(Error::new(span, "Unknown named field Pin<T> type ident to parse").to_compile_error())
@@ -626,6 +660,8 @@ pub fn extract_qobject(
 
     // A list of the invokables for the struct
     let mut object_invokables = vec![];
+    // A list of the normal methods (i.e. not invokables) for the struct
+    let mut object_normal_methods = vec![];
     // A list of original trait impls for the struct (eg impl Default for Struct)
     let mut original_trait_impls = vec![];
     // A list of original use declarations for the mod (eg use crate::thing)
@@ -749,13 +785,11 @@ pub fn extract_qobject(
                                     _others => original_trait_impls.push(original_impl.to_owned()),
                                 }
                             } else {
-                                // Add invokables from RustObj
-                                //
-                                // TODO: later we might filter these to only ones marked as invokable
-                                object_invokables.append(&mut extract_invokables(
-                                    &original_impl.items,
-                                    cpp_namespace_prefix,
-                                )?);
+                                let mut extracted =
+                                    extract_invokables(&original_impl.items, cpp_namespace_prefix)?;
+
+                                object_invokables.append(&mut extracted.invokables);
+                                object_normal_methods.append(&mut extracted.normal_methods);
                             }
                         }
                         _others => {
@@ -817,6 +851,7 @@ pub fn extract_qobject(
     Ok(QObject {
         ident: qt_ident,
         invokables: object_invokables,
+        normal_methods: object_normal_methods,
         properties: object_properties,
         namespace,
         original_mod,
@@ -847,7 +882,7 @@ mod tests {
         let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        // Check that it got the inovkables and properties
+        // Check that it got the invokables and properties
         assert_eq!(qobject.invokables.len(), 1);
         assert_eq!(qobject.properties.len(), 1);
 
@@ -974,6 +1009,9 @@ mod tests {
 
         // Check invokable parameters ident and type ident
         assert_eq!(invokable_second.parameters.len(), 0);
+
+        // Check that the normal method was also detected
+        assert_eq!(qobject.normal_methods.len(), 1);
     }
 
     #[test]

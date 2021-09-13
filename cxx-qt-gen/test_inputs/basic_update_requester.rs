@@ -3,6 +3,7 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
         fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
@@ -10,6 +11,7 @@ mod my_object {
             );
         }
 
+        #[invokable]
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }

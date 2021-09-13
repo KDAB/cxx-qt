@@ -26,6 +26,7 @@ mod my_data {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
         fn as_json_str(&self, cpp: Pin<&mut CppObj>) -> String {
             let wrapper = CppObjWrapper::new(cpp);
             let data = Data::from(&wrapper);

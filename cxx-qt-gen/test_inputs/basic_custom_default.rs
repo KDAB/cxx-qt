@@ -13,6 +13,7 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
         fn invokable(&self) {}
     }
 }

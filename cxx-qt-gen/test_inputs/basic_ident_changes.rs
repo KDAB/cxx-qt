@@ -8,6 +8,7 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }

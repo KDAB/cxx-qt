@@ -47,6 +47,10 @@ mod my_object {
         fn say_bye(&self) {
             println!("Bye from Rust!");
         }
+
+        fn plain_old_method(&self) {
+            println!("QML can't call this :)");
+        }
     }
 
     pub struct CppObjWrapper<'a> {
