@@ -7,6 +7,7 @@ use cxx_qt::make_qobject;
 
 mod data;
 pub mod sub;
+mod types;
 
 #[make_qobject]
 mod my_object {

@@ -22,6 +22,11 @@ pub(crate) struct CppRustIdent {
 /// Describes a Qt type
 #[derive(Debug, PartialEq)]
 pub enum QtTypes {
+    Bool,
+    F32,
+    F64,
+    I8,
+    I16,
     I32,
     Pin {
         /// Cache of the last type_idents as a str with it's namespace for C++ to reference
@@ -42,6 +47,9 @@ pub enum QtTypes {
     QString,
     String,
     Str,
+    U8,
+    U16,
+    U32,
     Unknown, // TODO: remove this after we have split the extract_invokable function
 }
 
@@ -157,10 +165,18 @@ fn extract_qt_type(
     } else if idents.len() == 1 {
         // We can assume that idents has an entry at index zero, because there is one entry
         match idents[0].to_string().as_str() {
+            "bool" => Ok(QtTypes::Bool),
+            "f32" => Ok(QtTypes::F32),
+            "f64" => Ok(QtTypes::F64),
+            "i8" => Ok(QtTypes::I8),
+            "i16" => Ok(QtTypes::I16),
+            "i32" => Ok(QtTypes::I32),
             "QString" => Ok(QtTypes::QString),
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),
-            "i32" => Ok(QtTypes::I32),
+            "u8" => Ok(QtTypes::U8),
+            "u16" => Ok(QtTypes::U16),
+            "u32" => Ok(QtTypes::U32),
             _other => Ok(QtTypes::Unknown),
         }
     // As this type ident has more than one segment, check if it is a pointer
@@ -1183,5 +1199,62 @@ mod tests {
         } else {
             panic!();
         }
+    }
+
+    #[test]
+    fn parses_types_primitive_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_primitive_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        // Check that it got the inovkables and properties
+        assert_eq!(qobject.invokables.len(), 0);
+        assert_eq!(qobject.properties.len(), 9);
+
+        assert_eq!(
+            qobject.properties[0].ident.rust_ident.to_string(),
+            "boolean"
+        );
+        assert_eq!(qobject.properties[0].type_ident.qt_type, QtTypes::Bool);
+
+        assert_eq!(
+            qobject.properties[1].ident.rust_ident.to_string(),
+            "float_32"
+        );
+        assert_eq!(qobject.properties[1].type_ident.qt_type, QtTypes::F32);
+
+        assert_eq!(
+            qobject.properties[2].ident.rust_ident.to_string(),
+            "float_64"
+        );
+        assert_eq!(qobject.properties[2].type_ident.qt_type, QtTypes::F64);
+
+        assert_eq!(qobject.properties[3].ident.rust_ident.to_string(), "int_8");
+        assert_eq!(qobject.properties[3].type_ident.qt_type, QtTypes::I8);
+
+        assert_eq!(qobject.properties[4].ident.rust_ident.to_string(), "int_16");
+        assert_eq!(qobject.properties[4].type_ident.qt_type, QtTypes::I16);
+
+        assert_eq!(qobject.properties[5].ident.rust_ident.to_string(), "int_32");
+        assert_eq!(qobject.properties[5].type_ident.qt_type, QtTypes::I32);
+
+        assert_eq!(qobject.properties[6].ident.rust_ident.to_string(), "uint_8");
+        assert_eq!(qobject.properties[6].type_ident.qt_type, QtTypes::U8);
+
+        assert_eq!(
+            qobject.properties[7].ident.rust_ident.to_string(),
+            "uint_16"
+        );
+        assert_eq!(qobject.properties[7].type_ident.qt_type, QtTypes::U16);
+
+        assert_eq!(
+            qobject.properties[8].ident.rust_ident.to_string(),
+            "uint_32"
+        );
+        assert_eq!(qobject.properties[8].type_ident.qt_type, QtTypes::U32);
     }
 }

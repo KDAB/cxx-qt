@@ -10,18 +10,18 @@ class MyObject : public CxxQObject
 {
   Q_OBJECT
   Q_PROPERTY(
-    int myNumber READ getMyNumber WRITE setMyNumber NOTIFY myNumberChanged)
+    qint32 myNumber READ getMyNumber WRITE setMyNumber NOTIFY myNumberChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  int getMyNumber() const;
+  qint32 getMyNumber() const;
 
   Q_INVOKABLE void sayBye();
 
 public Q_SLOTS:
-  void setMyNumber(int value);
+  void setMyNumber(qint32 value);
 
 Q_SIGNALS:
   void myNumberChanged();
@@ -30,7 +30,7 @@ private:
   rust::Box<RustObj> m_rustObj;
   bool m_initialised = false;
 
-  int m_myNumber;
+  qint32 m_myNumber;
 };
 
 std::unique_ptr<MyObject>

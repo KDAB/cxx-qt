@@ -69,11 +69,14 @@ impl CppType for QtTypes {
     /// Any converter that is required to convert this type into C++
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
-            Self::I32 => None,
+            Self::Bool => None,
+            Self::F32 | Self::F64 => None,
+            Self::I8 | Self::I16 | Self::I32 => None,
             Self::Pin { .. } => None,
             Self::Ptr { .. } => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
+            Self::U8 | Self::U16 | Self::U32 => None,
             _others => unreachable!(),
         }
     }
@@ -105,12 +108,15 @@ impl CppType for QtTypes {
     /// eg String => const QString and not whether the rust type was const.
     fn is_const(&self) -> bool {
         match self {
-            Self::I32 => false,
+            Self::Bool => false,
+            Self::F32 | Self::F64 => false,
+            Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
     }
@@ -143,12 +149,15 @@ impl CppType for QtTypes {
     /// always ref in arguments?
     fn is_ref(&self) -> bool {
         match self {
-            Self::I32 => false,
+            Self::Bool => false,
+            Self::F32 | Self::F64 => false,
+            Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
     }
@@ -165,7 +174,12 @@ impl CppType for QtTypes {
     /// The C++ type name of the CppType
     fn type_ident(&self) -> &str {
         match self {
-            Self::I32 => "int",
+            Self::Bool => "bool",
+            Self::F32 => "float",
+            Self::F64 => "double",
+            Self::I8 => "qint8",
+            Self::I16 => "qint16",
+            Self::I32 => "qint32",
             // Pin<T> where T is not is_this should use T as the CppType
             Self::Pin {
                 ident_namespace_str,
@@ -179,6 +193,9 @@ impl CppType for QtTypes {
                 ..
             } => ident_namespace_str,
             Self::Str | Self::String | Self::QString => "QString",
+            Self::U8 => "quint8",
+            Self::U16 => "quint16",
+            Self::U32 => "quint32",
             _other => unreachable!(),
         }
     }
@@ -1060,6 +1077,25 @@ mod tests {
             clang_format(include_str!("../test_outputs/basic_change_handler.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/basic_change_handler.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_types_primitive_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_primitive_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/types_primitive_property.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/types_primitive_property.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

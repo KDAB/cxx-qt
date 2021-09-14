@@ -14,7 +14,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  Q_INVOKABLE int doubleNumber(int number);
+  Q_INVOKABLE qint32 doubleNumber(qint32 number);
   Q_INVOKABLE QString helloMessage(const QString& msg);
   Q_INVOKABLE QString staticMessage();
 

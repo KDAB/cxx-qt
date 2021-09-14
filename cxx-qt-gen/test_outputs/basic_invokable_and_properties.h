@@ -9,21 +9,21 @@ class RustObj;
 class MyObject : public CxxQObject
 {
   Q_OBJECT
-  Q_PROPERTY(int number READ getNumber WRITE setNumber NOTIFY numberChanged)
+  Q_PROPERTY(qint32 number READ getNumber WRITE setNumber NOTIFY numberChanged)
   Q_PROPERTY(QString string READ getString WRITE setString NOTIFY stringChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  int getNumber() const;
+  qint32 getNumber() const;
   const QString& getString() const;
 
-  Q_INVOKABLE void sayHi(const QString& string, int number);
+  Q_INVOKABLE void sayHi(const QString& string, qint32 number);
   Q_INVOKABLE void sayBye();
 
 public Q_SLOTS:
-  void setNumber(int value);
+  void setNumber(qint32 value);
   void setString(const QString& value);
 
 Q_SIGNALS:
@@ -34,7 +34,7 @@ private:
   rust::Box<RustObj> m_rustObj;
   bool m_initialised = false;
 
-  int m_number;
+  qint32 m_number;
   QString m_string;
 };
 

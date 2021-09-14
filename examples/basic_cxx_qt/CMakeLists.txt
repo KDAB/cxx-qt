@@ -27,6 +27,7 @@ set(
     data.rs
     lib.rs
     sub.rs
+    types.rs
 )
 
 set(

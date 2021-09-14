@@ -14,6 +14,7 @@
 
 #include "cxx-qt-gen/include/my_data.h"
 #include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/my_types.h"
 #include "cxx-qt-gen/include/sub_object.h"
 
 int
@@ -165,6 +166,75 @@ TEST_CASE("CXX-Qt allows Rust code to handle an update request")
   obj.requestUpdate();
   QCoreApplication::processEvents();
   CHECK(obj.updateCallCount() == 1);
+}
+
+TEST_CASE("CXX-Qt types are exposed to C++ correctly")
+{
+  cxx_qt::my_types::MyTypes types;
+
+  QSignalSpy booleanSpy(&types, &cxx_qt::my_types::MyTypes::booleanChanged);
+  QSignalSpy float32Spy(&types, &cxx_qt::my_types::MyTypes::float32Changed);
+  QSignalSpy float64Spy(&types, &cxx_qt::my_types::MyTypes::float64Changed);
+  QSignalSpy int8Spy(&types, &cxx_qt::my_types::MyTypes::int8Changed);
+  QSignalSpy int16Spy(&types, &cxx_qt::my_types::MyTypes::int16Changed);
+  QSignalSpy int32Spy(&types, &cxx_qt::my_types::MyTypes::int32Changed);
+  QSignalSpy uint8Spy(&types, &cxx_qt::my_types::MyTypes::uint8Changed);
+  QSignalSpy uint16Spy(&types, &cxx_qt::my_types::MyTypes::uint16Changed);
+  QSignalSpy uint32Spy(&types, &cxx_qt::my_types::MyTypes::uint32Changed);
+
+  CHECK(types.getBoolean() == false);
+  CHECK(booleanSpy.count() == 0);
+  types.setBoolean(true);
+  CHECK(booleanSpy.count() == 1);
+  CHECK(types.getBoolean() == true);
+
+  CHECK(types.getFloat32() == 0.0);
+  CHECK(float32Spy.count() == 0);
+  types.setFloat32(0.33f);
+  CHECK(float32Spy.count() == 1);
+  CHECK(types.getFloat32() == 0.33f);
+
+  CHECK(types.getFloat64() == 0.0);
+  CHECK(float64Spy.count() == 0);
+  types.setFloat64(0.33);
+  CHECK(float64Spy.count() == 1);
+  CHECK(types.getFloat64() == 0.33);
+
+  CHECK(types.getInt8() == 0);
+  CHECK(int8Spy.count() == 0);
+  types.setInt8(4);
+  CHECK(int8Spy.count() == 1);
+  CHECK(types.getInt8() == 4);
+
+  CHECK(types.getInt16() == 0);
+  CHECK(int16Spy.count() == 0);
+  types.setInt16(4);
+  CHECK(int16Spy.count() == 1);
+  CHECK(types.getInt16() == 4);
+
+  CHECK(types.getInt32() == 0);
+  CHECK(int32Spy.count() == 0);
+  types.setInt32(4);
+  CHECK(int32Spy.count() == 1);
+  CHECK(types.getInt32() == 4);
+
+  CHECK(types.getUint8() == 0);
+  CHECK(uint8Spy.count() == 0);
+  types.setUint8(4);
+  CHECK(uint8Spy.count() == 1);
+  CHECK(types.getUint8() == 4);
+
+  CHECK(types.getUint16() == 0);
+  CHECK(uint16Spy.count() == 0);
+  types.setUint16(4);
+  CHECK(uint16Spy.count() == 1);
+  CHECK(types.getUint16() == 4);
+
+  CHECK(types.getUint32() == 0);
+  CHECK(uint32Spy.count() == 0);
+  types.setUint32(4);
+  CHECK(uint32Spy.count() == 1);
+  CHECK(types.getUint32() == 4);
 }
 
 #include "main.moc"

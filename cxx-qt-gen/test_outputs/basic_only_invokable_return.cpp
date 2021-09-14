@@ -13,8 +13,8 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-int
-MyObject::doubleNumber(int number)
+qint32
+MyObject::doubleNumber(qint32 number)
 {
   return m_rustObj->doubleNumber(number);
 }

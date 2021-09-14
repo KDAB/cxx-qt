@@ -13,14 +13,14 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-int
+qint32
 MyObject::getNumber() const
 {
   return m_number;
 }
 
 void
-MyObject::setNumber(int value)
+MyObject::setNumber(qint32 value)
 {
   if (!m_initialised) {
     m_number = value;

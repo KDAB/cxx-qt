@@ -14,7 +14,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  Q_INVOKABLE void sayHi(const QString& string, int number);
+  Q_INVOKABLE void sayHi(const QString& string, qint32 number);
   Q_INVOKABLE void sayBye();
 
 private:

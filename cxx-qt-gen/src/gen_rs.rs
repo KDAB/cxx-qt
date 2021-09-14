@@ -56,11 +56,19 @@ impl RustType for QtTypes {
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident {
         match self {
+            Self::Bool => format_ident!("bool"),
+            Self::F32 => format_ident!("f32"),
+            Self::F64 => format_ident!("f64"),
+            Self::I8 => format_ident!("i8"),
+            Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
             Self::Pin { .. } => unreachable!(),
             // Pointer types do not use this function (TODO: yet?)
             Self::Ptr { .. } => unreachable!(),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
+            Self::U8 => format_ident!("u8"),
+            Self::U16 => format_ident!("u16"),
+            Self::U32 => format_ident!("u32"),
             _others => unreachable!(),
         }
     }
@@ -68,6 +76,11 @@ impl RustType for QtTypes {
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
     fn full_param_type(&self) -> TokenStream {
         match self {
+            Self::Bool => quote! {bool},
+            Self::F32 => quote! {f32},
+            Self::F64 => quote! {f64},
+            Self::I8 => quote! {i8},
+            Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
             Self::Pin { .. } => unreachable!(),
             Self::Ptr { ident_str, .. } => {
@@ -75,6 +88,9 @@ impl RustType for QtTypes {
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
+            Self::U8 => quote! {u8},
+            Self::U16 => quote! {u16},
+            Self::U32 => quote! {u32},
             _other => unreachable!(),
         }
     }
@@ -1367,6 +1383,27 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_change_handler.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_types_primitive_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_primitive_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/types_primitive_property.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)

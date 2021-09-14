@@ -14,7 +14,7 @@ MyObject::MyObject(QObject* parent)
 MyObject::~MyObject() = default;
 
 void
-MyObject::sayHi(const QString& string, int number)
+MyObject::sayHi(const QString& string, qint32 number)
 {
   m_rustObj->sayHi(*this, string, number);
 }
