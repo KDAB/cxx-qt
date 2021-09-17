@@ -1,6 +1,14 @@
 mod my_object {
     use super::MyTrait;
 
+    enum Event {
+        MyEvent,
+    }
+
+    fn do_something() {
+        println!("I am a free function");
+    }
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {

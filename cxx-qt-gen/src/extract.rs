@@ -119,8 +119,8 @@ pub struct QObject {
     pub(crate) original_rust_struct: ItemStruct,
     /// The original Rust trait impls for the struct
     pub(crate) original_trait_impls: Vec<ItemImpl>,
-    /// The original Rust use declarations from the mod
-    pub(crate) original_use_decls: Vec<ItemUse>,
+    /// The original Rust declarations from the mod that will be directly passed through
+    pub(crate) original_passthrough_decls: Vec<Item>,
     /// The Rust impl that has optionally been provided to handle updates
     pub(crate) handle_updates_impl: Option<ItemImpl>,
     /// The Rust impl that has optionally been provided to handle property changes
@@ -662,10 +662,10 @@ pub fn extract_qobject(
     let mut object_invokables = vec![];
     // A list of the normal methods (i.e. not invokables) for the struct
     let mut object_normal_methods = vec![];
-    // A list of original trait impls for the struct (eg impl Default for Struct)
+    // A list of original trait impls for the struct (eg `impl Default for Struct`)
     let mut original_trait_impls = vec![];
-    // A list of original use declarations for the mod (eg use crate::thing)
-    let mut original_use_decls = vec![];
+    // A list of insignificant declarations for the mod that will be directly passed through (eg `use crate::thing`)
+    let mut original_passthrough_decls = vec![];
 
     // Determines if (and how) this object can respond to update requests
     let mut handle_updates_impl = None;
@@ -808,9 +808,9 @@ pub fn extract_qobject(
                     .to_compile_error());
                 }
             }
-            // We are a use so pass to use declaration list
-            Item::Use(u) => {
-                original_use_decls.push(u.to_owned());
+            // We are an insignificant item that will be directly passed through
+            Item::Use(_) | Item::Enum(_) | Item::Fn(_) => {
+                original_passthrough_decls.push(item.to_owned());
             }
             // TODO: consider what other items we allow in the mod, we may just pass through all
             // the remaining types as an unknown list which the gen side can put at the end?
@@ -860,7 +860,7 @@ pub fn extract_qobject(
         original_rust_struct: original_rust_struct
             .unwrap_or_else(|| syn::parse_str("struct RustObj;").unwrap()),
         original_trait_impls,
-        original_use_decls,
+        original_passthrough_decls,
         handle_updates_impl,
         handle_property_change_impl,
     })
@@ -1078,11 +1078,11 @@ mod tests {
     }
 
     #[test]
-    fn parses_basic_mod_use() {
+    fn parses_basic_mod_passthrough() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
         // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_mod_use.rs");
+        let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
@@ -1091,8 +1091,8 @@ mod tests {
         assert_eq!(qobject.invokables.len(), 1);
         assert_eq!(qobject.properties.len(), 1);
 
-        // Check that there is a use declaration
-        assert_eq!(qobject.original_use_decls.len(), 1);
+        // Check that there is a use, enum and fn declaration
+        assert_eq!(qobject.original_passthrough_decls.len(), 3);
     }
 
     #[test]

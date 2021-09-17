@@ -1,6 +1,14 @@
 mod my_object {
     use super::MyTrait;
 
+    enum Event {
+        MyEvent,
+    }
+
+    fn do_something() {
+        println!("I am a free function");
+    }
+
     struct Data {
         number: i32,
     }

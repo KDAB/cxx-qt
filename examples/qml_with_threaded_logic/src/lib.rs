@@ -5,17 +5,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
-// TODO: update this example to also respond to changes in the url property
-// once we have implemented the PropertyChangeHandler trait
-
-// TODO: maybe we want to make it possible to define an enum inside the mod?
-enum Event {
-    TitleArrived(String),
-}
-
 #[make_qobject]
 mod website {
-    use super::Event;
     use cxx_qt_lib::let_qstring;
     use futures::{
         channel::mpsc::{UnboundedReceiver, UnboundedSender},
@@ -28,6 +19,10 @@ mod website {
         thread,
         time::Duration,
     };
+
+    enum Event {
+        TitleArrived(String),
+    }
 
     pub struct Data {
         url: String,

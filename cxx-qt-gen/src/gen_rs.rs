@@ -909,7 +909,7 @@ pub fn generate_qobject_rs(
         .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
 
     let original_trait_impls = &obj.original_trait_impls;
-    let original_use_decls = &obj.original_use_decls;
+    let original_passthrough_decls = &obj.original_passthrough_decls;
 
     // Generate the rust creator function
     let creator_fn = generate_rust_object_creator(obj)?;
@@ -1035,9 +1035,9 @@ pub fn generate_qobject_rs(
     let output = quote! {
         #(#mod_attrs)*
         #mod_vis mod #mod_ident {
-            #(#original_use_decls)*
-
             #(#use_traits)*
+
+            #(#original_passthrough_decls)*
 
             #cxx_block
 
@@ -1252,16 +1252,16 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_mod_use() {
+    fn generates_basic_mod_passthrough() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.
         // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_mod_use.rs");
+        let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_mod_use.rs");
+        let expected_output = include_str!("../test_outputs/basic_mod_passthrough.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
