@@ -152,7 +152,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_qmldir = include_str!("../test_outputs/basic_qmldir");
@@ -171,7 +171,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_source = clang_format(include_str!(

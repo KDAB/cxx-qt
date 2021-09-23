@@ -165,7 +165,7 @@ fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
 fn gen_cxx_for_file(
     rs_path: &str,
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     let mut generated_cpp_paths = Vec::new();
@@ -234,7 +234,7 @@ fn gen_cxx_for_file(
 fn gen_cxx_for_files(
     rs_source: &[String],
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
 
@@ -257,7 +257,7 @@ fn gen_cxx_for_files(
     cpp_files
 }
 
-fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[String]) {
+fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
 
     let path = format!(
@@ -345,7 +345,7 @@ fn write_static_headers() -> Vec<String> {
 pub struct CxxQtBuilder {
     build_mode: BuildMode,
     cpp_format: Option<ClangFormatStyle>,
-    cpp_namespace_prefix: Vec<String>,
+    cpp_namespace_prefix: Vec<&'static str>,
 }
 
 impl CxxQtBuilder {
@@ -354,7 +354,7 @@ impl CxxQtBuilder {
         Self {
             build_mode: BuildMode::Plain,
             cpp_format: None,
-            cpp_namespace_prefix: vec!["cxx_qt".to_owned()],
+            cpp_namespace_prefix: vec!["cxx_qt"],
         }
     }
 
@@ -380,7 +380,7 @@ impl CxxQtBuilder {
     /// Choose the C++ namespace prefix that generated objects should be created inside
     ///
     /// Defaults to `cxx_qt`.
-    pub fn cpp_namespace_prefix(mut self, namespace: Vec<String>) -> Self {
+    pub fn cpp_namespace_prefix(mut self, namespace: Vec<&'static str>) -> Self {
         self.cpp_namespace_prefix = namespace;
         self
     }

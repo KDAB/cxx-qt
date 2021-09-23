@@ -153,7 +153,7 @@ enum ExtractTypeIdentError {
 fn extract_qt_type(
     idents: &[Ident],
     original_ty: &syn::Type,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<QtTypes, ExtractTypeIdentError> {
     // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
     // so that QML can set a C++/QML type into the property ? or is that not useful?
@@ -221,7 +221,7 @@ fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError>
 /// Extract the type ident from a given syn::Type
 fn extract_type_ident(
     ty: &syn::Type,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<ParameterType, ExtractTypeIdentError> {
     // Temporary storage of the current syn::TypePath if one is found
     let ty_path;
@@ -371,7 +371,7 @@ struct ExtractedInvokables {
 /// Extracts all the member functions from a module and generates invokables from them
 fn extract_invokables(
     items: &[ImplItem],
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<ExtractedInvokables, TokenStream> {
     let mut invokables = Vec::new();
     let mut normal_methods = Vec::new();
@@ -434,7 +434,7 @@ fn extract_invokables(
 // TODO: remove pub(crate) once extract_invokable is split
 pub(crate) fn extract_invokable(
     method: &ImplItemMethod,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<Invokable, TokenStream> {
     let method_ident = &method.sig.ident;
     let inputs = &method.sig.inputs;
@@ -555,7 +555,7 @@ pub(crate) fn extract_invokable(
 /// Extracts all the attributes from a struct and generates properties from them
 fn extract_properties(
     s: &ItemStruct,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<Vec<Property>, TokenStream> {
     let mut properties = Vec::new();
 
@@ -656,7 +656,7 @@ fn extract_properties(
 /// Parses a module in order to extract a QObject description from it
 pub fn extract_qobject(
     module: ItemMod,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<QObject, TokenStream> {
     // Find the items from the module
     let original_mod = module.to_owned();
@@ -895,7 +895,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
@@ -920,7 +920,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_ident_changes.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
@@ -969,7 +969,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
@@ -986,7 +986,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
@@ -1037,7 +1037,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
@@ -1100,7 +1100,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties
@@ -1118,7 +1118,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
@@ -1208,7 +1208,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties

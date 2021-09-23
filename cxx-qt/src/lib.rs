@@ -44,16 +44,28 @@ pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // Read the C++ namespace prefix set by cxx-qt-build
     let cpp_namespace_prefix = read_cpp_namespace_prefix();
 
+    // Extract and generate the rust code
+    extract_and_generate(module, &cpp_namespace_prefix)
+}
+
+// Take the module and C++ namespace and generate the rust code
+//
+// Note that wee need a separate function here, as we need to annotate the lifetimes to allow
+// for cpp_namespace_prefix to outlive cpp_namespace_prefix_ref
+fn extract_and_generate<'s>(module: ItemMod, cpp_namespace_prefix: &'s [String]) -> TokenStream {
+    let cpp_namespace_prefix_ref: Vec<&'s str> =
+        cpp_namespace_prefix.iter().map(AsRef::as_ref).collect();
+
     // Attempt to extract information about a QObject inside the module
     let qobject;
-    match extract_qobject(module, &cpp_namespace_prefix) {
+    match extract_qobject(module, &cpp_namespace_prefix_ref) {
         Ok(o) => qobject = o,
         Err(e) => return e.into(),
     }
 
     // From the extracted QObject, generate the rust code that replaces the original code
     // for the given QObject.
-    let gen_result = generate_qobject_rs(&qobject, &cpp_namespace_prefix);
+    let gen_result = generate_qobject_rs(&qobject, &cpp_namespace_prefix_ref);
     match gen_result {
         Ok(tokens) => tokens.into(),
         Err(tokens) => tokens.into(),

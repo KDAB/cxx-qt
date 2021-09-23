@@ -99,7 +99,7 @@ impl RustType for QtTypes {
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
 pub fn generate_qobject_cxx(
     obj: &QObject,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<TokenStream, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
@@ -750,7 +750,7 @@ fn fix_method_params(method: &ImplItemMethod) -> Result<ImplItemMethod, TokenStr
     let mut method = method.clone();
 
     // TODO: update this once extract_invokables is split in two
-    let invokable = crate::extract::extract_invokable(&method, &["".to_owned()])?;
+    let invokable = crate::extract::extract_invokable(&method, &[""])?;
 
     // Find which arguments are using Pin<T>
     let pin_args = invokable
@@ -830,7 +830,7 @@ fn fix_method_params(method: &ImplItemMethod) -> Result<ImplItemMethod, TokenStr
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(
     obj: &QObject,
-    cpp_namespace_prefix: &[String],
+    cpp_namespace_prefix: &[&str],
 ) -> Result<TokenStream, TokenStream> {
     // Load macro attributes that were on the module, excluding #[make_qobject]
     let mod_attrs = obj
@@ -1127,7 +1127,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_custom_default.rs");
@@ -1148,7 +1148,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_ident_changes.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_ident_changes.rs");
@@ -1169,7 +1169,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_invokable_and_properties.rs");
@@ -1190,7 +1190,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_invokable.rs");
@@ -1211,7 +1211,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_invokable_return.rs");
@@ -1232,7 +1232,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_only_properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_only_properties.rs");
@@ -1253,7 +1253,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_attrs_vis.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_mod_attrs_vis.rs");
@@ -1274,7 +1274,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_mod_passthrough.rs");
@@ -1295,7 +1295,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_pin_invokable.rs");
@@ -1316,7 +1316,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_property.rs");
@@ -1337,7 +1337,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/subobject_pin_invokable.rs");
@@ -1358,7 +1358,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_update_requester.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_update_requester.rs");
@@ -1379,7 +1379,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/basic_change_handler.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_change_handler.rs");
@@ -1400,7 +1400,7 @@ mod tests {
         // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt".to_owned()];
+        let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_primitive_property.rs");
