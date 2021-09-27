@@ -713,20 +713,18 @@ fn fix_impl_methods(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
 fn fix_method_params(method: &ImplItemMethod) -> Result<ImplItemMethod, TokenStream> {
     let mut method = method.clone();
 
-    // TODO: update this once extract_invokables is split in two
-    let invokable = crate::extract::extract_invokable(&method, &[""])?;
+    // Extract parameters from the method
+    let parameters = crate::extract::extract_method_params(&method, &[""])?;
 
     // Find which arguments are using Pin<T>
-    let pin_args = invokable
-        .parameters
+    let pin_args = parameters
         .iter()
         .enumerate()
         .filter(|(_, parameter)| parameter.type_ident.qt_type.is_pin())
         .map(|(index, _)| index)
         .collect::<Vec<usize>>();
 
-    let qstring_args = invokable
-        .parameters
+    let qstring_args = parameters
         .iter()
         .enumerate()
         .filter(|(_, parameter)| parameter.type_ident.qt_type == QtTypes::QString)

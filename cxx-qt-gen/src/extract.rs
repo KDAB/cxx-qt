@@ -428,77 +428,90 @@ fn extract_invokables(
     })
 }
 
-// TODO: we want to split this into two functions so that gen_rs::fix_method_params
-// can extract only the information that it needs.
-//
-// TODO: remove pub(crate) once extract_invokable is split
-pub(crate) fn extract_invokable(
+/// Extract the parameters for a given ImplItemMethod
+pub(crate) fn extract_method_params(
+    method: &ImplItemMethod,
+    cpp_namespace_prefix: &[&str],
+) -> Result<Vec<Parameter>, TokenStream> {
+    method.sig.inputs
+        .iter()
+        .map(|parameter| {
+            // Check that the parameter is typed
+            //
+            // If it is not typed (it is a syn::Receiver) then this means it is the self parameter
+            // but without a type, eg self: Box<Self> would be Typed
+            //
+            // TODO: does this mean that if self is Typed we need to skip it?
+            // so should we ignore the first parameter if it is named "self"?
+            if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
+                // The name ident of the parameter
+                let parameter_ident;
+                // The type ident of the parameter
+                let type_ident;
+
+                // Try to extract the name of the parameter
+                if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                    parameter_ident = ident;
+                } else {
+                    return Err(
+                        Error::new(parameter.span(), "Invalid argument ident format.")
+                            .to_compile_error(),
+                    );
+                }
+
+                // Try to extract the type of the parameter
+                match extract_type_ident(ty, cpp_namespace_prefix) {
+                    Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+                        return Err(Error::new(
+                            span,
+                            "Argument should not be angle bracketed or parenthesized.",
+                        )
+                        .to_compile_error());
+                    }
+                    Err(ExtractTypeIdentError::InvalidType(span)) => {
+                        return Err(
+                            Error::new(span, "Invalid argument ident format.").to_compile_error()
+                        )
+                    }
+                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                        return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                        return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                        return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
+                    }
+                }
+
+                // Build and push the parameter
+                Ok(Some(Parameter {
+                    ident: parameter_ident.to_owned(),
+                    type_ident,
+                }))
+            } else {
+                Ok(None)
+            }
+        })
+        // Turn Result<Option<T>, E> -> Option<Result<T, E>>
+        //
+        // If the Option<T> is None then we return None
+        // If the Option<T> is Some then we return Some(Ok(T))
+        // If the Result is an Err then we return Some(Err(E))
+        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+        // Collect the Vec<Result<T, E>> into Result<Vec<T>, E>
+        .collect::<Result<Vec<Parameter>, TokenStream>>()
+}
+
+fn extract_invokable(
     method: &ImplItemMethod,
     cpp_namespace_prefix: &[&str],
 ) -> Result<Invokable, TokenStream> {
     let method_ident = &method.sig.ident;
-    let inputs = &method.sig.inputs;
     let output = &method.sig.output;
 
-    let mut parameters = Vec::new();
-
-    for parameter in inputs {
-        // Check that the parameter is typed
-        //
-        // If it is not typed (it is a syn::Receiver) then this means it is the self parameter
-        // but without a type, eg self: Box<Self> would be Typed
-        //
-        // TODO: does this mean that if self is Typed we need to skip it?
-        // so should we ignore the first parameter if it is named "self"?
-        if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
-            // The name ident of the parameter
-            let parameter_ident;
-            // The type ident of the parameter
-            let type_ident;
-
-            // Try to extract the name of the parameter
-            if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                parameter_ident = ident;
-            } else {
-                return Err(
-                    Error::new(parameter.span(), "Invalid argument ident format.")
-                        .to_compile_error(),
-                );
-            }
-
-            // Try to extract the type of the parameter
-            match extract_type_ident(ty, cpp_namespace_prefix) {
-                Ok(result) => type_ident = result,
-                Err(ExtractTypeIdentError::InvalidArguments(span)) => {
-                    return Err(Error::new(
-                        span,
-                        "Argument should not be angle bracketed or parenthesized.",
-                    )
-                    .to_compile_error());
-                }
-                Err(ExtractTypeIdentError::InvalidType(span)) => {
-                    return Err(
-                        Error::new(span, "Invalid argument ident format.").to_compile_error()
-                    )
-                }
-                Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                    return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
-                }
-                Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
-                    return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                }
-                Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                    return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
-                }
-            }
-
-            // Build and push the parameter
-            parameters.push(Parameter {
-                ident: parameter_ident.to_owned(),
-                type_ident,
-            });
-        }
-    }
+    let parameters = extract_method_params(method, cpp_namespace_prefix)?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {
         // This output has a return type, so extract the type
