@@ -800,7 +800,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             {private_overrides}
         }};
 
-        std::unique_ptr<{ident}> new{ident}();
+        std::unique_ptr<{ident}> newCppObject();
 
         }} // namespace {namespace}
         "#,
@@ -833,9 +833,9 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {ident}::{ident}(QObject *parent)
             : CxxQObject(parent)
-            , m_rustObj(create{ident}Rs())
+            , m_rustObj(createRs())
         {{
-            initialise{ident}Cpp(*this);
+            initialiseCpp(*this);
             m_initialised = true;
         }}
 
@@ -847,7 +847,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {overrides}
 
-        std::unique_ptr<{ident}> new{ident}()
+        std::unique_ptr<{ident}> newCppObject()
         {{
             return std::make_unique<{ident}>();
         }}

@@ -397,14 +397,6 @@ pub fn generate_qobject_cxx(
         quote! {}
     };
 
-    // Build the methods to create the class
-    let new_object_ident_cpp = format_ident!("new{}", class_name);
-    let new_object_rust_str = format!("new_{}", class_name);
-    let create_object_ident = format_ident!("create_{}_rs", ident_snake);
-    let create_object_cpp_str = create_object_ident.to_string().to_case(Case::Camel);
-    let initialise_object_ident = format_ident!("initialise_{}_cpp", ident_snake);
-    let initialise_object_cpp_str = initialise_object_ident.to_string().to_case(Case::Camel);
-
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
 
@@ -433,8 +425,8 @@ pub fn generate_qobject_cxx(
 
                 #(#cpp_functions)*
 
-                #[rust_name = #new_object_rust_str]
-                fn #new_object_ident_cpp() -> UniquePtr<#class_name>;
+                #[rust_name = "new_cpp_object"]
+                fn newCppObject() -> UniquePtr<#class_name>;
             }
 
             extern "Rust" {
@@ -442,11 +434,11 @@ pub fn generate_qobject_cxx(
 
                 #(#rs_functions)*
 
-                #[cxx_name = #create_object_cpp_str]
-                fn #create_object_ident() -> Box<#rust_class_name>;
+                #[cxx_name = "createRs"]
+                fn create_rs() -> Box<#rust_class_name>;
 
-                #[cxx_name = #initialise_object_cpp_str]
-                fn #initialise_object_ident(cpp: Pin<&mut #class_name>);
+                #[cxx_name = "initialiseCpp"]
+                fn initialise_cpp(cpp: Pin<&mut #class_name>);
 
                 #handle_update_request
                 #handle_property_change
@@ -460,41 +452,13 @@ pub fn generate_qobject_cxx(
     Ok(output.into_token_stream())
 }
 
-/// Generate a Rust function that heap constructs the Rust object corresponding to the QObject
-fn generate_rust_object_creator(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Cache the rust class name, this is used multiple times later
-    let rust_class_name = format_ident!("RustObj");
-
-    // Build the ident as snake case, then build the rust creator method
-    //
-    // TODO: simplify this function name now that we have namespaces
-    let ident_snake = &obj.ident.to_string().to_case(Case::Snake);
-    let fn_ident = format_ident!("create_{}_rs", ident_snake);
-
-    // We assume that RustObj implements Default otherwise it can't be constructed from QML
-    // TODO: throw an error if we can determine this to not be the case
-    let output = quote! {
-        fn #fn_ident() -> std::boxed::Box<#rust_class_name> {
-            std::default::Default::default()
-        }
-    };
-
-    Ok(output.into_token_stream())
-}
-
 /// Generate a Rust function that initialises a QObject with the values from Data::default()
 fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
     let data_class_name = &obj.original_data_struct.ident;
 
-    // Build the ident as snake case, then build the rust creator method
-    //
-    // TODO: Simplify things to  initialiseCpp, createRs, newCppObject etc. now that we have namespaces
-    let ident_snake = &obj.ident.to_string().to_case(Case::Snake);
-    let fn_ident = format_ident!("initialise_{}_cpp", ident_snake);
-
     // We assume that all Data classes implement default
     let output = quote! {
-        fn #fn_ident(cpp: std::pin::Pin<&mut CppObj>) {
+        fn initialise_cpp(cpp: std::pin::Pin<&mut CppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
             wrapper.grab_values_from_data(&#data_class_name::default());
         }
@@ -927,9 +891,6 @@ pub fn generate_qobject_rs(
     let original_trait_impls = &obj.original_trait_impls;
     let original_passthrough_decls = &obj.original_passthrough_decls;
 
-    // Generate the rust creator function
-    let creator_fn = generate_rust_object_creator(obj)?;
-
     // Generate the cpp initialiser function
     let initialiser_fn = generate_cpp_object_initialiser(obj);
 
@@ -1075,7 +1036,9 @@ pub fn generate_qobject_rs(
 
             #handle_property_change_impl
 
-            #creator_fn
+            fn create_rs() -> std::boxed::Box<RustObj> {
+                std::default::Default::default()
+            }
 
             #initialiser_fn
         }

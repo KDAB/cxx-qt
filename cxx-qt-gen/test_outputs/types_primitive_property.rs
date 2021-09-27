@@ -65,18 +65,18 @@ mod my_object {
             #[rust_name = "set_uint_32"]
             fn setUint32(self: Pin<&mut MyObject>, value: u32);
 
-            #[rust_name = "new_MyObject"]
-            fn newMyObject() -> UniquePtr<MyObject>;
+            #[rust_name = "new_cpp_object"]
+            fn newCppObject() -> UniquePtr<MyObject>;
         }
 
         extern "Rust" {
             type RustObj;
 
-            #[cxx_name = "createMyObjectRs"]
-            fn create_my_object_rs() -> Box<RustObj>;
+            #[cxx_name = "createRs"]
+            fn create_rs() -> Box<RustObj>;
 
-            #[cxx_name = "initialiseMyObjectCpp"]
-            fn initialise_my_object_cpp(cpp: Pin<&mut MyObject>);
+            #[cxx_name = "initialiseCpp"]
+            fn initialise_cpp(cpp: Pin<&mut MyObject>);
         }
     }
 
@@ -229,11 +229,11 @@ mod my_object {
         }
     }
 
-    fn create_my_object_rs() -> std::boxed::Box<RustObj> {
+    fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_my_object_cpp(cpp: std::pin::Pin<&mut CppObj>) {
+    fn initialise_cpp(cpp: std::pin::Pin<&mut CppObj>) {
         let mut wrapper = CppObjWrapper::new(cpp);
         wrapper.grab_values_from_data(&Data::default());
     }

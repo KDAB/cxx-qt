@@ -5,9 +5,9 @@ namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
   : CxxQObject(parent)
-  , m_rustObj(createMyObjectRs())
+  , m_rustObj(createRs())
 {
-  initialiseMyObjectCpp(*this);
+  initialiseCpp(*this);
   m_initialised = true;
 }
 
@@ -26,7 +26,7 @@ MyObject::sayBye()
 }
 
 std::unique_ptr<MyObject>
-newMyObject()
+newCppObject()
 {
   return std::make_unique<MyObject>();
 }

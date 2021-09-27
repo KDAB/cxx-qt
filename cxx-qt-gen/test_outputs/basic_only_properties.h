@@ -36,6 +36,6 @@ private:
 };
 
 std::unique_ptr<MyObject>
-newMyObject();
+newCppObject();
 
 } // namespace cxx_qt::my_object
