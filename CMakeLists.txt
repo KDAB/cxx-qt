@@ -9,6 +9,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(cxx_qt)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Enable extra Qt definitions for all projects
 add_compile_definitions(
     QT_NO_CAST_FROM_ASCII

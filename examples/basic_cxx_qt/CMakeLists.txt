@@ -13,7 +13,7 @@ set(APP_NAME ${PROJECT_NAME})
 # TODO: Add a helper function to our CMake module which automatically
 # handles some of this boilerplate for a "typical" Qt application
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Test REQUIRED)
