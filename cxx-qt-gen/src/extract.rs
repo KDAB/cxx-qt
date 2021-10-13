@@ -50,7 +50,7 @@ pub enum QtTypes {
     U8,
     U16,
     U32,
-    Unknown, // TODO: remove this after we have split the extract_invokable function
+    Unknown,
 }
 
 /// Describes a type
@@ -147,6 +147,14 @@ enum ExtractTypeIdentError {
     UnknownAndNotCrate(Span),
     /// There is a Pin<T> but the T is unknown to our converters
     UnknownPinType(Span),
+}
+
+/// Describe what the extract method should do when parsing an unknown type
+pub enum ExtractMethodUnknownOptions {
+    /// Do not error, add unknown as the QtType, and continue
+    IgnoreUnknownTypes,
+    /// Error when there is an unknown, as all types must be parsed
+    ParseAllTypes,
 }
 
 /// Extract the Qt type from a list of Ident's
@@ -432,6 +440,7 @@ fn extract_invokables(
 pub(crate) fn extract_method_params(
     method: &ImplItemMethod,
     cpp_namespace_prefix: &[&str],
+    options: ExtractMethodUnknownOptions,
 ) -> Result<Vec<Parameter>, TokenStream> {
     method.sig.inputs
         .iter()
@@ -460,28 +469,50 @@ pub(crate) fn extract_method_params(
                 }
 
                 // Try to extract the type of the parameter
-                match extract_type_ident(ty, cpp_namespace_prefix) {
-                    Ok(result) => type_ident = result,
-                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
-                        return Err(Error::new(
-                            span,
-                            "Argument should not be angle bracketed or parenthesized.",
-                        )
-                        .to_compile_error());
-                    }
-                    Err(ExtractTypeIdentError::InvalidType(span)) => {
-                        return Err(
-                            Error::new(span, "Invalid argument ident format.").to_compile_error()
-                        )
-                    }
-                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                        return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
-                        return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                        return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
+                let extracted_type = extract_type_ident(ty, cpp_namespace_prefix);
+
+                match options {
+                    ExtractMethodUnknownOptions::IgnoreUnknownTypes => {
+                        match extracted_type {
+                            Ok(result) => type_ident = result,
+                            Err(_) => type_ident = ParameterType {
+                                // FIXME: does it matter that we don't have real values here
+                                // for idents and is_ref
+                                //
+                                // As this is only currently used when passing through
+                                // rust obj methods which aren't invokables
+                                idents: vec![],
+                                is_ref: false,
+                                original_ty: (**ty).to_owned(),
+                                qt_type: QtTypes::Unknown
+                            }
+                        }
+                    },
+                    ExtractMethodUnknownOptions::ParseAllTypes => {
+                        match extracted_type {
+                            Ok(result) => type_ident = result,
+                            Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+                                return Err(Error::new(
+                                    span,
+                                    "Argument should not be angle bracketed or parenthesized.",
+                                )
+                                .to_compile_error());
+                            }
+                            Err(ExtractTypeIdentError::InvalidType(span)) => {
+                                return Err(
+                                    Error::new(span, "Invalid argument ident format.").to_compile_error()
+                                )
+                            }
+                            Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                                return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
+                            }
+                            Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                                return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                            }
+                            Err(ExtractTypeIdentError::UnknownPinType(span)) => {
+                                return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
+                            }
+                        }
                     }
                 }
 
@@ -511,7 +542,11 @@ fn extract_invokable(
     let method_ident = &method.sig.ident;
     let output = &method.sig.output;
 
-    let parameters = extract_method_params(method, cpp_namespace_prefix)?;
+    let parameters = extract_method_params(
+        method,
+        cpp_namespace_prefix,
+        ExtractMethodUnknownOptions::ParseAllTypes,
+    )?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {
         // This output has a return type, so extract the type
@@ -1212,6 +1247,26 @@ mod tests {
         } else {
             panic!();
         }
+    }
+
+    #[test]
+    fn parses_basic_unknown_rust_obj_type() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_unknown_rust_obj_type.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        // Check that it got the names right
+        assert_eq!(qobject.ident.to_string(), "MyObject");
+        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+
+        // Check that it got the invokables
+        assert_eq!(qobject.invokables.len(), 0);
+        assert_eq!(qobject.normal_methods.len(), 2);
     }
 
     #[test]

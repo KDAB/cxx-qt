@@ -1007,6 +1007,29 @@ mod tests {
     }
 
     #[test]
+    fn generates_basic_unknown_rust_obj_type() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_unknown_rust_obj_type.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header = clang_format(include_str!(
+            "../test_outputs/basic_unknown_rust_obj_type.h"
+        ))
+        .unwrap();
+        let expected_source = clang_format(include_str!(
+            "../test_outputs/basic_unknown_rust_obj_type.cpp"
+        ))
+        .unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
     fn generates_subobject_property() {
         // TODO: we probably want to parse all the test case files we have
         // only once as to not slow down different tests on the same input.

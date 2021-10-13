@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use syn::spanned::Spanned;
 use syn::ImplItemMethod;
 
-use crate::extract::{QObject, QtTypes};
+use crate::extract::{ExtractMethodUnknownOptions, QObject, QtTypes};
 use crate::utils::{is_type_ident_ptr, type_to_namespace};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -698,7 +698,7 @@ fn fix_impl_methods(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
 
     for mut item in &mut cloned.items {
         if let syn::ImplItem::Method(m) = &mut item {
-            *m = fix_method_params(m)?;
+            *m = fix_method_params(m, ExtractMethodUnknownOptions::ParseAllTypes)?;
         } else {
             return Err(
                 syn::Error::new(item.span(), "Only methods are supported.").to_compile_error()
@@ -710,11 +710,14 @@ fn fix_impl_methods(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
 }
 
 /// Add std::pin to Pin and cxx_qt_lib::qstring to QString arguments
-fn fix_method_params(method: &ImplItemMethod) -> Result<ImplItemMethod, TokenStream> {
+fn fix_method_params(
+    method: &ImplItemMethod,
+    extract_options: ExtractMethodUnknownOptions,
+) -> Result<ImplItemMethod, TokenStream> {
     let mut method = method.clone();
 
     // Extract parameters from the method
-    let parameters = crate::extract::extract_method_params(&method, &[""])?;
+    let parameters = crate::extract::extract_method_params(&method, &[""], extract_options)?;
 
     // Find which arguments are using Pin<T>
     let pin_args = parameters
@@ -877,13 +880,18 @@ pub fn generate_qobject_rs(
     let invokable_methods = obj
         .invokables
         .iter()
-        .map(|m| fix_method_params(&m.original_method))
+        .map(|m| {
+            fix_method_params(
+                &m.original_method,
+                ExtractMethodUnknownOptions::ParseAllTypes,
+            )
+        })
         .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
 
     let normal_methods = obj
         .normal_methods
         .iter()
-        .map(|m| fix_method_params(m))
+        .map(|m| fix_method_params(m, ExtractMethodUnknownOptions::IgnoreUnknownTypes))
         .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
 
     let original_trait_impls = &obj.original_trait_impls;
@@ -1260,6 +1268,27 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/basic_pin_invokable.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_basic_unknown_rust_obj_type() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/basic_unknown_rust_obj_type.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/basic_unknown_rust_obj_type.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
