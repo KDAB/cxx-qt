@@ -117,6 +117,9 @@ impl QString {
 pub struct StackQString {
     // Static assertions in cxx_qt.cpp validate that this
     // is large enough and aligned enough.
+    #[cfg(feature = "Qt6")]
+    space: MaybeUninit<[usize; 3]>,
+    #[cfg(not(feature = "Qt6"))]
     space: MaybeUninit<usize>,
 }
 

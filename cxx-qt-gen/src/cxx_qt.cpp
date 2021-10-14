@@ -74,11 +74,19 @@ namespace {
 // We assume that std::size_t is the same size as Rust's usize.
 // cxx.cc has some asserts to ensure that is true.
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+static_assert(alignof(QString) <= alignof(std::size_t[3]),
+              "unexpectedly large QString alignment");
+
+static_assert(sizeof(QString) <= sizeof(std::size_t[3]),
+              "unexpectedly large QString size");
+#else
 static_assert(alignof(QString) <= alignof(std::size_t),
               "unexpectedly large QString alignment");
 
 static_assert(sizeof(QString) <= sizeof(std::size_t),
               "unexpectedly large QString size");
+#endif
 
 // We also assume that C++ char and Rust u8 are the same
 

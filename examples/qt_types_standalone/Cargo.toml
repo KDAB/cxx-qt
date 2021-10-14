@@ -18,7 +18,7 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx = "1.0"
 cxx-qt = { path = "../../cxx-qt" }
-cxx-qt-lib = { path = "../../cxx-qt-lib" }
+cxx-qt-lib = { path = "../../cxx-qt-lib", features=["Qt6"] }
 
 [build-dependencies]
 clang-format = { path = "../../clang-format" }
