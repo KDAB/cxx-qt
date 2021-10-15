@@ -37,6 +37,7 @@ MyObject::setMyNumber(qint32 value)
 void
 MyObject::sayBye()
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   m_rustObj->sayBye();
 }
 

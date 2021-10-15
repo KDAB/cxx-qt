@@ -16,18 +16,21 @@ MyObject::~MyObject() = default;
 qint32
 MyObject::doubleNumber(qint32 number)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return m_rustObj->doubleNumber(number);
 }
 
 QString
 MyObject::helloMessage(const QString& msg)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rustStringToQString(m_rustObj->helloMessage(msg));
 }
 
 QString
 MyObject::staticMessage()
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rustStrToQString(m_rustObj->staticMessage());
 }
 

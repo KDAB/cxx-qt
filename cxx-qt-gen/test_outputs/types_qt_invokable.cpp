@@ -16,18 +16,21 @@ MyObject::~MyObject() = default;
 QPointF
 MyObject::testPointf(const QPointF& pointf)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return m_rustObj->testPointf(*this, pointf);
 }
 
 QString
 MyObject::testString(const QString& string)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rustStringToQString(m_rustObj->testString(*this, string));
 }
 
 QVariant
 MyObject::testVariant(const QVariant& variant)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return ::CxxQt::rustVariantToQVariant(m_rustObj->testVariant(*this, variant));
 }
 

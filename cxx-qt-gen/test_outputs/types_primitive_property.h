@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "rust/cxx_qt.h"
 
 namespace cxx_qt::my_object {
@@ -60,6 +62,7 @@ Q_SIGNALS:
 
 private:
   rust::Box<RustObj> m_rustObj;
+  std::mutex m_rustObjMutex;
   bool m_initialised = false;
 
   bool m_boolean;

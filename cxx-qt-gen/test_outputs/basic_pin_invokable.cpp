@@ -16,12 +16,14 @@ MyObject::~MyObject() = default;
 void
 MyObject::sayHi(const QString& string, qint32 number)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   m_rustObj->sayHi(*this, string, number);
 }
 
 void
 MyObject::sayBye()
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   m_rustObj->sayBye(*this);
 }
 

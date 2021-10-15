@@ -31,7 +31,7 @@ MyObject::setNumber(qint32 value)
     m_number = value;
 
     Q_EMIT numberChanged();
-    m_rustObj->handlePropertyChange(*this, Property::Number);
+    requestPropertyChange(static_cast<int>(Property::Number));
   }
 }
 
@@ -53,8 +53,15 @@ MyObject::setString(const QString& value)
     m_string = value;
 
     Q_EMIT stringChanged();
-    m_rustObj->handlePropertyChange(*this, Property::String);
+    requestPropertyChange(static_cast<int>(Property::String));
   }
+}
+
+void
+MyObject::updatePropertyChange(int propertyId)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  m_rustObj->handlePropertyChange(*this, static_cast<Property>(propertyId));
 }
 
 std::unique_ptr<MyObject>
