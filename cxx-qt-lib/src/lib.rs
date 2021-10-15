@@ -7,6 +7,9 @@
 pub mod update_requester;
 pub use update_requester::UpdateRequestHandler;
 
+mod qsizef;
+pub use qsizef::QSizeF;
+
 mod qstring;
 pub use qstring::QString;
 

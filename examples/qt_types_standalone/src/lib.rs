@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt_lib::{let_qstring, MapQtValue, QPointF, QString};
+use cxx_qt_lib::{let_qstring, MapQtValue, QPointF, QSizeF, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -13,6 +13,7 @@ mod ffi {
         include!("bridge.h");
 
         type QString = cxx_qt_lib::QString;
+        type QSizeF = cxx_qt_lib::QSizeF;
         type QPointF = cxx_qt_lib::QPointF;
 
         fn test_constructed_qstring(s: &QString) -> bool;
@@ -30,6 +31,11 @@ mod ffi {
         fn read_qpointf(p: &QPointF) -> bool;
         fn copy_qpointf(p: &QPointF) -> QPointF;
         fn copy_value_qpointf(p: QPointF) -> QPointF;
+
+        fn construct_qsizef() -> QSizeF;
+        fn read_qsizef(p: &QSizeF) -> bool;
+        fn copy_qsizef(p: &QSizeF) -> QSizeF;
+        fn copy_value_qsizef(p: QSizeF) -> QSizeF;
     }
 }
 
@@ -86,4 +92,20 @@ fn copy_qpointf(p: &QPointF) -> QPointF {
 
 fn copy_value_qpointf(p: QPointF) -> QPointF {
     p
+}
+
+fn construct_qsizef() -> QSizeF {
+    QSizeF::new(1.23, 4.56)
+}
+
+fn read_qsizef(s: &QSizeF) -> bool {
+    ((s.w - 1.23).abs() < f64::EPSILON) && ((s.h - 4.56).abs() < f64::EPSILON)
+}
+
+fn copy_qsizef(s: &QSizeF) -> QSizeF {
+    *s
+}
+
+fn copy_value_qsizef(s: QSizeF) -> QSizeF {
+    s
 }

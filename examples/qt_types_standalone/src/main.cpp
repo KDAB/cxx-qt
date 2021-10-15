@@ -89,3 +89,32 @@ TEST_CASE("Can copy a value QPointF on the Rust side")
   CHECK(c.x() == 1.23);
   CHECK(c.y() == 4.56);
 }
+
+TEST_CASE("Can construct a QSizeF on the Rust side")
+{
+  const auto s = construct_qsizef();
+  CHECK(s.width() == 1.23);
+  CHECK(s.height() == 4.56);
+}
+
+TEST_CASE("Can read a QSizeF on the Rust side")
+{
+  const auto s = QSizeF(1.23, 4.56);
+  CHECK(read_qsizef(s));
+}
+
+TEST_CASE("Can copy a QSizeF on the Rust side")
+{
+  const auto s = QSizeF(1.23, 4.56);
+  const auto c = copy_qsizef(s);
+  CHECK(c.width() == 1.23);
+  CHECK(c.height() == 4.56);
+}
+
+TEST_CASE("Can copy a value QSizeF on the Rust side")
+{
+  const auto s = QSizeF(1.23, 4.56);
+  const auto c = copy_value_qsizef(s);
+  CHECK(c.width() == 1.23);
+  CHECK(c.height() == 4.56);
+}
