@@ -7,6 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QPointF>
 #include <QtCore/QString>
 
 bool

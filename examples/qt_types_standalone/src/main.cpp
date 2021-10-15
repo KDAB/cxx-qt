@@ -60,3 +60,32 @@ assign_to_qstring(QString& s, const QString& v)
   // Force some more activity for valgrind to inspect
   s.detach();
 }
+
+TEST_CASE("Can construct a QPointF on the Rust side")
+{
+  const auto p = construct_qpointf();
+  CHECK(p.x() == 1.23);
+  CHECK(p.y() == 4.56);
+}
+
+TEST_CASE("Can read a QPointF on the Rust side")
+{
+  const auto p = QPointF(1.23, 4.56);
+  CHECK(read_qpointf(p));
+}
+
+TEST_CASE("Can copy a QPointF on the Rust side")
+{
+  const auto p = QPointF(1.23, 4.56);
+  const auto c = copy_qpointf(p);
+  CHECK(c.x() == 1.23);
+  CHECK(c.y() == 4.56);
+}
+
+TEST_CASE("Can copy a value QPointF on the Rust side")
+{
+  const auto p = QPointF(1.23, 4.56);
+  const auto c = copy_value_qpointf(p);
+  CHECK(c.x() == 1.23);
+  CHECK(c.y() == 4.56);
+}

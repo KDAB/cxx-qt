@@ -14,7 +14,6 @@
 #include <QDebug>
 #include <QEvent>
 #include <QObject>
-#include <QPointer>
 #include <QString>
 
 #include "rust/cxx.h"

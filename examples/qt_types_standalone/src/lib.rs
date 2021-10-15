@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt_lib::{let_qstring, MapQtValue, QString};
+use cxx_qt_lib::{let_qstring, MapQtValue, QPointF, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -13,6 +13,7 @@ mod ffi {
         include!("bridge.h");
 
         type QString = cxx_qt_lib::QString;
+        type QPointF = cxx_qt_lib::QPointF;
 
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
@@ -24,6 +25,11 @@ mod ffi {
         fn modify_qstring(s: Pin<&mut QString>);
         fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
+
+        fn construct_qpointf() -> QPointF;
+        fn read_qpointf(p: &QPointF) -> bool;
+        fn copy_qpointf(p: &QPointF) -> QPointF;
+        fn copy_value_qpointf(p: QPointF) -> QPointF;
     }
 }
 
@@ -64,4 +70,20 @@ fn can_handle_qstring_change() -> bool {
 
     let rs = s.to_rust();
     rs == long_s
+}
+
+fn construct_qpointf() -> QPointF {
+    QPointF::new(1.23, 4.56)
+}
+
+fn read_qpointf(p: &QPointF) -> bool {
+    ((p.x - 1.23).abs() < f64::EPSILON) && ((p.y - 4.56).abs() < f64::EPSILON)
+}
+
+fn copy_qpointf(p: &QPointF) -> QPointF {
+    *p
+}
+
+fn copy_value_qpointf(p: QPointF) -> QPointF {
+    p
 }

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::let_qstring;
+use crate::qpointf::QPointF;
 use crate::qstring::QString;
 
 pub trait MapQtValue<C, F, R> {
@@ -22,6 +23,12 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
     fn map_qt_value(&self, map_func: fn(&mut C, &QString) -> R, context: &mut C) -> R {
         let_qstring!(s = self);
         map_func(context, &s)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QPointF) -> R, R> for QPointF {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QPointF) -> R, context: &mut C) -> R {
+        map_func(context, self)
     }
 }
 

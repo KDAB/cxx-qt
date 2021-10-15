@@ -10,6 +10,9 @@ pub use update_requester::UpdateRequestHandler;
 mod qstring;
 pub use qstring::QString;
 
+mod qpointf;
+pub use qpointf::QPointF;
+
 mod map_qt_value;
 pub use map_qt_value::*;
 

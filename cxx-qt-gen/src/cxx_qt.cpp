@@ -9,6 +9,7 @@
 
 #include "rust/cxx_qt.h"
 
+#include <QPointF>
 #include <QPointer>
 
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
@@ -101,6 +102,36 @@ extern "C"
   }
 
   void cxxqt1$qstring$drop(QString* self) noexcept { self->~QString(); }
+}
+
+namespace {
+
+// We do these checks to ensure that we can safely store a QPointF
+// inside a block of memory that Rust thinks contains two f64-s.
+// We also make sure that f64 and qreal are equivalent.
+
+static_assert(sizeof(qreal) == 8);
+static_assert(alignof(qreal) <= 8);
+
+static_assert(sizeof(QPointF) == 16);
+static_assert(alignof(QPointF) <= 16);
+
+// Our Rust code assumes that QPointF is trivial. Because it is trivial to move,
+// we don't need to use Pin. Because it is trivial to destruct we do not
+// need a special C++ function to destruct the object.
+
+static_assert(std::is_trivially_move_assignable<QPointF>::value == true);
+static_assert(std::is_trivially_copy_assignable<QPointF>::value == true);
+static_assert(std::is_trivially_destructible<QPointF>::value == true);
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qpointf$init(QPointF* self, qreal x, qreal y) noexcept
+  {
+    new (self) QPointF(x, y);
+  }
 }
 
 #endif // NO_QT

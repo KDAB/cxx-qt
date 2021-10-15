@@ -7,7 +7,7 @@
 # TODO: figure out what the actual hard minimum is
 cmake_minimum_required(VERSION 3.16)
 
-project(example_qstring_standalone)
+project(example_qt_types_standalone)
 set(APP_NAME ${PROJECT_NAME})
 
 # TODO: Add a helper function to our CMake module which automatically
