@@ -16,6 +16,7 @@ MyObject::~MyObject() = default;
 void
 MyObject::subTest(cxx_qt::sub_object::SubObject* sub)
 {
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   m_rustObj->subTest(*this, *sub);
 }
 

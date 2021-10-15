@@ -391,6 +391,7 @@ fn generate_invokables_cpp(
                 r#"
                 {return_ident} {struct_ident}::{ident}({parameter_types})
                 {{
+                    const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                     {body};
                 }}
                 "#,
@@ -492,7 +493,7 @@ fn generate_properties_cpp(
 
         let call_property_change_handler = if has_property_change_handler {
             format!(
-                "m_rustObj->handlePropertyChange(*this, Property::{ident});",
+                "requestPropertyChange(static_cast<int>(Property::{ident}));",
                 ident = parameter_ident_pascal
             )
         } else {
@@ -753,31 +754,51 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }
     };
 
-    let private_overrides = if obj.handle_updates_impl.is_some() {
-        r#"
-        void updateState() override;
-        "#
-    } else {
-        ""
-    };
+    let mut private_overrides = vec![];
+    let mut overrides = vec![];
 
-    let overrides = if obj.handle_updates_impl.is_some() {
-        formatdoc! {r#"
+    if obj.handle_property_change_impl.is_some() {
+        private_overrides.push(
+            r#"
+            void updatePropertyChange(int propertyId) override;
+        "#,
+        );
+
+        overrides.push(formatdoc! {r#"
+            void {ident}::updatePropertyChange(int propertyId)
+            {{
+                const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+                m_rustObj->handlePropertyChange(*this, static_cast<Property>(propertyId));
+            }}
+        "#,
+        ident = struct_ident_str,
+        })
+    }
+
+    if obj.handle_updates_impl.is_some() {
+        private_overrides.push(
+            r#"
+        void updateState() override;
+        "#,
+        );
+
+        overrides.push(formatdoc! {r#"
             void {ident}::updateState() {{
+                const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                 m_rustObj->handleUpdateRequest(*this);
             }}
         "#,
         ident = struct_ident_str,
-        }
-    } else {
-        "".to_owned()
-    };
+        });
+    }
 
     let namespace = obj.namespace.join("::");
 
     // Generate the C++ header part
     let header = formatdoc! {r#"
         #pragma once
+
+        #include <mutex>
 
         #include "rust/cxx_qt.h"
 
@@ -805,6 +826,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         private:
             rust::Box<{rust_struct_ident}> m_rustObj;
+            std::mutex m_rustObjMutex;
             bool m_initialised = false;
 
             {members_private}
@@ -833,7 +855,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     rust_struct_ident = RUST_STRUCT_IDENT_STR,
     signals = signals,
     public_slots = public_slots,
-    private_overrides = private_overrides,
+    private_overrides = private_overrides.join("\n"),
     };
 
     // Generate C++ source part
@@ -871,7 +893,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         invokables = invokables.sources.join("\n"),
         namespace = namespace,
         properties = properties.sources.join("\n"),
-        overrides = overrides,
+        overrides = overrides.join("\n"),
     };
 
     Ok(CppObject {

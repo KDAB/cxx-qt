@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "rust/cxx_qt.h"
 
 #include "cxx-qt-gen/include/sub_object.h"
@@ -20,6 +22,7 @@ public:
 
 private:
   rust::Box<RustObj> m_rustObj;
+  std::mutex m_rustObjMutex;
   bool m_initialised = false;
 };
 

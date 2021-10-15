@@ -9,6 +9,8 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
+#include <vector>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -74,6 +76,7 @@ public:
   // want to create custom classes that derive from CxxQObject so that they
   // know to avoid clashes with it.
   static const QEvent::Type UpdateStateEvent;
+  static const QEvent::Type UpdatePropertyEvent;
 
 public:
   CxxQObject(QObject* parent = nullptr)
@@ -81,21 +84,45 @@ public:
   {}
   virtual ~CxxQObject() = default;
 
+  void requestPropertyChange(int propertyId)
+  {
+    const std::lock_guard<std::mutex> guard(m_propertyChangeQueueMutex);
+    m_propertyChangeQueue.push_back(propertyId);
+    QCoreApplication::postEvent(this, new QEvent(UpdatePropertyEvent));
+  }
+
   void requestUpdate()
   {
     if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed))
       QCoreApplication::postEvent(this, new QEvent(UpdateStateEvent));
   }
 
+  std::vector<int> takePropertyChangeQueue()
+  {
+    const std::lock_guard<std::mutex> guard(m_propertyChangeQueueMutex);
+    std::vector<int> queue;
+    std::swap(m_propertyChangeQueue, queue);
+    return queue;
+  }
+
   bool event(QEvent* event) override
   {
-    if (event->type() == UpdateStateEvent) {
+    // TODO: later if CxxQObject is a mixin or member and knows about m_rustObj
+    // can the locking for m_rustObj happen here so we only have one lock?
+    // also would this change the virtual methods we have now?
+
+    if (event->type() == UpdatePropertyEvent) {
+      for (auto propertyId : takePropertyChangeQueue()) {
+        updatePropertyChange(propertyId);
+      }
+      return true;
+    } else if (event->type() == UpdateStateEvent) {
       // New Rust-side events might come in while we are processing a request
       // and request a new update while we are processing the queue.
       //
-      // If we flip this flag before updateState then worst case we get an extra
-      // event with nothing to actually process whereas if we do it afterwards
-      // then we might miss an update request.
+      // If we flip this flag before updateState then worst case we get an
+      // extra event with nothing to actually process whereas if we do it
+      // afterwards then we might miss an update request.
       m_waitingForUpdate.store(false, std::memory_order_relaxed);
 
       updateState();
@@ -113,6 +140,13 @@ protected:
   // might want to consider making the function pure virtual. Objects that want
   // to opt out of the state mechanism should then instead derive from an
   // entirely different base class as to have less overhead overall.
+  virtual void updatePropertyChange(int propertyId)
+  {
+    qWarning()
+      << "An UpdatePropertyEvent event was posted to a CxxQObject that does "
+         "not override updatePropertyChange(int), this likely indicates a bug.";
+  }
+
   virtual void updateState()
   {
     qWarning()
@@ -122,4 +156,6 @@ protected:
 
 private:
   std::atomic_bool m_waitingForUpdate{ false };
+  std::vector<int> m_propertyChangeQueue;
+  std::mutex m_propertyChangeQueueMutex;
 };

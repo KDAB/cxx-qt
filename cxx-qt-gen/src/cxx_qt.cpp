@@ -316,10 +316,17 @@ extern "C"
   void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
 }
 
-const QEvent::Type CxxQObject::UpdateStateEvent = []() {
-  auto eventId = QEvent::registerEventType(QEvent::User + 1);
+static const QEvent::Type
+createEventType(int hint)
+{
+  auto eventId = QEvent::registerEventType(hint);
   Q_ASSERT(eventId > -1);
   return static_cast<QEvent::Type>(eventId);
-}();
+}
+
+const QEvent::Type CxxQObject::UpdateStateEvent =
+  createEventType(QEvent::User + 1);
+const QEvent::Type CxxQObject::UpdatePropertyEvent =
+  createEventType(QEvent::User + 2);
 
 #endif // NO_QT
