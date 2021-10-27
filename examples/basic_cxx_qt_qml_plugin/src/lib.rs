@@ -6,6 +6,8 @@
 use cxx_qt::make_qobject;
 
 mod data;
+// TODO: move to subdir when cxx-qt-build supports it
+mod mock_qt_types;
 pub mod sub;
 
 #[make_qobject]

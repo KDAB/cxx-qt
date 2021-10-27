@@ -40,6 +40,7 @@ impl RustType for QtTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::Pin { .. } => unreachable!(),
+            Self::QPointF => true,
             Self::Str | Self::String => true,
             _others => false,
         }
@@ -65,6 +66,7 @@ impl RustType for QtTypes {
             Self::Pin { .. } => unreachable!(),
             // Pointer types do not use this function (TODO: yet?)
             Self::Ptr { .. } => unreachable!(),
+            Self::QPointF => format_ident!("QPointF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
@@ -87,6 +89,7 @@ impl RustType for QtTypes {
                 let ident = format_ident!("{}", ident_str);
                 quote! {cxx::UniquePtr<ffi::#ident>}
             }
+            Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
@@ -420,6 +423,8 @@ pub fn generate_qobject_cxx(
 
                 type #class_name;
 
+                #[namespace = ""]
+                type QPointF = cxx_qt_lib::QPointF;
                 #[namespace = ""]
                 type QString = cxx_qt_lib::QString;
 
@@ -1394,6 +1399,48 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_primitive_property.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_types_qt_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_qt_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/types_qt_property.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_types_qt_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_qt_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/types_qt_invokable.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)

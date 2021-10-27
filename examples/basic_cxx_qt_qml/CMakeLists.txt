@@ -66,3 +66,4 @@ endfunction()
 
 add_qml_test(myobject)
 add_qml_test(mydata)
+add_qml_test(qttypes)

@@ -74,6 +74,7 @@ impl CppType for QtTypes {
             Self::I8 | Self::I16 | Self::I32 => None,
             Self::Pin { .. } => None,
             Self::Ptr { .. } => None,
+            Self::QPointF => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
             Self::U8 | Self::U16 | Self::U32 => None,
@@ -98,6 +99,7 @@ impl CppType for QtTypes {
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 ident_str.to_case(Case::Snake)
             )],
+            Self::QPointF => vec!["#include <QtCore/QPointF>".to_owned()],
             _others => vec![],
         }
     }
@@ -113,6 +115,7 @@ impl CppType for QtTypes {
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
+            Self::QPointF => true,
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
@@ -154,6 +157,7 @@ impl CppType for QtTypes {
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
             Self::Ptr { .. } => false,
+            Self::QPointF => true,
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
@@ -192,6 +196,7 @@ impl CppType for QtTypes {
                 ident_namespace_str,
                 ..
             } => ident_namespace_str,
+            Self::QPointF => "QPointF",
             Self::Str | Self::String | Self::QString => "QString",
             Self::U8 => "quint8",
             Self::U16 => "quint16",
@@ -1119,6 +1124,44 @@ mod tests {
             clang_format(include_str!("../test_outputs/types_primitive_property.h")).unwrap();
         let expected_source =
             clang_format(include_str!("../test_outputs/types_primitive_property.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_types_qt_property() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_qt_property.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/types_qt_property.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/types_qt_property.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_types_qt_invokable() {
+        // TODO: we probably want to parse all the test case files we have
+        // only once as to not slow down different tests on the same input.
+        // This can maybe be done with some kind of static object somewhere.
+        let source = include_str!("../test_inputs/types_qt_invokable.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header =
+            clang_format(include_str!("../test_outputs/types_qt_invokable.h")).unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/types_qt_invokable.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

@@ -1,9 +1,7 @@
 mod my_object {
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
-        enum Property {
-            Number,
-        }
+        enum Property {}
 
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.h");
@@ -14,11 +12,6 @@ mod my_object {
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
 
-            #[rust_name = "number"]
-            fn getNumber(self: &MyObject) -> i32;
-            #[rust_name = "set_number"]
-            fn setNumber(self: Pin<&mut MyObject>, value: i32);
-
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
         }
@@ -26,8 +19,11 @@ mod my_object {
         extern "Rust" {
             type RustObj;
 
-            #[cxx_name = "invokable"]
-            fn invokable(self: &RustObj);
+            #[cxx_name = "testPointf"]
+            fn test_pointf(self: &RustObj, _cpp: Pin<&mut MyObject>, pointf: &QPointF) -> QPointF;
+
+            #[cxx_name = "testString"]
+            fn test_string(self: &RustObj, _cpp: Pin<&mut MyObject>, string: &QString) -> String;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -44,7 +40,17 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn invokable(&self) {}
+        fn test_pointf(&self, _cpp: std::pin::Pin<&mut CppObj>, pointf: &QPointF) -> QPointF {
+            pointf
+        }
+
+        fn test_string(
+            &self,
+            _cpp: std::pin::Pin<&mut CppObj>,
+            string: &cxx_qt_lib::QString,
+        ) -> String {
+            string.to_rust()
+        }
     }
 
     pub struct CppObjWrapper<'a> {
@@ -56,14 +62,6 @@ mod my_object {
             Self { cpp }
         }
 
-        pub fn number(&self) -> i32 {
-            self.cpp.number()
-        }
-
-        pub fn set_number(&mut self, value: i32) {
-            self.cpp.as_mut().set_number(value);
-        }
-
         pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
@@ -73,27 +71,15 @@ mod my_object {
 
         pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
-
-            data.number
-                .map_qt_value(|context, converted| context.set_number(converted), self);
         }
     }
 
-    struct Data {
-        number: i32,
-    }
+    #[derive(Default)]
+    struct Data;
 
     impl<'a> From<&CppObjWrapper<'a>> for Data {
-        fn from(value: &CppObjWrapper<'a>) -> Self {
-            Self {
-                number: value.number().into(),
-            }
-        }
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            Self { number: 32 }
+        fn from(_value: &CppObjWrapper<'a>) -> Self {
+            Self {}
         }
     }
 

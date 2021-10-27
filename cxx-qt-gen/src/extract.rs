@@ -44,6 +44,7 @@ pub enum QtTypes {
         /// Cache of the last type ident as a str with it's namespace for C++ to reference
         ident_namespace_str: String,
     },
+    QPointF,
     QString,
     String,
     Str,
@@ -179,6 +180,7 @@ fn extract_qt_type(
             "i8" => Ok(QtTypes::I8),
             "i16" => Ok(QtTypes::I16),
             "i32" => Ok(QtTypes::I32),
+            "QPointF" => Ok(QtTypes::QPointF),
             "QString" => Ok(QtTypes::QString),
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),

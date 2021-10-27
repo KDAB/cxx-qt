@@ -239,7 +239,7 @@ fn construct_qpointf() -> QPointF {
 }
 
 fn read_qpointf(p: &QPointF) -> bool {
-    ((p.x - 1.23).abs() < f64::EPSILON) && ((p.y - 4.56).abs() < f64::EPSILON)
+    ((p.x() - 1.23).abs() < f64::EPSILON) && ((p.y() - 4.56).abs() < f64::EPSILON)
 }
 
 fn copy_qpointf(p: &QPointF) -> QPointF {

@@ -8,6 +8,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QPointF = cxx_qt_lib::QPointF;
+            #[namespace = ""]
             type QString = cxx_qt_lib::QString;
 
             #[rust_name = "new_cpp_object"]

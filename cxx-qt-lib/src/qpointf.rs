@@ -10,13 +10,19 @@ use std::mem::MaybeUninit;
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QPointF {
-    pub x: f64,
-    pub y: f64,
+    x: f64,
+    y: f64,
 }
 
 extern "C" {
     #[link_name = "cxxqt1$qpointf$init"]
     fn qpointf_init(this: &mut MaybeUninit<QPointF>, x: f64, y: f64);
+}
+
+impl Default for QPointF {
+    fn default() -> Self {
+        Self::new(0.0, 0.0)
+    }
 }
 
 impl QPointF {
@@ -32,6 +38,22 @@ impl QPointF {
             s.assume_init()
         }
     }
+
+    pub fn set_x(&mut self, x: f64) {
+        self.x = x;
+    }
+
+    pub fn set_y(&mut self, y: f64) {
+        self.y = y;
+    }
+
+    pub fn x(&self) -> f64 {
+        self.x
+    }
+
+    pub fn y(&self) -> f64 {
+        self.y
+    }
 }
 
 // Safety:
@@ -40,4 +62,10 @@ impl QPointF {
 unsafe impl ExternType for QPointF {
     type Id = type_id!("QPointF");
     type Kind = cxx::kind::Trivial;
+}
+
+impl From<&QPointF> for QPointF {
+    fn from(qpointf: &QPointF) -> Self {
+        *qpointf
+    }
 }

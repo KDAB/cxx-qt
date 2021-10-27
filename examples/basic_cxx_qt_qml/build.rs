@@ -11,6 +11,7 @@ fn main() {
         .cpp_format(ClangFormatStyle::Mozilla)
         .file("src/data.rs")
         .file("src/lib.rs")
+        .file("src/mock_qt_types.rs")
         .file("src/sub.rs")
         .build();
 }

@@ -85,7 +85,7 @@ add_test(NAME ${APP_NAME}_test
 )
 
 # TODO: can't use add_valgrind_test so cmake gets confused by the spaces in test_cmd, write manually for now
-add_test(NAME ${APP_NAME}_${TEST_NAME}_test_valgrind
+add_test(NAME ${APP_NAME}_test_valgrind
     COMMAND ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} --suppressions=${MEMORYCHECK_SUPPRESSIONS_FILE} ${test_cmd}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 )
