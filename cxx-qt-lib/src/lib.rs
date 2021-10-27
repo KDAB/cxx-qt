@@ -11,7 +11,7 @@ pub mod update_requester;
 pub use update_requester::UpdateRequestHandler;
 
 mod qcolor;
-pub use qcolor::{Color, QColor};
+pub use qcolor::{Color, ColorImpl, QColor};
 
 mod qrect;
 pub use qrect::QRect;

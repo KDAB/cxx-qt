@@ -27,6 +27,48 @@ TestCase {
         }
     }
 
+
+    // QColor
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_color_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "colorChanged",
+            target: mock,
+        });
+        compare(mock.color, Qt.rgba(1.0, 0.0, 0.0, 1.0));
+
+        compare(spy.count, 0);
+        mock.color = Qt.rgba(1.0, 1.0, 1.0, 1.0);
+        tryCompare(spy, "count", 1);
+        compare(mock.color, Qt.rgba(1.0, 1.0, 1.0, 1.0));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_color_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testColorInvokable(Qt.rgba(1.0, 0.0, 0.0, 1.0));
+        compare(result, Qt.rgba(0.0, 1.0, 0, 1.0));
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_color_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "colorChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.color, Qt.rgba(1.0, 0.0, 0.0, 1.0));
+        mock.testColorProperty();
+        compare(mock.color, Qt.rgba(0.0, 0.0, 1.0, 1.0));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QPoint
 
     // Check that we can adjust the property for the type and it has non default value

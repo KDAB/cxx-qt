@@ -2,6 +2,7 @@ mod my_object {
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {
+            Color,
             Point,
             Pointf,
             Rect,
@@ -16,6 +17,8 @@ mod my_object {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+            #[namespace = ""]
+            type QColor = cxx_qt_lib::QColor;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -34,7 +37,14 @@ mod my_object {
             type QVariant = cxx_qt_lib::QVariant;
 
             #[namespace = "CxxQt"]
+            type Color = cxx_qt_lib::Color;
+            #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
+
+            #[rust_name = "color"]
+            fn getColor(self: &MyObject) -> &QColor;
+            #[rust_name = "set_color"]
+            fn setColor(self: Pin<&mut MyObject>, value: &QColor);
 
             #[rust_name = "point"]
             fn getPoint(self: &MyObject) -> &QPoint;
@@ -106,6 +116,14 @@ mod my_object {
     impl<'a> CppObj<'a> {
         pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
             Self { cpp }
+        }
+
+        pub fn color(&self) -> &cxx_qt_lib::QColor {
+            self.cpp.color()
+        }
+
+        pub fn set_color(&mut self, value: &cxx_qt_lib::QColor) {
+            self.cpp.as_mut().set_color(value);
         }
 
         pub fn point(&self) -> &cxx_qt_lib::QPoint {
@@ -182,6 +200,8 @@ mod my_object {
         pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
 
+            data.color
+                .map_qt_value(|context, converted| context.set_color(converted), self);
             data.point
                 .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
@@ -203,6 +223,7 @@ mod my_object {
 
     #[derive(Default)]
     struct Data {
+        color: Color,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -216,6 +237,7 @@ mod my_object {
     impl<'a> From<&CppObj<'a>> for Data {
         fn from(value: &CppObj<'a>) -> Self {
             Self {
+                color: value.color().into(),
                 point: value.point().into(),
                 pointf: value.pointf().into(),
                 rect: value.rect().into(),

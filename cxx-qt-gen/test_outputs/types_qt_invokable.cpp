@@ -13,6 +13,13 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
+QColor
+MyObject::testColor(const QColor& color)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return ::CxxQt::rustColorToQColor(m_rustObj->testColorWrapper(*this, color));
+}
+
 QPoint
 MyObject::testPoint(const QPoint& point)
 {

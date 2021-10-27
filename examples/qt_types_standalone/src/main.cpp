@@ -89,6 +89,19 @@ test_constructed_qcolor(const QColor& c, ColorTest test)
   }
 }
 
+TEST_CASE("Can convert Rust Color to QColor")
+{
+  const auto runTest = [](auto test) {
+    return test_constructed_qcolor(CxxQt::rustColorToQColor(make_color(test)),
+                                   test);
+  };
+
+  CHECK(runTest(ColorTest::Rgb_Red));
+  CHECK(runTest(ColorTest::Rgb_Green));
+  CHECK(runTest(ColorTest::Rgb_Blue));
+  CHECK(runTest(ColorTest::Rgb_Transparent));
+}
+
 TEST_CASE("Can read a QColor on the Rust side")
 {
   CHECK(can_read_qcolor(QColor(255, 0, 0, 255), ColorTest::Rgb_Red));

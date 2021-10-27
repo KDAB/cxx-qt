@@ -324,6 +324,8 @@ enum class QColorSpec : uint8_t
 
 extern "C"
 {
+  void cxxqt1$qcolor$init(QColor* self) noexcept { new (self) QColor(); }
+
   void cxxqt1$qcolor$init$from$argb(QColor* self,
                                     int a,
                                     int r,
@@ -359,6 +361,11 @@ extern "C"
       default:
         return QColorSpec::Unsupported;
     }
+  }
+
+  void cxxqt1$qcolor$assign$qcolor(const QColor& from, QColor& to) noexcept
+  {
+    to = from;
   }
 
   void cxxqt1$qcolor$drop(QColor* self) noexcept { self->~QColor(); }

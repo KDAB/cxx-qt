@@ -11,6 +11,7 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QVariant>
+#include <QtGui/QColor>
 
 namespace cxx_qt::my_object {
 
@@ -19,6 +20,7 @@ class RustObj;
 class MyObject : public CxxQObject
 {
   Q_OBJECT
+  Q_PROPERTY(QColor color READ getColor WRITE setColor NOTIFY colorChanged)
   Q_PROPERTY(QPoint point READ getPoint WRITE setPoint NOTIFY pointChanged)
   Q_PROPERTY(QPointF pointf READ getPointf WRITE setPointf NOTIFY pointfChanged)
   Q_PROPERTY(QRect rect READ getRect WRITE setRect NOTIFY rectChanged)
@@ -33,6 +35,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
+  const QColor& getColor() const;
   const QPoint& getPoint() const;
   const QPointF& getPointf() const;
   const QRect& getRect() const;
@@ -43,6 +46,7 @@ public:
   const QVariant& getVariant() const;
 
 public Q_SLOTS:
+  void setColor(const QColor& value);
   void setPoint(const QPoint& value);
   void setPointf(const QPointF& value);
   void setRect(const QRect& value);
@@ -53,6 +57,7 @@ public Q_SLOTS:
   void setVariant(const QVariant& value);
 
 Q_SIGNALS:
+  void colorChanged();
   void pointChanged();
   void pointfChanged();
   void rectChanged();
@@ -67,6 +72,7 @@ private:
   std::mutex m_rustObjMutex;
   bool m_initialised = false;
 
+  QColor m_color;
   QPoint m_point;
   QPointF m_pointf;
   QRect m_rect;

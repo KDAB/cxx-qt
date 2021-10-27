@@ -27,6 +27,7 @@ impl RustType for QtTypes {
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
+            Self::Color => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
@@ -56,6 +57,7 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
+            Self::Color | Self::QColor => format_ident!("QColor"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
@@ -87,6 +89,7 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
+            Self::Color | Self::QColor => quote! {cxx_qt_lib::QColor},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
@@ -429,6 +432,8 @@ pub fn generate_qobject_cxx(
                 type #class_name;
 
                 #[namespace = ""]
+                type QColor = cxx_qt_lib::QColor;
+                #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
                 type QPointF = cxx_qt_lib::QPointF;
@@ -445,6 +450,8 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
 
+                #[namespace = "CxxQt"]
+                type Color = cxx_qt_lib::Color;
                 #[namespace = "CxxQt"]
                 type Variant = cxx_qt_lib::Variant;
 

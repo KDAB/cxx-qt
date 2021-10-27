@@ -10,6 +10,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QColor = cxx_qt_lib::QColor;
+            #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
@@ -26,6 +28,8 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
+            #[namespace = "CxxQt"]
+            type Color = cxx_qt_lib::Color;
             #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
 

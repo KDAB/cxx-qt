@@ -23,6 +23,7 @@ Window {
 
     MyObject {
         id: myObject
+        color: "red"
         number: 1
         string: "My String " + myObject.number
         sub: subObject
@@ -75,6 +76,12 @@ Window {
             text: "Print Data"
 
             onClicked: console.warn(myData.asJsonStr())
+        }
+
+        Rectangle {
+            color: myObject.color
+            height: 20
+            width: 20
         }
     }
 

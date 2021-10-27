@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRect,
-    QRectF, QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, ColorImpl, MapQtValue, QColor, QPoint, QPointF,
+    QRect, QRectF, QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -47,6 +47,8 @@ mod ffi {
         type QRect = cxx_qt_lib::QRect;
 
         #[namespace = "CxxQt"]
+        type Color = cxx_qt_lib::Color;
+        #[namespace = "CxxQt"]
         type Variant = cxx_qt_lib::Variant;
 
         fn test_constructed_qstring(s: &QString) -> bool;
@@ -64,6 +66,7 @@ mod ffi {
         fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
 
+        fn make_color(test: ColorTest) -> Color;
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
 
@@ -145,89 +148,60 @@ fn can_handle_qstring_change() -> bool {
     rs == long_s
 }
 
-fn can_construct_qcolor(test: ColorTest) -> bool {
-    let color = match test {
-        ColorTest::Rgb_Red => Color::ARGB {
-            alpha: 255,
-            red: 255,
-            green: 0,
-            blue: 0,
-        },
-        ColorTest::Rgb_Green => Color::ARGB {
-            alpha: 255,
-            red: 0,
-            green: 255,
-            blue: 0,
-        },
-        ColorTest::Rgb_Blue => Color::ARGB {
-            alpha: 255,
-            red: 0,
-            green: 0,
-            blue: 255,
-        },
-        ColorTest::Rgb_Transparent => Color::ARGB {
-            alpha: 0,
-            red: 0,
-            green: 0,
-            blue: 0,
-        },
+fn make_color(test: ColorTest) -> Color {
+    match test {
+        ColorTest::Rgb_Red => Color::from_argb(255, 255, 0, 0),
+        ColorTest::Rgb_Green => Color::from_argb(255, 0, 255, 0),
+        ColorTest::Rgb_Blue => Color::from_argb(255, 0, 0, 255),
+        ColorTest::Rgb_Transparent => Color::from_argb(0, 0, 0, 0),
         _others => panic!("Unsupported test: {}", test.repr),
-    };
+    }
+}
 
+fn can_construct_qcolor(test: ColorTest) -> bool {
+    let color = make_color(test);
     let_qcolor!(c = &color);
     ffi::test_constructed_qcolor(&c, test)
 }
 
 fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
     match test {
-        ColorTest::Rgb_Red => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 255 && green == 0 && blue == 0,
-                _others => false,
-            }
-        }
-        ColorTest::Rgb_Green => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 0 && green == 255 && blue == 0,
-                _others => false,
-            }
-        }
-        ColorTest::Rgb_Blue => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 0 && green == 0 && blue == 255,
-                _others => false,
-            }
-        }
-        ColorTest::Rgb_Transparent => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 0 && red == 0 && green == 0 && blue == 0,
-                _others => false,
-            }
-        }
+        ColorTest::Rgb_Red => match &*c.to_rust() {
+            ColorImpl::ARGB {
+                alpha,
+                red,
+                green,
+                blue,
+            } => *alpha == 255 && *red == 255 && *green == 0 && *blue == 0,
+            _others => false,
+        },
+        ColorTest::Rgb_Green => match &*c.to_rust() {
+            ColorImpl::ARGB {
+                alpha,
+                red,
+                green,
+                blue,
+            } => *alpha == 255 && *red == 0 && *green == 255 && *blue == 0,
+            _others => false,
+        },
+        ColorTest::Rgb_Blue => match &*c.to_rust() {
+            ColorImpl::ARGB {
+                alpha,
+                red,
+                green,
+                blue,
+            } => *alpha == 255 && *red == 0 && *green == 0 && *blue == 255,
+            _others => false,
+        },
+        ColorTest::Rgb_Transparent => match &*c.to_rust() {
+            ColorImpl::ARGB {
+                alpha,
+                red,
+                green,
+                blue,
+            } => *alpha == 0 && *red == 0 && *green == 0 && *blue == 0,
+            _others => false,
+        },
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }

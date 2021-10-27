@@ -1,6 +1,7 @@
 mod my_object {
     #[derive(Default)]
     struct Data {
+        color: Color,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
