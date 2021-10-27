@@ -11,5 +11,6 @@ fn main() {
     // eg if you want a QQmlExtensionModule etc
     CxxQtBuilder::new()
         .cpp_format(ClangFormatStyle::Mozilla)
+        .file("src/lib.rs")
         .build();
 }

@@ -23,17 +23,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 include(CxxQt)
 
 set(
-    RUST_SOURCES
-    data.rs
-    lib.rs
-    sub.rs
-    types.rs
-)
-
-set(
     CPP_SOURCES
     src/main.cpp
 )
 
-cxx_qt_cmake(${APP_NAME} "${RUST_SOURCES}" "${CPP_SOURCES}")
+cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
 target_link_libraries(${APP_NAME} doctest Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Test)

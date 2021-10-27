@@ -22,12 +22,6 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Test REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 include(CxxQt)
-
-set(
-    RUST_SOURCES
-    lib.rs
-)
-
 set(
     CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
@@ -35,7 +29,7 @@ set(
 )
 
 # Generate the C++ code
-cxx_qt_generate_cpp("${RUST_SOURCES}" GEN_SOURCES)
+cxx_qt_generate_cpp(GEN_SOURCES)
 # Define our executable
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}")
 # Include generated sources

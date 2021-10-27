@@ -27,19 +27,12 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QuickT
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 include(CxxQt)
 
-set(
-    RUST_SOURCES
-    data.rs
-    lib.rs
-    sub.rs
-)
-
 set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/qml)
 # TODO: generate this path and name from the build.rs then our cmake helpers can read this from .txt
 set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
 
 # Generate the C++ code
-cxx_qt_generate_cpp("${RUST_SOURCES}" GEN_SOURCES)
+cxx_qt_generate_cpp(GEN_SOURCES)
 
 # Define our executable with our QML resource files
 add_library(${APP_NAME}_qmlplugin SHARED "${GEN_SOURCES}")

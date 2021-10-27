@@ -13,5 +13,8 @@ fn main() {
             "example_basic_cxx_qt_qml_plugin_qmlplugin",
         )
         .cpp_format(ClangFormatStyle::Mozilla)
+        .file("src/data.rs")
+        .file("src/lib.rs")
+        .file("src/sub.rs")
         .build();
 }

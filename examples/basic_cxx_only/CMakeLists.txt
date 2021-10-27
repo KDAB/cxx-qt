@@ -20,14 +20,9 @@ include(CxxQt)
 add_compile_definitions(NO_QT)
 
 set(
-    RUST_SOURCES
-    lib.rs
-)
-
-set(
     CPP_SOURCES
     src/main.cpp
 )
 
-cxx_qt_cmake(${APP_NAME} "${RUST_SOURCES}" "${CPP_SOURCES}")
+cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
 target_link_libraries(${APP_NAME} doctest)

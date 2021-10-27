@@ -43,15 +43,6 @@ impl Default for BuildMode {
 // QObject macros and at most one "raw CXX" macro per file already. For now this remains a TODO
 // as to keep things simpler. We also want to able to warn users about duplicate names eventually.
 
-/// Retrieve the list of rust sources from the file
-fn read_rs_sources() -> Vec<String> {
-    let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
-    let path = format!("{}/target/cxx-qt-gen/rust_sources.txt", dir_manifest);
-
-    let contents = std::fs::read_to_string(path).expect("Could not read list of Rust source files");
-    contents.split(';').map(|s| s.to_string()).collect()
-}
-
 /// Tests if an attributes matched what is expected for #[cxx::bridge]
 fn is_cxx_attr(attr: &Attribute) -> bool {
     let segments = &attr.path.segments;
@@ -170,7 +161,13 @@ fn gen_cxx_for_file(
     let dir_manifest = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     let mut generated_cpp_paths = Vec::new();
 
-    let path = format!("{}/src/{}", dir_manifest, rs_path);
+    // TODO: in the future use the module path as the file path
+    // so that src/moda/lib.rs with mod modb { make_qobject(MyObject) } becomes src/moda/modb/my_object
+    // this then avoids collisions later.
+    //
+    // This will require detecting nested modules in a file
+
+    let path = format!("{}/{}", dir_manifest, rs_path);
     let content = std::fs::read_to_string(path).expect("Could not read Rust file");
     let extracted = extract_modules(&content, rs_path);
 
@@ -180,8 +177,31 @@ fn gen_cxx_for_file(
     let tokens = {
         match extracted {
             ExtractedModule::Cxx(m) => {
-                h_path = format!("{}/target/cxx-qt-gen/include/{}.h", dir_manifest, rs_path);
-                cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", dir_manifest, rs_path);
+                // Extract just the file name of the rs_path as we don't want to include sub folders
+                //
+                // TODO: later this won't be required when we are tracking the module path
+                let rs_file_name = {
+                    if let Some(os_file_name) = std::path::Path::new(rs_path).file_name() {
+                        if let Some(file_name) = os_file_name.to_str() {
+                            file_name
+                        } else {
+                            panic!(
+                                "Could not convert OsStr to str for rust source path: {}",
+                                rs_path
+                            );
+                        }
+                    } else {
+                        panic!("No file name found in rust source path: {}", rs_path)
+                    }
+                };
+                h_path = format!(
+                    "{}/target/cxx-qt-gen/include/{}.h",
+                    dir_manifest, rs_file_name
+                );
+                cpp_path = format!(
+                    "{}/target/cxx-qt-gen/src/{}.cpp",
+                    dir_manifest, rs_file_name
+                );
 
                 m.into_token_stream()
             }
@@ -232,7 +252,7 @@ fn gen_cxx_for_file(
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
 fn gen_cxx_for_files(
-    rs_source: &[String],
+    rs_source: &[&'static str],
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
     cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
@@ -346,6 +366,7 @@ pub struct CxxQtBuilder {
     build_mode: BuildMode,
     cpp_format: Option<ClangFormatStyle>,
     cpp_namespace_prefix: Vec<&'static str>,
+    rust_sources: Vec<&'static str>,
 }
 
 impl CxxQtBuilder {
@@ -355,6 +376,7 @@ impl CxxQtBuilder {
             build_mode: BuildMode::Plain,
             cpp_format: None,
             cpp_namespace_prefix: vec!["cxx_qt"],
+            rust_sources: vec![],
         }
     }
 
@@ -385,6 +407,16 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Specify rust file paths to parse through the cxx-qt marco
+    ///
+    /// Currently the path should be relative to CARGO_MANIFEST_DIR
+    pub fn file(mut self, rust_source: &'static str) -> Self {
+        self.rust_sources.push(rust_source);
+        self
+    }
+
+    // TODO: support globs with files("src/**/*.rs")
+
     /// Perform the build task, for example parsing and generating sources
     pub fn build(self) {
         // Set clang-format format
@@ -396,9 +428,6 @@ impl CxxQtBuilder {
         //
         // This is so that the make_qobject macro can read this back later
         write_cpp_namespace_prefix(&self.cpp_namespace_prefix);
-
-        // Read sources
-        let rs_sources = read_rs_sources();
 
         // TODO: somewhere check that we don't have duplicate class names
         // TODO: later use the module::object to turn into module/object.h and namespace
@@ -414,7 +443,7 @@ impl CxxQtBuilder {
 
         // Generate files
         let mut cpp_paths = gen_cxx_for_files(
-            &rs_sources,
+            &self.rust_sources,
             &mut ext_plugin.as_mut(),
             &self.cpp_namespace_prefix,
         );

@@ -9,5 +9,8 @@ use cxx_qt_build::CxxQtBuilder;
 fn main() {
     CxxQtBuilder::new()
         .cpp_format(ClangFormatStyle::Mozilla)
+        .file("src/data.rs")
+        .file("src/lib.rs")
+        .file("src/sub.rs")
         .build();
 }
