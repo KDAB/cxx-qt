@@ -12,6 +12,7 @@
 #include <QPointF>
 #include <QPointer>
 #include <QSizeF>
+#include <QtGui/QColor>
 
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
 // post an event to a specific CxxQObject.
@@ -163,6 +164,68 @@ extern "C"
   {
     new (self) QSizeF(w, h);
   }
+}
+
+namespace {
+
+// We do these checks to ensure that we can safely store a QColor
+// inside a block of memory that Rust thinks contains as 2 usizes.
+//
+// We assume that std::size_t is the same size as Rust's usize.
+// cxx.cc has some asserts to ensure that is true.
+static_assert(alignof(QColor) <= alignof(std::size_t[2]),
+              "unexpectedly large QColor alignment");
+static_assert(sizeof(QColor) <= sizeof(std::size_t[2]),
+              "unexpectedly large QColor size");
+
+enum class QColorSpec : uint8_t
+{
+  Unsupported = 0,
+  Rgb = 1,
+};
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qcolor$init$from$argb(QColor* self,
+                                    int a,
+                                    int r,
+                                    int g,
+                                    int b) noexcept
+  {
+    new (self) QColor();
+    *self = QColor(r, g, b, a);
+  }
+
+  int cxxqt1$qcolor$get$alpha(const QColor& self) noexcept
+  {
+    return self.alpha();
+  }
+
+  int cxxqt1$qcolor$get$red(const QColor& self) noexcept { return self.red(); }
+
+  int cxxqt1$qcolor$get$green(const QColor& self) noexcept
+  {
+    return self.green();
+  }
+
+  int cxxqt1$qcolor$get$blue(const QColor& self) noexcept
+  {
+    return self.blue();
+  }
+
+  QColorSpec cxxqt1$qcolor$get$spec(const QColor& self) noexcept
+  {
+    switch (self.spec()) {
+      case QColor::Rgb:
+        return QColorSpec::Rgb;
+      default:
+        return QColorSpec::Unsupported;
+    }
+  }
+
+  void cxxqt1$qcolor$drop(QColor* self) noexcept { self->~QColor(); }
 }
 
 #endif // NO_QT

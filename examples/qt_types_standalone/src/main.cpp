@@ -61,6 +61,47 @@ assign_to_qstring(QString& s, const QString& v)
   s.detach();
 }
 
+TEST_CASE("Can construct a QColor on the Rust side")
+{
+  CHECK(can_construct_qcolor(ColorTest::Rgb_Red));
+  CHECK(can_construct_qcolor(ColorTest::Rgb_Green));
+  CHECK(can_construct_qcolor(ColorTest::Rgb_Blue));
+  CHECK(can_construct_qcolor(ColorTest::Rgb_Transparent));
+}
+
+bool
+test_constructed_qcolor(const QColor& c, ColorTest test)
+{
+  switch (test) {
+    case ColorTest::Rgb_Red:
+      return c.alpha() == 255 && c.red() == 255 && c.green() == 0 &&
+             c.blue() == 0;
+    case ColorTest::Rgb_Green:
+      return c.alpha() == 255 && c.red() == 0 && c.green() == 255 &&
+             c.blue() == 0;
+    case ColorTest::Rgb_Blue:
+      return c.alpha() == 255 && c.red() == 0 && c.green() == 0 &&
+             c.blue() == 255;
+    case ColorTest::Rgb_Transparent:
+      return c.alpha() == 0 && c.red() == 0 && c.green() == 0 && c.blue() == 0;
+    default:
+      return false;
+  }
+}
+
+TEST_CASE("Can read a QColor on the Rust side")
+{
+  CHECK(can_read_qcolor(QColor(255, 0, 0, 255), ColorTest::Rgb_Red));
+  CHECK(can_read_qcolor(QColor(0, 255, 0, 255), ColorTest::Rgb_Green));
+  CHECK(can_read_qcolor(QColor(0, 0, 255, 255), ColorTest::Rgb_Blue));
+  CHECK(can_read_qcolor(QColor(0, 0, 0, 0), ColorTest::Rgb_Transparent));
+
+  CHECK(can_read_qcolor(QColor(Qt::red), ColorTest::Rgb_Red));
+  CHECK(can_read_qcolor(QColor(Qt::green), ColorTest::Rgb_Green));
+  CHECK(can_read_qcolor(QColor(Qt::blue), ColorTest::Rgb_Blue));
+  CHECK(can_read_qcolor(QColor(Qt::transparent), ColorTest::Rgb_Transparent));
+}
+
 TEST_CASE("Can construct a QPointF on the Rust side")
 {
   const auto p = construct_qpointf();

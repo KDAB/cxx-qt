@@ -5,19 +5,29 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt_lib::{let_qstring, MapQtValue, QPointF, QSizeF, QString};
+use cxx_qt_lib::{let_qcolor, let_qstring, Color, MapQtValue, QColor, QPointF, QSizeF, QString};
 
 #[cxx::bridge]
 mod ffi {
+    enum ColorTest {
+        Rgb_Red,
+        Rgb_Green,
+        Rgb_Blue,
+        Rgb_Transparent,
+    }
+
     unsafe extern "C++" {
         include!("bridge.h");
 
+        type QColor = cxx_qt_lib::QColor;
         type QString = cxx_qt_lib::QString;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPointF = cxx_qt_lib::QPointF;
 
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
+
+        fn test_constructed_qcolor(c: &QColor, test: ColorTest) -> bool;
     }
 
     extern "Rust" {
@@ -26,6 +36,9 @@ mod ffi {
         fn modify_qstring(s: Pin<&mut QString>);
         fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
+
+        fn can_construct_qcolor(test: ColorTest) -> bool;
+        fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
 
         fn construct_qpointf() -> QPointF;
         fn read_qpointf(p: &QPointF) -> bool;
@@ -38,6 +51,8 @@ mod ffi {
         fn copy_value_qsizef(p: QSizeF) -> QSizeF;
     }
 }
+
+use ffi::ColorTest;
 
 fn can_construct_qstring(slice: bool) -> bool {
     if slice {
@@ -76,6 +91,93 @@ fn can_handle_qstring_change() -> bool {
 
     let rs = s.to_rust();
     rs == long_s
+}
+
+fn can_construct_qcolor(test: ColorTest) -> bool {
+    let color = match test {
+        ColorTest::Rgb_Red => Color::ARGB {
+            alpha: 255,
+            red: 255,
+            green: 0,
+            blue: 0,
+        },
+        ColorTest::Rgb_Green => Color::ARGB {
+            alpha: 255,
+            red: 0,
+            green: 255,
+            blue: 0,
+        },
+        ColorTest::Rgb_Blue => Color::ARGB {
+            alpha: 255,
+            red: 0,
+            green: 0,
+            blue: 255,
+        },
+        ColorTest::Rgb_Transparent => Color::ARGB {
+            alpha: 0,
+            red: 0,
+            green: 0,
+            blue: 0,
+        },
+        _others => panic!("Unsupported test: {}", test.repr),
+    };
+
+    let_qcolor!(c = &color);
+    ffi::test_constructed_qcolor(&c, test)
+}
+
+fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
+    match test {
+        ColorTest::Rgb_Red => {
+            let rs_c = c.to_rust();
+            match rs_c {
+                Some(Color::ARGB {
+                    alpha,
+                    red,
+                    green,
+                    blue,
+                }) => alpha == 255 && red == 255 && green == 0 && blue == 0,
+                _others => false,
+            }
+        }
+        ColorTest::Rgb_Green => {
+            let rs_c = c.to_rust();
+            match rs_c {
+                Some(Color::ARGB {
+                    alpha,
+                    red,
+                    green,
+                    blue,
+                }) => alpha == 255 && red == 0 && green == 255 && blue == 0,
+                _others => false,
+            }
+        }
+        ColorTest::Rgb_Blue => {
+            let rs_c = c.to_rust();
+            match rs_c {
+                Some(Color::ARGB {
+                    alpha,
+                    red,
+                    green,
+                    blue,
+                }) => alpha == 255 && red == 0 && green == 0 && blue == 255,
+                _others => false,
+            }
+        }
+        ColorTest::Rgb_Transparent => {
+            let rs_c = c.to_rust();
+            match rs_c {
+                Some(Color::ARGB {
+                    alpha,
+                    red,
+                    green,
+                    blue,
+                }) => alpha == 0 && red == 0 && green == 0 && blue == 0,
+                _others => false,
+            }
+        }
+        _others => panic!("Unsupported test: {}", test.repr),
+    }
 }
 
 fn construct_qpointf() -> QPointF {

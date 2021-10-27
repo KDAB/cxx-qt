@@ -10,9 +10,15 @@
 #include <QtCore/QPointF>
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
+#include <QtGui/QColor>
+
+#include "cxx-qt-gen/include/lib.rs.h"
 
 bool
 test_constructed_qstring(const QString& s);
 
 void
 assign_to_qstring(QString& s, const QString& v);
+
+bool
+test_constructed_qcolor(const QColor& c, ColorTest test);

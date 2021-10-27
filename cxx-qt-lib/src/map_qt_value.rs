@@ -4,13 +4,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::let_qcolor;
 use crate::let_qstring;
+use crate::qcolor::{Color, QColor};
 use crate::qpointf::QPointF;
 use crate::qsizef::QSizeF;
 use crate::qstring::QString;
 
 pub trait MapQtValue<C, F, R> {
     fn map_qt_value(&self, map_func: F, context: &mut C) -> R;
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QColor) -> R, R> for Color {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QColor) -> R, context: &mut C) -> R {
+        let_qcolor!(c = self);
+        map_func(context, &c)
+    }
 }
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for &str {
