@@ -10,13 +10,19 @@ use std::mem::MaybeUninit;
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QSizeF {
-    pub w: f64,
-    pub h: f64,
+    w: f64,
+    h: f64,
 }
 
 extern "C" {
     #[link_name = "cxxqt1$qsizef$init"]
     fn qsizef_init(this: &mut MaybeUninit<QSizeF>, w: f64, h: f64);
+}
+
+impl Default for QSizeF {
+    fn default() -> Self {
+        Self::new(0.0, 0.0)
+    }
 }
 
 impl QSizeF {
@@ -31,6 +37,22 @@ impl QSizeF {
             qsizef_init(&mut s, w, h);
             s.assume_init()
         }
+    }
+
+    pub fn height(&self) -> f64 {
+        self.h
+    }
+
+    pub fn set_height(&mut self, h: f64) {
+        self.h = h;
+    }
+
+    pub fn set_width(&mut self, w: f64) {
+        self.w = w;
+    }
+
+    pub fn width(&self) -> f64 {
+        self.w
     }
 }
 

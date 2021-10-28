@@ -255,7 +255,7 @@ fn construct_qsizef() -> QSizeF {
 }
 
 fn read_qsizef(s: &QSizeF) -> bool {
-    ((s.w - 1.23).abs() < f64::EPSILON) && ((s.h - 4.56).abs() < f64::EPSILON)
+    ((s.width() - 1.23).abs() < f64::EPSILON) && ((s.height() - 4.56).abs() < f64::EPSILON)
 }
 
 fn copy_qsizef(s: &QSizeF) -> QSizeF {
