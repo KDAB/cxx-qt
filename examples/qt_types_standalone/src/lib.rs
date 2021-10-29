@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt_lib::{let_qcolor, let_qstring, Color, MapQtValue, QColor, QPointF, QSizeF, QString};
+use cxx_qt_lib::{
+    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPointF, QSizeF, QString,
+    QVariant, Variant,
+};
 
 #[cxx::bridge]
 mod ffi {
@@ -16,11 +19,18 @@ mod ffi {
         Rgb_Transparent,
     }
 
+    enum VariantTest {
+        String,
+        Int,
+        Bool,
+    }
+
     unsafe extern "C++" {
         include!("bridge.h");
 
         type QColor = cxx_qt_lib::QColor;
         type QString = cxx_qt_lib::QString;
+        type QVariant = cxx_qt_lib::QVariant;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPointF = cxx_qt_lib::QPointF;
 
@@ -28,6 +38,8 @@ mod ffi {
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
 
         fn test_constructed_qcolor(c: &QColor, test: ColorTest) -> bool;
+
+        fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
     }
 
     extern "Rust" {
@@ -39,6 +51,9 @@ mod ffi {
 
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
+
+        fn can_construct_qvariant(test: VariantTest) -> bool;
+        fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
 
         fn construct_qpointf() -> QPointF;
         fn read_qpointf(p: &QPointF) -> bool;
@@ -53,6 +68,7 @@ mod ffi {
 }
 
 use ffi::ColorTest;
+use ffi::VariantTest;
 
 fn can_construct_qstring(slice: bool) -> bool {
     if slice {
@@ -173,6 +189,45 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
                     green,
                     blue,
                 }) => alpha == 0 && red == 0 && green == 0 && blue == 0,
+                _others => false,
+            }
+        }
+        _others => panic!("Unsupported test: {}", test.repr),
+    }
+}
+
+fn can_construct_qvariant(test: VariantTest) -> bool {
+    let variant = match test {
+        VariantTest::String => Variant::String("Rust string".to_owned()),
+        VariantTest::Int => Variant::Int(123),
+        VariantTest::Bool => Variant::Bool(true),
+        _others => panic!("Unsupported test: {}", test.repr),
+    };
+
+    let_qvariant!(v = &variant);
+    ffi::test_constructed_qvariant(&v, test)
+}
+
+fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
+    match test {
+        VariantTest::String => {
+            let rs_v = v.to_rust();
+            match rs_v {
+                Some(Variant::String(s)) => s == "C++ string",
+                _others => false,
+            }
+        }
+        VariantTest::Int => {
+            let rs_v = v.to_rust();
+            match rs_v {
+                Some(Variant::Int(i)) => i == 8910,
+                _others => false,
+            }
+        }
+        VariantTest::Bool => {
+            let rs_v = v.to_rust();
+            match rs_v {
+                Some(Variant::Bool(b)) => !b,
                 _others => false,
             }
         }

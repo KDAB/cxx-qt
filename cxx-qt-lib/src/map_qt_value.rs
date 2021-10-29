@@ -6,10 +6,12 @@
 
 use crate::let_qcolor;
 use crate::let_qstring;
+use crate::let_qvariant;
 use crate::qcolor::{Color, QColor};
 use crate::qpointf::QPointF;
 use crate::qsizef::QSizeF;
 use crate::qstring::QString;
+use crate::qvariant::{QVariant, Variant};
 
 pub trait MapQtValue<C, F, R> {
     fn map_qt_value(&self, map_func: F, context: &mut C) -> R;
@@ -33,6 +35,13 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
     fn map_qt_value(&self, map_func: fn(&mut C, &QString) -> R, context: &mut C) -> R {
         let_qstring!(s = self);
         map_func(context, &s)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QVariant) -> R, R> for &Variant {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QVariant) -> R, context: &mut C) -> R {
+        let_qvariant!(v = self);
+        map_func(context, &v)
     }
 }
 

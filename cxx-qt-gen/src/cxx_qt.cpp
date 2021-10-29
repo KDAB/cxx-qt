@@ -12,6 +12,7 @@
 #include <QPointF>
 #include <QPointer>
 #include <QSizeF>
+#include <QVariant>
 #include <QtGui/QColor>
 
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
@@ -226,6 +227,85 @@ extern "C"
   }
 
   void cxxqt1$qcolor$drop(QColor* self) noexcept { self->~QColor(); }
+}
+
+namespace {
+
+// We do these checks to ensure that we can safely store a QVariant
+// inside a block of memory that Rust thinks contains as 2 usizes.
+//
+// We assume that std::size_t is the same size as Rust's usize.
+// cxx.cc has some asserts to ensure that is true.
+static_assert(alignof(QVariant) <= alignof(std::size_t[2]),
+              "unexpectedly large QVariant alignment");
+static_assert(sizeof(QVariant) <= sizeof(std::size_t[2]),
+              "unexpectedly large QVariant size");
+
+enum class QVariantType : uint8_t
+{
+  Unsupported = 0,
+  String = 1,
+  Int = 2,
+  Bool = 3,
+};
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qvariant$init$from$int(QVariant* self, int i) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(i);
+  }
+
+  void cxxqt1$qvariant$init$from$str(QVariant* self, rust::Str s) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(rustStrToQString(s));
+  }
+
+  void cxxqt1$qvariant$init$from$bool(QVariant* self, bool b) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(b);
+  }
+
+  QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
+  {
+    switch (self.type()) {
+      case QMetaType::QString:
+        return QVariantType::String;
+      case QMetaType::Int:
+        return QVariantType::Int;
+      case QMetaType::Bool:
+        return QVariantType::Bool;
+
+      default:
+        return QVariantType::Unsupported;
+    }
+  }
+
+  void cxxqt1$qvariant$copy$to$string(const QVariant& self,
+                                      rust::String& string) noexcept
+  {
+    cxxqt1$qstring$to_rust_string(self.toString(), string);
+  }
+
+  int cxxqt1$qvariant$to$int(const QVariant& self) noexcept
+  {
+    bool ok;
+    int result = self.toInt(&ok);
+    Q_ASSERT(ok);
+    return result;
+  }
+
+  bool cxxqt1$qvariant$to$bool(const QVariant& self) noexcept
+  {
+    return self.toBool();
+  }
+
+  void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
 }
 
 #endif // NO_QT

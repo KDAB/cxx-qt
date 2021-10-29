@@ -19,6 +19,9 @@ pub use qstring::QString;
 mod qpointf;
 pub use qpointf::QPointF;
 
+mod qvariant;
+pub use qvariant::{QVariant, Variant};
+
 mod map_qt_value;
 pub use map_qt_value::*;
 
@@ -31,6 +34,7 @@ pub trait PropertyChangeHandler<C, P> {
 pub mod private {
     pub use crate::qcolor::StackQColor;
     pub use crate::qstring::StackQString;
+    pub use crate::qvariant::StackQVariant;
 }
 
 mod actually_private {
