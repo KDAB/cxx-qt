@@ -27,6 +27,8 @@ enum QVariantType {
 }
 
 extern "C" {
+    #[link_name = "cxxqt1$qvariant$init"]
+    fn qvariant_init(this: &mut MaybeUninit<QVariant>);
     #[link_name = "cxxqt1$qvariant$init$from$int"]
     fn qvariant_init_from_int(this: &mut MaybeUninit<QVariant>, i: i32);
     #[link_name = "cxxqt1$qvariant$init$from$str"]
@@ -116,19 +118,19 @@ impl QVariant {
 
     /// Create a new Rust Variant from this QVariant.
     /// This is a copy operation so any changes will not propagate to the original QVariant.
-    pub fn to_rust(&self) -> Option<Variant> {
+    pub fn to_rust(&self) -> Variant {
         // Given that a QVariant can only be constructed using [`let_qvariant!`] macro,
         // it is safe to assume that self is a valid QVariant reference which makes these
         // function calls safe.
         match unsafe { qvariant_get_type(self) } {
-            QVariantType::Unsupported => None,
+            QVariantType::Unsupported => Variant::unsupported(),
             QVariantType::String => {
                 let mut s = String::new();
                 unsafe { qvariant_copy_to_string(self, &mut s) };
-                Some(Variant::from_string(s))
+                Variant::from_string(s)
             }
-            QVariantType::Int => Some(Variant::from_int(unsafe { qvariant_to_int(self) })),
-            QVariantType::Bool => Some(Variant::from_bool(unsafe { qvariant_to_bool(self) })),
+            QVariantType::Int => Variant::from_int(unsafe { qvariant_to_int(self) }),
+            QVariantType::Bool => Variant::from_bool(unsafe { qvariant_to_bool(self) }),
         }
     }
 }
@@ -168,6 +170,7 @@ impl StackQVariant {
         let this = &mut *self.space.as_mut_ptr().cast::<MaybeUninit<QVariant>>();
 
         match value.deref() {
+            VariantImpl::Unsupported => qvariant_init(this),
             VariantImpl::String(s) => qvariant_init_from_str(this, s),
             VariantImpl::Int(i) => qvariant_init_from_int(this, *i),
             VariantImpl::Bool(b) => qvariant_init_from_bool(this, *b),
@@ -208,6 +211,7 @@ unsafe impl ExternType for QVariant {
 }
 
 pub enum VariantImpl {
+    Unsupported,
     String(String),
     Int(i32),
     Bool(bool),
@@ -234,6 +238,12 @@ impl Variant {
     pub fn from_bool(b: bool) -> Self {
         Self {
             d: Box::new(VariantImpl::Bool(b)),
+        }
+    }
+
+    pub fn unsupported() -> Self {
+        Self {
+            d: Box::new(VariantImpl::Unsupported),
         }
     }
 }
@@ -279,15 +289,8 @@ pub unsafe extern "C" fn drop_variant(this: &mut ManuallyDrop<Variant>) {
     ManuallyDrop::drop(this);
 }
 
-impl From<&QVariant> for Option<Variant> {
-    fn from(qvariant: &QVariant) -> Self {
-        qvariant.to_rust()
-    }
-}
-
 impl From<&QVariant> for Variant {
     fn from(qvariant: &QVariant) -> Self {
-        // TODO: instead have Variant::Unsupported ?
-        qvariant.to_rust().unwrap()
+        qvariant.to_rust()
     }
 }

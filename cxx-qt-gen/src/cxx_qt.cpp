@@ -253,6 +253,8 @@ enum class QVariantType : uint8_t
 
 extern "C"
 {
+  void cxxqt1$qvariant$init(QVariant* self) noexcept { new (self) QVariant(); }
+
   void cxxqt1$qvariant$init$from$int(QVariant* self, int i) noexcept
   {
     new (self) QVariant();

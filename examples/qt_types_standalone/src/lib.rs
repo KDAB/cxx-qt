@@ -218,16 +218,16 @@ fn can_construct_qvariant(test: VariantTest) -> bool {
 
 fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
     match test {
-        VariantTest::String => match v.to_rust().as_deref() {
-            Some(VariantImpl::String(s)) => s == "C++ string",
+        VariantTest::String => match &*v.to_rust() {
+            VariantImpl::String(s) => s == "C++ string",
             _others => false,
         },
-        VariantTest::Int => match v.to_rust().as_deref() {
-            Some(VariantImpl::Int(i)) => *i == 8910,
+        VariantTest::Int => match &*v.to_rust() {
+            VariantImpl::Int(i) => *i == 8910,
             _others => false,
         },
-        VariantTest::Bool => match v.to_rust().as_deref() {
-            Some(VariantImpl::Bool(b)) => !*b,
+        VariantTest::Bool => match &*v.to_rust() {
+            VariantImpl::Bool(b) => !*b,
             _others => false,
         },
         _others => panic!("Unsupported test: {}", test.repr),

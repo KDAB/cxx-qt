@@ -48,13 +48,13 @@ mod mock_qt_types {
         #[invokable]
         fn test_variant_property(&self, cpp: Pin<&mut CppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
-            match wrapper.variant().to_rust().as_deref() {
-                Some(VariantImpl::Bool(b)) => {
+            match *wrapper.variant().to_rust() {
+                VariantImpl::Bool(b) => {
                     let new_variant = Variant::from_bool(!b);
                     let_qvariant!(new_qvariant = &new_variant);
                     wrapper.set_variant(&new_qvariant);
                 }
-                Some(VariantImpl::Int(i)) => {
+                VariantImpl::Int(i) => {
                     let new_variant = Variant::from_int(i * 2);
                     let_qvariant!(new_qvariant = &new_variant);
                     wrapper.set_variant(&new_qvariant);
@@ -65,9 +65,9 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match variant.to_rust().as_deref() {
-                Some(VariantImpl::Bool(b)) => Variant::from_bool(!b),
-                Some(VariantImpl::Int(i)) => Variant::from_int(i * 2),
+            match *variant.to_rust() {
+                VariantImpl::Bool(b) => Variant::from_bool(!b),
+                VariantImpl::Int(i) => Variant::from_int(i * 2),
                 _ => panic!("Incorrect variant type!"),
             }
         }
