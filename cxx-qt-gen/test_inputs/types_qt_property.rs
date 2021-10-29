@@ -3,6 +3,7 @@ mod my_object {
     struct Data {
         pointf: QPointF,
         string: String,
+        variant: Variant,
     }
 
     #[derive(Default)]

@@ -284,3 +284,10 @@ impl From<&QVariant> for Option<Variant> {
         qvariant.to_rust()
     }
 }
+
+impl From<&QVariant> for Variant {
+    fn from(qvariant: &QVariant) -> Self {
+        // TODO: instead have Variant::Unsupported ?
+        qvariant.to_rust().unwrap()
+    }
+}

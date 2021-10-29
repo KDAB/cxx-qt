@@ -11,6 +11,11 @@ mod my_object {
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
+            #[namespace = ""]
+            type QVariant = cxx_qt_lib::QVariant;
+
+            #[namespace = "CxxQt"]
+            type Variant = cxx_qt_lib::Variant;
 
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
@@ -24,6 +29,9 @@ mod my_object {
 
             #[cxx_name = "testString"]
             fn test_string(self: &RustObj, _cpp: Pin<&mut MyObject>, string: &QString) -> String;
+
+            #[cxx_name = "testVariant"]
+            fn test_variant(self: &RustObj, _cpp: Pin<&mut MyObject>, variant: &QVariant) -> Variant;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -50,6 +58,10 @@ mod my_object {
             string: &cxx_qt_lib::QString,
         ) -> String {
             string.to_rust()
+        }
+
+        fn test_variant(&self, _cpp: std::pin::Pin<&mut CppObj>, variant: &QVariant) -> Variant {
+            variant
         }
     }
 

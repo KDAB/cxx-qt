@@ -16,6 +16,11 @@ mod my_object {
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
+            #[namespace = ""]
+            type QVariant = cxx_qt_lib::QVariant;
+
+            #[namespace = "CxxQt"]
+            type Variant = cxx_qt_lib::Variant;
 
             #[rust_name = "number"]
             fn getNumber(self: &MyObject) -> i32;

@@ -38,7 +38,7 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
     }
 }
 
-impl<C, R> MapQtValue<C, fn(&mut C, &QVariant) -> R, R> for &Variant {
+impl<C, R> MapQtValue<C, fn(&mut C, &QVariant) -> R, R> for Variant {
     fn map_qt_value(&self, map_func: fn(&mut C, &QVariant) -> R, context: &mut C) -> R {
         let_qvariant!(v = self);
         map_func(context, &v)

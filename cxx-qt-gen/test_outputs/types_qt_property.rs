@@ -4,6 +4,7 @@ mod my_object {
         enum Property {
             Pointf,
             String,
+            Variant,
         }
 
         unsafe extern "C++" {
@@ -14,6 +15,11 @@ mod my_object {
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
+            #[namespace = ""]
+            type QVariant = cxx_qt_lib::QVariant;
+
+            #[namespace = "CxxQt"]
+            type Variant = cxx_qt_lib::Variant;
 
             #[rust_name = "pointf"]
             fn getPointf(self: &MyObject) -> &QPointF;
@@ -24,6 +30,11 @@ mod my_object {
             fn getString(self: &MyObject) -> &QString;
             #[rust_name = "set_string"]
             fn setString(self: Pin<&mut MyObject>, value: &QString);
+
+            #[rust_name = "variant"]
+            fn getVariant(self: &MyObject) -> &QVariant;
+            #[rust_name = "set_variant"]
+            fn setVariant(self: Pin<&mut MyObject>, value: &QVariant);
 
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
@@ -73,6 +84,14 @@ mod my_object {
             self.cpp.as_mut().set_string(value);
         }
 
+        pub fn variant(&self) -> &cxx_qt_lib::QVariant {
+            self.cpp.variant()
+        }
+
+        pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
+            self.cpp.as_mut().set_variant(value);
+        }
+
         pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
@@ -87,6 +106,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_pointf(converted), self);
             data.string
                 .map_qt_value(|context, converted| context.set_string(converted), self);
+            data.variant
+                .map_qt_value(|context, converted| context.set_variant(converted), self);
         }
     }
 
@@ -94,6 +115,7 @@ mod my_object {
     struct Data {
         pointf: QPointF,
         string: String,
+        variant: Variant,
     }
 
     impl<'a> From<&CppObjWrapper<'a>> for Data {
@@ -101,6 +123,7 @@ mod my_object {
             Self {
                 pointf: value.pointf().into(),
                 string: value.string().into(),
+                variant: value.variant().into(),
             }
         }
     }

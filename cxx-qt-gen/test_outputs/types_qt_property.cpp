@@ -55,6 +55,27 @@ MyObject::setString(const QString& value)
   }
 }
 
+const QVariant&
+MyObject::getVariant() const
+{
+  return m_variant;
+}
+
+void
+MyObject::setVariant(const QVariant& value)
+{
+  if (!m_initialised) {
+    m_variant = value;
+    return;
+  }
+
+  if (value != m_variant) {
+    m_variant = value;
+
+    Q_EMIT variantChanged();
+  }
+}
+
 std::unique_ptr<MyObject>
 newCppObject()
 {

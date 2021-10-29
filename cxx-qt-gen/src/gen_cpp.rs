@@ -77,6 +77,8 @@ impl CppType for QtTypes {
             Self::QPointF => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
+            Self::QVariant => None,
+            Self::Variant => Some("::CxxQt::rustVariantToQVariant"),
             Self::U8 | Self::U16 | Self::U32 => None,
             _others => unreachable!(),
         }
@@ -100,6 +102,8 @@ impl CppType for QtTypes {
                 ident_str.to_case(Case::Snake)
             )],
             Self::QPointF => vec!["#include <QtCore/QPointF>".to_owned()],
+            // FIXME: do we need both variant and qvariant here?
+            Self::QVariant | Self::Variant => vec!["#include <QtCore/QVariant>".to_owned()],
             _others => vec![],
         }
     }
@@ -119,6 +123,7 @@ impl CppType for QtTypes {
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
@@ -161,6 +166,7 @@ impl CppType for QtTypes {
             Self::Str => true,
             Self::String => true,
             Self::QString => true,
+            Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
@@ -198,6 +204,7 @@ impl CppType for QtTypes {
             } => ident_namespace_str,
             Self::QPointF => "QPointF",
             Self::Str | Self::String | Self::QString => "QString",
+            Self::QVariant | Self::Variant => "QVariant",
             Self::U8 => "quint8",
             Self::U16 => "quint16",
             Self::U32 => "quint32",

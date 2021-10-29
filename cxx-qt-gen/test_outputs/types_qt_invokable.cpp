@@ -25,6 +25,12 @@ MyObject::testString(const QString& string)
   return rustStringToQString(m_rustObj->testString(*this, string));
 }
 
+QVariant
+MyObject::testVariant(const QVariant& variant)
+{
+  return ::CxxQt::rustVariantToQVariant(m_rustObj->testVariant(*this, variant));
+}
+
 std::unique_ptr<MyObject>
 newCppObject()
 {

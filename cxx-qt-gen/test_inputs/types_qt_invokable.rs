@@ -15,5 +15,10 @@ mod my_object {
         fn test_string(&self, _cpp: Pin<&mut CppObj>, string: &QString) -> String {
             string.to_rust()
         }
+
+        #[invokable]
+        fn test_variant(&self, _cpp: Pin<&mut CppObj>, variant: &QVariant) -> Variant {
+            variant
+        }
     }
 }

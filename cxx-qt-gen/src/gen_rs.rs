@@ -41,6 +41,7 @@ impl RustType for QtTypes {
         match self {
             Self::Pin { .. } => unreachable!(),
             Self::QPointF => true,
+            Self::Variant => true,
             Self::Str | Self::String => true,
             _others => false,
         }
@@ -68,6 +69,7 @@ impl RustType for QtTypes {
             Self::Ptr { .. } => unreachable!(),
             Self::QPointF => format_ident!("QPointF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
+            Self::QVariant | Self::Variant => format_ident!("QVariant"),
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
             Self::U32 => format_ident!("u32"),
@@ -91,6 +93,7 @@ impl RustType for QtTypes {
             }
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
+            Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
             Self::U32 => quote! {u32},
@@ -427,6 +430,11 @@ pub fn generate_qobject_cxx(
                 type QPointF = cxx_qt_lib::QPointF;
                 #[namespace = ""]
                 type QString = cxx_qt_lib::QString;
+                #[namespace = ""]
+                type QVariant = cxx_qt_lib::QVariant;
+
+                #[namespace = "CxxQt"]
+                type Variant = cxx_qt_lib::Variant;
 
                 #(#cpp_functions)*
 
