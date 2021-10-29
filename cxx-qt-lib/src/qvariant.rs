@@ -10,8 +10,10 @@
 use crate::actually_private::Private;
 use cxx::{type_id, ExternType};
 use std::{
+    ffi::c_void,
     marker::{PhantomData, PhantomPinned},
-    mem::MaybeUninit,
+    mem::{self, ManuallyDrop, MaybeUninit},
+    ops::{Deref, DerefMut},
     pin::Pin,
 };
 
@@ -39,6 +41,8 @@ extern "C" {
     fn qvariant_to_int(this: &QVariant) -> i32;
     #[link_name = "cxxqt1$qvariant$to$bool"]
     fn qvariant_to_bool(this: &QVariant) -> bool;
+    #[link_name = "cxxqt1$qvariant$assign$qvariant"]
+    fn qvariant_assign_qvariant(from: &QVariant, to: &mut QVariant);
     #[link_name = "cxxqt1$qvariant$drop"]
     fn qvariant_drop(this: &mut MaybeUninit<QVariant>);
 }
@@ -121,10 +125,10 @@ impl QVariant {
             QVariantType::String => {
                 let mut s = String::new();
                 unsafe { qvariant_copy_to_string(self, &mut s) };
-                Some(Variant::String(s))
+                Some(Variant::from_string(s))
             }
-            QVariantType::Int => Some(Variant::Int(unsafe { qvariant_to_int(self) })),
-            QVariantType::Bool => Some(Variant::Bool(unsafe { qvariant_to_bool(self) })),
+            QVariantType::Int => Some(Variant::from_int(unsafe { qvariant_to_int(self) })),
+            QVariantType::Bool => Some(Variant::from_bool(unsafe { qvariant_to_bool(self) })),
         }
     }
 }
@@ -163,10 +167,10 @@ impl StackQVariant {
     pub unsafe fn init(&mut self, value: &Variant) -> Pin<&mut QVariant> {
         let this = &mut *self.space.as_mut_ptr().cast::<MaybeUninit<QVariant>>();
 
-        match value {
-            Variant::String(s) => qvariant_init_from_str(this, s),
-            Variant::Int(i) => qvariant_init_from_int(this, *i),
-            Variant::Bool(b) => qvariant_init_from_bool(this, *b),
+        match value.deref() {
+            VariantImpl::String(s) => qvariant_init_from_str(this, s),
+            VariantImpl::Int(i) => qvariant_init_from_int(this, *i),
+            VariantImpl::Bool(b) => qvariant_init_from_bool(this, *b),
         }
 
         Pin::new_unchecked(&mut *this.as_mut_ptr())
@@ -203,10 +207,76 @@ unsafe impl ExternType for QVariant {
     type Kind = cxx::kind::Opaque;
 }
 
-pub enum Variant {
+pub enum VariantImpl {
     String(String),
     Int(i32),
     Bool(bool),
+}
+
+#[repr(C)]
+pub struct Variant {
+    pub d: Box<VariantImpl>,
+}
+
+impl Variant {
+    pub fn from_string(s: String) -> Self {
+        Self {
+            d: Box::new(VariantImpl::String(s)),
+        }
+    }
+
+    pub fn from_int(i: i32) -> Self {
+        Self {
+            d: Box::new(VariantImpl::Int(i)),
+        }
+    }
+
+    pub fn from_bool(b: bool) -> Self {
+        Self {
+            d: Box::new(VariantImpl::Bool(b)),
+        }
+    }
+}
+
+impl Deref for Variant {
+    type Target = VariantImpl;
+
+    fn deref(&self) -> &Self::Target {
+        &self.d
+    }
+}
+
+impl DerefMut for Variant {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.d
+    }
+}
+
+const_assert_eq!(mem::size_of::<Variant>(), mem::size_of::<*mut c_void>());
+const_assert_eq!(mem::align_of::<Variant>(), mem::align_of::<*mut c_void>());
+
+// Safety
+//
+// By implementing Variant through the "pimpl" idiom we ensure
+// that is equivalent to void* in C++ and thus 100% trivial.
+// We also have static asserts to ensure that this remains true.
+unsafe impl ExternType for Variant {
+    type Id = type_id!("CxxQt::Variant");
+    type Kind = cxx::kind::Trivial;
+}
+
+#[export_name = "cxxqt1$assign$variant$to$qvariant"]
+pub unsafe extern "C" fn assign_variant_to_qvariant(rust: &Variant, cpp: &mut QVariant) {
+    // TODO: this could probably be optimised by having dedicated functions to assign to cpp directly
+    // rather than to first create a new QVariant. The best would be to change the init... functions
+    // to assign... and then have a single init function to create an empty QVariant.
+    let_qvariant!(q = rust);
+    qvariant_assign_qvariant(&q, cpp);
+}
+
+#[export_name = "cxxqt1$drop$variant"]
+pub unsafe extern "C" fn drop_variant(this: &mut ManuallyDrop<Variant>) {
+    ManuallyDrop::drop(this);
 }
 
 impl From<&QVariant> for Option<Variant> {

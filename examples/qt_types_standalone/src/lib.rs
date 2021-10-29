@@ -7,7 +7,7 @@
 use core::pin::Pin;
 use cxx_qt_lib::{
     let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPointF, QSizeF, QString,
-    QVariant, Variant,
+    QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -26,6 +26,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-gen/statics/rust/cxx_qt.h");
         include!("bridge.h");
 
         type QColor = cxx_qt_lib::QColor;
@@ -33,6 +34,9 @@ mod ffi {
         type QVariant = cxx_qt_lib::QVariant;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPointF = cxx_qt_lib::QPointF;
+
+        #[namespace = "CxxQt"]
+        type Variant = cxx_qt_lib::Variant;
 
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
@@ -52,6 +56,7 @@ mod ffi {
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
 
+        fn make_variant(test: VariantTest) -> Variant;
         fn can_construct_qvariant(test: VariantTest) -> bool;
         fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
 
@@ -196,41 +201,35 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
     }
 }
 
-fn can_construct_qvariant(test: VariantTest) -> bool {
-    let variant = match test {
-        VariantTest::String => Variant::String("Rust string".to_owned()),
-        VariantTest::Int => Variant::Int(123),
-        VariantTest::Bool => Variant::Bool(true),
+fn make_variant(test: VariantTest) -> Variant {
+    match test {
+        VariantTest::String => Variant::from_string("Rust string".to_owned()),
+        VariantTest::Int => Variant::from_int(123),
+        VariantTest::Bool => Variant::from_bool(true),
         _others => panic!("Unsupported test: {}", test.repr),
-    };
+    }
+}
 
+fn can_construct_qvariant(test: VariantTest) -> bool {
+    let variant = make_variant(test);
     let_qvariant!(v = &variant);
     ffi::test_constructed_qvariant(&v, test)
 }
 
 fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
     match test {
-        VariantTest::String => {
-            let rs_v = v.to_rust();
-            match rs_v {
-                Some(Variant::String(s)) => s == "C++ string",
-                _others => false,
-            }
-        }
-        VariantTest::Int => {
-            let rs_v = v.to_rust();
-            match rs_v {
-                Some(Variant::Int(i)) => i == 8910,
-                _others => false,
-            }
-        }
-        VariantTest::Bool => {
-            let rs_v = v.to_rust();
-            match rs_v {
-                Some(Variant::Bool(b)) => !b,
-                _others => false,
-            }
-        }
+        VariantTest::String => match v.to_rust().as_deref() {
+            Some(VariantImpl::String(s)) => s == "C++ string",
+            _others => false,
+        },
+        VariantTest::Int => match v.to_rust().as_deref() {
+            Some(VariantImpl::Int(i)) => *i == 8910,
+            _others => false,
+        },
+        VariantTest::Bool => match v.to_rust().as_deref() {
+            Some(VariantImpl::Bool(b)) => !*b,
+            _others => false,
+        },
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }

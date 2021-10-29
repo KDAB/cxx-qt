@@ -4,6 +4,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[macro_use]
+extern crate static_assertions;
+
 pub mod update_requester;
 pub use update_requester::UpdateRequestHandler;
 
@@ -20,7 +23,7 @@ mod qpointf;
 pub use qpointf::QPointF;
 
 mod qvariant;
-pub use qvariant::{QVariant, Variant};
+pub use qvariant::{QVariant, Variant, VariantImpl};
 
 mod map_qt_value;
 pub use map_qt_value::*;

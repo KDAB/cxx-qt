@@ -18,6 +18,28 @@
 
 #include "rust/cxx.h"
 
+namespace CxxQt {
+
+// NB: this is an "owning" pointer so if you get one of these you
+// are responsible for calling cxxqt1$drop$variant drop on it once
+// you are done with it.
+//
+// TODO: find a way to convince cxx to allow us to make Variant a
+// class with an explicit destructor yet still allows use to return
+// it from a Rust function similar to what it allows with its own
+// rust::String type.
+typedef void* Variant;
+
+}
+
+extern "C" void
+cxxqt1$assign$variant$to$qvariant(const CxxQt::Variant& rust, QVariant& cpp);
+
+extern "C" void
+cxxqt1$drop$variant(CxxQt::Variant* self);
+
+// TODO: we probably want to namespace these conversion functions too
+
 inline QString
 rustStringToQString(const rust::string& value)
 {
@@ -28,6 +50,19 @@ inline QString
 rustStrToQString(const rust::str& value)
 {
   return QString::fromUtf8(value.data(), value.length());
+}
+
+namespace CxxQt {
+
+inline QVariant
+rustVariantToQVariant(CxxQt::Variant&& rust)
+{
+  QVariant cpp;
+  cxxqt1$assign$variant$to$qvariant(rust, cpp);
+  cxxqt1$drop$variant(&rust);
+  return cpp;
+}
+
 }
 
 class CxxQObject : public QObject

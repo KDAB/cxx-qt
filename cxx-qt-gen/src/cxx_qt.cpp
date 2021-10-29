@@ -305,6 +305,12 @@ extern "C"
     return self.toBool();
   }
 
+  void cxxqt1$qvariant$assign$qvariant(const QVariant& from,
+                                       QVariant& to) noexcept
+  {
+    to = from;
+  }
+
   void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
 }
 

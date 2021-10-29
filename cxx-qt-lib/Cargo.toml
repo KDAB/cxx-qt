@@ -12,3 +12,4 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 cxx = "1.0"
+static_assertions = "1.1.0"

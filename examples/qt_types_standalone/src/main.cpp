@@ -112,6 +112,18 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
   }
 }
 
+TEST_CASE("Can convert Rust Variant to QVariant")
+{
+  const auto runTest = [](auto test) {
+    return test_constructed_qvariant(
+      CxxQt::rustVariantToQVariant(make_variant(test)), test);
+  };
+
+  CHECK(runTest(VariantTest::String));
+  CHECK(runTest(VariantTest::Int));
+  CHECK(runTest(VariantTest::Bool));
+}
+
 TEST_CASE("Can read a QColor on the Rust side")
 {
   CHECK(can_read_qcolor(QColor(255, 0, 0, 255), ColorTest::Rgb_Red));
