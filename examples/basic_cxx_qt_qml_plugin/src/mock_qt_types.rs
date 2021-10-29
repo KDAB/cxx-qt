@@ -8,16 +8,18 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod mock_qt_types {
-    use cxx_qt_lib::QPointF;
+    use cxx_qt_lib::{let_qvariant, QPointF, QVariant, Variant, VariantImpl};
 
     pub struct Data {
         pointf: QPointF,
+        variant: Variant,
     }
 
     impl Default for Data {
         fn default() -> Self {
             Data {
                 pointf: QPointF::new(1.0, 2.0),
+                variant: Variant::from_int(1),
             }
         }
     }
@@ -41,6 +43,33 @@ mod mock_qt_types {
             point.set_x(point.x() * 2.0);
             point.set_y(point.x() * 2.0);
             point
+        }
+
+        #[invokable]
+        fn test_variant_property(&self, cpp: Pin<&mut CppObj>) {
+            let mut wrapper = CppObjWrapper::new(cpp);
+            match *wrapper.variant().to_rust() {
+                VariantImpl::Bool(b) => {
+                    let new_variant = Variant::from_bool(!b);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    wrapper.set_variant(&new_qvariant);
+                }
+                VariantImpl::Int(i) => {
+                    let new_variant = Variant::from_int(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    wrapper.set_variant(&new_qvariant);
+                }
+                _ => panic!("Incorrect variant type!"),
+            }
+        }
+
+        #[invokable]
+        fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
+            match *variant.to_rust() {
+                VariantImpl::Bool(b) => Variant::from_bool(!b),
+                VariantImpl::Int(i) => Variant::from_int(i * 2),
+                _ => panic!("Incorrect variant type!"),
+            }
         }
     }
 }
