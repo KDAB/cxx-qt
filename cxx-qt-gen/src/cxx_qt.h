@@ -73,8 +73,7 @@ public:
   // TODO: we need to document the existence of UpdateStateEvent for users who
   // want to create custom classes that derive from CxxQObject so that they
   // know to avoid clashes with it.
-  static constexpr QEvent::Type UpdateStateEvent =
-    static_cast<QEvent::Type>(QEvent::User + 1);
+  static const QEvent::Type UpdateStateEvent;
 
 public:
   CxxQObject(QObject* parent = nullptr)

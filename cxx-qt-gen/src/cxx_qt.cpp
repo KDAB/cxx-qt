@@ -316,4 +316,10 @@ extern "C"
   void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
 }
 
+const QEvent::Type CxxQObject::UpdateStateEvent = []() {
+  auto eventId = QEvent::registerEventType(QEvent::User + 1);
+  Q_ASSERT(eventId > -1);
+  return static_cast<QEvent::Type>(eventId);
+}();
+
 #endif // NO_QT
