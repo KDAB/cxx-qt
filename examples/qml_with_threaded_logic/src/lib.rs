@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
+// ANCHOR: book_macro_code
 #[make_qobject]
 mod website {
     use futures::{
@@ -109,6 +110,7 @@ mod website {
         }
     }
 
+    // ANCHOR: book_update_request_handler
     impl UpdateRequestHandler<CppObj<'_>> for RustObj {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             while let Some(event) = self.event_queue.next().now_or_never() {
@@ -118,6 +120,7 @@ mod website {
             }
         }
     }
+    // ANCHOR_END: book_update_request_handler
 
     impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
         fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
@@ -129,3 +132,4 @@ mod website {
         }
     }
 }
+// ANCHOR_END: book_macro_code

@@ -50,10 +50,16 @@ cmake --build . -j$(nproc)
 ./build/examples/qml_minimal/example_qml_minimal
 ```
 
+## Book
+
+You can build the book using `mdbook serve` from the `book` folder, you should install `mdbook` and `mdbook-linkcheck` from cargo.
+
 ## Testing
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
-It also assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
+For testing the book, it assumes that `mdbook` and `mdbook-linkcheck` from cargo have been installed.
+
+For license and memory testing, it assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
 
 ```bash
 cd build/
