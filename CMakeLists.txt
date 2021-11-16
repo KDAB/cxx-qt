@@ -54,6 +54,7 @@ function(add_valgrind_test NAME_WITH_PREFIX BINARY WORKING_DIRECTORY)
     )
 endfunction()
 
+add_subdirectory(book)
 add_subdirectory(examples)
 
 # Create helper method which adds relevent cargo tests for a given manifest
