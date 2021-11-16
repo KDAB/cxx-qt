@@ -63,4 +63,14 @@ TestCase {
         const newData = myData.asJsonStr();
         compare(newData, `{"number":2,"string":"Test!"}`);
     }
+
+    function test_grab_valuess() {
+        const myData = createTemporaryObject(componentMyData, null, {});
+        compare(myData.number, 4);
+        compare(myData.string, "Hello World!");
+
+        myData.grabValues();
+        compare(myData.number, 2);
+        compare(myData.string, "Goodbye!");
+    }
 }

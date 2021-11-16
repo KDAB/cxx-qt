@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
+// ANCHOR: book_macro_code
 #[make_qobject]
 mod my_data {
     use serde::{Deserialize, Serialize};
@@ -31,5 +32,13 @@ mod my_data {
             let data = Data::from(cpp);
             serde_json::to_string(&data).unwrap()
         }
+
+        #[invokable]
+        fn grab_values(&self, cpp: &mut CppObj) {
+            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
+            let data: Data = serde_json::from_str(string).unwrap();
+            cpp.grab_values_from_data(&data);
+        }
     }
 }
+// ANCHOR_END: book_macro_code
