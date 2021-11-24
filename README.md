@@ -2,6 +2,7 @@
 SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
@@ -27,18 +28,20 @@ In future we might improve upon this with a custom CMake module for instance.
 Ensure that you have the following installed
 
   * C++ compiler
-  * clang-format
-  * CMake
-  * Qt
-  * Rust
+  * [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+  * [CMake v3.16+](https://cmake.org/)
+  * [Qt 5](https://www.qt.io/)
+  * [Rust](https://www.rust-lang.org/)
 
 ## Compiling
+In a cxx-qt project, the build system is based on CMake, which uses Cargo under the hood.
+Therefore, unlike a typical Rust project, CMake must be used to build cxx-qt.
 
 ```bash
 mkdir build/
 cd build/
 cmake ../
-make -j$(nproc)
+cmake --build . -j$(nproc)
 ```
 
 ## Run the basic QML example
@@ -51,7 +54,7 @@ make -j$(nproc)
 
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
-It also assumes that you have `reuse` installed (eg via `pip3 --install reuse`) and `valgrind`.
+It also assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
 
 ```bash
 cd build/
