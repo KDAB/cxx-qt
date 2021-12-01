@@ -530,7 +530,8 @@ fn generate_properties_cpp(
 
                         {member_ident} = value;
 
-                        Q_EMIT {ident_changed}();
+                        requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+
                         {call_property_change_handler}
                     }}
                 }}
@@ -594,7 +595,8 @@ fn generate_properties_cpp(
                   {member_owned_ident} = std::move(value);
                   {member_ident} = {member_owned_ident}.get();
 
-                  Q_EMIT {ident_changed}();
+                  requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+
                   {call_change_handler}
                 }}
                 "#,
@@ -627,7 +629,8 @@ fn generate_properties_cpp(
                     if (value != {member_ident}) {{
                         {member_ident} = value;
 
-                        Q_EMIT {ident_changed}();
+                        requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+
                         {call_change_handler}
                     }}
                 }}

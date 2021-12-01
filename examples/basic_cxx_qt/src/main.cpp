@@ -55,6 +55,8 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(obj.getNumber() == 0);
   CHECK(numberSpy.count() == 0);
   obj.setNumber(16);
+  CHECK(numberSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(numberSpy.count() == 1);
   CHECK(obj.getNumber() == 16);
 
@@ -62,6 +64,8 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(obj.getString() == QString());
   CHECK(stringSpy.count() == 0);
   obj.setString(QStringLiteral("Hello"));
+  CHECK(stringSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(stringSpy.count() == 1);
   CHECK(obj.getString() == QStringLiteral("Hello"));
 
@@ -70,21 +74,29 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(numberSpy.count() == 1);
   obj.doubleNumberSelf();
   CHECK(obj.getNumber() == 32);
+  CHECK(numberSpy.count() == 1);
+  QCoreApplication::processEvents();
   CHECK(numberSpy.count() == 2);
 
   // Check the sub property
   CHECK(obj.getSub() == nullptr);
   CHECK(subSpy.count() == 0);
   obj.setSub(&sub);
+  CHECK(subSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(subSpy.count() == 1);
   CHECK(obj.getSub() == &sub);
 
   // Check the sub increment number self
   sub.setNumber(1);
   CHECK(sub.getNumber() == 1);
+  CHECK(subNumberSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(subNumberSpy.count() == 1);
   sub.incrementNumberSelf();
   CHECK(sub.getNumber() == 2);
+  CHECK(subNumberSpy.count() == 1);
+  QCoreApplication::processEvents();
   CHECK(subNumberSpy.count() == 2);
 
   // Check the double number sub
@@ -92,6 +104,8 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   CHECK(subNumberSpy.count() == 2);
   obj.doubleNumberSub(&sub);
   CHECK(sub.getNumber() == 4);
+  CHECK(subNumberSpy.count() == 2);
+  QCoreApplication::processEvents();
   CHECK(subNumberSpy.count() == 3);
 
   qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
@@ -113,12 +127,16 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
   // Check the number changed property
   CHECK(numberSpy.count() == 0);
   data.setNumber(16);
+  CHECK(numberSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(numberSpy.count() == 1);
   CHECK(data.getNumber() == 16);
 
   // Check the string property
   CHECK(stringSpy.count() == 0);
   data.setString(QStringLiteral("Hello"));
+  CHECK(stringSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(stringSpy.count() == 1);
   CHECK(data.getString() == QStringLiteral("Hello"));
 
@@ -187,54 +205,72 @@ TEST_CASE("CXX-Qt types are exposed to C++ correctly")
   CHECK(types.getBoolean() == false);
   CHECK(booleanSpy.count() == 0);
   types.setBoolean(true);
+  CHECK(booleanSpy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(booleanSpy.count() == 1);
   CHECK(types.getBoolean() == true);
 
   CHECK(types.getFloat32() == 0.0);
   CHECK(float32Spy.count() == 0);
   types.setFloat32(0.33f);
+  CHECK(float32Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(float32Spy.count() == 1);
   CHECK(types.getFloat32() == 0.33f);
 
   CHECK(types.getFloat64() == 0.0);
   CHECK(float64Spy.count() == 0);
   types.setFloat64(0.33);
+  CHECK(float64Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(float64Spy.count() == 1);
   CHECK(types.getFloat64() == 0.33);
 
   CHECK(types.getInt8() == 0);
   CHECK(int8Spy.count() == 0);
   types.setInt8(4);
+  CHECK(int8Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(int8Spy.count() == 1);
   CHECK(types.getInt8() == 4);
 
   CHECK(types.getInt16() == 0);
   CHECK(int16Spy.count() == 0);
   types.setInt16(4);
+  CHECK(int16Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(int16Spy.count() == 1);
   CHECK(types.getInt16() == 4);
 
   CHECK(types.getInt32() == 0);
   CHECK(int32Spy.count() == 0);
   types.setInt32(4);
+  CHECK(int32Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(int32Spy.count() == 1);
   CHECK(types.getInt32() == 4);
 
   CHECK(types.getUint8() == 0);
   CHECK(uint8Spy.count() == 0);
   types.setUint8(4);
+  CHECK(uint8Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(uint8Spy.count() == 1);
   CHECK(types.getUint8() == 4);
 
   CHECK(types.getUint16() == 0);
   CHECK(uint16Spy.count() == 0);
   types.setUint16(4);
+  CHECK(uint16Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(uint16Spy.count() == 1);
   CHECK(types.getUint16() == 4);
 
   CHECK(types.getUint32() == 0);
   CHECK(uint32Spy.count() == 0);
   types.setUint32(4);
+  CHECK(uint32Spy.count() == 0);
+  QCoreApplication::processEvents();
   CHECK(uint32Spy.count() == 1);
   CHECK(types.getUint32() == 4);
 }

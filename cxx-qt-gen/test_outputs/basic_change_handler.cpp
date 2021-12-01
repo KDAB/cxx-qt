@@ -30,7 +30,8 @@ MyObject::setNumber(qint32 value)
   if (value != m_number) {
     m_number = value;
 
-    Q_EMIT numberChanged();
+    requestEmitSignal([&]() { Q_EMIT numberChanged(); });
+
     requestPropertyChange(static_cast<int>(Property::Number));
   }
 }
@@ -52,7 +53,8 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    Q_EMIT stringChanged();
+    requestEmitSignal([&]() { Q_EMIT stringChanged(); });
+
     requestPropertyChange(static_cast<int>(Property::String));
   }
 }

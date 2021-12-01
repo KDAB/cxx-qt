@@ -30,7 +30,7 @@ MyObject::setBoolean(bool value)
   if (value != m_boolean) {
     m_boolean = value;
 
-    Q_EMIT booleanChanged();
+    requestEmitSignal([&]() { Q_EMIT booleanChanged(); });
   }
 }
 
@@ -51,7 +51,7 @@ MyObject::setFloat32(float value)
   if (value != m_float32) {
     m_float32 = value;
 
-    Q_EMIT float32Changed();
+    requestEmitSignal([&]() { Q_EMIT float32Changed(); });
   }
 }
 
@@ -72,7 +72,7 @@ MyObject::setFloat64(double value)
   if (value != m_float64) {
     m_float64 = value;
 
-    Q_EMIT float64Changed();
+    requestEmitSignal([&]() { Q_EMIT float64Changed(); });
   }
 }
 
@@ -93,7 +93,7 @@ MyObject::setInt8(qint8 value)
   if (value != m_int8) {
     m_int8 = value;
 
-    Q_EMIT int8Changed();
+    requestEmitSignal([&]() { Q_EMIT int8Changed(); });
   }
 }
 
@@ -114,7 +114,7 @@ MyObject::setInt16(qint16 value)
   if (value != m_int16) {
     m_int16 = value;
 
-    Q_EMIT int16Changed();
+    requestEmitSignal([&]() { Q_EMIT int16Changed(); });
   }
 }
 
@@ -135,7 +135,7 @@ MyObject::setInt32(qint32 value)
   if (value != m_int32) {
     m_int32 = value;
 
-    Q_EMIT int32Changed();
+    requestEmitSignal([&]() { Q_EMIT int32Changed(); });
   }
 }
 
@@ -156,7 +156,7 @@ MyObject::setUint8(quint8 value)
   if (value != m_uint8) {
     m_uint8 = value;
 
-    Q_EMIT uint8Changed();
+    requestEmitSignal([&]() { Q_EMIT uint8Changed(); });
   }
 }
 
@@ -177,7 +177,7 @@ MyObject::setUint16(quint16 value)
   if (value != m_uint16) {
     m_uint16 = value;
 
-    Q_EMIT uint16Changed();
+    requestEmitSignal([&]() { Q_EMIT uint16Changed(); });
   }
 }
 
@@ -198,7 +198,7 @@ MyObject::setUint32(quint32 value)
   if (value != m_uint32) {
     m_uint32 = value;
 
-    Q_EMIT uint32Changed();
+    requestEmitSignal([&]() { Q_EMIT uint32Changed(); });
   }
 }
 
