@@ -134,7 +134,9 @@ class UpdateEventCatcher : public QObject
 public:
   bool eventFilter(QObject* object, QEvent* event) override
   {
-    if (event->type() == CxxQObject::UpdateStateEvent) {
+    // We assume that the ProcessQueueEvent came from our requestUpdate as
+    // there are no other events being triggered in the test.
+    if (event->type() == CxxQObject::ProcessQueueEvent) {
       Q_EMIT receivedUpdateRequest();
       return true;
     }

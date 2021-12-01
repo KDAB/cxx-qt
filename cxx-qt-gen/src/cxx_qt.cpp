@@ -324,9 +324,7 @@ createEventType(int hint)
   return static_cast<QEvent::Type>(eventId);
 }
 
-const QEvent::Type CxxQObject::UpdateStateEvent =
+const QEvent::Type CxxQObject::ProcessQueueEvent =
   createEventType(QEvent::User + 1);
-const QEvent::Type CxxQObject::UpdatePropertyEvent =
-  createEventType(QEvent::User + 2);
 
 #endif // NO_QT
