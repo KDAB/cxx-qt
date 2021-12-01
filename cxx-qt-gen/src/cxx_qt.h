@@ -7,6 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -67,6 +68,22 @@ rustVariantToQVariant(CxxQt::Variant&& rust)
 
 }
 
+// TODO: later there will be more items here eg signal pointer
+union QueueItemData
+{
+  int propertyId;
+};
+
+struct QueueItem
+{
+  enum
+  {
+    UpdatePropertyChange,
+    UpdateState
+  } type;
+  QueueItemData data;
+};
+
 class CxxQObject : public QObject
 {
   Q_OBJECT
@@ -75,8 +92,7 @@ public:
   // TODO: we need to document the existence of UpdateStateEvent for users who
   // want to create custom classes that derive from CxxQObject so that they
   // know to avoid clashes with it.
-  static const QEvent::Type UpdateStateEvent;
-  static const QEvent::Type UpdatePropertyEvent;
+  static const QEvent::Type ProcessQueueEvent;
 
 public:
   CxxQObject(QObject* parent = nullptr)
@@ -86,22 +102,49 @@ public:
 
   void requestPropertyChange(int propertyId)
   {
-    const std::lock_guard<std::mutex> guard(m_propertyChangeQueueMutex);
-    m_propertyChangeQueue.push_back(propertyId);
-    QCoreApplication::postEvent(this, new QEvent(UpdatePropertyEvent));
+    // Lock the queue, post the event, add to the queue
+    // worst case we'll push an event that does nothing if takeQueue() is
+    // waiting on the lock
+    const std::lock_guard<std::mutex> guard(m_queueMutex);
+
+    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
+      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
+    }
+
+    m_queue.push_back({ QueueItem::UpdatePropertyChange, { propertyId } });
   }
 
   void requestUpdate()
   {
-    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed))
-      QCoreApplication::postEvent(this, new QEvent(UpdateStateEvent));
+    // Lock the queue, post the event, add to the queue
+    // worst case we'll push an event that does nothing if takeQueue() is
+    // waiting on the lock
+    const std::lock_guard<std::mutex> guard(m_queueMutex);
+
+    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
+      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
+    }
+
+    // Compress request updates to only one
+    //
+    // TODO: should we compress events? what happens if we change a
+    // property/emit signal, request update, change property/emit signal,
+    // request update? The second request update won't happen?
+    // Or should the request update always happen after the property/signal
+    // changes?
+    if (std::none_of(
+          m_queue.cbegin(), m_queue.cend(), [](const QueueItem& item) {
+            return item.type == QueueItem::UpdateState;
+          })) {
+      m_queue.push_back({ QueueItem::UpdateState, {} });
+    }
   }
 
-  std::vector<int> takePropertyChangeQueue()
+  std::vector<QueueItem> takeQueue()
   {
-    const std::lock_guard<std::mutex> guard(m_propertyChangeQueueMutex);
-    std::vector<int> queue;
-    std::swap(m_propertyChangeQueue, queue);
+    const std::lock_guard<std::mutex> guard(m_queueMutex);
+    std::vector<QueueItem> queue;
+    std::swap(m_queue, queue);
     return queue;
   }
 
@@ -111,21 +154,26 @@ public:
     // can the locking for m_rustObj happen here so we only have one lock?
     // also would this change the virtual methods we have now?
 
-    if (event->type() == UpdatePropertyEvent) {
-      for (auto propertyId : takePropertyChangeQueue()) {
-        updatePropertyChange(propertyId);
-      }
-      return true;
-    } else if (event->type() == UpdateStateEvent) {
-      // New Rust-side events might come in while we are processing a request
-      // and request a new update while we are processing the queue.
+    if (event->type() == ProcessQueueEvent) {
+      // New Rust-side events might come in while we are processing the queue.
       //
-      // If we flip this flag before updateState then worst case we get an
+      // If we flip this flag before takeQueue then worst case we get an
       // extra event with nothing to actually process whereas if we do it
-      // afterwards then we might miss an update request.
+      // afterwards then we might miss a queue item to process.
       m_waitingForUpdate.store(false, std::memory_order_relaxed);
 
-      updateState();
+      for (auto item : takeQueue()) {
+        switch (item.type) {
+          case QueueItem::UpdatePropertyChange: {
+            updatePropertyChange(item.data.propertyId);
+            break;
+          }
+          case QueueItem::UpdateState: {
+            updateState();
+            break;
+          }
+        }
+      }
       return true;
     }
 
@@ -156,6 +204,6 @@ protected:
 
 private:
   std::atomic_bool m_waitingForUpdate{ false };
-  std::vector<int> m_propertyChangeQueue;
-  std::mutex m_propertyChangeQueueMutex;
+  std::vector<QueueItem> m_queue;
+  std::mutex m_queueMutex;
 };
