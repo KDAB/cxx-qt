@@ -40,7 +40,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.pointf = Qt.point(10, 20);
-        compare(spy.count, 1);
+        tryCompare(spy, "count", 1);
         compare(mock.pointf, Qt.point(10, 20));
     }
 
@@ -64,7 +64,7 @@ TestCase {
         compare(mock.pointf, Qt.point(1, 2));
         mock.testPointfProperty();
         compare(mock.pointf, Qt.point(2, 4));
-        compare(spy.count, 1);
+        tryCompare(spy, "count", 1);
     }
 
     // QVariant
@@ -80,7 +80,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.variant = "string";
-        compare(spy.count, 1);
+        tryCompare(spy, "count", 1);
         compare(mock.variant, "string");
     }
 
@@ -107,15 +107,18 @@ TestCase {
         compare(mock.variant, 1);
         mock.testVariantProperty();
         compare(mock.variant, 2);
-        compare(spy.count, 1);
+        tryCompare(spy, "count", 1);
 
         mock.variant = true;
+        // wait for signal to occur
+        tryCompare(spy, "count", 2);
+
         spy.clear();
 
         compare(spy.count, 0);
         compare(mock.variant, true);
         mock.testVariantProperty();
         compare(mock.variant, false);
-        compare(spy.count, 1);
+        tryCompare(spy, "count", 1);
     }
 }

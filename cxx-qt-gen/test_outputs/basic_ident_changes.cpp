@@ -30,7 +30,7 @@ MyObject::setMyNumber(qint32 value)
   if (value != m_myNumber) {
     m_myNumber = value;
 
-    Q_EMIT myNumberChanged();
+    requestEmitSignal([&]() { Q_EMIT myNumberChanged(); });
   }
 }
 
