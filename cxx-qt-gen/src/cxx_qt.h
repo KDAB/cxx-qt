@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <mutex>
+#include <variant>
 #include <vector>
 
 #include <QCoreApplication>
@@ -68,20 +70,15 @@ rustVariantToQVariant(CxxQt::Variant&& rust)
 
 }
 
-// TODO: later there will be more items here eg signal pointer
-union QueueItemData
-{
-  int propertyId;
-};
-
 struct QueueItem
 {
   enum
   {
+    EmitSignal,
     UpdatePropertyChange,
     UpdateState
   } type;
-  QueueItemData data;
+  std::variant<int, std::function<void()>> data;
 };
 
 class CxxQObject : public QObject
@@ -99,6 +96,20 @@ public:
     : QObject(parent)
   {}
   virtual ~CxxQObject() = default;
+
+  void requestEmitSignal(std::function<void()> signalFunctor)
+  {
+    // Lock the queue, post the event, add to the queue
+    // worst case we'll push an event that does nothing if takeQueue() is
+    // waiting on the lock
+    const std::lock_guard<std::mutex> guard(m_queueMutex);
+
+    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
+      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
+    }
+
+    m_queue.push_back({ QueueItem::EmitSignal, { signalFunctor } });
+  }
 
   void requestPropertyChange(int propertyId)
   {
@@ -164,8 +175,12 @@ public:
 
       for (auto item : takeQueue()) {
         switch (item.type) {
+          case QueueItem::EmitSignal: {
+            std::get<std::function<void()>>(item.data)();
+            break;
+          }
           case QueueItem::UpdatePropertyChange: {
-            updatePropertyChange(item.data.propertyId);
+            updatePropertyChange(std::get<int>(item.data));
             break;
           }
           case QueueItem::UpdateState: {
