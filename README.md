@@ -23,7 +23,7 @@ the source for a crate which provides helper functions to be used in a `build.rs
 Initially the projects in the examples folder will also serve as a template for new projects should use cxx-qt.
 In future we might improve upon this with a custom CMake module for instance.
 
-# Building
+## Building
 
 Ensure that you have the following installed
 
@@ -51,7 +51,6 @@ cmake --build . -j$(nproc)
 ```
 
 ## Testing
-
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
 It also assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
@@ -60,3 +59,30 @@ It also assumes that you have [`reuse`](https://reuse.software/) installed (eg v
 cd build/
 ctest -j$(nproc)
 ```
+
+## Licensing
+cxx-qt is Copyright (C) 2021, Klarälvdalens Datakonsult AB, and is available under
+the terms of the [MIT](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/MIT.txt)
+or the [Apache-2.0](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/Apache-2.0.txt)
+licenses.
+
+Contact KDAB at <info@kdab.com> to inquire about additional features or
+services related to this project.
+
+cxx-qt includes these source files, also available under the terms of the MIT license:
+
+* [doctest.h](https://github.com/onqtam/doctest) - the lightest feature-rich C++ single-header testing framework for unit tests and TDD (C) 2016-2021 Viktor Kirilov <vik.kirilov@gmail.com>
+
+# About KDAB
+cxx-qt is supported and maintained by Klarälvdalens Datakonsult AB (KDAB).
+
+The KDAB Group is the global No.1 software consultancy for Qt, C++ and
+OpenGL applications across desktop, embedded and mobile platforms.
+
+The KDAB Group provides consulting and mentoring for developing Qt applications
+from scratch and in porting from all popular and legacy frameworks to Qt.
+We continue to help develop parts of Qt and are one of the major contributors
+to the Qt Project. We can give advanced or standard trainings anywhere
+around the globe on Qt as well as C++, OpenGL, 3D and more.
+
+Please visit https://www.kdab.com to meet the people who write code like this.
