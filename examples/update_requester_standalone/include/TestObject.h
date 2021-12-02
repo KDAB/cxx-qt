@@ -20,7 +20,11 @@ public:
   ~TestObject() = default;
 
 private:
-  void updateState() override { Q_EMIT updateStateRequested(); }
+  Q_INVOKABLE void requestUpdate()
+  {
+    CxxQObject::requestUpdate([&]() { updateState(); });
+  }
+  void updateState() { Q_EMIT updateStateRequested(); }
 
 Q_SIGNALS:
   void updateStateRequested();

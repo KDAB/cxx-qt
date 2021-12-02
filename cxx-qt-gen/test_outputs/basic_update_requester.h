@@ -24,7 +24,8 @@ private:
   std::mutex m_rustObjMutex;
   bool m_initialised = false;
 
-  void updateState() override;
+  Q_INVOKABLE void requestUpdate();
+  void updateState();
 };
 
 std::unique_ptr<MyObject>

@@ -36,8 +36,6 @@ private:
 
   qint32 m_number;
   QString m_string;
-
-  void updatePropertyChange(int propertyId) override;
 };
 
 std::unique_ptr<MyObject>

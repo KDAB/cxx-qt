@@ -9,6 +9,7 @@
 
 #include "rust/cxx_qt.h"
 
+#include <QMetaObject>
 #include <QPointF>
 #include <QPointer>
 #include <QSizeF>
@@ -55,8 +56,16 @@ extern "C"
     if (self->isNull())
       return false;
 
-    self->data()->requestUpdate();
-    return true;
+    const auto ret = QMetaObject::invokeMethod(
+      self->data(), "requestUpdate", Qt::DirectConnection);
+
+    if (!ret) {
+      qWarning() << Q_FUNC_INFO
+                 << "Tried to call requestUpdate on object without "
+                    "UpdateRequestHandler trait.";
+    }
+
+    return ret;
   }
 
   QPtr* cxxqt1$update_requester$clone(const QPtr* self) noexcept
