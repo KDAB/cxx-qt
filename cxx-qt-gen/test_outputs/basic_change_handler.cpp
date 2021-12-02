@@ -32,7 +32,10 @@ MyObject::setNumber(qint32 value)
 
     requestEmitSignal([&]() { Q_EMIT numberChanged(); });
 
-    requestPropertyChange(static_cast<int>(Property::Number));
+    requestPropertyChange([&]() {
+      const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+      m_rustObj->handlePropertyChange(*this, Property::Number);
+    });
   }
 }
 
@@ -55,15 +58,11 @@ MyObject::setString(const QString& value)
 
     requestEmitSignal([&]() { Q_EMIT stringChanged(); });
 
-    requestPropertyChange(static_cast<int>(Property::String));
+    requestPropertyChange([&]() {
+      const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+      m_rustObj->handlePropertyChange(*this, Property::String);
+    });
   }
-}
-
-void
-MyObject::updatePropertyChange(int propertyId)
-{
-  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->handlePropertyChange(*this, static_cast<Property>(propertyId));
 }
 
 std::unique_ptr<MyObject>

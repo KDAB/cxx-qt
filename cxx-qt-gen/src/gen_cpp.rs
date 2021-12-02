@@ -492,10 +492,15 @@ fn generate_properties_cpp(
         let parameter_ident_pascal = parameter.ident.to_case(Case::Pascal);
 
         let call_property_change_handler = if has_property_change_handler {
-            format!(
-                "requestPropertyChange(static_cast<int>(Property::{ident}));",
+            formatdoc! {
+                r#"
+                requestPropertyChange([&]() {{
+                    const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+                    m_rustObj->handlePropertyChange(*this, Property::{ident});
+                }});
+                "#,
                 ident = parameter_ident_pascal
-            )
+            }
         } else {
             "".to_owned()
         };
@@ -757,35 +762,21 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }
     };
 
-    let mut private_overrides = vec![];
-    let mut overrides = vec![];
+    let mut private_method_headers = vec![];
+    let mut private_method_sources = vec![];
 
-    if obj.handle_property_change_impl.is_some() {
-        private_overrides.push(
-            r#"
-            void updatePropertyChange(int propertyId) override;
-        "#,
-        );
+    if obj.handle_updates_impl.is_some() {
+        private_method_headers.push("Q_INVOKABLE void requestUpdate();");
+        private_method_headers.push("void updateState();");
 
-        overrides.push(formatdoc! {r#"
-            void {ident}::updatePropertyChange(int propertyId)
-            {{
-                const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-                m_rustObj->handlePropertyChange(*this, static_cast<Property>(propertyId));
+        private_method_sources.push(formatdoc! {r#"
+            void {ident}::requestUpdate() {{
+                CxxQObject::requestUpdate([&]() {{ updateState(); }});
             }}
         "#,
         ident = struct_ident_str,
-        })
-    }
-
-    if obj.handle_updates_impl.is_some() {
-        private_overrides.push(
-            r#"
-        void updateState() override;
-        "#,
-        );
-
-        overrides.push(formatdoc! {r#"
+        });
+        private_method_sources.push(formatdoc! {r#"
             void {ident}::updateState() {{
                 const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                 m_rustObj->handleUpdateRequest(*this);
@@ -834,7 +825,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
             {members_private}
 
-            {private_overrides}
+            {private_method_headers}
         }};
 
         std::unique_ptr<{ident}> newCppObject();
@@ -858,7 +849,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     rust_struct_ident = RUST_STRUCT_IDENT_STR,
     signals = signals,
     public_slots = public_slots,
-    private_overrides = private_overrides.join("\n"),
+    private_method_headers = private_method_headers.join("\n"),
     };
 
     // Generate C++ source part
@@ -882,7 +873,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {invokables}
 
-        {overrides}
+        {private_method_sources}
 
         std::unique_ptr<{ident}> newCppObject()
         {{
@@ -896,7 +887,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         invokables = invokables.sources.join("\n"),
         namespace = namespace,
         properties = properties.sources.join("\n"),
-        overrides = overrides.join("\n"),
+        private_method_sources = private_method_sources.join("\n"),
     };
 
     Ok(CppObject {

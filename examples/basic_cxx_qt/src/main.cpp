@@ -174,7 +174,7 @@ TEST_CASE("CXX-Qt allows Rust code to request an update")
   cxx_qt::my_object::MyObject obj;
   obj.installEventFilter(&catcher);
 
-  obj.requestUpdate();
+  obj.requestUpdateTest();
   CHECK(updateSpy.wait());
   CHECK(updateSpy.count() == 1);
 }
@@ -183,7 +183,7 @@ TEST_CASE("CXX-Qt allows Rust code to handle an update request")
 {
   cxx_qt::my_object::MyObject obj;
   CHECK(obj.updateCallCount() == 0);
-  obj.requestUpdate();
+  obj.requestUpdateTest();
   QCoreApplication::processEvents();
   CHECK(obj.updateCallCount() == 1);
 }

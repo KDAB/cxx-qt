@@ -28,6 +28,12 @@ MyObject::sayBye()
 }
 
 void
+MyObject::requestUpdate()
+{
+  CxxQObject::requestUpdate([&]() { updateState(); });
+}
+
+void
 MyObject::updateState()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
