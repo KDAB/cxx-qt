@@ -9,6 +9,9 @@ version = "0.1.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+description = "A basic clang-format Rust wrapper"
+repository = "https://github.com/KDAB/cxx-qt/"
+readme = "README.md"
 
 [dependencies]
 once_cell = "1.7"
