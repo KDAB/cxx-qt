@@ -13,7 +13,7 @@ description = "Code generation for integrating `cxx-qt` into higher level tools"
 repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
-clang-format = { path = "../clang-format" }
+clang-format = { path = "../clang-format", version = "0.1" }
 convert_case = "0.4"
 derivative = "2.2"
 indoc = "1.0"

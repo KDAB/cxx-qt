@@ -17,6 +17,6 @@ readme = "README.md"
 proc-macro = true
 
 [dependencies]
-cxx-qt-gen = { path = "../cxx-qt-gen" }
+cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.1" }
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
