@@ -12,12 +12,18 @@ A basic clang-format Rust wrapper.
 This allows for formatting a given input using `clang-format` from the system.
 
 ```rust
-let input = r#"
-    struct Test {
+use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
 
-    };
-"#;
-let output = clang_format_with_style(input, &ClangFormatStyle::Mozilla);
-assert!(output.is_ok());
-assert_eq!(output.unwrap(), "\nstruct Test\n{};\n");
+fn main() {
+    CLANG_FORMAT_STYLE.set(ClangFormatStyle::Mozilla);
+
+    let input = r#"
+        struct Test {
+
+        };
+    "#;
+    let output = clang_format(input);
+    assert!(output.is_ok());
+    assert_eq!(output.unwrap(), "\nstruct Test\n{};\n");
+}
 ```

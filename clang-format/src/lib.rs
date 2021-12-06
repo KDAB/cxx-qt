@@ -104,6 +104,24 @@ fn clang_format_with_style(
 }
 
 /// Execute clang-format with the given input and collect the output
+///
+/// # Example
+///
+/// ```
+/// # use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
+/// # fn main() {
+/// CLANG_FORMAT_STYLE.set(ClangFormatStyle::Mozilla);
+///
+/// let input = r#"
+///     struct Test {
+///
+///     };
+/// "#;
+/// let output = clang_format(input);
+/// assert!(output.is_ok());
+/// assert_eq!(output.unwrap(), "\nstruct Test\n{};\n");
+/// # }
+/// ```
 pub fn clang_format(input: &str) -> Result<String, ClangFormatError> {
     // Retrieve the style to use
     let style = CLANG_FORMAT_STYLE.get_or_init(|| ClangFormatStyle::Default);
