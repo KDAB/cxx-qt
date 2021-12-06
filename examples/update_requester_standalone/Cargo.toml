@@ -22,5 +22,5 @@ cxx-qt-lib = { path = "../../cxx-qt-lib" }
 once_cell = "1.8.0"
 
 [build-dependencies]
-clang-format = { path = "../../clang-format" }
+clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }
