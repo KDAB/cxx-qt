@@ -74,7 +74,6 @@ endfunction()
 # Add cargo tests for all our manifests
 #
 # Note doctests are not supported on the staticlib in root
-add_test_cargo(clang_format "${CMAKE_CURRENT_SOURCE_DIR}/clang-format/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)

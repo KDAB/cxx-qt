@@ -19,5 +19,5 @@ crate-type = ["staticlib"]
 cxx = "1.0"
 
 [build-dependencies]
-clang-format = { path = "../../clang-format" }
+clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }

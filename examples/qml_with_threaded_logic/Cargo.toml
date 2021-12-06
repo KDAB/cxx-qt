@@ -23,5 +23,5 @@ futures = "0.3"
 futures-timer = "3.0"
 
 [build-dependencies]
-clang-format = { path = "../../clang-format" }
+clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }

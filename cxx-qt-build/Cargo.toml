@@ -13,7 +13,7 @@ description = "Helpers for integrating `cxx-qt` crate into a Cargo build"
 repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
-clang-format = { path = "../clang-format", version = "0.1" }
+clang-format = "0.1"
 cxx-gen = "0.7"
 cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.1" }
 proc-macro2 = "1.0"
