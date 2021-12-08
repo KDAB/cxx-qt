@@ -22,7 +22,7 @@ public:
 private:
   Q_INVOKABLE void requestUpdate()
   {
-    CxxQObject::requestUpdate([&]() { updateState(); });
+    runOnGUIThread([&]() { updateState(); });
   }
   void updateState() { Q_EMIT updateStateRequested(); }
 

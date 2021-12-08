@@ -29,7 +29,7 @@ MyObject::setObj(cxx_qt::sub_object::SubObject* value)
 
     m_obj = value;
 
-    requestEmitSignal([&]() { Q_EMIT objChanged(); });
+    runOnGUIThread([&]() { Q_EMIT objChanged(); });
   }
 }
 
@@ -49,7 +49,7 @@ MyObject::giveObj(std::unique_ptr<cxx_qt::sub_object::SubObject> value)
   m_ownedObj = std::move(value);
   m_obj = m_ownedObj.get();
 
-  requestEmitSignal([&]() { Q_EMIT objChanged(); });
+  runOnGUIThread([&]() { Q_EMIT objChanged(); });
 }
 
 std::unique_ptr<MyObject>

@@ -30,7 +30,7 @@ MyObject::setPointf(const QPointF& value)
   if (value != m_pointf) {
     m_pointf = value;
 
-    requestEmitSignal([&]() { Q_EMIT pointfChanged(); });
+    runOnGUIThread([&]() { Q_EMIT pointfChanged(); });
   }
 }
 
@@ -51,7 +51,7 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    requestEmitSignal([&]() { Q_EMIT stringChanged(); });
+    runOnGUIThread([&]() { Q_EMIT stringChanged(); });
   }
 }
 
@@ -72,7 +72,7 @@ MyObject::setVariant(const QVariant& value)
   if (value != m_variant) {
     m_variant = value;
 
-    requestEmitSignal([&]() { Q_EMIT variantChanged(); });
+    runOnGUIThread([&]() { Q_EMIT variantChanged(); });
   }
 }
 
