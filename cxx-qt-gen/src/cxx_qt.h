@@ -79,51 +79,13 @@ public:
   static const QEvent::Type ProcessQueueEvent;
 
 public:
-  CxxQObject(QObject* parent = nullptr)
-    : QObject(parent)
-  {}
-  virtual ~CxxQObject() = default;
+  CxxQObject(QObject* parent = nullptr);
+  virtual ~CxxQObject();
 
-  void runOnGUIThread(std::function<void()> functor)
-  {
-    // Lock the queue, post the event, add to the queue
-    // worst case we'll push an event that does nothing if takeQueue() is
-    // waiting on the lock
-    const std::lock_guard<std::mutex> guard(m_queueMutex);
+  bool event(QEvent* event) override;
 
-    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
-      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
-    }
-
-    m_queue.push_back(functor);
-  }
-
-  std::vector<std::function<void()>> takeQueue()
-  {
-    const std::lock_guard<std::mutex> guard(m_queueMutex);
-    std::vector<std::function<void()>> queue;
-    std::swap(m_queue, queue);
-    return queue;
-  }
-
-  bool event(QEvent* event) override
-  {
-    if (event->type() == ProcessQueueEvent) {
-      // New Rust-side events might come in while we are processing the queue.
-      //
-      // If we flip this flag before takeQueue then worst case we get an
-      // extra event with nothing to actually process whereas if we do it
-      // afterwards then we might miss a queue item to process.
-      m_waitingForUpdate.store(false, std::memory_order_relaxed);
-
-      for (auto item : takeQueue()) {
-        item();
-      }
-      return true;
-    }
-
-    return false;
-  }
+  void runOnGUIThread(std::function<void()> functor);
+  std::vector<std::function<void()>> takeQueue();
 
 private:
   std::atomic_bool m_waitingForUpdate{ false };
