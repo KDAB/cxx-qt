@@ -494,7 +494,7 @@ fn generate_properties_cpp(
         let call_property_change_handler = if has_property_change_handler {
             formatdoc! {
                 r#"
-                requestPropertyChange([&]() {{
+                runOnGUIThread([&]() {{
                     const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                     m_rustObj->handlePropertyChange(*this, Property::{ident});
                 }});
@@ -535,7 +535,7 @@ fn generate_properties_cpp(
 
                         {member_ident} = value;
 
-                        requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+                        runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
 
                         {call_property_change_handler}
                     }}
@@ -600,7 +600,7 @@ fn generate_properties_cpp(
                   {member_owned_ident} = std::move(value);
                   {member_ident} = {member_owned_ident}.get();
 
-                  requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+                  runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
 
                   {call_change_handler}
                 }}
@@ -634,7 +634,7 @@ fn generate_properties_cpp(
                     if (value != {member_ident}) {{
                         {member_ident} = value;
 
-                        requestEmitSignal([&]() {{ Q_EMIT {ident_changed}(); }});
+                        runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
 
                         {call_change_handler}
                     }}
@@ -771,7 +771,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         private_method_sources.push(formatdoc! {r#"
             void {ident}::requestUpdate() {{
-                CxxQObject::requestUpdate([&]() {{ updateState(); }});
+                runOnGUIThread([&]() {{ updateState(); }});
             }}
         "#,
         ident = struct_ident_str,

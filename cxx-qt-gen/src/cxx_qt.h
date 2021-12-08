@@ -84,7 +84,7 @@ public:
   {}
   virtual ~CxxQObject() = default;
 
-  void requestEmitSignal(std::function<void()> signalFunctor)
+  void runOnGUIThread(std::function<void()> functor)
   {
     // Lock the queue, post the event, add to the queue
     // worst case we'll push an event that does nothing if takeQueue() is
@@ -95,35 +95,7 @@ public:
       QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
     }
 
-    m_queue.push_back(signalFunctor);
-  }
-
-  void requestPropertyChange(std::function<void()> propertyFunctor)
-  {
-    // Lock the queue, post the event, add to the queue
-    // worst case we'll push an event that does nothing if takeQueue() is
-    // waiting on the lock
-    const std::lock_guard<std::mutex> guard(m_queueMutex);
-
-    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
-      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
-    }
-
-    m_queue.push_back(propertyFunctor);
-  }
-
-  void requestUpdate(std::function<void()> updateFunctor)
-  {
-    // Lock the queue, post the event, add to the queue
-    // worst case we'll push an event that does nothing if takeQueue() is
-    // waiting on the lock
-    const std::lock_guard<std::mutex> guard(m_queueMutex);
-
-    if (!m_waitingForUpdate.exchange(true, std::memory_order_relaxed)) {
-      QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
-    }
-
-    m_queue.push_back(updateFunctor);
+    m_queue.push_back(functor);
   }
 
   std::vector<std::function<void()>> takeQueue()

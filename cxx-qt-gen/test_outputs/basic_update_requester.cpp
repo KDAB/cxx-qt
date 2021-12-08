@@ -30,7 +30,7 @@ MyObject::sayBye()
 void
 MyObject::requestUpdate()
 {
-  CxxQObject::requestUpdate([&]() { updateState(); });
+  runOnGUIThread([&]() { updateState(); });
 }
 
 void

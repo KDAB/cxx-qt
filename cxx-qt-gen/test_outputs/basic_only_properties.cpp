@@ -30,7 +30,7 @@ MyObject::setNumber(qint32 value)
   if (value != m_number) {
     m_number = value;
 
-    requestEmitSignal([&]() { Q_EMIT numberChanged(); });
+    runOnGUIThread([&]() { Q_EMIT numberChanged(); });
   }
 }
 
@@ -51,7 +51,7 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    requestEmitSignal([&]() { Q_EMIT stringChanged(); });
+    runOnGUIThread([&]() { Q_EMIT stringChanged(); });
   }
 }
 
