@@ -7,7 +7,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <algorithm>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -132,21 +131,7 @@ public:
       QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
     }
 
-    // Compress request updates to only one
-    //
-    // TODO: should we compress events? what happens if we change a
-    // property/emit signal, request update, change property/emit signal,
-    // request update? The second request update won't happen?
-    // Or should the request update always happen after the property/signal
-    // changes?
-    if (std::none_of(
-          m_queue.cbegin(),
-          m_queue.cend(),
-          [](const std::pair<QueueEvent, std::function<void()>>& item) {
-            return item.first == QueueEvent::UpdateState;
-          })) {
-      m_queue.push_back(std::make_pair(QueueEvent::UpdateState, updateFunctor));
-    }
+    m_queue.push_back(std::make_pair(QueueEvent::UpdateState, updateFunctor));
   }
 
   std::vector<std::pair<QueueEvent, std::function<void()>>> takeQueue()
