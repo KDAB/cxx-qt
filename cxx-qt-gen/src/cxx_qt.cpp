@@ -353,7 +353,7 @@ CxxQObject::event(QEvent* event)
     // afterwards then we might miss a queue item to process.
     m_waitingForUpdate.store(false, std::memory_order_relaxed);
 
-    for (auto item : takeQueue()) {
+    for (const auto& item : takeQueue()) {
       item();
     }
     return true;
