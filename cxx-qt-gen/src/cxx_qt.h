@@ -68,13 +68,6 @@ rustVariantToQVariant(CxxQt::Variant&& rust)
 
 }
 
-enum QueueEvent
-{
-  EmitSignal,
-  UpdatePropertyChange,
-  UpdateState
-};
-
 class CxxQObject : public QObject
 {
   Q_OBJECT
@@ -102,7 +95,7 @@ public:
       QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
     }
 
-    m_queue.push_back(std::make_pair(QueueEvent::EmitSignal, signalFunctor));
+    m_queue.push_back(signalFunctor);
   }
 
   void requestPropertyChange(std::function<void()> propertyFunctor)
@@ -116,8 +109,7 @@ public:
       QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
     }
 
-    m_queue.push_back(
-      std::make_pair(QueueEvent::UpdatePropertyChange, propertyFunctor));
+    m_queue.push_back(propertyFunctor);
   }
 
   void requestUpdate(std::function<void()> updateFunctor)
@@ -131,13 +123,13 @@ public:
       QCoreApplication::postEvent(this, new QEvent(ProcessQueueEvent));
     }
 
-    m_queue.push_back(std::make_pair(QueueEvent::UpdateState, updateFunctor));
+    m_queue.push_back(updateFunctor);
   }
 
-  std::vector<std::pair<QueueEvent, std::function<void()>>> takeQueue()
+  std::vector<std::function<void()>> takeQueue()
   {
     const std::lock_guard<std::mutex> guard(m_queueMutex);
-    std::vector<std::pair<QueueEvent, std::function<void()>>> queue;
+    std::vector<std::function<void()>> queue;
     std::swap(m_queue, queue);
     return queue;
   }
@@ -153,7 +145,7 @@ public:
       m_waitingForUpdate.store(false, std::memory_order_relaxed);
 
       for (auto item : takeQueue()) {
-        item.second();
+        item();
       }
       return true;
     }
@@ -163,6 +155,6 @@ public:
 
 private:
   std::atomic_bool m_waitingForUpdate{ false };
-  std::vector<std::pair<QueueEvent, std::function<void()>>> m_queue;
+  std::vector<std::function<void()>> m_queue;
   std::mutex m_queueMutex;
 };
