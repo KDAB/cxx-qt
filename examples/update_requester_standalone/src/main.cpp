@@ -53,17 +53,6 @@ TEST_CASE("An update can be requested")
   CHECK_EQ(updatedSpy.count(), 1);
 }
 
-TEST_CASE("Multiple requests are grouped into a single update")
-{
-  Q_ASSERT(testObject != nullptr);
-
-  QSignalSpy updatedSpy(testObject, &TestObject::updateStateRequested);
-  request_update();
-  request_update();
-  CHECK(updatedSpy.wait());
-  CHECK_EQ(updatedSpy.count(), 1);
-}
-
 TEST_CASE("Multiple state updates are possible")
 {
   Q_ASSERT(testObject != nullptr);
@@ -72,13 +61,13 @@ TEST_CASE("Multiple state updates are possible")
   request_update();
   request_update();
   CHECK(updatedSpy.wait());
-  CHECK_EQ(updatedSpy.count(), 1);
+  CHECK_EQ(updatedSpy.count(), 2);
 
   updatedSpy.clear();
   request_update();
   request_update();
   CHECK(updatedSpy.wait());
-  CHECK_EQ(updatedSpy.count(), 1);
+  CHECK_EQ(updatedSpy.count(), 2);
 }
 
 TEST_CASE("Requests across multiple threads are supported")
@@ -88,5 +77,5 @@ TEST_CASE("Requests across multiple threads are supported")
   QSignalSpy updatedSpy(testObject, &TestObject::updateStateRequested);
   request_on_multiple_threads();
   CHECK(updatedSpy.wait());
-  CHECK_EQ(updatedSpy.count(), 1);
+  CHECK_EQ(updatedSpy.count(), 100);
 }
