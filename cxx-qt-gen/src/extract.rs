@@ -124,6 +124,8 @@ pub(crate) struct Invokable {
     pub(crate) parameters: Vec<Parameter>,
     /// The return type information
     pub(crate) return_type: Option<ParameterType>,
+    /// Whether this invokable is using mut self or not
+    pub(crate) mutable: bool,
     /// The original Rust method for the invokable
     #[derivative(Debug = "ignore")]
     pub(crate) original_method: ImplItemMethod,
@@ -489,6 +491,18 @@ pub(crate) fn extract_method_params(
         .collect::<Result<Vec<Parameter>, TokenStream>>()
 }
 
+/// Return whether the first parameter of a method is a mutable self argument
+//
+// Note that self: Box<Self> is parsed as FnArg::Typed not FnArg::Receiver so will be false
+// but we don't use this case with CXX, so this can be ignored.
+fn is_method_mutable(method: &ImplItemMethod) -> bool {
+    if let Some(FnArg::Receiver(Receiver { mutability, .. })) = method.sig.inputs.first() {
+        return mutability.is_some();
+    }
+
+    false
+}
+
 fn extract_invokable(
     method: &ImplItemMethod,
     cpp_namespace_prefix: &[&str],
@@ -497,6 +511,7 @@ fn extract_invokable(
     let method_ident = &method.sig.ident;
     let output = &method.sig.output;
 
+    let mutable = is_method_mutable(method);
     let parameters = extract_method_params(method, cpp_namespace_prefix, qt_ident)?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {
@@ -555,6 +570,7 @@ fn extract_invokable(
     Ok(Invokable {
         ident: ident_method,
         ident_wrapper,
+        mutable,
         parameters,
         return_type,
         original_method: method.to_owned(), // TODO: remove to_owned once extract_invokable is split
@@ -1005,7 +1021,7 @@ mod tests {
         assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
 
         // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 2);
+        assert_eq!(qobject.invokables.len(), 3);
 
         // Check invokable ident
         let invokable = &qobject.invokables[0];
@@ -1028,6 +1044,9 @@ mod tests {
         assert_eq!(param_second.type_ident.idents[0].to_string(), "i32");
         assert!(!param_second.type_ident.is_ref);
 
+        // Check invokable is not mutable
+        assert!(!invokable.mutable);
+
         // Check invokable ident
         let invokable_second = &qobject.invokables[1];
         assert_eq!(invokable_second.ident.cpp_ident.to_string(), "sayBye");
@@ -1035,6 +1054,25 @@ mod tests {
 
         // Check invokable parameters ident and type ident
         assert_eq!(invokable_second.parameters.len(), 0);
+
+        // Check invokable is not mutable
+        assert!(!invokable_second.mutable);
+
+        let invokable_third = &qobject.invokables[2];
+        assert_eq!(
+            invokable_third.ident.cpp_ident.to_string(),
+            "mutableInvokable"
+        );
+        assert_eq!(
+            invokable_third.ident.rust_ident.to_string(),
+            "mutable_invokable"
+        );
+
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable_third.parameters.len(), 0);
+
+        // Check invokable is mutable
+        assert!(invokable_third.mutable);
 
         // Check that the normal method was also detected
         assert_eq!(qobject.normal_methods.len(), 1);

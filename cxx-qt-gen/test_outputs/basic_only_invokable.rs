@@ -47,6 +47,8 @@ mod my_object {
             fn say_hi(self: &RustObj, string: &QString, number: i32);
             #[cxx_name = "sayBye"]
             fn say_bye(self: &RustObj);
+            #[cxx_name = "mutableInvokable"]
+            fn mutable_invokable(self: &mut RustObj);
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -71,6 +73,10 @@ mod my_object {
 
         fn say_bye(&self) {
             println!("Bye from Rust!");
+        }
+
+        fn mutable_invokable(&mut self) {
+            println!("This method is mutable!");
         }
 
         fn plain_old_method(&self) {

@@ -35,18 +35,15 @@ pub mod rust_obj_invokables {
             self.rust_only_field
         }
 
-        // TODO: We need mutable invokable support for this
-        // https://github.com/KDAB/cxx-qt/pull/76
-        //
-        // #[invokable]
-        // fn invokable_multiply(&mut self, factor: i32) -> i32 {
-        //     self.rust_only_method(factor);
-        //     self.rust_only_field
-        // }
+        #[invokable]
+        fn invokable_multiply(&mut self, factor: i32) -> i32 {
+            self.rust_only_method(factor);
+            self.rust_only_field
+        }
 
-        // fn rust_only_method(&mut self, factor: i32) {
-        //     self.rust_only_field *= factor;
-        // }
+        fn rust_only_method(&mut self, factor: i32) {
+            self.rust_only_field *= factor;
+        }
     }
 }
 // ANCHOR_END: book_macro_code

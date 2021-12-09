@@ -14,7 +14,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn say_bye(&self, _cpp: &mut CppObj) {
+        fn say_bye(&mut self, _cpp: &mut CppObj) {
             println!("Bye from Rust!");
         }
     }
