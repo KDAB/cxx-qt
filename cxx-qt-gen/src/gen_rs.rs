@@ -209,6 +209,11 @@ pub fn generate_qobject_cxx(
             (&i.ident.rust_ident, i.ident.cpp_ident.to_string())
         };
         let parameters = &i.parameters;
+        let mutablility = if i.mutable {
+            Some(quote! { mut })
+        } else {
+            None
+        };
 
         // TODO: invokables need to also become freestanding functions that
         // take as input a reference to both the Rs class and the CppObject
@@ -235,18 +240,18 @@ pub fn generate_qobject_cxx(
                 } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name) -> &#(#type_idents)::*;
+                        fn #ident(self: &#mutablility #rust_class_name) -> &#(#type_idents)::*;
                     });
                 } else {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name) -> #(#type_idents)::*;
+                        fn #ident(self: &#mutablility #rust_class_name) -> #(#type_idents)::*;
                     });
                 }
             } else {
                 rs_functions.push(quote! {
                     #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#rust_class_name);
+                    fn #ident(self: &#mutablility #rust_class_name);
                 });
             }
         } else {
@@ -323,18 +328,18 @@ pub fn generate_qobject_cxx(
                 } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
+                        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
                     });
                 } else {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> #(#type_idents)::*;
+                        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> #(#type_idents)::*;
                     });
                 }
             } else {
                 rs_functions.push(quote! {
                     #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#rust_class_name, #(#parameters_quotes),*);
+                    fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*);
                 });
             }
         }
@@ -650,6 +655,11 @@ fn invokable_generate_wrapper(
 ) -> Result<TokenStream, TokenStream> {
     let ident = &invokable.ident.rust_ident;
     let return_type_orig = invokable.original_method.sig.output.clone();
+    let mutablility = if invokable.mutable {
+        Some(quote! { mut })
+    } else {
+        None
+    };
 
     let mut input_parameters = vec![];
     let mut output_parameters = vec![];
@@ -705,7 +715,7 @@ fn invokable_generate_wrapper(
         if return_type.qt_type.is_opaque() {
             let return_type_ident = return_type.qt_type.full_param_type();
             return Ok(quote! {
-                fn #ident_wrapper(&self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_ident> {
+                fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_ident> {
                     #(#wrappers)*
                     return self.#ident(#(#output_parameters),*).to_unique_ptr();
                 }
@@ -714,7 +724,7 @@ fn invokable_generate_wrapper(
     }
 
     Ok(quote! {
-        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type_orig {
+        fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) #return_type_orig {
             #(#wrappers)*
             return self.#ident(#(#output_parameters),*);
         }

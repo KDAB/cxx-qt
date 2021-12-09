@@ -27,6 +27,13 @@ MyObject::sayBye()
   m_rustObj->sayBye();
 }
 
+void
+MyObject::mutableInvokable()
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  m_rustObj->mutableInvokable();
+}
+
 std::unique_ptr<CppObj>
 newCppObject()
 {

@@ -18,6 +18,7 @@ public:
 
   Q_INVOKABLE void sayHi(const QString& string, qint32 number);
   Q_INVOKABLE void sayBye();
+  Q_INVOKABLE void mutableInvokable();
 
 private:
   rust::Box<RustObj> m_rustObj;

@@ -18,6 +18,11 @@ mod my_object {
             println!("Bye from Rust!");
         }
 
+        #[invokable]
+        fn mutable_invokable(&mut self) {
+            println!("This method is mutable!");
+        }
+
         fn plain_old_method(&self) {
             println!("QML can't call this :)");
         }
