@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+// SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
@@ -29,15 +30,8 @@ TestCase {
 
     function test_increment() {
         const myObject = createTemporaryObject(componentMyObject, null, {});
-        compare(myObject.incrementNumber(1), 2);
-    }
-
-    function test_increment_self() {
-        const myObject = createTemporaryObject(componentMyObject, null, {
-            number: 1,
-        });
-        myObject.incrementNumberSelf();
-        compare(myObject.number, 2);
+        myObject.incrementNumber();
+        compare(myObject.number(), 2);
     }
 
     function test_number() {

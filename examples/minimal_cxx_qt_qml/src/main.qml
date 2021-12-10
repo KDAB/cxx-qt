@@ -39,7 +39,11 @@ Window {
 
             onClicked: myObject.incrementNumber()
         }
-    }
 
-    Component.onCompleted: myObject.sayHi(myObject.string, myObject.number)
+        Button {
+            text: "Say Hi!"
+
+            onClicked: myObject.sayHi(myObject.string, myObject.number)
+        }
+    }
 }

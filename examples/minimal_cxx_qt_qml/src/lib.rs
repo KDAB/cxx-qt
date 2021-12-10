@@ -19,14 +19,14 @@ mod my_object {
     impl RustObj {
         #[invokable]
         fn increment_number(&self, cpp: Pin<&mut CppObj>) {
-            let value = cpp.number() + 1;
-            cpp.set_number(value);
+            let mut wrapper = CppObjWrapper::new(cpp);
+            wrapper.set_number(wrapper.number() + 1);
         }
 
         #[invokable]
         fn say_hi(&self, string: &QString, number: i32) {
             let s: String = string.into();
-            println!("Hi from Rust! String is {} and number is {}", s, number);
+            println!("Hi from Rust! String is '{}' and number is {}", s, number);
         }
     }
 }
