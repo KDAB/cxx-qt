@@ -19,9 +19,9 @@ Window {
     EnergyUsage {
         id: energyUsage
 
-        // FIXME: have the ability to HandleDestroy so we can tidy up
+        // FIXME: have the ability to HandleInit so we can start the server
         // https://github.com/KDAB/cxx-qt/issues/13
-        Component.onDestruction: disconnect()
+        Component.onCompleted: startServer()
     }
 
     ColumnLayout {
@@ -49,7 +49,23 @@ Window {
             Label {
                 color: energyUsage.averageUse > 50.0 ? "red" : "black"
                 horizontalAlignment: Text.AlignRight
-                text: energyUsage.isConnected ? qsTr("%1 kW").arg(energyUsage.averageUse) : qsTr("N/A")
+                text: qsTr("%1 kW").arg(energyUsage.averageUse)
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+
+            Label {
+                horizontalAlignment: Text.AlignLeft
+                Layout.fillWidth: true
+                text: qsTr("Total Energy Use")
+            }
+
+            Label {
+                horizontalAlignment: Text.AlignRight
+                text: qsTr("%1 kW").arg(energyUsage.totalUse)
             }
         }
 
@@ -65,20 +81,7 @@ Window {
 
             Label {
                 horizontalAlignment: Text.AlignRight
-                text: energyUsage.isConnected ? energyUsage.sensors : qsTr("N/A")
-            }
-        }
-
-        Button {
-            Layout.fillWidth: true
-            text: energyUsage.isConnected ? qsTr("Disconnect") : qsTr("Connect")
-
-            onClicked: {
-                if (energyUsage.isConnected) {
-                    energyUsage.disconnect();
-                } else {
-                    energyUsage.connect();
-                }
+                text: energyUsage.sensors
             }
         }
 
