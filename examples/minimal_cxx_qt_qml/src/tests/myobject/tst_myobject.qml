@@ -29,9 +29,12 @@ TestCase {
     }
 
     function test_increment() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
+        const myObject = createTemporaryObject(componentMyObject, null, {
+            number: 1
+        });
+        compare(myObject.number, 1);
         myObject.incrementNumber();
-        compare(myObject.number(), 2);
+        compare(myObject.number, 2);
     }
 
     function test_number() {
