@@ -61,6 +61,8 @@ pub enum QtTypes {
 pub(crate) struct ParameterType {
     /// The type of the parameter
     pub(crate) idents: Vec<Ident>,
+    /// If this parameter is mutable
+    pub(crate) is_mut: bool,
     /// If this parameter is a reference
     pub(crate) is_ref: bool,
     /// The original type, this allows us to annotate an error with a span later
@@ -239,19 +241,24 @@ fn extract_type_ident(
 ) -> Result<ParameterType, ExtractTypeIdentError> {
     // Temporary storage of the current syn::TypePath if one is found
     let ty_path;
+    let is_mut;
     // Whether this syn::Type is a reference or not
     let is_ref;
 
     match ty {
         // The type is simply a path (eg std::slice::Iter)
         Type::Path(path) => {
+            is_mut = false;
             is_ref = false;
             ty_path = path;
         }
         // The type is a reference, so see if it contains a path
-        Type::Reference(TypeReference { elem, .. }) => {
+        Type::Reference(TypeReference {
+            mutability, elem, ..
+        }) => {
             // If the type is a path then extract it and mark is_ref
             if let Type::Path(path) = &**elem {
+                is_mut = mutability.is_some();
                 is_ref = true;
                 ty_path = path;
             } else {
@@ -270,7 +277,7 @@ fn extract_type_ident(
                 PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. })
                     if args.len() == 1 =>
                 {
-                    let is_mut;
+                    let pin_is_mut;
                     let ty_path;
 
                     // We have already checked that args is of len 1
@@ -281,7 +288,7 @@ fn extract_type_ident(
                             mutability,
                             ..
                         })) => {
-                            is_mut = mutability.is_some();
+                            pin_is_mut = mutability.is_some();
 
                             if let Type::Path(path) = &**elem {
                                 ty_path = path;
@@ -324,7 +331,7 @@ fn extract_type_ident(
                             // TODO: could be it's own enum error? InvalidPinType?
                             return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
                         },
-                        is_mut,
+                        is_mut: pin_is_mut,
                         // If the T in Pin<T> is FFICppObj, then it is "this"
                         is_this: if let Some(ident) = type_idents.first() {
                             ident.to_string().as_str() == "FFICppObj"
@@ -346,6 +353,7 @@ fn extract_type_ident(
                         // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
                         // into an owned Vec<Ident>
                         idents,
+                        is_mut,
                         is_ref,
                         // We need to have the original type so that errors can Span if there are no idents
                         original_ty: ty.to_owned(),
@@ -366,6 +374,7 @@ fn extract_type_ident(
         // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
         // into an owned Vec<Ident>
         idents,
+        is_mut,
         is_ref,
         // We need to have the original type so that errors can Span if there are no idents
         original_ty: ty.to_owned(),
@@ -488,6 +497,7 @@ pub(crate) fn extract_method_params(
                                 // As this is only currently used when passing through
                                 // rust obj methods which aren't invokables
                                 idents: vec![],
+                                is_mut: false,
                                 is_ref: false,
                                 original_ty: (**ty).to_owned(),
                                 qt_type: QtTypes::Unknown
