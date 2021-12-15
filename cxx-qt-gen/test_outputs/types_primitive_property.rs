@@ -95,11 +95,11 @@ mod my_object {
 
     impl RustObj {}
 
-    pub struct CppObjWrapper<'a> {
+    pub struct CppObj<'a> {
         cpp: std::pin::Pin<&'a mut FFICppObj>,
     }
 
-    impl<'a> CppObjWrapper<'a> {
+    impl<'a> CppObj<'a> {
         fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
             Self { cpp }
         }
@@ -220,8 +220,8 @@ mod my_object {
         uint_32: u32,
     }
 
-    impl<'a> From<&CppObjWrapper<'a>> for Data {
-        fn from(value: &CppObjWrapper<'a>) -> Self {
+    impl<'a> From<&CppObj<'a>> for Data {
+        fn from(value: &CppObj<'a>) -> Self {
             Self {
                 boolean: value.boolean().into(),
                 float_32: value.float_32().into(),
@@ -241,7 +241,7 @@ mod my_object {
     }
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObjWrapper::new(cpp);
+        let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(&Data::default());
     }
 }

@@ -59,7 +59,7 @@ mod website {
     impl RustObj {
         #[invokable]
         fn change_url(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
 
             let url = wrapper.url().to_rust();
             let new_url = if url == "known" { "unknown" } else { "known" };
@@ -70,7 +70,7 @@ mod website {
 
         #[invokable]
         fn refresh_title(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
 
             // TODO: SeqCst is probably not the most efficient solution
             let new_load =
@@ -106,7 +106,7 @@ mod website {
             thread::spawn(move || block_on(fetch_title));
         }
 
-        fn process_event(&mut self, event: &Event, cpp: &mut CppObjWrapper) {
+        fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
             match event {
                 Event::TitleArrived(title) => {
                     let_qstring!(s = title);
@@ -119,7 +119,7 @@ mod website {
 
     impl UpdateRequestHandler<FFICppObj> for RustObj {
         fn handle_update_request(&mut self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
 
             while let Some(event) = self.event_queue.next().now_or_never() {
                 if let Some(event) = event {

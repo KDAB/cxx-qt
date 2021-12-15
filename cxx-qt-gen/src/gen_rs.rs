@@ -472,7 +472,7 @@ fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
     // We assume that all Data classes implement default
     let output = quote! {
         fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
             wrapper.grab_values_from_data(&#data_class_name::default());
         }
     };
@@ -840,7 +840,7 @@ pub fn generate_qobject_rs(
 
     // Cache the rust class name
     let rust_class_name = format_ident!("RustObj");
-    let rust_wrapper_name = format_ident!("CppObjWrapper");
+    let rust_wrapper_name = format_ident!("CppObj");
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj, cpp_namespace_prefix)?;
@@ -855,7 +855,7 @@ pub fn generate_qobject_rs(
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
     let data_struct = build_struct_with_fields(&obj.original_data_struct, &data_fields_no_ptr);
 
-    // Build a converter for Data -> CppObjWrapper
+    // Build a converter for Data -> CppObj
     let data_struct_impl = {
         let mut fields_into = vec![];
         // If there are no filtered fields then use _value
