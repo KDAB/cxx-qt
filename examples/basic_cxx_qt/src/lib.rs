@@ -25,7 +25,7 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn double_number_self(&self, cpp: Pin<&mut FFICppObj>) {
+        fn double_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() * 2;
             cpp.set_number(value);
         }
@@ -48,9 +48,8 @@ mod my_object {
         }
 
         #[invokable]
-        fn request_update_test(&self, cpp: Pin<&mut FFICppObj>) {
-            let wrapper = CppObj::new(cpp);
-            let update_requester = wrapper.update_requester();
+        fn request_update_test(&self, cpp: &mut CppObj) {
+            let update_requester = cpp.update_requester();
             update_requester.request_update();
         }
 

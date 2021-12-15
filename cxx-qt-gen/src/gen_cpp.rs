@@ -115,6 +115,7 @@ impl CppType for QtTypes {
     fn is_const(&self) -> bool {
         match self {
             Self::Bool => false,
+            Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
@@ -133,6 +134,7 @@ impl CppType for QtTypes {
     /// to add *this to this or *arg to arg.
     fn is_pin(&self) -> bool {
         match self {
+            Self::CppObj { .. } => true,
             Self::Pin { .. } => true,
             _others => false,
         }
@@ -141,6 +143,7 @@ impl CppType for QtTypes {
     /// Whether this type is a pointer
     fn is_ptr(&self) -> bool {
         match self {
+            Self::CppObj { .. } => true,
             Self::Pin { .. } => true,
             Self::Ptr { .. } => true,
             _other => false,
@@ -158,6 +161,7 @@ impl CppType for QtTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::Bool => false,
+            Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::Pin { .. } => false,
@@ -176,6 +180,7 @@ impl CppType for QtTypes {
     /// definitions and if the parameter should be skipped in method declarations
     fn is_this(&self) -> bool {
         match self {
+            Self::CppObj { external, .. } => external == &false,
             Self::Pin { is_this, .. } => is_this == &true,
             _others => false,
         }
@@ -364,7 +369,12 @@ fn generate_invokables_cpp(
         // Prepare the body of the invokable, we may return or wrap this later
         let body = format!(
             "m_rustObj->{ident}({parameter_names})",
-            ident = invokable.ident.cpp_ident.to_string(),
+            // If we are a pointer to a CppObj then we need a wrapper
+            ident = if let Some(ident_wrapper) = &invokable.ident_wrapper {
+                ident_wrapper.cpp_ident.to_string()
+            } else {
+                invokable.ident.cpp_ident.to_string()
+            },
             parameter_names = parameters.names.join(", ")
         );
 

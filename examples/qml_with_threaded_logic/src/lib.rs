@@ -58,20 +58,16 @@ mod website {
 
     impl RustObj {
         #[invokable]
-        fn change_url(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-
-            let url = wrapper.url().to_rust();
+        fn change_url(&self, cpp: &mut CppObj) {
+            let url = cpp.url().to_rust();
             let new_url = if url == "known" { "unknown" } else { "known" };
 
             let_qstring!(new_url = new_url);
-            wrapper.set_url(&new_url);
+            cpp.set_url(&new_url);
         }
 
         #[invokable]
-        fn refresh_title(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-
+        fn refresh_title(&self, cpp: &mut CppObj) {
             // TODO: SeqCst is probably not the most efficient solution
             let new_load =
                 self.loading
@@ -82,10 +78,10 @@ mod website {
             }
 
             let_qstring!(s = "Loading...");
-            wrapper.set_title(&s);
+            cpp.set_title(&s);
 
-            let url = wrapper.url().to_rust();
-            let update_requester = wrapper.update_requester();
+            let url = cpp.url().to_rust();
+            let update_requester = cpp.update_requester();
             let event_sender = self.event_sender.clone();
 
             let fetch_title = async move {
@@ -131,8 +127,10 @@ mod website {
 
     impl PropertyChangeHandler<FFICppObj, Property> for RustObj {
         fn handle_property_change(&mut self, cpp: Pin<&mut FFICppObj>, property: Property) {
+            let mut wrapper = CppObj::new(cpp);
+
             match property {
-                Property::Url => self.refresh_title(cpp),
+                Property::Url => self.refresh_title(&mut wrapper),
                 Property::Title => println!("title changed"),
                 _ => unreachable!(),
             }

@@ -4,7 +4,7 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn say_hi(&self, _cpp: Pin<&mut FFICppObj>, string: &QString, number: i32) {
+        fn say_hi(&self, _cpp: &mut CppObj, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number
@@ -12,7 +12,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn say_bye(&self, _cpp: Pin<&mut FFICppObj>) {
+        fn say_bye(&self, _cpp: &mut CppObj) {
             println!("Bye from Rust!");
         }
     }

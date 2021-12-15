@@ -24,7 +24,7 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn increment_number_self(&self, cpp: Pin<&mut FFICppObj>) {
+        fn increment_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() + 1;
             cpp.set_number(value);
         }

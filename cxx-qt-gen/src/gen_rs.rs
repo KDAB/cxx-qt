@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use syn::spanned::Spanned;
 use syn::ImplItemMethod;
 
-use crate::extract::{ExtractMethodUnknownOptions, QObject, QtTypes};
+use crate::extract::{ExtractMethodUnknownOptions, Invokable, QObject, QtTypes};
 use crate::utils::{is_type_ident_ptr, type_to_namespace};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -50,6 +50,7 @@ impl RustType for QtTypes {
     /// Whether this type is_this, this is used to determine if the type needs to be rewritten
     fn is_this(&self) -> bool {
         match self {
+            Self::CppObj { external, .. } => external == &false,
             Self::Pin { is_this, .. } => is_this == &true,
             _others => false,
         }
@@ -184,8 +185,14 @@ pub fn generate_qobject_cxx(
     // to a custom name for C++ or Rust side?
     for i in &obj.invokables {
         // Cache the ident and parameters as they are used multiple times later
-        let ident = &i.ident.rust_ident;
-        let ident_cpp_str = &i.ident.cpp_ident.to_string();
+        let (ident, ident_cpp_str) = if let Some(ident_wrapper) = &i.ident_wrapper {
+            (
+                &ident_wrapper.rust_ident,
+                ident_wrapper.cpp_ident.to_string(),
+            )
+        } else {
+            (&i.ident.rust_ident, i.ident.cpp_ident.to_string())
+        };
         let parameters = &i.parameters;
 
         // TODO: invokables need to also become freestanding functions that
@@ -230,6 +237,15 @@ pub fn generate_qobject_cxx(
 
                 // If the type is Pin<T> then we need to change extract differently
                 match &p.type_ident.qt_type {
+                    QtTypes::CppObj {
+                        external: _,
+                        type_ident,
+                    } => {
+                        let rust_ident = &type_ident.rust_ident;
+                        parameters_quotes.push(quote! {
+                            _cpp: Pin<&mut #rust_ident>
+                        });
+                    }
                     QtTypes::Pin {
                         is_mut,
                         is_this,
@@ -730,7 +746,12 @@ fn fix_method_params(
     let mut method = method.clone();
 
     // Extract parameters from the method
-    let parameters = crate::extract::extract_method_params(&method, &[""], extract_options)?;
+    let parameters = crate::extract::extract_method_params(
+        &method,
+        &[""],
+        &format_ident!("Object"),
+        extract_options,
+    )?;
 
     // Find which arguments are using Pin<T>
     let pin_args = parameters
@@ -803,6 +824,62 @@ fn fix_method_params(
     }
 
     Ok(method)
+}
+
+/// Generate the wrapper method for a given invokable
+fn invokable_generate_wrapper(
+    invokable: &Invokable,
+    ident_wrapper: &Ident,
+) -> Result<TokenStream, TokenStream> {
+    let ident = &invokable.ident.rust_ident;
+    let return_type = invokable.original_method.sig.output.clone();
+
+    let mut input_parameters = vec![];
+    let mut output_parameters = vec![];
+    let mut wrappers = vec![];
+
+    for param in &invokable.parameters {
+        let param_ident = &param.ident;
+        let is_mut = if param.type_ident.is_mut {
+            quote! { mut }
+        } else {
+            quote! {}
+        };
+        let is_ref = if param.type_ident.is_ref {
+            quote! { & }
+        } else {
+            quote! {}
+        };
+
+        if let QtTypes::CppObj { external: _, .. } = param.type_ident.qt_type {
+            // TODO: consider external FFICppObj
+            input_parameters.push(quote! { #param_ident: std::pin::Pin<&mut FFICppObj> });
+            wrappers.push(quote! {
+                let mut #param_ident = CppObj::new(#param_ident);
+            });
+            output_parameters.push(quote! { #is_ref #is_mut #param_ident });
+        } else {
+            // FIXME: we need to add cxx_qt_lib:: to &QString, but can this be generic ? or can we
+            // pull QString into the scope of this module so it can be &QString ?
+            //
+            // For now this replicates the QString part of fix_method_params, the Pin part will
+            // disappear in a future commit, so don't implement here.
+            if let QtTypes::QString = param.type_ident.qt_type {
+                input_parameters.push(quote! { #param_ident: &cxx_qt_lib::QString });
+            } else {
+                let param_type = &param.type_ident.original_ty;
+                input_parameters.push(quote! { #param_ident: #param_type });
+            }
+            output_parameters.push(quote! { #param_ident });
+        }
+    }
+
+    Ok(quote! {
+        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type {
+            #(#wrappers)*
+            return self.#ident(#(#output_parameters),*);
+        }
+    })
 }
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
@@ -890,6 +967,17 @@ pub fn generate_qobject_rs(
     let property_methods = generate_property_methods_rs(obj)?;
 
     // Capture methods, trait impls, use decls so they can used by quote
+    let invokable_method_wrappers = obj
+        .invokables
+        .iter()
+        .map(|i| {
+            i.ident_wrapper
+                .as_ref()
+                .map(|ident_wrapper| invokable_generate_wrapper(i, &ident_wrapper.rust_ident))
+        })
+        .flatten()
+        .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
+
     let invokable_methods = obj
         .invokables
         .iter()
@@ -945,6 +1033,7 @@ pub fn generate_qobject_rs(
 
     let rust_struct_impl = quote! {
         impl #rust_class_name {
+            #(#invokable_method_wrappers)*
             #(#invokable_methods)*
             #(#normal_methods)*
 
