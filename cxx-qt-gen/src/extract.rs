@@ -302,10 +302,10 @@ fn extract_type_ident(
                         // For a given Pin<crate::A::T> we want to make it cxx_qt::A::T
                         ident_namespace_str: if let Some(ident) = type_idents.last() {
                             let ident_str = ident.to_string();
-                            // Ignore Pin<&mut CppObj> from our namespaces for now
+                            // Ignore Pin<&mut FFICppObj> from our namespaces for now
                             //
                             // TODO: does this need to be considered?
-                            if type_idents.len() == 1 && ident_str.as_str() == "CppObj" {
+                            if type_idents.len() == 1 && ident_str.as_str() == "FFICppObj" {
                                 ident_str
                             } else {
                                 // Extract the namespace of the type
@@ -325,9 +325,9 @@ fn extract_type_ident(
                             return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
                         },
                         is_mut,
-                        // If the T in Pin<T> is CppObj, then it is "this"
+                        // If the T in Pin<T> is FFICppObj, then it is "this"
                         is_this: if let Some(ident) = type_idents.first() {
-                            ident.to_string().as_str() == "CppObj"
+                            ident.to_string().as_str() == "FFICppObj"
                         } else {
                             false
                         },
@@ -1203,11 +1203,11 @@ mod tests {
             type_idents,
         } = &param_first.type_ident.qt_type
         {
-            assert_eq!(ident_namespace_str, "CppObj");
+            assert_eq!(ident_namespace_str, "FFICppObj");
             assert_eq!(is_mut, &true);
             assert_eq!(is_this, &true);
             assert_eq!(type_idents.len(), 1);
-            assert_eq!(type_idents[0].to_string(), "CppObj");
+            assert_eq!(type_idents[0].to_string(), "FFICppObj");
         } else {
             panic!();
         }
@@ -1245,11 +1245,11 @@ mod tests {
             type_idents,
         } = &param_first.type_ident.qt_type
         {
-            assert_eq!(ident_namespace_str, "CppObj");
+            assert_eq!(ident_namespace_str, "FFICppObj");
             assert_eq!(is_mut, &true);
             assert_eq!(is_this, &true);
             assert_eq!(type_idents.len(), 1);
-            assert_eq!(type_idents[0].to_string(), "CppObj");
+            assert_eq!(type_idents[0].to_string(), "FFICppObj");
         } else {
             panic!();
         }

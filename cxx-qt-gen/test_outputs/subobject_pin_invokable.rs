@@ -17,7 +17,7 @@ mod my_object {
             #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
             #[namespace = "cxx_qt::sub_object"]
-            type SubObject = crate::sub_object::CppObj;
+            type SubObject = crate::sub_object::FFICppObj;
 
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
@@ -37,7 +37,7 @@ mod my_object {
         }
     }
 
-    pub type CppObj = ffi::MyObject;
+    pub type FFICppObj = ffi::MyObject;
     pub type Property = ffi::Property;
 
     #[derive(Default)]
@@ -46,26 +46,26 @@ mod my_object {
     impl RustObj {
         fn sub_test(
             &self,
-            _cpp: std::pin::Pin<&mut CppObj>,
-            sub: std::pin::Pin<&mut crate::sub_object::CppObj>,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            sub: std::pin::Pin<&mut crate::sub_object::FFICppObj>,
         ) {
             println!("Bye from Rust!");
         }
     }
 
     pub struct CppObjWrapper<'a> {
-        cpp: std::pin::Pin<&'a mut CppObj>,
+        cpp: std::pin::Pin<&'a mut FFICppObj>,
     }
 
     impl<'a> CppObjWrapper<'a> {
-        fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+        fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
             Self { cpp }
         }
 
         pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
             use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
-            let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
+            let ptr: *const FFICppObj = unsafe { &*self.cpp.as_ref() };
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
@@ -86,7 +86,7 @@ mod my_object {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut CppObj>) {
+    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObjWrapper::new(cpp);
         wrapper.grab_values_from_data(&Data::default());
     }
