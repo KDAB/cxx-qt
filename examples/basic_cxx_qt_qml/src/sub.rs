@@ -18,7 +18,7 @@ pub mod sub_object {
 
     impl RustObj {
         #[invokable]
-        fn increment_number_self(&self, cpp: Pin<&mut CppObj>) {
+        fn increment_number_self(&self, cpp: Pin<&mut FFICppObj>) {
             let value = cpp.number();
             cpp.set_number(value + 1);
         }

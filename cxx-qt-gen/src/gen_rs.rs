@@ -160,20 +160,20 @@ pub fn generate_qobject_cxx(
 
         Ok(())
     };
-    // Closure which retrieves Object from crate::module::Object and swaps to crate::module::CppObj
+    // Closure which retrieves Object from crate::module::Object and swaps to crate::module::FFICppObj
     let type_idents_to_ptr_class_name_and_ffi_type = |type_idents: &Vec<Ident>| {
         // Build the class name of the pointer, eg Object in crate::module::Object
         //
         // We can assume that unwrap will work here as we have checked that type_idents is not empty
         let ptr_class_name = type_idents.last().unwrap().clone();
 
-        // Swap the last type segment to be CppObj
-        // so that crate::module::Object becomes crate::module::CppObj
+        // Swap the last type segment to be FFICppObj
+        // so that crate::module::Object becomes crate::module::FFICppObj
         //
         // As we will generate a public type which points to the ffi type at the module level
         let mut type_idents_ffi = type_idents.clone();
         type_idents_ffi.pop();
-        type_idents_ffi.push(format_ident!("CppObj"));
+        type_idents_ffi.push(format_ident!("FFICppObj"));
 
         (ptr_class_name, type_idents_ffi)
     };
@@ -193,7 +193,7 @@ pub fn generate_qobject_cxx(
         // inside a wrapper. The functions that are impl'ed on the Rs class
         // will then simply create the wrapper and call the free functions.
         //
-        // As a first step we could maybe just add a `cpp: Pin<&mut CppObj>`
+        // As a first step we could maybe just add a `cpp: Pin<&mut FFICppObj>`
         // argument to invokables so that users can manually wrap it.
 
         // Determine if the invokable has any parameter
@@ -245,7 +245,7 @@ pub fn generate_qobject_cxx(
                                 parameters_quotes.push(quote! { #ident: Pin<&#class_name> });
                             }
                         } else {
-                            // Retrieve Object from crate::module::Object and swap to crate::module::CppObj
+                            // Retrieve Object from crate::module::Object and swap to crate::module::FFICppObj
                             let (ptr_class_name, type_idents_ffi) =
                                 type_idents_to_ptr_class_name_and_ffi_type(type_idents);
 
@@ -330,7 +330,7 @@ pub fn generate_qobject_cxx(
                 .to_compile_error());
             }
 
-            // Retrieve Object from crate::module::Object and swap to crate::module::CppObj
+            // Retrieve Object from crate::module::Object and swap to crate::module::FFICppObj
             let (ptr_class_name, type_idents_ffi) =
                 type_idents_to_ptr_class_name_and_ffi_type(type_idents);
 
@@ -458,7 +458,7 @@ pub fn generate_qobject_cxx(
             }
         }
 
-        pub type CppObj = ffi::#class_name;
+        pub type FFICppObj = ffi::#class_name;
         pub type Property = ffi::Property;
     };
 
@@ -471,7 +471,7 @@ fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
 
     // We assume that all Data classes implement default
     let output = quote! {
-        fn initialise_cpp(cpp: std::pin::Pin<&mut CppObj>) {
+        fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut wrapper = CppObjWrapper::new(cpp);
             wrapper.grab_values_from_data(&#data_class_name::default());
         }
@@ -646,7 +646,7 @@ fn fix_pin_path(method: &mut ImplItemMethod, pin_args: &[usize]) -> Result<(), T
         .filter(|(index, _)| pin_args.contains(index))
         // Rewrite the type
         //
-        // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to CppObj
+        // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to FFICppObj
         .map(|(_, item)| {
             if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
                 let ty_path;
@@ -690,8 +690,8 @@ fn fix_pin_path(method: &mut ImplItemMethod, pin_args: &[usize]) -> Result<(), T
                             if let syn::Type::Path(arg_path) = &mut **elem {
                                 // From b::T we want T
                                 if let Some(segment) = arg_path.path.segments.last_mut() {
-                                    // Always set last type in Pin<T> to CppObj
-                                    segment.ident = format_ident!("CppObj");
+                                    // Always set last type in Pin<T> to FFICppObj
+                                    segment.ident = format_ident!("FFICppObj");
                                 }
                             }
                         }
@@ -924,7 +924,7 @@ pub fn generate_qobject_rs(
     // Define a function to handle update requests if we have one
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
-            fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut CppObj>) {
+            fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
                 self.handle_update_request(cpp);
             }
         }
@@ -935,7 +935,7 @@ pub fn generate_qobject_rs(
     // Define a function to handle property changes if we have one
     let handle_property_change = if obj.handle_property_change_impl.is_some() {
         quote! {
-            fn call_handle_property_change(&mut self, cpp: std::pin::Pin<&mut CppObj>, property: Property) {
+            fn call_handle_property_change(&mut self, cpp: std::pin::Pin<&mut FFICppObj>, property: Property) {
                 self.handle_property_change(cpp, property);
             }
         }
@@ -956,7 +956,7 @@ pub fn generate_qobject_rs(
     // Create a struct that wraps the CppObject with a nicer interface
     let wrapper_struct = quote! {
         pub struct #rust_wrapper_name<'a> {
-            cpp: std::pin::Pin<&'a mut CppObj>,
+            cpp: std::pin::Pin<&'a mut FFICppObj>,
         }
     };
 
@@ -986,7 +986,7 @@ pub fn generate_qobject_rs(
 
     let wrapper_struct_impl = quote! {
         impl<'a> #rust_wrapper_name<'a> {
-            fn new(cpp: std::pin::Pin<&'a mut CppObj>) -> Self {
+            fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
                 Self { cpp }
             }
 
@@ -995,7 +995,7 @@ pub fn generate_qobject_rs(
             pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
                 use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
 
-                let ptr: *const CppObj = unsafe { &*self.cpp.as_ref() };
+                let ptr: *const FFICppObj = unsafe { &*self.cpp.as_ref() };
                 unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
             }
 

@@ -7,17 +7,17 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn test_pointf(&self, _cpp: Pin<&mut CppObj>, pointf: &QPointF) -> QPointF {
+        fn test_pointf(&self, _cpp: Pin<&mut FFICppObj>, pointf: &QPointF) -> QPointF {
             pointf
         }
 
         #[invokable]
-        fn test_string(&self, _cpp: Pin<&mut CppObj>, string: &QString) -> String {
+        fn test_string(&self, _cpp: Pin<&mut FFICppObj>, string: &QString) -> String {
             string.to_rust()
         }
 
         #[invokable]
-        fn test_variant(&self, _cpp: Pin<&mut CppObj>, variant: &QVariant) -> Variant {
+        fn test_variant(&self, _cpp: Pin<&mut FFICppObj>, variant: &QVariant) -> Variant {
             variant
         }
     }

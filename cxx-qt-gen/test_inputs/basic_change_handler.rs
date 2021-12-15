@@ -8,8 +8,8 @@ mod my_object {
     #[derive(Default)]
     struct RustObj;
 
-    impl PropertyChangeHandler<CppObj, Property> for RustObj {
-        fn handle_property_change(&mut self, _cpp: Pin<&mut CppObj>, _property: Property) {
+    impl PropertyChangeHandler<FFICppObj, Property> for RustObj {
+        fn handle_property_change(&mut self, _cpp: Pin<&mut FFICppObj>, _property: Property) {
             println!("change")
         }
     }
