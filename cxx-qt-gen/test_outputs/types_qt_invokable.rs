@@ -24,14 +24,26 @@ mod my_object {
         extern "Rust" {
             type RustObj;
 
-            #[cxx_name = "testPointf"]
-            fn test_pointf(self: &RustObj, _cpp: Pin<&mut MyObject>, pointf: &QPointF) -> QPointF;
+            #[cxx_name = "testPointfWrapper"]
+            fn test_pointf_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                pointf: &QPointF,
+            ) -> QPointF;
 
-            #[cxx_name = "testString"]
-            fn test_string(self: &RustObj, _cpp: Pin<&mut MyObject>, string: &QString) -> String;
+            #[cxx_name = "testStringWrapper"]
+            fn test_string_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                string: &QString,
+            ) -> String;
 
-            #[cxx_name = "testVariant"]
-            fn test_variant(self: &RustObj, _cpp: Pin<&mut MyObject>, variant: &QVariant) -> Variant;
+            #[cxx_name = "testVariantWrapper"]
+            fn test_variant_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                variant: &QVariant,
+            ) -> Variant;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -48,19 +60,42 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn test_pointf(&self, _cpp: std::pin::Pin<&mut FFICppObj>, pointf: &QPointF) -> QPointF {
-            pointf
+        fn test_pointf_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            pointf: &QPointF,
+        ) -> QPointF {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_pointf(&mut _cpp, pointf);
         }
 
-        fn test_string(
+        fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             string: &cxx_qt_lib::QString,
         ) -> String {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_string(&mut _cpp, string);
+        }
+
+        fn test_variant_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            variant: &QVariant,
+        ) -> Variant {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_variant(&mut _cpp, variant);
+        }
+
+        fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {
+            pointf
+        }
+
+        fn test_string(&self, _cpp: &mut CppObj, string: &cxx_qt_lib::QString) -> String {
             string.to_rust()
         }
 
-        fn test_variant(&self, _cpp: std::pin::Pin<&mut FFICppObj>, variant: &QVariant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {
             variant
         }
     }

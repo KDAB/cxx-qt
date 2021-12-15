@@ -29,12 +29,11 @@ mod mock_qt_types {
 
     impl RustObj {
         #[invokable]
-        fn test_pointf_property(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-            let mut point = *wrapper.pointf();
+        fn test_pointf_property(&self, cpp: &mut CppObj) {
+            let mut point = *cpp.pointf();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 2.0);
-            wrapper.set_pointf(&point);
+            cpp.set_pointf(&point);
         }
 
         #[invokable]
@@ -46,18 +45,17 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_variant_property(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-            match *wrapper.variant().to_rust() {
+        fn test_variant_property(&self, cpp: &mut CppObj) {
+            match *cpp.variant().to_rust() {
                 VariantImpl::Bool(b) => {
                     let new_variant = Variant::from_bool(!b);
                     let_qvariant!(new_qvariant = &new_variant);
-                    wrapper.set_variant(&new_qvariant);
+                    cpp.set_variant(&new_qvariant);
                 }
                 VariantImpl::Int(i) => {
                     let new_variant = Variant::from_int(i * 2);
                     let_qvariant!(new_qvariant = &new_variant);
-                    wrapper.set_variant(&new_qvariant);
+                    cpp.set_variant(&new_qvariant);
                 }
                 _ => panic!("Incorrect variant type!"),
             }

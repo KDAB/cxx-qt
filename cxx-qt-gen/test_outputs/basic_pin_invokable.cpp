@@ -17,14 +17,14 @@ void
 MyObject::sayHi(const QString& string, qint32 number)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->sayHi(*this, string, number);
+  m_rustObj->sayHiWrapper(*this, string, number);
 }
 
 void
 MyObject::sayBye()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->sayBye(*this);
+  m_rustObj->sayByeWrapper(*this);
 }
 
 std::unique_ptr<MyObject>

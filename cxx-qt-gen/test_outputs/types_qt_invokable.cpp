@@ -17,21 +17,22 @@ QPointF
 MyObject::testPointf(const QPointF& pointf)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return m_rustObj->testPointf(*this, pointf);
+  return m_rustObj->testPointfWrapper(*this, pointf);
 }
 
 QString
 MyObject::testString(const QString& string)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return rustStringToQString(m_rustObj->testString(*this, string));
+  return rustStringToQString(m_rustObj->testStringWrapper(*this, string));
 }
 
 QVariant
 MyObject::testVariant(const QVariant& variant)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return ::CxxQt::rustVariantToQVariant(m_rustObj->testVariant(*this, variant));
+  return ::CxxQt::rustVariantToQVariant(
+    m_rustObj->testVariantWrapper(*this, variant));
 }
 
 std::unique_ptr<MyObject>

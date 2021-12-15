@@ -18,9 +18,8 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn increment_number(&self, cpp: Pin<&mut CppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
-            wrapper.set_number(wrapper.number() + 1);
+        fn increment_number(&self, cpp: &mut CppObj) {
+            cpp.set_number(cpp.number() + 1);
         }
 
         #[invokable]
