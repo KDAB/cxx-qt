@@ -30,7 +30,7 @@ mod mock_qt_types {
     impl RustObj {
         #[invokable]
         fn test_pointf_property(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
             let mut point = *wrapper.pointf();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 2.0);
@@ -47,7 +47,7 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_property(&self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObjWrapper::new(cpp);
+            let mut wrapper = CppObj::new(cpp);
             match *wrapper.variant().to_rust() {
                 VariantImpl::Bool(b) => {
                     let new_variant = Variant::from_bool(!b);

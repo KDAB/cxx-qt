@@ -48,11 +48,11 @@ mod my_object {
         }
     }
 
-    pub struct CppObjWrapper<'a> {
+    pub struct CppObj<'a> {
         cpp: std::pin::Pin<&'a mut FFICppObj>,
     }
 
-    impl<'a> CppObjWrapper<'a> {
+    impl<'a> CppObj<'a> {
         fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
             Self { cpp }
         }
@@ -71,8 +71,8 @@ mod my_object {
 
     struct Data;
 
-    impl<'a> From<&CppObjWrapper<'a>> for Data {
-        fn from(_value: &CppObjWrapper<'a>) -> Self {
+    impl<'a> From<&CppObj<'a>> for Data {
+        fn from(_value: &CppObj<'a>) -> Self {
             Self {}
         }
     }
@@ -82,7 +82,7 @@ mod my_object {
     }
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObjWrapper::new(cpp);
+        let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(&Data::default());
     }
 }
