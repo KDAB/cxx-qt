@@ -67,7 +67,6 @@ impl RustType for QtTypes {
             Self::I32 => format_ident!("i32"),
             Self::Pin { .. } => unreachable!(),
             // Pointer types do not use this function (TODO: yet?)
-            Self::Ptr { .. } => unreachable!(),
             Self::QPointF => format_ident!("QPointF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::QVariant | Self::Variant => format_ident!("QVariant"),
@@ -105,10 +104,6 @@ impl RustType for QtTypes {
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
             Self::Pin { .. } => unreachable!(),
-            Self::Ptr { ident_str, .. } => {
-                let ident = format_ident!("{}", ident_str);
-                quote! {cxx::UniquePtr<ffi::#ident>}
-            }
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
             Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
