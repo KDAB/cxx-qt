@@ -82,6 +82,23 @@ impl RustType for QtTypes {
     fn full_param_type(&self) -> TokenStream {
         match self {
             Self::Bool => quote! {bool},
+            Self::CppObj {
+                external,
+                rust_type_idents,
+                ..
+            } if external == &true => {
+                // FIXME: can't put a custom name in the generation, needs to match
+                // the C++ ? Is a typedef on the C++ side enough?
+                //
+                // TODO: the solution here will likely be combined into extract phase?
+                let combined_name = format_ident!(
+                    "{}",
+                    rust_type_idents[rust_type_idents.len() - 2]
+                        .to_string()
+                        .to_case(Case::Pascal)
+                );
+                quote! {cxx::UniquePtr<ffi::#combined_name>}
+            }
             Self::F32 => quote! {f32},
             Self::F64 => quote! {f64},
             Self::I8 => quote! {i8},
@@ -263,6 +280,8 @@ pub fn generate_qobject_cxx(
                             //
                             // FIXME: can't put a custom name in the generation, needs to match
                             // the C++ ? Is a typedef on the C++ side enough?
+                            //
+                            // TODO: the solution here will likely be combined into extract phase?
                             let combined_name = format_ident!(
                                 "{}",
                                 rust_type_idents[rust_type_idents.len() - 2]
@@ -388,8 +407,18 @@ pub fn generate_qobject_cxx(
             }
 
             // Retrieve Object from crate::module::Object and swap to crate::module::FFICppObj
-            let (ptr_class_name, type_idents_ffi) =
-                type_idents_to_ptr_class_name_and_ffi_type(type_idents);
+            let (_, type_idents_ffi) = type_idents_to_ptr_class_name_and_ffi_type(type_idents);
+
+            // FIXME: can't put a custom name in the generation, needs to match
+            // the C++ ? Is a typedef on the C++ side enough?
+            //
+            // TODO: the solution here will likely be combined into extract phase?
+            let combined_name = format_ident!(
+                "{}",
+                type_idents[type_idents.len() - 2]
+                    .to_string()
+                    .to_case(Case::Pascal)
+            );
 
             // Add type definition for the class name we are a pointer for to the C++ bridge
             //
@@ -397,7 +426,7 @@ pub fn generate_qobject_cxx(
             cpp_types_push_unique(
                 &mut cpp_functions,
                 &mut cpp_types,
-                &ptr_class_name,
+                &combined_name,
                 type_idents_ffi,
             )?;
 
@@ -410,9 +439,9 @@ pub fn generate_qobject_cxx(
             // Add the getter and setter to C++ bridge
             cpp_functions.push(quote! {
                 #[rust_name = #getter_str]
-                fn #getter_cpp(self: Pin<&mut #class_name>) -> UniquePtr<#ptr_class_name>;
+                fn #getter_cpp(self: Pin<&mut #class_name>) -> UniquePtr<#combined_name>;
                 #[rust_name = #setter_str]
-                fn #setter_cpp(self: Pin<&mut #class_name>, value: UniquePtr<#ptr_class_name>);
+                fn #setter_cpp(self: Pin<&mut #class_name>, value: UniquePtr<#combined_name>);
             });
         // This is a normal primitive type so add Rust getters and setters
         } else {

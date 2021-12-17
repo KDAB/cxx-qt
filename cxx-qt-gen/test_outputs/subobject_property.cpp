@@ -13,14 +13,14 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-cxx_qt::sub_object::SubObject*
+cxx_qt::sub_object::CppObj*
 MyObject::getObj() const
 {
   return m_obj;
 }
 
 void
-MyObject::setObj(cxx_qt::sub_object::SubObject* value)
+MyObject::setObj(cxx_qt::sub_object::CppObj* value)
 {
   if (value != m_obj) {
     if (m_ownedObj) {
@@ -33,7 +33,7 @@ MyObject::setObj(cxx_qt::sub_object::SubObject* value)
   }
 }
 
-std::unique_ptr<cxx_qt::sub_object::SubObject>
+std::unique_ptr<cxx_qt::sub_object::CppObj>
 MyObject::takeObj()
 {
   auto value = std::move(m_ownedObj);
@@ -42,7 +42,7 @@ MyObject::takeObj()
 }
 
 void
-MyObject::giveObj(std::unique_ptr<cxx_qt::sub_object::SubObject> value)
+MyObject::giveObj(std::unique_ptr<cxx_qt::sub_object::CppObj> value)
 {
   Q_ASSERT(value.get() != m_obj);
 
