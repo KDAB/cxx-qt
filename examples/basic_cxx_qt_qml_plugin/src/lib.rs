@@ -16,7 +16,7 @@ mod my_object {
     pub struct Data {
         number: i32,
         string: String,
-        sub: crate::sub::sub_object::SubObject,
+        sub: crate::sub::sub_object::CppObj,
     }
 
     #[derive(Default)]
