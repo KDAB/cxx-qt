@@ -31,7 +31,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn double_number_sub(&self, sub: Pin<&mut crate::sub::sub_object::SubObject>) {
+        fn double_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
             let value = sub.number() * 2;
             sub.set_number(value);
         }

@@ -53,3 +53,5 @@ std::unique_ptr<CppObj>
 newCppObject();
 
 } // namespace cxx_qt::my_object
+
+Q_DECLARE_METATYPE(cxx_qt::my_object::CppObj*)

@@ -88,6 +88,19 @@ impl CppType for QtTypes {
     /// for example so that when Object uses SubObject it includes sub_object.h
     fn include_paths(&self) -> Vec<String> {
         match self {
+            // If we are an external CppObj then we need to build an include path
+            //
+            // TODO: once we generate sub folders for nested modules, this will need to use all
+            // type idents other than first and last.
+            // https://github.com/KDAB/cxx-qt/issues/19
+            Self::CppObj {
+                external,
+                cpp_type_idents,
+                ..
+            } if external == &true && cpp_type_idents.len() > 2 => vec![format!(
+                "#include \"cxx-qt-gen/include/{}.h\"",
+                cpp_type_idents[cpp_type_idents.len() - 2]
+            )],
             // If we are Pin<T> not to "this" then include the T
             Self::Pin {
                 is_this,
@@ -190,6 +203,10 @@ impl CppType for QtTypes {
     fn type_ident(&self) -> &str {
         match self {
             Self::Bool => "bool",
+            Self::CppObj {
+                cpp_type_idents_string,
+                ..
+            } => cpp_type_idents_string,
             Self::F32 => "float",
             Self::F64 => "double",
             Self::I8 => "qint8",
@@ -797,6 +814,12 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     }
 
     let namespace = obj.namespace.join("::");
+    // let combined_ident = obj.namespace
+    //     .iter()
+    //     .cloned()
+    //     .chain(vec!["FFICppObj".to_owned()])
+    //     .collect::<Vec<String>>()
+    //     .join("_").to_case(Case::Pascal);
 
     // Generate the C++ header part
     let header = formatdoc! {r#"
@@ -843,6 +866,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         std::unique_ptr<CppObj> newCppObject();
 
         }} // namespace {namespace}
+
+        Q_DECLARE_METATYPE({namespace}::CppObj*)
         "#,
     ident = struct_ident_str,
     invokables = invokables.headers.join("\n"),

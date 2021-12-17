@@ -14,10 +14,10 @@ MyObject::MyObject(QObject* parent)
 MyObject::~MyObject() = default;
 
 void
-MyObject::subTest(cxx_qt::sub_object::SubObject* sub)
+MyObject::subTest(cxx_qt::sub_object::CppObj* sub)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->subTest(*this, *sub);
+  m_rustObj->subTestWrapper(*this, *sub);
 }
 
 std::unique_ptr<CppObj>

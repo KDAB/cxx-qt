@@ -30,7 +30,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn increment_number_sub(&self, sub: Pin<&mut crate::sub::sub_object::SubObject>) {
+        fn increment_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
             let value = sub.number() + 1;
             sub.set_number(value);
         }

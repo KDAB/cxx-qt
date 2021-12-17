@@ -26,13 +26,16 @@ pub(crate) enum QtTypes {
     /// A CppObj which is being passed as a parameter in a method
     CppObj {
         /// Whether this CppObj is from the current module or another module
-        //
-        // FIXME: do we need to know this, or is the code generic enough?
         external: bool,
-        /// The ident of the type for C++ and Rust, eg
-        /// C++ - MyObject or cxx_qt::sub_object::SubObject
+        /// The ident of the type for C++, eg the MyObject or CppObj from:
+        /// C++ - MyObject or cxx_qt::sub_object::CppObj
+        cpp_type_idents: Vec<Ident>,
+        /// A cache of the C++ type as a string with the namespace
+        /// eg "cxx_qt::module::CppObj"
+        cpp_type_idents_string: String,
+        /// The ident of the type for Rust, eg the MyObject or CppObj from:
         /// Rust - MyObject or crate::sub_object::CppObj
-        type_ident: CppRustIdent,
+        rust_type_idents: Vec<Ident>,
     },
     F32,
     F64,
@@ -197,15 +200,9 @@ fn extract_qt_type(
             "bool" => Ok(QtTypes::Bool),
             "CppObj" => Ok(QtTypes::CppObj {
                 external: false,
-                // TODO: read ident from either the type if it starts with crate or module name
-                // if it has no ::
-                //
-                // TODO: external will have more than one ident, so will need to replace the
-                // is_type_ident_ptr section below
-                type_ident: CppRustIdent {
-                    cpp_ident: qt_ident.clone(),
-                    rust_ident: qt_ident.clone(),
-                },
+                cpp_type_idents: vec![qt_ident.clone()],
+                cpp_type_idents_string: qt_ident.to_string(),
+                rust_type_idents: vec![qt_ident.clone()],
             }),
             "f32" => Ok(QtTypes::F32),
             "f64" => Ok(QtTypes::F64),
@@ -223,6 +220,31 @@ fn extract_qt_type(
             "u32" => Ok(QtTypes::U32),
             _other => Ok(QtTypes::Unknown),
         }
+    // If the first ident is crate, the last is CppObj, and we have more than two parts
+    // then we are an external CppObj
+    } else if idents.len() > 2
+        && idents.first().unwrap().to_string().as_str() == "crate"
+        && idents.last().unwrap().to_string().as_str() == "CppObj"
+    {
+        let cpp_type_idents = cpp_namespace_prefix
+            .to_vec()
+            .iter()
+            .map(|s| quote::format_ident!("{}", s))
+            // TODO: once we generate sub folders for nested modules, this will need to use all
+            // type idents other than first and last. as the namespace will then reflect sub dirs
+            // https://github.com/KDAB/cxx-qt/issues/19
+            .chain(idents.iter().skip(idents.len() - 2).cloned())
+            .collect::<Vec<Ident>>();
+        Ok(QtTypes::CppObj {
+            external: true,
+            cpp_type_idents_string: cpp_type_idents
+                .iter()
+                .map(|ident| ident.to_string())
+                .collect::<Vec<String>>()
+                .join("::"),
+            cpp_type_idents,
+            rust_type_idents: idents.to_vec(),
+        })
     // As this type ident has more than one segment, check if it is a pointer
     } else if is_type_ident_ptr(idents) {
         // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here

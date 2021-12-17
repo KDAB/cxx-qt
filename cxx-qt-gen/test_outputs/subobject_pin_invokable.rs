@@ -26,8 +26,8 @@ mod my_object {
         extern "Rust" {
             type RustObj;
 
-            #[cxx_name = "subTest"]
-            fn sub_test(self: &RustObj, _cpp: Pin<&mut MyObject>, sub: Pin<&mut SubObject>);
+            #[cxx_name = "subTestWrapper"]
+            fn sub_test_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, sub: Pin<&mut SubObject>);
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -44,11 +44,17 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn sub_test(
+        fn sub_test_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             sub: std::pin::Pin<&mut crate::sub_object::FFICppObj>,
         ) {
+            let mut _cpp = CppObj::new(_cpp);
+            let mut sub = crate::sub_object::CppObj::new(sub);
+            return self.sub_test(&mut _cpp, &mut sub);
+        }
+
+        fn sub_test(&self, _cpp: &mut CppObj, sub: &mut crate::sub_object::CppObj) {
             println!("Bye from Rust!");
         }
     }

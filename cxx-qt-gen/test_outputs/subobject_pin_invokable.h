@@ -18,7 +18,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
-  Q_INVOKABLE void subTest(cxx_qt::sub_object::SubObject* sub);
+  Q_INVOKABLE void subTest(cxx_qt::sub_object::CppObj* sub);
 
 private:
   rust::Box<RustObj> m_rustObj;
@@ -32,3 +32,5 @@ std::unique_ptr<CppObj>
 newCppObject();
 
 } // namespace cxx_qt::my_object
+
+Q_DECLARE_METATYPE(cxx_qt::my_object::CppObj*)
