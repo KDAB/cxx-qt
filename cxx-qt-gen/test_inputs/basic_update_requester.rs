@@ -17,8 +17,8 @@ mod my_object {
         }
     }
 
-    impl UpdateRequestHandler<FFICppObj> for RustObj {
-        fn handle_update_request(&mut self, _cpp: Pin<&mut FFICppObj>) {
+    impl UpdateRequestHandler<CppObj> for RustObj {
+        fn handle_update_request(&mut self, _cpp: &mut CppObj) {
             println!("update")
         }
     }

@@ -93,5 +93,5 @@ unsafe impl Send for QPtr {}
 unsafe impl Sync for QPtr {}
 
 pub trait UpdateRequestHandler<C> {
-    fn handle_update_request(&mut self, cpp: std::pin::Pin<&mut C>);
+    fn handle_update_request(&mut self, cpp: &mut C);
 }

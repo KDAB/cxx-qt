@@ -66,7 +66,8 @@ mod my_object {
             cpp: std::pin::Pin<&mut FFICppObj>,
             property: Property,
         ) {
-            self.handle_property_change(cpp, property);
+            let mut cpp = CppObj::new(cpp);
+            self.handle_property_change(&mut cpp, property);
         }
     }
 
@@ -127,12 +128,8 @@ mod my_object {
         }
     }
 
-    impl PropertyChangeHandler<FFICppObj, Property> for RustObj {
-        fn handle_property_change(
-            &mut self,
-            _cpp: std::pin::Pin<&mut FFICppObj>,
-            _property: Property,
-        ) {
+    impl PropertyChangeHandler<CppObj, Property> for RustObj {
+        fn handle_property_change(&mut self, _cpp: &mut CppObj, _property: Property) {
             println!("change")
         }
     }
