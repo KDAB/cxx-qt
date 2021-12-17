@@ -3,7 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::utils::{is_type_ident_ptr, type_to_namespace};
+use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
 use proc_macro2::{Span, TokenStream};
@@ -52,13 +52,6 @@ pub(crate) enum QtTypes {
         is_this: bool,
         /// The ident of the inner type (eg the T of Pin<T>)
         type_idents: Vec<Ident>,
-    },
-    /// A pointer to a CppObj from another module which is a property
-    Ptr {
-        /// Cache of the last type ident as a str C++ and Rust to reference
-        ident_str: String,
-        /// Cache of the last type ident as a str with it's namespace for C++ to reference
-        ident_namespace_str: String,
     },
     QPointF,
     QString,
@@ -244,20 +237,6 @@ fn extract_qt_type(
                 .join("::"),
             cpp_type_idents,
             rust_type_idents: idents.to_vec(),
-        })
-    // As this type ident has more than one segment, check if it is a pointer
-    } else if is_type_ident_ptr(idents) {
-        // We can assume that last exists as there is at least one entry in idents, so unwrap() is fine here
-        let ident_str = idents.last().unwrap().to_string();
-        let mut namespace = type_to_namespace(cpp_namespace_prefix, idents)
-            // TODO: should we have our own error type? UnknownPtrNamespace?
-            .map_err(|_| ExtractTypeIdentError::InvalidType(original_ty.span()))?;
-        namespace.push(ident_str.clone());
-
-        Ok(QtTypes::Ptr {
-            ident_str,
-            // TODO: do we need to track is_ref here?
-            ident_namespace_str: namespace.join("::"),
         })
     // This is an unknown type that did not start with crate and has multiple parts
     } else {
