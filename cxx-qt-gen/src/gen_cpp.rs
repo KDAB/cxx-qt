@@ -72,7 +72,6 @@ impl CppType for QtTypes {
             Self::Bool => None,
             Self::F32 | Self::F64 => None,
             Self::I8 | Self::I16 | Self::I32 => None,
-            Self::Pin { .. } => None,
             Self::QPointF => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
@@ -100,15 +99,6 @@ impl CppType for QtTypes {
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 cpp_type_idents[cpp_type_idents.len() - 2]
             )],
-            // If we are Pin<T> not to "this" then include the T
-            Self::Pin {
-                is_this,
-                type_idents,
-                ..
-            } if is_this == &false && !type_idents.is_empty() => vec![format!(
-                "#include \"cxx-qt-gen/include/{}.h\"",
-                type_idents.last().unwrap().to_string().to_case(Case::Snake)
-            )],
             Self::QPointF => vec!["#include <QtCore/QPointF>".to_owned()],
             // FIXME: do we need both variant and qvariant here?
             Self::QVariant | Self::Variant => vec!["#include <QtCore/QVariant>".to_owned()],
@@ -126,7 +116,6 @@ impl CppType for QtTypes {
             Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
-            Self::Pin { .. } => false,
             Self::QPointF => true,
             Self::Str => true,
             Self::String => true,
@@ -142,7 +131,6 @@ impl CppType for QtTypes {
     fn is_pin(&self) -> bool {
         match self {
             Self::CppObj { .. } => true,
-            Self::Pin { .. } => true,
             _others => false,
         }
     }
@@ -151,7 +139,6 @@ impl CppType for QtTypes {
     fn is_ptr(&self) -> bool {
         match self {
             Self::CppObj { .. } => true,
-            Self::Pin { .. } => true,
             _other => false,
         }
     }
@@ -170,7 +157,6 @@ impl CppType for QtTypes {
             Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
-            Self::Pin { .. } => false,
             Self::QPointF => true,
             Self::Str => true,
             Self::String => true,
@@ -186,7 +172,6 @@ impl CppType for QtTypes {
     fn is_this(&self) -> bool {
         match self {
             Self::CppObj { external, .. } => external == &false,
-            Self::Pin { is_this, .. } => is_this == &true,
             _others => false,
         }
     }
@@ -204,14 +189,6 @@ impl CppType for QtTypes {
             Self::I8 => "qint8",
             Self::I16 => "qint16",
             Self::I32 => "qint32",
-            // Pin<T> where T is not is_this should use T as the CppType
-            Self::Pin {
-                ident_namespace_str,
-                is_this,
-                ..
-            } if is_this == &false => ident_namespace_str,
-            // Pin<T> where T is_this should not be used as a CppType argument as it's internal
-            Self::Pin { .. } => unreachable!(),
             Self::QPointF => "QPointF",
             Self::Str | Self::String | Self::QString => "QString",
             Self::QVariant | Self::Variant => "QVariant",

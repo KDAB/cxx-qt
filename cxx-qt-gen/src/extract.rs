@@ -42,17 +42,6 @@ pub(crate) enum QtTypes {
     I8,
     I16,
     I32,
-    // TODO: do we need Pin anymore?
-    Pin {
-        /// Cache of the last type_idents as a str with it's namespace for C++ to reference
-        ident_namespace_str: String,
-        /// Whether the inner type of this Pin is mut
-        is_mut: bool,
-        /// Whether the inner type of this Pin is the current type, and therefore "this" in C++
-        is_this: bool,
-        /// The ident of the inner type (eg the T of Pin<T>)
-        type_idents: Vec<Ident>,
-    },
     QPointF,
     QString,
     String,
@@ -161,8 +150,6 @@ enum ExtractTypeIdentError {
     IdentEmpty(Span),
     /// There are multiple idents but didn't start with crate::
     UnknownAndNotCrate(Span),
-    /// There is a Pin<T> but the T is unknown to our converters
-    UnknownPinType(Span),
 }
 
 /// Describe what the extract method should do when parsing an unknown type
@@ -297,101 +284,6 @@ fn extract_type_ident(
         }
         _others => {
             return Err(ExtractTypeIdentError::InvalidType(ty.span()));
-        }
-    }
-
-    // Check if this type is a Pin<T>, if it is then attempt to extract it
-    if let Some(segment) = ty_path.path.segments.first() {
-        if segment.ident.to_string().as_str() == "Pin" {
-            match &segment.arguments {
-                PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. })
-                    if args.len() == 1 =>
-                {
-                    let pin_is_mut;
-                    let ty_path;
-
-                    // We have already checked that args is of len 1
-                    match &args[0] {
-                        // We are &mut T
-                        GenericArgument::Type(Type::Reference(TypeReference {
-                            elem,
-                            mutability,
-                            ..
-                        })) => {
-                            pin_is_mut = mutability.is_some();
-
-                            if let Type::Path(path) = &**elem {
-                                ty_path = path;
-                            } else {
-                                return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
-                            }
-                        }
-                        // TODO: later we might want extra cases to handle non ref versions? Pin<T>
-                        _others => {
-                            return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
-                        }
-                    }
-
-                    // Convert our inner type to a list of idents
-                    let type_idents = path_to_idents(&ty_path.path)?;
-                    // Create the Qt type for the Pin
-                    let qt_type = QtTypes::Pin {
-                        // For a given Pin<crate::A::T> we want to make it cxx_qt::A::T
-                        ident_namespace_str: if let Some(ident) = type_idents.last() {
-                            let ident_str = ident.to_string();
-                            // Ignore Pin<&mut FFICppObj> from our namespaces for now
-                            //
-                            // TODO: does this need to be considered?
-                            if type_idents.len() == 1 && ident_str.as_str() == "FFICppObj" {
-                                ident_str
-                            } else {
-                                // Extract the namespace of the type
-                                let mut namespace =
-                                    type_to_namespace(cpp_namespace_prefix, &type_idents)
-                                        // TODO: should we have our own error type? UnknownPtrNamespace?
-                                        .map_err(|_| {
-                                            ExtractTypeIdentError::InvalidType(ty_path.span())
-                                        })?;
-                                namespace.push(ident_str);
-                                namespace.join("::")
-                            }
-                        } else {
-                            // There was no T part of Pin<T>
-                            //
-                            // TODO: could be it's own enum error? InvalidPinType?
-                            return Err(ExtractTypeIdentError::UnknownPinType(ty.span()));
-                        },
-                        is_mut: pin_is_mut,
-                        // If the T in Pin<T> is FFICppObj, then it is "this"
-                        is_this: if let Some(ident) = type_idents.first() {
-                            ident.to_string().as_str() == "FFICppObj"
-                        } else {
-                            false
-                        },
-                        type_idents,
-                    };
-                    // We put the Pin as our idents, the inner type goes into the QtType
-                    //
-                    // The gen_cpp and gen_rs don't use this as they'll special case Pin<T> when
-                    // it's an invokable argument to use the inner type.
-                    // It is only used in return types or Q_PROPERTY in gen_rs
-                    //
-                    // TODO: should Pin<T> be accepted for return types and Q_PROPERTY?
-                    let idents = vec![segment.ident.to_owned()];
-
-                    return Ok(ParameterType {
-                        // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
-                        // into an owned Vec<Ident>
-                        idents,
-                        is_mut,
-                        is_ref,
-                        // We need to have the original type so that errors can Span if there are no idents
-                        original_ty: ty.to_owned(),
-                        qt_type,
-                    });
-                }
-                _ => {}
-            }
         }
     }
 
@@ -557,9 +449,6 @@ pub(crate) fn extract_method_params(
                             Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
                                 return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
                             }
-                            Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                                return Err(Error::new(span, "Unknown argument Pin<T> type ident to parse").to_compile_error())
-                            }
                         }
                     }
                 }
@@ -624,12 +513,6 @@ fn extract_invokable(
                     "First return type ident segment must start with 'crate' if there are multiple",
                 )
                 .to_compile_error())
-            }
-            Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                return Err(
-                    Error::new(span, "Unknown return Pin<T> type ident to parse")
-                        .to_compile_error(),
-                )
             }
         }
     } else {
@@ -716,9 +599,6 @@ fn extract_properties(
                     }
                     Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
                         return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownPinType(span)) => {
-                        return Err(Error::new(span, "Unknown named field Pin<T> type ident to parse").to_compile_error())
                     }
                 }
 
