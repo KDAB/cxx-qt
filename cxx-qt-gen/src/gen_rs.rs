@@ -238,13 +238,54 @@ pub fn generate_qobject_cxx(
                 // If the type is Pin<T> then we need to change extract differently
                 match &p.type_ident.qt_type {
                     QtTypes::CppObj {
-                        external: _,
-                        type_ident,
+                        external,
+                        rust_type_idents,
+                        ..
                     } => {
-                        let rust_ident = &type_ident.rust_ident;
-                        parameters_quotes.push(quote! {
-                            _cpp: Pin<&mut #rust_ident>
-                        });
+                        if *external {
+                            // TODO: these two will likely replace type_idents_to_ptr_class_name_and_ffi_type
+                            // once we remove Ptr as a type
+                            let rust_type_idents = rust_type_idents
+                                .iter()
+                                .take(rust_type_idents.len() - 1)
+                                .cloned()
+                                .chain(vec![format_ident!("FFICppObj")])
+                                .collect::<Vec<Ident>>();
+                            // let combined_name = format_ident!(
+                            //     "{}",
+                            //     rust_type_idents
+                            //         .iter()
+                            //         .map(|ident| ident.to_string())
+                            //         .collect::<Vec<String>>()
+                            //         .join("_")
+                            //         .to_case(Case::Pascal)
+                            // );
+                            //
+                            // FIXME: can't put a custom name in the generation, needs to match
+                            // the C++ ? Is a typedef on the C++ side enough?
+                            let combined_name = format_ident!(
+                                "{}",
+                                rust_type_idents[rust_type_idents.len() - 2]
+                                    .to_string()
+                                    .to_case(Case::Pascal)
+                            );
+
+                            parameters_quotes.push(quote! {
+                                #ident: Pin<&mut #combined_name>
+                            });
+
+                            // Add the type of the external object to the C++ bridge
+                            cpp_types_push_unique(
+                                &mut cpp_functions,
+                                &mut cpp_types,
+                                &combined_name,
+                                rust_type_idents,
+                            )?;
+                        } else {
+                            parameters_quotes.push(quote! {
+                                #ident: Pin<&mut #(#rust_type_idents)::*>
+                            });
+                        }
                     }
                     QtTypes::Pin {
                         is_mut,
@@ -748,7 +789,7 @@ fn fix_method_params(
     // Extract parameters from the method
     let parameters = crate::extract::extract_method_params(
         &method,
-        &[""],
+        &["namespace"],
         &format_ident!("Object"),
         extract_options,
     )?;
@@ -851,11 +892,30 @@ fn invokable_generate_wrapper(
             quote! {}
         };
 
-        if let QtTypes::CppObj { external: _, .. } = param.type_ident.qt_type {
-            // TODO: consider external FFICppObj
-            input_parameters.push(quote! { #param_ident: std::pin::Pin<&mut FFICppObj> });
+        if let QtTypes::CppObj {
+            rust_type_idents, ..
+        } = &param.type_ident.qt_type
+        {
+            // Create Rust idents with CppObj and FFICppObj at the end
+            let rust_idents_module = rust_type_idents
+                .iter()
+                .take(rust_type_idents.len() - 1)
+                .cloned()
+                .collect::<Vec<Ident>>();
+            let rust_idents_ffi = rust_idents_module
+                .iter()
+                .cloned()
+                .chain(vec![format_ident!("FFICppObj")]);
+            let rust_idents_cpp_obj = rust_idents_module
+                .iter()
+                .cloned()
+                .chain(vec![format_ident!("CppObj")]);
+
+            input_parameters
+                .push(quote! { #param_ident: std::pin::Pin<&mut #(#rust_idents_ffi)::*> });
+
             wrappers.push(quote! {
-                let mut #param_ident = CppObj::new(#param_ident);
+                let mut #param_ident = #(#rust_idents_cpp_obj)::*::new(#param_ident);
             });
             output_parameters.push(quote! { #is_ref #is_mut #param_ident });
         } else {
