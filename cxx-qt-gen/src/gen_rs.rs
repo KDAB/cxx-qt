@@ -15,8 +15,6 @@ use crate::utils::{is_type_ident_ptr, type_to_namespace};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
-    /// Whether this type is a Pin<T>
-    fn is_pin(&self) -> bool;
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
     /// Whether this type is a this (eg the T in Pin<T>)
@@ -28,18 +26,9 @@ trait RustType {
 }
 
 impl RustType for QtTypes {
-    /// Whether this type is a Pin<T>, this is used to find args to rename Pin to std::pin::Pin
-    fn is_pin(&self) -> bool {
-        match self {
-            Self::Pin { .. } => true,
-            _others => false,
-        }
-    }
-
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
-            Self::Pin { .. } => unreachable!(),
             Self::QPointF => true,
             Self::Variant => true,
             Self::Str | Self::String => true,
@@ -51,7 +40,6 @@ impl RustType for QtTypes {
     fn is_this(&self) -> bool {
         match self {
             Self::CppObj { external, .. } => external == &false,
-            Self::Pin { is_this, .. } => is_this == &true,
             _others => false,
         }
     }
@@ -65,8 +53,6 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
-            Self::Pin { .. } => unreachable!(),
-            // Pointer types do not use this function (TODO: yet?)
             Self::QPointF => format_ident!("QPointF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::QVariant | Self::Variant => format_ident!("QVariant"),
@@ -103,7 +89,6 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
-            Self::Pin { .. } => unreachable!(),
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
             Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
@@ -299,43 +284,6 @@ pub fn generate_qobject_cxx(
                             parameters_quotes.push(quote! {
                                 #ident: Pin<&mut #(#rust_type_idents)::*>
                             });
-                        }
-                    }
-                    QtTypes::Pin {
-                        is_mut,
-                        is_this,
-                        type_idents,
-                        ..
-                    } => {
-                        // If the Pin<T> is to our own type, then we refer to the C++ class name
-                        // not the external crate (when it is a sub object)
-                        if *is_this {
-                            if *is_mut {
-                                parameters_quotes.push(quote! { #ident: Pin<&mut #class_name> });
-                            } else {
-                                parameters_quotes.push(quote! { #ident: Pin<&#class_name> });
-                            }
-                        } else {
-                            // Retrieve Object from crate::module::Object and swap to crate::module::FFICppObj
-                            let (ptr_class_name, type_idents_ffi) =
-                                type_idents_to_ptr_class_name_and_ffi_type(type_idents);
-
-                            // Add type definition for the struct name we are a Pin for to the Rust bridge
-                            //
-                            // Ensure that we only do this once
-                            cpp_types_push_unique(
-                                &mut cpp_functions,
-                                &mut cpp_types,
-                                &ptr_class_name,
-                                type_idents_ffi,
-                            )?;
-
-                            if *is_mut {
-                                parameters_quotes
-                                    .push(quote! { #ident: Pin<&mut #ptr_class_name> });
-                            } else {
-                                parameters_quotes.push(quote! { #ident: Pin<&#ptr_class_name> });
-                            }
                         }
                     }
                     _others => {
