@@ -113,24 +113,20 @@ mod website {
         }
     }
 
-    impl UpdateRequestHandler<FFICppObj> for RustObj {
-        fn handle_update_request(&mut self, cpp: Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-
+    impl UpdateRequestHandler<CppObj<'_>> for RustObj {
+        fn handle_update_request(&mut self, cpp: &mut CppObj) {
             while let Some(event) = self.event_queue.next().now_or_never() {
                 if let Some(event) = event {
-                    self.process_event(&event, &mut wrapper);
+                    self.process_event(&event, cpp);
                 }
             }
         }
     }
 
-    impl PropertyChangeHandler<FFICppObj, Property> for RustObj {
-        fn handle_property_change(&mut self, cpp: Pin<&mut FFICppObj>, property: Property) {
-            let mut wrapper = CppObj::new(cpp);
-
+    impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
+        fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
             match property {
-                Property::Url => self.refresh_title(&mut wrapper),
+                Property::Url => self.refresh_title(cpp),
                 Property::Title => println!("title changed"),
                 _ => unreachable!(),
             }

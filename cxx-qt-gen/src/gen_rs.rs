@@ -1102,7 +1102,8 @@ pub fn generate_qobject_rs(
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
             fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
-                self.handle_update_request(cpp);
+                let mut cpp = CppObj::new(cpp);
+                self.handle_update_request(&mut cpp);
             }
         }
     } else {
@@ -1113,7 +1114,8 @@ pub fn generate_qobject_rs(
     let handle_property_change = if obj.handle_property_change_impl.is_some() {
         quote! {
             fn call_handle_property_change(&mut self, cpp: std::pin::Pin<&mut FFICppObj>, property: Property) {
-                self.handle_property_change(cpp, property);
+                let mut cpp = CppObj::new(cpp);
+                self.handle_property_change(&mut cpp, property);
             }
         }
     } else {

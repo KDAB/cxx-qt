@@ -29,7 +29,7 @@ mod map_qt_value;
 pub use map_qt_value::*;
 
 pub trait PropertyChangeHandler<C, P> {
-    fn handle_property_change(&mut self, cpp: std::pin::Pin<&mut C>, property: P);
+    fn handle_property_change(&mut self, cpp: &mut C, property: P);
 }
 /// This mod contains private things that need to technically be pub so that
 /// they can be used inside macros. You should not use anything inside here
