@@ -39,7 +39,9 @@ private:
   std::unique_ptr<cxx_qt::sub_object::SubObject> m_ownedObj;
 };
 
-std::unique_ptr<MyObject>
+typedef MyObject CppObj;
+
+std::unique_ptr<CppObj>
 newCppObject();
 
 } // namespace cxx_qt::my_object

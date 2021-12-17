@@ -34,10 +34,10 @@ MyObject::staticMessage()
   return rustStrToQString(m_rustObj->staticMessage());
 }
 
-std::unique_ptr<MyObject>
+std::unique_ptr<CppObj>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return std::make_unique<CppObj>();
 }
 
 } // namespace cxx_qt::my_object

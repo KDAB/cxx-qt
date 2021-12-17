@@ -52,10 +52,10 @@ MyObject::giveObj(std::unique_ptr<cxx_qt::sub_object::SubObject> value)
   runOnGUIThread([&]() { Q_EMIT objChanged(); });
 }
 
-std::unique_ptr<MyObject>
+std::unique_ptr<CppObj>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return std::make_unique<CppObj>();
 }
 
 } // namespace cxx_qt::my_object

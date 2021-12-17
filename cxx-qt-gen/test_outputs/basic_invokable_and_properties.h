@@ -41,7 +41,9 @@ private:
   QString m_string;
 };
 
-std::unique_ptr<MyObject>
+typedef MyObject CppObj;
+
+std::unique_ptr<CppObj>
 newCppObject();
 
 } // namespace cxx_qt::my_object
