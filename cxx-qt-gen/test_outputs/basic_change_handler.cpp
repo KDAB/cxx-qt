@@ -65,10 +65,10 @@ MyObject::setString(const QString& value)
   }
 }
 
-std::unique_ptr<MyObject>
+std::unique_ptr<CppObj>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return std::make_unique<CppObj>();
 }
 
 } // namespace cxx_qt::my_object

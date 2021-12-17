@@ -838,7 +838,9 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             {private_method_headers}
         }};
 
-        std::unique_ptr<{ident}> newCppObject();
+        typedef {ident} CppObj;
+
+        std::unique_ptr<CppObj> newCppObject();
 
         }} // namespace {namespace}
         "#,
@@ -885,9 +887,9 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {private_method_sources}
 
-        std::unique_ptr<{ident}> newCppObject()
+        std::unique_ptr<CppObj> newCppObject()
         {{
-            return std::make_unique<{ident}>();
+            return std::make_unique<CppObj>();
         }}
 
         }} // namespace {namespace}

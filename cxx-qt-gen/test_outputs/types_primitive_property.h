@@ -76,7 +76,9 @@ private:
   quint32 m_uint32;
 };
 
-std::unique_ptr<MyObject>
+typedef MyObject CppObj;
+
+std::unique_ptr<CppObj>
 newCppObject();
 
 } // namespace cxx_qt::my_object

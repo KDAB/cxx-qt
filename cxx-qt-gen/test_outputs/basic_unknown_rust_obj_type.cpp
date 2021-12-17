@@ -13,10 +13,10 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
-std::unique_ptr<MyObject>
+std::unique_ptr<CppObj>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return std::make_unique<CppObj>();
 }
 
 } // namespace cxx_qt::my_object
