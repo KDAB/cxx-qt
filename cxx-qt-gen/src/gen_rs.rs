@@ -1075,7 +1075,7 @@ pub fn generate_qobject_rs(
 
     let wrapper_struct_impl = quote! {
         impl<'a> #rust_wrapper_name<'a> {
-            fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
+            pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
                 Self { cpp }
             }
 

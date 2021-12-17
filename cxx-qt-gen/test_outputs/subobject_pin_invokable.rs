@@ -58,7 +58,7 @@ mod my_object {
     }
 
     impl<'a> CppObj<'a> {
-        fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
+        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
             Self { cpp }
         }
 
