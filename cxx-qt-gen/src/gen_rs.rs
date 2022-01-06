@@ -726,6 +726,12 @@ pub fn generate_qobject_rs(
                     }
                 }
             }
+
+            impl<'a> From<&mut #rust_wrapper_name<'a>> for #data_struct_name {
+                fn from(#value_ident: &mut #rust_wrapper_name<'a>) -> Self {
+                    Self::from(&*#value_ident)
+                }
+            }
         }
     };
 

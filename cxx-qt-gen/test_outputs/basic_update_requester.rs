@@ -96,6 +96,12 @@ mod my_object {
         }
     }
 
+    impl<'a> From<&mut CppObj<'a>> for Data {
+        fn from(_value: &mut CppObj<'a>) -> Self {
+            Self::from(&*_value)
+        }
+    }
+
     impl UpdateRequestHandler<CppObj> for RustObj {
         fn handle_update_request(&mut self, _cpp: &mut CppObj) {
             println!("update")

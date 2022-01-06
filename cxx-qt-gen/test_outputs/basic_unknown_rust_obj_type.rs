@@ -77,6 +77,12 @@ mod my_object {
         }
     }
 
+    impl<'a> From<&mut CppObj<'a>> for Data {
+        fn from(_value: &mut CppObj<'a>) -> Self {
+            Self::from(&*_value)
+        }
+    }
+
     fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
