@@ -10,6 +10,7 @@ use crate::let_qvariant;
 use crate::qcolor::{Color, QColor};
 use crate::qpoint::QPoint;
 use crate::qpointf::QPointF;
+use crate::qrectf::QRectF;
 use crate::qsize::QSize;
 use crate::qsizef::QSizeF;
 use crate::qstring::QString;
@@ -55,6 +56,12 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QPoint) -> R, R> for QPoint {
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QPointF) -> R, R> for QPointF {
     fn map_qt_value(&self, map_func: fn(&mut C, &QPointF) -> R, context: &mut C) -> R {
+        map_func(context, self)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QRectF) -> R, R> for QRectF {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QRectF) -> R, context: &mut C) -> R {
         map_func(context, self)
     }
 }
