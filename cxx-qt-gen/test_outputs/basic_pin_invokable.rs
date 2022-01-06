@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::QString;
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {}
@@ -52,7 +54,7 @@ mod my_object {
         fn say_hi_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &cxx_qt_lib::QString,
+            string: &QString,
             number: i32,
         ) {
             let mut _cpp = CppObj::new(_cpp);
@@ -64,7 +66,7 @@ mod my_object {
             return self.say_bye(&mut _cpp);
         }
 
-        fn say_hi(&self, _cpp: &mut CppObj, string: &cxx_qt_lib::QString, number: i32) {
+        fn say_hi(&self, _cpp: &mut CppObj, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

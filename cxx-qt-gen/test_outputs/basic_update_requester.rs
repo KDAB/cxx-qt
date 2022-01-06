@@ -1,4 +1,5 @@
 mod my_object {
+    use cxx_qt_lib::QString;
     use cxx_qt_lib::UpdateRequestHandler;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
@@ -49,7 +50,7 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn say_hi(&self, string: &cxx_qt_lib::QString, number: i32) {
+        fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

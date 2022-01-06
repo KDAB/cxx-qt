@@ -152,14 +152,6 @@ enum ExtractTypeIdentError {
     UnknownAndNotCrate(Span),
 }
 
-/// Describe what the extract method should do when parsing an unknown type
-pub enum ExtractMethodUnknownOptions {
-    /// Do not error, add unknown as the QtType, and continue
-    IgnoreUnknownTypes,
-    /// Error when there is an unknown, as all types must be parsed
-    ParseAllTypes,
-}
-
 /// Extract the Qt type from a list of Ident's
 fn extract_qt_type(
     idents: &[Ident],
@@ -379,7 +371,6 @@ pub(crate) fn extract_method_params(
     method: &ImplItemMethod,
     cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
-    options: ExtractMethodUnknownOptions,
 ) -> Result<Vec<Parameter>, TokenStream> {
     method.sig.inputs
         .iter()
@@ -408,48 +399,25 @@ pub(crate) fn extract_method_params(
                 }
 
                 // Try to extract the type of the parameter
-                let extracted_type = extract_type_ident(ty, cpp_namespace_prefix, qt_ident);
-
-                match options {
-                    ExtractMethodUnknownOptions::IgnoreUnknownTypes => {
-                        match extracted_type {
-                            Ok(result) => type_ident = result,
-                            Err(_) => type_ident = ParameterType {
-                                // FIXME: does it matter that we don't have real values here
-                                // for idents and is_ref
-                                //
-                                // As this is only currently used when passing through
-                                // rust obj methods which aren't invokables
-                                idents: vec![],
-                                is_mut: false,
-                                is_ref: false,
-                                original_ty: (**ty).to_owned(),
-                                qt_type: QtTypes::Unknown
-                            }
-                        }
-                    },
-                    ExtractMethodUnknownOptions::ParseAllTypes => {
-                        match extracted_type {
-                            Ok(result) => type_ident = result,
-                            Err(ExtractTypeIdentError::InvalidArguments(span)) => {
-                                return Err(Error::new(
-                                    span,
-                                    "Argument should not be angle bracketed or parenthesized.",
-                                )
-                                .to_compile_error());
-                            }
-                            Err(ExtractTypeIdentError::InvalidType(span)) => {
-                                return Err(
-                                    Error::new(span, "Invalid argument ident format.").to_compile_error()
-                                )
-                            }
-                            Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                                return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
-                            }
-                            Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
-                                return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                            }
-                        }
+                match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
+                    Ok(result) => type_ident = result,
+                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+                        return Err(Error::new(
+                            span,
+                            "Argument should not be angle bracketed or parenthesized.",
+                        )
+                        .to_compile_error());
+                    }
+                    Err(ExtractTypeIdentError::InvalidType(span)) => {
+                        return Err(
+                            Error::new(span, "Invalid argument ident format.").to_compile_error()
+                        )
+                    }
+                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                        return Err(Error::new(span, "Argument type ident must have at least one segment").to_compile_error())
+                    }
+                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                        return Err(Error::new(span, "First argument type ident segment must start with 'crate' if there are multiple").to_compile_error())
                     }
                 }
 
@@ -480,12 +448,7 @@ fn extract_invokable(
     let method_ident = &method.sig.ident;
     let output = &method.sig.output;
 
-    let parameters = extract_method_params(
-        method,
-        cpp_namespace_prefix,
-        qt_ident,
-        ExtractMethodUnknownOptions::ParseAllTypes,
-    )?;
+    let parameters = extract_method_params(method, cpp_namespace_prefix, qt_ident)?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {
         // This output has a return type, so extract the type
