@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::QString;
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {}
@@ -50,7 +52,7 @@ mod my_object {
             number * 2
         }
 
-        fn hello_message(&self, msg: &cxx_qt_lib::QString) -> String {
+        fn hello_message(&self, msg: &QString) -> String {
             format!("Hello {}", msg)
         }
 

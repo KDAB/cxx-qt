@@ -7,6 +7,8 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 pub mod sub_object {
+    use cxx_qt_lib::QString;
+
     #[derive(Default)]
     pub struct Data {
         number: i32,

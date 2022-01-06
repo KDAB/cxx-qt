@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::QString;
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {}
@@ -72,7 +74,7 @@ mod my_object {
         fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &cxx_qt_lib::QString,
+            string: &QString,
         ) -> String {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_string(&mut _cpp, string);
@@ -91,7 +93,7 @@ mod my_object {
             pointf
         }
 
-        fn test_string(&self, _cpp: &mut CppObj, string: &cxx_qt_lib::QString) -> String {
+        fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
             string.to_rust()
         }
 

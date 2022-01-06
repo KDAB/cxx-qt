@@ -7,10 +7,8 @@ use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
-use syn::spanned::Spanned;
-use syn::ImplItemMethod;
 
-use crate::extract::{ExtractMethodUnknownOptions, Invokable, QObject, QtTypes};
+use crate::extract::{Invokable, QObject, QtTypes};
 use crate::utils::{is_type_ident_ptr, type_to_namespace};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -659,186 +657,6 @@ fn build_struct_with_fields(
     }
 }
 
-/// Add std::pin to Pin arguments in a method
-fn fix_pin_path(method: &mut ImplItemMethod, pin_args: &[usize]) -> Result<(), TokenStream> {
-    // Rewrite args
-    method
-        .sig
-        .inputs
-        .iter_mut()
-        // We can skip self as that's not in our parameters above
-        //
-        // TODO: note this assumes that the first argument is self
-        .skip(1)
-        // We only want to rewrite pinned args
-        .enumerate()
-        .filter(|(index, _)| pin_args.contains(index))
-        // Rewrite the type
-        //
-        // We add std::pin to Pin, and swap the last type inside a Pin<&a::T> from T to FFICppObj
-        .map(|(_, item)| {
-            if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
-                let ty_path;
-
-                match ty.as_mut() {
-                    syn::Type::Path(ref mut path) => {
-                        ty_path = path;
-                    }
-                    // TODO: do we support TypeReference for &Pin<T>?
-                    // Type::Reference(TypeReference { elem, .. }) => {
-                    //     // If the type is a path then extract it and mark is_ref
-                    //     if let Type::Path(path) = &**elem {
-                    //         ty_path = path;
-                    //     }
-                    // }
-                    //
-                    _others => {
-                        return Err(syn::Error::new(
-                            item.span(),
-                            "Pin<T> argument must be a path, we do not support reference yet",
-                        )
-                        .to_compile_error())
-                    }
-                }
-
-                // Add std::pin to Pin
-                ty_path.path.segments.insert(0, format_ident!("std").into());
-                ty_path.path.segments.insert(1, format_ident!("pin").into());
-
-                // From a::Pin<&b::T> we want Pin<&b::T> (we ultimately want to get to T)
-                if let Some(segment) = ty_path.path.segments.last_mut() {
-                    // From Pin<&b::T> we want &b::T
-                    if let syn::PathArguments::AngleBracketed(arguments) = &mut segment.arguments {
-                        // From &b::T we want b::T
-                        //
-                        // TODO: do we need to support non reference? or will it always be reference?
-                        if let Some(syn::GenericArgument::Type(syn::Type::Reference(
-                            syn::TypeReference { elem, .. },
-                        ))) = arguments.args.first_mut()
-                        {
-                            if let syn::Type::Path(arg_path) = &mut **elem {
-                                // From b::T we want T
-                                if let Some(segment) = arg_path.path.segments.last_mut() {
-                                    // Always set last type in Pin<T> to FFICppObj
-                                    segment.ident = format_ident!("FFICppObj");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Ok(item)
-        })
-        .collect::<Result<Vec<_>, TokenStream>>()?;
-
-    Ok(())
-}
-
-/// Add std::pin to Pin and cxx_qt_lib::qstring to QString arguments for all impl methods
-fn fix_impl_methods(impl_: &syn::ItemImpl) -> Result<TokenStream, TokenStream> {
-    let mut cloned = impl_.to_owned();
-
-    for mut item in &mut cloned.items {
-        if let syn::ImplItem::Method(m) = &mut item {
-            *m = fix_method_params(m, ExtractMethodUnknownOptions::ParseAllTypes)?;
-        } else {
-            return Err(
-                syn::Error::new(item.span(), "Only methods are supported.").to_compile_error()
-            );
-        }
-    }
-
-    Ok(quote! { #cloned })
-}
-
-/// Add std::pin to Pin and cxx_qt_lib::qstring to QString arguments
-fn fix_method_params(
-    method: &ImplItemMethod,
-    extract_options: ExtractMethodUnknownOptions,
-) -> Result<ImplItemMethod, TokenStream> {
-    let mut method = method.clone();
-
-    // Extract parameters from the method
-    let parameters = crate::extract::extract_method_params(
-        &method,
-        &["namespace"],
-        &format_ident!("Object"),
-        extract_options,
-    )?;
-
-    // Find which arguments are using Pin<T>
-    let pin_args = parameters
-        .iter()
-        .enumerate()
-        .filter(|(_, parameter)| parameter.type_ident.qt_type.is_pin())
-        .map(|(index, _)| index)
-        .collect::<Vec<usize>>();
-
-    let qstring_args = parameters
-        .iter()
-        .enumerate()
-        .filter(|(_, parameter)| parameter.type_ident.qt_type == QtTypes::QString)
-        .map(|(index, _)| index)
-        .collect::<Vec<usize>>();
-
-    if !pin_args.is_empty() {
-        fix_pin_path(&mut method, &pin_args)?;
-    }
-
-    if !qstring_args.is_empty() {
-        // Rewrite args
-        method
-            .sig
-            .inputs
-            .iter_mut()
-            // We can skip self as that's not in our parameters above
-            //
-            // TODO: note this assumes that the first argument is self
-            .skip(1)
-            .enumerate()
-            .filter(|(index, _)| qstring_args.contains(index))
-            // Rewrite the type
-            //
-            // We add cxx_qt_lib to QString
-            .map(|(_, item)| {
-                if let syn::FnArg::Typed(syn::PatType { ref mut ty, .. }) = item {
-                    let ty_path;
-
-                    match ty.as_mut() {
-                        syn::Type::Reference(syn::TypeReference { elem, .. }) => {
-                            // If the type is a path then extract it and mark is_ref
-                            if let syn::Type::Path(ref mut path) = &mut **elem {
-                                ty_path = path;
-                            } else {
-                                return Err(syn::Error::new(
-                                    item.span(),
-                                    "QString args must be valid references.",
-                                )
-                                .to_compile_error());
-                            }
-                        }
-                        _others => {
-                            return Err(syn::Error::new(
-                                item.span(),
-                                "QString args must be references.",
-                            )
-                            .to_compile_error())
-                        }
-                    }
-
-                    ty_path
-                        .path
-                        .segments
-                        .insert(0, format_ident!("cxx_qt_lib").into());
-                }
-                Ok(item)
-            })
-            .collect::<Result<Vec<_>, TokenStream>>()?;
-    }
-
-    Ok(method)
-}
-
 /// Generate the wrapper method for a given invokable
 fn invokable_generate_wrapper(
     invokable: &Invokable,
@@ -891,17 +709,8 @@ fn invokable_generate_wrapper(
             });
             output_parameters.push(quote! { #is_ref #is_mut #param_ident });
         } else {
-            // FIXME: we need to add cxx_qt_lib:: to &QString, but can this be generic ? or can we
-            // pull QString into the scope of this module so it can be &QString ?
-            //
-            // For now this replicates the QString part of fix_method_params, the Pin part will
-            // disappear in a future commit, so don't implement here.
-            if let QtTypes::QString = param.type_ident.qt_type {
-                input_parameters.push(quote! { #param_ident: &cxx_qt_lib::QString });
-            } else {
-                let param_type = &param.type_ident.original_ty;
-                input_parameters.push(quote! { #param_ident: #param_type });
-            }
+            let param_type = &param.type_ident.original_ty;
+            input_parameters.push(quote! { #param_ident: #param_type });
             output_parameters.push(quote! { #param_ident });
         }
     }
@@ -1013,19 +822,9 @@ pub fn generate_qobject_rs(
     let invokable_methods = obj
         .invokables
         .iter()
-        .map(|m| {
-            fix_method_params(
-                &m.original_method,
-                ExtractMethodUnknownOptions::ParseAllTypes,
-            )
-        })
-        .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
-
-    let normal_methods = obj
-        .normal_methods
-        .iter()
-        .map(|m| fix_method_params(m, ExtractMethodUnknownOptions::IgnoreUnknownTypes))
-        .collect::<Result<Vec<syn::ImplItemMethod>, TokenStream>>()?;
+        .map(|m| m.original_method.clone())
+        .collect::<Vec<syn::ImplItemMethod>>();
+    let normal_methods = &obj.normal_methods;
 
     let original_trait_impls = &obj.original_trait_impls;
     let original_passthrough_decls = &obj.original_passthrough_decls;
@@ -1138,17 +937,8 @@ pub fn generate_qobject_rs(
         use_traits.push(quote! { use cxx_qt_lib::PropertyChangeHandler; });
     }
 
-    let handle_updates_impl = if let Some(impl_) = &obj.handle_updates_impl {
-        fix_impl_methods(impl_)?
-    } else {
-        quote! {}
-    };
-
-    let handle_property_change_impl = if let Some(impl_) = &obj.handle_property_change_impl {
-        fix_impl_methods(impl_)?
-    } else {
-        quote! {}
-    };
+    let handle_updates_impl = &obj.handle_updates_impl;
+    let handle_property_change_impl = &obj.handle_property_change_impl;
 
     // Build our rewritten module that replaces the input from the macro
     let output = quote! {

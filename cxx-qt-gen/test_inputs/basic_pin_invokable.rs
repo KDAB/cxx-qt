@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::QString;
+
     #[derive(Default)]
     struct RustObj;
 
