@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPointF, QSizeF, QString,
-    QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QSizeF,
+    QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -40,6 +40,7 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
         type QVariant = cxx_qt_lib::QVariant;
         type QSizeF = cxx_qt_lib::QSizeF;
+        type QPoint = cxx_qt_lib::QPoint;
         type QPointF = cxx_qt_lib::QPointF;
 
         #[namespace = "CxxQt"]
@@ -66,6 +67,11 @@ mod ffi {
         fn make_variant(test: VariantTest) -> Variant;
         fn can_construct_qvariant(test: VariantTest) -> bool;
         fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
+
+        fn construct_qpoint() -> QPoint;
+        fn read_qpoint(p: &QPoint) -> bool;
+        fn copy_qpoint(p: &QPoint) -> QPoint;
+        fn copy_value_qpoint(p: QPoint) -> QPoint;
 
         fn construct_qpointf() -> QPointF;
         fn read_qpointf(p: &QPointF) -> bool;
@@ -274,6 +280,22 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn construct_qpoint() -> QPoint {
+    QPoint::new(2, 4)
+}
+
+fn read_qpoint(p: &QPoint) -> bool {
+    p.x() == 2 && p.y() == 4
+}
+
+fn copy_qpoint(p: &QPoint) -> QPoint {
+    *p
+}
+
+fn copy_value_qpoint(p: QPoint) -> QPoint {
+    p
 }
 
 fn construct_qpointf() -> QPointF {

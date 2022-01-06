@@ -183,6 +183,35 @@ TEST_CASE("Can read a QVariant on the Rust side")
     can_read_qvariant(QVariant::fromValue<quint32>(8910), VariantTest::U32));
 }
 
+TEST_CASE("Can construct a QPoint on the Rust side")
+{
+  const auto p = construct_qpoint();
+  CHECK(p.x() == 2);
+  CHECK(p.y() == 4);
+}
+
+TEST_CASE("Can read a QPoint on the Rust side")
+{
+  const auto p = QPoint(2, 4);
+  CHECK(read_qpoint(p));
+}
+
+TEST_CASE("Can copy a QPoint on the Rust side")
+{
+  const auto p = QPoint(2, 4);
+  const auto c = copy_qpoint(p);
+  CHECK(c.x() == 2);
+  CHECK(c.y() == 4);
+}
+
+TEST_CASE("Can copy a value QPoint on the Rust side")
+{
+  const auto p = QPoint(2, 4);
+  const auto c = copy_value_qpoint(p);
+  CHECK(c.x() == 2);
+  CHECK(c.y() == 4);
+}
+
 TEST_CASE("Can construct a QPointF on the Rust side")
 {
   const auto p = construct_qpointf();

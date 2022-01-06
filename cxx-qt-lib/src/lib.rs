@@ -19,6 +19,9 @@ pub use qsizef::QSizeF;
 mod qstring;
 pub use qstring::QString;
 
+mod qpoint;
+pub use qpoint::QPoint;
+
 mod qpointf;
 pub use qpointf::QPointF;
 
