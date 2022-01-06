@@ -13,6 +13,27 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
+const QPoint&
+MyObject::getPoint() const
+{
+  return m_point;
+}
+
+void
+MyObject::setPoint(const QPoint& value)
+{
+  if (!m_initialised) {
+    m_point = value;
+    return;
+  }
+
+  if (value != m_point) {
+    m_point = value;
+
+    runOnGUIThread([&]() { Q_EMIT pointChanged(); });
+  }
+}
+
 const QPointF&
 MyObject::getPointf() const
 {

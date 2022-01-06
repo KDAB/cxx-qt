@@ -27,6 +27,47 @@ TestCase {
         }
     }
 
+    // QPoint
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qpoint_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "pointChanged",
+            target: mock,
+        });
+        compare(mock.point, Qt.point(1, 3));
+
+        compare(spy.count, 0);
+        mock.point = Qt.point(10, 30);
+        tryCompare(spy, "count", 1);
+        compare(mock.point, Qt.point(10, 30));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qpoint_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testPointInvokable(Qt.point(10, 30));
+        compare(result, Qt.point(20, 90));
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qpoint_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "pointChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.point, Qt.point(1, 3));
+        mock.testPointProperty();
+        compare(mock.point, Qt.point(2, 9));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QPointF
 
     // Check that we can adjust the property for the type and it has non default value

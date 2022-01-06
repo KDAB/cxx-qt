@@ -8,9 +8,10 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod mock_qt_types {
-    use cxx_qt_lib::{let_qvariant, QPointF, QVariant, Variant, VariantImpl};
+    use cxx_qt_lib::{let_qvariant, QPoint, QPointF, QVariant, Variant, VariantImpl};
 
     pub struct Data {
+        point: QPoint,
         pointf: QPointF,
         variant: Variant,
     }
@@ -18,6 +19,7 @@ mod mock_qt_types {
     impl Default for Data {
         fn default() -> Self {
             Data {
+                point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
                 variant: Variant::from_i32(1),
             }
@@ -28,6 +30,22 @@ mod mock_qt_types {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
+        fn test_point_property(&self, cpp: &mut CppObj) {
+            let mut point = *cpp.point();
+            point.set_x(point.x() * 2);
+            point.set_y(point.y() * 3);
+            cpp.set_point(&point);
+        }
+
+        #[invokable]
+        fn test_point_invokable(&self, point: &QPoint) -> QPoint {
+            let mut point = *point;
+            point.set_x(point.x() * 2);
+            point.set_y(point.y() * 3);
+            point
+        }
+
         #[invokable]
         fn test_pointf_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.pointf();

@@ -13,6 +13,13 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
+QPoint
+MyObject::testPoint(const QPoint& point)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return m_rustObj->testPointWrapper(*this, point);
+}
+
 QPointF
 MyObject::testPointf(const QPointF& pointf)
 {

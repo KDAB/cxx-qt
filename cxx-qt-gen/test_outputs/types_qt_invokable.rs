@@ -10,6 +10,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QPoint = cxx_qt_lib::QPoint;
+            #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
@@ -25,6 +27,9 @@ mod my_object {
 
         extern "Rust" {
             type RustObj;
+
+            #[cxx_name = "testPointWrapper"]
+            fn test_point_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, point: &QPoint) -> QPoint;
 
             #[cxx_name = "testPointfWrapper"]
             fn test_pointf_wrapper(
@@ -62,6 +67,15 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
+        fn test_point_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            point: &QPoint,
+        ) -> QPoint {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_point(&mut _cpp, point);
+        }
+
         fn test_pointf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
@@ -87,6 +101,10 @@ mod my_object {
         ) -> Variant {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_variant(&mut _cpp, variant);
+        }
+
+        fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
+            point
         }
 
         fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {

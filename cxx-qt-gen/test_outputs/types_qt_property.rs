@@ -2,6 +2,7 @@ mod my_object {
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {
+            Point,
             Pointf,
             String,
             Variant,
@@ -12,6 +13,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QPoint = cxx_qt_lib::QPoint;
+            #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
@@ -20,6 +23,11 @@ mod my_object {
 
             #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
+
+            #[rust_name = "point"]
+            fn getPoint(self: &MyObject) -> &QPoint;
+            #[rust_name = "set_point"]
+            fn setPoint(self: Pin<&mut MyObject>, value: &QPoint);
 
             #[rust_name = "pointf"]
             fn getPointf(self: &MyObject) -> &QPointF;
@@ -68,6 +76,14 @@ mod my_object {
             Self { cpp }
         }
 
+        pub fn point(&self) -> &cxx_qt_lib::QPoint {
+            self.cpp.point()
+        }
+
+        pub fn set_point(&mut self, value: &cxx_qt_lib::QPoint) {
+            self.cpp.as_mut().set_point(value);
+        }
+
         pub fn pointf(&self) -> &cxx_qt_lib::QPointF {
             self.cpp.pointf()
         }
@@ -102,6 +118,8 @@ mod my_object {
         pub fn grab_values_from_data(&mut self, data: &Data) {
             use cxx_qt_lib::MapQtValue;
 
+            data.point
+                .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
                 .map_qt_value(|context, converted| context.set_pointf(converted), self);
             data.string
@@ -113,6 +131,7 @@ mod my_object {
 
     #[derive(Default)]
     struct Data {
+        point: QPoint,
         pointf: QPointF,
         string: String,
         variant: Variant,
@@ -121,6 +140,7 @@ mod my_object {
     impl<'a> From<&CppObj<'a>> for Data {
         fn from(value: &CppObj<'a>) -> Self {
             Self {
+                point: value.point().into(),
                 pointf: value.pointf().into(),
                 string: value.string().into(),
                 variant: value.variant().into(),
