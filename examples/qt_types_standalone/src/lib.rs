@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QSize,
-    QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRectF,
+    QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -43,6 +43,7 @@ mod ffi {
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPoint = cxx_qt_lib::QPoint;
         type QPointF = cxx_qt_lib::QPointF;
+        type QRectF = cxx_qt_lib::QRectF;
 
         #[namespace = "CxxQt"]
         type Variant = cxx_qt_lib::Variant;
@@ -78,6 +79,11 @@ mod ffi {
         fn read_qpointf(p: &QPointF) -> bool;
         fn copy_qpointf(p: &QPointF) -> QPointF;
         fn copy_value_qpointf(p: QPointF) -> QPointF;
+
+        fn construct_qrectf() -> QRectF;
+        fn read_qrectf(p: &QRectF) -> bool;
+        fn copy_qrectf(p: &QRectF) -> QRectF;
+        fn copy_value_qrectf(p: QRectF) -> QRectF;
 
         fn construct_qsize() -> QSize;
         fn read_qsize(p: &QSize) -> bool;
@@ -317,6 +323,25 @@ fn copy_qpointf(p: &QPointF) -> QPointF {
 }
 
 fn copy_value_qpointf(p: QPointF) -> QPointF {
+    p
+}
+
+fn construct_qrectf() -> QRectF {
+    QRectF::new(1.23, 4.56, 2.46, 9.12)
+}
+
+fn read_qrectf(p: &QRectF) -> bool {
+    ((p.x() - 1.23).abs() < f64::EPSILON)
+        && ((p.y() - 4.56).abs() < f64::EPSILON)
+        && ((p.width() - 2.46).abs() < f64::EPSILON)
+        && ((p.height() - 9.12).abs() < f64::EPSILON)
+}
+
+fn copy_qrectf(p: &QRectF) -> QRectF {
+    *p
+}
+
+fn copy_value_qrectf(p: QRectF) -> QRectF {
     p
 }
 
