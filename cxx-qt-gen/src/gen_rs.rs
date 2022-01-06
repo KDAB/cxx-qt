@@ -9,7 +9,7 @@ use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
 
 use crate::extract::{Invokable, QObject, QtTypes};
-use crate::utils::{is_type_ident_ptr, type_to_namespace};
+use crate::utils::type_to_namespace;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
@@ -336,8 +336,8 @@ pub fn generate_qobject_cxx(
         let property_ident_snake = property.ident.rust_ident.to_string().to_case(Case::Snake);
         let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
 
-        // This type is a pointer, so special case the C++ functions and no Rust functions
-        if is_type_ident_ptr(type_idents) {
+        // This type is a pointer (CppObj), so special case the C++ functions and no Rust functions
+        if let QtTypes::CppObj { .. } = property.type_ident.qt_type {
             // Check that type_idents is not empty
             if type_idents.is_empty() {
                 return Err(syn::Error::new(
@@ -538,7 +538,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
         let cpp_getter_ident = &property.getter.as_ref().unwrap().rust_ident;
         let cpp_setter_ident = &property.setter.as_ref().unwrap().rust_ident;
 
-        if is_type_ident_ptr(&property.type_ident.idents) {
+        if let QtTypes::CppObj { .. } = property.type_ident.qt_type {
             let ident = &property.ident.rust_ident;
             let take_ident = format_ident!("take_{}", ident);
             let give_ident = format_ident!("give_{}", ident);
@@ -580,52 +580,6 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
     }
 
     Ok(property_methods)
-}
-
-fn is_field_ptr(field: &syn::Field) -> bool {
-    // Determine the type of the field
-    let ty_path;
-    match &field.ty {
-        syn::Type::Path(path) => {
-            ty_path = path;
-        }
-        syn::Type::Reference(syn::TypeReference { elem, .. }) => {
-            if let syn::Type::Path(path) = &**elem {
-                ty_path = path;
-            } else {
-                // Unknown type, just ignore so we pass through
-                return true;
-            }
-        }
-        _others => {
-            // Unknown type, just ignore so we pass through
-            return true;
-        }
-    }
-
-    // Filter any fields that have a type which is a pointer
-    !is_type_ident_ptr(
-        &ty_path
-            .path
-            .segments
-            .iter()
-            .map(|segment| segment.ident.to_owned())
-            .collect::<Vec<syn::Ident>>(),
-    )
-}
-
-/// Return the fields of the struct filtered by the given closure
-fn filter_fields<F: Fn(&syn::Field) -> bool>(
-    original_struct: &syn::ItemStruct,
-    filter_closure: F,
-) -> Vec<&syn::Field> {
-    // Filter the fields of the struct to remove any pointer fields
-    // as they are instead stored in the C++ object and not owned by the rust side
-    original_struct
-        .fields
-        .iter()
-        .filter(|field| filter_closure(field))
-        .collect::<Vec<&syn::Field>>()
 }
 
 /// Builds a struct with th given new fields
@@ -769,7 +723,18 @@ pub fn generate_qobject_rs(
     // do we need to rewrite the field to their data struct?
     let data_struct_name = &obj.original_data_struct.ident;
     // Build a list of the fields that aren't pointers as they are stored on C++ side
-    let data_fields_no_ptr = filter_fields(&obj.original_data_struct, is_field_ptr);
+    let data_fields_no_ptr = obj
+        .properties
+        .iter()
+        .zip(&obj.original_data_struct.fields)
+        .filter_map(|(prop, field)| {
+            if let QtTypes::CppObj { .. } = prop.type_ident.qt_type {
+                None
+            } else {
+                Some(field)
+            }
+        })
+        .collect::<Vec<&syn::Field>>();
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
     let data_struct = build_struct_with_fields(&obj.original_data_struct, &data_fields_no_ptr);
 
@@ -833,11 +798,12 @@ pub fn generate_qobject_rs(
     let initialiser_fn = generate_cpp_object_initialiser(obj);
 
     // Build our filtered rust struct
-    //
-    // TODO: once fields are stored on this C++ side, this can change
     let rust_struct = build_struct_with_fields(
         &obj.original_rust_struct,
-        &filter_fields(&obj.original_rust_struct, is_field_ptr),
+        &obj.original_rust_struct
+            .fields
+            .iter()
+            .collect::<Vec<&syn::Field>>(),
     );
 
     // Define a function to handle update requests if we have one
