@@ -36,6 +36,15 @@ pub(crate) enum QtTypes {
         /// The ident of the type for Rust, eg the MyObject or CppObj from:
         /// Rust - MyObject or crate::sub_object::CppObj
         rust_type_idents: Vec<Ident>,
+        /// The combined name of the type, this is a single word which is used
+        /// as the type name of the C++ type in the Rust cxx bridge
+        /// eg MyObject or SubObject
+        /// This needs the match the name of the C++ class without namespace
+        /// as we add this in the macro attribute
+        //
+        // TODO: later can we use the fully qualified path
+        // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
+        combined_name: Ident,
     },
     F32,
     F64,
@@ -175,6 +184,7 @@ fn extract_qt_type(
                 cpp_type_idents: vec![qt_ident.clone()],
                 cpp_type_idents_string: qt_ident.to_string(),
                 rust_type_idents: vec![qt_ident.clone()],
+                combined_name: qt_ident.clone(),
             }),
             "f32" => Ok(QtTypes::F32),
             "f64" => Ok(QtTypes::F64),
@@ -216,6 +226,12 @@ fn extract_qt_type(
                 .join("::"),
             cpp_type_idents,
             rust_type_idents: idents.to_vec(),
+            // TODO: later can we use the fully qualified path
+            // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
+            combined_name: quote::format_ident!(
+                "{}",
+                idents[idents.len() - 2].to_string().to_case(Case::Pascal)
+            ),
         })
     // This is an unknown type that did not start with crate and has multiple parts
     } else {
