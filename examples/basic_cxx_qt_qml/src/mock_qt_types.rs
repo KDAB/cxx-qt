@@ -8,11 +8,12 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod mock_qt_types {
-    use cxx_qt_lib::{let_qvariant, QPoint, QPointF, QVariant, Variant, VariantImpl};
+    use cxx_qt_lib::{let_qvariant, QPoint, QPointF, QSizeF, QVariant, Variant, VariantImpl};
 
     pub struct Data {
         point: QPoint,
         pointf: QPointF,
+        sizef: QSizeF,
         variant: Variant,
     }
 
@@ -21,6 +22,7 @@ mod mock_qt_types {
             Data {
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
+                sizef: QSizeF::new(1.0, 3.0),
                 variant: Variant::from_i32(1),
             }
         }
@@ -60,6 +62,22 @@ mod mock_qt_types {
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             point
+        }
+
+        #[invokable]
+        fn test_sizef_property(&self, cpp: &mut CppObj) {
+            let mut size = *cpp.sizef();
+            size.set_width(size.width() * 2.0);
+            size.set_height(size.height() * 3.0);
+            cpp.set_sizef(&size);
+        }
+
+        #[invokable]
+        fn test_sizef_invokable(&self, size: &QSizeF) -> QSizeF {
+            let mut size = *size;
+            size.set_width(size.width() * 2.0);
+            size.set_height(size.height() * 3.0);
+            size
         }
 
         #[invokable]

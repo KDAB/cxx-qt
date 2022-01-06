@@ -63,3 +63,9 @@ unsafe impl ExternType for QSizeF {
     type Id = type_id!("QSizeF");
     type Kind = cxx::kind::Trivial;
 }
+
+impl From<&QSizeF> for QSizeF {
+    fn from(sizef: &QSizeF) -> Self {
+        *sizef
+    }
+}

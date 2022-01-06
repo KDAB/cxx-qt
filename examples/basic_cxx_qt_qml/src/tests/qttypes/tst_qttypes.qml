@@ -109,6 +109,47 @@ TestCase {
     }
 
 
+    // QSizeF
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qsizef_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "sizefChanged",
+            target: mock,
+        });
+        compare(mock.sizef, Qt.size(1, 3));
+
+        compare(spy.count, 0);
+        mock.sizef = Qt.size(10, 30);
+        tryCompare(spy, "count", 1);
+        compare(mock.sizef, Qt.size(10, 30));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qsizef_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testSizefInvokable(Qt.size(10, 30));
+        compare(result, Qt.size(20, 90));
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qsizef_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "sizefChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.sizef, Qt.size(1, 3));
+        mock.testSizefProperty();
+        compare(mock.sizef, Qt.size(2, 9));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QVariant
 
     // Check that we can adjust the property for the type and it has non default value

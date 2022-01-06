@@ -29,6 +29,7 @@ impl RustType for QtTypes {
         match self {
             Self::QPoint => true,
             Self::QPointF => true,
+            Self::QSizeF => true,
             Self::Variant => true,
             Self::Str | Self::String => true,
             _others => false,
@@ -54,6 +55,7 @@ impl RustType for QtTypes {
             Self::I32 => format_ident!("i32"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
+            Self::QSizeF => format_ident!("QSizeF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::QVariant | Self::Variant => format_ident!("QVariant"),
             Self::U8 => format_ident!("u8"),
@@ -81,6 +83,7 @@ impl RustType for QtTypes {
             Self::I32 => quote! {i32},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
+            Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
             Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
             Self::U8 => quote! {u8},
@@ -420,6 +423,8 @@ pub fn generate_qobject_cxx(
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
                 type QPointF = cxx_qt_lib::QPointF;
+                #[namespace = ""]
+                type QSizeF = cxx_qt_lib::QSizeF;
                 #[namespace = ""]
                 type QString = cxx_qt_lib::QString;
                 #[namespace = ""]

@@ -19,6 +19,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_sizef(&self, _cpp: &mut CppObj, sizef: &QSizeF) -> QSizeF {
+            sizef
+        }
+
+        #[invokable]
         fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
             string.to_rust()
         }
