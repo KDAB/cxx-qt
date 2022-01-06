@@ -4,6 +4,7 @@
 
 #include "rust/cxx_qt.h"
 
+#include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QVariant>
 
@@ -19,6 +20,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
+  Q_INVOKABLE QPoint testPoint(const QPoint& point);
   Q_INVOKABLE QPointF testPointf(const QPointF& pointf);
   Q_INVOKABLE QString testString(const QString& string);
   Q_INVOKABLE QVariant testVariant(const QVariant& variant);

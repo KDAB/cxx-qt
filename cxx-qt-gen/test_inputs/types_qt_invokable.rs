@@ -9,6 +9,11 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
+        fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
+            point
+        }
+
+        #[invokable]
         fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {
             pointf
         }

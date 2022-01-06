@@ -13,6 +13,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QPoint = cxx_qt_lib::QPoint;
+            #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;

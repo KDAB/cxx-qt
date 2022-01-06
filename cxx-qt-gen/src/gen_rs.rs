@@ -27,6 +27,7 @@ impl RustType for QtTypes {
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
+            Self::QPoint => true,
             Self::QPointF => true,
             Self::Variant => true,
             Self::Str | Self::String => true,
@@ -51,6 +52,7 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
+            Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::QVariant | Self::Variant => format_ident!("QVariant"),
@@ -77,6 +79,7 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
+            Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
             Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
@@ -413,6 +416,8 @@ pub fn generate_qobject_cxx(
 
                 type #class_name;
 
+                #[namespace = ""]
+                type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
                 type QPointF = cxx_qt_lib::QPointF;
                 #[namespace = ""]
