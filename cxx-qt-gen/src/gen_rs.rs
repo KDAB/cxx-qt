@@ -67,19 +67,9 @@ impl RustType for QtTypes {
             Self::Bool => quote! {bool},
             Self::CppObj {
                 external,
-                rust_type_idents,
+                combined_name,
                 ..
             } if external == &true => {
-                // FIXME: can't put a custom name in the generation, needs to match
-                // the C++ ? Is a typedef on the C++ side enough?
-                //
-                // TODO: the solution here will likely be combined into extract phase?
-                let combined_name = format_ident!(
-                    "{}",
-                    rust_type_idents[rust_type_idents.len() - 2]
-                        .to_string()
-                        .to_case(Case::Pascal)
-                );
                 quote! {cxx::UniquePtr<ffi::#combined_name>}
             }
             Self::F32 => quote! {f32},
@@ -235,6 +225,7 @@ pub fn generate_qobject_cxx(
                     QtTypes::CppObj {
                         external,
                         rust_type_idents,
+                        combined_name,
                         ..
                     } => {
                         if *external {
@@ -246,26 +237,6 @@ pub fn generate_qobject_cxx(
                                 .cloned()
                                 .chain(vec![format_ident!("FFICppObj")])
                                 .collect::<Vec<Ident>>();
-                            // let combined_name = format_ident!(
-                            //     "{}",
-                            //     rust_type_idents
-                            //         .iter()
-                            //         .map(|ident| ident.to_string())
-                            //         .collect::<Vec<String>>()
-                            //         .join("_")
-                            //         .to_case(Case::Pascal)
-                            // );
-                            //
-                            // FIXME: can't put a custom name in the generation, needs to match
-                            // the C++ ? Is a typedef on the C++ side enough?
-                            //
-                            // TODO: the solution here will likely be combined into extract phase?
-                            let combined_name = format_ident!(
-                                "{}",
-                                rust_type_idents[rust_type_idents.len() - 2]
-                                    .to_string()
-                                    .to_case(Case::Pascal)
-                            );
 
                             parameters_quotes.push(quote! {
                                 #ident: Pin<&mut #combined_name>
@@ -275,7 +246,7 @@ pub fn generate_qobject_cxx(
                             cpp_types_push_unique(
                                 &mut cpp_functions,
                                 &mut cpp_types,
-                                &combined_name,
+                                combined_name,
                                 rust_type_idents,
                             )?;
                         } else {
@@ -337,7 +308,7 @@ pub fn generate_qobject_cxx(
         let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
 
         // This type is a pointer (CppObj), so special case the C++ functions and no Rust functions
-        if let QtTypes::CppObj { .. } = property.type_ident.qt_type {
+        if let QtTypes::CppObj { combined_name, .. } = &property.type_ident.qt_type {
             // Check that type_idents is not empty
             if type_idents.is_empty() {
                 return Err(syn::Error::new(
@@ -350,24 +321,13 @@ pub fn generate_qobject_cxx(
             // Retrieve Object from crate::module::Object and swap to crate::module::FFICppObj
             let (_, type_idents_ffi) = type_idents_to_ptr_class_name_and_ffi_type(type_idents);
 
-            // FIXME: can't put a custom name in the generation, needs to match
-            // the C++ ? Is a typedef on the C++ side enough?
-            //
-            // TODO: the solution here will likely be combined into extract phase?
-            let combined_name = format_ident!(
-                "{}",
-                type_idents[type_idents.len() - 2]
-                    .to_string()
-                    .to_case(Case::Pascal)
-            );
-
             // Add type definition for the class name we are a pointer for to the C++ bridge
             //
             // Ensure that we only do this once
             cpp_types_push_unique(
                 &mut cpp_functions,
                 &mut cpp_types,
-                &combined_name,
+                combined_name,
                 type_idents_ffi,
             )?;
 
