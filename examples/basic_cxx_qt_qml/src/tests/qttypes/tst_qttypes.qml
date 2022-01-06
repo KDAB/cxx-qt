@@ -109,6 +109,47 @@ TestCase {
     }
 
 
+    // QRectF
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qrectf_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "rectfChanged",
+            target: mock,
+        });
+        compare(mock.rectf, Qt.rect(1, 2, 3, 4));
+
+        compare(spy.count, 0);
+        mock.rectf = Qt.rect(10, 20, 30, 40);
+        tryCompare(spy, "count", 1);
+        compare(mock.rectf, Qt.rect(10, 20, 30, 40));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qrectf_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testRectfInvokable(Qt.rect(10, 20, 30, 40));
+        compare(result, Qt.rect(20, 60, 120, 200));
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qrectf_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "rectfChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.rectf, Qt.rect(1, 2, 3, 4));
+        mock.testRectfProperty();
+        compare(mock.rectf, Qt.rect(2, 6, 12, 20));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QSize
 
     // Check that we can adjust the property for the type and it has non default value
@@ -142,7 +183,6 @@ TestCase {
         });
 
         compare(spy.count, 0);
-
         compare(mock.size, Qt.size(1, 3));
         mock.testSizeProperty();
         compare(mock.size, Qt.size(2, 9));

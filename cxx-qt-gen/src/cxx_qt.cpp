@@ -193,9 +193,9 @@ static_assert(alignof(QRectF) <= 32);
 // we don't need to use Pin. Because it is trivial to destruct we do not
 // need a special C++ function to destruct the object.
 
-static_assert(std::is_trivially_move_assignable<QRectF>::value == true);
-static_assert(std::is_trivially_copy_assignable<QRectF>::value == true);
-static_assert(std::is_trivially_destructible<QRectF>::value == true);
+static_assert(std::is_trivially_move_assignable<QRectF>::value);
+static_assert(std::is_trivially_copy_assignable<QRectF>::value);
+static_assert(std::is_trivially_destructible<QRectF>::value);
 
 } // namespace
 

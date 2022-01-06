@@ -14,6 +14,8 @@ mod my_object {
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
+            type QRectF = cxx_qt_lib::QRectF;
+            #[namespace = ""]
             type QSize = cxx_qt_lib::QSize;
             #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
