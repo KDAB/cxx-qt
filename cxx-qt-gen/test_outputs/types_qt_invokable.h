@@ -6,6 +6,7 @@
 
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
+#include <QtCore/QSizeF>
 #include <QtCore/QVariant>
 
 namespace cxx_qt::my_object {
@@ -22,6 +23,7 @@ public:
 
   Q_INVOKABLE QPoint testPoint(const QPoint& point);
   Q_INVOKABLE QPointF testPointf(const QPointF& pointf);
+  Q_INVOKABLE QSizeF testSizef(const QSizeF& sizef);
   Q_INVOKABLE QString testString(const QString& string);
   Q_INVOKABLE QVariant testVariant(const QVariant& variant);
 

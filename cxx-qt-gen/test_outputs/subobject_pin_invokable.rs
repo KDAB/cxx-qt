@@ -12,6 +12,8 @@ mod my_object {
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
+            type QSizeF = cxx_qt_lib::QSizeF;
+            #[namespace = ""]
             type QString = cxx_qt_lib::QString;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
