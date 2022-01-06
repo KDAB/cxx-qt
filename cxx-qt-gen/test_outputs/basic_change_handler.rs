@@ -128,6 +128,12 @@ mod my_object {
         }
     }
 
+    impl<'a> From<&mut CppObj<'a>> for Data {
+        fn from(value: &mut CppObj<'a>) -> Self {
+            Self::from(&*value)
+        }
+    }
+
     impl PropertyChangeHandler<CppObj, Property> for RustObj {
         fn handle_property_change(&mut self, _cpp: &mut CppObj, _property: Property) {
             println!("change")

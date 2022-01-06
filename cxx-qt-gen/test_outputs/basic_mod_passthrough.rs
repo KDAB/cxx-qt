@@ -106,6 +106,12 @@ mod my_object {
         }
     }
 
+    impl<'a> From<&mut CppObj<'a>> for Data {
+        fn from(value: &mut CppObj<'a>) -> Self {
+            Self::from(&*value)
+        }
+    }
+
     impl Default for Data {
         fn default() -> Self {
             Self { number: 32 }
