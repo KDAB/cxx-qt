@@ -6,6 +6,7 @@
 
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
+#include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QVariant>
@@ -24,6 +25,7 @@ public:
 
   Q_INVOKABLE QPoint testPoint(const QPoint& point);
   Q_INVOKABLE QPointF testPointf(const QPointF& pointf);
+  Q_INVOKABLE QRectF testRectf(const QRectF& rectf);
   Q_INVOKABLE QSize testSize(const QSize& size);
   Q_INVOKABLE QSizeF testSizef(const QSizeF& sizef);
   Q_INVOKABLE QString testString(const QString& string);

@@ -19,6 +19,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_rectf(&self, _cpp: &mut CppObj, rectf: &QRectF) -> QRectF {
+            rectf
+        }
+
+        #[invokable]
         fn test_size(&self, _cpp: &mut CppObj, size: &QSize) -> QSize {
             size
         }

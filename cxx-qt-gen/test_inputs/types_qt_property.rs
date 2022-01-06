@@ -3,6 +3,7 @@ mod my_object {
     struct Data {
         point: QPoint,
         pointf: QPointF,
+        rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
         string: String,
