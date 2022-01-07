@@ -67,6 +67,21 @@ mod mock_qt_types {
                     let_qvariant!(new_qvariant = &new_variant);
                     cpp.set_variant(&new_qvariant);
                 }
+                VariantImpl::U8(i) => {
+                    let new_variant = Variant::from_u8(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
+                VariantImpl::U16(i) => {
+                    let new_variant = Variant::from_u16(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
+                VariantImpl::U32(i) => {
+                    let new_variant = Variant::from_u32(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
                 _ => panic!("Incorrect variant type!"),
             }
         }
@@ -78,6 +93,9 @@ mod mock_qt_types {
                 VariantImpl::I8(i) => Variant::from_i8(i * 2),
                 VariantImpl::I16(i) => Variant::from_i16(i * 2),
                 VariantImpl::I32(i) => Variant::from_i32(i * 2),
+                VariantImpl::U8(i) => Variant::from_u8(i * 2),
+                VariantImpl::U16(i) => Variant::from_u16(i * 2),
+                VariantImpl::U32(i) => Variant::from_u32(i * 2),
                 _ => panic!("Incorrect variant type!"),
             }
         }
