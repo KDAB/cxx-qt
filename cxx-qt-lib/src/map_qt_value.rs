@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::qcolor::{Color, QColor};
+use crate::qdate::QDate;
 use crate::qpoint::QPoint;
 use crate::qpointf::QPointF;
 use crate::qrect::QRect;
@@ -40,6 +41,12 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
 impl<C, R> MapQtValue<C, fn(&mut C, &QVariant) -> R, R> for Variant {
     fn map_qt_value(&self, map_func: fn(&mut C, &QVariant) -> R, context: &mut C) -> R {
         map_func(context, &self.inner)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QDate) -> R, R> for QDate {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QDate) -> R, context: &mut C) -> R {
+        map_func(context, self)
     }
 }
 

@@ -9,6 +9,7 @@
 
 #include "rust/cxx_qt.h"
 
+#include <QDate>
 #include <QMetaObject>
 #include <QPointF>
 #include <QPointer>
@@ -145,6 +146,35 @@ extern "C"
   }
 }
 
+namespace {
+
+// We do these checks to ensure that we can safely store a QDate
+// inside a block of memory that Rust thinks contains one i64.
+// We also make sure that i64 and qint64 are equivalent.
+
+static_assert(sizeof(qint64) == 8);
+static_assert(alignof(qint64) <= 8);
+
+static_assert(sizeof(QDate) == 8);
+static_assert(alignof(QDate) <= 8);
+
+// Our Rust code assumes that QDate is trivial. Because it is trivial to move,
+// we don't need to use Pin. Because it is trivial to destruct we do not
+// need a special C++ function to destruct the object.
+
+static_assert(std::is_trivially_move_assignable<QDate>::value);
+static_assert(std::is_trivially_copy_assignable<QDate>::value);
+static_assert(std::is_trivially_destructible<QDate>::value);
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qdate$init(QDate* self, int y, int m, int d) noexcept
+  {
+    new (self) QDate(y, m, d);
+  }
+}
 namespace {
 
 // We do these checks to ensure that we can safely store a QPoint

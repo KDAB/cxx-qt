@@ -10,6 +10,9 @@ pub use update_requester::UpdateRequestHandler;
 mod qcolor;
 pub use qcolor::{Color, QColor};
 
+mod qdate;
+pub use qdate::QDate;
+
 mod qrect;
 pub use qrect::QRect;
 
