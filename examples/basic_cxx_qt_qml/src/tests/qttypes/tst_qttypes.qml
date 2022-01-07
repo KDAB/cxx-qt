@@ -36,20 +36,20 @@ TestCase {
             signalName: "pointfChanged",
             target: mock,
         });
-        compare(mock.pointf, Qt.point(1, 2));
+        compare(mock.pointf, Qt.point(1, 3));
 
         compare(spy.count, 0);
-        mock.pointf = Qt.point(10, 20);
+        mock.pointf = Qt.point(10, 30);
         tryCompare(spy, "count", 1);
-        compare(mock.pointf, Qt.point(10, 20));
+        compare(mock.pointf, Qt.point(10, 30));
     }
 
     // Check that we can pass the type as a parameter and return it back
     function test_qpointf_invokable() {
         const mock = createTemporaryObject(componentMockQtTypes, null, {});
 
-        const result = mock.testPointfInvokable(Qt.point(10, 20));
-        compare(result, Qt.point(20, 40));
+        const result = mock.testPointfInvokable(Qt.point(10, 30));
+        compare(result, Qt.point(20, 90));
     }
 
     // Check that an invokable can adjust (read and write) a property for the type
@@ -61,9 +61,9 @@ TestCase {
         });
 
         compare(spy.count, 0);
-        compare(mock.pointf, Qt.point(1, 2));
+        compare(mock.pointf, Qt.point(1, 3));
         mock.testPointfProperty();
-        compare(mock.pointf, Qt.point(2, 4));
+        compare(mock.pointf, Qt.point(2, 9));
         tryCompare(spy, "count", 1);
     }
 
