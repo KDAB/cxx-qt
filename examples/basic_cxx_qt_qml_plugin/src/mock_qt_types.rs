@@ -19,7 +19,7 @@ mod mock_qt_types {
         fn default() -> Self {
             Data {
                 pointf: QPointF::new(1.0, 3.0),
-                variant: Variant::from_int(1),
+                variant: Variant::from_i32(1),
             }
         }
     }
@@ -52,8 +52,18 @@ mod mock_qt_types {
                     let_qvariant!(new_qvariant = &new_variant);
                     cpp.set_variant(&new_qvariant);
                 }
-                VariantImpl::Int(i) => {
-                    let new_variant = Variant::from_int(i * 2);
+                VariantImpl::I8(i) => {
+                    let new_variant = Variant::from_i8(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
+                VariantImpl::I16(i) => {
+                    let new_variant = Variant::from_i16(i * 2);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
+                VariantImpl::I32(i) => {
+                    let new_variant = Variant::from_i32(i * 2);
                     let_qvariant!(new_qvariant = &new_variant);
                     cpp.set_variant(&new_qvariant);
                 }
@@ -65,7 +75,9 @@ mod mock_qt_types {
         fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
             match *variant.to_rust() {
                 VariantImpl::Bool(b) => Variant::from_bool(!b),
-                VariantImpl::Int(i) => Variant::from_int(i * 2),
+                VariantImpl::I8(i) => Variant::from_i8(i * 2),
+                VariantImpl::I16(i) => Variant::from_i16(i * 2),
+                VariantImpl::I32(i) => Variant::from_i32(i * 2),
                 _ => panic!("Incorrect variant type!"),
             }
         }

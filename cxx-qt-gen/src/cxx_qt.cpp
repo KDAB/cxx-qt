@@ -254,8 +254,10 @@ enum class QVariantType : uint8_t
 {
   Unsupported = 0,
   String = 1,
-  Int = 2,
-  Bool = 3,
+  I8 = 2,
+  I16 = 3,
+  I32 = 4,
+  Bool = 5,
 };
 
 } // namespace
@@ -264,7 +266,19 @@ extern "C"
 {
   void cxxqt1$qvariant$init(QVariant* self) noexcept { new (self) QVariant(); }
 
-  void cxxqt1$qvariant$init$from$int(QVariant* self, int i) noexcept
+  void cxxqt1$qvariant$init$from$i8(QVariant* self, char i) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(i);
+  }
+
+  void cxxqt1$qvariant$init$from$i16(QVariant* self, short i) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(i);
+  }
+
+  void cxxqt1$qvariant$init$from$i32(QVariant* self, int i) noexcept
   {
     new (self) QVariant();
     *self = QVariant::fromValue(i);
@@ -288,7 +302,11 @@ extern "C"
       case QMetaType::QString:
         return QVariantType::String;
       case QMetaType::Int:
-        return QVariantType::Int;
+        return QVariantType::I32;
+      case QMetaType::Short:
+        return QVariantType::I16;
+      case QMetaType::Char:
+        return QVariantType::I8;
       case QMetaType::Bool:
         return QVariantType::Bool;
 
@@ -303,7 +321,19 @@ extern "C"
     cxxqt1$qstring$to_rust_string(self.toString(), string);
   }
 
-  int cxxqt1$qvariant$to$int(const QVariant& self) noexcept
+  char cxxqt1$qvariant$to$i8(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<qint8>());
+    return self.value<qint8>();
+  }
+
+  int cxxqt1$qvariant$to$i16(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<qint16>());
+    return self.value<qint16>();
+  }
+
+  int cxxqt1$qvariant$to$i32(const QVariant& self) noexcept
   {
     bool ok;
     int result = self.toInt(&ok);
