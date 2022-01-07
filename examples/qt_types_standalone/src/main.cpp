@@ -89,10 +89,25 @@ test_constructed_qcolor(const QColor& c, ColorTest test)
   }
 }
 
+TEST_CASE("Can read a QColor on the Rust side")
+{
+  CHECK(can_read_qcolor(QColor(255, 0, 0, 255), ColorTest::Rgb_Red));
+  CHECK(can_read_qcolor(QColor(0, 255, 0, 255), ColorTest::Rgb_Green));
+  CHECK(can_read_qcolor(QColor(0, 0, 255, 255), ColorTest::Rgb_Blue));
+  CHECK(can_read_qcolor(QColor(0, 0, 0, 0), ColorTest::Rgb_Transparent));
+
+  CHECK(can_read_qcolor(QColor(Qt::red), ColorTest::Rgb_Red));
+  CHECK(can_read_qcolor(QColor(Qt::green), ColorTest::Rgb_Green));
+  CHECK(can_read_qcolor(QColor(Qt::blue), ColorTest::Rgb_Blue));
+  CHECK(can_read_qcolor(QColor(Qt::transparent), ColorTest::Rgb_Transparent));
+}
+
 TEST_CASE("Can construct a QVariant on the Rust side")
 {
   CHECK(can_construct_qvariant(VariantTest::String));
-  CHECK(can_construct_qvariant(VariantTest::Int));
+  CHECK(can_construct_qvariant(VariantTest::I8));
+  CHECK(can_construct_qvariant(VariantTest::I16));
+  CHECK(can_construct_qvariant(VariantTest::I32));
   CHECK(can_construct_qvariant(VariantTest::Bool));
 }
 
@@ -102,7 +117,11 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
   switch (test) {
     case VariantTest::String:
       return v.toString() == QStringLiteral("Rust string");
-    case VariantTest::Int:
+    case VariantTest::I8:
+      return v.toInt() == 12;
+    case VariantTest::I16:
+      return v.toInt() == 123;
+    case VariantTest::I32:
       return v.toInt() == 123;
     case VariantTest::Bool:
       return v.toBool() == true;
@@ -120,28 +139,19 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   };
 
   CHECK(runTest(VariantTest::String));
-  CHECK(runTest(VariantTest::Int));
+  CHECK(runTest(VariantTest::I8));
+  CHECK(runTest(VariantTest::I16));
+  CHECK(runTest(VariantTest::I32));
   CHECK(runTest(VariantTest::Bool));
-}
-
-TEST_CASE("Can read a QColor on the Rust side")
-{
-  CHECK(can_read_qcolor(QColor(255, 0, 0, 255), ColorTest::Rgb_Red));
-  CHECK(can_read_qcolor(QColor(0, 255, 0, 255), ColorTest::Rgb_Green));
-  CHECK(can_read_qcolor(QColor(0, 0, 255, 255), ColorTest::Rgb_Blue));
-  CHECK(can_read_qcolor(QColor(0, 0, 0, 0), ColorTest::Rgb_Transparent));
-
-  CHECK(can_read_qcolor(QColor(Qt::red), ColorTest::Rgb_Red));
-  CHECK(can_read_qcolor(QColor(Qt::green), ColorTest::Rgb_Green));
-  CHECK(can_read_qcolor(QColor(Qt::blue), ColorTest::Rgb_Blue));
-  CHECK(can_read_qcolor(QColor(Qt::transparent), ColorTest::Rgb_Transparent));
 }
 
 TEST_CASE("Can read a QVariant on the Rust side")
 {
   CHECK(can_read_qvariant(QVariant::fromValue(QStringLiteral("C++ string")),
                           VariantTest::String));
-  CHECK(can_read_qvariant(QVariant::fromValue(8910), VariantTest::Int));
+  CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
+  CHECK(can_read_qvariant(QVariant::fromValue<qint16>(8910), VariantTest::I16));
+  CHECK(can_read_qvariant(QVariant::fromValue(8910), VariantTest::I32));
   CHECK(can_read_qvariant(QVariant::fromValue(false), VariantTest::Bool));
 }
 

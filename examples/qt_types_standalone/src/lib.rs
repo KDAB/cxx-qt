@@ -21,7 +21,9 @@ mod ffi {
 
     enum VariantTest {
         String,
-        Int,
+        I8,
+        I16,
+        I32,
         Bool,
     }
 
@@ -204,7 +206,9 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
 fn make_variant(test: VariantTest) -> Variant {
     match test {
         VariantTest::String => Variant::from_string("Rust string".to_owned()),
-        VariantTest::Int => Variant::from_int(123),
+        VariantTest::I8 => Variant::from_i8(12),
+        VariantTest::I16 => Variant::from_i16(123),
+        VariantTest::I32 => Variant::from_i32(123),
         VariantTest::Bool => Variant::from_bool(true),
         _others => panic!("Unsupported test: {}", test.repr),
     }
@@ -222,8 +226,16 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             VariantImpl::String(s) => s == "C++ string",
             _others => false,
         },
-        VariantTest::Int => match &*v.to_rust() {
-            VariantImpl::Int(i) => *i == 8910,
+        VariantTest::I8 => match &*v.to_rust() {
+            VariantImpl::I8(i) => *i == 89,
+            _others => false,
+        },
+        VariantTest::I16 => match &*v.to_rust() {
+            VariantImpl::I16(i) => *i == 8910,
+            _others => false,
+        },
+        VariantTest::I32 => match &*v.to_rust() {
+            VariantImpl::I32(i) => *i == 8910,
             _others => false,
         },
         VariantTest::Bool => match &*v.to_rust() {
