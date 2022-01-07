@@ -7,7 +7,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QPoint>
 #include <QtCore/QPointF>
+#include <QtCore/QRect>
 #include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
