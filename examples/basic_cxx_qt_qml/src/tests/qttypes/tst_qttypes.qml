@@ -109,6 +109,47 @@ TestCase {
     }
 
 
+    // QSize
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qsize_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "sizeChanged",
+            target: mock,
+        });
+        compare(mock.size, Qt.size(1, 3));
+
+        compare(spy.count, 0);
+        mock.size = Qt.size(10, 30);
+        tryCompare(spy, "count", 1);
+        compare(mock.size, Qt.size(10, 30));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qsize_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testSizeInvokable(Qt.size(10, 30));
+        compare(result, Qt.size(20, 90));
+    }
+
+    function test_qsize_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "sizeChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+
+        compare(mock.size, Qt.size(1, 3));
+        mock.testSizeProperty();
+        compare(mock.size, Qt.size(2, 9));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QSizeF
 
     // Check that we can adjust the property for the type and it has non default value

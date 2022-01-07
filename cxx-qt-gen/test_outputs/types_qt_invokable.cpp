@@ -27,6 +27,13 @@ MyObject::testPointf(const QPointF& pointf)
   return m_rustObj->testPointfWrapper(*this, pointf);
 }
 
+QSize
+MyObject::testSize(const QSize& size)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return m_rustObj->testSizeWrapper(*this, size);
+}
+
 QSizeF
 MyObject::testSizef(const QSizeF& sizef)
 {

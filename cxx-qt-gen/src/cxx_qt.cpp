@@ -193,9 +193,9 @@ static_assert(alignof(QSize) <= 8);
 // we don't need to use Pin. Because it is trivial to destruct we do not
 // need a special C++ function to destruct the object.
 
-static_assert(std::is_trivially_move_assignable<QSize>::value == true);
-static_assert(std::is_trivially_copy_assignable<QSize>::value == true);
-static_assert(std::is_trivially_destructible<QSize>::value == true);
+static_assert(std::is_trivially_move_assignable<QSize>::value);
+static_assert(std::is_trivially_copy_assignable<QSize>::value);
+static_assert(std::is_trivially_destructible<QSize>::value);
 
 } // namespace
 

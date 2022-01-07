@@ -4,6 +4,7 @@ mod my_object {
         enum Property {
             Point,
             Pointf,
+            Size,
             Sizef,
             String,
             Variant,
@@ -17,6 +18,8 @@ mod my_object {
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
+            #[namespace = ""]
+            type QSize = cxx_qt_lib::QSize;
             #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
@@ -36,6 +39,11 @@ mod my_object {
             fn getPointf(self: &MyObject) -> &QPointF;
             #[rust_name = "set_pointf"]
             fn setPointf(self: Pin<&mut MyObject>, value: &QPointF);
+
+            #[rust_name = "size"]
+            fn getSize(self: &MyObject) -> &QSize;
+            #[rust_name = "set_size"]
+            fn setSize(self: Pin<&mut MyObject>, value: &QSize);
 
             #[rust_name = "sizef"]
             fn getSizef(self: &MyObject) -> &QSizeF;
@@ -100,6 +108,14 @@ mod my_object {
             self.cpp.as_mut().set_pointf(value);
         }
 
+        pub fn size(&self) -> &cxx_qt_lib::QSize {
+            self.cpp.size()
+        }
+
+        pub fn set_size(&mut self, value: &cxx_qt_lib::QSize) {
+            self.cpp.as_mut().set_size(value);
+        }
+
         pub fn sizef(&self) -> &cxx_qt_lib::QSizeF {
             self.cpp.sizef()
         }
@@ -138,6 +154,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
                 .map_qt_value(|context, converted| context.set_pointf(converted), self);
+            data.size
+                .map_qt_value(|context, converted| context.set_size(converted), self);
             data.sizef
                 .map_qt_value(|context, converted| context.set_sizef(converted), self);
             data.string
@@ -151,6 +169,7 @@ mod my_object {
     struct Data {
         point: QPoint,
         pointf: QPointF,
+        size: QSize,
         sizef: QSizeF,
         string: String,
         variant: Variant,
@@ -161,6 +180,7 @@ mod my_object {
             Self {
                 point: value.point().into(),
                 pointf: value.pointf().into(),
+                size: value.size().into(),
                 sizef: value.sizef().into(),
                 string: value.string().into(),
                 variant: value.variant().into(),

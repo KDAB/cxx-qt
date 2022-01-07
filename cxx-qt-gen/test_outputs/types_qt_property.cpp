@@ -55,6 +55,27 @@ MyObject::setPointf(const QPointF& value)
   }
 }
 
+const QSize&
+MyObject::getSize() const
+{
+  return m_size;
+}
+
+void
+MyObject::setSize(const QSize& value)
+{
+  if (!m_initialised) {
+    m_size = value;
+    return;
+  }
+
+  if (value != m_size) {
+    m_size = value;
+
+    runOnGUIThread([&]() { Q_EMIT sizeChanged(); });
+  }
+}
+
 const QSizeF&
 MyObject::getSizef() const
 {
