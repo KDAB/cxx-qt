@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QSizeF,
-    QString, QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QSize,
+    QSizeF, QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -39,6 +39,7 @@ mod ffi {
         type QColor = cxx_qt_lib::QColor;
         type QString = cxx_qt_lib::QString;
         type QVariant = cxx_qt_lib::QVariant;
+        type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPoint = cxx_qt_lib::QPoint;
         type QPointF = cxx_qt_lib::QPointF;
@@ -77,6 +78,11 @@ mod ffi {
         fn read_qpointf(p: &QPointF) -> bool;
         fn copy_qpointf(p: &QPointF) -> QPointF;
         fn copy_value_qpointf(p: QPointF) -> QPointF;
+
+        fn construct_qsize() -> QSize;
+        fn read_qsize(p: &QSize) -> bool;
+        fn copy_qsize(p: &QSize) -> QSize;
+        fn copy_value_qsize(p: QSize) -> QSize;
 
         fn construct_qsizef() -> QSizeF;
         fn read_qsizef(p: &QSizeF) -> bool;
@@ -312,6 +318,22 @@ fn copy_qpointf(p: &QPointF) -> QPointF {
 
 fn copy_value_qpointf(p: QPointF) -> QPointF {
     p
+}
+
+fn construct_qsize() -> QSize {
+    QSize::new(1, 4)
+}
+
+fn read_qsize(s: &QSize) -> bool {
+    s.width() == 1 && s.height() == 4
+}
+
+fn copy_qsize(s: &QSize) -> QSize {
+    *s
+}
+
+fn copy_value_qsize(s: QSize) -> QSize {
+    s
 }
 
 fn construct_qsizef() -> QSizeF {

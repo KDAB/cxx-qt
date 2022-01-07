@@ -12,6 +12,7 @@
 #include <QMetaObject>
 #include <QPointF>
 #include <QPointer>
+#include <QSize>
 #include <QSizeF>
 #include <QVariant>
 #include <QtGui/QColor>
@@ -173,6 +174,36 @@ extern "C"
   void cxxqt1$qpointf$init(QPointF* self, qreal x, qreal y) noexcept
   {
     new (self) QPointF(x, y);
+  }
+}
+
+namespace {
+
+// We do these checks to ensure that we can safely store a QSize
+// inside a block of memory that Rust thinks contains two i32-s.
+// We also make sure that i32 and int are equivalent.
+
+static_assert(sizeof(int) == 4);
+static_assert(alignof(int) <= 4);
+
+static_assert(sizeof(QSize) == 8);
+static_assert(alignof(QSize) <= 8);
+
+// Our Rust code assumes that QSize is trivial. Because it is trivial to move,
+// we don't need to use Pin. Because it is trivial to destruct we do not
+// need a special C++ function to destruct the object.
+
+static_assert(std::is_trivially_move_assignable<QSize>::value == true);
+static_assert(std::is_trivially_copy_assignable<QSize>::value == true);
+static_assert(std::is_trivially_destructible<QSize>::value == true);
+
+} // namespace
+
+extern "C"
+{
+  void cxxqt1$qsize$init(QSize* self, int w, int h) noexcept
+  {
+    new (self) QSize(w, h);
   }
 }
 
