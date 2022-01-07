@@ -19,6 +19,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_size(&self, _cpp: &mut CppObj, size: &QSize) -> QSize {
+            size
+        }
+
+        #[invokable]
         fn test_sizef(&self, _cpp: &mut CppObj, sizef: &QSizeF) -> QSizeF {
             sizef
         }

@@ -14,6 +14,8 @@ mod my_object {
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
             #[namespace = ""]
+            type QSize = cxx_qt_lib::QSize;
+            #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
@@ -31,7 +33,11 @@ mod my_object {
             type RustObj;
 
             #[cxx_name = "testPointWrapper"]
-            fn test_point_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, point: &QPoint) -> QPoint;
+            fn test_point_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                point: &QPoint,
+            ) -> QPoint;
 
             #[cxx_name = "testPointfWrapper"]
             fn test_pointf_wrapper(
@@ -39,6 +45,9 @@ mod my_object {
                 _cpp: Pin<&mut MyObject>,
                 pointf: &QPointF,
             ) -> QPointF;
+
+            #[cxx_name = "testSizeWrapper"]
+            fn test_size_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, size: &QSize) -> QSize;
 
             #[cxx_name = "testSizefWrapper"]
             fn test_sizef_wrapper(
@@ -94,6 +103,11 @@ mod my_object {
             return self.test_pointf(&mut _cpp, pointf);
         }
 
+        fn test_size_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, size: &QSize) -> QSize {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_size(&mut _cpp, size);
+        }
+
         fn test_sizef_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
@@ -127,6 +141,10 @@ mod my_object {
 
         fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {
             pointf
+        }
+
+        fn test_size(&self, _cpp: &mut CppObj, size: &QSize) -> QSize {
+            size
         }
 
         fn test_sizef(&self, _cpp: &mut CppObj, sizef: &QSizeF) -> QSizeF {
