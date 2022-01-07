@@ -13,6 +13,9 @@ pub use update_requester::UpdateRequestHandler;
 mod qcolor;
 pub use qcolor::{Color, QColor};
 
+mod qsize;
+pub use qsize::QSize;
+
 mod qsizef;
 pub use qsizef::QSizeF;
 

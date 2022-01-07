@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QtCore/QPointF>
+#include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
 #include <QtCore/QVariant>
