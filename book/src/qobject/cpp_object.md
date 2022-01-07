@@ -23,8 +23,6 @@ If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued
 
 Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the `RustObj` which is already locked.
 
-TODO: use real example once we have the code
-
 ```rust,ignore,noplayground
 impl RustObj {
     #[invokable]
@@ -35,8 +33,6 @@ impl RustObj {
     }
 }
 ```
-
-Note: signals are not implemented yet [https://github.com/KDAB/cxx-qt/issues/31](https://github.com/KDAB/cxx-qt/issues/31).
 
 ## Threading
 

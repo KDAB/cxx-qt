@@ -12,6 +12,7 @@ mod mock_qt_types;
 mod nested;
 mod rust_obj_invokables;
 mod serialisation;
+mod signals;
 pub mod sub;
 mod types;
 

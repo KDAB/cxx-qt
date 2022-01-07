@@ -9,36 +9,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 The signals enum defines which signals should exist on the QObject. It allows you to define the signal name and the parameters of the signal.
 
-TODO: use real example once we have the code
-
 ```rust,ignore,noplayground
-#[make_qobject]
-mod my_object {
-    enum Signals {
-        Ready,
-        DataChanged { data: i32 },
-    }
-}
+{{#include ../../../examples/qml_features/src/signals.rs:book_signals_enum}}
 ```
 
-Note: signals are not implemented yet [https://github.com/KDAB/cxx-qt/issues/31](https://github.com/KDAB/cxx-qt/issues/31).
 ## Emitting a signal
 
 To emit a signal from Rust use the [`CppObj`](./cpp_object.md) and call either the `emit_queued(Signal)` or `unsafe emit_immediate(Signal)` method.
 
 Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the `RustObj` which is already locked.
 
-TODO: use real example once we have the code
-
 ```rust,ignore,noplayground
-impl RustObj {
-    #[invokable]
-    fn invokable(&self, cpp: &mut CppObj) {
-        unsafe { cpp.emit_immediate(Signal::Ready); }
-
-        cpp.emit_queued(Signal::DataChanged { data: 1 });
-    }
-}
+{{#include ../../../examples/qml_features/src/signals.rs:book_rust_obj_impl}}
 ```
-
-Note: signals are not implemented yet [https://github.com/KDAB/cxx-qt/issues/31](https://github.com/KDAB/cxx-qt/issues/31).

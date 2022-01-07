@@ -14,6 +14,11 @@ mod mock_qt_types {
     };
     use std::str::FromStr;
 
+    pub enum Signal {
+        Ready,
+        DataChanged { variant: QVariant },
+    }
+
     pub struct Data {
         color: QColor,
         date: QDate,
@@ -55,6 +60,24 @@ mod mock_qt_types {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
+        fn test_signal(&self, cpp: &mut CppObj) {
+            cpp.emit_queued(Signal::Ready);
+            cpp.emit_queued(Signal::DataChanged {
+                variant: QVariant::from(true),
+            });
+        }
+
+        #[invokable]
+        fn test_unsafe_signal(&self, cpp: &mut CppObj) {
+            unsafe {
+                cpp.emit_immediate(Signal::Ready);
+                cpp.emit_immediate(Signal::DataChanged {
+                    variant: QVariant::from(true),
+                });
+            }
+        }
+
         #[invokable]
         fn test_color_property(&self, cpp: &mut CppObj) {
             cpp.set_color(QColor::from_rgba(0, 0, 255, 255));

@@ -20,6 +20,7 @@ fn main() {
         .file("src/nested.rs")
         .file("src/rust_obj_invokables.rs")
         .file("src/serialisation.rs")
+        .file("src/signals.rs")
         .file("src/sub.rs")
         .file("src/types.rs")
         .build();
