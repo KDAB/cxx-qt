@@ -151,6 +151,15 @@ pub(crate) struct Property {
     // TODO: later we will further possibilities such as CONSTANT or FINAL
 }
 
+/// Describes a signal that can be used from QML
+#[derive(Debug)]
+pub(crate) struct Signal {
+    pub(crate) emit_ident: CppRustIdent,
+    pub(crate) enum_ident: Ident,
+    pub(crate) parameters: Vec<Parameter>,
+    pub(crate) signal_ident: CppRustIdent,
+}
+
 /// Describes all the properties of a QObject class
 #[derive(Debug)]
 pub struct QObject {
@@ -162,6 +171,8 @@ pub struct QObject {
     pub(crate) normal_methods: Vec<ImplItemMethod>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
+    /// All the signals that can be emitted/connected from QML
+    pub(crate) signals: Vec<Signal>,
     /// The namespace to use for C++
     pub(crate) namespace: Vec<String>,
     /// The original Rust mod for the struct
@@ -170,6 +181,8 @@ pub struct QObject {
     pub(crate) original_data_struct: ItemStruct,
     /// The original Rust struct that the object was generated from
     pub(crate) original_rust_struct: ItemStruct,
+    /// The original Signal enum that the signals were generated from
+    pub(crate) original_signal_enum: Option<ItemEnum>,
     /// The original Rust trait impls for the struct
     pub(crate) original_trait_impls: Vec<ItemImpl>,
     /// The original Rust declarations from the mod that will be directly passed through
@@ -681,6 +694,83 @@ fn extract_properties(
     Ok(properties)
 }
 
+/// Extracts all the fields from an enum and generates signals from them
+fn extract_signals(
+    e: &syn::ItemEnum,
+    cpp_namespace_prefix: &[&str],
+    qt_ident: &Ident,
+) -> Result<Vec<Signal>, TokenStream> {
+    let mut signals = Vec::new();
+
+    for variant in &e.variants {
+        let ident_str = variant.ident.to_string();
+        let parameters = if let Fields::Named(FieldsNamed { named, .. }) = &variant.fields {
+            let mut parameters = vec![];
+
+            for name in named {
+                // Extract only fields with an ident (should be all as these are named fields).
+                if let Field {
+                    // TODO: later we'll need to read the attributes (eg qt_property) here
+                    // attrs,
+                    ident: Some(ident),
+                    ty,
+                    ..
+                } = name
+                {
+                    // Extract the type of the field
+                    let type_ident;
+
+                    match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
+                        Ok(result) => type_ident = result,
+                        Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+                            return Err(Error::new(
+                                span,
+                                "Named field should not be angle bracketed or parenthesized.",
+                            )
+                            .to_compile_error());
+                        }
+                        Err(ExtractTypeIdentError::InvalidType(span)) => {
+                            return Err(
+                                Error::new(span, "Invalid name field ident format.").to_compile_error()
+                            )
+                        }
+                        Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+                            return Err(Error::new(span, "Named field type ident must have at least one segment").to_compile_error())
+                        }
+                        Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
+                            return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
+                        }
+                    }
+
+                    parameters.push(Parameter {
+                        ident: ident.clone(),
+                        type_ident,
+                    });
+                }
+            }
+
+            parameters
+        } else {
+            vec![]
+        };
+
+        signals.push(Signal {
+            emit_ident: CppRustIdent {
+                cpp_ident: quote::format_ident!("emit{}", ident_str.to_case(Case::Pascal)),
+                rust_ident: quote::format_ident!("emit_{}", ident_str.to_case(Case::Snake)),
+            },
+            enum_ident: variant.ident.clone(),
+            parameters,
+            signal_ident: CppRustIdent {
+                cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
+                rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
+            },
+        });
+    }
+
+    Ok(signals)
+}
+
 /// Parses a module in order to extract a QObject description from it
 pub fn extract_qobject(
     module: ItemMod,
@@ -710,6 +800,8 @@ pub fn extract_qobject(
     let mut original_trait_impls = vec![];
     // A list of insignificant declarations for the mod that will be directly passed through (eg `use crate::thing`)
     let mut original_passthrough_decls = vec![];
+    // The original signal enum if one is found
+    let mut original_signal_enum = None;
 
     // Determines if (and how) this object can respond to update requests
     let mut handle_updates_impl = None;
@@ -720,6 +812,26 @@ pub fn extract_qobject(
     // Process each of the items in the mod
     for item in items.drain(..) {
         match item {
+            // We are an Enum
+            Item::Enum(ref item_enum) => {
+                match item_enum.ident.to_string().as_str() {
+                    // We are a Signal definition
+                    "Signal" => {
+                        // Check that we are the first Signal enum
+                        if original_signal_enum.is_none() {
+                            original_signal_enum = Some(item_enum.clone());
+                        } else {
+                            return Err(Error::new(
+                                item_enum.span(),
+                                "Only one Signal enum is supported per mod.",
+                            )
+                            .to_compile_error());
+                        }
+                    }
+                    // Passthrough unknown enums
+                    _others => original_passthrough_decls.push(item.to_owned()),
+                }
+            }
             // We are a struct
             Item::Struct(s) => {
                 match s.ident.to_string().as_str() {
@@ -869,6 +981,13 @@ pub fn extract_qobject(
         vec![]
     };
 
+    // Read signals  from the Signal enum
+    let object_signals = if let Some(ref original_enum) = original_signal_enum {
+        extract_signals(original_enum, cpp_namespace_prefix, &qt_ident)?
+    } else {
+        vec![]
+    };
+
     // Build the namespace for this QObject
     //
     // We build a fake valid type here, crate::module::Object
@@ -894,10 +1013,12 @@ pub fn extract_qobject(
         invokables: object_invokables,
         normal_methods: object_normal_methods,
         properties: object_properties,
+        signals: object_signals,
         namespace,
         original_mod,
         original_data_struct: original_data_struct
             .unwrap_or_else(|| syn::parse_str("struct Data;").unwrap()),
+        original_signal_enum,
         original_rust_struct: original_rust_struct
             .unwrap_or_else(|| syn::parse_str("struct RustObj;").unwrap()),
         original_trait_impls,
@@ -1305,6 +1426,71 @@ mod tests {
         assert_eq!(notify.cpp_ident.to_string(), "nestedChanged");
         // TODO: does rust need a notify ident?
         assert_eq!(notify.rust_ident.to_string(), "nested");
+    }
+
+    #[test]
+    fn parses_signals() {
+        let source = include_str!("../test_inputs/signals.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        assert_eq!(qobject.properties.len(), 0);
+        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.signals.len(), 2);
+
+        assert_eq!(
+            qobject.signals[0].emit_ident.cpp_ident.to_string(),
+            "emitReady"
+        );
+        assert_eq!(
+            qobject.signals[0].emit_ident.rust_ident.to_string(),
+            "emit_ready"
+        );
+        assert_eq!(qobject.signals[0].enum_ident.to_string(), "Ready");
+        assert_eq!(qobject.signals[0].parameters.len(), 0);
+        assert_eq!(
+            qobject.signals[0].signal_ident.cpp_ident.to_string(),
+            "ready"
+        );
+        assert_eq!(
+            qobject.signals[0].signal_ident.rust_ident.to_string(),
+            "ready"
+        );
+
+        assert_eq!(
+            qobject.signals[1].emit_ident.cpp_ident.to_string(),
+            "emitDataChanged"
+        );
+        assert_eq!(
+            qobject.signals[1].emit_ident.rust_ident.to_string(),
+            "emit_data_changed"
+        );
+        assert_eq!(qobject.signals[1].enum_ident.to_string(), "DataChanged");
+        assert_eq!(qobject.signals[1].parameters.len(), 3);
+        assert_eq!(qobject.signals[1].parameters[0].ident.to_string(), "first");
+        assert_eq!(
+            qobject.signals[1].parameters[0].type_ident.idents[0].to_string(),
+            "i32"
+        );
+        assert_eq!(qobject.signals[1].parameters[1].ident.to_string(), "second");
+        assert_eq!(
+            qobject.signals[1].parameters[1].type_ident.idents[0].to_string(),
+            "QVariant"
+        );
+        assert_eq!(qobject.signals[1].parameters[2].ident.to_string(), "third");
+        assert_eq!(
+            qobject.signals[1].parameters[2].type_ident.idents[0].to_string(),
+            "QPoint"
+        );
+        assert_eq!(
+            qobject.signals[1].signal_ident.cpp_ident.to_string(),
+            "dataChanged"
+        );
+        assert_eq!(
+            qobject.signals[1].signal_ident.rust_ident.to_string(),
+            "data_changed"
+        );
     }
 
     #[test]

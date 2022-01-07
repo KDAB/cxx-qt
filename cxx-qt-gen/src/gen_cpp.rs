@@ -9,7 +9,7 @@ use indoc::formatdoc;
 use proc_macro2::TokenStream;
 use syn::Ident;
 
-use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes};
+use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes, Signal};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
@@ -235,6 +235,18 @@ struct CppInvokable {
     /// The header definition of the invokable
     header: String,
     /// The source implementation of the invokable
+    source: String,
+}
+/// Describes a C++ signal with header and source parts
+#[derive(Debug)]
+struct CppSignal {
+    /// Any extra include that is required for the signal
+    header_includes: Vec<String>,
+    /// Any public methods that are defined by the signal
+    header_public: Vec<String>,
+    /// Any signals that are defined by the signal
+    header_signals: Vec<String>,
+    /// The source implementation of the signal
     source: String,
 }
 /// Describes a C++ property with header and source parts
@@ -682,6 +694,119 @@ fn generate_properties_cpp(
     Ok(items)
 }
 
+/// Generate a CppProperty object containing the header and source of a given list of rust properties
+fn generate_signals_cpp(
+    struct_ident: &Ident,
+    signals: &[Signal],
+) -> Result<Vec<CppSignal>, TokenStream> {
+    let mut items: Vec<CppSignal> = vec![];
+
+    for signal in signals {
+        let mut header_includes = vec![];
+        let mut header_public = vec![];
+        let mut header_signals = vec![];
+
+        let queued_ident_cpp = signal.emit_ident.cpp_ident.to_string();
+        let signal_ident_cpp = signal.signal_ident.cpp_ident.to_string();
+
+        let parameters_with_type = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
+
+                format!(
+                    "{is_const} {type_ident}{is_ref}{is_ptr} {ident}",
+                    ident = parameter.ident,
+                    is_const = parameter.type_ident.qt_type.as_const_str(),
+                    is_ref = parameter.type_ident.qt_type.as_ref_str(),
+                    is_ptr = parameter.type_ident.qt_type.as_ptr_str(),
+                    type_ident = parameter.type_ident.qt_type.type_ident(),
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let parameters_with_type_queued = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
+
+                format!(
+                    "{type_ident}{is_ptr} {ident}",
+                    ident = parameter.ident,
+                    is_ptr = parameter.type_ident.qt_type.as_ptr_str(),
+                    type_ident = if parameter.type_ident.qt_type.is_opaque() {
+                        format!(
+                            "std::unique_ptr<{}>",
+                            parameter.type_ident.qt_type.type_ident()
+                        )
+                    } else {
+                        parameter.type_ident.qt_type.type_ident().to_owned()
+                    },
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        header_public.push(format!(
+            "void {ident}({parameters});",
+            ident = queued_ident_cpp,
+            parameters = parameters_with_type_queued
+        ));
+        header_signals.push(format!(
+            "void {ident}({parameters});",
+            ident = signal_ident_cpp,
+            parameters = parameters_with_type
+        ));
+
+        // Note that we want a lambda by value (not reference) here so that we move any values
+        let mut captures = vec!["this".to_owned()];
+        let mut parameter_values = vec![];
+        for parameter in &signal.parameters {
+            let parameter_str = parameter.ident.to_string();
+            captures.push(format!("{} = std::move({})", parameter_str, parameter_str));
+            parameter_values.push(format!(
+                "{is_opaque}{ident}",
+                ident = parameter_str,
+                is_opaque = if parameter.type_ident.qt_type.is_opaque() {
+                    "*"
+                } else {
+                    ""
+                },
+            ));
+        }
+
+        let source = formatdoc! {
+            r#"
+            void
+            {struct_ident}::{queued_ident_cpp}({parameters})
+            {{
+                const auto signalSuccess = QMetaObject::invokeMethod(
+                    this, [{captures}]() {{ Q_EMIT {signal_ident_cpp}({parameter_values}); }}, Qt::QueuedConnection);
+                Q_ASSERT(signalSuccess);
+            }}
+            "#,
+            queued_ident_cpp = queued_ident_cpp,
+            signal_ident_cpp = signal_ident_cpp,
+            struct_ident = struct_ident,
+            captures = captures.join(", "),
+            parameters = parameters_with_type_queued,
+            parameter_values = parameter_values.join(", "),
+        };
+
+        items.push(CppSignal {
+            header_includes,
+            header_public,
+            header_signals,
+            source,
+        })
+    }
+
+    Ok(items)
+}
+
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let struct_ident_str = obj.ident.to_string();
@@ -751,16 +876,46 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             },
         );
 
+    // A helper which allows us to flatten data from vec of signals
+    struct CppSignalHelper {
+        headers_includes: Vec<String>,
+        headers_public: Vec<String>,
+        headers_signals: Vec<String>,
+        sources: Vec<String>,
+    }
+
+    let mut signals = generate_signals_cpp(&obj.ident, &obj.signals)?
+        .drain(..)
+        .fold(
+            CppSignalHelper {
+                headers_includes: vec![],
+                headers_public: vec![],
+                headers_signals: vec![],
+                sources: vec![],
+            },
+            |mut acc, mut signal| {
+                acc.headers_includes.append(&mut signal.header_includes);
+                acc.headers_public.append(&mut signal.header_public);
+                acc.headers_signals.append(&mut signal.header_signals);
+                acc.sources.push(signal.source);
+                acc
+            },
+        );
+
     // If there are signals then prepare a string otherwise leave an empty string
     // We need to do this otherwise we are left with a Q_SIGNALS with nothing after it
-    let signals = if properties.headers_signals.is_empty() {
+    let cpp_signals = if properties.headers_signals.is_empty() && signals.headers_signals.is_empty()
+    {
         "".to_owned()
     } else {
+        let mut qt_signals = properties.headers_signals;
+        qt_signals.append(&mut signals.headers_signals);
+
         formatdoc! {r#"
             Q_SIGNALS:
-            {properties_signals}
+            {signals}
             "#,
-            properties_signals = properties.headers_signals.join("\n"),
+            signals = qt_signals.join("\n"),
         }
     };
     // If there are public slots then prepare a string otherwise leave an empty string
@@ -837,6 +992,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {public_method_headers}
 
+        {signal_emitters}
+
         {public_slots}
 
         {signals}
@@ -863,6 +1020,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     includes = {
         let mut includes = properties.headers_includes;
         includes.append(&mut invokables.headers_includes);
+        includes.append(&mut signals.headers_includes);
         // Sort and remove duplicates
         includes.sort();
         includes.dedup();
@@ -872,7 +1030,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
     rust_struct_ident = RUST_STRUCT_IDENT_STR,
-    signals = signals,
+    signals = cpp_signals,
+    signal_emitters = signals.headers_public.join("\n"),
     public_slots = public_slots,
     public_method_headers = public_method_headers.join("\n"),
     };
@@ -900,6 +1059,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {public_method_sources}
 
+        {signals}
+
         std::unique_ptr<CppObj> newCppObject()
         {{
             return std::make_unique<CppObj>();
@@ -913,6 +1074,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         namespace = namespace,
         properties = properties.sources.join("\n"),
         public_method_sources = public_method_sources.join("\n"),
+        signals = signals.sources.join("\n"),
     };
 
     Ok(CppObject {
@@ -988,6 +1150,20 @@ mod tests {
 
         let expected_header = clang_format(include_str!("../test_outputs/properties.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/properties.cpp")).unwrap();
+        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
+        assert_eq!(cpp_object.header, expected_header);
+        assert_eq!(cpp_object.source, expected_source);
+    }
+
+    #[test]
+    fn generates_signals() {
+        let source = include_str!("../test_inputs/signals.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_header = clang_format(include_str!("../test_outputs/signals.h")).unwrap();
+        let expected_source = clang_format(include_str!("../test_outputs/signals.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
         assert_eq!(cpp_object.header, expected_header);
         assert_eq!(cpp_object.source, expected_source);

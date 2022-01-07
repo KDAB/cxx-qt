@@ -422,6 +422,67 @@ pub fn generate_qobject_cxx(
         }
     }
 
+    // Add signals emitters
+    for signal in &obj.signals {
+        let signal_ident_cpp = &signal.signal_ident.cpp_ident;
+        let signal_ident_rust_str = &signal.signal_ident.rust_ident.to_string();
+
+        let queued_ident_cpp = &signal.emit_ident.cpp_ident;
+        let queued_ident_rust_str = &signal.emit_ident.rust_ident.to_string();
+
+        if signal.parameters.is_empty() {
+            cpp_functions.push(quote! {
+                #[rust_name = #signal_ident_rust_str]
+                fn #signal_ident_cpp(self: Pin<&mut #class_name>);
+                #[rust_name = #queued_ident_rust_str]
+                fn #queued_ident_cpp(self: Pin<&mut #class_name>);
+            });
+        } else {
+            // For immediate parameters we want by-ref or primitive by-value
+            let parameters = signal
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let ident = &parameter.ident;
+                    let param_type = parameter.type_ident.qt_type.cxx_bridge_type_ident();
+                    if parameter.type_ident.qt_type.is_ref() {
+                        quote! {
+                            #ident: &#param_type
+                        }
+                    } else {
+                        quote! {
+                            #ident: #param_type
+                        }
+                    }
+                })
+                .collect::<Vec<TokenStream>>();
+            // For queued parameters we want by-value (or UniquePtr<T>)
+            let parameters_queued = signal
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let ident = &parameter.ident;
+                    let param_type = parameter.type_ident.qt_type.cxx_bridge_type_ident();
+                    if parameter.type_ident.qt_type.is_opaque() {
+                        quote! {
+                            #ident: UniquePtr<#param_type>
+                        }
+                    } else {
+                        quote! {
+                            #ident: #param_type
+                        }
+                    }
+                })
+                .collect::<Vec<TokenStream>>();
+            cpp_functions.push(quote! {
+                #[rust_name = #signal_ident_rust_str]
+                fn #signal_ident_cpp(self: Pin<&mut #class_name>, #(#parameters),*);
+                #[rust_name = #queued_ident_rust_str]
+                fn #queued_ident_cpp(self: Pin<&mut #class_name>, #(#parameters_queued),*);
+            });
+        }
+    }
+
     // Define a function to handle update requests if we have one
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
@@ -669,6 +730,79 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
     Ok(property_methods)
 }
 
+fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
+    let mut signal_methods = Vec::new();
+    let mut queued_cases = Vec::new();
+    let mut immediate_cases = Vec::new();
+
+    for signal in &obj.signals {
+        let emit_ident = &signal.emit_ident.rust_ident;
+        let enum_ident = &signal.enum_ident;
+        let parameters = signal
+            .parameters
+            .iter()
+            .map(|parameter| &parameter.ident)
+            .collect::<Vec<&Ident>>();
+        let parameters_to_value_immediate = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                if parameter.type_ident.qt_type.is_opaque() {
+                    quote! { &#ident.to_unique_ptr() }
+                } else if parameter.type_ident.qt_type.is_ref() {
+                    quote! { &#ident }
+                } else {
+                    ident.into_token_stream()
+                }
+            })
+            .collect::<Vec<TokenStream>>();
+        let parameters_to_value_queued = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                if parameter.type_ident.qt_type.is_opaque() {
+                    quote! { #ident.to_unique_ptr() }
+                } else {
+                    ident.into_token_stream()
+                }
+            })
+            .collect::<Vec<TokenStream>>();
+        let signal_ident = &signal.signal_ident.rust_ident;
+
+        queued_cases.push(quote! {
+            Signal::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#emit_ident(#(#parameters_to_value_queued),*),
+        });
+
+        immediate_cases.push(quote! {
+            Signal::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#signal_ident(#(#parameters_to_value_immediate),*),
+        });
+    }
+
+    if !queued_cases.is_empty() {
+        signal_methods.push(quote! {
+            pub fn emit_queued(&mut self, signal: Signal) {
+                match signal {
+                    #(#queued_cases)*
+                }
+            }
+        });
+    }
+
+    if !immediate_cases.is_empty() {
+        signal_methods.push(quote! {
+            pub unsafe fn emit_immediate(&mut self, signal: Signal) {
+                match signal {
+                    #(#immediate_cases)*
+                }
+            }
+        });
+    }
+
+    Ok(signal_methods)
+}
+
 /// Builds a struct with th given new fields
 fn build_struct_with_fields(
     original_struct: &syn::ItemStruct,
@@ -906,6 +1040,8 @@ pub fn generate_qobject_rs(
 
     // Generate property methods from the object
     let property_methods = generate_property_methods_rs(obj)?;
+    let signal_methods = generate_signal_methods_rs(obj)?;
+    let signal_enum = &obj.original_signal_enum;
 
     // Capture methods, trait impls, use decls so they can used by quote
     let invokable_method_wrappers = obj
@@ -1024,6 +1160,7 @@ pub fn generate_qobject_rs(
             }
 
             #(#property_methods)*
+            #(#signal_methods)*
 
             #update_requester
 
@@ -1055,6 +1192,8 @@ pub fn generate_qobject_rs(
             #(#original_passthrough_decls)*
 
             #cxx_block
+
+            #signal_enum
 
             #rust_struct
 
@@ -1219,6 +1358,24 @@ mod tests {
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/properties.rs");
+        let expected_output = format_rs_source(expected_output);
+
+        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
+            .unwrap()
+            .to_string();
+        let generated_rs = format_rs_source(&generated_rs);
+
+        assert_eq!(generated_rs, expected_output);
+    }
+
+    #[test]
+    fn generates_signals() {
+        let source = include_str!("../test_inputs/signals.rs");
+        let module: ItemMod = syn::parse_str(source).unwrap();
+        let cpp_namespace_prefix = vec!["cxx_qt"];
+        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+
+        let expected_output = include_str!("../test_outputs/signals.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)

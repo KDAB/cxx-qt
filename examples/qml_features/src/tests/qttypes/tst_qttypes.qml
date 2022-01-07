@@ -35,6 +35,59 @@ TestCase {
         }
     }
 
+    // Signals
+
+    function test_signal() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const readySpy = createTemporaryObject(componentSpy, null, {
+            signalName: "ready",
+            target: mock,
+        });
+        const dataChangedSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "dataChanged",
+            target: mock,
+        });
+
+        compare(readySpy.count, 0);
+        compare(dataChangedSpy.count, 0);
+
+        mock.testSignal();
+
+        // Safe signal emission is queued
+        compare(readySpy.count, 0);
+        compare(dataChangedSpy.count, 0);
+        tryCompare(readySpy, "count", 1);
+        compare(readySpy.signalArguments[0].length, 0);
+        tryCompare(dataChangedSpy, "count", 1);
+        compare(dataChangedSpy.signalArguments[0].length, 1);
+        const signalArguments = dataChangedSpy.signalArguments[0];
+        compare(signalArguments[0], true);
+    }
+
+    function test_unsafe_signal() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const readySpy = createTemporaryObject(componentSpy, null, {
+            signalName: "ready",
+            target: mock,
+        });
+        const dataChangedSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "dataChanged",
+            target: mock,
+        });
+
+        compare(readySpy.count, 0);
+        compare(dataChangedSpy.count, 0);
+
+        mock.testUnsafeSignal();
+
+        compare(readySpy.count, 1);
+        compare(readySpy.signalArguments[0].length, 0);
+        compare(dataChangedSpy.count, 1);
+        compare(dataChangedSpy.signalArguments[0].length, 1);
+        const signalArguments = dataChangedSpy.signalArguments[0];
+        compare(signalArguments[0], true);
+    }
+
 
     // QColor
 
