@@ -623,8 +623,8 @@ fn invokable_generate_wrapper(
             });
             output_parameters.push(quote! { #is_ref #is_mut #param_ident });
         } else {
-            let param_type = &param.type_ident.original_ty;
-            input_parameters.push(quote! { #param_ident: #param_type });
+            let param_type = &param.type_ident.idents;
+            input_parameters.push(quote! { #param_ident: #is_ref #is_mut #(#param_type)::* });
             output_parameters.push(quote! { #param_ident });
         }
     }
