@@ -20,11 +20,14 @@ mod ffi {
     }
 
     enum VariantTest {
-        String,
+        Bool,
         I8,
         I16,
         I32,
-        Bool,
+        String,
+        U8,
+        U16,
+        U32,
     }
 
     unsafe extern "C++" {
@@ -205,11 +208,14 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
 
 fn make_variant(test: VariantTest) -> Variant {
     match test {
-        VariantTest::String => Variant::from_string("Rust string".to_owned()),
+        VariantTest::Bool => Variant::from_bool(true),
         VariantTest::I8 => Variant::from_i8(12),
         VariantTest::I16 => Variant::from_i16(123),
         VariantTest::I32 => Variant::from_i32(123),
-        VariantTest::Bool => Variant::from_bool(true),
+        VariantTest::String => Variant::from_string("Rust string".to_owned()),
+        VariantTest::U8 => Variant::from_u8(12),
+        VariantTest::U16 => Variant::from_u16(123),
+        VariantTest::U32 => Variant::from_u32(123),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
@@ -222,8 +228,8 @@ fn can_construct_qvariant(test: VariantTest) -> bool {
 
 fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
     match test {
-        VariantTest::String => match &*v.to_rust() {
-            VariantImpl::String(s) => s == "C++ string",
+        VariantTest::Bool => match &*v.to_rust() {
+            VariantImpl::Bool(b) => !*b,
             _others => false,
         },
         VariantTest::I8 => match &*v.to_rust() {
@@ -238,8 +244,20 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             VariantImpl::I32(i) => *i == 8910,
             _others => false,
         },
-        VariantTest::Bool => match &*v.to_rust() {
-            VariantImpl::Bool(b) => !*b,
+        VariantTest::String => match &*v.to_rust() {
+            VariantImpl::String(s) => s == "C++ string",
+            _others => false,
+        },
+        VariantTest::U8 => match &*v.to_rust() {
+            VariantImpl::U8(i) => *i == 89,
+            _others => false,
+        },
+        VariantTest::U16 => match &*v.to_rust() {
+            VariantImpl::U16(i) => *i == 8910,
+            _others => false,
+        },
+        VariantTest::U32 => match &*v.to_rust() {
+            VariantImpl::U32(i) => *i == 8910,
             _others => false,
         },
         _others => panic!("Unsupported test: {}", test.repr),

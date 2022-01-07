@@ -21,16 +21,21 @@ use std::{
 #[allow(dead_code)]
 enum QVariantType {
     Unsupported = 0,
-    String = 1,
+    Bool = 1,
     I8 = 2,
     I16 = 3,
     I32 = 4,
-    Bool = 5,
+    String = 5,
+    U8 = 6,
+    U16 = 7,
+    U32 = 8,
 }
 
 extern "C" {
     #[link_name = "cxxqt1$qvariant$init"]
     fn qvariant_init(this: &mut MaybeUninit<QVariant>);
+    #[link_name = "cxxqt1$qvariant$init$from$bool"]
+    fn qvariant_init_from_bool(this: &mut MaybeUninit<QVariant>, b: bool);
     #[link_name = "cxxqt1$qvariant$init$from$i8"]
     fn qvariant_init_from_i8(this: &mut MaybeUninit<QVariant>, i: i8);
     #[link_name = "cxxqt1$qvariant$init$from$i16"]
@@ -39,20 +44,30 @@ extern "C" {
     fn qvariant_init_from_i32(this: &mut MaybeUninit<QVariant>, i: i32);
     #[link_name = "cxxqt1$qvariant$init$from$str"]
     fn qvariant_init_from_str(this: &mut MaybeUninit<QVariant>, s: &str);
-    #[link_name = "cxxqt1$qvariant$init$from$bool"]
-    fn qvariant_init_from_bool(this: &mut MaybeUninit<QVariant>, b: bool);
+    #[link_name = "cxxqt1$qvariant$init$from$u8"]
+    fn qvariant_init_from_u8(this: &mut MaybeUninit<QVariant>, i: u8);
+    #[link_name = "cxxqt1$qvariant$init$from$u16"]
+    fn qvariant_init_from_u16(this: &mut MaybeUninit<QVariant>, i: u16);
+    #[link_name = "cxxqt1$qvariant$init$from$u32"]
+    fn qvariant_init_from_u32(this: &mut MaybeUninit<QVariant>, i: u32);
     #[link_name = "cxxqt1$qvariant$get$type"]
     fn qvariant_get_type(this: &QVariant) -> QVariantType;
-    #[link_name = "cxxqt1$qvariant$copy$to$string"]
-    fn qvariant_copy_to_string(this: &QVariant, s: &mut String);
+    #[link_name = "cxxqt1$qvariant$to$bool"]
+    fn qvariant_to_bool(this: &QVariant) -> bool;
     #[link_name = "cxxqt1$qvariant$to$i8"]
     fn qvariant_to_i8(this: &QVariant) -> i8;
     #[link_name = "cxxqt1$qvariant$to$i16"]
     fn qvariant_to_i16(this: &QVariant) -> i16;
     #[link_name = "cxxqt1$qvariant$to$i32"]
     fn qvariant_to_i32(this: &QVariant) -> i32;
-    #[link_name = "cxxqt1$qvariant$to$bool"]
-    fn qvariant_to_bool(this: &QVariant) -> bool;
+    #[link_name = "cxxqt1$qvariant$copy$to$string"]
+    fn qvariant_copy_to_string(this: &QVariant, s: &mut String);
+    #[link_name = "cxxqt1$qvariant$to$u8"]
+    fn qvariant_to_u8(this: &QVariant) -> u8;
+    #[link_name = "cxxqt1$qvariant$to$u16"]
+    fn qvariant_to_u16(this: &QVariant) -> u16;
+    #[link_name = "cxxqt1$qvariant$to$u32"]
+    fn qvariant_to_u32(this: &QVariant) -> u32;
     #[link_name = "cxxqt1$qvariant$assign$qvariant"]
     fn qvariant_assign_qvariant(from: &QVariant, to: &mut QVariant);
     #[link_name = "cxxqt1$qvariant$drop"]
@@ -134,15 +149,18 @@ impl QVariant {
         // function calls safe.
         match unsafe { qvariant_get_type(self) } {
             QVariantType::Unsupported => Variant::unsupported(),
+            QVariantType::Bool => Variant::from_bool(unsafe { qvariant_to_bool(self) }),
+            QVariantType::I8 => Variant::from_i8(unsafe { qvariant_to_i8(self) }),
+            QVariantType::I16 => Variant::from_i16(unsafe { qvariant_to_i16(self) }),
+            QVariantType::I32 => Variant::from_i32(unsafe { qvariant_to_i32(self) }),
             QVariantType::String => {
                 let mut s = String::new();
                 unsafe { qvariant_copy_to_string(self, &mut s) };
                 Variant::from_string(s)
             }
-            QVariantType::I8 => Variant::from_i8(unsafe { qvariant_to_i8(self) }),
-            QVariantType::I16 => Variant::from_i16(unsafe { qvariant_to_i16(self) }),
-            QVariantType::I32 => Variant::from_i32(unsafe { qvariant_to_i32(self) }),
-            QVariantType::Bool => Variant::from_bool(unsafe { qvariant_to_bool(self) }),
+            QVariantType::U8 => Variant::from_u8(unsafe { qvariant_to_u8(self) }),
+            QVariantType::U16 => Variant::from_u16(unsafe { qvariant_to_u16(self) }),
+            QVariantType::U32 => Variant::from_u32(unsafe { qvariant_to_u32(self) }),
         }
     }
 }
@@ -183,11 +201,14 @@ impl StackQVariant {
 
         match value.deref() {
             VariantImpl::Unsupported => qvariant_init(this),
-            VariantImpl::String(s) => qvariant_init_from_str(this, s),
+            VariantImpl::Bool(b) => qvariant_init_from_bool(this, *b),
             VariantImpl::I8(i) => qvariant_init_from_i8(this, *i),
             VariantImpl::I16(i) => qvariant_init_from_i16(this, *i),
             VariantImpl::I32(i) => qvariant_init_from_i32(this, *i),
-            VariantImpl::Bool(b) => qvariant_init_from_bool(this, *b),
+            VariantImpl::String(s) => qvariant_init_from_str(this, s),
+            VariantImpl::U8(i) => qvariant_init_from_u8(this, *i),
+            VariantImpl::U16(i) => qvariant_init_from_u16(this, *i),
+            VariantImpl::U32(i) => qvariant_init_from_u32(this, *i),
         }
 
         Pin::new_unchecked(&mut *this.as_mut_ptr())
@@ -226,11 +247,14 @@ unsafe impl ExternType for QVariant {
 
 pub enum VariantImpl {
     Unsupported,
-    String(String),
+    Bool(bool),
     I8(i8),
     I16(i16),
     I32(i32),
-    Bool(bool),
+    String(String),
+    U8(u8),
+    U16(u16),
+    U32(u32),
 }
 
 #[repr(C)]
@@ -239,9 +263,9 @@ pub struct Variant {
 }
 
 impl Variant {
-    pub fn from_string(s: String) -> Self {
+    pub fn from_bool(b: bool) -> Self {
         Self {
-            d: Box::new(VariantImpl::String(s)),
+            d: Box::new(VariantImpl::Bool(b)),
         }
     }
 
@@ -263,9 +287,27 @@ impl Variant {
         }
     }
 
-    pub fn from_bool(b: bool) -> Self {
+    pub fn from_string(s: String) -> Self {
         Self {
-            d: Box::new(VariantImpl::Bool(b)),
+            d: Box::new(VariantImpl::String(s)),
+        }
+    }
+
+    pub fn from_u8(i: u8) -> Self {
+        Self {
+            d: Box::new(VariantImpl::U8(i)),
+        }
+    }
+
+    pub fn from_u16(i: u16) -> Self {
+        Self {
+            d: Box::new(VariantImpl::U16(i)),
+        }
+    }
+
+    pub fn from_u32(i: u32) -> Self {
+        Self {
+            d: Box::new(VariantImpl::U32(i)),
         }
     }
 
