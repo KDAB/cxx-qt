@@ -29,6 +29,7 @@ impl RustType for QtTypes {
         match self {
             Self::QPoint => true,
             Self::QPointF => true,
+            Self::QRect => true,
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
@@ -57,6 +58,7 @@ impl RustType for QtTypes {
             Self::I32 => format_ident!("i32"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
+            Self::QRect => format_ident!("QRect"),
             Self::QRectF => format_ident!("QRectF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
@@ -87,6 +89,7 @@ impl RustType for QtTypes {
             Self::I32 => quote! {i32},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
+            Self::QRect => quote! {cxx_qt_lib::QRect},
             Self::QRectF => quote! {cxx_qt_lib::QRectF},
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
@@ -429,6 +432,8 @@ pub fn generate_qobject_cxx(
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
                 type QPointF = cxx_qt_lib::QPointF;
+                #[namespace = ""]
+                type QRect = cxx_qt_lib::QRect;
                 #[namespace = ""]
                 type QRectF = cxx_qt_lib::QRectF;
                 #[namespace = ""]
