@@ -18,7 +18,7 @@ mod mock_qt_types {
     impl Default for Data {
         fn default() -> Self {
             Data {
-                pointf: QPointF::new(1.0, 2.0),
+                pointf: QPointF::new(1.0, 3.0),
                 variant: Variant::from_int(1),
             }
         }
@@ -32,7 +32,7 @@ mod mock_qt_types {
         fn test_pointf_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.pointf();
             point.set_x(point.x() * 2.0);
-            point.set_y(point.y() * 2.0);
+            point.set_y(point.y() * 3.0);
             cpp.set_pointf(&point);
         }
 
@@ -40,7 +40,7 @@ mod mock_qt_types {
         fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
             let mut point = *point;
             point.set_x(point.x() * 2.0);
-            point.set_y(point.y() * 2.0);
+            point.set_y(point.y() * 3.0);
             point
         }
 
