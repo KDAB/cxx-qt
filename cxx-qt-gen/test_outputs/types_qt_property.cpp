@@ -34,6 +34,27 @@ MyObject::setColor(const QColor& value)
   }
 }
 
+const QDate&
+MyObject::getDate() const
+{
+  return m_date;
+}
+
+void
+MyObject::setDate(const QDate& value)
+{
+  if (!m_initialised) {
+    m_date = value;
+    return;
+  }
+
+  if (value != m_date) {
+    m_date = value;
+
+    runOnGUIThread([&]() { Q_EMIT dateChanged(); });
+  }
+}
+
 const QPoint&
 MyObject::getPoint() const
 {

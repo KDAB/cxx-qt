@@ -10,8 +10,11 @@ mod my_object {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+
             #[namespace = ""]
             type QColor = cxx_qt_lib::QColor;
+            #[namespace = ""]
+            type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -42,6 +45,9 @@ mod my_object {
                 _cpp: Pin<&mut MyObject>,
                 color: &QColor,
             ) -> UniquePtr<QColor>;
+
+            #[cxx_name = "testDateWrapper"]
+            fn test_date_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, date: &QDate) -> QDate;
 
             #[cxx_name = "testPointWrapper"]
             fn test_point_wrapper(
@@ -115,6 +121,11 @@ mod my_object {
             return self.test_color(&mut _cpp, color).to_unique_ptr();
         }
 
+        fn test_date_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, date: &QDate) -> QDate {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_date(&mut _cpp, date);
+        }
+
         fn test_point_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
@@ -181,6 +192,10 @@ mod my_object {
 
         fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> Color {
             color
+        }
+
+        fn test_date(&self, _cpp: &mut CppObj, date: &QDate) -> QDate {
+            date
         }
 
         fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {

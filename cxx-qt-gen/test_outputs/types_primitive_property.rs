@@ -19,8 +19,11 @@ mod my_object {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+
             #[namespace = ""]
             type QColor = cxx_qt_lib::QColor;
+            #[namespace = ""]
+            type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]

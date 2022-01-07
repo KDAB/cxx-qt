@@ -5,6 +5,7 @@ mod my_object {
     mod ffi {
         enum Property {
             Color,
+            Date,
             Point,
             Pointf,
             Rect,
@@ -19,8 +20,11 @@ mod my_object {
             include!("cxx-qt-gen/include/my_object.h");
 
             type MyObject;
+
             #[namespace = ""]
             type QColor = cxx_qt_lib::QColor;
+            #[namespace = ""]
+            type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -42,6 +46,11 @@ mod my_object {
             fn getColor(self: &MyObject) -> &QColor;
             #[rust_name = "set_color"]
             fn setColor(self: Pin<&mut MyObject>, value: &QColor);
+
+            #[rust_name = "date"]
+            fn getDate(self: &MyObject) -> &QDate;
+            #[rust_name = "set_date"]
+            fn setDate(self: Pin<&mut MyObject>, value: &QDate);
 
             #[rust_name = "point"]
             fn getPoint(self: &MyObject) -> &QPoint;
@@ -123,6 +132,14 @@ mod my_object {
             self.cpp.as_mut().set_color(value);
         }
 
+        pub fn date(&self) -> &cxx_qt_lib::QDate {
+            self.cpp.date()
+        }
+
+        pub fn set_date(&mut self, value: &cxx_qt_lib::QDate) {
+            self.cpp.as_mut().set_date(value);
+        }
+
         pub fn point(&self) -> &cxx_qt_lib::QPoint {
             self.cpp.point()
         }
@@ -199,6 +216,8 @@ mod my_object {
 
             data.color
                 .map_qt_value(|context, converted| context.set_color(converted), self);
+            data.date
+                .map_qt_value(|context, converted| context.set_date(converted), self);
             data.point
                 .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
@@ -221,6 +240,7 @@ mod my_object {
     #[derive(Default)]
     struct Data {
         color: Color,
+        date: QDate,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -235,6 +255,7 @@ mod my_object {
         fn from(value: &CppObj<'a>) -> Self {
             Self {
                 color: value.color().into(),
+                date: value.date().into(),
                 point: value.point().into(),
                 pointf: value.pointf().into(),
                 rect: value.rect().into(),

@@ -20,6 +20,13 @@ MyObject::testColor(const QColor& color)
   return std::move(*m_rustObj->testColorWrapper(*this, color));
 }
 
+QDate
+MyObject::testDate(const QDate& date)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return m_rustObj->testDateWrapper(*this, date);
+}
+
 QPoint
 MyObject::testPoint(const QPoint& point)
 {

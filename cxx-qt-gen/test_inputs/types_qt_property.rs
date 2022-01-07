@@ -2,6 +2,7 @@ mod my_object {
     #[derive(Default)]
     struct Data {
         color: Color,
+        date: QDate,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
