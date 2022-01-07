@@ -223,6 +223,38 @@ TEST_CASE("Can copy a value QPoint on the Rust side")
   CHECK(c.y() == 4);
 }
 
+TEST_CASE("Can construct a QDate on the Rust side")
+{
+  const auto d = construct_qdate();
+  CHECK(d.year() == 2022);
+  CHECK(d.month() == 1);
+  CHECK(d.day() == 1);
+}
+
+TEST_CASE("Can read a QDate on the Rust side")
+{
+  const auto d = QDate(2022, 1, 1);
+  CHECK(read_qdate(d));
+}
+
+TEST_CASE("Can copy a QDate on the Rust side")
+{
+  const auto d = QDate(2022, 1, 1);
+  const auto c = copy_qdate(d);
+  CHECK(c.year() == 2022);
+  CHECK(c.month() == 1);
+  CHECK(c.day() == 1);
+}
+
+TEST_CASE("Can copy a value QDate on the Rust side")
+{
+  const auto d = QDate(2022, 1, 1);
+  const auto c = copy_value_qdate(d);
+  CHECK(c.year() == 2022);
+  CHECK(c.month() == 1);
+  CHECK(c.day() == 1);
+}
+
 TEST_CASE("Can construct a QPointF on the Rust side")
 {
   const auto p = construct_qpointf();

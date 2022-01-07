@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QVariant,
-    ToUniquePtr, Variant, VariantValue,
+    Color, MapQtValue, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
+    QVariant, ToUniquePtr, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -37,6 +37,7 @@ mod ffi {
         include!("bridge.h");
 
         type QColor = cxx_qt_lib::QColor;
+        type QDate = cxx_qt_lib::QDate;
         type QString = cxx_qt_lib::QString;
         type QVariant = cxx_qt_lib::QVariant;
         type QSize = cxx_qt_lib::QSize;
@@ -68,6 +69,11 @@ mod ffi {
         fn make_variant(test: VariantTest) -> UniquePtr<QVariant>;
         fn can_construct_qvariant(test: VariantTest) -> bool;
         fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
+
+        fn construct_qdate() -> QDate;
+        fn read_qdate(d: &QDate) -> bool;
+        fn copy_qdate(d: &QDate) -> QDate;
+        fn copy_value_qdate(d: QDate) -> QDate;
 
         fn construct_qpoint() -> QPoint;
         fn read_qpoint(p: &QPoint) -> bool;
@@ -239,6 +245,22 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn construct_qdate() -> QDate {
+    QDate::new(2022, 1, 1)
+}
+
+fn read_qdate(d: &QDate) -> bool {
+    d.year() == 2022 && d.month() == 1 && d.day() == 1
+}
+
+fn copy_qdate(d: &QDate) -> QDate {
+    *d
+}
+
+fn copy_value_qdate(d: QDate) -> QDate {
+    d
 }
 
 fn construct_qpoint() -> QPoint {
