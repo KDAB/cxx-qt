@@ -69,6 +69,48 @@ TestCase {
     }
 
 
+
+    // QDate
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qdate_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "dateChanged",
+            target: mock,
+        });
+        compare(mock.date, new Date(2022, 0, 1));
+
+        compare(spy.count, 0);
+        mock.date = new Date(2021, 11, 31);
+        tryCompare(spy, "count", 1);
+        compare(mock.date, new Date(2021, 11, 31));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qdate_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testDateInvokable(new Date(2022, 0, 1));
+        compare(result, new Date(2021, 11, 31));
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qdate_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "dateChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.date, new Date(2022, 0, 1));
+        mock.testDateProperty();
+        compare(mock.date, new Date(2021, 11, 31));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QPoint
 
     // Check that we can adjust the property for the type and it has non default value

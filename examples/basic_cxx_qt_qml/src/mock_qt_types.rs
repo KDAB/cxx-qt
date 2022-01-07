@@ -9,12 +9,13 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant,
+        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant,
         VariantValue,
     };
 
     pub struct Data {
         color: Color,
+        date: QDate,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -28,6 +29,7 @@ mod mock_qt_types {
         fn default() -> Self {
             Data {
                 color: Color::from_rgba(255, 0, 0, 255),
+                date: QDate::new(2022, 1, 1),
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
                 rect: QRect::new(1, 2, 3, 4),
@@ -52,6 +54,20 @@ mod mock_qt_types {
         #[invokable]
         fn test_color_invokable(&self, _color: &QColor) -> Color {
             Color::from_rgba(0, 255, 0, 255)
+        }
+
+        #[invokable]
+        fn test_date_property(&self, cpp: &mut CppObj) {
+            let mut date = *cpp.date();
+            date.set_date(2021, 12, 31);
+            cpp.set_date(&date);
+        }
+
+        #[invokable]
+        fn test_date_invokable(&self, date: &QDate) -> QDate {
+            let mut date = *date;
+            date.set_date(2021, 12, 31);
+            date
         }
 
         #[invokable]

@@ -28,6 +28,7 @@ impl RustType for QtTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::Color => true,
+            Self::QDate => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
@@ -58,6 +59,7 @@ impl RustType for QtTypes {
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
             Self::Color | Self::QColor => format_ident!("QColor"),
+            Self::QDate => format_ident!("QDate"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
@@ -90,6 +92,7 @@ impl RustType for QtTypes {
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
             Self::Color | Self::QColor => quote! {cxx_qt_lib::QColor},
+            Self::QDate => quote! {cxx_qt_lib::QDate},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
@@ -445,6 +448,8 @@ pub fn generate_qobject_cxx(
 
                 #[namespace = ""]
                 type QColor = cxx_qt_lib::QColor;
+                #[namespace = ""]
+                type QDate = cxx_qt_lib::QDate;
                 #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
