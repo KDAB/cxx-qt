@@ -105,6 +105,8 @@ TEST_CASE("Can read a QColor on the Rust side")
 TEST_CASE("Can construct a QVariant on the Rust side")
 {
   CHECK(can_construct_qvariant(VariantTest::Bool));
+  CHECK(can_construct_qvariant(VariantTest::F32));
+  CHECK(can_construct_qvariant(VariantTest::F64));
   CHECK(can_construct_qvariant(VariantTest::I8));
   CHECK(can_construct_qvariant(VariantTest::I16));
   CHECK(can_construct_qvariant(VariantTest::I32));
@@ -120,20 +122,24 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
   switch (test) {
     case VariantTest::Bool:
       return v.toBool() == true;
+    case VariantTest::F32:
+      return qFuzzyCompare(v.value<float>(), 1.23f);
+    case VariantTest::F64:
+      return qFuzzyCompare(v.value<double>(), 1.23);
     case VariantTest::I8:
-      return v.toInt() == 12;
+      return v.value<qint8>() == 12;
     case VariantTest::I16:
-      return v.toInt() == 123;
+      return v.value<qint16>() == 123;
     case VariantTest::I32:
-      return v.toInt() == 123;
+      return v.value<qint32>() == 123;
     case VariantTest::String:
       return v.toString() == QStringLiteral("Rust string");
     case VariantTest::U8:
-      return v.toInt() == 12;
+      return v.value<quint8>() == 12;
     case VariantTest::U16:
-      return v.toInt() == 123;
+      return v.value<quint16>() == 123;
     case VariantTest::U32:
-      return v.toInt() == 123;
+      return v.value<quint32>() == 123;
 
     default:
       return false;
@@ -148,6 +154,8 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   };
 
   CHECK(runTest(VariantTest::Bool));
+  CHECK(runTest(VariantTest::F32));
+  CHECK(runTest(VariantTest::F64));
   CHECK(runTest(VariantTest::I8));
   CHECK(runTest(VariantTest::I16));
   CHECK(runTest(VariantTest::I32));
@@ -160,6 +168,9 @@ TEST_CASE("Can convert Rust Variant to QVariant")
 TEST_CASE("Can read a QVariant on the Rust side")
 {
   CHECK(can_read_qvariant(QVariant::fromValue(false), VariantTest::Bool));
+  CHECK(can_read_qvariant(QVariant::fromValue<float>(89.1), VariantTest::F32));
+  CHECK(can_read_qvariant(QVariant::fromValue<double>(89.1), VariantTest::F64));
+  CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
   CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
   CHECK(can_read_qvariant(QVariant::fromValue<qint16>(8910), VariantTest::I16));
   CHECK(can_read_qvariant(QVariant::fromValue(8910), VariantTest::I32));

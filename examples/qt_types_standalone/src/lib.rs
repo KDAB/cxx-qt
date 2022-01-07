@@ -21,6 +21,8 @@ mod ffi {
 
     enum VariantTest {
         Bool,
+        F32,
+        F64,
         I8,
         I16,
         I32,
@@ -209,6 +211,8 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
 fn make_variant(test: VariantTest) -> Variant {
     match test {
         VariantTest::Bool => Variant::from_bool(true),
+        VariantTest::F32 => Variant::from_f32(1.23),
+        VariantTest::F64 => Variant::from_f64(1.23),
         VariantTest::I8 => Variant::from_i8(12),
         VariantTest::I16 => Variant::from_i16(123),
         VariantTest::I32 => Variant::from_i32(123),
@@ -230,6 +234,14 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
     match test {
         VariantTest::Bool => match &*v.to_rust() {
             VariantImpl::Bool(b) => !*b,
+            _others => false,
+        },
+        VariantTest::F32 => match &*v.to_rust() {
+            VariantImpl::F32(f) => *f == 89.1,
+            _others => false,
+        },
+        VariantTest::F64 => match &*v.to_rust() {
+            VariantImpl::F64(f) => *f == 89.1,
             _others => false,
         },
         VariantTest::I8 => match &*v.to_rust() {

@@ -254,13 +254,15 @@ enum class QVariantType : uint8_t
 {
   Unsupported = 0,
   Bool = 1,
-  I8 = 2,
-  I16 = 3,
-  I32 = 4,
-  String = 5,
-  U8 = 6,
-  U16 = 7,
-  U32 = 8,
+  F32 = 2,
+  F64 = 3,
+  I8 = 4,
+  I16 = 5,
+  I32 = 6,
+  String = 7,
+  U8 = 8,
+  U16 = 9,
+  U32 = 10,
 };
 
 } // namespace
@@ -273,6 +275,18 @@ extern "C"
   {
     new (self) QVariant();
     *self = QVariant::fromValue(b);
+  }
+
+  void cxxqt1$qvariant$init$from$f32(QVariant* self, float f) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(f);
+  }
+
+  void cxxqt1$qvariant$init$from$f64(QVariant* self, double d) noexcept
+  {
+    new (self) QVariant();
+    *self = QVariant::fromValue(d);
   }
 
   void cxxqt1$qvariant$init$from$i8(QVariant* self, qint8 i) noexcept
@@ -322,6 +336,10 @@ extern "C"
     switch (self.type()) {
       case QMetaType::Bool:
         return QVariantType::Bool;
+      case QMetaType::Float:
+        return QVariantType::F32;
+      case QMetaType::Double:
+        return QVariantType::F64;
       case QMetaType::SChar:
         return QVariantType::I8;
       case QMetaType::Short:
@@ -345,6 +363,18 @@ extern "C"
   bool cxxqt1$qvariant$to$bool(const QVariant& self) noexcept
   {
     return self.toBool();
+  }
+
+  float cxxqt1$qvariant$to$f32(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<float>());
+    return self.value<float>();
+  }
+
+  double cxxqt1$qvariant$to$f64(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<double>());
+    return self.value<double>();
   }
 
   qint8 cxxqt1$qvariant$to$i8(const QVariant& self) noexcept
