@@ -40,7 +40,7 @@ mod mock_qt_types {
         fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
             let mut point = *point;
             point.set_x(point.x() * 2.0);
-            point.set_y(point.x() * 2.0);
+            point.set_y(point.y() * 2.0);
             point
         }
 
