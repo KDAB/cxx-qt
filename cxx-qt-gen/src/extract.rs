@@ -72,8 +72,6 @@ pub(crate) struct ParameterType {
     pub(crate) is_mut: bool,
     /// If this parameter is a reference
     pub(crate) is_ref: bool,
-    /// The original type, this allows us to annotate an error with a span later
-    pub(crate) original_ty: syn::Type,
     /// The detected Qt type of the parameter
     pub(crate) qt_type: QtTypes,
 }
@@ -306,8 +304,6 @@ fn extract_type_ident(
         idents,
         is_mut,
         is_ref,
-        // We need to have the original type so that errors can Span if there are no idents
-        original_ty: ty.to_owned(),
         qt_type,
     })
 }
@@ -905,19 +901,19 @@ mod tests {
         assert_eq!(prop_first.ident.rust_ident.to_string(), "my_number");
         assert_eq!(prop_first.type_ident.idents.len(), 1);
         assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
-        assert_eq!(prop_first.type_ident.is_ref, false);
+        assert!(!prop_first.type_ident.is_ref);
 
-        assert_eq!(prop_first.getter.is_some(), true);
+        assert!(prop_first.getter.is_some());
         let getter = prop_first.getter.as_ref().unwrap();
         assert_eq!(getter.cpp_ident.to_string(), "getMyNumber");
         assert_eq!(getter.rust_ident.to_string(), "my_number");
 
-        assert_eq!(prop_first.setter.is_some(), true);
+        assert!(prop_first.setter.is_some());
         let setter = prop_first.setter.as_ref().unwrap();
         assert_eq!(setter.cpp_ident.to_string(), "setMyNumber");
         assert_eq!(setter.rust_ident.to_string(), "set_my_number");
 
-        assert_eq!(prop_first.notify.is_some(), true);
+        assert!(prop_first.notify.is_some());
         let notify = prop_first.notify.as_ref().unwrap();
         assert_eq!(notify.cpp_ident.to_string(), "myNumberChanged");
         // TODO: does rust need a notify ident?
@@ -983,13 +979,13 @@ mod tests {
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_first.type_ident.idents.len(), 1);
         assert_eq!(param_first.type_ident.idents[0].to_string(), "QString");
-        assert_eq!(param_first.type_ident.is_ref, true);
+        assert!(param_first.type_ident.is_ref);
 
         let param_second = &invokable.parameters[1];
         assert_eq!(param_second.ident.to_string(), "number");
         assert_eq!(param_second.type_ident.idents.len(), 1);
         assert_eq!(param_second.type_ident.idents[0].to_string(), "i32");
-        assert_eq!(param_second.type_ident.is_ref, false);
+        assert!(!param_second.type_ident.is_ref);
 
         // Check invokable ident
         let invokable_second = &qobject.invokables[1];
@@ -1023,19 +1019,19 @@ mod tests {
         assert_eq!(prop_first.ident.rust_ident.to_string(), "number");
         assert_eq!(prop_first.type_ident.idents.len(), 1);
         assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
-        assert_eq!(prop_first.type_ident.is_ref, false);
+        assert!(!prop_first.type_ident.is_ref);
 
-        assert_eq!(prop_first.getter.is_some(), true);
+        assert!(prop_first.getter.is_some());
         let getter = prop_first.getter.as_ref().unwrap();
         assert_eq!(getter.cpp_ident.to_string(), "getNumber");
         assert_eq!(getter.rust_ident.to_string(), "number");
 
-        assert_eq!(prop_first.setter.is_some(), true);
+        assert!(prop_first.setter.is_some());
         let setter = prop_first.setter.as_ref().unwrap();
         assert_eq!(setter.cpp_ident.to_string(), "setNumber");
         assert_eq!(setter.rust_ident.to_string(), "set_number");
 
-        assert_eq!(prop_first.notify.is_some(), true);
+        assert!(prop_first.notify.is_some());
         let notify = prop_first.notify.as_ref().unwrap();
         assert_eq!(notify.cpp_ident.to_string(), "numberChanged");
         // TODO: does rust need a notify ident?
@@ -1047,19 +1043,19 @@ mod tests {
         assert_eq!(prop_second.ident.rust_ident.to_string(), "string");
         assert_eq!(prop_second.type_ident.idents.len(), 1);
         assert_eq!(prop_second.type_ident.idents[0].to_string(), "String");
-        assert_eq!(prop_second.type_ident.is_ref, false);
+        assert!(!prop_second.type_ident.is_ref);
 
-        assert_eq!(prop_second.getter.is_some(), true);
+        assert!(prop_second.getter.is_some());
         let getter = prop_second.getter.as_ref().unwrap();
         assert_eq!(getter.cpp_ident.to_string(), "getString");
         assert_eq!(getter.rust_ident.to_string(), "string");
 
-        assert_eq!(prop_second.setter.is_some(), true);
+        assert!(prop_second.setter.is_some());
         let setter = prop_second.setter.as_ref().unwrap();
         assert_eq!(setter.cpp_ident.to_string(), "setString");
         assert_eq!(setter.rust_ident.to_string(), "set_string");
 
-        assert_eq!(prop_second.notify.is_some(), true);
+        assert!(prop_second.notify.is_some());
         let notify = prop_second.notify.as_ref().unwrap();
         assert_eq!(notify.cpp_ident.to_string(), "stringChanged");
         // TODO: does rust need a notify ident?
@@ -1114,8 +1110,8 @@ mod tests {
         assert_eq!(param_first.ident.to_string(), "_cpp");
         assert_eq!(param_first.type_ident.idents.len(), 1);
         assert_eq!(param_first.type_ident.idents[0].to_string(), "CppObj");
-        assert_eq!(param_first.type_ident.is_ref, true);
-        assert_eq!(param_first.type_ident.is_mut, true);
+        assert!(param_first.type_ident.is_ref);
+        assert!(param_first.type_ident.is_mut);
         if let QtTypes::CppObj { external, .. } = &param_first.type_ident.qt_type {
             assert_eq!(external, &false);
         } else {
@@ -1127,13 +1123,13 @@ mod tests {
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_second.type_ident.idents.len(), 1);
         assert_eq!(param_second.type_ident.idents[0].to_string(), "QString");
-        assert_eq!(param_second.type_ident.is_ref, true);
+        assert!(param_second.type_ident.is_ref);
 
         let param_third = &invokable.parameters[2];
         assert_eq!(param_third.ident.to_string(), "number");
         assert_eq!(param_third.type_ident.idents.len(), 1);
         assert_eq!(param_third.type_ident.idents[0].to_string(), "i32");
-        assert_eq!(param_third.type_ident.is_ref, false);
+        assert!(!param_third.type_ident.is_ref);
 
         // Check invokable ident
         let invokable_second = &qobject.invokables[1];
@@ -1147,8 +1143,8 @@ mod tests {
         assert_eq!(param_first.ident.to_string(), "_cpp");
         assert_eq!(param_first.type_ident.idents.len(), 1);
         assert_eq!(param_first.type_ident.idents[0].to_string(), "CppObj");
-        assert_eq!(param_first.type_ident.is_ref, true);
-        assert_eq!(param_first.type_ident.is_mut, true);
+        assert!(param_first.type_ident.is_ref);
+        assert!(param_first.type_ident.is_mut);
         if let QtTypes::CppObj { external, .. } = &param_first.type_ident.qt_type {
             assert_eq!(external, &false);
         } else {
