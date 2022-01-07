@@ -52,6 +52,16 @@ mod mock_qt_types {
                     let_qvariant!(new_qvariant = &new_variant);
                     cpp.set_variant(&new_qvariant);
                 }
+                VariantImpl::F32(f) => {
+                    let new_variant = Variant::from_f32(f * 2.0);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
+                VariantImpl::F64(d) => {
+                    let new_variant = Variant::from_f64(d * 2.0);
+                    let_qvariant!(new_qvariant = &new_variant);
+                    cpp.set_variant(&new_qvariant);
+                }
                 VariantImpl::I8(i) => {
                     let new_variant = Variant::from_i8(i * 2);
                     let_qvariant!(new_qvariant = &new_variant);
@@ -90,6 +100,8 @@ mod mock_qt_types {
         fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
             match *variant.to_rust() {
                 VariantImpl::Bool(b) => Variant::from_bool(!b),
+                VariantImpl::F32(f) => Variant::from_f32(f * 2.0),
+                VariantImpl::F64(d) => Variant::from_f64(d * 2.0),
                 VariantImpl::I8(i) => Variant::from_i8(i * 2),
                 VariantImpl::I16(i) => Variant::from_i16(i * 2),
                 VariantImpl::I32(i) => Variant::from_i32(i * 2),

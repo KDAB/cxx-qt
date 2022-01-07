@@ -22,13 +22,15 @@ use std::{
 enum QVariantType {
     Unsupported = 0,
     Bool = 1,
-    I8 = 2,
-    I16 = 3,
-    I32 = 4,
-    String = 5,
-    U8 = 6,
-    U16 = 7,
-    U32 = 8,
+    F32 = 2,
+    F64 = 3,
+    I8 = 4,
+    I16 = 5,
+    I32 = 6,
+    String = 7,
+    U8 = 8,
+    U16 = 9,
+    U32 = 10,
 }
 
 extern "C" {
@@ -36,6 +38,10 @@ extern "C" {
     fn qvariant_init(this: &mut MaybeUninit<QVariant>);
     #[link_name = "cxxqt1$qvariant$init$from$bool"]
     fn qvariant_init_from_bool(this: &mut MaybeUninit<QVariant>, b: bool);
+    #[link_name = "cxxqt1$qvariant$init$from$f32"]
+    fn qvariant_init_from_f32(this: &mut MaybeUninit<QVariant>, i: f32);
+    #[link_name = "cxxqt1$qvariant$init$from$f64"]
+    fn qvariant_init_from_f64(this: &mut MaybeUninit<QVariant>, i: f64);
     #[link_name = "cxxqt1$qvariant$init$from$i8"]
     fn qvariant_init_from_i8(this: &mut MaybeUninit<QVariant>, i: i8);
     #[link_name = "cxxqt1$qvariant$init$from$i16"]
@@ -54,6 +60,10 @@ extern "C" {
     fn qvariant_get_type(this: &QVariant) -> QVariantType;
     #[link_name = "cxxqt1$qvariant$to$bool"]
     fn qvariant_to_bool(this: &QVariant) -> bool;
+    #[link_name = "cxxqt1$qvariant$to$f32"]
+    fn qvariant_to_f32(this: &QVariant) -> f32;
+    #[link_name = "cxxqt1$qvariant$to$f64"]
+    fn qvariant_to_f64(this: &QVariant) -> f64;
     #[link_name = "cxxqt1$qvariant$to$i8"]
     fn qvariant_to_i8(this: &QVariant) -> i8;
     #[link_name = "cxxqt1$qvariant$to$i16"]
@@ -150,6 +160,8 @@ impl QVariant {
         match unsafe { qvariant_get_type(self) } {
             QVariantType::Unsupported => Variant::unsupported(),
             QVariantType::Bool => Variant::from_bool(unsafe { qvariant_to_bool(self) }),
+            QVariantType::F32 => Variant::from_f32(unsafe { qvariant_to_f32(self) }),
+            QVariantType::F64 => Variant::from_f64(unsafe { qvariant_to_f64(self) }),
             QVariantType::I8 => Variant::from_i8(unsafe { qvariant_to_i8(self) }),
             QVariantType::I16 => Variant::from_i16(unsafe { qvariant_to_i16(self) }),
             QVariantType::I32 => Variant::from_i32(unsafe { qvariant_to_i32(self) }),
@@ -202,6 +214,8 @@ impl StackQVariant {
         match value.deref() {
             VariantImpl::Unsupported => qvariant_init(this),
             VariantImpl::Bool(b) => qvariant_init_from_bool(this, *b),
+            VariantImpl::F32(i) => qvariant_init_from_f32(this, *i),
+            VariantImpl::F64(i) => qvariant_init_from_f64(this, *i),
             VariantImpl::I8(i) => qvariant_init_from_i8(this, *i),
             VariantImpl::I16(i) => qvariant_init_from_i16(this, *i),
             VariantImpl::I32(i) => qvariant_init_from_i32(this, *i),
@@ -248,6 +262,8 @@ unsafe impl ExternType for QVariant {
 pub enum VariantImpl {
     Unsupported,
     Bool(bool),
+    F32(f32),
+    F64(f64),
     I8(i8),
     I16(i16),
     I32(i32),
@@ -266,6 +282,18 @@ impl Variant {
     pub fn from_bool(b: bool) -> Self {
         Self {
             d: Box::new(VariantImpl::Bool(b)),
+        }
+    }
+
+    pub fn from_f32(f: f32) -> Self {
+        Self {
+            d: Box::new(VariantImpl::F32(f)),
+        }
+    }
+
+    pub fn from_f64(f: f64) -> Self {
+        Self {
+            d: Box::new(VariantImpl::F64(f)),
         }
     }
 
