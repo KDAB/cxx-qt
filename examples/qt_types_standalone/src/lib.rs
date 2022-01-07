@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRectF,
-    QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRect,
+    QRectF, QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -44,6 +44,7 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
         type QPointF = cxx_qt_lib::QPointF;
         type QRectF = cxx_qt_lib::QRectF;
+        type QRect = cxx_qt_lib::QRect;
 
         #[namespace = "CxxQt"]
         type Variant = cxx_qt_lib::Variant;
@@ -79,6 +80,11 @@ mod ffi {
         fn read_qpointf(p: &QPointF) -> bool;
         fn copy_qpointf(p: &QPointF) -> QPointF;
         fn copy_value_qpointf(p: QPointF) -> QPointF;
+
+        fn construct_qrect() -> QRect;
+        fn read_qrect(p: &QRect) -> bool;
+        fn copy_qrect(p: &QRect) -> QRect;
+        fn copy_value_qrect(p: QRect) -> QRect;
 
         fn construct_qrectf() -> QRectF;
         fn read_qrectf(p: &QRectF) -> bool;
@@ -324,6 +330,22 @@ fn copy_qpointf(p: &QPointF) -> QPointF {
 
 fn copy_value_qpointf(p: QPointF) -> QPointF {
     p
+}
+
+fn construct_qrect() -> QRect {
+    QRect::new(1, 4, 2, 8)
+}
+
+fn read_qrect(r: &QRect) -> bool {
+    r.x() == 1 && r.y() == 4 && r.width() == 2 && r.height() == 8
+}
+
+fn copy_qrect(r: &QRect) -> QRect {
+    *r
+}
+
+fn copy_value_qrect(r: QRect) -> QRect {
+    r
 }
 
 fn construct_qrectf() -> QRectF {

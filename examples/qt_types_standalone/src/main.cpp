@@ -241,6 +241,41 @@ TEST_CASE("Can copy a value QPointF on the Rust side")
   CHECK(qFuzzyCompare(c.y(), 4.56));
 }
 
+TEST_CASE("Can construct a QRect on the Rust side")
+{
+  const auto r = construct_qrect();
+  CHECK(r.x() == 1);
+  CHECK(r.y() == 4);
+  CHECK(r.width() == 2);
+  CHECK(r.height() == 8);
+}
+
+TEST_CASE("Can read a QRect on the Rust side")
+{
+  const auto r = QRect(1, 4, 2, 8);
+  CHECK(read_qrect(r));
+}
+
+TEST_CASE("Can copy a QRect on the Rust side")
+{
+  const auto r = QRect(1, 4, 2, 8);
+  const auto c = copy_qrect(r);
+  CHECK(c.x() == 1);
+  CHECK(c.y() == 4);
+  CHECK(c.width() == 2);
+  CHECK(c.height() == 8);
+}
+
+TEST_CASE("Can copy a value QRect on the Rust side")
+{
+  const auto r = QRect(1, 4, 2, 8);
+  const auto c = copy_value_qrect(r);
+  CHECK(c.x() == 1);
+  CHECK(c.y() == 4);
+  CHECK(c.width() == 2);
+  CHECK(c.height() == 8);
+}
+
 TEST_CASE("Can construct a QRectF on the Rust side")
 {
   const auto r = construct_qrectf();
