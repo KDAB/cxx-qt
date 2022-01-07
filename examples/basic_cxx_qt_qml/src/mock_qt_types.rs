@@ -9,12 +9,13 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        let_qvariant, QPoint, QPointF, QRectF, QSize, QSizeF, QVariant, Variant, VariantImpl,
+        let_qvariant, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant, VariantImpl,
     };
 
     pub struct Data {
         point: QPoint,
         pointf: QPointF,
+        rect: QRect,
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
@@ -26,6 +27,7 @@ mod mock_qt_types {
             Data {
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
+                rect: QRect::new(1, 2, 3, 4),
                 rectf: QRectF::new(1.0, 2.0, 3.0, 4.0),
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
@@ -68,6 +70,30 @@ mod mock_qt_types {
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             point
+        }
+
+        #[invokable]
+        fn test_rect_property(&self, cpp: &mut CppObj) {
+            let mut rect = *cpp.rect();
+            // Copy width and height, otherwise when we adjust the x and y it affects the width and height
+            let (width, height) = (rect.width(), rect.height());
+            rect.set_x(rect.x() * 2);
+            rect.set_y(rect.y() * 3);
+            rect.set_width(width * 4);
+            rect.set_height(height * 5);
+            cpp.set_rect(&rect);
+        }
+
+        #[invokable]
+        fn test_rect_invokable(&self, rect: &QRect) -> QRect {
+            let mut rect = *rect;
+            // Copy width and height, otherwise when we adjust the x and y it affects the width and height
+            let (width, height) = (rect.width(), rect.height());
+            rect.set_x(rect.x() * 2);
+            rect.set_y(rect.x() * 3);
+            rect.set_width(width * 4);
+            rect.set_height(height * 5);
+            rect
         }
 
         #[invokable]

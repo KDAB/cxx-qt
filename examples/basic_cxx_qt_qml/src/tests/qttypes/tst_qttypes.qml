@@ -109,6 +109,46 @@ TestCase {
     }
 
 
+    // QRect
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qrect_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "rectChanged",
+            target: mock,
+        });
+        compare(mock.rect, Qt.rect(1, 2, 3, 4));
+
+        compare(spy.count, 0);
+        mock.rect = Qt.rect(10, 20, 30, 40);
+        tryCompare(spy, "count", 1);
+        compare(mock.rect, Qt.rect(10, 20, 30, 40));
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qrect_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testRectInvokable(Qt.rect(10, 20, 30, 40));
+        compare(result, Qt.rect(20, 60, 120, 200));
+    }
+
+    function test_qrect_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "rectChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.rect, Qt.rect(1, 2, 3, 4));
+        mock.testRectProperty();
+        compare(mock.rect, Qt.rect(2, 6, 12, 20));
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QRectF
 
     // Check that we can adjust the property for the type and it has non default value

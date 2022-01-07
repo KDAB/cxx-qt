@@ -6,6 +6,7 @@
 
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
+#include <QtCore/QRect>
 #include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
@@ -20,6 +21,7 @@ class MyObject : public CxxQObject
   Q_OBJECT
   Q_PROPERTY(QPoint point READ getPoint WRITE setPoint NOTIFY pointChanged)
   Q_PROPERTY(QPointF pointf READ getPointf WRITE setPointf NOTIFY pointfChanged)
+  Q_PROPERTY(QRect rect READ getRect WRITE setRect NOTIFY rectChanged)
   Q_PROPERTY(QRectF rectf READ getRectf WRITE setRectf NOTIFY rectfChanged)
   Q_PROPERTY(QSize size READ getSize WRITE setSize NOTIFY sizeChanged)
   Q_PROPERTY(QSizeF sizef READ getSizef WRITE setSizef NOTIFY sizefChanged)
@@ -33,6 +35,7 @@ public:
 
   const QPoint& getPoint() const;
   const QPointF& getPointf() const;
+  const QRect& getRect() const;
   const QRectF& getRectf() const;
   const QSize& getSize() const;
   const QSizeF& getSizef() const;
@@ -42,6 +45,7 @@ public:
 public Q_SLOTS:
   void setPoint(const QPoint& value);
   void setPointf(const QPointF& value);
+  void setRect(const QRect& value);
   void setRectf(const QRectF& value);
   void setSize(const QSize& value);
   void setSizef(const QSizeF& value);
@@ -51,6 +55,7 @@ public Q_SLOTS:
 Q_SIGNALS:
   void pointChanged();
   void pointfChanged();
+  void rectChanged();
   void rectfChanged();
   void sizeChanged();
   void sizefChanged();
@@ -64,6 +69,7 @@ private:
 
   QPoint m_point;
   QPointF m_pointf;
+  QRect m_rect;
   QRectF m_rectf;
   QSize m_size;
   QSizeF m_sizef;

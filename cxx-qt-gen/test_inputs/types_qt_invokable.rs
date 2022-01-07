@@ -19,6 +19,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_rect(&self, _cpp: &mut CppObj, rect: &QRect) -> QRect {
+            rect
+        }
+
+        #[invokable]
         fn test_rectf(&self, _cpp: &mut CppObj, rectf: &QRectF) -> QRectF {
             rectf
         }

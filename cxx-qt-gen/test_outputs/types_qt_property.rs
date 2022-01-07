@@ -4,6 +4,7 @@ mod my_object {
         enum Property {
             Point,
             Pointf,
+            Rect,
             Rectf,
             Size,
             Sizef,
@@ -19,6 +20,8 @@ mod my_object {
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
+            #[namespace = ""]
+            type QRect = cxx_qt_lib::QRect;
             #[namespace = ""]
             type QRectF = cxx_qt_lib::QRectF;
             #[namespace = ""]
@@ -42,6 +45,11 @@ mod my_object {
             fn getPointf(self: &MyObject) -> &QPointF;
             #[rust_name = "set_pointf"]
             fn setPointf(self: Pin<&mut MyObject>, value: &QPointF);
+
+            #[rust_name = "rect"]
+            fn getRect(self: &MyObject) -> &QRect;
+            #[rust_name = "set_rect"]
+            fn setRect(self: Pin<&mut MyObject>, value: &QRect);
 
             #[rust_name = "rectf"]
             fn getRectf(self: &MyObject) -> &QRectF;
@@ -116,6 +124,14 @@ mod my_object {
             self.cpp.as_mut().set_pointf(value);
         }
 
+        pub fn rect(&self) -> &cxx_qt_lib::QRect {
+            self.cpp.rect()
+        }
+
+        pub fn set_rect(&mut self, value: &cxx_qt_lib::QRect) {
+            self.cpp.as_mut().set_rect(value);
+        }
+
         pub fn rectf(&self) -> &cxx_qt_lib::QRectF {
             self.cpp.rectf()
         }
@@ -170,6 +186,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
                 .map_qt_value(|context, converted| context.set_pointf(converted), self);
+            data.rect
+                .map_qt_value(|context, converted| context.set_rect(converted), self);
             data.rectf
                 .map_qt_value(|context, converted| context.set_rectf(converted), self);
             data.size
@@ -187,6 +205,7 @@ mod my_object {
     struct Data {
         point: QPoint,
         pointf: QPointF,
+        rect: QRect,
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
@@ -199,6 +218,7 @@ mod my_object {
             Self {
                 point: value.point().into(),
                 pointf: value.pointf().into(),
+                rect: value.rect().into(),
                 rectf: value.rectf().into(),
                 size: value.size().into(),
                 sizef: value.sizef().into(),

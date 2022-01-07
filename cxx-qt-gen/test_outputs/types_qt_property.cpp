@@ -55,6 +55,27 @@ MyObject::setPointf(const QPointF& value)
   }
 }
 
+const QRect&
+MyObject::getRect() const
+{
+  return m_rect;
+}
+
+void
+MyObject::setRect(const QRect& value)
+{
+  if (!m_initialised) {
+    m_rect = value;
+    return;
+  }
+
+  if (value != m_rect) {
+    m_rect = value;
+
+    runOnGUIThread([&]() { Q_EMIT rectChanged(); });
+  }
+}
+
 const QRectF&
 MyObject::getRectf() const
 {
