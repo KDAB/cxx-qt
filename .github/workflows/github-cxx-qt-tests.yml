@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: cxx-qt tests
+on: [push, pull_request]
+jobs:
+  ctest:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      # Install Rust toolchain
+      - uses: actions-rs/toolchain@v1
+        with:
+          components: clippy, rustfmt
+          toolchain: stable
+      # FIXME: FUTURE: Remove PPA for Qt 5.15 once 22.04 is available
+      # https://launchpad.net/~savoury1/+archive/ubuntu/qt-5-15
+      - run: sudo add-apt-repository ppa:savoury1/qt-5-15
+      # Install clang-format, Qt, reuse, valgrind
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y clang-format-12 libssl-dev pkg-config python3-pip qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev qml-module-qtquick2 qml-module-qtquick-controls2 qml-module-qttest valgrind
+      - run: sudo ln -s /usr/bin/clang-format-12 /usr/local/bin/clang-format
+      - run: pip3 install reuse
+      # Ensure we have a clean build folder
+      - run: rm -rf build/
+      - run: mkdir -p build/
+      # Configure and build CMake then run ctest
+      #
+      # Note that each github action run command is executed from the same directory even after
+      # performing cd so for the ctest line we need to cd within the same command
+      - run: cmake -S. -Bbuild/ -G "Unix Makefiles"
+      - run: cmake --build build/ --config Debug --target all -j$(nproc)
+      - run: (cd build/ && QT_QPA_PLATFORM=offscreen ctest -j$(nproc) -C Debug -T test --output-on-failure)
