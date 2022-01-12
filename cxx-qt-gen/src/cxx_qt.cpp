@@ -363,7 +363,8 @@ extern "C"
 
   QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
   {
-    // QVariant::Type is obsolete, ensure we use QMetaType::Type to avoid warnings
+    // QVariant::Type is obsolete, ensure we use QMetaType::Type to avoid
+    // warnings
     switch (static_cast<QMetaType::Type>(self.type())) {
       case QMetaType::Bool:
         return QVariantType::Bool;
