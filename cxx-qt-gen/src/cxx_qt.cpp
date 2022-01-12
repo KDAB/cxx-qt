@@ -162,9 +162,9 @@ static_assert(alignof(QPointF) <= 16);
 // we don't need to use Pin. Because it is trivial to destruct we do not
 // need a special C++ function to destruct the object.
 
-static_assert(std::is_trivially_move_assignable<QPointF>::value == true);
-static_assert(std::is_trivially_copy_assignable<QPointF>::value == true);
-static_assert(std::is_trivially_destructible<QPointF>::value == true);
+static_assert(std::is_trivially_move_assignable<QPointF>::value);
+static_assert(std::is_trivially_copy_assignable<QPointF>::value);
+static_assert(std::is_trivially_destructible<QPointF>::value);
 
 } // namespace
 
@@ -192,9 +192,9 @@ static_assert(alignof(QSizeF) <= 16);
 // we don't need to use Pin. Because it is trivial to destruct we do not
 // need a special C++ function to destruct the object.
 
-static_assert(std::is_trivially_move_assignable<QSizeF>::value == true);
-static_assert(std::is_trivially_copy_assignable<QSizeF>::value == true);
-static_assert(std::is_trivially_destructible<QSizeF>::value == true);
+static_assert(std::is_trivially_move_assignable<QSizeF>::value);
+static_assert(std::is_trivially_copy_assignable<QSizeF>::value);
+static_assert(std::is_trivially_destructible<QSizeF>::value);
 
 } // namespace
 
