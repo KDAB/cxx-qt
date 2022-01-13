@@ -170,9 +170,20 @@ static_assert(std::is_trivially_destructible<QDate>::value);
 
 extern "C"
 {
-  void cxxqt1$qdate$init(QDate* self, int y, int m, int d) noexcept
+  void cxxqt1$qdate$init(QDate* self, qint32 y, qint32 m, qint32 d) noexcept
   {
     new (self) QDate(y, m, d);
+  }
+
+  qint32 cxxqt1$qdate$year(const QDate& self) noexcept { return self.year(); }
+
+  qint32 cxxqt1$qdate$month(const QDate& self) noexcept { return self.month(); }
+
+  qint32 cxxqt1$qdate$day(const QDate& self) noexcept { return self.day(); }
+
+  bool cxxqt1$qdate$set$date(QDate& self, qint32 y, qint32 m, qint32 d) noexcept
+  {
+    return self.setDate(y, m, d);
   }
 }
 namespace {
