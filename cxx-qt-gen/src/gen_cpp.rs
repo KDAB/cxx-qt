@@ -385,7 +385,7 @@ fn generate_invokables_cpp(
             // we are passing *this across for cpp objects in rust.
             header: format!(
                 "Q_INVOKABLE {return_ident} {ident}({parameter_types});",
-                ident = invokable.ident.cpp_ident.to_string(),
+                ident = invokable.ident.cpp_ident,
                 parameter_types = parameter_arg_line,
                 return_ident = return_ident,
             ),
