@@ -13,6 +13,7 @@ use crate::qrectf::QRectF;
 use crate::qsize::QSize;
 use crate::qsizef::QSizeF;
 use crate::qstring::QString;
+use crate::qtime::QTime;
 use crate::qvariant::{QVariant, Variant};
 use crate::ToUniquePtr;
 
@@ -82,6 +83,12 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QSize) -> R, R> for QSize {
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QSizeF) -> R, R> for QSizeF {
     fn map_qt_value(&self, map_func: fn(&mut C, &QSizeF) -> R, context: &mut C) -> R {
+        map_func(context, self)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QTime) -> R, R> for QTime {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QTime) -> R, context: &mut C) -> R {
         map_func(context, self)
     }
 }

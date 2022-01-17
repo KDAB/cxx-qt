@@ -15,6 +15,7 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
+#include <QtCore/QTime>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 

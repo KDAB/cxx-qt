@@ -7,7 +7,7 @@
 use core::pin::Pin;
 use cxx_qt_lib::{
     Color, MapQtValue, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QVariant, ToUniquePtr, Variant, VariantValue,
+    QTime, QVariant, ToUniquePtr, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -46,6 +46,7 @@ mod ffi {
         type QPointF = cxx_qt_lib::QPointF;
         type QRectF = cxx_qt_lib::QRectF;
         type QRect = cxx_qt_lib::QRect;
+        type QTime = cxx_qt_lib::QTime;
 
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
@@ -104,6 +105,11 @@ mod ffi {
         fn read_qsizef(p: &QSizeF) -> bool;
         fn copy_qsizef(p: &QSizeF) -> QSizeF;
         fn copy_value_qsizef(p: QSizeF) -> QSizeF;
+
+        fn construct_qtime() -> QTime;
+        fn read_qtime(p: &QTime) -> bool;
+        fn copy_qtime(p: &QTime) -> QTime;
+        fn copy_value_qtime(p: QTime) -> QTime;
     }
 }
 
@@ -359,5 +365,21 @@ fn copy_qsizef(s: &QSizeF) -> QSizeF {
 }
 
 fn copy_value_qsizef(s: QSizeF) -> QSizeF {
+    s
+}
+
+fn construct_qtime() -> QTime {
+    QTime::new(1, 2, 3, 4)
+}
+
+fn read_qtime(s: &QTime) -> bool {
+    s.hour() == 1 && s.minute() == 2 && s.second() == 3 && s.msec() == 4
+}
+
+fn copy_qtime(s: &QTime) -> QTime {
+    *s
+}
+
+fn copy_value_qtime(s: QTime) -> QTime {
     s
 }
