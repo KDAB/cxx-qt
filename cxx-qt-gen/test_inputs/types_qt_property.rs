@@ -11,6 +11,7 @@ mod my_object {
         sizef: QSizeF,
         string: String,
         time: QTime,
+        url: Url,
         variant: Variant,
     }
 

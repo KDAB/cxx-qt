@@ -223,6 +223,27 @@ MyObject::setTime(const QTime& value)
   }
 }
 
+const QUrl&
+MyObject::getUrl() const
+{
+  return m_url;
+}
+
+void
+MyObject::setUrl(const QUrl& value)
+{
+  if (!m_initialised) {
+    m_url = value;
+    return;
+  }
+
+  if (value != m_url) {
+    m_url = value;
+
+    runOnGUIThread([&]() { Q_EMIT urlChanged(); });
+  }
+}
+
 const QVariant&
 MyObject::getVariant() const
 {

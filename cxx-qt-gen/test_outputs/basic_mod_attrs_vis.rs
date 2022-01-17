@@ -33,6 +33,8 @@ pub mod my_object {
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
+            type QUrl = cxx_qt_lib::QUrl;
+            #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
             #[rust_name = "new_cpp_object"]

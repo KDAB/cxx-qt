@@ -192,7 +192,7 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
 }
 
 fn can_construct_qurl(test: &QString) -> bool {
-    let url = Url::from_string(test.to_rust()).to_unique_ptr();
+    let url = Url::from_str(&test.to_rust()).to_unique_ptr();
 
     ffi::test_constructed_qurl(&url, test)
 }

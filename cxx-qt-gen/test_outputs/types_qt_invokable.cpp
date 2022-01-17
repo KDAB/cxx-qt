@@ -83,6 +83,13 @@ MyObject::testTime(const QTime& time)
   return m_rustObj->testTimeWrapper(*this, time);
 }
 
+QUrl
+MyObject::testUrl(const QUrl& url)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return std::move(*m_rustObj->testUrlWrapper(*this, url));
+}
+
 QVariant
 MyObject::testVariant(const QVariant& variant)
 {

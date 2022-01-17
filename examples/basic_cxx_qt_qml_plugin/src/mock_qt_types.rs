@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
-        Variant, VariantValue,
+        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl, QVariant,
+        Url, Variant, VariantValue,
     };
 
     pub struct Data {
@@ -23,6 +23,7 @@ mod mock_qt_types {
         size: QSize,
         sizef: QSizeF,
         time: QTime,
+        url: Url,
         variant: Variant,
     }
 
@@ -38,6 +39,7 @@ mod mock_qt_types {
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
                 time: QTime::new(1, 2, 3, 4),
+                url: Url::from_str("https://github.com/KDAB"),
                 variant: Variant::from_i32(1),
             }
         }
@@ -202,6 +204,17 @@ mod mock_qt_types {
                 time.msec() * 5,
             );
             time
+        }
+
+        #[invokable]
+        fn test_url_property(&self, cpp: &mut CppObj) {
+            let url = Url::from_str(&(cpp.url().to_rust().string() + "/cxx-qt")).to_unique_ptr();
+            cpp.set_url(&url);
+        }
+
+        #[invokable]
+        fn test_url_invokable(&self, url: &QUrl) -> Url {
+            Url::from_str(&(url.to_rust().string() + "/cxx-qt"))
         }
 
         #[invokable]
