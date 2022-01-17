@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QtCore/QDate>
+#include <QtCore/QDateTime>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QRect>
@@ -30,6 +31,11 @@ assign_to_qstring(QString& s, const QString& v);
 
 bool
 test_constructed_qcolor(const QColor& c, ColorTest test);
+
+bool
+test_constructed_qdatetime(const QDateTime& s,
+                           const QDate& date,
+                           const QTime& time);
 
 bool
 test_constructed_qurl(const QUrl& u, const QString& test);

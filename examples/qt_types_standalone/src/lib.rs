@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    Color, MapQtValue, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
+    Color, DateTime, MapQtValue, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize,
+    QSizeF, QString, QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -38,6 +38,7 @@ mod ffi {
 
         type QColor = cxx_qt_lib::QColor;
         type QDate = cxx_qt_lib::QDate;
+        type QDateTime = cxx_qt_lib::QDateTime;
         type QString = cxx_qt_lib::QString;
         type QUrl = cxx_qt_lib::QUrl;
         type QVariant = cxx_qt_lib::QVariant;
@@ -54,6 +55,8 @@ mod ffi {
 
         fn test_constructed_qcolor(c: &QColor, test: ColorTest) -> bool;
 
+        fn test_constructed_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
+
         fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
 
         fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
@@ -69,6 +72,9 @@ mod ffi {
         fn make_color(test: ColorTest) -> UniquePtr<QColor>;
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
+
+        fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool;
+        fn can_read_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
 
         fn can_construct_qurl(test: &QString) -> bool;
         fn can_read_qurl(u: &QUrl, test: &QString) -> bool;
@@ -189,6 +195,22 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
         }
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
+    let dt = DateTime::from_date_time(date, time).to_unique_ptr();
+    ffi::test_constructed_qdatetime(&dt, date, time)
+}
+
+fn can_read_qdatetime(dt: &QDateTime, date: &QDate, time: &QTime) -> bool {
+    let dt = dt.to_rust();
+    dt.date().year() == date.year()
+        && dt.date().month() == date.month()
+        && dt.date().day() == date.day()
+        && dt.time().hour() == time.hour()
+        && dt.time().minute() == time.minute()
+        && dt.time().second() == time.second()
+        && dt.time().msec() == time.msec()
 }
 
 fn can_construct_qurl(test: &QString) -> bool {

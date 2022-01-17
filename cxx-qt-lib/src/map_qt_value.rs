@@ -6,6 +6,7 @@
 
 use crate::qcolor::{Color, QColor};
 use crate::qdate::QDate;
+use crate::qdatetime::{DateTime, QDateTime};
 use crate::qpoint::QPoint;
 use crate::qpointf::QPointF;
 use crate::qrect::QRect;
@@ -26,6 +27,12 @@ pub trait MapQtValue<C, F, R> {
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QColor) -> R, R> for Color {
     fn map_qt_value(&self, map_func: fn(&mut C, &QColor) -> R, context: &mut C) -> R {
+        map_func(context, &self.inner)
+    }
+}
+
+impl<C, R> MapQtValue<C, fn(&mut C, &QDateTime) -> R, R> for DateTime {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QDateTime) -> R, context: &mut C) -> R {
         map_func(context, &self.inner)
     }
 }

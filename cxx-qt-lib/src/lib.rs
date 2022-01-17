@@ -13,6 +13,9 @@ pub use qcolor::{Color, QColor};
 mod qdate;
 pub use qdate::QDate;
 
+mod qdatetime;
+pub use qdatetime::{DateTime, QDateTime};
+
 mod qrect;
 pub use qrect::QRect;
 
