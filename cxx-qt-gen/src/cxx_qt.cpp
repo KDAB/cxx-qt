@@ -10,6 +10,7 @@
 #include "rust/cxx_qt.h"
 
 #include <QDate>
+#include <QDateTime>
 #include <QMetaObject>
 #include <QPointF>
 #include <QPointer>
@@ -520,6 +521,75 @@ extern "C"
   }
 
   void cxxqt1$unique_ptr$qcolor$drop(std::unique_ptr<QColor>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
+}
+
+extern "C"
+{
+
+  void cxxqt1$qdatetime$init$from$qdatetime(std::unique_ptr<QDateTime>* ptr,
+                                            const QDateTime& qdatetime) noexcept
+  {
+    new (ptr) std::unique_ptr<QDateTime>(new QDateTime(qdatetime));
+  }
+
+  void cxxqt1$qdatetime$init$from$date$time(std::unique_ptr<QDateTime>* ptr,
+                                            const QDate& date,
+                                            const QTime& time) noexcept
+  {
+    new (ptr) std::unique_ptr<QDateTime>(new QDateTime(date, time));
+  }
+
+  QDate cxxqt1$qdatetime$get$date(const QDateTime& dateTime) noexcept
+  {
+    return dateTime.date();
+  }
+
+  QTime cxxqt1$qdatetime$get$time(const QDateTime& dateTime) noexcept
+  {
+    return dateTime.time();
+  }
+
+  void cxxqt1$qdatetime$set$date(QDateTime& dateTime,
+                                 const QDate& date) noexcept
+  {
+    dateTime.setDate(date);
+  }
+
+  void cxxqt1$qdatetime$set$time(QDateTime& dateTime,
+                                 const QTime& time) noexcept
+  {
+    dateTime.setTime(time);
+  }
+
+  void cxxqt1$unique_ptr$qdatetime$null(
+    std::unique_ptr<QDateTime>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QDateTime>();
+  }
+
+  void cxxqt1$unique_ptr$qdatetime$raw(std::unique_ptr<QDateTime>* ptr,
+                                       QDateTime* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QDateTime>(raw);
+  }
+
+  const QDateTime* cxxqt1$unique_ptr$qdatetime$get(
+    const std::unique_ptr<QDateTime>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QDateTime* cxxqt1$unique_ptr$qdatetime$release(
+    std::unique_ptr<QDateTime>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qdatetime$drop(
+    std::unique_ptr<QDateTime>* ptr) noexcept
   {
     ptr->~unique_ptr();
   }
