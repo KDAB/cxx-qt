@@ -11,6 +11,7 @@
 #include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
+#include <QtCore/QTime>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 
@@ -30,6 +31,7 @@ class MyObject : public CxxQObject
   Q_PROPERTY(QSize size READ getSize WRITE setSize NOTIFY sizeChanged)
   Q_PROPERTY(QSizeF sizef READ getSizef WRITE setSizef NOTIFY sizefChanged)
   Q_PROPERTY(QString string READ getString WRITE setString NOTIFY stringChanged)
+  Q_PROPERTY(QTime time READ getTime WRITE setTime NOTIFY timeChanged)
   Q_PROPERTY(
     QVariant variant READ getVariant WRITE setVariant NOTIFY variantChanged)
 
@@ -46,6 +48,7 @@ public:
   const QSize& getSize() const;
   const QSizeF& getSizef() const;
   const QString& getString() const;
+  const QTime& getTime() const;
   const QVariant& getVariant() const;
 
 public Q_SLOTS:
@@ -58,6 +61,7 @@ public Q_SLOTS:
   void setSize(const QSize& value);
   void setSizef(const QSizeF& value);
   void setString(const QString& value);
+  void setTime(const QTime& value);
   void setVariant(const QVariant& value);
 
 Q_SIGNALS:
@@ -70,6 +74,7 @@ Q_SIGNALS:
   void sizeChanged();
   void sizefChanged();
   void stringChanged();
+  void timeChanged();
   void variantChanged();
 
 private:
@@ -86,6 +91,7 @@ private:
   QSize m_size;
   QSizeF m_sizef;
   QString m_string;
+  QTime m_time;
   QVariant m_variant;
 };
 

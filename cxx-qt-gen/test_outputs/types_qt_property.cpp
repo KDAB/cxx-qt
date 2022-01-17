@@ -202,6 +202,27 @@ MyObject::setString(const QString& value)
   }
 }
 
+const QTime&
+MyObject::getTime() const
+{
+  return m_time;
+}
+
+void
+MyObject::setTime(const QTime& value)
+{
+  if (!m_initialised) {
+    m_time = value;
+    return;
+  }
+
+  if (value != m_time) {
+    m_time = value;
+
+    runOnGUIThread([&]() { Q_EMIT timeChanged(); });
+  }
+}
+
 const QVariant&
 MyObject::getVariant() const
 {

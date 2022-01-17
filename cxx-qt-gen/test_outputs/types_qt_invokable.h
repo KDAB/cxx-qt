@@ -11,6 +11,7 @@
 #include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
+#include <QtCore/QTime>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 
@@ -35,6 +36,7 @@ public:
   Q_INVOKABLE QSize testSize(const QSize& size);
   Q_INVOKABLE QSizeF testSizef(const QSizeF& sizef);
   Q_INVOKABLE QString testString(const QString& string);
+  Q_INVOKABLE QTime testTime(const QTime& time);
   Q_INVOKABLE QVariant testVariant(const QVariant& variant);
 
 private:

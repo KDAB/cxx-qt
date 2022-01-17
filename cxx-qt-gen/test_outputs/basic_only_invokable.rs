@@ -30,6 +30,8 @@ mod my_object {
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
             #[namespace = ""]
+            type QTime = cxx_qt_lib::QTime;
+            #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
             #[rust_name = "new_cpp_object"]

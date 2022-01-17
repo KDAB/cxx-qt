@@ -76,6 +76,13 @@ MyObject::testString(const QString& string)
   return std::move(*m_rustObj->testStringWrapper(*this, string));
 }
 
+QTime
+MyObject::testTime(const QTime& time)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return m_rustObj->testTimeWrapper(*this, time);
+}
+
 QVariant
 MyObject::testVariant(const QVariant& variant)
 {

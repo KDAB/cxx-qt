@@ -30,6 +30,8 @@ mod my_object {
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
             #[namespace = ""]
+            type QTime = cxx_qt_lib::QTime;
+            #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
             #[rust_name = "new_cpp_object"]
@@ -89,6 +91,13 @@ mod my_object {
                 _cpp: Pin<&mut MyObject>,
                 string: &QString,
             ) -> UniquePtr<QString>;
+
+            #[cxx_name = "testTimeWrapper"]
+            fn test_time_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                time: &QTime,
+            ) -> QTime;
 
             #[cxx_name = "testVariantWrapper"]
             fn test_variant_wrapper(
@@ -181,6 +190,15 @@ mod my_object {
             return self.test_string(&mut _cpp, string).to_unique_ptr();
         }
 
+        fn test_time_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            time: &QTime,
+        ) -> QTime {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_time(&mut _cpp, time);
+        }
+
         fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
@@ -224,6 +242,10 @@ mod my_object {
 
         fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
             string.to_rust()
+        }
+
+        fn test_time(&self, _cpp: &mut CppObj, time: &QTime) -> QTime {
+            time
         }
 
         fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {

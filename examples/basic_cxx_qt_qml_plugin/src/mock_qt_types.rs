@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant,
-        VariantValue,
+        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
+        Variant, VariantValue,
     };
 
     pub struct Data {
@@ -22,6 +22,7 @@ mod mock_qt_types {
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
+        time: QTime,
         variant: Variant,
     }
 
@@ -36,6 +37,7 @@ mod mock_qt_types {
                 rectf: QRectF::new(1.0, 2.0, 3.0, 4.0),
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
+                time: QTime::new(1, 2, 3, 4),
                 variant: Variant::from_i32(1),
             }
         }
@@ -176,6 +178,30 @@ mod mock_qt_types {
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             size
+        }
+
+        #[invokable]
+        fn test_time_property(&self, cpp: &mut CppObj) {
+            let mut time = *cpp.time();
+            time.set_hms(
+                time.hour() * 2,
+                time.minute() * 3,
+                time.second() * 4,
+                time.msec() * 5,
+            );
+            cpp.set_time(&time);
+        }
+
+        #[invokable]
+        fn test_time_invokable(&self, time: &QTime) -> QTime {
+            let mut time = *time;
+            time.set_hms(
+                time.hour() * 2,
+                time.minute() * 3,
+                time.second() * 4,
+                time.msec() * 5,
+            );
+            time
         }
 
         #[invokable]

@@ -355,6 +355,62 @@ TestCase {
     }
 
 
+    // QTime
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qtime_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "timeChanged",
+            target: mock,
+        });
+        compare(mock.time.getHours(), 1);
+        compare(mock.time.getMinutes(), 2);
+        compare(mock.time.getSeconds(), 3);
+        compare(mock.time.getMilliseconds(), 4);
+
+        compare(spy.count, 0);
+        mock.time = new Date(0, 0, 0, 4, 3, 2, 1);
+        tryCompare(spy, "count", 1);
+        compare(mock.time.getHours(), 4);
+        compare(mock.time.getMinutes(), 3);
+        compare(mock.time.getSeconds(), 2);
+        compare(mock.time.getMilliseconds(), 1);
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qtime_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+
+        const result = mock.testTimeInvokable(new Date(0, 0, 0, 1, 2, 3, 4));
+        compare(result.getHours(), 2);
+        compare(result.getMinutes(), 6);
+        compare(result.getSeconds(), 12);
+        compare(result.getMilliseconds(), 20);
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qtime_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "timeChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.time.getHours(), 1);
+        compare(mock.time.getMinutes(), 2);
+        compare(mock.time.getSeconds(), 3);
+        compare(mock.time.getMilliseconds(), 4);
+        mock.testTimeProperty();
+        compare(mock.time.getHours(), 2);
+        compare(mock.time.getMinutes(), 6);
+        compare(mock.time.getSeconds(), 12);
+        compare(mock.time.getMilliseconds(), 20);
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QVariant
 
     // Check that we can adjust the property for the type and it has non default value

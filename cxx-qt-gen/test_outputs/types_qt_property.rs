@@ -13,6 +13,7 @@ mod my_object {
             Size,
             Sizef,
             String,
+            Time,
             Variant,
         }
 
@@ -39,6 +40,8 @@ mod my_object {
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
             type QString = cxx_qt_lib::QString;
+            #[namespace = ""]
+            type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
@@ -86,6 +89,11 @@ mod my_object {
             fn getString(self: &MyObject) -> &QString;
             #[rust_name = "set_string"]
             fn setString(self: Pin<&mut MyObject>, value: &QString);
+
+            #[rust_name = "time"]
+            fn getTime(self: &MyObject) -> &QTime;
+            #[rust_name = "set_time"]
+            fn setTime(self: Pin<&mut MyObject>, value: &QTime);
 
             #[rust_name = "variant"]
             fn getVariant(self: &MyObject) -> &QVariant;
@@ -196,6 +204,14 @@ mod my_object {
             self.cpp.as_mut().set_string(value);
         }
 
+        pub fn time(&self) -> &cxx_qt_lib::QTime {
+            self.cpp.time()
+        }
+
+        pub fn set_time(&mut self, value: &cxx_qt_lib::QTime) {
+            self.cpp.as_mut().set_time(value);
+        }
+
         pub fn variant(&self) -> &cxx_qt_lib::QVariant {
             self.cpp.variant()
         }
@@ -232,6 +248,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_sizef(converted), self);
             data.string
                 .map_qt_value(|context, converted| context.set_string(converted), self);
+            data.time
+                .map_qt_value(|context, converted| context.set_time(converted), self);
             data.variant
                 .map_qt_value(|context, converted| context.set_variant(converted), self);
         }
@@ -248,6 +266,7 @@ mod my_object {
         size: QSize,
         sizef: QSizeF,
         string: String,
+        time: QTime,
         variant: Variant,
     }
 
@@ -263,6 +282,7 @@ mod my_object {
                 size: value.size().into(),
                 sizef: value.sizef().into(),
                 string: value.string().into(),
+                time: value.time().into(),
                 variant: value.variant().into(),
             }
         }

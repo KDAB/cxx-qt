@@ -54,6 +54,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_time(&self, _cpp: &mut CppObj, time: &QTime) -> QTime {
+            time
+        }
+
+        #[invokable]
         fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {
             variant
         }
