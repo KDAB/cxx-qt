@@ -10,6 +10,7 @@ mod my_object {
         size: QSize,
         sizef: QSizeF,
         string: String,
+        time: QTime,
         variant: Variant,
     }
 
