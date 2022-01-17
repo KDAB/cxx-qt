@@ -14,12 +14,15 @@ use crate::qsize::QSize;
 use crate::qsizef::QSizeF;
 use crate::qstring::QString;
 use crate::qtime::QTime;
+use crate::qurl::{QUrl, Url};
 use crate::qvariant::{QVariant, Variant};
 use crate::ToUniquePtr;
 
 pub trait MapQtValue<C, F, R> {
     fn map_qt_value(&self, map_func: F, context: &mut C) -> R;
 }
+
+// Opaque types
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QColor) -> R, R> for Color {
     fn map_qt_value(&self, map_func: fn(&mut C, &QColor) -> R, context: &mut C) -> R {
@@ -39,11 +42,19 @@ impl<C, R> MapQtValue<C, fn(&mut C, &QString) -> R, R> for String {
     }
 }
 
+impl<C, R> MapQtValue<C, fn(&mut C, &QUrl) -> R, R> for Url {
+    fn map_qt_value(&self, map_func: fn(&mut C, &QUrl) -> R, context: &mut C) -> R {
+        map_func(context, &self.inner)
+    }
+}
+
 impl<C, R> MapQtValue<C, fn(&mut C, &QVariant) -> R, R> for Variant {
     fn map_qt_value(&self, map_func: fn(&mut C, &QVariant) -> R, context: &mut C) -> R {
         map_func(context, &self.inner)
     }
 }
+
+// Trivial types
 
 impl<C, R> MapQtValue<C, fn(&mut C, &QDate) -> R, R> for QDate {
     fn map_qt_value(&self, map_func: fn(&mut C, &QDate) -> R, context: &mut C) -> R {

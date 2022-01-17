@@ -114,6 +114,26 @@ TEST_CASE("Can read a QColor on the Rust side")
   CHECK(can_read_qcolor(QColor(Qt::transparent), ColorTest::Rgb_Transparent));
 }
 
+TEST_CASE("Can construct a QUrl on the Rust side")
+{
+  CHECK(can_construct_qurl(QStringLiteral("https://kdab.com/")));
+  CHECK(can_construct_qurl(QStringLiteral("https://github.com/KDAB/cxx-qt/")));
+}
+
+bool
+test_constructed_qurl(const QUrl& c, const QString& test)
+{
+  return c.url() == test;
+}
+
+TEST_CASE("Can read a QUrl on the Rust side")
+{
+  CHECK(can_read_qurl(QUrl(QStringLiteral("https://github.com/KDAB/cxx-qt/")),
+                      QStringLiteral("https://github.com/KDAB/cxx-qt/")));
+  CHECK(can_read_qurl(QUrl(QStringLiteral("https://kdab.com")),
+                      QStringLiteral("https://kdab.com")));
+}
+
 TEST_CASE("Can construct a QVariant on the Rust side")
 {
   CHECK(can_construct_qvariant(VariantTest::Bool));
