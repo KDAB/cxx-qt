@@ -393,8 +393,7 @@ TestCase {
     function test_qtime_invokable_property() {
         const mock = createTemporaryObject(componentMockQtTypes, null, {});
         const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "timeChanged",
-            target: mock,
+            signalName: "timeChanged",target: mock,
         });
 
         compare(spy.count, 0);
@@ -407,6 +406,47 @@ TestCase {
         compare(mock.time.getMinutes(), 6);
         compare(mock.time.getSeconds(), 12);
         compare(mock.time.getMilliseconds(), 20);
+        tryCompare(spy, "count", 1);
+    }
+
+
+
+    // QUrl
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qurl_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "urlChanged",
+            target: mock,
+        });
+        compare(mock.url, "https://github.com/KDAB");
+
+        compare(spy.count, 0);
+        mock.url = "https://github.com/KDAB/cxx-qt";
+        tryCompare(spy, "count", 1);
+        compare(mock.url, "https://github.com/KDAB/cxx-qt");
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qurl_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const result = mock.testUrlInvokable("https://github.com/KDAB");
+        compare(result, "https://github.com/KDAB/cxx-qt");
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qurl_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "urlChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.url, "https://github.com/KDAB");
+        mock.testUrlProperty();
+        compare(mock.url, "https://github.com/KDAB/cxx-qt");
         tryCompare(spy, "count", 1);
     }
 

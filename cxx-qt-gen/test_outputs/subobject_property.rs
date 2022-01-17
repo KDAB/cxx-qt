@@ -33,7 +33,10 @@ mod my_object {
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
+            type QUrl = cxx_qt_lib::QUrl;
+            #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
+
             #[namespace = "cxx_qt::sub_object"]
             type SubObject = crate::sub_object::FFICppObj;
 

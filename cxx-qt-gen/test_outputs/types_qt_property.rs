@@ -14,6 +14,7 @@ mod my_object {
             Sizef,
             String,
             Time,
+            Url,
             Variant,
         }
 
@@ -42,6 +43,8 @@ mod my_object {
             type QString = cxx_qt_lib::QString;
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
+            #[namespace = ""]
+            type QUrl = cxx_qt_lib::QUrl;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
@@ -94,6 +97,11 @@ mod my_object {
             fn getTime(self: &MyObject) -> &QTime;
             #[rust_name = "set_time"]
             fn setTime(self: Pin<&mut MyObject>, value: &QTime);
+
+            #[rust_name = "url"]
+            fn getUrl(self: &MyObject) -> &QUrl;
+            #[rust_name = "set_url"]
+            fn setUrl(self: Pin<&mut MyObject>, value: &QUrl);
 
             #[rust_name = "variant"]
             fn getVariant(self: &MyObject) -> &QVariant;
@@ -212,6 +220,14 @@ mod my_object {
             self.cpp.as_mut().set_time(value);
         }
 
+        pub fn url(&self) -> &cxx_qt_lib::QUrl {
+            self.cpp.url()
+        }
+
+        pub fn set_url(&mut self, value: &cxx_qt_lib::QUrl) {
+            self.cpp.as_mut().set_url(value);
+        }
+
         pub fn variant(&self) -> &cxx_qt_lib::QVariant {
             self.cpp.variant()
         }
@@ -250,6 +266,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_string(converted), self);
             data.time
                 .map_qt_value(|context, converted| context.set_time(converted), self);
+            data.url
+                .map_qt_value(|context, converted| context.set_url(converted), self);
             data.variant
                 .map_qt_value(|context, converted| context.set_variant(converted), self);
         }
@@ -267,6 +285,7 @@ mod my_object {
         sizef: QSizeF,
         string: String,
         time: QTime,
+        url: Url,
         variant: Variant,
     }
 
@@ -283,6 +302,7 @@ mod my_object {
                 sizef: value.sizef().into(),
                 string: value.string().into(),
                 time: value.time().into(),
+                url: value.url().into(),
                 variant: value.variant().into(),
             }
         }

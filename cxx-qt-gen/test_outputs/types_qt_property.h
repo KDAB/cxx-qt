@@ -12,6 +12,7 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QTime>
+#include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 
@@ -32,6 +33,7 @@ class MyObject : public CxxQObject
   Q_PROPERTY(QSizeF sizef READ getSizef WRITE setSizef NOTIFY sizefChanged)
   Q_PROPERTY(QString string READ getString WRITE setString NOTIFY stringChanged)
   Q_PROPERTY(QTime time READ getTime WRITE setTime NOTIFY timeChanged)
+  Q_PROPERTY(QUrl url READ getUrl WRITE setUrl NOTIFY urlChanged)
   Q_PROPERTY(
     QVariant variant READ getVariant WRITE setVariant NOTIFY variantChanged)
 
@@ -49,6 +51,7 @@ public:
   const QSizeF& getSizef() const;
   const QString& getString() const;
   const QTime& getTime() const;
+  const QUrl& getUrl() const;
   const QVariant& getVariant() const;
 
 public Q_SLOTS:
@@ -62,6 +65,7 @@ public Q_SLOTS:
   void setSizef(const QSizeF& value);
   void setString(const QString& value);
   void setTime(const QTime& value);
+  void setUrl(const QUrl& value);
   void setVariant(const QVariant& value);
 
 Q_SIGNALS:
@@ -75,6 +79,7 @@ Q_SIGNALS:
   void sizefChanged();
   void stringChanged();
   void timeChanged();
+  void urlChanged();
   void variantChanged();
 
 private:
@@ -92,6 +97,7 @@ private:
   QSizeF m_sizef;
   QString m_string;
   QTime m_time;
+  QUrl m_url;
   QVariant m_variant;
 };
 

@@ -36,6 +36,7 @@ impl RustType for QtTypes {
             Self::QSize => true,
             Self::QSizeF => true,
             Self::QTime => true,
+            Self::Url => true,
             Self::Variant => true,
             Self::Str | Self::String => true,
             _others => false,
@@ -69,6 +70,7 @@ impl RustType for QtTypes {
             Self::QSizeF => format_ident!("QSizeF"),
             Self::Str | Self::String | Self::QString => format_ident!("QString"),
             Self::QTime => format_ident!("QTime"),
+            Self::QUrl | Self::Url => format_ident!("QUrl"),
             Self::QVariant | Self::Variant => format_ident!("QVariant"),
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
@@ -103,6 +105,7 @@ impl RustType for QtTypes {
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
             Self::QTime => quote! {cxx_qt_lib::QTime},
             Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
+            Self::QUrl | Self::Url => quote! {cxx_qt_lib::QUrl},
             Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
@@ -469,6 +472,8 @@ pub fn generate_qobject_cxx(
                 type QString = cxx_qt_lib::QString;
                 #[namespace = ""]
                 type QTime = cxx_qt_lib::QTime;
+                #[namespace = ""]
+                type QUrl = cxx_qt_lib::QUrl;
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
 

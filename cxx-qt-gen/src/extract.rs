@@ -64,6 +64,8 @@ pub(crate) enum QtTypes {
     String,
     Str,
     QTime,
+    QUrl,
+    Url,
     QVariant,
     Variant,
     U8,
@@ -78,6 +80,7 @@ impl QtTypes {
         match self {
             Self::QColor | Self::Color => true,
             Self::QString | Self::String | Self::Str => true,
+            Self::QUrl | Self::Url => true,
             Self::QVariant | Self::Variant => true,
             _others => false,
         }
@@ -223,6 +226,8 @@ fn extract_qt_type(
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),
             "QTime" => Ok(QtTypes::QTime),
+            "QUrl" => Ok(QtTypes::QUrl),
+            "Url" => Ok(QtTypes::Url),
             "QVariant" => Ok(QtTypes::QVariant),
             "Variant" => Ok(QtTypes::Variant),
             "u8" => Ok(QtTypes::U8),
