@@ -411,3 +411,38 @@ TEST_CASE("Can copy a value QSizeF on the Rust side")
   CHECK(qFuzzyCompare(c.width(), 1.23));
   CHECK(qFuzzyCompare(c.height(), 4.56));
 }
+
+TEST_CASE("Can construct a QTime on the Rust side")
+{
+  const auto t = construct_qtime();
+  CHECK(t.hour() == 1);
+  CHECK(t.minute() == 2);
+  CHECK(t.second() == 3);
+  CHECK(t.msec() == 4);
+}
+
+TEST_CASE("Can read a QTime on the Rust side")
+{
+  const auto t = QTime(1, 2, 3, 4);
+  CHECK(read_qtime(t));
+}
+
+TEST_CASE("Can copy a QTime on the Rust side")
+{
+  const auto t = QTime(1, 2, 3, 4);
+  const auto c = copy_qtime(t);
+  CHECK(t.hour() == 1);
+  CHECK(t.minute() == 2);
+  CHECK(t.second() == 3);
+  CHECK(t.msec() == 4);
+}
+
+TEST_CASE("Can copy a value QTime on the Rust side")
+{
+  const auto t = QTime(1, 2, 3, 4);
+  const auto c = copy_value_qtime(t);
+  CHECK(t.hour() == 1);
+  CHECK(t.minute() == 2);
+  CHECK(t.second() == 3);
+  CHECK(t.msec() == 4);
+}

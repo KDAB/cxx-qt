@@ -28,6 +28,9 @@ pub use qsizef::QSizeF;
 mod qstring;
 pub use qstring::QString;
 
+mod qtime;
+pub use qtime::QTime;
+
 mod qpoint;
 pub use qpoint::QPoint;
 
