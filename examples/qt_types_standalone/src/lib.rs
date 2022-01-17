@@ -7,7 +7,7 @@
 use core::pin::Pin;
 use cxx_qt_lib::{
     Color, MapQtValue, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QTime, QVariant, ToUniquePtr, Variant, VariantValue,
+    QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -39,6 +39,7 @@ mod ffi {
         type QColor = cxx_qt_lib::QColor;
         type QDate = cxx_qt_lib::QDate;
         type QString = cxx_qt_lib::QString;
+        type QUrl = cxx_qt_lib::QUrl;
         type QVariant = cxx_qt_lib::QVariant;
         type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
@@ -53,6 +54,8 @@ mod ffi {
 
         fn test_constructed_qcolor(c: &QColor, test: ColorTest) -> bool;
 
+        fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
+
         fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
     }
 
@@ -66,6 +69,9 @@ mod ffi {
         fn make_color(test: ColorTest) -> UniquePtr<QColor>;
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
+
+        fn can_construct_qurl(test: &QString) -> bool;
+        fn can_read_qurl(u: &QUrl, test: &QString) -> bool;
 
         fn make_variant(test: VariantTest) -> UniquePtr<QVariant>;
         fn can_construct_qvariant(test: VariantTest) -> bool;
@@ -183,6 +189,16 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
         }
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn can_construct_qurl(test: &QString) -> bool {
+    let url = Url::from_string(test.to_rust()).to_unique_ptr();
+
+    ffi::test_constructed_qurl(&url, test)
+}
+
+fn can_read_qurl(u: &QUrl, test: &QString) -> bool {
+    u.to_rust().string() == test.to_rust()
 }
 
 fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {

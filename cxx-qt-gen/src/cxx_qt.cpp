@@ -18,6 +18,7 @@
 #include <QSize>
 #include <QSizeF>
 #include <QTime>
+#include <QUrl>
 #include <QVariant>
 #include <QtGui/QColor>
 
@@ -519,6 +520,57 @@ extern "C"
   }
 
   void cxxqt1$unique_ptr$qcolor$drop(std::unique_ptr<QColor>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
+}
+
+extern "C"
+{
+  void cxxqt1$qurl$init$from$qurl(std::unique_ptr<QUrl>* ptr,
+                                  const QUrl& qurl) noexcept
+  {
+    new (ptr) std::unique_ptr<QUrl>(new QUrl(qurl));
+  }
+
+  void cxxqt1$qurl$init$from$string(std::unique_ptr<QUrl>* ptr,
+                                    const char* data,
+                                    std::size_t len) noexcept
+  {
+    new (ptr) std::unique_ptr<QUrl>(new QUrl(QString::fromUtf8(data, len)));
+  }
+
+  void cxxqt1$qurl$to$rust$string(const QUrl& qt, rust::String& rust) noexcept
+  {
+    static_assert(sizeof(char16_t) == sizeof(QChar));
+    const auto data = qt.url();
+    rust = rust::String(reinterpret_cast<const char16_t*>(data.constData()),
+                        data.size());
+  }
+
+  void cxxqt1$unique_ptr$qurl$null(std::unique_ptr<QUrl>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QUrl>();
+  }
+
+  void cxxqt1$unique_ptr$qurl$raw(std::unique_ptr<QUrl>* ptr,
+                                  QUrl* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QUrl>(raw);
+  }
+
+  const QUrl* cxxqt1$unique_ptr$qurl$get(
+    const std::unique_ptr<QUrl>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QUrl* cxxqt1$unique_ptr$qurl$release(std::unique_ptr<QUrl>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qurl$drop(std::unique_ptr<QUrl>* ptr) noexcept
   {
     ptr->~unique_ptr();
   }

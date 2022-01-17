@@ -16,6 +16,7 @@
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
 #include <QtCore/QTime>
+#include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 
@@ -29,6 +30,9 @@ assign_to_qstring(QString& s, const QString& v);
 
 bool
 test_constructed_qcolor(const QColor& c, ColorTest test);
+
+bool
+test_constructed_qurl(const QUrl& u, const QString& test);
 
 bool
 test_constructed_qvariant(const QVariant& s, VariantTest test);
