@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
 #include <QEvent>
 #include <QObject>

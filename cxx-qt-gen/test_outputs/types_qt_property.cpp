@@ -55,6 +55,27 @@ MyObject::setDate(const QDate& value)
   }
 }
 
+const QDateTime&
+MyObject::getDateTime() const
+{
+  return m_dateTime;
+}
+
+void
+MyObject::setDateTime(const QDateTime& value)
+{
+  if (!m_initialised) {
+    m_dateTime = value;
+    return;
+  }
+
+  if (value != m_dateTime) {
+    m_dateTime = value;
+
+    runOnGUIThread([&]() { Q_EMIT dateTimeChanged(); });
+  }
+}
+
 const QPoint&
 MyObject::getPoint() const
 {

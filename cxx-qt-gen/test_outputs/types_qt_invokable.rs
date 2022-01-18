@@ -16,6 +16,8 @@ mod my_object {
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
+            type QDateTime = cxx_qt_lib::QDateTime;
+            #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;
@@ -52,6 +54,13 @@ mod my_object {
 
             #[cxx_name = "testDateWrapper"]
             fn test_date_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, date: &QDate) -> QDate;
+
+            #[cxx_name = "testDateTimeWrapper"]
+            fn test_date_time_wrapper(
+                self: &RustObj,
+                _cpp: Pin<&mut MyObject>,
+                dateTime: &QDateTime,
+            ) -> UniquePtr<QDateTime>;
 
             #[cxx_name = "testPointWrapper"]
             fn test_point_wrapper(
@@ -95,11 +104,7 @@ mod my_object {
             ) -> UniquePtr<QString>;
 
             #[cxx_name = "testTimeWrapper"]
-            fn test_time_wrapper(
-                self: &RustObj,
-                _cpp: Pin<&mut MyObject>,
-                time: &QTime,
-            ) -> QTime;
+            fn test_time_wrapper(self: &RustObj, _cpp: Pin<&mut MyObject>, time: &QTime) -> QTime;
 
             #[cxx_name = "testUrlWrapper"]
             fn test_url_wrapper(
@@ -142,6 +147,15 @@ mod my_object {
         fn test_date_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, date: &QDate) -> QDate {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_date(&mut _cpp, date);
+        }
+
+        fn test_date_time_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            dateTime: &QDateTime,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QDateTime> {
+            let mut _cpp = CppObj::new(_cpp);
+            return self.test_date_time(&mut _cpp, dateTime).to_unique_ptr();
         }
 
         fn test_point_wrapper(
@@ -199,11 +213,7 @@ mod my_object {
             return self.test_string(&mut _cpp, string).to_unique_ptr();
         }
 
-        fn test_time_wrapper(
-            &self,
-            _cpp: std::pin::Pin<&mut FFICppObj>,
-            time: &QTime,
-        ) -> QTime {
+        fn test_time_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, time: &QTime) -> QTime {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_time(&mut _cpp, time);
         }
@@ -232,6 +242,10 @@ mod my_object {
 
         fn test_date(&self, _cpp: &mut CppObj, date: &QDate) -> QDate {
             date
+        }
+
+        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> DateTime {
+            dateTime
         }
 
         fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {

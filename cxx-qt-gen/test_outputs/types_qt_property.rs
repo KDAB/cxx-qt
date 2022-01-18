@@ -6,6 +6,7 @@ mod my_object {
         enum Property {
             Color,
             Date,
+            DateTime,
             Point,
             Pointf,
             Rect,
@@ -27,6 +28,8 @@ mod my_object {
             type QColor = cxx_qt_lib::QColor;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
+            #[namespace = ""]
+            type QDateTime = cxx_qt_lib::QDateTime;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -57,6 +60,11 @@ mod my_object {
             fn getDate(self: &MyObject) -> &QDate;
             #[rust_name = "set_date"]
             fn setDate(self: Pin<&mut MyObject>, value: &QDate);
+
+            #[rust_name = "date_time"]
+            fn getDateTime(self: &MyObject) -> &QDateTime;
+            #[rust_name = "set_date_time"]
+            fn setDateTime(self: Pin<&mut MyObject>, value: &QDateTime);
 
             #[rust_name = "point"]
             fn getPoint(self: &MyObject) -> &QPoint;
@@ -156,6 +164,14 @@ mod my_object {
             self.cpp.as_mut().set_date(value);
         }
 
+        pub fn date_time(&self) -> &cxx_qt_lib::QDateTime {
+            self.cpp.date_time()
+        }
+
+        pub fn set_date_time(&mut self, value: &cxx_qt_lib::QDateTime) {
+            self.cpp.as_mut().set_date_time(value);
+        }
+
         pub fn point(&self) -> &cxx_qt_lib::QPoint {
             self.cpp.point()
         }
@@ -250,6 +266,8 @@ mod my_object {
                 .map_qt_value(|context, converted| context.set_color(converted), self);
             data.date
                 .map_qt_value(|context, converted| context.set_date(converted), self);
+            data.date_time
+                .map_qt_value(|context, converted| context.set_date_time(converted), self);
             data.point
                 .map_qt_value(|context, converted| context.set_point(converted), self);
             data.pointf
@@ -277,6 +295,7 @@ mod my_object {
     struct Data {
         color: Color,
         date: QDate,
+        date_time: DateTime,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -294,6 +313,7 @@ mod my_object {
             Self {
                 color: value.color().into(),
                 date: value.date().into(),
+                date_time: value.date_time().into(),
                 point: value.point().into(),
                 pointf: value.pointf().into(),
                 rect: value.rect().into(),

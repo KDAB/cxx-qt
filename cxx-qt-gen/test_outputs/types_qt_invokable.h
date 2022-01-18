@@ -5,6 +5,7 @@
 #include "rust/cxx_qt.h"
 
 #include <QtCore/QDate>
+#include <QtCore/QDateTime>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QRect>
@@ -30,6 +31,7 @@ public:
 
   Q_INVOKABLE QColor testColor(const QColor& color);
   Q_INVOKABLE QDate testDate(const QDate& date);
+  Q_INVOKABLE QDateTime testDateTime(const QDateTime& dateTime);
   Q_INVOKABLE QPoint testPoint(const QPoint& point);
   Q_INVOKABLE QPointF testPointf(const QPointF& pointf);
   Q_INVOKABLE QRect testRect(const QRect& rect);

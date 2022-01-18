@@ -9,13 +9,14 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl, QVariant,
-        Url, Variant, VariantValue,
+        Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
+        QTime, QUrl, QVariant, Url, Variant, VariantValue,
     };
 
     pub struct Data {
         color: Color,
         date: QDate,
+        date_time: DateTime,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -32,6 +33,10 @@ mod mock_qt_types {
             Data {
                 color: Color::from_rgba(255, 0, 0, 255),
                 date: QDate::new(2022, 1, 1),
+                date_time: DateTime::from_date_time(
+                    &QDate::new(2022, 1, 1),
+                    &QTime::new(1, 2, 3, 4),
+                ),
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
                 rect: QRect::new(1, 2, 3, 4),
@@ -72,6 +77,36 @@ mod mock_qt_types {
             let mut date = *date;
             date.set_date(2021, 12, 31);
             date
+        }
+
+        #[invokable]
+        fn test_date_time_property(&self, cpp: &mut CppObj) {
+            let date_time = cpp.date_time().to_rust();
+            let new_date_time = DateTime::from_date_time(
+                &QDate::new(2021, 12, 31),
+                &QTime::new(
+                    date_time.time().hour() * 2,
+                    date_time.time().minute() * 3,
+                    date_time.time().second() * 4,
+                    date_time.time().msec() * 5,
+                ),
+            )
+            .to_unique_ptr();
+            cpp.set_date_time(&new_date_time);
+        }
+
+        #[invokable]
+        fn test_date_time_invokable(&self, date_time: &QDateTime) -> DateTime {
+            let date_time = date_time.to_rust();
+            DateTime::from_date_time(
+                &QDate::new(2021, 12, 31),
+                &QTime::new(
+                    date_time.time().hour() * 2,
+                    date_time.time().minute() * 3,
+                    date_time.time().second() * 4,
+                    date_time.time().msec() * 5,
+                ),
+            )
         }
 
         #[invokable]
