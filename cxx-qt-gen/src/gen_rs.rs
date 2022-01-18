@@ -29,6 +29,7 @@ impl RustType for QtTypes {
         match self {
             Self::Color => true,
             Self::QDate => true,
+            Self::DateTime => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
@@ -62,6 +63,7 @@ impl RustType for QtTypes {
             Self::I32 => format_ident!("i32"),
             Self::Color | Self::QColor => format_ident!("QColor"),
             Self::QDate => format_ident!("QDate"),
+            Self::QDateTime | Self::DateTime => format_ident!("QDateTime"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
@@ -97,6 +99,7 @@ impl RustType for QtTypes {
             Self::I32 => quote! {i32},
             Self::Color | Self::QColor => quote! {cxx_qt_lib::QColor},
             Self::QDate => quote! {cxx_qt_lib::QDate},
+            Self::QDateTime | Self::DateTime => quote! {cxx_qt_lib::QDateTime},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
@@ -456,6 +459,8 @@ pub fn generate_qobject_cxx(
                 type QColor = cxx_qt_lib::QColor;
                 #[namespace = ""]
                 type QDate = cxx_qt_lib::QDate;
+                #[namespace = ""]
+                type QDateTime = cxx_qt_lib::QDateTime;
                 #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]

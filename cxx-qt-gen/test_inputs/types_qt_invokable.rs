@@ -19,6 +19,11 @@ mod my_object {
         }
 
         #[invokable]
+        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> DateTime {
+            dateTime
+        }
+
+        #[invokable]
         fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
             point
         }

@@ -46,6 +46,8 @@ pub(crate) enum QtTypes {
         // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
         combined_name: Ident,
     },
+    DateTime,
+    QDateTime,
     F32,
     F64,
     I8,
@@ -79,6 +81,7 @@ impl QtTypes {
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
             Self::QColor | Self::Color => true,
+            Self::QDateTime | Self::DateTime => true,
             Self::QString | Self::String | Self::Str => true,
             Self::QUrl | Self::Url => true,
             Self::QVariant | Self::Variant => true,
@@ -208,6 +211,8 @@ fn extract_qt_type(
                 rust_type_idents: vec![qt_ident.clone()],
                 combined_name: qt_ident.clone(),
             }),
+            "DateTime" => Ok(QtTypes::DateTime),
+            "QDateTime" => Ok(QtTypes::QDateTime),
             "f32" => Ok(QtTypes::F32),
             "f64" => Ok(QtTypes::F64),
             "i8" => Ok(QtTypes::I8),

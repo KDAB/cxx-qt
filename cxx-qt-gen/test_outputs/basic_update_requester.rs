@@ -1,7 +1,7 @@
 mod my_object {
     use cxx_qt_lib::QString;
-    use cxx_qt_lib::UpdateRequestHandler;
     use cxx_qt_lib::ToUniquePtr;
+    use cxx_qt_lib::UpdateRequestHandler;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
@@ -16,6 +16,8 @@ mod my_object {
             type QColor = cxx_qt_lib::QColor;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
+            #[namespace = ""]
+            type QDateTime = cxx_qt_lib::QDateTime;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]

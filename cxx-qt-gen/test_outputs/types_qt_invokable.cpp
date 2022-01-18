@@ -27,6 +27,13 @@ MyObject::testDate(const QDate& date)
   return m_rustObj->testDateWrapper(*this, date);
 }
 
+QDateTime
+MyObject::testDateTime(const QDateTime& dateTime)
+{
+  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+  return std::move(*m_rustObj->testDateTimeWrapper(*this, dateTime));
+}
+
 QPoint
 MyObject::testPoint(const QPoint& point)
 {
