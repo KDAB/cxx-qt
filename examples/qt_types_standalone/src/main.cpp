@@ -165,6 +165,8 @@ TEST_CASE("Can construct a QVariant on the Rust side")
   CHECK(can_construct_qvariant(VariantTest::I8));
   CHECK(can_construct_qvariant(VariantTest::I16));
   CHECK(can_construct_qvariant(VariantTest::I32));
+  CHECK(can_construct_qvariant(VariantTest::QPoint));
+  CHECK(can_construct_qvariant(VariantTest::QPointF));
   CHECK(can_construct_qvariant(VariantTest::String));
   CHECK(can_construct_qvariant(VariantTest::U8));
   CHECK(can_construct_qvariant(VariantTest::U16));
@@ -187,6 +189,10 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
       return v.value<qint16>() == 123;
     case VariantTest::I32:
       return v.value<qint32>() == 123;
+    case VariantTest::QPoint:
+      return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
+    case VariantTest::QPointF:
+      return v.value<QPointF>().x() == 1.0 && v.value<QPoint>().y() == 3.0;
     case VariantTest::String:
       return v.toString() == QStringLiteral("Rust string");
     case VariantTest::U8:
@@ -213,6 +219,8 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   CHECK(runTest(VariantTest::I8));
   CHECK(runTest(VariantTest::I16));
   CHECK(runTest(VariantTest::I32));
+  CHECK(runTest(VariantTest::QPoint));
+  CHECK(runTest(VariantTest::QPointF));
   CHECK(runTest(VariantTest::String));
   CHECK(runTest(VariantTest::U8));
   CHECK(runTest(VariantTest::U16));
@@ -228,6 +236,10 @@ TEST_CASE("Can read a QVariant on the Rust side")
   CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
   CHECK(can_read_qvariant(QVariant::fromValue<qint16>(8910), VariantTest::I16));
   CHECK(can_read_qvariant(QVariant::fromValue(8910), VariantTest::I32));
+  CHECK(can_read_qvariant(QVariant::fromValue<QPoint>(QPoint(8, 9)),
+                          VariantTest::QPoint));
+  CHECK(can_read_qvariant(QVariant::fromValue<QPointF>(QPointF(8.0, 9.0)),
+                          VariantTest::QPointF));
   CHECK(can_read_qvariant(QVariant::fromValue(QStringLiteral("C++ string")),
                           VariantTest::String));
   CHECK(can_read_qvariant(QVariant::fromValue<quint8>(89), VariantTest::U8));

@@ -27,6 +27,8 @@ mod ffi {
         I8,
         I16,
         I32,
+        QPoint,
+        QPointF,
         String,
         U8,
         U16,
@@ -232,6 +234,8 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::I8 => Variant::from_i8(12).to_unique_ptr(),
         VariantTest::I16 => Variant::from_i16(123).to_unique_ptr(),
         VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
+        VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
+        VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
         VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
         VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
@@ -270,6 +274,14 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         VariantTest::I32 => match variant {
             VariantValue::I32(i) => i == 8910,
+            _others => false,
+        },
+        VariantTest::QPoint => match variant {
+            VariantValue::QPoint(point) => point.x() == 8 && point.y() == 9,
+            _others => false,
+        },
+        VariantTest::QPointF => match variant {
+            VariantValue::QPointF(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
             _others => false,
         },
         VariantTest::String => match variant {

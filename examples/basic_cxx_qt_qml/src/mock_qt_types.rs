@@ -282,6 +282,17 @@ mod mock_qt_types {
                     let variant = Variant::from_i32(i * 2).to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QPoint(point) => {
+                    let variant = Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
+                        .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
+                VariantValue::QPointF(pointf) => {
+                    let variant =
+                        Variant::from_qpointf(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
+                            .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::U8(i) => {
                     let variant = Variant::from_u8(i * 2).to_unique_ptr();
                     cpp.set_variant(&variant);
@@ -307,6 +318,12 @@ mod mock_qt_types {
                 VariantValue::I8(i) => Variant::from_i8(i * 2),
                 VariantValue::I16(i) => Variant::from_i16(i * 2),
                 VariantValue::I32(i) => Variant::from_i32(i * 2),
+                VariantValue::QPoint(point) => {
+                    Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
+                }
+                VariantValue::QPointF(pointf) => {
+                    Variant::from_qpointf(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
+                }
                 VariantValue::U8(i) => Variant::from_u8(i * 2),
                 VariantValue::U16(i) => Variant::from_u16(i * 2),
                 VariantValue::U32(i) => Variant::from_u32(i * 2),
