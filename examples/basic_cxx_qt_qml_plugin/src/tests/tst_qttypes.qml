@@ -517,6 +517,9 @@ TestCase {
 
         result = mock.testVariantInvokable(true);
         compare(result, false);
+
+        result = mock.testVariantInvokable(Qt.point(1.0, 3.0));
+        compare(result, Qt.point(2.0, 6.0));
     }
 
     // Check that an invokable can adjust (read and write) a property for the type

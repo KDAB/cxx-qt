@@ -7,6 +7,7 @@
 // We are only using references to QVariant so it is actually ffi safe as far as we are concerned
 #![allow(improper_ctypes)]
 
+use crate::{QPoint, QPointF};
 use cxx::{memory::UniquePtrTarget, type_id, ExternType};
 use std::{
     ffi::c_void,
@@ -24,10 +25,12 @@ enum QVariantType {
     I8 = 4,
     I16 = 5,
     I32 = 6,
-    String = 7,
-    U8 = 8,
-    U16 = 9,
-    U32 = 10,
+    QPoint = 7,
+    QPointF = 8,
+    String = 9,
+    U8 = 10,
+    U16 = 11,
+    U32 = 12,
 }
 
 extern "C" {
@@ -48,6 +51,13 @@ extern "C" {
     fn qvariant_init_from_i16(ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i16);
     #[link_name = "cxxqt1$qvariant$init$from$i32"]
     fn qvariant_init_from_i32(ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i32);
+    #[link_name = "cxxqt1$qvariant$init$from$qpoint"]
+    fn qvariant_init_from_qpoint(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, point: &QPoint);
+    #[link_name = "cxxqt1$qvariant$init$from$qpointf"]
+    fn qvariant_init_from_qpointf(
+        this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>,
+        pointf: &QPointF,
+    );
     #[link_name = "cxxqt1$qvariant$init$from$str"]
     fn qvariant_init_from_str(ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, s: &str);
     #[link_name = "cxxqt1$qvariant$init$from$u8"]
@@ -70,6 +80,10 @@ extern "C" {
     fn qvariant_to_i16(this: &QVariant) -> i16;
     #[link_name = "cxxqt1$qvariant$to$i32"]
     fn qvariant_to_i32(this: &QVariant) -> i32;
+    #[link_name = "cxxqt1$qvariant$to$qpoint"]
+    fn qvariant_to_qpoint(this: &QVariant) -> QPoint;
+    #[link_name = "cxxqt1$qvariant$to$qpointf"]
+    fn qvariant_to_qpointf(this: &QVariant) -> QPointF;
     #[link_name = "cxxqt1$qvariant$copy$to$string"]
     fn qvariant_copy_to_string(this: &QVariant, s: &mut String);
     #[link_name = "cxxqt1$qvariant$to$u8"]
@@ -172,6 +186,8 @@ pub enum VariantValue {
     I8(i8),
     I16(i16),
     I32(i32),
+    QPoint(QPoint),
+    QPointF(QPointF),
     String(String),
     U8(u8),
     U16(u16),
@@ -253,6 +269,26 @@ impl Variant {
         }
     }
 
+    pub fn from_qpoint(point: QPoint) -> Self {
+        Self {
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
+                qvariant_init_from_qpoint(&mut ptr, &point);
+                ptr.assume_init()
+            },
+        }
+    }
+
+    pub fn from_qpointf(pointf: QPointF) -> Self {
+        Self {
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
+                qvariant_init_from_qpointf(&mut ptr, &pointf);
+                ptr.assume_init()
+            },
+        }
+    }
+
     pub fn from_string(s: String) -> Self {
         Self {
             inner: unsafe {
@@ -304,6 +340,12 @@ impl Variant {
             QVariantType::I8 => VariantValue::I8(unsafe { qvariant_to_i8(&self.inner) }),
             QVariantType::I16 => VariantValue::I16(unsafe { qvariant_to_i16(&self.inner) }),
             QVariantType::I32 => VariantValue::I32(unsafe { qvariant_to_i32(&self.inner) }),
+            QVariantType::QPoint => {
+                VariantValue::QPoint(unsafe { qvariant_to_qpoint(&self.inner) })
+            }
+            QVariantType::QPointF => {
+                VariantValue::QPointF(unsafe { qvariant_to_qpointf(&self.inner) })
+            }
             QVariantType::String => {
                 let mut s = String::new();
                 unsafe { qvariant_copy_to_string(&self.inner, &mut s) };
