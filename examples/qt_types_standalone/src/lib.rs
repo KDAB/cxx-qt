@@ -29,6 +29,8 @@ mod ffi {
         I32,
         QPoint,
         QPointF,
+        QSize,
+        QSizeF,
         String,
         U8,
         U16,
@@ -236,6 +238,8 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
         VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
         VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QSize => Variant::from_qsize(QSize::new(1, 3)).to_unique_ptr(),
+        VariantTest::QSizeF => Variant::from_qsizef(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
         VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
         VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
@@ -282,6 +286,14 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         VariantTest::QPointF => match variant {
             VariantValue::QPointF(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
+            _others => false,
+        },
+        VariantTest::QSize => match variant {
+            VariantValue::QSize(size) => size.width() == 8 && size.height() == 9,
+            _others => false,
+        },
+        VariantTest::QSizeF => match variant {
+            VariantValue::QSizeF(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
             _others => false,
         },
         VariantTest::String => match variant {

@@ -293,6 +293,20 @@ mod mock_qt_types {
                             .to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QSize(size) => {
+                    let variant =
+                        Variant::from_qsize(QSize::new(size.width() * 2, size.height() * 2))
+                            .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
+                VariantValue::QSizeF(sizef) => {
+                    let variant = Variant::from_qsizef(QSizeF::new(
+                        sizef.width() * 2.0,
+                        sizef.height() * 2.0,
+                    ))
+                    .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::U8(i) => {
                     let variant = Variant::from_u8(i * 2).to_unique_ptr();
                     cpp.set_variant(&variant);
@@ -323,6 +337,12 @@ mod mock_qt_types {
                 }
                 VariantValue::QPointF(pointf) => {
                     Variant::from_qpointf(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
+                }
+                VariantValue::QSize(size) => {
+                    Variant::from_qsize(QSize::new(size.width() * 2, size.height() * 2))
+                }
+                VariantValue::QSizeF(sizef) => {
+                    Variant::from_qsizef(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
                 }
                 VariantValue::U8(i) => Variant::from_u8(i * 2),
                 VariantValue::U16(i) => Variant::from_u16(i * 2),
