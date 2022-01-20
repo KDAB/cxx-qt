@@ -44,7 +44,3 @@ jobs:
       - run: cmake -S. -Bbuild/ -G "Unix Makefiles"
       - run: cmake --build build/ --config Debug --target all -j$(nproc)
       - run: (cd build/ && QT_QPA_PLATFORM=offscreen ctest -j$(nproc) -C Debug -T test --output-on-failure)
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
