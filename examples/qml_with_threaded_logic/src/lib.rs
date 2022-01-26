@@ -59,7 +59,7 @@ mod website {
     impl RustObj {
         #[invokable]
         fn change_url(&self, cpp: &mut CppObj) {
-            let url = cpp.url().to_rust();
+            let url = cpp.url();
             let new_url = if url == "known" { "unknown" } else { "known" };
 
             let_qstring!(new_url = new_url);
@@ -80,7 +80,7 @@ mod website {
             let_qstring!(s = "Loading...");
             cpp.set_title(&s);
 
-            let url = cpp.url().to_rust();
+            let url = cpp.url();
             let update_requester = cpp.update_requester();
             let event_sender = self.event_sender.clone();
 

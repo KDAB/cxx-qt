@@ -102,7 +102,7 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
-            match *cpp.variant().to_rust() {
+            match *cpp.variant() {
                 VariantImpl::Bool(b) => {
                     let new_variant = Variant::from_bool(!b);
                     let_qvariant!(new_qvariant = &new_variant);

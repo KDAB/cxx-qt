@@ -124,16 +124,16 @@ mod my_object {
             self.cpp.as_mut().set_sizef(value);
         }
 
-        pub fn string(&self) -> &cxx_qt_lib::QString {
-            self.cpp.string()
+        pub fn string(&self) -> String {
+            self.cpp.string().to_rust()
         }
 
         pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
             self.cpp.as_mut().set_string(value);
         }
 
-        pub fn variant(&self) -> &cxx_qt_lib::QVariant {
-            self.cpp.variant()
+        pub fn variant(&self) -> cxx_qt_lib::Variant {
+            self.cpp.variant().to_rust()
         }
 
         pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
