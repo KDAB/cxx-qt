@@ -101,8 +101,8 @@ mod my_object {
             self.cpp.as_mut().set_primitive(value);
         }
 
-        pub fn opaque(&self) -> &cxx_qt_lib::QColor {
-            self.cpp.opaque()
+        pub fn opaque(&self) -> cxx_qt_lib::Color {
+            self.cpp.opaque().to_rust()
         }
 
         pub fn set_opaque(&mut self, value: &cxx_qt_lib::QColor) {

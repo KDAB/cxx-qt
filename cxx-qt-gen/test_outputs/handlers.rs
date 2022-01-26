@@ -123,8 +123,8 @@ mod my_object {
             self.cpp.as_mut().set_number(value);
         }
 
-        pub fn string(&self) -> &cxx_qt_lib::QString {
-            self.cpp.string()
+        pub fn string(&self) -> String {
+            self.cpp.string().to_rust()
         }
 
         pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {

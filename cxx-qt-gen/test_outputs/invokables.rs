@@ -58,7 +58,7 @@ mod my_object {
             #[cxx_name = "invokableNestedParameterWrapper"]
             fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
             #[cxx_name = "invokableParameters"]
-            fn invokable_parameters(self: &RustObj, opaque: &Color, primitive: i32);
+            fn invokable_parameters(self: &RustObj, opaque: &QColor, primitive: i32);
             #[cxx_name = "invokableParametersCppObjWrapper"]
             fn invokable_parameters_cpp_obj_wrapper(
                 self: &RustObj,
