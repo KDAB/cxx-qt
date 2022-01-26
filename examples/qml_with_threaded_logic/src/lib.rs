@@ -59,7 +59,7 @@ mod website {
     impl RustObj {
         #[invokable]
         fn change_url(&self, cpp: &mut CppObj) {
-            let url = cpp.url().to_rust();
+            let url = cpp.url();
             let new_url = if url == "known" { "unknown" } else { "known" };
 
             cpp.set_url(&new_url.to_unique_ptr());
@@ -78,7 +78,7 @@ mod website {
 
             cpp.set_title(&"Loading...".to_unique_ptr());
 
-            let url = cpp.url().to_rust();
+            let url = cpp.url();
             // ANCHOR: book_cpp_update_requester
             // Retrieve the update requester from the CppObj
             let update_requester = cpp.update_requester();

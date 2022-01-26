@@ -82,7 +82,7 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_date_time_property(&self, cpp: &mut CppObj) {
-            let date_time = cpp.date_time().to_rust();
+            let date_time = cpp.date_time();
             let new_date_time = DateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -248,7 +248,7 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = Url::from_str(&(cpp.url().to_rust().string() + "/cxx-qt"))
+            let url = Url::from_str(&(cpp.url().string() + "/cxx-qt"))
                 .unwrap()
                 .to_unique_ptr();
             cpp.set_url(&url);
@@ -261,7 +261,7 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
-            match cpp.variant().to_rust().value() {
+            match cpp.variant().value() {
                 VariantValue::Bool(b) => {
                     let variant = Variant::from(!b).to_unique_ptr();
                     cpp.set_variant(&variant);

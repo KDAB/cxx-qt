@@ -27,7 +27,7 @@ mod types {
     impl RustObj {
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
-            match cpp.variant().to_rust().value() {
+            match cpp.variant().value() {
                 VariantValue::Bool(b) => {
                     let new_variant = Variant::from(!b).to_unique_ptr();
                     cpp.set_variant(&new_variant);

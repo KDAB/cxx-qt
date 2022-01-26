@@ -11,16 +11,21 @@ use std::collections::HashSet;
 use crate::extract::{Invokable, QObject, QtTypes};
 use crate::utils::type_to_namespace;
 
+/// The direction that a type is flowing
+/// used to indicate if a type is an Input to Rust from C++ or an Output from Rust to C++
+enum Direction {
+    Input,
+    Output,
+}
+
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
-    /// Whether this type is a this (eg the T in Pin<T>)
-    fn is_this(&self) -> bool;
-    /// The ident of the type when used as a parameter on a function
-    fn param_type_ident(&self) -> Ident;
+    /// The name of the type when defined in the CXX bridge, eg the A in type A = B;
+    fn cxx_bridge_type_ident(&self, direction: Direction) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn full_param_type(&self) -> TokenStream;
+    fn cxx_qt_lib_type(&self, direction: Direction) -> TokenStream;
 }
 
 impl RustType for QtTypes {
@@ -44,16 +49,11 @@ impl RustType for QtTypes {
         }
     }
 
-    /// Whether this type is_this, this is used to determine if the type needs to be rewritten
-    fn is_this(&self) -> bool {
-        match self {
-            Self::CppObj { external, .. } => external == &false,
-            _others => false,
-        }
-    }
-
-    /// The ident of the type when used as a parameter on a function
-    fn param_type_ident(&self) -> Ident {
+    /// The name of the type when defined in the CXX bridge
+    ///
+    /// eg the A in type A = B;
+    /// And then the A in  fn method(A) -> A;
+    fn cxx_bridge_type_ident(&self, direction: Direction) -> Ident {
         match self {
             Self::Bool => format_ident!("bool"),
             Self::F32 => format_ident!("f32"),
@@ -61,19 +61,38 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
-            Self::Color | Self::QColor => format_ident!("QColor"),
+            Self::Color | Self::QColor => match direction {
+                Direction::Input => format_ident!("QColor"),
+                Direction::Output => format_ident!("Color"),
+            },
             Self::QDate => format_ident!("QDate"),
-            Self::QDateTime | Self::DateTime => format_ident!("QDateTime"),
+            Self::QDateTime | Self::DateTime => match direction {
+                Direction::Input => format_ident!("QDateTime"),
+                Direction::Output => format_ident!("DateTime"),
+            },
+            Self::Str => match direction {
+                Direction::Input => format_ident!("QString"),
+                Direction::Output => format_ident!("str"),
+            },
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
             Self::QRectF => format_ident!("QRectF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
-            Self::Str | Self::String | Self::QString => format_ident!("QString"),
+            Self::QString | Self::String => match direction {
+                Direction::Input => format_ident!("QString"),
+                Direction::Output => format_ident!("String"),
+            },
             Self::QTime => format_ident!("QTime"),
-            Self::QUrl | Self::Url => format_ident!("QUrl"),
-            Self::QVariant | Self::Variant => format_ident!("QVariant"),
+            Self::QUrl | Self::Url => match direction {
+                Direction::Input => format_ident!("QUrl"),
+                Direction::Output => format_ident!("Url"),
+            },
+            Self::QVariant | Self::Variant => match direction {
+                Direction::Input => format_ident!("QVariant"),
+                Direction::Output => format_ident!("Variant"),
+            },
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
             Self::U32 => format_ident!("u32"),
@@ -82,34 +101,51 @@ impl RustType for QtTypes {
     }
 
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn full_param_type(&self) -> TokenStream {
+    fn cxx_qt_lib_type(&self, direction: Direction) -> TokenStream {
         match self {
             Self::Bool => quote! {bool},
             Self::CppObj {
                 external,
                 combined_name,
                 ..
-            } if external == &true => {
-                quote! {cxx::UniquePtr<ffi::#combined_name>}
-            }
+            } if external == &true => quote! {cxx::UniquePtr<ffi::#combined_name>},
             Self::F32 => quote! {f32},
             Self::F64 => quote! {f64},
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
-            Self::Color | Self::QColor => quote! {cxx_qt_lib::QColor},
+            Self::Color | Self::QColor => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QColor},
+                Direction::Output => quote! {cxx_qt_lib::Color},
+            },
             Self::QDate => quote! {cxx_qt_lib::QDate},
-            Self::QDateTime | Self::DateTime => quote! {cxx_qt_lib::QDateTime},
+            Self::QDateTime | Self::DateTime => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QDateTime},
+                Direction::Output => quote! {cxx_qt_lib::DateTime},
+            },
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
             Self::QRectF => quote! {cxx_qt_lib::QRectF},
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
+            Self::Str => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QString},
+                Direction::Output => quote! {str},
+            },
+            Self::QString | Self::String => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QString},
+                Direction::Output => quote! {String},
+            },
             Self::QTime => quote! {cxx_qt_lib::QTime},
-            Self::Str | Self::String | Self::QString => quote! {cxx_qt_lib::QString},
-            Self::QUrl | Self::Url => quote! {cxx_qt_lib::QUrl},
-            Self::QVariant | Self::Variant => quote! {cxx_qt_lib::QVariant},
+            Self::QUrl | Self::Url => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QUrl},
+                Direction::Output => quote! {cxx_qt_lib::Url},
+            },
+            Self::QVariant | Self::Variant => match direction {
+                Direction::Input => quote! {cxx_qt_lib::QVariant},
+                Direction::Output => quote! {cxx_qt_lib::Variant},
+            },
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
             Self::U32 => quote! {u32},
@@ -225,29 +261,22 @@ pub fn generate_qobject_cxx(
 
         // Determine if the invokable has any parameter
         if parameters.is_empty() {
-            // Determine if there is a return type and if it's a reference
+            // Determine if there is a return type
             if let Some(return_type) = &i.return_type {
-                // Cache the return type
-                let type_idents = &return_type.idents;
-
-                // Determine if the return type is a ref
-                if return_type.qt_type.is_opaque() {
-                    let return_type_ident = return_type.qt_type.param_type_ident();
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#mutablility #rust_class_name) -> UniquePtr<#return_type_ident>;
-                    });
+                // Cache and build the return type
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(Direction::Input);
+                let type_ident = if return_type.qt_type.is_opaque() {
+                    quote! { UniquePtr<#type_ident> }
                 } else if return_type.is_ref {
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#mutablility #rust_class_name) -> &#(#type_idents)::*;
-                    });
+                    quote! { &#type_ident }
                 } else {
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#mutablility #rust_class_name) -> #(#type_idents)::*;
-                    });
-                }
+                    quote! { #type_ident }
+                };
+
+                rs_functions.push(quote! {
+                    #[cxx_name = #ident_cpp_str]
+                    fn #ident(self: &#mutablility #rust_class_name) -> #type_ident;
+                });
             } else {
                 rs_functions.push(quote! {
                     #[cxx_name = #ident_cpp_str]
@@ -297,45 +326,36 @@ pub fn generate_qobject_cxx(
                         }
                     }
                     _others => {
-                        let type_idents = &p.type_ident.idents;
-
-                        // Determine if the type is a ref
-                        if p.type_ident.is_ref {
-                            parameters_quotes.push(quote! {
-                                #ident: &#(#type_idents)::*
-                            });
+                        let type_ident =
+                            &p.type_ident.qt_type.cxx_bridge_type_ident(Direction::Input);
+                        let type_ident = if p.type_ident.is_ref {
+                            quote! {&#type_ident}
                         } else {
-                            parameters_quotes.push(quote! {
-                                #ident: #(#type_idents)::*
-                            });
-                        }
+                            quote! {#type_ident}
+                        };
+                        parameters_quotes.push(quote! {
+                            #ident: #type_ident
+                        });
                     }
                 };
             }
 
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
-                // Cache the return type
-                let type_idents = &return_type.idents;
-
-                // Determine if the return type is a ref
-                if return_type.qt_type.is_opaque() {
-                    let return_type_ident = return_type.qt_type.param_type_ident();
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> UniquePtr<#return_type_ident>;
-                    });
+                // Cache and build the return type
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(Direction::Input);
+                let type_ident = if return_type.qt_type.is_opaque() {
+                    quote! { UniquePtr<#type_ident> }
                 } else if return_type.is_ref {
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
-                    });
+                    quote! { &#type_ident }
                 } else {
-                    rs_functions.push(quote! {
-                        #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> #(#type_idents)::*;
-                    });
-                }
+                    quote! { #type_ident }
+                };
+
+                rs_functions.push(quote! {
+                    #[cxx_name = #ident_cpp_str]
+                    fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> #type_ident;
+                });
             } else {
                 rs_functions.push(quote! {
                     #[cxx_name = #ident_cpp_str]
@@ -400,7 +420,10 @@ pub fn generate_qobject_cxx(
             let setter_cpp = format_ident!("set{}", property_ident_pascal);
 
             let qt_type = &property.type_ident.qt_type;
-            let param_type = qt_type.param_type_ident();
+            // Note that properties use "input" even for outputs as this is coming from C++ -> Rust
+            //
+            // Then the CppObj method converts and opaque types into their Rust form
+            let param_type = qt_type.cxx_bridge_type_ident(Direction::Input);
             let param_type = if qt_type.is_ref() {
                 quote! {&#param_type}
             } else {
@@ -586,11 +609,18 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
     for property in &obj.properties {
         let qt_type = &property.type_ident.qt_type;
-        let param_type = qt_type.full_param_type();
-        let param_type = if qt_type.is_ref() {
-            quote! {&#param_type}
+        let input_param_type = qt_type.cxx_qt_lib_type(Direction::Input);
+        let input_param_type = if qt_type.is_ref() {
+            quote! {&#input_param_type}
         } else {
-            quote! {#param_type}
+            quote! {#input_param_type}
+        };
+        let output_param_type = qt_type.cxx_qt_lib_type(Direction::Output);
+        // When the output type is opaque we pass by value rather than ref
+        let output_param_type = if !qt_type.is_opaque() && qt_type.is_ref() {
+            quote! {&#output_param_type}
+        } else {
+            quote! {#output_param_type}
         };
 
         let cpp_getter_ident = &property.getter.as_ref().unwrap().rust_ident;
@@ -602,13 +632,13 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             let give_ident = format_ident!("give_{}", ident);
 
             property_methods.push(quote! {
-                pub fn #take_ident(&mut self) -> #param_type {
+                pub fn #take_ident(&mut self) -> #output_param_type {
                     self.cpp.as_mut().#take_ident()
                 }
             });
 
             property_methods.push(quote! {
-                pub fn #give_ident(&mut self, value: #param_type) {
+                pub fn #give_ident(&mut self, value: #input_param_type) {
                     self.cpp.as_mut().#give_ident(value);
                 }
             });
@@ -616,10 +646,16 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             if let Some(getter) = &property.getter {
                 // Generate a getter using the rust ident
                 let getter_ident = &getter.rust_ident;
+                // If the type is opaque then we need to convert to the Rust form
+                let opaque_converter = if qt_type.is_opaque() {
+                    quote! {.to_rust()}
+                } else {
+                    quote! {}
+                };
 
                 property_methods.push(quote! {
-                    pub fn #getter_ident(&self) -> #param_type {
-                        self.cpp.#cpp_getter_ident()
+                    pub fn #getter_ident(&self) -> #output_param_type {
+                        self.cpp.#cpp_getter_ident()#opaque_converter
                     }
                 });
             }
@@ -629,7 +665,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                 let setter_ident = &setter.rust_ident;
 
                 property_methods.push(quote! {
-                    pub fn #setter_ident(&mut self, value: #param_type) {
+                    pub fn #setter_ident(&mut self, value: #input_param_type) {
                         self.cpp.as_mut().#cpp_setter_ident(value);
                     }
                 });
@@ -734,7 +770,7 @@ fn invokable_generate_wrapper(
 
     if let Some(return_type) = &invokable.return_type {
         if return_type.qt_type.is_opaque() {
-            let return_type_ident = return_type.qt_type.full_param_type();
+            let return_type_ident = return_type.qt_type.cxx_qt_lib_type(Direction::Input);
             return Ok(quote! {
                 fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_ident> {
                     #(#wrappers)*

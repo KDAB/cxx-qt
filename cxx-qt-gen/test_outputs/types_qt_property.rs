@@ -149,8 +149,8 @@ mod my_object {
             Self { cpp }
         }
 
-        pub fn color(&self) -> &cxx_qt_lib::QColor {
-            self.cpp.color()
+        pub fn color(&self) -> cxx_qt_lib::Color {
+            self.cpp.color().to_rust()
         }
 
         pub fn set_color(&mut self, value: &cxx_qt_lib::QColor) {
@@ -165,8 +165,8 @@ mod my_object {
             self.cpp.as_mut().set_date(value);
         }
 
-        pub fn date_time(&self) -> &cxx_qt_lib::QDateTime {
-            self.cpp.date_time()
+        pub fn date_time(&self) -> cxx_qt_lib::DateTime {
+            self.cpp.date_time().to_rust()
         }
 
         pub fn set_date_time(&mut self, value: &cxx_qt_lib::QDateTime) {
@@ -221,8 +221,8 @@ mod my_object {
             self.cpp.as_mut().set_sizef(value);
         }
 
-        pub fn string(&self) -> &cxx_qt_lib::QString {
-            self.cpp.string()
+        pub fn string(&self) -> String {
+            self.cpp.string().to_rust()
         }
 
         pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
@@ -237,16 +237,16 @@ mod my_object {
             self.cpp.as_mut().set_time(value);
         }
 
-        pub fn url(&self) -> &cxx_qt_lib::QUrl {
-            self.cpp.url()
+        pub fn url(&self) -> cxx_qt_lib::Url {
+            self.cpp.url().to_rust()
         }
 
         pub fn set_url(&mut self, value: &cxx_qt_lib::QUrl) {
             self.cpp.as_mut().set_url(value);
         }
 
-        pub fn variant(&self) -> &cxx_qt_lib::QVariant {
-            self.cpp.variant()
+        pub fn variant(&self) -> cxx_qt_lib::Variant {
+            self.cpp.variant().to_rust()
         }
 
         pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
