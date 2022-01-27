@@ -256,8 +256,7 @@ into_qvariant!(u32, ffi::qvariant_init_from_u32);
 ///
 /// Internally this holds a UniquePtr to a QVariant which has been constructed on the C++ side.
 pub struct Variant {
-    // Note that once map_qt_value is removed later, this can become private again
-    pub(crate) inner: cxx::UniquePtr<QVariant>,
+    inner: cxx::UniquePtr<QVariant>,
 }
 
 impl Default for Variant {

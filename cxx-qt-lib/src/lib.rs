@@ -7,9 +7,6 @@
 mod types;
 pub use types::*;
 
-mod map_qt_value;
-pub use map_qt_value::*;
-
 // Provide a separate depending on the platform
 // this is because include_str requires th correct and non-mixed path separators
 //
