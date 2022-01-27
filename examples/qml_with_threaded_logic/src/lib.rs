@@ -7,7 +7,6 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod website {
-    use cxx_qt_lib::let_qstring;
     use futures::{
         channel::mpsc::{UnboundedReceiver, UnboundedSender},
         executor::block_on,
@@ -61,9 +60,7 @@ mod website {
         fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url();
             let new_url = if url == "known" { "unknown" } else { "known" };
-
-            let_qstring!(new_url = new_url);
-            cpp.set_url(&new_url);
+            cpp.set_url(new_url);
         }
 
         #[invokable]
@@ -77,8 +74,7 @@ mod website {
                 return;
             }
 
-            let_qstring!(s = "Loading...");
-            cpp.set_title(&s);
+            cpp.set_title("Loading...");
 
             let url = cpp.url();
             let update_requester = cpp.update_requester();
@@ -105,8 +101,7 @@ mod website {
         fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
             match event {
                 Event::TitleArrived(title) => {
-                    let_qstring!(s = title);
-                    cpp.set_title(&s);
+                    cpp.set_title(title);
                     self.loading.store(false, Ordering::Relaxed);
                 }
             }

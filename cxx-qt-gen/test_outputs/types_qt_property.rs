@@ -128,16 +128,18 @@ mod my_object {
             self.cpp.string().to_rust()
         }
 
-        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
-            self.cpp.as_mut().set_string(value);
+        pub fn set_string(&mut self, value: &str) {
+            cxx_qt_lib::let_qstring!(qvalue = value);
+            self.cpp.as_mut().set_string(&qvalue);
         }
 
         pub fn variant(&self) -> cxx_qt_lib::Variant {
             self.cpp.variant().to_rust()
         }
 
-        pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
-            self.cpp.as_mut().set_variant(value);
+        pub fn set_variant(&mut self, value: &cxx_qt_lib::Variant) {
+            cxx_qt_lib::let_qvariant!(qvalue = value);
+            self.cpp.as_mut().set_variant(&qvalue);
         }
 
         pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
@@ -148,20 +150,12 @@ mod my_object {
         }
 
         pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.point
-                .map_qt_value(|context, converted| context.set_point(converted), self);
-            data.pointf
-                .map_qt_value(|context, converted| context.set_pointf(converted), self);
-            data.size
-                .map_qt_value(|context, converted| context.set_size(converted), self);
-            data.sizef
-                .map_qt_value(|context, converted| context.set_sizef(converted), self);
-            data.string
-                .map_qt_value(|context, converted| context.set_string(converted), self);
-            data.variant
-                .map_qt_value(|context, converted| context.set_variant(converted), self);
+            self.set_point(&data.point);
+            self.set_pointf(&data.pointf);
+            self.set_size(&data.size);
+            self.set_sizef(&data.sizef);
+            self.set_string(&data.string);
+            self.set_variant(&data.variant);
         }
     }
 

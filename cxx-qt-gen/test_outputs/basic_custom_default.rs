@@ -83,10 +83,7 @@ mod my_object {
         }
 
         pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.number
-                .map_qt_value(|context, converted| context.set_number(converted), self);
+            self.set_number(data.number);
         }
     }
 

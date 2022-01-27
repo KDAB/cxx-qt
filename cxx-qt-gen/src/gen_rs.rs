@@ -11,11 +11,10 @@ use std::collections::HashSet;
 use crate::extract::{Invokable, QObject, QtTypes};
 use crate::utils::type_to_namespace;
 
-/// The direction that a type is flowing
-/// used to indicate if a type is an Input to Rust from C++ or an Output from Rust to C++
-enum Direction {
-    Input,
-    Output,
+/// The target type that we want, eg is this the QVariant (Cpp) or Variant (Rust)
+enum TargetType {
+    Cpp,
+    Rust,
 }
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -24,10 +23,12 @@ trait RustType {
     fn is_ref(&self) -> bool;
     /// Whether this type is opaque
     fn is_opaque(&self) -> bool;
+    /// The converter from Rust into C++
+    fn convert_into_cpp(&self) -> Option<TokenStream>;
     /// The name of the type when defined in the CXX bridge, eg the A in type A = B;
-    fn cxx_bridge_type_ident(&self, direction: Direction) -> Ident;
+    fn cxx_bridge_type_ident(&self, target_type: TargetType) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn cxx_qt_lib_type(&self, direction: Direction) -> TokenStream;
+    fn cxx_qt_lib_type(&self, target_type: TargetType) -> TokenStream;
 }
 
 impl RustType for QtTypes {
@@ -38,8 +39,8 @@ impl RustType for QtTypes {
             Self::QPointF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Variant => true,
-            Self::Str | Self::String => true,
+            Self::QString | Self::String | Self::Str => true,
+            Self::QVariant | Self::Variant => true,
             _others => false,
         }
     }
@@ -53,11 +54,20 @@ impl RustType for QtTypes {
         }
     }
 
+    /// The converter from C++ into Rust
+    fn convert_into_cpp(&self) -> Option<TokenStream> {
+        match self {
+            Self::QString | Self::String => Some(quote! { cxx_qt_lib::let_qstring! }),
+            Self::Variant | Self::QVariant => Some(quote! { cxx_qt_lib::let_qvariant! }),
+            _other => None,
+        }
+    }
+
     /// The name of the type when defined in the CXX bridge
     ///
     /// eg the A in type A = B;
     /// And then the A in  fn method(A) -> A;
-    fn cxx_bridge_type_ident(&self, direction: Direction) -> Ident {
+    fn cxx_bridge_type_ident(&self, target_type: TargetType) -> Ident {
         match self {
             Self::Bool => format_ident!("bool"),
             Self::F32 => format_ident!("f32"),
@@ -70,13 +80,13 @@ impl RustType for QtTypes {
             Self::QPointF => format_ident!("QPointF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
-            Self::QString | Self::String => match direction {
-                Direction::Input => format_ident!("QString"),
-                Direction::Output => format_ident!("String"),
+            Self::QString | Self::String => match target_type {
+                TargetType::Cpp => format_ident!("QString"),
+                TargetType::Rust => format_ident!("String"),
             },
-            Self::QVariant | Self::Variant => match direction {
-                Direction::Input => format_ident!("QVariant"),
-                Direction::Output => format_ident!("Variant"),
+            Self::QVariant | Self::Variant => match target_type {
+                TargetType::Cpp => format_ident!("QVariant"),
+                TargetType::Rust => format_ident!("Variant"),
             },
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
@@ -86,7 +96,7 @@ impl RustType for QtTypes {
     }
 
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn cxx_qt_lib_type(&self, direction: Direction) -> TokenStream {
+    fn cxx_qt_lib_type(&self, target_type: TargetType) -> TokenStream {
         match self {
             Self::Bool => quote! {bool},
             Self::CppObj {
@@ -104,13 +114,13 @@ impl RustType for QtTypes {
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
             Self::Str => quote! {str},
-            Self::QString | Self::String => match direction {
-                Direction::Input => quote! {cxx_qt_lib::QString},
-                Direction::Output => quote! {String},
+            Self::QString | Self::String => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QString},
+                TargetType::Rust => quote! {String},
             },
-            Self::QVariant | Self::Variant => match direction {
-                Direction::Input => quote! {cxx_qt_lib::QVariant},
-                Direction::Output => quote! {cxx_qt_lib::Variant},
+            Self::QVariant | Self::Variant => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QVariant},
+                TargetType::Rust => quote! {cxx_qt_lib::Variant},
             },
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
@@ -224,7 +234,7 @@ pub fn generate_qobject_cxx(
         if parameters.is_empty() {
             // Determine if there is a return type
             if let Some(return_type) = &i.return_type {
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(Direction::Output);
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Rust);
                 let type_ident = if return_type.is_ref {
                     quote! {&#type_ident}
                 } else {
@@ -285,7 +295,7 @@ pub fn generate_qobject_cxx(
                     }
                     _others => {
                         let type_ident =
-                            &p.type_ident.qt_type.cxx_bridge_type_ident(Direction::Input);
+                            &p.type_ident.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
                         let type_ident = if p.type_ident.is_ref {
                             quote! {&#type_ident}
                         } else {
@@ -301,7 +311,7 @@ pub fn generate_qobject_cxx(
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
                 // Cache the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(Direction::Output);
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Rust);
                 let type_ident = if return_type.is_ref {
                     quote! {&#type_ident}
                 } else {
@@ -376,10 +386,7 @@ pub fn generate_qobject_cxx(
             let setter_cpp = format_ident!("set{}", property_ident_pascal);
 
             let qt_type = &property.type_ident.qt_type;
-            // Note that properties use "input" even for outputs as this is coming from C++ -> Rust
-            //
-            // Then the CppObj method converts and opaque types into their Rust form
-            let param_type = qt_type.cxx_bridge_type_ident(Direction::Input);
+            let param_type = qt_type.cxx_bridge_type_ident(TargetType::Cpp);
             let param_type = if qt_type.is_ref() {
                 quote! {&#param_type}
             } else {
@@ -520,18 +527,13 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
     for property in &obj.properties {
         let qt_type = &property.type_ident.qt_type;
-        let input_param_type = qt_type.cxx_qt_lib_type(Direction::Input);
-        let input_param_type = if qt_type.is_ref() {
-            quote! {&#input_param_type}
-        } else {
-            quote! {#input_param_type}
-        };
-        let output_param_type = qt_type.cxx_qt_lib_type(Direction::Output);
+        let rust_param_type = qt_type.cxx_qt_lib_type(TargetType::Rust);
         // When the output type is opaque we pass by value rather than ref
-        let output_param_type = if !qt_type.is_opaque() && qt_type.is_ref() {
-            quote! {&#output_param_type}
+        // even though it's a non trivial type
+        let rust_param_type = if !qt_type.is_opaque() && qt_type.is_ref() {
+            quote! {&#rust_param_type}
         } else {
-            quote! {#output_param_type}
+            quote! {#rust_param_type}
         };
 
         let cpp_getter_ident = &property.getter.as_ref().unwrap().rust_ident;
@@ -543,13 +545,13 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             let give_ident = format_ident!("give_{}", ident);
 
             property_methods.push(quote! {
-                pub fn #take_ident(&mut self) -> #output_param_type {
+                pub fn #take_ident(&mut self) -> #rust_param_type {
                     self.cpp.as_mut().#take_ident()
                 }
             });
 
             property_methods.push(quote! {
-                pub fn #give_ident(&mut self, value: #input_param_type) {
+                pub fn #give_ident(&mut self, value: #rust_param_type) {
                     self.cpp.as_mut().#give_ident(value);
                 }
             });
@@ -565,7 +567,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                 };
 
                 property_methods.push(quote! {
-                    pub fn #getter_ident(&self) -> #output_param_type {
+                    pub fn #getter_ident(&self) -> #rust_param_type {
                         self.cpp.#cpp_getter_ident()#opaque_converter
                     }
                 });
@@ -574,12 +576,29 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             if let Some(setter) = &property.setter {
                 // Generate a setter using the rust ident
                 let setter_ident = &setter.rust_ident;
+                if let Some(opaque_converter) = qt_type.convert_into_cpp() {
+                    // Special case where instead of generating &String
+                    // we use &str as the input for setter methods.
+                    //
+                    // FIXME: can we make this generic in the RustType trait somewhere?
+                    let rust_param_type = match qt_type {
+                        QtTypes::QString | QtTypes::String => quote! {str},
+                        _others => rust_param_type,
+                    };
 
-                property_methods.push(quote! {
-                    pub fn #setter_ident(&mut self, value: #input_param_type) {
-                        self.cpp.as_mut().#cpp_setter_ident(value);
-                    }
-                });
+                    property_methods.push(quote! {
+                        pub fn #setter_ident(&mut self, value: &#rust_param_type) {
+                            #opaque_converter(qvalue = value);
+                            self.cpp.as_mut().#cpp_setter_ident(&qvalue);
+                        }
+                    });
+                } else {
+                    property_methods.push(quote! {
+                        pub fn #setter_ident(&mut self, value: #rust_param_type) {
+                            self.cpp.as_mut().#cpp_setter_ident(value);
+                        }
+                    });
+                };
             }
         }
     }
@@ -736,12 +755,18 @@ pub fn generate_qobject_rs(
             if let QtTypes::CppObj { .. } = prop.type_ident.qt_type {
                 None
             } else {
-                Some(field)
+                Some((&prop.type_ident.qt_type, field))
             }
         })
-        .collect::<Vec<&syn::Field>>();
+        .collect::<Vec<(&QtTypes, &syn::Field)>>();
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
-    let data_struct = build_struct_with_fields(&obj.original_data_struct, &data_fields_no_ptr);
+    let data_struct = build_struct_with_fields(
+        &obj.original_data_struct,
+        &data_fields_no_ptr
+            .iter()
+            .map(|(_, field)| *field)
+            .collect::<Vec<&syn::Field>>(),
+    );
 
     // Build a converter for Data -> CppObj
     let data_struct_impl = {
@@ -753,7 +778,7 @@ pub fn generate_qobject_rs(
             format_ident!("value")
         };
 
-        for field in &data_fields_no_ptr {
+        for (_, field) in &data_fields_no_ptr {
             if let Some(field_ident) = &field.ident {
                 let field_name = field_ident.clone();
 
@@ -861,14 +886,18 @@ pub fn generate_qobject_rs(
 
     // TODO: eventually we want so support grabbing values from sub objects too
     let mut grab_values = vec![];
-    for field in &data_fields_no_ptr {
+    for (qt_type, field) in &data_fields_no_ptr {
         if let Some(field_ident) = &field.ident {
             let field_name = field_ident.clone();
             let setter_name = format_ident!("set_{}", field_name);
+            let is_ref = if qt_type.is_ref() {
+                quote! {&}
+            } else {
+                quote! {}
+            };
 
             grab_values.push(quote! {
-                data.#field_name.
-                    map_qt_value(|context, converted| context.#setter_name(converted), self);
+                self.#setter_name(#is_ref data.#field_name);
             });
         }
     }
@@ -899,8 +928,6 @@ pub fn generate_qobject_rs(
             }
 
             pub fn grab_values_from_data(&mut self, data: &#data_struct_name) {
-                use cxx_qt_lib::MapQtValue;
-
                 #(#grab_values)*
             }
         }

@@ -80,8 +80,9 @@ mod my_object {
             self.cpp.string().to_rust()
         }
 
-        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
-            self.cpp.as_mut().set_string(value);
+        pub fn set_string(&mut self, value: &str) {
+            cxx_qt_lib::let_qstring!(qvalue = value);
+            self.cpp.as_mut().set_string(&qvalue);
         }
 
         pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
@@ -92,12 +93,8 @@ mod my_object {
         }
 
         pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.number
-                .map_qt_value(|context, converted| context.set_number(converted), self);
-            data.string
-                .map_qt_value(|context, converted| context.set_string(converted), self);
+            self.set_number(data.number);
+            self.set_string(&data.string);
         }
     }
 

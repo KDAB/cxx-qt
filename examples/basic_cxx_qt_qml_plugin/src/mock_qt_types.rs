@@ -8,9 +8,7 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod mock_qt_types {
-    use cxx_qt_lib::{
-        let_qvariant, QPoint, QPointF, QSize, QSizeF, QVariant, Variant, VariantImpl,
-    };
+    use cxx_qt_lib::{QPoint, QPointF, QSize, QSizeF, QVariant, Variant, VariantImpl};
 
     pub struct Data {
         point: QPoint,
@@ -103,51 +101,15 @@ mod mock_qt_types {
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
             match *cpp.variant() {
-                VariantImpl::Bool(b) => {
-                    let new_variant = Variant::from_bool(!b);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::F32(f) => {
-                    let new_variant = Variant::from_f32(f * 2.0);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::F64(d) => {
-                    let new_variant = Variant::from_f64(d * 2.0);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::I8(i) => {
-                    let new_variant = Variant::from_i8(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::I16(i) => {
-                    let new_variant = Variant::from_i16(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::I32(i) => {
-                    let new_variant = Variant::from_i32(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::U8(i) => {
-                    let new_variant = Variant::from_u8(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::U16(i) => {
-                    let new_variant = Variant::from_u16(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
-                VariantImpl::U32(i) => {
-                    let new_variant = Variant::from_u32(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
-                }
+                VariantImpl::Bool(b) => cpp.set_variant(&Variant::from_bool(!b)),
+                VariantImpl::F32(f) => cpp.set_variant(&Variant::from_f32(f * 2.0)),
+                VariantImpl::F64(d) => cpp.set_variant(&Variant::from_f64(d * 2.0)),
+                VariantImpl::I8(i) => cpp.set_variant(&Variant::from_i8(i * 2)),
+                VariantImpl::I16(i) => cpp.set_variant(&Variant::from_i16(i * 2)),
+                VariantImpl::I32(i) => cpp.set_variant(&Variant::from_i32(i * 2)),
+                VariantImpl::U8(i) => cpp.set_variant(&Variant::from_u8(i * 2)),
+                VariantImpl::U16(i) => cpp.set_variant(&Variant::from_u16(i * 2)),
+                VariantImpl::U32(i) => cpp.set_variant(&Variant::from_u32(i * 2)),
                 _ => panic!("Incorrect variant type!"),
             }
         }
