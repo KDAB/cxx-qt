@@ -36,11 +36,6 @@ TEST_CASE("Can modify a QString on the Rust side")
   CHECK_EQ(s, QStringLiteral("Updated string value"));
 }
 
-TEST_CASE("Can map Rust &str to &QString")
-{
-  CHECK(can_map_to_qstring());
-}
-
 TEST_CASE("Can handle a QString modified on the Rust side")
 {
   CHECK(can_handle_qstring_change());

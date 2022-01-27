@@ -176,8 +176,7 @@ mod my_object {
             unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-        }
+        pub fn grab_values_from_data(&mut self, data: &Data) {}
     }
 
     #[derive(Default)]

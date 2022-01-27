@@ -31,9 +31,6 @@ pub use qpointf::QPointF;
 mod qvariant;
 pub use qvariant::{QVariant, Variant, VariantImpl};
 
-mod map_qt_value;
-pub use map_qt_value::*;
-
 pub trait PropertyChangeHandler<C, P> {
     fn handle_property_change(&mut self, cpp: &mut C, property: P);
 }

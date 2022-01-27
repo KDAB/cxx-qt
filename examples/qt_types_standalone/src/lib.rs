@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QSize,
-    QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qcolor, let_qstring, let_qvariant, Color, QColor, QPoint, QPointF, QSize, QSizeF, QString,
+    QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -59,7 +59,6 @@ mod ffi {
         fn can_construct_qstring(slice: bool) -> bool;
         fn can_read_qstring(s: &QString) -> bool;
         fn modify_qstring(s: Pin<&mut QString>);
-        fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
 
         fn can_construct_qcolor(test: ColorTest) -> bool;
@@ -113,13 +112,6 @@ fn can_read_qstring(s: &QString) -> bool {
 fn modify_qstring(s: Pin<&mut QString>) {
     let_qstring!(v = "Updated string value");
     ffi::assign_to_qstring(s, &v);
-}
-
-fn can_map_to_qstring() -> bool {
-    "String constructed by Rust".map_qt_value(
-        |_, converted| ffi::test_constructed_qstring(converted),
-        &mut (),
-    )
 }
 
 fn can_handle_qstring_change() -> bool {
