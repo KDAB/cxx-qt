@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    Color, DateTime, MapQtValue, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize,
-    QSizeF, QString, QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
+    Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
+    QString, QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
 };
 use std::str::FromStr;
 
@@ -78,7 +78,6 @@ mod ffi {
         fn can_construct_qstring(slice: bool) -> bool;
         fn can_read_qstring(s: &QString) -> bool;
         fn modify_qstring(s: Pin<&mut QString>);
-        fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
 
         fn make_color(test: ColorTest) -> UniquePtr<QColor>;
@@ -156,13 +155,6 @@ fn can_read_qstring(s: &QString) -> bool {
 
 fn modify_qstring(s: Pin<&mut QString>) {
     ffi::assign_to_qstring(s, &"Updated string value".to_unique_ptr());
-}
-
-fn can_map_to_qstring() -> bool {
-    "String constructed by Rust".map_qt_value(
-        |_, converted| ffi::test_constructed_qstring(converted),
-        &mut (),
-    )
 }
 
 fn can_handle_qstring_change() -> bool {

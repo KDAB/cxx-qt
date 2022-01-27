@@ -55,9 +55,7 @@ impl QColor {
 ///
 /// Internally this holds a UniquePtr to a QColor which has been constructed on the C++ side.
 pub struct Color {
-    // Note that once map_qt_value is removed later, this can become private again
-    #[doc(hidden)]
-    pub(crate) inner: cxx::UniquePtr<QColor>,
+    inner: cxx::UniquePtr<QColor>,
 }
 
 impl Default for Color {
