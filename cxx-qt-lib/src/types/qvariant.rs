@@ -64,6 +64,8 @@ mod ffi {
         #[rust_name = "qvariant_get_type"]
         fn qvariantType(qvariant: &QVariant) -> QVariantType;
 
+        #[rust_name = "qvariant_init"]
+        fn qvariantInit() -> UniquePtr<QVariant>;
         #[rust_name = "qvariant_init_from_qvariant"]
         fn qvariantInitFromQVariant(variant: &QVariant) -> UniquePtr<QVariant>;
         #[rust_name = "qvariant_init_from_bool"]
@@ -258,6 +260,12 @@ pub struct Variant {
     pub(crate) inner: cxx::UniquePtr<QVariant>,
 }
 
+impl Default for Variant {
+    fn default() -> Self {
+        Variant::from_unique_ptr(ffi::qvariant_init())
+    }
+}
+
 impl<T> From<T> for Variant
 where
     T: IntoQVariant,
@@ -270,6 +278,13 @@ where
 }
 
 impl Variant {
+    /// Construct a Rust Variant from an existing UniquePtr<QVariant> this is a move operation
+    ///
+    /// This is used in Variant::default so that we don't need to perform another copy
+    fn from_unique_ptr(ptr: cxx::UniquePtr<QVariant>) -> Self {
+        Self { inner: ptr }
+    }
+
     // TODO: add a set_value(&mut self, value: VariantValue);
 
     /// Returns the value of the QVariant

@@ -57,8 +57,7 @@ mod mock_qt_types {
     impl RustObj {
         #[invokable]
         fn test_color_property(&self, cpp: &mut CppObj) {
-            let color = Color::from_rgba(0, 0, 255, 255).to_unique_ptr();
-            cpp.set_color(&color);
+            cpp.set_color(Color::from_rgba(0, 0, 255, 255));
         }
 
         #[invokable]
@@ -91,9 +90,8 @@ mod mock_qt_types {
                     date_time.time().second() * 4,
                     date_time.time().msec() * 5,
                 ),
-            )
-            .to_unique_ptr();
-            cpp.set_date_time(&new_date_time);
+            );
+            cpp.set_date_time(new_date_time);
         }
 
         #[invokable]
@@ -248,10 +246,8 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = Url::from_str(&(cpp.url().string() + "/cxx-qt"))
-                .unwrap()
-                .to_unique_ptr();
-            cpp.set_url(&url);
+            let url = Url::from_str(&(cpp.url().string() + "/cxx-qt")).unwrap();
+            cpp.set_url(url);
         }
 
         #[invokable]
@@ -262,42 +258,22 @@ mod mock_qt_types {
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
-                VariantValue::Bool(b) => {
-                    let variant = Variant::from(!b).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::F32(f) => {
-                    let variant = Variant::from(f * 2.0).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::F64(d) => {
-                    let variant = Variant::from(d * 2.0).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::I8(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::I16(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::I32(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
+                VariantValue::Bool(b) => cpp.set_variant(Variant::from(!b)),
+                VariantValue::F32(f) => cpp.set_variant(Variant::from(f * 2.0)),
+                VariantValue::F64(d) => cpp.set_variant(Variant::from(d * 2.0)),
+                VariantValue::I8(i) => cpp.set_variant(Variant::from(i * 2)),
+                VariantValue::I16(i) => cpp.set_variant(Variant::from(i * 2)),
+                VariantValue::I32(i) => cpp.set_variant(Variant::from(i * 2)),
                 VariantValue::QColor(mut color) => {
                     color.set_red(0);
                     color.set_green(0);
                     color.set_blue(255);
                     color.set_alpha(255);
-                    let variant = Variant::from(color).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(color));
                 }
                 VariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
-                    let variant = Variant::from(date).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(date));
                 }
                 VariantValue::QDateTime(mut date_time) => {
                     date_time.set_date(QDate::new(2021, 12, 31));
@@ -307,49 +283,44 @@ mod mock_qt_types {
                         date_time.time().second() * 4,
                         date_time.time().msec() * 5,
                     ));
-                    let variant = Variant::from(date_time).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(date_time));
                 }
                 VariantValue::QPoint(point) => {
-                    let variant =
-                        Variant::from(QPoint::new(point.x() * 2, point.y() * 2)).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(QPoint::new(point.x() * 2, point.y() * 2)));
                 }
                 VariantValue::QPointF(pointf) => {
-                    let variant = Variant::from(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
-                        .to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(QPointF::new(
+                        pointf.x() * 2.0,
+                        pointf.y() * 2.0,
+                    )));
                 }
                 VariantValue::QRect(rect) => {
-                    let variant = Variant::from(QRect::new(
+                    cpp.set_variant(Variant::from(QRect::new(
                         rect.x() * 2,
                         rect.y() * 3,
                         rect.width() * 4,
                         rect.height() * 5,
-                    ))
-                    .to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    )));
                 }
                 VariantValue::QRectF(rectf) => {
-                    let variant = Variant::from(QRectF::new(
+                    cpp.set_variant(Variant::from(QRectF::new(
                         rectf.x() * 2.0,
                         rectf.y() * 3.0,
                         rectf.width() * 4.0,
                         rectf.height() * 5.0,
-                    ))
-                    .to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    )));
                 }
                 VariantValue::QSize(size) => {
-                    let variant = Variant::from(QSize::new(size.width() * 2, size.height() * 2))
-                        .to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(QSize::new(
+                        size.width() * 2,
+                        size.height() * 2,
+                    )));
                 }
                 VariantValue::QSizeF(sizef) => {
-                    let variant =
-                        Variant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
-                            .to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(QSizeF::new(
+                        sizef.width() * 2.0,
+                        sizef.height() * 2.0,
+                    )));
                 }
                 VariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -358,26 +329,15 @@ mod mock_qt_types {
                         time.second() * 4,
                         time.msec() * 5,
                     );
-                    let variant = Variant::from(time).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(time));
                 }
                 VariantValue::QUrl(url) => {
                     let url = Url::from_str(&(url.string() + "/cxx-qt")).unwrap();
-                    let variant = Variant::from(url).to_unique_ptr();
-                    cpp.set_variant(&variant);
+                    cpp.set_variant(Variant::from(url));
                 }
-                VariantValue::U8(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::U16(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
-                VariantValue::U32(i) => {
-                    let variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&variant);
-                }
+                VariantValue::U8(i) => cpp.set_variant(Variant::from(i * 2)),
+                VariantValue::U16(i) => cpp.set_variant(Variant::from(i * 2)),
+                VariantValue::U32(i) => cpp.set_variant(Variant::from(i * 2)),
                 _ => panic!("Incorrect variant type!"),
             }
         }

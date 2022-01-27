@@ -138,11 +138,8 @@ pub mod my_object {
             self.cpp.as_mut().set_number(value);
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.number
-                .map_qt_value(|context, converted| context.set_number(converted), self);
+        pub fn grab_values_from_data(&mut self, mut data: Data) {
+            self.set_number(data.number);
         }
     }
 
@@ -183,6 +180,6 @@ pub mod my_object {
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(&Data::default());
+        wrapper.grab_values_from_data(Data::default());
     }
 }

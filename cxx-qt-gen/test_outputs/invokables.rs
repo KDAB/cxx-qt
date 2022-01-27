@@ -175,9 +175,7 @@ mod my_object {
             Self { cpp }
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-        }
+        pub fn grab_values_from_data(&mut self, mut data: Data) {}
     }
 
     struct Data;
@@ -200,6 +198,6 @@ mod my_object {
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(&Data::default());
+        wrapper.grab_values_from_data(Data::default());
     }
 }

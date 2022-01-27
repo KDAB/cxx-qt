@@ -61,8 +61,7 @@ mod website {
         fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url();
             let new_url = if url == "known" { "unknown" } else { "known" };
-
-            cpp.set_url(&new_url.to_unique_ptr());
+            cpp.set_url(new_url);
         }
 
         #[invokable]
@@ -76,7 +75,7 @@ mod website {
                 return;
             }
 
-            cpp.set_title(&"Loading...".to_unique_ptr());
+            cpp.set_title("Loading...");
 
             let url = cpp.url();
             // ANCHOR: book_cpp_update_requester
@@ -109,7 +108,7 @@ mod website {
         fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
             match event {
                 Event::TitleArrived(title) => {
-                    cpp.set_title(&title.to_unique_ptr());
+                    cpp.set_title(title);
                     self.loading.store(false, Ordering::Relaxed);
                 }
             }

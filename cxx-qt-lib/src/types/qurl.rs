@@ -15,6 +15,9 @@ mod ffi {
         fn qurlToRustString(url: &QUrl) -> String;
 
         #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qurl_init"]
+        fn qurlInit() -> UniquePtr<QUrl>;
+        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qurl_init_from_string"]
         fn qurlInitFromString(string: &str) -> UniquePtr<QUrl>;
         #[namespace = "rust::cxxqtlib1"]
@@ -43,6 +46,12 @@ pub struct Url {
     // Note that once map_qt_value is removed later, this can become private again
     #[doc(hidden)]
     pub(crate) inner: cxx::UniquePtr<QUrl>,
+}
+
+impl Default for Url {
+    fn default() -> Self {
+        Url::from_unique_ptr(ffi::qurl_init())
+    }
 }
 
 impl Url {

@@ -197,27 +197,16 @@ mod my_object {
             self.cpp.as_mut().set_uint_32(value);
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.boolean
-                .map_qt_value(|context, converted| context.set_boolean(converted), self);
-            data.float_32
-                .map_qt_value(|context, converted| context.set_float_32(converted), self);
-            data.float_64
-                .map_qt_value(|context, converted| context.set_float_64(converted), self);
-            data.int_8
-                .map_qt_value(|context, converted| context.set_int_8(converted), self);
-            data.int_16
-                .map_qt_value(|context, converted| context.set_int_16(converted), self);
-            data.int_32
-                .map_qt_value(|context, converted| context.set_int_32(converted), self);
-            data.uint_8
-                .map_qt_value(|context, converted| context.set_uint_8(converted), self);
-            data.uint_16
-                .map_qt_value(|context, converted| context.set_uint_16(converted), self);
-            data.uint_32
-                .map_qt_value(|context, converted| context.set_uint_32(converted), self);
+        pub fn grab_values_from_data(&mut self, mut data: Data) {
+            self.set_boolean(data.boolean);
+            self.set_float_32(data.float_32);
+            self.set_float_64(data.float_64);
+            self.set_int_8(data.int_8);
+            self.set_int_16(data.int_16);
+            self.set_int_32(data.int_32);
+            self.set_uint_8(data.uint_8);
+            self.set_uint_16(data.uint_16);
+            self.set_uint_32(data.uint_32);
         }
     }
 
@@ -262,6 +251,6 @@ mod my_object {
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(&Data::default());
+        wrapper.grab_values_from_data(Data::default());
     }
 }

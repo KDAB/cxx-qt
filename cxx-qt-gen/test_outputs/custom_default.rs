@@ -86,11 +86,8 @@ mod my_object {
             self.cpp.as_mut().set_public(value);
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.public
-                .map_qt_value(|context, converted| context.set_public(converted), self);
+        pub fn grab_values_from_data(&mut self, mut data: Data) {
+            self.set_public(data.public);
         }
     }
 
@@ -130,6 +127,6 @@ mod my_object {
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(&Data::default());
+        wrapper.grab_values_from_data(Data::default());
     }
 }
