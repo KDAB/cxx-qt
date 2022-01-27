@@ -17,7 +17,7 @@ void
 MyObject::sayHi(const QString& string, qint32 number)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->sayHi(string, number);
+  m_rustObj->sayHiWrapper(string, number);
 }
 
 void

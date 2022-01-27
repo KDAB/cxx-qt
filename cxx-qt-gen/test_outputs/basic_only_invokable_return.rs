@@ -1,6 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
-
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {}
@@ -34,10 +32,10 @@ mod my_object {
 
             #[cxx_name = "doubleNumber"]
             fn double_number(self: &RustObj, number: i32) -> i32;
-            #[cxx_name = "helloMessage"]
-            fn hello_message(self: &RustObj, msg: &QString) -> String;
-            #[cxx_name = "staticMessage"]
-            fn static_message(self: &RustObj) -> &str;
+            #[cxx_name = "helloMessageWrapper"]
+            fn hello_message_wrapper(self: &RustObj, msg: &QString) -> UniquePtr<QString>;
+            #[cxx_name = "staticMessageWrapper"]
+            fn static_message_wrapper(self: &RustObj) -> UniquePtr<QString>;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -54,11 +52,22 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
+        fn hello_message_wrapper(&self, msg: &cxx_qt_lib::QString) -> cxx::UniquePtr<cxx_qt_lib::QString> {
+            let msg = msg.to_rust();
+            cxx_qt_lib::let_qstring_unique_ptr!(out = &self.hello_message(&msg));
+            return out;
+        }
+
+        fn static_message_wrapper(&self) -> cxx::UniquePtr<cxx_qt_lib::QString> {
+            cxx_qt_lib::let_qstring_unique_ptr!(out = &self.static_message());
+            return out;
+        }
+
         fn double_number(&self, number: i32) -> i32 {
             number * 2
         }
 
-        fn hello_message(&self, msg: &QString) -> String {
+        fn hello_message(&self, msg: &str) -> String {
             format!("Hello {}", msg)
         }
 

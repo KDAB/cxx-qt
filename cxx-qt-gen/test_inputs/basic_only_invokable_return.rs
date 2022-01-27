@@ -1,6 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
-
     #[derive(Default)]
     struct RustObj;
 
@@ -11,7 +9,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn hello_message(&self, msg: &QString) -> String {
+        fn hello_message(&self, msg: &str) -> String {
             format!("Hello {}", msg)
         }
 

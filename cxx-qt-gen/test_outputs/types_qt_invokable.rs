@@ -1,6 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
-
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {}
@@ -61,14 +59,14 @@ mod my_object {
                 self: &RustObj,
                 _cpp: Pin<&mut MyObject>,
                 string: &QString,
-            ) -> String;
+            ) -> UniquePtr<QString>;
 
             #[cxx_name = "testVariantWrapper"]
             fn test_variant_wrapper(
                 self: &RustObj,
                 _cpp: Pin<&mut MyObject>,
                 variant: &QVariant,
-            ) -> Variant;
+            ) -> UniquePtr<QVariant>;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -88,8 +86,8 @@ mod my_object {
         fn test_point_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            point: &QPoint,
-        ) -> QPoint {
+            point: &cxx_qt_lib::QPoint,
+        ) -> cxx_qt_lib::QPoint {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_point(&mut _cpp, point);
         }
@@ -97,13 +95,17 @@ mod my_object {
         fn test_pointf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            pointf: &QPointF,
-        ) -> QPointF {
+            pointf: &cxx_qt_lib::QPointF,
+        ) -> cxx_qt_lib::QPointF {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_pointf(&mut _cpp, pointf);
         }
 
-        fn test_size_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, size: &QSize) -> QSize {
+        fn test_size_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            size: &cxx_qt_lib::QSize,
+        ) -> cxx_qt_lib::QSize {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_size(&mut _cpp, size);
         }
@@ -111,8 +113,8 @@ mod my_object {
         fn test_sizef_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            sizef: &QSizeF,
-        ) -> QSizeF {
+            sizef: &cxx_qt_lib::QSizeF,
+        ) -> cxx_qt_lib::QSizeF {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_sizef(&mut _cpp, sizef);
         }
@@ -120,19 +122,23 @@ mod my_object {
         fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &QString,
-        ) -> String {
+            string: &cxx_qt_lib::QString,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QString> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_string(&mut _cpp, string);
+            let string = string.to_rust();
+            cxx_qt_lib::let_qstring_unique_ptr!(out = &self.test_string(&mut _cpp, &string));
+            return out;
         }
 
         fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            variant: &QVariant,
-        ) -> Variant {
+            variant: &cxx_qt_lib::QVariant,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_variant(&mut _cpp, variant);
+            let variant = variant.to_rust();
+            cxx_qt_lib::let_qvariant_unique_ptr!(out = &self.test_variant(&mut _cpp, &variant));
+            return out;
         }
 
         fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
@@ -151,11 +157,11 @@ mod my_object {
             sizef
         }
 
-        fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
-            string.to_rust()
+        fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+            string.to_owned()
         }
 
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &Variant) -> Variant {
             variant
         }
     }

@@ -45,15 +45,14 @@ QString
 MyObject::testString(const QString& string)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return rustStringToQString(m_rustObj->testStringWrapper(*this, string));
+  return *m_rustObj->testStringWrapper(*this, string).release();
 }
 
 QVariant
 MyObject::testVariant(const QVariant& variant)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return ::CxxQt::rustVariantToQVariant(
-    m_rustObj->testVariantWrapper(*this, variant));
+  return *m_rustObj->testVariantWrapper(*this, variant).release();
 }
 
 std::unique_ptr<CppObj>

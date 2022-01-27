@@ -1,5 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
     use cxx_qt_lib::UpdateRequestHandler;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
@@ -33,8 +32,8 @@ mod my_object {
         extern "Rust" {
             type RustObj;
 
-            #[cxx_name = "sayHi"]
-            fn say_hi(self: &RustObj, string: &QString, number: i32);
+            #[cxx_name = "sayHiWrapper"]
+            fn say_hi_wrapper(self: &RustObj, string: &QString, number: i32);
             #[cxx_name = "sayBye"]
             fn say_bye(self: &RustObj);
 
@@ -56,7 +55,12 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn say_hi(&self, string: &QString, number: i32) {
+        fn say_hi_wrapper(&self, string: &cxx_qt_lib::QString, number: i32) {
+            let string = string.to_rust();
+            self.say_hi(&string, number);
+        }
+
+        fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

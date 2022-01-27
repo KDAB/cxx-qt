@@ -1,6 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
-
     #[derive(Default)]
     struct Data;
 
@@ -29,12 +27,12 @@ mod my_object {
         }
 
         #[invokable]
-        fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
-            string.to_rust()
+        fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+            string.to_owned()
         }
 
         #[invokable]
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &Variant) -> Variant {
             variant
         }
     }

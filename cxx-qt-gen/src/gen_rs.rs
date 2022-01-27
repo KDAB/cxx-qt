@@ -25,6 +25,8 @@ trait RustType {
     fn is_opaque(&self) -> bool;
     /// The converter from Rust into C++
     fn convert_into_cpp(&self) -> Option<TokenStream>;
+    /// The converter from Rust into C++ UniquePtr
+    fn convert_into_cpp_unique_ptr(&self) -> Option<TokenStream>;
     /// The name of the type when defined in the CXX bridge, eg the A in type A = B;
     fn cxx_bridge_type_ident(&self, target_type: TargetType) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
@@ -48,17 +50,28 @@ impl RustType for QtTypes {
     /// Whether this type is opaque
     fn is_opaque(&self) -> bool {
         match self {
-            Self::QString | Self::String => true,
+            Self::QString | Self::String | Self::Str => true,
             Self::QVariant | Self::Variant => true,
             _others => false,
         }
     }
 
-    /// The converter from C++ into Rust
+    /// The converter from Rust into C++
     fn convert_into_cpp(&self) -> Option<TokenStream> {
         match self {
-            Self::QString | Self::String => Some(quote! { cxx_qt_lib::let_qstring! }),
+            Self::QString | Self::String | Self::Str => Some(quote! { cxx_qt_lib::let_qstring! }),
             Self::Variant | Self::QVariant => Some(quote! { cxx_qt_lib::let_qvariant! }),
+            _other => None,
+        }
+    }
+
+    /// The converter from Rust into C++ UniquePtr
+    fn convert_into_cpp_unique_ptr(&self) -> Option<TokenStream> {
+        match self {
+            Self::QString | Self::String | Self::Str => {
+                Some(quote! { cxx_qt_lib::let_qstring_unique_ptr! })
+            }
+            Self::Variant | Self::QVariant => Some(quote! { cxx_qt_lib::let_qvariant_unique_ptr! }),
             _other => None,
         }
     }
@@ -75,11 +88,14 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
-            Self::Str => format_ident!("str"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
+            Self::Str => match target_type {
+                TargetType::Cpp => format_ident!("QString"),
+                TargetType::Rust => format_ident!("str"),
+            },
             Self::QString | Self::String => match target_type {
                 TargetType::Cpp => format_ident!("QString"),
                 TargetType::Rust => format_ident!("String"),
@@ -113,7 +129,10 @@ impl RustType for QtTypes {
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
-            Self::Str => quote! {str},
+            Self::Str => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QString},
+                TargetType::Rust => quote! {str},
+            },
             Self::QString | Self::String => match target_type {
                 TargetType::Cpp => quote! {cxx_qt_lib::QString},
                 TargetType::Rust => quote! {String},
@@ -234,8 +253,10 @@ pub fn generate_qobject_cxx(
         if parameters.is_empty() {
             // Determine if there is a return type
             if let Some(return_type) = &i.return_type {
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Rust);
-                let type_ident = if return_type.is_ref {
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+                let type_ident = if return_type.qt_type.is_opaque() {
+                    quote! { UniquePtr<#type_ident> }
+                } else if return_type.is_ref {
                     quote! {&#type_ident}
                 } else {
                     quote! {#type_ident}
@@ -311,8 +332,10 @@ pub fn generate_qobject_cxx(
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
                 // Cache the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Rust);
-                let type_ident = if return_type.is_ref {
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+                let type_ident = if return_type.qt_type.is_opaque() {
+                    quote! { UniquePtr<#type_ident> }
+                } else if return_type.is_ref {
                     quote! {&#type_ident}
                 } else {
                     quote! {#type_ident}
@@ -641,7 +664,6 @@ fn invokable_generate_wrapper(
     ident_wrapper: &Ident,
 ) -> Result<TokenStream, TokenStream> {
     let ident = &invokable.ident.rust_ident;
-    let return_type = invokable.original_method.sig.output.clone();
 
     let mut input_parameters = vec![];
     let mut output_parameters = vec![];
@@ -687,18 +709,52 @@ fn invokable_generate_wrapper(
             });
             output_parameters.push(quote! { #is_ref #is_mut #param_ident });
         } else {
-            let param_type = &param.type_ident.idents;
-            input_parameters.push(quote! { #param_ident: #is_ref #is_mut #(#param_type)::* });
-            output_parameters.push(quote! { #param_ident });
+            // If we are an opaque input type we need to convert to the Rust type
+            //
+            // And then keep the ref and mut state of the parameter
+            if param.type_ident.qt_type.is_opaque() {
+                wrappers.push(quote! {
+                    let #is_mut #param_ident = #param_ident.to_rust();
+                });
+
+                output_parameters.push(quote! { #is_ref #is_mut #param_ident });
+            } else {
+                output_parameters.push(quote! { #param_ident });
+            }
+
+            let param_type = param.type_ident.qt_type.cxx_qt_lib_type(TargetType::Cpp);
+            input_parameters.push(quote! { #param_ident: #is_ref #is_mut #param_type });
         }
     }
 
-    Ok(quote! {
-        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type {
-            #(#wrappers)*
-            return self.#ident(#(#output_parameters),*);
+    // If we are an opaque return type then we need to convert into the C++ type
+    if let Some(return_type) = &invokable.return_type {
+        let return_type_cpp = return_type.qt_type.cxx_qt_lib_type(TargetType::Cpp);
+
+        if let Some(opaque_converter) = return_type.qt_type.convert_into_cpp_unique_ptr() {
+            Ok(quote! {
+                fn #ident_wrapper(&self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_cpp> {
+                    #(#wrappers)*
+                    #opaque_converter(out = &self.#ident(#(#output_parameters),*));
+                    return out;
+                }
+            })
+        } else {
+            Ok(quote! {
+                fn #ident_wrapper(&self, #(#input_parameters),*) -> #return_type_cpp {
+                    #(#wrappers)*
+                    return self.#ident(#(#output_parameters),*);
+                }
+            })
         }
-    })
+    } else {
+        Ok(quote! {
+            fn #ident_wrapper(&self, #(#input_parameters),*) {
+                #(#wrappers)*
+                self.#ident(#(#output_parameters),*);
+            }
+        })
+    }
 }
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code

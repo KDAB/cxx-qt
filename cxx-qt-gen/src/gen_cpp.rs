@@ -26,6 +26,8 @@ trait CppType {
     fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
+    /// Whether this type is opaque
+    fn is_opaque(&self) -> bool;
     /// Whether this type is a Pin<T>
     fn is_pin(&self) -> bool;
     /// Whether this type is a pointer
@@ -132,6 +134,15 @@ impl CppType for QtTypes {
             Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
+        }
+    }
+
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool {
+        match self {
+            Self::QString | Self::Str | Self::String => true,
+            Self::QVariant | Self::Variant => true,
+            _others => false,
         }
     }
 
@@ -376,11 +387,34 @@ fn generate_invokables_cpp(
         );
 
         // Cache the return ident as it's used in both header and source
-        let return_ident = if let Some(return_type) = &return_type {
-            return_type.type_ident()
-        } else {
-            "void"
-        };
+        let (return_ident, is_return, is_opaque_return_pre, is_opaque_return_post) =
+            if let Some(return_type) = &return_type {
+                if return_type.is_opaque() {
+                    (return_type.type_ident(), "return", "*", ".release()")
+                } else {
+                    (return_type.type_ident(), "return", "", "")
+                }
+            } else {
+                ("void", "", "", "")
+            };
+
+        // Could abuse implicit sharing but this still leaks
+        //
+        // let (return_ident, is_return, is_opaque_return_pre, is_opaque_return_post) =
+        //     if let Some(return_type) = &return_type {
+        //         if return_type.is_opaque() {
+        //             (
+        //                 return_type.type_ident(),
+        //                 "return",
+        //                 format!("{}(*", return_type.type_ident()),
+        //                 ".get())",
+        //             )
+        //         } else {
+        //             (return_type.type_ident(), "return", "".to_owned(), "")
+        //         }
+        //     } else {
+        //         ("void", "", "".to_owned(), "")
+        //     };
 
         // Prepare the CppInvokable
         items.push(CppInvokable {
@@ -399,20 +433,14 @@ fn generate_invokables_cpp(
                 {return_ident} {struct_ident}::{ident}({parameter_types})
                 {{
                     const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-                    {body};
+                    {is_return} {is_opaque_return_pre}{body}{is_opaque_return_post};
                 }}
                 "#,
-                // Decide if the body needs a return or converter
-                body = if let Some(return_type) = &return_type {
-                    if let Some(converter_ident) = return_type.convert_into_cpp() {
-                        format!("return {converter}({body})", converter = converter_ident, body = body)
-                    } else {
-                        format!("return {body}", body = body)
-                    }
-                } else {
-                    body
-                },
+                body = body,
                 ident = invokable.ident.cpp_ident.to_string(),
+                is_return = is_return,
+                is_opaque_return_pre = is_opaque_return_pre,
+                is_opaque_return_post = is_opaque_return_post,
                 parameter_types = parameter_arg_line,
                 struct_ident = struct_ident.to_string(),
                 return_ident = return_ident,

@@ -505,10 +505,33 @@ fn extract_invokable(
         cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
         rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
     };
-    let ident_wrapper = if parameters
-        .iter()
-        .any(|parameter| matches!(parameter.type_ident.qt_type, QtTypes::CppObj { .. }))
-    {
+
+    // We need a wrapper for any opaque types or pointers in the parameters or return types
+    let return_is_opaque = if let Some(return_type) = &return_type {
+        matches!(
+            return_type.qt_type,
+            QtTypes::CppObj { .. }
+                | QtTypes::QString
+                | QtTypes::Str
+                | QtTypes::String
+                | QtTypes::QVariant
+                | QtTypes::Variant
+        )
+    } else {
+        false
+    };
+    let ident_wrapper = if return_is_opaque
+        || parameters.iter().any(|parameter| {
+            matches!(
+                parameter.type_ident.qt_type,
+                QtTypes::CppObj { .. }
+                    | QtTypes::QString
+                    | QtTypes::Str
+                    | QtTypes::String
+                    | QtTypes::QVariant
+                    | QtTypes::Variant
+            )
+        }) {
         Some(CppRustIdent {
             cpp_ident: quote::format_ident!("{}Wrapper", ident_method.cpp_ident),
             rust_ident: quote::format_ident!("{}_wrapper", ident_method.rust_ident),
@@ -984,7 +1007,7 @@ mod tests {
         assert_eq!(param_first.ident.to_string(), "string");
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_first.type_ident.idents.len(), 1);
-        assert_eq!(param_first.type_ident.idents[0].to_string(), "QString");
+        assert_eq!(param_first.type_ident.idents[0].to_string(), "str");
         assert!(param_first.type_ident.is_ref);
 
         let param_second = &invokable.parameters[1];
@@ -1128,7 +1151,7 @@ mod tests {
         assert_eq!(param_second.ident.to_string(), "string");
         // TODO: add extra checks when we read if this is a mut or not
         assert_eq!(param_second.type_ident.idents.len(), 1);
-        assert_eq!(param_second.type_ident.idents[0].to_string(), "QString");
+        assert_eq!(param_second.type_ident.idents[0].to_string(), "str");
         assert!(param_second.type_ident.is_ref);
 
         let param_third = &invokable.parameters[2];

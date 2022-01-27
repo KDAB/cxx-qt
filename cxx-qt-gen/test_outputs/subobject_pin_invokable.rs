@@ -57,7 +57,7 @@ mod my_object {
         ) {
             let mut _cpp = CppObj::new(_cpp);
             let mut sub = crate::sub_object::CppObj::new(sub);
-            return self.sub_test(&mut _cpp, &mut sub);
+            self.sub_test(&mut _cpp, &mut sub);
         }
 
         fn sub_test(&self, _cpp: &mut CppObj, sub: &mut crate::sub_object::CppObj) {

@@ -8,7 +8,7 @@ use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod mock_qt_types {
-    use cxx_qt_lib::{QPoint, QPointF, QSize, QSizeF, QVariant, Variant, VariantImpl};
+    use cxx_qt_lib::{QPoint, QPointF, QSize, QSizeF, Variant, VariantImpl};
 
     pub struct Data {
         point: QPoint,
@@ -115,8 +115,8 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match *variant.to_rust() {
+        fn test_variant_invokable(&self, variant: &Variant) -> Variant {
+            match **variant {
                 VariantImpl::Bool(b) => Variant::from_bool(!b),
                 VariantImpl::F32(f) => Variant::from_f32(f * 2.0),
                 VariantImpl::F64(d) => Variant::from_f64(d * 2.0),

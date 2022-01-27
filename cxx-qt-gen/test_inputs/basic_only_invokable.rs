@@ -1,12 +1,10 @@
 mod my_object {
-    use cxx_qt_lib::QString;
-
     #[derive(Default)]
     struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn say_hi(&self, string: &QString, number: i32) {
+        fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number
