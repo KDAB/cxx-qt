@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
-        QTime, QUrl, QVariant, Url, Variant, VariantValue,
+        Color, DateTime, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, Url, Variant,
+        VariantValue,
     };
     use std::str::FromStr;
 
@@ -61,7 +61,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_color_invokable(&self, _color: &QColor) -> Color {
+        fn test_color_invokable(&self, _color: &Color) -> Color {
             Color::from_rgba(0, 255, 0, 255)
         }
 
@@ -95,8 +95,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_date_time_invokable(&self, date_time: &QDateTime) -> DateTime {
-            let date_time = date_time.to_rust();
+        fn test_date_time_invokable(&self, date_time: &DateTime) -> DateTime {
             DateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -251,8 +250,8 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_url_invokable(&self, url: &QUrl) -> Url {
-            Url::from_str(&(url.to_rust().string() + "/cxx-qt")).unwrap()
+        fn test_url_invokable(&self, url: &Url) -> Url {
+            Url::from_str(&(url.string() + "/cxx-qt")).unwrap()
         }
 
         #[invokable]
@@ -343,8 +342,8 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match variant.to_rust().value() {
+        fn test_variant_invokable(&self, variant: &Variant) -> Variant {
+            match variant.value() {
                 VariantValue::Bool(b) => Variant::from(!b),
                 VariantValue::F32(f) => Variant::from(f * 2.0),
                 VariantValue::F64(d) => Variant::from(d * 2.0),

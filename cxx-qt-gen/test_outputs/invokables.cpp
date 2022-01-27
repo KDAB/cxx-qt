@@ -52,7 +52,7 @@ void
 MyObject::invokableParameters(const QColor& opaque, qint32 primitive)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableParameters(opaque, primitive);
+  m_rustObj->invokableParametersWrapper(opaque, primitive);
 }
 
 void

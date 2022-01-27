@@ -80,6 +80,7 @@ impl QtTypes {
     /// Whether this type is opaque so will be a UniquePtr<T> when returned from Rust to C++
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
+            Self::CppObj { .. } => true,
             Self::QColor | Self::Color => true,
             Self::QDateTime | Self::DateTime => true,
             Self::QString | Self::String | Self::Str => true,
@@ -551,13 +552,14 @@ fn extract_invokable(
         cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
         rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
     };
+
     // We need a wrapper for any opaque types or pointers in the parameters or return types
     let ident_wrapper = if return_type
         .as_ref()
         .map_or(false, |return_type| return_type.qt_type.is_opaque())
         || parameters
             .iter()
-            .any(|parameter| matches!(parameter.type_ident.qt_type, QtTypes::CppObj { .. }))
+            .any(|parameter| parameter.type_ident.qt_type.is_opaque())
     {
         Some(CppRustIdent {
             cpp_ident: quote::format_ident!("{}Wrapper", ident_method.cpp_ident),
@@ -1041,10 +1043,7 @@ mod tests {
         }
         assert!(parameter.type_ident.is_ref);
         assert!(parameter.type_ident.is_mut);
-        assert!(matches!(
-            parameter.type_ident.qt_type,
-            QtTypes::CppObj { .. }
-        ));
+        assert!(parameter.type_ident.qt_type.is_opaque());
 
         // Check Parameters invokable
         let invokable = &qobject.invokables[5];

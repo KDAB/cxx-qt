@@ -57,8 +57,8 @@ mod my_object {
             fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObject>);
             #[cxx_name = "invokableNestedParameterWrapper"]
             fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
-            #[cxx_name = "invokableParameters"]
-            fn invokable_parameters(self: &RustObj, opaque: &QColor, primitive: i32);
+            #[cxx_name = "invokableParametersWrapper"]
+            fn invokable_parameters_wrapper(self: &RustObj, opaque: &QColor, primitive: i32);
             #[cxx_name = "invokableParametersCppObjWrapper"]
             fn invokable_parameters_cpp_obj_wrapper(
                 self: &RustObj,
@@ -88,12 +88,12 @@ mod my_object {
     impl RustObj {
         fn invokable_cpp_obj_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
-            return self.invokable_cpp_obj(&mut cpp);
+            self.invokable_cpp_obj(&mut cpp);
         }
 
         fn invokable_mutable_cpp_obj_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
-            return self.invokable_mutable_cpp_obj(&mut cpp);
+            self.invokable_mutable_cpp_obj(&mut cpp);
         }
 
         fn invokable_nested_parameter_wrapper(
@@ -101,7 +101,12 @@ mod my_object {
             nested: std::pin::Pin<&mut crate::nested_object::FFICppObj>,
         ) {
             let mut nested = crate::nested_object::CppObj::new(nested);
-            return self.invokable_nested_parameter(&mut nested);
+            self.invokable_nested_parameter(&mut nested);
+        }
+
+        fn invokable_parameters_wrapper(&self, opaque: &cxx_qt_lib::QColor, primitive: i32) {
+            let opaque = opaque.to_rust();
+            self.invokable_parameters(&opaque, primitive);
         }
 
         fn invokable_parameters_cpp_obj_wrapper(
@@ -110,7 +115,7 @@ mod my_object {
             cpp: std::pin::Pin<&mut FFICppObj>,
         ) {
             let mut cpp = CppObj::new(cpp);
-            return self.invokable_parameters_cpp_obj(primitive, &mut cpp);
+            self.invokable_parameters_cpp_obj(primitive, &mut cpp);
         }
 
         fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColor> {

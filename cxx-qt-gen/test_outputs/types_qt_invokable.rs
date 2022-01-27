@@ -1,5 +1,4 @@
 mod my_object {
-    use cxx_qt_lib::QString;
     use cxx_qt_lib::ToUniquePtr;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
@@ -136,13 +135,18 @@ mod my_object {
         fn test_color_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            color: &QColor,
+            color: &cxx_qt_lib::QColor,
         ) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_color(&mut _cpp, color).to_unique_ptr();
+            let color = color.to_rust();
+            return self.test_color(&mut _cpp, &color).to_unique_ptr();
         }
 
-        fn test_date_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, date: &QDate) -> QDate {
+        fn test_date_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            date: &cxx_qt_lib::QDate,
+        ) -> cxx_qt_lib::QDate {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_date(&mut _cpp, date);
         }
@@ -150,17 +154,18 @@ mod my_object {
         fn test_date_time_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            dateTime: &QDateTime,
+            dateTime: &cxx_qt_lib::QDateTime,
         ) -> cxx::UniquePtr<cxx_qt_lib::QDateTime> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_date_time(&mut _cpp, dateTime).to_unique_ptr();
+            let dateTime = dateTime.to_rust();
+            return self.test_date_time(&mut _cpp, &dateTime).to_unique_ptr();
         }
 
         fn test_point_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            point: &QPoint,
-        ) -> QPoint {
+            point: &cxx_qt_lib::QPoint,
+        ) -> cxx_qt_lib::QPoint {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_point(&mut _cpp, point);
         }
@@ -168,13 +173,17 @@ mod my_object {
         fn test_pointf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            pointf: &QPointF,
-        ) -> QPointF {
+            pointf: &cxx_qt_lib::QPointF,
+        ) -> cxx_qt_lib::QPointF {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_pointf(&mut _cpp, pointf);
         }
 
-        fn test_rect_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, rect: &QRect) -> QRect {
+        fn test_rect_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            rect: &cxx_qt_lib::QRect,
+        ) -> cxx_qt_lib::QRect {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_rect(&mut _cpp, rect);
         }
@@ -182,13 +191,17 @@ mod my_object {
         fn test_rectf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            rectf: &QRectF,
-        ) -> QRectF {
+            rectf: &cxx_qt_lib::QRectF,
+        ) -> cxx_qt_lib::QRectF {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_rectf(&mut _cpp, rectf);
         }
 
-        fn test_size_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, size: &QSize) -> QSize {
+        fn test_size_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            size: &cxx_qt_lib::QSize,
+        ) -> cxx_qt_lib::QSize {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_size(&mut _cpp, size);
         }
@@ -196,8 +209,8 @@ mod my_object {
         fn test_sizef_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            sizef: &QSizeF,
-        ) -> QSizeF {
+            sizef: &cxx_qt_lib::QSizeF,
+        ) -> cxx_qt_lib::QSizeF {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_sizef(&mut _cpp, sizef);
         }
@@ -205,13 +218,18 @@ mod my_object {
         fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &QString,
+            string: &cxx_qt_lib::QString,
         ) -> cxx::UniquePtr<cxx_qt_lib::QString> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_string(&mut _cpp, string).to_unique_ptr();
+            let string = string.to_rust();
+            return self.test_string(&mut _cpp, &string).to_unique_ptr();
         }
 
-        fn test_time_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, time: &QTime) -> QTime {
+        fn test_time_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            time: &cxx_qt_lib::QTime,
+        ) -> cxx_qt_lib::QTime {
             let mut _cpp = CppObj::new(_cpp);
             return self.test_time(&mut _cpp, time);
         }
@@ -219,19 +237,21 @@ mod my_object {
         fn test_url_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            url: &QUrl,
+            url: &cxx_qt_lib::QUrl,
         ) -> cxx::UniquePtr<cxx_qt_lib::QUrl> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_url(&mut _cpp, url).to_unique_ptr();
+            let url = url.to_rust();
+            return self.test_url(&mut _cpp, &url).to_unique_ptr();
         }
 
         fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            variant: &QVariant,
+            variant: &cxx_qt_lib::QVariant,
         ) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_variant(&mut _cpp, variant).to_unique_ptr();
+            let variant = variant.to_rust();
+            return self.test_variant(&mut _cpp, &variant).to_unique_ptr();
         }
 
         fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> Color {
@@ -270,19 +290,19 @@ mod my_object {
             sizef
         }
 
-        fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> String {
-            string.to_rust()
+        fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+            string.to_owned()
         }
 
         fn test_time(&self, _cpp: &mut CppObj, time: &QTime) -> QTime {
             time
         }
 
-        fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> Url {
+        fn test_url(&self, _cpp: &mut CppObj, url: &Url) -> Url {
             url
         }
 
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &Variant) -> Variant {
             variant
         }
     }
