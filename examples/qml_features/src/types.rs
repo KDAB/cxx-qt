@@ -7,7 +7,7 @@ use cxx_qt::make_qobject;
 // ANCHOR: book_macro_code
 #[make_qobject]
 mod types {
-    use cxx_qt_lib::{QVariant, Variant, VariantValue};
+    use cxx_qt_lib::{Variant, VariantValue};
 
     pub struct Data {
         variant: Variant,
@@ -39,8 +39,8 @@ mod types {
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match variant.to_rust().value() {
+        fn test_variant_invokable(&self, variant: &Variant) -> Variant {
+            match variant.value() {
                 VariantValue::Bool(b) => Variant::from(!b),
                 VariantValue::I32(i) => Variant::from(i * 2),
                 _ => panic!("Incorrect variant type!"),
