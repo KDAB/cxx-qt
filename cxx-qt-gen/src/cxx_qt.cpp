@@ -115,6 +115,34 @@ extern "C"
   }
 
   void cxxqt1$qstring$drop(QString* self) noexcept { self->~QString(); }
+
+  void cxxqt1$unique_ptr$qstring$null(std::unique_ptr<QString>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QString>();
+  }
+
+  void cxxqt1$unique_ptr$qstring$raw(std::unique_ptr<QString>* ptr,
+                                     QString* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QString>(raw);
+  }
+
+  const QString* cxxqt1$unique_ptr$qstring$get(
+    const std::unique_ptr<QString>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QString* cxxqt1$unique_ptr$qstring$release(
+    std::unique_ptr<QString>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qstring$drop(std::unique_ptr<QString>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
 }
 
 namespace {
@@ -489,6 +517,34 @@ extern "C"
   }
 
   void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
+
+  void cxxqt1$unique_ptr$qvariant$null(std::unique_ptr<QVariant>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>();
+  }
+
+  void cxxqt1$unique_ptr$qvariant$raw(std::unique_ptr<QVariant>* ptr,
+                                      QVariant* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(raw);
+  }
+
+  const QVariant* cxxqt1$unique_ptr$qvariant$get(
+    const std::unique_ptr<QVariant>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QVariant* cxxqt1$unique_ptr$qvariant$release(
+    std::unique_ptr<QVariant>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qvariant$drop(std::unique_ptr<QVariant>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
 }
 
 static const QEvent::Type

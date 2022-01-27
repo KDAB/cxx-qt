@@ -8,8 +8,9 @@
 #![allow(improper_ctypes)]
 
 use crate::actually_private::Private;
-use cxx::{type_id, ExternType};
+use cxx::{memory::UniquePtrTarget, type_id, ExternType};
 use std::{
+    ffi::c_void,
     marker::{PhantomData, PhantomPinned},
     mem::MaybeUninit,
     pin::Pin,
@@ -184,5 +185,56 @@ unsafe impl ExternType for QString {
 impl From<&QString> for String {
     fn from(qstring: &QString) -> Self {
         qstring.to_rust()
+    }
+}
+
+extern "C" {
+    #[link_name = "cxxqt1$unique_ptr$qstring$null"]
+    fn unique_ptr_qstring_null(this: *mut MaybeUninit<*mut c_void>);
+    #[link_name = "cxxqt1$unique_ptr$qstring$raw"]
+    fn unique_ptr_qstring_raw(this: *mut MaybeUninit<*mut c_void>, raw: *mut QString);
+    #[link_name = "cxxqt1$unique_ptr$qstring$get"]
+    fn unique_ptr_qstring_get(this: *const MaybeUninit<*mut c_void>) -> *const QString;
+    #[link_name = "cxxqt1$unique_ptr$qstring$release"]
+    fn unique_ptr_qstring_release(this: *mut MaybeUninit<*mut c_void>) -> *mut QString;
+    #[link_name = "cxxqt1$unique_ptr$qstring$drop"]
+    fn unique_ptr_qstring_drop(this: *mut MaybeUninit<*mut c_void>);
+}
+
+unsafe impl UniquePtrTarget for QString {
+    #[doc(hidden)]
+    fn __typename(f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str("QString")
+    }
+
+    #[doc(hidden)]
+    fn __null() -> MaybeUninit<*mut c_void> {
+        let mut repr = MaybeUninit::uninit();
+        unsafe {
+            unique_ptr_qstring_null(&mut repr);
+        }
+        repr
+    }
+
+    #[doc(hidden)]
+    unsafe fn __raw(raw: *mut Self) -> MaybeUninit<*mut c_void> {
+        let mut repr = MaybeUninit::uninit();
+        unique_ptr_qstring_raw(&mut repr, raw);
+        repr
+    }
+
+    #[doc(hidden)]
+    unsafe fn __get(repr: MaybeUninit<*mut c_void>) -> *const Self {
+        unique_ptr_qstring_get(&repr)
+    }
+
+    #[doc(hidden)]
+    unsafe fn __release(mut repr: MaybeUninit<*mut c_void>) -> *mut Self {
+        unique_ptr_qstring_release(&mut repr)
+    }
+
+    #[doc(hidden)]
+    unsafe fn __drop(mut repr: MaybeUninit<*mut c_void>) {
+        unique_ptr_qstring_drop(&mut repr)
     }
 }

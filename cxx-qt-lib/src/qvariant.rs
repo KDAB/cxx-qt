@@ -8,7 +8,7 @@
 #![allow(improper_ctypes)]
 
 use crate::actually_private::Private;
-use cxx::{type_id, ExternType};
+use cxx::{memory::UniquePtrTarget, type_id, ExternType};
 use std::{
     ffi::c_void,
     marker::{PhantomData, PhantomPinned},
@@ -257,6 +257,57 @@ impl Drop for StackQVariant {
 unsafe impl ExternType for QVariant {
     type Id = type_id!("QVariant");
     type Kind = cxx::kind::Opaque;
+}
+
+extern "C" {
+    #[link_name = "cxxqt1$unique_ptr$qvariant$null"]
+    fn unique_ptr_qvariant_null(this: *mut MaybeUninit<*mut c_void>);
+    #[link_name = "cxxqt1$unique_ptr$qvariant$raw"]
+    fn unique_ptr_qvariant_raw(this: *mut MaybeUninit<*mut c_void>, raw: *mut QVariant);
+    #[link_name = "cxxqt1$unique_ptr$qvariant$get"]
+    fn unique_ptr_qvariant_get(this: *const MaybeUninit<*mut c_void>) -> *const QVariant;
+    #[link_name = "cxxqt1$unique_ptr$qvariant$release"]
+    fn unique_ptr_qvariant_release(this: *mut MaybeUninit<*mut c_void>) -> *mut QVariant;
+    #[link_name = "cxxqt1$unique_ptr$qvariant$drop"]
+    fn unique_ptr_qvariant_drop(this: *mut MaybeUninit<*mut c_void>);
+}
+
+unsafe impl UniquePtrTarget for QVariant {
+    #[doc(hidden)]
+    fn __typename(f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str("QVariant")
+    }
+
+    #[doc(hidden)]
+    fn __null() -> MaybeUninit<*mut c_void> {
+        let mut repr = MaybeUninit::uninit();
+        unsafe {
+            unique_ptr_qvariant_null(&mut repr);
+        }
+        repr
+    }
+
+    #[doc(hidden)]
+    unsafe fn __raw(raw: *mut Self) -> MaybeUninit<*mut c_void> {
+        let mut repr = MaybeUninit::uninit();
+        unique_ptr_qvariant_raw(&mut repr, raw);
+        repr
+    }
+
+    #[doc(hidden)]
+    unsafe fn __get(repr: MaybeUninit<*mut c_void>) -> *const Self {
+        unique_ptr_qvariant_get(&repr)
+    }
+
+    #[doc(hidden)]
+    unsafe fn __release(mut repr: MaybeUninit<*mut c_void>) -> *mut Self {
+        unique_ptr_qvariant_release(&mut repr)
+    }
+
+    #[doc(hidden)]
+    unsafe fn __drop(mut repr: MaybeUninit<*mut c_void>) {
+        unique_ptr_qvariant_drop(&mut repr)
+    }
 }
 
 pub enum VariantImpl {
