@@ -40,7 +40,9 @@ pub trait PropertyChangeHandler<C, P> {
 pub mod private {
     pub use crate::qcolor::StackQColor;
     pub use crate::qstring::StackQString;
+    pub use crate::qstring::StackQStringUniquePtr;
     pub use crate::qvariant::StackQVariant;
+    pub use crate::qvariant::StackQVariantUniquePtr;
 }
 
 mod actually_private {

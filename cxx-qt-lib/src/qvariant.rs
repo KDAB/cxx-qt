@@ -56,6 +56,31 @@ extern "C" {
     fn qvariant_init_from_u16(this: &mut MaybeUninit<QVariant>, i: u16);
     #[link_name = "cxxqt1$qvariant$init$from$u32"]
     fn qvariant_init_from_u32(this: &mut MaybeUninit<QVariant>, i: u32);
+    #[link_name = "cxxqt1$qvariant$init$unique$ptr"]
+    fn qvariant_init_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>);
+    #[link_name = "cxxqt1$qvariant$init$from$bool$unique$ptr"]
+    fn qvariant_init_from_bool_unique_ptr(
+        this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>,
+        b: bool,
+    );
+    #[link_name = "cxxqt1$qvariant$init$from$f32$unique$ptr"]
+    fn qvariant_init_from_f32_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: f32);
+    #[link_name = "cxxqt1$qvariant$init$from$f64$unique$ptr"]
+    fn qvariant_init_from_f64_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: f64);
+    #[link_name = "cxxqt1$qvariant$init$from$i8$unique$ptr"]
+    fn qvariant_init_from_i8_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i8);
+    #[link_name = "cxxqt1$qvariant$init$from$i16$unique$ptr"]
+    fn qvariant_init_from_i16_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i16);
+    #[link_name = "cxxqt1$qvariant$init$from$i32$unique$ptr"]
+    fn qvariant_init_from_i32_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i32);
+    #[link_name = "cxxqt1$qvariant$init$from$str$unique$ptr"]
+    fn qvariant_init_from_str_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, s: &str);
+    #[link_name = "cxxqt1$qvariant$init$from$u8$unique$ptr"]
+    fn qvariant_init_from_u8_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: u8);
+    #[link_name = "cxxqt1$qvariant$init$from$u16$unique$ptr"]
+    fn qvariant_init_from_u16_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: u16);
+    #[link_name = "cxxqt1$qvariant$init$from$u32$unique$ptr"]
+    fn qvariant_init_from_u32_unique_ptr(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: u32);
     #[link_name = "cxxqt1$qvariant$get$type"]
     fn qvariant_get_type(this: &QVariant) -> QVariantType;
     #[link_name = "cxxqt1$qvariant$to$bool"]
@@ -140,6 +165,23 @@ macro_rules! let_qvariant {
         #[allow(unused_mut, unused_unsafe)]
         let mut $var = match $value {
             let_qvariant => unsafe { stack_qvariant.init(let_qvariant) },
+        };
+    };
+}
+
+/// Constructs a UniquePtr<QString> on the stack similar to `let_qstring` above.
+///
+/// Note that the UniquePtr must be passed to C++ and released there, as we
+/// don't implement Drop on the Rust side to avoid double free
+#[macro_export]
+macro_rules! let_qvariant_unique_ptr {
+    ($var:ident = $value:expr $(,)?) => {
+        let mut stack_qvariant = $crate::private::StackQVariantUniquePtr::new();
+        #[allow(unused_mut, unused_unsafe)]
+        let mut $var = match $value {
+            let_qvariant_unique_ptr => unsafe {
+                stack_qvariant.init_unique_ptr(let_qvariant_unique_ptr)
+            },
         };
     };
 }
@@ -246,6 +288,49 @@ impl Drop for StackQVariant {
             let this = &mut *self.space.as_mut_ptr().cast::<MaybeUninit<QVariant>>();
             qvariant_drop(this);
         }
+    }
+}
+
+// Similar to StackQVariant above but is a UniquePtr version
+//
+// We don't Drop a StackQVariantUniquePtr as this is released on the C++ side
+#[doc(hidden)]
+#[repr(C)]
+pub struct StackQVariantUniquePtr {
+    // Static assertions in cxx_qt.cpp validate that this
+    // is large enough and aligned enough.
+    space: MaybeUninit<usize>,
+}
+
+#[allow(missing_docs)]
+impl StackQVariantUniquePtr {
+    pub fn new() -> Self {
+        StackQVariantUniquePtr {
+            space: MaybeUninit::uninit(),
+        }
+    }
+
+    pub unsafe fn init_unique_ptr(mut self, value: &Variant) -> cxx::UniquePtr<QVariant> {
+        let this = &mut *self
+            .space
+            .as_mut_ptr()
+            .cast::<MaybeUninit<cxx::UniquePtr<QVariant>>>();
+
+        match value.deref() {
+            VariantImpl::Unsupported => qvariant_init_unique_ptr(this),
+            VariantImpl::Bool(b) => qvariant_init_from_bool_unique_ptr(this, *b),
+            VariantImpl::F32(i) => qvariant_init_from_f32_unique_ptr(this, *i),
+            VariantImpl::F64(i) => qvariant_init_from_f64_unique_ptr(this, *i),
+            VariantImpl::I8(i) => qvariant_init_from_i8_unique_ptr(this, *i),
+            VariantImpl::I16(i) => qvariant_init_from_i16_unique_ptr(this, *i),
+            VariantImpl::I32(i) => qvariant_init_from_i32_unique_ptr(this, *i),
+            VariantImpl::String(s) => qvariant_init_from_str_unique_ptr(this, s),
+            VariantImpl::U8(i) => qvariant_init_from_u8_unique_ptr(this, *i),
+            VariantImpl::U16(i) => qvariant_init_from_u16_unique_ptr(this, *i),
+            VariantImpl::U32(i) => qvariant_init_from_u32_unique_ptr(this, *i),
+        }
+
+        std::ptr::read(this.as_mut_ptr())
     }
 }
 

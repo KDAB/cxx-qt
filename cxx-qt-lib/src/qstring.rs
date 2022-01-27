@@ -22,6 +22,12 @@ use std::{
 extern "C" {
     #[link_name = "cxxqt1$qstring$init"]
     fn qstring_init(this: &mut MaybeUninit<QString>, ptr: *const u8, len: usize);
+    #[link_name = "cxxqt1$qstring$init$unique$ptr"]
+    fn qstring_init_unique_ptr(
+        this: &mut MaybeUninit<cxx::UniquePtr<QString>>,
+        ptr: *const u8,
+        len: usize,
+    );
     #[link_name = "cxxqt1$qstring$to_rust_string"]
     fn qstring_to_rust_string(qt: &QString, rust: &mut String);
     #[link_name = "cxxqt1$qstring$drop"]
@@ -86,6 +92,23 @@ macro_rules! let_qstring {
         #[allow(unused_mut, unused_unsafe)]
         let mut $var = match $value {
             let_qstring => unsafe { stack_qstring.init(let_qstring) },
+        };
+    };
+}
+
+/// Constructs a UniquePtr<QString> on the stack similar to `let_qstring` above.
+///
+/// Note that the UniquePtr must be passed to C++ and released there, as we
+/// don't implement Drop on the Rust side to avoid double free
+#[macro_export]
+macro_rules! let_qstring_unique_ptr {
+    ($var:ident = $value:expr $(,)?) => {
+        let mut stack_qstring = $crate::private::StackQStringUniquePtr::new();
+        #[allow(unused_mut, unused_unsafe)]
+        let mut $var = match $value {
+            let_qstring_unique_ptr => unsafe {
+                stack_qstring.init_unique_ptr(let_qstring_unique_ptr)
+            },
         };
     };
 }
@@ -169,6 +192,36 @@ impl Drop for StackQString {
             let this = &mut *self.space.as_mut_ptr().cast::<MaybeUninit<QString>>();
             qstring_drop(this);
         }
+    }
+}
+
+// Similar to StackQString above but is a UniquePtr version
+//
+// We don't Drop a StackQStringUniquePtr as this is released on the C++ side
+#[doc(hidden)]
+#[repr(C)]
+pub struct StackQStringUniquePtr {
+    // Static assertions in cxx_qt.cpp validate that this
+    // is large enough and aligned enough.
+    space: MaybeUninit<usize>,
+}
+
+#[allow(missing_docs)]
+impl StackQStringUniquePtr {
+    pub fn new() -> Self {
+        StackQStringUniquePtr {
+            space: MaybeUninit::uninit(),
+        }
+    }
+
+    pub unsafe fn init_unique_ptr(mut self, value: impl AsRef<[u8]>) -> cxx::UniquePtr<QString> {
+        let value = value.as_ref();
+        let this = &mut *self
+            .space
+            .as_mut_ptr()
+            .cast::<MaybeUninit<cxx::UniquePtr<QString>>>();
+        qstring_init_unique_ptr(this, value.as_ptr(), value.len());
+        std::ptr::read(this.as_mut_ptr())
     }
 }
 

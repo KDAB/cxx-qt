@@ -90,6 +90,12 @@ static_assert(alignof(QString) <= alignof(std::size_t),
 static_assert(sizeof(QString) <= sizeof(std::size_t),
               "unexpectedly large QString size");
 
+static_assert(alignof(std::unique_ptr<QString>) <= alignof(std::size_t),
+              "unexpectedly large std::unique_ptr<QString> alignment");
+
+static_assert(sizeof(std::unique_ptr<QString>) <= sizeof(std::size_t),
+              "unexpectedly large std::unique_ptr<QString> size");
+
 // We also assume that C++ char and Rust u8 are the same
 
 static_assert(sizeof(char) == sizeof(std::uint8_t));
@@ -104,6 +110,14 @@ extern "C"
   {
     new (self) QString();
     *self = QString::fromUtf8(ptr, len);
+  }
+
+  void cxxqt1$qstring$init$unique$ptr(std::unique_ptr<QString>* self,
+                                      const char* ptr,
+                                      std::size_t len) noexcept
+  {
+    new (self) std::unique_ptr<QString>(new QString());
+    self->reset(new QString(QString::fromUtf8(ptr, len)));
   }
 
   void cxxqt1$qstring$to_rust_string(const QString& qt,
@@ -339,6 +353,11 @@ static_assert(alignof(QVariant) <= alignof(std::size_t[2]),
 static_assert(sizeof(QVariant) <= sizeof(std::size_t[2]),
               "unexpectedly large QVariant size");
 
+static_assert(alignof(std::unique_ptr<QVariant>) <= alignof(std::size_t),
+              "unexpectedly large std::unique_ptr<QVariant> alignment");
+static_assert(sizeof(std::unique_ptr<QVariant>) <= sizeof(std::size_t),
+              "unexpectedly large std::unique_ptr<QVariant> size");
+
 enum class QVariantType : uint8_t
 {
   Unsupported = 0,
@@ -418,6 +437,82 @@ extern "C"
   {
     new (self) QVariant();
     *self = QVariant::fromValue(i);
+  }
+
+  void cxxqt1$qvariant$init$unique$ptr(std::unique_ptr<QVariant>* self) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+  }
+
+  void cxxqt1$qvariant$init$from$bool$unique$ptr(
+    std::unique_ptr<QVariant>* self,
+    bool b) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(b)));
+  }
+
+  void cxxqt1$qvariant$init$from$f32$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                float f) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(f)));
+  }
+
+  void cxxqt1$qvariant$init$from$f64$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                double d) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::QVariant::fromValue(d)));
+  }
+
+  void cxxqt1$qvariant$init$from$i8$unique$ptr(std::unique_ptr<QVariant>* self,
+                                               qint8 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
+  }
+
+  void cxxqt1$qvariant$init$from$i16$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                qint16 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
+  }
+
+  void cxxqt1$qvariant$init$from$i32$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                qint32 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
+  }
+
+  void cxxqt1$qvariant$init$from$str$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                rust::Str s) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(rustStrToQString(s))));
+  }
+
+  void cxxqt1$qvariant$init$from$u8$unique$ptr(std::unique_ptr<QVariant>* self,
+                                               quint8 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
+  }
+
+  void cxxqt1$qvariant$init$from$u16$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                quint16 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
+  }
+
+  void cxxqt1$qvariant$init$from$u32$unique$ptr(std::unique_ptr<QVariant>* self,
+                                                quint32 i) noexcept
+  {
+    new (self) std::unique_ptr<QVariant>();
+    self->reset(new QVariant(QVariant::fromValue(i)));
   }
 
   QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
