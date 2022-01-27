@@ -25,6 +25,9 @@ mod ffi {
         fn setRed(self: Pin<&mut QColor>, red: i32);
 
         #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qcolor_init"]
+        fn qcolorInit() -> UniquePtr<QColor>;
+        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qcolor_init_from_rgba"]
         fn qcolorInitFromRgba(red: i32, green: i32, blue: i32, alpha: i32) -> UniquePtr<QColor>;
         #[namespace = "rust::cxxqtlib1"]
@@ -55,6 +58,12 @@ pub struct Color {
     // Note that once map_qt_value is removed later, this can become private again
     #[doc(hidden)]
     pub(crate) inner: cxx::UniquePtr<QColor>,
+}
+
+impl Default for Color {
+    fn default() -> Self {
+        Color::from_unique_ptr(ffi::qcolor_init())
+    }
 }
 
 impl Color {

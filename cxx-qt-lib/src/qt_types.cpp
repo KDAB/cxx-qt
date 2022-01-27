@@ -27,6 +27,12 @@ UpdateRequester::requestUpdate() const
 }
 
 std::unique_ptr<QColor>
+qcolorInit()
+{
+  return std::make_unique<QColor>();
+}
+
+std::unique_ptr<QColor>
 qcolorInitFromRgba(std::int32_t r,
                    std::int32_t g,
                    std::int32_t b,
@@ -51,6 +57,12 @@ QDate
 qdateInit(int y, int m, int d)
 {
   return QDate(y, m, d);
+}
+
+std::unique_ptr<QDateTime>
+qdatetimeInit()
+{
+  return std::make_unique<QDateTime>();
 }
 
 std::unique_ptr<QDateTime>
@@ -178,6 +190,12 @@ qtimeInit(int h, int m, int s, int ms)
 }
 
 std::unique_ptr<QUrl>
+qurlInit()
+{
+  return std::make_unique<QUrl>();
+}
+
+std::unique_ptr<QUrl>
 qurlInitFromString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
@@ -197,6 +215,12 @@ qurlToRustString(const QUrl& url)
 {
   // Note that this changes UTF-16 to UTF-8
   return rust::String(url.toString().toStdString());
+}
+
+std::unique_ptr<QVariant>
+qvariantInit()
+{
+  return std::make_unique<QVariant>();
 }
 
 #define CXX_QT_VARIANT_INIT(typeName, name)                                    \

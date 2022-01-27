@@ -29,12 +29,10 @@ mod types {
         fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 VariantValue::Bool(b) => {
-                    let new_variant = Variant::from(!b).to_unique_ptr();
-                    cpp.set_variant(&new_variant);
+                    cpp.set_variant(Variant::from(!b));
                 }
                 VariantValue::I32(i) => {
-                    let new_variant = Variant::from(i * 2).to_unique_ptr();
-                    cpp.set_variant(&new_variant);
+                    cpp.set_variant(Variant::from(i * 2));
                 }
                 _ => panic!("Incorrect variant type!"),
             }

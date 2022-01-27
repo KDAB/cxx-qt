@@ -29,6 +29,9 @@ mod ffi {
         fn qdatetimeSetTime(datetime: Pin<&mut QDateTime>, time: QTime);
 
         #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qdatetime_init"]
+        fn qdatetimeInit() -> UniquePtr<QDateTime>;
+        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qdatetime_init_from_date_and_time"]
         fn qdatetimeInitFromDateAndTime(date: &QDate, time: &QTime) -> UniquePtr<QDateTime>;
         #[namespace = "rust::cxxqtlib1"]
@@ -57,6 +60,12 @@ pub struct DateTime {
     // Note that once map_qt_value is removed later, this can become private again
     #[doc(hidden)]
     pub(crate) inner: cxx::UniquePtr<QDateTime>,
+}
+
+impl Default for DateTime {
+    fn default() -> Self {
+        DateTime::from_unique_ptr(ffi::qdatetime_init())
+    }
 }
 
 impl DateTime {

@@ -69,6 +69,8 @@ enum class QVariantType : uint8_t
 } // namespace types
 
 std::unique_ptr<QColor>
+qcolorInit();
+std::unique_ptr<QColor>
 qcolorInitFromRgba(std::int32_t r,
                    std::int32_t g,
                    std::int32_t b,
@@ -81,6 +83,8 @@ qdateInitDefault();
 QDate
 qdateInit(int y, int m, int d);
 
+std::unique_ptr<QDateTime>
+qdatetimeInit();
 std::unique_ptr<QDateTime>
 qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time);
 std::unique_ptr<QDateTime>
@@ -131,12 +135,16 @@ QTime
 qtimeInit(int h, int m, int s, int ms);
 
 std::unique_ptr<QUrl>
+qurlInit();
+std::unique_ptr<QUrl>
 qurlInitFromString(rust::Str string);
 std::unique_ptr<QUrl>
 qurlInitFromQUrl(const QUrl& url);
 rust::String
 qurlToRustString(const QUrl& url);
 
+std::unique_ptr<QVariant>
+qvariantInit();
 std::unique_ptr<QVariant>
 qvariantInitFromQVariant(const QVariant& variant);
 std::unique_ptr<QVariant>

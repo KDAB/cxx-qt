@@ -37,7 +37,7 @@ mod my_data {
         fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: Data = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(&data);
+            cpp.grab_values_from_data(data);
         }
     }
 }

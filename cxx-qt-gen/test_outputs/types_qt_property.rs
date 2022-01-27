@@ -153,8 +153,8 @@ mod my_object {
             self.cpp.color().to_rust()
         }
 
-        pub fn set_color(&mut self, value: &cxx_qt_lib::QColor) {
-            self.cpp.as_mut().set_color(value);
+        pub fn set_color(&mut self, value: cxx_qt_lib::Color) {
+            self.cpp.as_mut().set_color(&value.to_unique_ptr());
         }
 
         pub fn date(&self) -> &cxx_qt_lib::QDate {
@@ -169,8 +169,8 @@ mod my_object {
             self.cpp.date_time().to_rust()
         }
 
-        pub fn set_date_time(&mut self, value: &cxx_qt_lib::QDateTime) {
-            self.cpp.as_mut().set_date_time(value);
+        pub fn set_date_time(&mut self, value: cxx_qt_lib::DateTime) {
+            self.cpp.as_mut().set_date_time(&value.to_unique_ptr());
         }
 
         pub fn point(&self) -> &cxx_qt_lib::QPoint {
@@ -225,8 +225,8 @@ mod my_object {
             self.cpp.string().to_rust()
         }
 
-        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
-            self.cpp.as_mut().set_string(value);
+        pub fn set_string(&mut self, value: &str) {
+            self.cpp.as_mut().set_string(&value.to_unique_ptr());
         }
 
         pub fn time(&self) -> &cxx_qt_lib::QTime {
@@ -241,47 +241,32 @@ mod my_object {
             self.cpp.url().to_rust()
         }
 
-        pub fn set_url(&mut self, value: &cxx_qt_lib::QUrl) {
-            self.cpp.as_mut().set_url(value);
+        pub fn set_url(&mut self, value: cxx_qt_lib::Url) {
+            self.cpp.as_mut().set_url(&value.to_unique_ptr());
         }
 
         pub fn variant(&self) -> cxx_qt_lib::Variant {
             self.cpp.variant().to_rust()
         }
 
-        pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
-            self.cpp.as_mut().set_variant(value);
+        pub fn set_variant(&mut self, value: cxx_qt_lib::Variant) {
+            self.cpp.as_mut().set_variant(&value.to_unique_ptr());
         }
 
-        pub fn grab_values_from_data(&mut self, data: &Data) {
-            use cxx_qt_lib::MapQtValue;
-
-            data.color
-                .map_qt_value(|context, converted| context.set_color(converted), self);
-            data.date
-                .map_qt_value(|context, converted| context.set_date(converted), self);
-            data.date_time
-                .map_qt_value(|context, converted| context.set_date_time(converted), self);
-            data.point
-                .map_qt_value(|context, converted| context.set_point(converted), self);
-            data.pointf
-                .map_qt_value(|context, converted| context.set_pointf(converted), self);
-            data.rect
-                .map_qt_value(|context, converted| context.set_rect(converted), self);
-            data.rectf
-                .map_qt_value(|context, converted| context.set_rectf(converted), self);
-            data.size
-                .map_qt_value(|context, converted| context.set_size(converted), self);
-            data.sizef
-                .map_qt_value(|context, converted| context.set_sizef(converted), self);
-            data.string
-                .map_qt_value(|context, converted| context.set_string(converted), self);
-            data.time
-                .map_qt_value(|context, converted| context.set_time(converted), self);
-            data.url
-                .map_qt_value(|context, converted| context.set_url(converted), self);
-            data.variant
-                .map_qt_value(|context, converted| context.set_variant(converted), self);
+        pub fn grab_values_from_data(&mut self, mut data: Data) {
+            self.set_color(std::mem::take(&mut data.color));
+            self.set_date(&data.date);
+            self.set_date_time(std::mem::take(&mut data.date_time));
+            self.set_point(&data.point);
+            self.set_pointf(&data.pointf);
+            self.set_rect(&data.rect);
+            self.set_rectf(&data.rectf);
+            self.set_size(&data.size);
+            self.set_sizef(&data.sizef);
+            self.set_string(&data.string);
+            self.set_time(&data.time);
+            self.set_url(std::mem::take(&mut data.url));
+            self.set_variant(std::mem::take(&mut data.variant));
         }
     }
 
@@ -334,6 +319,6 @@ mod my_object {
 
     fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(&Data::default());
+        wrapper.grab_values_from_data(Data::default());
     }
 }

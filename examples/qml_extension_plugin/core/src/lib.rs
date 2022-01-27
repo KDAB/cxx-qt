@@ -37,7 +37,7 @@ mod my_object {
         #[invokable]
         fn reset(&self, cpp: &mut CppObj) {
             let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
-            cpp.grab_values_from_data(&data);
+            cpp.grab_values_from_data(data);
         }
 
         #[invokable]
@@ -50,7 +50,7 @@ mod my_object {
         fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: Data = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(&data);
+            cpp.grab_values_from_data(data);
         }
     }
 }
