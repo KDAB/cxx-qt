@@ -19,7 +19,6 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
-#include <QtGui/QColor>
 
 #include "rust/cxx.h"
 
@@ -33,16 +32,9 @@ namespace CxxQt {
 // class with an explicit destructor yet still allows use to return
 // it from a Rust function similar to what it allows with its own
 // rust::String type.
-typedef void* Color;
 typedef void* Variant;
 
 }
-
-extern "C" void
-cxxqt1$assign$color$to$qcolor(const CxxQt::Color& rust, QColor& cpp);
-
-extern "C" void
-cxxqt1$drop$color(CxxQt::Color* self);
 
 extern "C" void
 cxxqt1$assign$variant$to$qvariant(const CxxQt::Variant& rust, QVariant& cpp);
@@ -65,15 +57,6 @@ rustStrToQString(const rust::str& value)
 }
 
 namespace CxxQt {
-
-inline QColor
-rustColorToQColor(CxxQt::Color&& rust)
-{
-  QColor cpp;
-  cxxqt1$assign$color$to$qcolor(rust, cpp);
-  cxxqt1$drop$color(&rust);
-  return cpp;
-}
 
 inline QVariant
 rustVariantToQVariant(CxxQt::Variant&& rust)

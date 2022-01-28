@@ -314,26 +314,23 @@ static_assert(alignof(QColor) <= alignof(std::size_t[2]),
 static_assert(sizeof(QColor) <= sizeof(std::size_t[2]),
               "unexpectedly large QColor size");
 
-enum class QColorSpec : uint8_t
-{
-  Unsupported = 0,
-  Rgb = 1,
-};
-
 } // namespace
 
 extern "C"
 {
-  void cxxqt1$qcolor$init(QColor* self) noexcept { new (self) QColor(); }
-
-  void cxxqt1$qcolor$init$from$argb(QColor* self,
-                                    int a,
-                                    int r,
-                                    int g,
-                                    int b) noexcept
+  void cxxqt1$qcolor$init$from$qcolor(std::unique_ptr<QColor>* ptr,
+                                      const QColor& qcolor) noexcept
   {
-    new (self) QColor();
-    *self = QColor(r, g, b, a);
+    new (ptr) std::unique_ptr<QColor>(new QColor(qcolor));
+  }
+
+  void cxxqt1$qcolor$init$from$rgba(std::unique_ptr<QColor>* ptr,
+                                    std::int32_t r,
+                                    std::int32_t g,
+                                    std::int32_t b,
+                                    std::int32_t a) noexcept
+  {
+    new (ptr) std::unique_ptr<QColor>(new QColor(r, g, b, a));
   }
 
   int cxxqt1$qcolor$get$alpha(const QColor& self) noexcept
@@ -353,22 +350,53 @@ extern "C"
     return self.blue();
   }
 
-  QColorSpec cxxqt1$qcolor$get$spec(const QColor& self) noexcept
+  void cxxqt1$qcolor$set$alpha(QColor& self, int alpha) noexcept
   {
-    switch (self.spec()) {
-      case QColor::Rgb:
-        return QColorSpec::Rgb;
-      default:
-        return QColorSpec::Unsupported;
-    }
+    self.setAlpha(alpha);
   }
 
-  void cxxqt1$qcolor$assign$qcolor(const QColor& from, QColor& to) noexcept
+  void cxxqt1$qcolor$set$red(QColor& self, int red) noexcept
   {
-    to = from;
+    self.setRed(red);
   }
 
-  void cxxqt1$qcolor$drop(QColor* self) noexcept { self->~QColor(); }
+  void cxxqt1$qcolor$set$green(QColor& self, int green) noexcept
+  {
+    self.setGreen(green);
+  }
+
+  void cxxqt1$qcolor$set$blue(QColor& self, int blue) noexcept
+  {
+    self.setBlue(blue);
+  }
+
+  void cxxqt1$unique_ptr$qcolor$null(std::unique_ptr<QColor>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QColor>();
+  }
+
+  void cxxqt1$unique_ptr$qcolor$raw(std::unique_ptr<QColor>* ptr,
+                                    QColor* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QColor>(raw);
+  }
+
+  const QColor* cxxqt1$unique_ptr$qcolor$get(
+    const std::unique_ptr<QColor>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QColor* cxxqt1$unique_ptr$qcolor$release(
+    std::unique_ptr<QColor>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qcolor$drop(std::unique_ptr<QColor>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
 }
 
 namespace {
