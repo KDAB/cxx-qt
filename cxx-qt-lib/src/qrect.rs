@@ -53,10 +53,12 @@ impl QRect {
         self.x2 = self.x1 + w - 1;
     }
 
+    /// Note that this adjusts the width as well as the left edge
     pub fn set_x(&mut self, x: i32) {
         self.x1 = x;
     }
 
+    /// Note that this adjusts the height as well as the top edge
     pub fn set_y(&mut self, y: i32) {
         self.y1 = y;
     }
