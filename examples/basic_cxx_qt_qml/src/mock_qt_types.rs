@@ -180,7 +180,7 @@ mod mock_qt_types {
         fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
             let mut rect = *rect;
             rect.set_x(rect.x() * 2.0);
-            rect.set_y(rect.x() * 3.0);
+            rect.set_y(rect.y() * 3.0);
             rect.set_width(rect.width() * 4.0);
             rect.set_height(rect.height() * 5.0);
             rect
@@ -293,6 +293,26 @@ mod mock_qt_types {
                             .to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QRect(rect) => {
+                    let variant = Variant::from_qrect(QRect::new(
+                        rect.x() * 2,
+                        rect.y() * 3,
+                        rect.width() * 4,
+                        rect.height() * 5,
+                    ))
+                    .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
+                VariantValue::QRectF(rectf) => {
+                    let variant = Variant::from_qrectf(QRectF::new(
+                        rectf.x() * 2.0,
+                        rectf.y() * 3.0,
+                        rectf.width() * 4.0,
+                        rectf.height() * 5.0,
+                    ))
+                    .to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::QSize(size) => {
                     let variant =
                         Variant::from_qsize(QSize::new(size.width() * 2, size.height() * 2))
@@ -338,6 +358,18 @@ mod mock_qt_types {
                 VariantValue::QPointF(pointf) => {
                     Variant::from_qpointf(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
                 }
+                VariantValue::QRect(rect) => Variant::from_qrect(QRect::new(
+                    rect.x() * 2,
+                    rect.y() * 3,
+                    rect.width() * 4,
+                    rect.height() * 5,
+                )),
+                VariantValue::QRectF(rectf) => Variant::from_qrectf(QRectF::new(
+                    rectf.x() * 2.0,
+                    rectf.y() * 3.0,
+                    rectf.width() * 4.0,
+                    rectf.height() * 5.0,
+                )),
                 VariantValue::QSize(size) => {
                     Variant::from_qsize(QSize::new(size.width() * 2, size.height() * 2))
                 }

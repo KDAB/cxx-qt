@@ -29,6 +29,8 @@ mod ffi {
         I32,
         QPoint,
         QPointF,
+        QRect,
+        QRectF,
         QSize,
         QSizeF,
         String,
@@ -238,6 +240,10 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
         VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
         VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QRect => Variant::from_qrect(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
+        VariantTest::QRectF => {
+            Variant::from_qrectf(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr()
+        }
         VariantTest::QSize => Variant::from_qsize(QSize::new(1, 3)).to_unique_ptr(),
         VariantTest::QSizeF => Variant::from_qsizef(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
@@ -286,6 +292,21 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         VariantTest::QPointF => match variant {
             VariantValue::QPointF(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
+            _others => false,
+        },
+        VariantTest::QRect => match variant {
+            VariantValue::QRect(rect) => {
+                rect.x() == 123 && rect.y() == 456 && rect.width() == 246 && rect.height() == 912
+            }
+            _others => false,
+        },
+        VariantTest::QRectF => match variant {
+            VariantValue::QRectF(rectf) => {
+                ((rectf.x() - 1.23).abs() < f64::EPSILON)
+                    && ((rectf.y() - 4.56).abs() < f64::EPSILON)
+                    && ((rectf.width() - 2.46).abs() < f64::EPSILON)
+                    && ((rectf.height() - 9.12).abs() < f64::EPSILON)
+            }
             _others => false,
         },
         VariantTest::QSize => match variant {

@@ -167,6 +167,8 @@ TEST_CASE("Can construct a QVariant on the Rust side")
   CHECK(can_construct_qvariant(VariantTest::I32));
   CHECK(can_construct_qvariant(VariantTest::QPoint));
   CHECK(can_construct_qvariant(VariantTest::QPointF));
+  CHECK(can_construct_qvariant(VariantTest::QRect));
+  CHECK(can_construct_qvariant(VariantTest::QRectF));
   CHECK(can_construct_qvariant(VariantTest::QSize));
   CHECK(can_construct_qvariant(VariantTest::QSizeF));
   CHECK(can_construct_qvariant(VariantTest::String));
@@ -195,6 +197,15 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
       return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
     case VariantTest::QPointF:
       return v.value<QPointF>().x() == 1.0 && v.value<QPoint>().y() == 3.0;
+    case VariantTest::QRect:
+      return v.value<QRectF>().x() == 123 && v.value<QRectF>().y() == 456 &&
+             v.value<QRectF>().width() == 246 &&
+             v.value<QRectF>().height() == 912;
+    case VariantTest::QRectF:
+      return qFuzzyCompare(v.value<QRectF>().x(), 1.23) &&
+             qFuzzyCompare(v.value<QRectF>().y(), 4.56) &&
+             qFuzzyCompare(v.value<QRectF>().width(), 2.46) &&
+             qFuzzyCompare(v.value<QRectF>().height(), 9.12);
     case VariantTest::QSize:
       return v.value<QSize>().width() == 1 && v.value<QSize>().height() == 3;
     case VariantTest::QSizeF:
@@ -228,6 +239,8 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   CHECK(runTest(VariantTest::I32));
   CHECK(runTest(VariantTest::QPoint));
   CHECK(runTest(VariantTest::QPointF));
+  CHECK(runTest(VariantTest::QRect));
+  CHECK(runTest(VariantTest::QRectF));
   CHECK(runTest(VariantTest::QSize));
   CHECK(runTest(VariantTest::QSizeF));
   CHECK(runTest(VariantTest::String));
@@ -249,6 +262,11 @@ TEST_CASE("Can read a QVariant on the Rust side")
                           VariantTest::QPoint));
   CHECK(can_read_qvariant(QVariant::fromValue<QPointF>(QPointF(8.0, 9.0)),
                           VariantTest::QPointF));
+  CHECK(can_read_qvariant(QVariant::fromValue<QRect>(QRect(123, 456, 246, 912)),
+                          VariantTest::QRect));
+  CHECK(can_read_qvariant(
+    QVariant::fromValue<QRectF>(QRectF(1.23, 4.56, 2.46, 9.12)),
+    VariantTest::QRectF));
   CHECK(can_read_qvariant(QVariant::fromValue<QSize>(QSize(8, 9)),
                           VariantTest::QSize));
   CHECK(can_read_qvariant(QVariant::fromValue<QSizeF>(QSizeF(8.0, 9.0)),
