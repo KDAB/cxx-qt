@@ -29,8 +29,6 @@ mod my_object {
             type QVariant = cxx_qt_lib::QVariant;
 
             #[namespace = "CxxQt"]
-            type Color = cxx_qt_lib::Color;
-            #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
 
             #[rust_name = "new_cpp_object"]

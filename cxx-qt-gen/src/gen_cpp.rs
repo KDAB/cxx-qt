@@ -26,6 +26,8 @@ trait CppType {
     fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool;
     /// Whether this type is a Pin<T>
     fn is_pin(&self) -> bool;
     /// Whether this type is a pointer
@@ -70,7 +72,7 @@ impl CppType for QtTypes {
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
             Self::Bool => None,
-            Self::Color => Some("::CxxQt::rustColorToQColor"),
+            Self::Color => None,
             Self::F32 | Self::F64 => None,
             Self::I8 | Self::I16 | Self::I32 => None,
             Self::QPoint => None,
@@ -138,6 +140,14 @@ impl CppType for QtTypes {
             Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
+        }
+    }
+
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool {
+        match self {
+            Self::QColor | Self::Color => true,
+            _others => false,
         }
     }
 
@@ -414,7 +424,9 @@ fn generate_invokables_cpp(
                 "#,
                 // Decide if the body needs a return or converter
                 body = if let Some(return_type) = &return_type {
-                    if let Some(converter_ident) = return_type.convert_into_cpp() {
+                    if return_type.is_opaque() {
+                        format!("return std::move(*{body})", body = body)
+                    } else if let Some(converter_ident) = return_type.convert_into_cpp() {
                         format!("return {converter}({body})", converter = converter_ident, body = body)
                     } else {
                         format!("return {body}", body = body)

@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        let_qcolor, let_qvariant, Color, ColorImpl, QColor, QPoint, QPointF, QRect, QRectF, QSize,
-        QSizeF, QVariant, Variant, VariantImpl,
+        let_qvariant, Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant,
+        Variant, VariantImpl,
     };
 
     pub struct Data {
@@ -27,7 +27,7 @@ mod mock_qt_types {
     impl Default for Data {
         fn default() -> Self {
             Data {
-                color: Color::from_argb(255, 255, 0, 0),
+                color: Color::from_rgba(255, 0, 0, 255),
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
                 rect: QRect::new(1, 2, 3, 4),
@@ -45,22 +45,13 @@ mod mock_qt_types {
     impl RustObj {
         #[invokable]
         fn test_color_property(&self, cpp: &mut CppObj) {
-            match *cpp.color().to_rust() {
-                ColorImpl::ARGB { .. } => {
-                    let new_color = Color::from_argb(255, 0, 0, 255);
-                    let_qcolor!(new_qcolor = &new_color);
-                    cpp.set_color(&new_qcolor);
-                }
-                _ => panic!("Incorrect color type!"),
-            }
+            let color = Color::from_rgba(0, 0, 255, 255).to_unique_ptr();
+            cpp.set_color(&color);
         }
 
         #[invokable]
-        fn test_color_invokable(&self, color: &QColor) -> Color {
-            match *color.to_rust() {
-                ColorImpl::ARGB { .. } => Color::from_argb(255, 0, 255, 0),
-                _ => panic!("Incorrect color type!"),
-            }
+        fn test_color_invokable(&self, _color: &QColor) -> Color {
+            Color::from_rgba(0, 255, 0, 255)
         }
 
         #[invokable]

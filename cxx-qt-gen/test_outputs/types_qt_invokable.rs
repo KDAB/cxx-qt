@@ -29,8 +29,6 @@ mod my_object {
             type QVariant = cxx_qt_lib::QVariant;
 
             #[namespace = "CxxQt"]
-            type Color = cxx_qt_lib::Color;
-            #[namespace = "CxxQt"]
             type Variant = cxx_qt_lib::Variant;
 
             #[rust_name = "new_cpp_object"]
@@ -45,7 +43,7 @@ mod my_object {
                 self: &RustObj,
                 _cpp: Pin<&mut MyObject>,
                 color: &QColor,
-            ) -> Color;
+            ) -> UniquePtr<QColor>;
 
             #[cxx_name = "testPointWrapper"]
             fn test_point_wrapper(
@@ -110,9 +108,13 @@ mod my_object {
     struct RustObj;
 
     impl RustObj {
-        fn test_color_wrapper(&self, _cpp: std::pin::Pin<&mut FFICppObj>, color: &QColor) -> Color {
+        fn test_color_wrapper(
+            &self,
+            _cpp: std::pin::Pin<&mut FFICppObj>,
+            color: &QColor,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_color(&mut _cpp, color);
+            return self.test_color(&mut _cpp, color).to_unique_ptr();
         }
 
         fn test_point_wrapper(

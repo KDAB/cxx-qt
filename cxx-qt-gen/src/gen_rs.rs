@@ -17,6 +17,8 @@ trait RustType {
     fn is_ref(&self) -> bool;
     /// Whether this type is a this (eg the T in Pin<T>)
     fn is_this(&self) -> bool;
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool;
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
@@ -44,6 +46,14 @@ impl RustType for QtTypes {
     fn is_this(&self) -> bool {
         match self {
             Self::CppObj { external, .. } => external == &false,
+            _others => false,
+        }
+    }
+
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool {
+        match self {
+            Self::QColor | Self::Color => true,
             _others => false,
         }
     }
@@ -214,7 +224,13 @@ pub fn generate_qobject_cxx(
                 let type_idents = &return_type.idents;
 
                 // Determine if the return type is a ref
-                if return_type.is_ref {
+                if return_type.qt_type.is_opaque() {
+                    let return_type_ident = return_type.qt_type.param_type_ident();
+                    rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
+                        fn #ident(self: &#rust_class_name) -> UniquePtr<#return_type_ident>;
+                    });
+                } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name) -> &#(#type_idents)::*;
@@ -296,7 +312,13 @@ pub fn generate_qobject_cxx(
                 let type_idents = &return_type.idents;
 
                 // Determine if the return type is a ref
-                if return_type.is_ref {
+                if return_type.qt_type.is_opaque() {
+                    let return_type_ident = return_type.qt_type.param_type_ident();
+                    rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
+                        fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> UniquePtr<#return_type_ident>;
+                    });
+                } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
@@ -450,8 +472,6 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
 
-                #[namespace = "CxxQt"]
-                type Color = cxx_qt_lib::Color;
                 #[namespace = "CxxQt"]
                 type Variant = cxx_qt_lib::Variant;
 
@@ -609,7 +629,7 @@ fn invokable_generate_wrapper(
     ident_wrapper: &Ident,
 ) -> Result<TokenStream, TokenStream> {
     let ident = &invokable.ident.rust_ident;
-    let return_type = invokable.original_method.sig.output.clone();
+    let return_type_orig = invokable.original_method.sig.output.clone();
 
     let mut input_parameters = vec![];
     let mut output_parameters = vec![];
@@ -661,8 +681,20 @@ fn invokable_generate_wrapper(
         }
     }
 
+    if let Some(return_type) = &invokable.return_type {
+        if return_type.qt_type.is_opaque() {
+            let return_type_ident = return_type.qt_type.full_param_type();
+            return Ok(quote! {
+                fn #ident_wrapper(&self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_ident> {
+                    #(#wrappers)*
+                    return self.#ident(#(#output_parameters),*).to_unique_ptr();
+                }
+            });
+        }
+    }
+
     Ok(quote! {
-        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type {
+        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type_orig {
             #(#wrappers)*
             return self.#ident(#(#output_parameters),*);
         }

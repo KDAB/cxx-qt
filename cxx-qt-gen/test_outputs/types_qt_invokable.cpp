@@ -17,7 +17,7 @@ QColor
 MyObject::testColor(const QColor& color)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return ::CxxQt::rustColorToQColor(m_rustObj->testColorWrapper(*this, color));
+  return std::move(*m_rustObj->testColorWrapper(*this, color));
 }
 
 QPoint
