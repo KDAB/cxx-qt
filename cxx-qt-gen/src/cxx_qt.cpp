@@ -705,12 +705,14 @@ enum class QVariantType : uint8_t
   I32 = 6,
   QPoint = 7,
   QPointF = 8,
-  QSize = 9,
-  QSizeF = 10,
-  String = 11,
-  U8 = 12,
-  U16 = 13,
-  U32 = 14,
+  QRect = 9,
+  QRectF = 10,
+  QSize = 11,
+  QSizeF = 12,
+  String = 13,
+  U8 = 14,
+  U16 = 15,
+  U32 = 16,
 };
 
 } // namespace
@@ -771,6 +773,18 @@ extern "C"
     new (ptr) std::unique_ptr<QVariant>(new QVariant(pointf));
   }
 
+  void cxxqt1$qvariant$init$from$qrect(std::unique_ptr<QVariant>* ptr,
+                                       const QRect& rect) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(rect));
+  }
+
+  void cxxqt1$qvariant$init$from$qrectf(std::unique_ptr<QVariant>* ptr,
+                                        const QRectF& rectf) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(rectf));
+  }
+
   void cxxqt1$qvariant$init$from$qsize(std::unique_ptr<QVariant>* ptr,
                                        const QSize& size) noexcept
   {
@@ -829,6 +843,10 @@ extern "C"
         return QVariantType::QPoint;
       case QMetaType::QPointF:
         return QVariantType::QPointF;
+      case QMetaType::QRect:
+        return QVariantType::QRect;
+      case QMetaType::QRectF:
+        return QVariantType::QRectF;
       case QMetaType::QSize:
         return QVariantType::QSize;
       case QMetaType::QSizeF:
@@ -892,6 +910,18 @@ extern "C"
   {
     Q_ASSERT(self.canConvert<QPointF>());
     return self.value<QPointF>();
+  }
+
+  QRect cxxqt1$qvariant$to$qrect(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<QRect>());
+    return self.value<QRect>();
+  }
+
+  QRectF cxxqt1$qvariant$to$qrectf(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<QRectF>());
+    return self.value<QRectF>();
   }
 
   QSize cxxqt1$qvariant$to$qsize(const QVariant& self) noexcept

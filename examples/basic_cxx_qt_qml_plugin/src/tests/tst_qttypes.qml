@@ -521,6 +521,9 @@ TestCase {
         result = mock.testVariantInvokable(Qt.point(1.0, 3.0));
         compare(result, Qt.point(2.0, 6.0));
 
+        result = mock.testVariantInvokable(Qt.rect(10, 20, 30, 40));
+        compare(result, Qt.rect(20, 60, 120, 200));
+
         result = mock.testVariantInvokable(Qt.size(1.0, 3.0));
         compare(result, Qt.size(2.0, 6.0));
     }
