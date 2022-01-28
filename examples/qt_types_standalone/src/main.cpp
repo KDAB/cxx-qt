@@ -215,8 +215,8 @@ TEST_CASE("Can copy a value QPoint on the Rust side")
 TEST_CASE("Can construct a QPointF on the Rust side")
 {
   const auto p = construct_qpointf();
-  CHECK(p.x() == 1.23);
-  CHECK(p.y() == 4.56);
+  CHECK(qFuzzyCompare(p.x(), 1.23));
+  CHECK(qFuzzyCompare(p.y(), 4.56));
 }
 
 TEST_CASE("Can read a QPointF on the Rust side")
@@ -229,16 +229,16 @@ TEST_CASE("Can copy a QPointF on the Rust side")
 {
   const auto p = QPointF(1.23, 4.56);
   const auto c = copy_qpointf(p);
-  CHECK(c.x() == 1.23);
-  CHECK(c.y() == 4.56);
+  CHECK(qFuzzyCompare(c.x(), 1.23));
+  CHECK(qFuzzyCompare(c.y(), 4.56));
 }
 
 TEST_CASE("Can copy a value QPointF on the Rust side")
 {
   const auto p = QPointF(1.23, 4.56);
   const auto c = copy_value_qpointf(p);
-  CHECK(c.x() == 1.23);
-  CHECK(c.y() == 4.56);
+  CHECK(qFuzzyCompare(c.x(), 1.23));
+  CHECK(qFuzzyCompare(c.y(), 4.56));
 }
 
 TEST_CASE("Can construct a QRectF on the Rust side")
@@ -308,8 +308,8 @@ TEST_CASE("Can copy a value QSize on the Rust side")
 TEST_CASE("Can construct a QSizeF on the Rust side")
 {
   const auto s = construct_qsizef();
-  CHECK(s.width() == 1.23);
-  CHECK(s.height() == 4.56);
+  CHECK(qFuzzyCompare(s.width(), 1.23));
+  CHECK(qFuzzyCompare(s.height(), 4.56));
 }
 
 TEST_CASE("Can read a QSizeF on the Rust side")
@@ -322,14 +322,14 @@ TEST_CASE("Can copy a QSizeF on the Rust side")
 {
   const auto s = QSizeF(1.23, 4.56);
   const auto c = copy_qsizef(s);
-  CHECK(c.width() == 1.23);
-  CHECK(c.height() == 4.56);
+  CHECK(qFuzzyCompare(c.width(), 1.23));
+  CHECK(qFuzzyCompare(c.height(), 4.56));
 }
 
 TEST_CASE("Can copy a value QSizeF on the Rust side")
 {
   const auto s = QSizeF(1.23, 4.56);
   const auto c = copy_value_qsizef(s);
-  CHECK(c.width() == 1.23);
-  CHECK(c.height() == 4.56);
+  CHECK(qFuzzyCompare(c.width(), 1.23));
+  CHECK(qFuzzyCompare(c.height(), 4.56));
 }
