@@ -210,10 +210,14 @@ impl Color {
             qcolor_set_red(self.inner.pin_mut(), red);
         }
     }
+}
+
+impl crate::ToUniquePtr for Color {
+    type CppType = QColor;
 
     /// Retrieve the UniquePtr to the Qt QColor of this Rust Color
     /// so that this object can be passed back to C++.
-    pub fn to_unique_ptr(self) -> cxx::UniquePtr<QColor> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QColor> {
         self.inner
     }
 }

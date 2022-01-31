@@ -1,5 +1,6 @@
 mod my_object {
     use cxx_qt_lib::QString;
+    use cxx_qt_lib::ToUniquePtr;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
@@ -81,7 +82,7 @@ mod my_object {
                 self: &RustObj,
                 _cpp: Pin<&mut MyObject>,
                 string: &QString,
-            ) -> String;
+            ) -> UniquePtr<QString>;
 
             #[cxx_name = "testVariantWrapper"]
             fn test_variant_wrapper(
@@ -164,9 +165,9 @@ mod my_object {
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             string: &QString,
-        ) -> String {
+        ) -> cxx::UniquePtr<cxx_qt_lib::QString> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_string(&mut _cpp, string);
+            return self.test_string(&mut _cpp, string).to_unique_ptr();
         }
 
         fn test_variant_wrapper(

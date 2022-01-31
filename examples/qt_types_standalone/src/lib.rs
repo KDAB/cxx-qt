@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qstring, Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QVariant, Variant, VariantValue,
+    Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QVariant,
+    ToUniquePtr, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -106,12 +106,10 @@ use ffi::VariantTest;
 
 fn can_construct_qstring(slice: bool) -> bool {
     if slice {
-        let_qstring!(s = "String constructed by Rust");
-        ffi::test_constructed_qstring(&s)
+        ffi::test_constructed_qstring(&"String constructed by Rust".to_unique_ptr())
     } else {
         let rs_string = "String constructed by Rust".to_owned();
-        let_qstring!(s = rs_string);
-        ffi::test_constructed_qstring(&s)
+        ffi::test_constructed_qstring(&rs_string.to_unique_ptr())
     }
 }
 
@@ -121,8 +119,7 @@ fn can_read_qstring(s: &QString) -> bool {
 }
 
 fn modify_qstring(s: Pin<&mut QString>) {
-    let_qstring!(v = "Updated string value");
-    ffi::assign_to_qstring(s, &v);
+    ffi::assign_to_qstring(s, &"Updated string value".to_unique_ptr());
 }
 
 fn can_map_to_qstring() -> bool {
@@ -134,13 +131,12 @@ fn can_map_to_qstring() -> bool {
 
 fn can_handle_qstring_change() -> bool {
     let long_s = "Very very long string that is hopefully long enough to allocate and get Valgrind's attention :)";
+    let long_s_ptr = long_s.to_unique_ptr();
 
-    let_qstring!(s = "Short string");
-    let_qstring!(v = long_s);
-    ffi::assign_to_qstring(s.as_mut(), &v);
+    let mut short_s_ptr = "Short string".to_unique_ptr();
+    ffi::assign_to_qstring(short_s_ptr.pin_mut(), &long_s_ptr);
 
-    let rs = s.to_rust();
-    rs == long_s
+    short_s_ptr.to_rust() == long_s
 }
 
 fn make_color(test: ColorTest) -> cxx::UniquePtr<QColor> {

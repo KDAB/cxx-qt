@@ -17,23 +17,8 @@
 #include <QDebug>
 #include <QEvent>
 #include <QObject>
-#include <QString>
 
 #include "rust/cxx.h"
-
-// TODO: we probably want to namespace these conversion functions too
-
-inline QString
-rustStringToQString(const rust::string& value)
-{
-  return QString::fromUtf8(value.data(), value.length());
-}
-
-inline QString
-rustStrToQString(const rust::str& value)
-{
-  return QString::fromUtf8(value.data(), value.length());
-}
 
 class CxxQObject : public QObject
 {

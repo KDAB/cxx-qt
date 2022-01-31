@@ -1,5 +1,6 @@
 mod my_object {
     use super::MyTrait;
+    use cxx_qt_lib::ToUniquePtr;
 
     enum Event {
         MyEvent,

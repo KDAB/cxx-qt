@@ -40,16 +40,11 @@ pub use map_qt_value::*;
 pub trait PropertyChangeHandler<C, P> {
     fn handle_property_change(&mut self, cpp: &mut C, property: P);
 }
-/// This mod contains private things that need to technically be pub so that
-/// they can be used inside macros. You should not use anything inside here
-/// from another crate even though that would compile.
-pub mod private {
-    pub use crate::qstring::StackQString;
-}
 
-mod actually_private {
-    /// This is a dummy struct. If you add it as a template parameter to new()
-    /// inside a struct that you have been forced to make public then outside
-    /// users won't be able to construct such a struct themselves.
-    pub trait Private {}
+pub trait ToUniquePtr {
+    type CppType;
+
+    fn to_unique_ptr(self) -> cxx::UniquePtr<Self::CppType>
+    where
+        Self::CppType: cxx::memory::UniquePtrTarget;
 }

@@ -66,7 +66,7 @@ QString
 MyObject::testString(const QString& string)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return rustStringToQString(m_rustObj->testStringWrapper(*this, string));
+  return std::move(*m_rustObj->testStringWrapper(*this, string));
 }
 
 QVariant

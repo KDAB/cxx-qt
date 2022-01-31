@@ -314,8 +314,14 @@ impl Variant {
             QVariantType::U32 => VariantValue::U32(unsafe { qvariant_to_u32(&self.inner) }),
         }
     }
+}
 
-    pub fn to_unique_ptr(self) -> cxx::UniquePtr<QVariant> {
+impl crate::ToUniquePtr for Variant {
+    type CppType = QVariant;
+
+    /// Retrieve the UniquePtr to the Qt QVariant of this Rust Variant
+    /// so that this object can be passed back to C++.
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QVariant> {
         self.inner
     }
 }
