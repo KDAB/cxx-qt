@@ -19,8 +19,6 @@ trait CppType {
     fn as_ptr_str(&self) -> &str;
     /// String representation of the ref part of this type
     fn as_ref_str(&self) -> &str;
-    /// Any converter that is required to convert this type into C++
-    fn convert_into_cpp(&self) -> Option<&'static str>;
     /// Any include paths for this type, this is used for Ptr types
     /// for example so that when Object uses SubObject it includes sub_object.h
     fn include_paths(&self) -> Vec<String>;
@@ -65,27 +63,6 @@ impl CppType for QtTypes {
             "&"
         } else {
             ""
-        }
-    }
-
-    /// Any converter that is required to convert this type into C++
-    fn convert_into_cpp(&self) -> Option<&'static str> {
-        match self {
-            Self::Bool => None,
-            Self::Color => None,
-            Self::F32 | Self::F64 => None,
-            Self::I8 | Self::I16 | Self::I32 => None,
-            Self::QPoint => None,
-            Self::QPointF => None,
-            Self::QRect => None,
-            Self::QRectF => None,
-            Self::QSize => None,
-            Self::QSizeF => None,
-            Self::Str => None,
-            Self::String => None,
-            Self::Variant => None,
-            Self::U8 | Self::U16 | Self::U32 => None,
-            _others => unreachable!(),
         }
     }
 
@@ -428,8 +405,6 @@ fn generate_invokables_cpp(
                 body = if let Some(return_type) = &return_type {
                     if return_type.is_opaque() {
                         format!("return std::move(*{body})", body = body)
-                    } else if let Some(converter_ident) = return_type.convert_into_cpp() {
-                        format!("return {converter}({body})", converter = converter_ident, body = body)
                     } else {
                         format!("return {body}", body = body)
                     }
