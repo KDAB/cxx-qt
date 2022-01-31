@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        let_qvariant, Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant,
-        Variant, VariantImpl,
+        Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant,
+        VariantValue,
     };
 
     pub struct Data {
@@ -164,51 +164,42 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
-            match *cpp.variant().to_rust() {
-                VariantImpl::Bool(b) => {
-                    let new_variant = Variant::from_bool(!b);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+            match cpp.variant().to_rust().value() {
+                VariantValue::Bool(b) => {
+                    let variant = Variant::from_bool(!b).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::F32(f) => {
-                    let new_variant = Variant::from_f32(f * 2.0);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::F32(f) => {
+                    let variant = Variant::from_f32(f * 2.0).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::F64(d) => {
-                    let new_variant = Variant::from_f64(d * 2.0);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::F64(d) => {
+                    let variant = Variant::from_f64(d * 2.0).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::I8(i) => {
-                    let new_variant = Variant::from_i8(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::I8(i) => {
+                    let variant = Variant::from_i8(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::I16(i) => {
-                    let new_variant = Variant::from_i16(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::I16(i) => {
+                    let variant = Variant::from_i16(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::I32(i) => {
-                    let new_variant = Variant::from_i32(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::I32(i) => {
+                    let variant = Variant::from_i32(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::U8(i) => {
-                    let new_variant = Variant::from_u8(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::U8(i) => {
+                    let variant = Variant::from_u8(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::U16(i) => {
-                    let new_variant = Variant::from_u16(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::U16(i) => {
+                    let variant = Variant::from_u16(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
-                VariantImpl::U32(i) => {
-                    let new_variant = Variant::from_u32(i * 2);
-                    let_qvariant!(new_qvariant = &new_variant);
-                    cpp.set_variant(&new_qvariant);
+                VariantValue::U32(i) => {
+                    let variant = Variant::from_u32(i * 2).to_unique_ptr();
+                    cpp.set_variant(&variant);
                 }
                 _ => panic!("Incorrect variant type!"),
             }
@@ -216,16 +207,16 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match *variant.to_rust() {
-                VariantImpl::Bool(b) => Variant::from_bool(!b),
-                VariantImpl::F32(f) => Variant::from_f32(f * 2.0),
-                VariantImpl::F64(d) => Variant::from_f64(d * 2.0),
-                VariantImpl::I8(i) => Variant::from_i8(i * 2),
-                VariantImpl::I16(i) => Variant::from_i16(i * 2),
-                VariantImpl::I32(i) => Variant::from_i32(i * 2),
-                VariantImpl::U8(i) => Variant::from_u8(i * 2),
-                VariantImpl::U16(i) => Variant::from_u16(i * 2),
-                VariantImpl::U32(i) => Variant::from_u32(i * 2),
+            match variant.to_rust().value() {
+                VariantValue::Bool(b) => Variant::from_bool(!b),
+                VariantValue::F32(f) => Variant::from_f32(f * 2.0),
+                VariantValue::F64(d) => Variant::from_f64(d * 2.0),
+                VariantValue::I8(i) => Variant::from_i8(i * 2),
+                VariantValue::I16(i) => Variant::from_i16(i * 2),
+                VariantValue::I32(i) => Variant::from_i32(i * 2),
+                VariantValue::U8(i) => Variant::from_u8(i * 2),
+                VariantValue::U16(i) => Variant::from_u16(i * 2),
+                VariantValue::U32(i) => Variant::from_u32(i * 2),
                 _ => panic!("Incorrect variant type!"),
             }
         }

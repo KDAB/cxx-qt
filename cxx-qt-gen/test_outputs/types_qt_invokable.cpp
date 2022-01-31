@@ -73,8 +73,7 @@ QVariant
 MyObject::testVariant(const QVariant& variant)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return ::CxxQt::rustVariantToQVariant(
-    m_rustObj->testVariantWrapper(*this, variant));
+  return std::move(*m_rustObj->testVariantWrapper(*this, variant));
 }
 
 std::unique_ptr<CppObj>

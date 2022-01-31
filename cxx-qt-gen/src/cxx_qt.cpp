@@ -430,66 +430,70 @@ enum class QVariantType : uint8_t
 
 extern "C"
 {
-  void cxxqt1$qvariant$init(QVariant* self) noexcept { new (self) QVariant(); }
-
-  void cxxqt1$qvariant$init$from$bool(QVariant* self, bool b) noexcept
+  void cxxqt1$qvariant$init$from$qvariant(std::unique_ptr<QVariant>* ptr,
+                                          const QVariant& qvariant) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(b);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(qvariant));
   }
 
-  void cxxqt1$qvariant$init$from$f32(QVariant* self, float f) noexcept
+  void cxxqt1$qvariant$init$from$bool(std::unique_ptr<QVariant>* ptr,
+                                      bool b) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(f);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(b));
   }
 
-  void cxxqt1$qvariant$init$from$f64(QVariant* self, double d) noexcept
+  void cxxqt1$qvariant$init$from$f32(std::unique_ptr<QVariant>* ptr,
+                                     float f) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(d);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(f));
   }
 
-  void cxxqt1$qvariant$init$from$i8(QVariant* self, qint8 i) noexcept
+  void cxxqt1$qvariant$init$from$f64(std::unique_ptr<QVariant>* ptr,
+                                     double d) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(d));
   }
 
-  void cxxqt1$qvariant$init$from$i16(QVariant* self, qint16 i) noexcept
+  void cxxqt1$qvariant$init$from$i8(std::unique_ptr<QVariant>* ptr,
+                                    qint8 i) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
   }
 
-  void cxxqt1$qvariant$init$from$i32(QVariant* self, qint32 i) noexcept
+  void cxxqt1$qvariant$init$from$i16(std::unique_ptr<QVariant>* ptr,
+                                     qint16 i) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
   }
 
-  void cxxqt1$qvariant$init$from$str(QVariant* self, rust::Str s) noexcept
+  void cxxqt1$qvariant$init$from$i32(std::unique_ptr<QVariant>* ptr,
+                                     qint32 i) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(rustStrToQString(s));
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
   }
 
-  void cxxqt1$qvariant$init$from$u8(QVariant* self, quint8 i) noexcept
+  void cxxqt1$qvariant$init$from$str(std::unique_ptr<QVariant>* ptr,
+                                     rust::Str s) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(rustStrToQString(s)));
   }
 
-  void cxxqt1$qvariant$init$from$u16(QVariant* self, quint16 i) noexcept
+  void cxxqt1$qvariant$init$from$u8(std::unique_ptr<QVariant>* ptr,
+                                    quint8 i) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
   }
 
-  void cxxqt1$qvariant$init$from$u32(QVariant* self, quint32 i) noexcept
+  void cxxqt1$qvariant$init$from$u16(std::unique_ptr<QVariant>* ptr,
+                                     quint16 i) noexcept
   {
-    new (self) QVariant();
-    *self = QVariant::fromValue(i);
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
+  }
+
+  void cxxqt1$qvariant$init$from$u32(std::unique_ptr<QVariant>* ptr,
+                                     quint32 i) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
   }
 
   QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
@@ -582,13 +586,33 @@ extern "C"
     return self.value<quint32>();
   }
 
-  void cxxqt1$qvariant$assign$qvariant(const QVariant& from,
-                                       QVariant& to) noexcept
+  void cxxqt1$unique_ptr$qvariant$null(std::unique_ptr<QVariant>* ptr) noexcept
   {
-    to = from;
+    new (ptr) std::unique_ptr<QVariant>();
   }
 
-  void cxxqt1$qvariant$drop(QVariant* self) noexcept { self->~QVariant(); }
+  void cxxqt1$unique_ptr$qvariant$raw(std::unique_ptr<QVariant>* ptr,
+                                      QVariant* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(raw);
+  }
+
+  const QVariant* cxxqt1$unique_ptr$qvariant$get(
+    const std::unique_ptr<QVariant>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QVariant* cxxqt1$unique_ptr$qvariant$release(
+    std::unique_ptr<QVariant>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qvariant$drop(std::unique_ptr<QVariant>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
 }
 
 static const QEvent::Type

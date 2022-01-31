@@ -4,9 +4,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[macro_use]
-extern crate static_assertions;
-
 pub mod update_requester;
 pub use update_requester::UpdateRequestHandler;
 
@@ -35,7 +32,7 @@ mod qpointf;
 pub use qpointf::QPointF;
 
 mod qvariant;
-pub use qvariant::{QVariant, Variant, VariantImpl};
+pub use qvariant::{QVariant, Variant, VariantValue};
 
 mod map_qt_value;
 pub use map_qt_value::*;
@@ -48,7 +45,6 @@ pub trait PropertyChangeHandler<C, P> {
 /// from another crate even though that would compile.
 pub mod private {
     pub use crate::qstring::StackQString;
-    pub use crate::qvariant::StackQVariant;
 }
 
 mod actually_private {

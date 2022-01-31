@@ -161,8 +161,7 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
 TEST_CASE("Can convert Rust Variant to QVariant")
 {
   const auto runTest = [](auto test) {
-    return test_constructed_qvariant(
-      CxxQt::rustVariantToQVariant(make_variant(test)), test);
+    return test_constructed_qvariant(std::move(*make_variant(test)), test);
   };
 
   CHECK(runTest(VariantTest::Bool));
