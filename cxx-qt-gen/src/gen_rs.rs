@@ -54,6 +54,7 @@ impl RustType for QtTypes {
     fn is_opaque(&self) -> bool {
         match self {
             Self::QColor | Self::Color => true,
+            Self::QString | Self::String | Self::Str => true,
             Self::QVariant | Self::Variant => true,
             _others => false,
         }
@@ -930,6 +931,8 @@ pub fn generate_qobject_rs(
     if obj.handle_property_change_impl.is_some() {
         use_traits.push(quote! { use cxx_qt_lib::PropertyChangeHandler; });
     }
+    // TODO: only push if we have an opaque param or return type?
+    use_traits.push(quote! { use cxx_qt_lib::ToUniquePtr; });
 
     let handle_updates_impl = &obj.handle_updates_impl;
     let handle_property_change_impl = &obj.handle_property_change_impl;

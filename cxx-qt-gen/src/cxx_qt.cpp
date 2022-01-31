@@ -100,15 +100,15 @@ static_assert(sizeof(char) == sizeof(std::uint8_t));
 
 extern "C"
 {
-  void cxxqt1$qstring$init(QString* self,
-                           const char* ptr,
-                           std::size_t len) noexcept
+  void cxxqt1$qstring$init$from$rust$string(std::unique_ptr<QString>* ptr,
+                                            const char* data,
+                                            std::size_t len) noexcept
   {
-    new (self) QString();
-    *self = QString::fromUtf8(ptr, len);
+    new (ptr)
+      std::unique_ptr<QString>(new QString(QString::fromUtf8(data, len)));
   }
 
-  void cxxqt1$qstring$to_rust_string(const QString& qt,
+  void cxxqt1$qstring$to$rust$string(const QString& qt,
                                      rust::String& rust) noexcept
   {
     static_assert(sizeof(char16_t) == sizeof(QChar));
@@ -116,7 +116,33 @@ extern "C"
                         qt.size());
   }
 
-  void cxxqt1$qstring$drop(QString* self) noexcept { self->~QString(); }
+  void cxxqt1$unique_ptr$qstring$null(std::unique_ptr<QString>* ptr) noexcept
+  {
+    new (ptr) std::unique_ptr<QString>();
+  }
+
+  void cxxqt1$unique_ptr$qstring$raw(std::unique_ptr<QString>* ptr,
+                                     QString* raw) noexcept
+  {
+    new (ptr) std::unique_ptr<QString>(raw);
+  }
+
+  const QString* cxxqt1$unique_ptr$qstring$get(
+    const std::unique_ptr<QString>& ptr) noexcept
+  {
+    return ptr.get();
+  }
+
+  QString* cxxqt1$unique_ptr$qstring$release(
+    std::unique_ptr<QString>& ptr) noexcept
+  {
+    return ptr.release();
+  }
+
+  void cxxqt1$unique_ptr$qstring$drop(std::unique_ptr<QString>* ptr) noexcept
+  {
+    ptr->~unique_ptr();
+  }
 }
 
 namespace {
@@ -475,7 +501,8 @@ extern "C"
   void cxxqt1$qvariant$init$from$str(std::unique_ptr<QVariant>* ptr,
                                      rust::Str s) noexcept
   {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(rustStrToQString(s)));
+    new (ptr) std::unique_ptr<QVariant>(
+      new QVariant(QString::fromUtf8(s.data(), s.size())));
   }
 
   void cxxqt1$qvariant$init$from$u8(std::unique_ptr<QVariant>* ptr,
@@ -565,7 +592,7 @@ extern "C"
   void cxxqt1$qvariant$copy$to$string(const QVariant& self,
                                       rust::String& string) noexcept
   {
-    cxxqt1$qstring$to_rust_string(self.toString(), string);
+    cxxqt1$qstring$to$rust$string(self.toString(), string);
   }
 
   quint8 cxxqt1$qvariant$to$u8(const QVariant& self) noexcept

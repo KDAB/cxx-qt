@@ -81,8 +81,8 @@ impl CppType for QtTypes {
             Self::QRectF => None,
             Self::QSize => None,
             Self::QSizeF => None,
-            Self::Str => Some("rustStrToQString"),
-            Self::String => Some("rustStringToQString"),
+            Self::Str => None,
+            Self::String => None,
             Self::Variant => None,
             Self::U8 | Self::U16 | Self::U32 => None,
             _others => unreachable!(),
@@ -147,6 +147,7 @@ impl CppType for QtTypes {
     fn is_opaque(&self) -> bool {
         match self {
             Self::QColor | Self::Color => true,
+            Self::QString | Self::String | Self::Str => true,
             Self::QVariant | Self::Variant => true,
             _others => false,
         }

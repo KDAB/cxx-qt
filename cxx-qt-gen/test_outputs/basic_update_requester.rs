@@ -1,6 +1,7 @@
 mod my_object {
     use cxx_qt_lib::QString;
     use cxx_qt_lib::UpdateRequestHandler;
+    use cxx_qt_lib::ToUniquePtr;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {

@@ -1,4 +1,6 @@
 mod my_object {
+    use cxx_qt_lib::ToUniquePtr;
+
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
         enum Property {

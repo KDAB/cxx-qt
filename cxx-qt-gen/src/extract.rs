@@ -520,6 +520,9 @@ fn extract_invokable(
             QtTypes::CppObj { .. }
                 | QtTypes::QColor
                 | QtTypes::Color
+                | QtTypes::QString
+                | QtTypes::String
+                | QtTypes::Str
                 | QtTypes::QVariant
                 | QtTypes::Variant
         )
