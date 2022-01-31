@@ -26,9 +26,6 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
-
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
         }

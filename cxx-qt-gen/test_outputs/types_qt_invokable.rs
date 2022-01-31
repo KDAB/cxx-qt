@@ -28,9 +28,6 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
-
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
         }
@@ -91,7 +88,7 @@ mod my_object {
                 self: &RustObj,
                 _cpp: Pin<&mut MyObject>,
                 variant: &QVariant,
-            ) -> Variant;
+            ) -> UniquePtr<QVariant>;
 
             #[cxx_name = "createRs"]
             fn create_rs() -> Box<RustObj>;
@@ -176,9 +173,9 @@ mod my_object {
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             variant: &QVariant,
-        ) -> Variant {
+        ) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
             let mut _cpp = CppObj::new(_cpp);
-            return self.test_variant(&mut _cpp, variant);
+            return self.test_variant(&mut _cpp, variant).to_unique_ptr();
         }
 
         fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> Color {

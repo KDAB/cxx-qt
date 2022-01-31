@@ -54,6 +54,7 @@ impl RustType for QtTypes {
     fn is_opaque(&self) -> bool {
         match self {
             Self::QColor | Self::Color => true,
+            Self::QVariant | Self::Variant => true,
             _others => false,
         }
     }
@@ -471,9 +472,6 @@ pub fn generate_qobject_cxx(
                 type QString = cxx_qt_lib::QString;
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
-
-                #[namespace = "CxxQt"]
-                type Variant = cxx_qt_lib::Variant;
 
                 #(#cpp_functions)*
 

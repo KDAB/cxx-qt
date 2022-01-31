@@ -517,7 +517,11 @@ fn extract_invokable(
     let return_is_opaque = if let Some(return_type) = &return_type {
         matches!(
             return_type.qt_type,
-            QtTypes::CppObj { .. } | QtTypes::QColor | QtTypes::Color
+            QtTypes::CppObj { .. }
+                | QtTypes::QColor
+                | QtTypes::Color
+                | QtTypes::QVariant
+                | QtTypes::Variant
         )
     } else {
         false

@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize,
-    QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qstring, Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
+    QVariant, Variant, VariantValue,
 };
 
 #[cxx::bridge]
@@ -46,9 +46,6 @@ mod ffi {
         type QRectF = cxx_qt_lib::QRectF;
         type QRect = cxx_qt_lib::QRect;
 
-        #[namespace = "CxxQt"]
-        type Variant = cxx_qt_lib::Variant;
-
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
 
@@ -68,7 +65,7 @@ mod ffi {
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
 
-        fn make_variant(test: VariantTest) -> Variant;
+        fn make_variant(test: VariantTest) -> UniquePtr<QVariant>;
         fn can_construct_qvariant(test: VariantTest) -> bool;
         fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
 
@@ -180,68 +177,68 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
     }
 }
 
-fn make_variant(test: VariantTest) -> Variant {
+fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
     match test {
-        VariantTest::Bool => Variant::from_bool(true),
-        VariantTest::F32 => Variant::from_f32(1.23),
-        VariantTest::F64 => Variant::from_f64(1.23),
-        VariantTest::I8 => Variant::from_i8(12),
-        VariantTest::I16 => Variant::from_i16(123),
-        VariantTest::I32 => Variant::from_i32(123),
-        VariantTest::String => Variant::from_string("Rust string".to_owned()),
-        VariantTest::U8 => Variant::from_u8(12),
-        VariantTest::U16 => Variant::from_u16(123),
-        VariantTest::U32 => Variant::from_u32(123),
+        VariantTest::Bool => Variant::from_bool(true).to_unique_ptr(),
+        VariantTest::F32 => Variant::from_f32(1.23).to_unique_ptr(),
+        VariantTest::F64 => Variant::from_f64(1.23).to_unique_ptr(),
+        VariantTest::I8 => Variant::from_i8(12).to_unique_ptr(),
+        VariantTest::I16 => Variant::from_i16(123).to_unique_ptr(),
+        VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
+        VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
+        VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
+        VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
+        VariantTest::U32 => Variant::from_u32(123).to_unique_ptr(),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
 
 fn can_construct_qvariant(test: VariantTest) -> bool {
     let variant = make_variant(test);
-    let_qvariant!(v = &variant);
-    ffi::test_constructed_qvariant(&v, test)
+    ffi::test_constructed_qvariant(&variant, test)
 }
 
 fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
+    let variant = v.to_rust().value();
     match test {
-        VariantTest::Bool => match &*v.to_rust() {
-            VariantImpl::Bool(b) => !*b,
+        VariantTest::Bool => match variant {
+            VariantValue::Bool(b) => !b,
             _others => false,
         },
-        VariantTest::F32 => match &*v.to_rust() {
-            VariantImpl::F32(f) => *f == 89.1,
+        VariantTest::F32 => match variant {
+            VariantValue::F32(f) => f == 89.1,
             _others => false,
         },
-        VariantTest::F64 => match &*v.to_rust() {
-            VariantImpl::F64(f) => *f == 89.1,
+        VariantTest::F64 => match variant {
+            VariantValue::F64(f) => f == 89.1,
             _others => false,
         },
-        VariantTest::I8 => match &*v.to_rust() {
-            VariantImpl::I8(i) => *i == 89,
+        VariantTest::I8 => match variant {
+            VariantValue::I8(i) => i == 89,
             _others => false,
         },
-        VariantTest::I16 => match &*v.to_rust() {
-            VariantImpl::I16(i) => *i == 8910,
+        VariantTest::I16 => match variant {
+            VariantValue::I16(i) => i == 8910,
             _others => false,
         },
-        VariantTest::I32 => match &*v.to_rust() {
-            VariantImpl::I32(i) => *i == 8910,
+        VariantTest::I32 => match variant {
+            VariantValue::I32(i) => i == 8910,
             _others => false,
         },
-        VariantTest::String => match &*v.to_rust() {
-            VariantImpl::String(s) => s == "C++ string",
+        VariantTest::String => match variant {
+            VariantValue::String(s) => s == "C++ string",
             _others => false,
         },
-        VariantTest::U8 => match &*v.to_rust() {
-            VariantImpl::U8(i) => *i == 89,
+        VariantTest::U8 => match variant {
+            VariantValue::U8(i) => i == 89,
             _others => false,
         },
-        VariantTest::U16 => match &*v.to_rust() {
-            VariantImpl::U16(i) => *i == 8910,
+        VariantTest::U16 => match variant {
+            VariantValue::U16(i) => i == 8910,
             _others => false,
         },
-        VariantTest::U32 => match &*v.to_rust() {
-            VariantImpl::U32(i) => *i == 8910,
+        VariantTest::U32 => match variant {
+            VariantValue::U32(i) => i == 8910,
             _others => false,
         },
         _others => panic!("Unsupported test: {}", test.repr),

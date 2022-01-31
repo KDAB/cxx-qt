@@ -27,9 +27,6 @@ mod my_object {
             type QString = cxx_qt_lib::QString;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
-
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
             #[namespace = "cxx_qt::sub_object"]
             type SubObject = crate::sub_object::FFICppObj;
 

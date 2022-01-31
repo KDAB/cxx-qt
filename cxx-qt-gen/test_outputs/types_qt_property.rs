@@ -36,9 +36,6 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
-
             #[rust_name = "color"]
             fn getColor(self: &MyObject) -> &QColor;
             #[rust_name = "set_color"]

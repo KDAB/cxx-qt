@@ -28,9 +28,6 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
-
             #[rust_name = "my_number"]
             fn getMyNumber(self: &MyObject) -> i32;
             #[rust_name = "set_my_number"]

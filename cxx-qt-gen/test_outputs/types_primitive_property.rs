@@ -36,9 +36,6 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
-            #[namespace = "CxxQt"]
-            type Variant = cxx_qt_lib::Variant;
-
             #[rust_name = "boolean"]
             fn getBoolean(self: &MyObject) -> bool;
             #[rust_name = "set_boolean"]
