@@ -34,7 +34,7 @@ mod my_object {
             #[namespace = ""]
             type QUrl = cxx_qt_lib::QUrl;
             #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariant;
+            type QVariant = cxx_qt_lib::QVariantCpp;
 
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
@@ -247,8 +247,8 @@ mod my_object {
         fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            variant: &cxx_qt_lib::QVariant,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
+            variant: &cxx_qt_lib::QVariantCpp,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
             let mut _cpp = CppObj::new(_cpp);
             let variant = variant.to_rust();
             return self.test_variant(&mut _cpp, &variant).to_unique_ptr();
@@ -302,7 +302,7 @@ mod my_object {
             url
         }
 
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &Variant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
             variant
         }
     }

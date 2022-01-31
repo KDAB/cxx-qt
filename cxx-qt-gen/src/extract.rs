@@ -69,7 +69,6 @@ pub(crate) enum QtTypes {
     QUrl,
     Url,
     QVariant,
-    Variant,
     U8,
     U16,
     U32,
@@ -85,7 +84,7 @@ impl QtTypes {
             Self::QDateTime | Self::DateTime => true,
             Self::QString | Self::String | Self::Str => true,
             Self::QUrl | Self::Url => true,
-            Self::QVariant | Self::Variant => true,
+            Self::QVariant => true,
             _others => false,
         }
     }
@@ -237,7 +236,6 @@ fn extract_qt_type(
             "QUrl" => Ok(QtTypes::QUrl),
             "Url" => Ok(QtTypes::Url),
             "QVariant" => Ok(QtTypes::QVariant),
-            "Variant" => Ok(QtTypes::Variant),
             "u8" => Ok(QtTypes::U8),
             "u16" => Ok(QtTypes::U16),
             "u32" => Ok(QtTypes::U32),

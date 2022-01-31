@@ -13,7 +13,7 @@ mod my_object {
         string: String,
         time: QTime,
         url: Url,
-        variant: Variant,
+        variant: QVariant,
     }
 
     #[derive(Default)]

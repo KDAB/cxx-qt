@@ -158,18 +158,21 @@ mod ffi {
     impl UniquePtr<QVariant> {}
 }
 
-/// The QVariant class acts like a union for the most common Qt data types.
-pub type QVariant = ffi::QVariant;
+/// The QVariantCpp class acts like a union for the most common Qt data types.
+///
+/// Note that this is the C++ representation and QVariant should be used in Rust.
+pub type QVariantCpp = ffi::QVariant;
 
-impl QVariant {
-    /// Create a new Rust Variant from this QVariant.
-    /// This is a copy operation so any changes will not propagate to the original QVariant.
-    pub fn to_rust(&self) -> Variant {
-        Variant::from(self)
+impl QVariantCpp {
+    /// Create a new Rust QVariant from this QVariantCpp.
+    /// This is a copy operation so any changes will not propagate to the original QVariantCpp.
+    pub fn to_rust(&self) -> QVariant {
+        QVariant::from(self)
     }
 }
 
-pub enum VariantValue {
+/// The Rust inner value of a QVariant
+pub enum QVariantValue {
     Unsupported,
     Bool(bool),
     F32(f32),
@@ -194,15 +197,15 @@ pub enum VariantValue {
     U32(u32),
 }
 
-// Define how we convert from other types into a QVariant
-trait IntoQVariant {
-    fn into_qvariant(self) -> cxx::UniquePtr<QVariant>;
+// Define how we convert from other types into a QVariantCpp
+trait IntoQVariantCpp {
+    fn into_qvariant(self) -> cxx::UniquePtr<QVariantCpp>;
 }
 
 macro_rules! into_qvariant {
     ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for $typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
+        impl IntoQVariantCpp for $typeName {
+            fn into_qvariant(self) -> cxx::UniquePtr<QVariantCpp> {
                 $name(self)
             }
         }
@@ -211,8 +214,8 @@ macro_rules! into_qvariant {
 
 macro_rules! into_qvariant_ref {
     ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for $typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
+        impl IntoQVariantCpp for $typeName {
+            fn into_qvariant(self) -> cxx::UniquePtr<QVariantCpp> {
                 $name(&self)
             }
         }
@@ -221,15 +224,15 @@ macro_rules! into_qvariant_ref {
 
 macro_rules! into_qvariant_opaque {
     ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for $typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
+        impl IntoQVariantCpp for $typeName {
+            fn into_qvariant(self) -> cxx::UniquePtr<QVariantCpp> {
                 $name(&self.to_unique_ptr())
             }
         }
     };
 }
 
-into_qvariant!(&QVariant, ffi::qvariant_init_from_qvariant);
+into_qvariant!(&QVariantCpp, ffi::qvariant_init_from_qvariant);
 into_qvariant!(bool, ffi::qvariant_init_from_bool);
 into_qvariant!(f32, ffi::qvariant_init_from_f32);
 into_qvariant!(f64, ffi::qvariant_init_from_f64);
@@ -254,20 +257,20 @@ into_qvariant!(u32, ffi::qvariant_init_from_u32);
 
 /// The Rust representation of Qt's QVariant
 ///
-/// Internally this holds a UniquePtr to a QVariant which has been constructed on the C++ side.
-pub struct Variant {
-    inner: cxx::UniquePtr<QVariant>,
+/// Internally this holds a UniquePtr to a QVariantCpp which has been constructed on the C++ side.
+pub struct QVariant {
+    inner: cxx::UniquePtr<QVariantCpp>,
 }
 
-impl Default for Variant {
+impl Default for QVariant {
     fn default() -> Self {
-        Variant::from_unique_ptr(ffi::qvariant_init())
+        QVariant::from_unique_ptr(ffi::qvariant_init())
     }
 }
 
-impl<T> From<T> for Variant
+impl<T> From<T> for QVariant
 where
-    T: IntoQVariant,
+    T: IntoQVariantCpp,
 {
     fn from(t: T) -> Self {
         Self {
@@ -276,62 +279,68 @@ where
     }
 }
 
-impl Variant {
-    /// Construct a Rust Variant from an existing UniquePtr<QVariant> this is a move operation
+impl QVariant {
+    /// Construct a Rust QVariant from an existing UniquePtr<QVariantCpp> this is a move operation
     ///
-    /// This is used in Variant::default so that we don't need to perform another copy
-    fn from_unique_ptr(ptr: cxx::UniquePtr<QVariant>) -> Self {
+    /// This is used in QVariant::default so that we don't need to perform another copy
+    fn from_unique_ptr(ptr: cxx::UniquePtr<QVariantCpp>) -> Self {
         Self { inner: ptr }
     }
 
-    // TODO: add a set_value(&mut self, value: VariantValue);
+    // TODO: add a set_value(&mut self, value: QVariantValue);
 
-    /// Returns the value of the QVariant
-    pub fn value(&self) -> VariantValue {
+    /// Returns the value of the QVariant as a Rust enum
+    pub fn value(&self) -> QVariantValue {
         match ffi::qvariant_get_type(&self.inner) {
-            ffi::QVariantType::Unsupported => VariantValue::Unsupported,
-            ffi::QVariantType::Bool => VariantValue::Bool(ffi::qvariant_to_bool(&self.inner)),
-            ffi::QVariantType::F32 => VariantValue::F32(ffi::qvariant_to_f32(&self.inner)),
-            ffi::QVariantType::F64 => VariantValue::F64(ffi::qvariant_to_f64(&self.inner)),
-            ffi::QVariantType::I8 => VariantValue::I8(ffi::qvariant_to_i8(&self.inner)),
-            ffi::QVariantType::I16 => VariantValue::I16(ffi::qvariant_to_i16(&self.inner)),
-            ffi::QVariantType::I32 => VariantValue::I32(ffi::qvariant_to_i32(&self.inner)),
+            ffi::QVariantType::Unsupported => QVariantValue::Unsupported,
+            ffi::QVariantType::Bool => QVariantValue::Bool(ffi::qvariant_to_bool(&self.inner)),
+            ffi::QVariantType::F32 => QVariantValue::F32(ffi::qvariant_to_f32(&self.inner)),
+            ffi::QVariantType::F64 => QVariantValue::F64(ffi::qvariant_to_f64(&self.inner)),
+            ffi::QVariantType::I8 => QVariantValue::I8(ffi::qvariant_to_i8(&self.inner)),
+            ffi::QVariantType::I16 => QVariantValue::I16(ffi::qvariant_to_i16(&self.inner)),
+            ffi::QVariantType::I32 => QVariantValue::I32(ffi::qvariant_to_i32(&self.inner)),
             ffi::QVariantType::QColor => {
-                VariantValue::QColor(Color::from_unique_ptr(ffi::qvariant_to_qcolor(&self.inner)))
+                QVariantValue::QColor(Color::from_unique_ptr(ffi::qvariant_to_qcolor(&self.inner)))
             }
-            ffi::QVariantType::QDate => VariantValue::QDate(ffi::qvariant_to_qdate(&self.inner)),
-            ffi::QVariantType::QDateTime => VariantValue::QDateTime(DateTime::from_unique_ptr(
+            ffi::QVariantType::QDate => QVariantValue::QDate(ffi::qvariant_to_qdate(&self.inner)),
+            ffi::QVariantType::QDateTime => QVariantValue::QDateTime(DateTime::from_unique_ptr(
                 ffi::qvariant_to_qdatetime(&self.inner),
             )),
-            ffi::QVariantType::QPoint => VariantValue::QPoint(ffi::qvariant_to_qpoint(&self.inner)),
-            ffi::QVariantType::QPointF => {
-                VariantValue::QPointF(ffi::qvariant_to_qpointf(&self.inner))
+            ffi::QVariantType::QPoint => {
+                QVariantValue::QPoint(ffi::qvariant_to_qpoint(&self.inner))
             }
-            ffi::QVariantType::QRect => VariantValue::QRect(ffi::qvariant_to_qrect(&self.inner)),
-            ffi::QVariantType::QRectF => VariantValue::QRectF(ffi::qvariant_to_qrectf(&self.inner)),
-            ffi::QVariantType::QSize => VariantValue::QSize(ffi::qvariant_to_qsize(&self.inner)),
-            ffi::QVariantType::QSizeF => VariantValue::QSizeF(ffi::qvariant_to_qsizef(&self.inner)),
-            ffi::QVariantType::QTime => VariantValue::QTime(ffi::qvariant_to_qtime(&self.inner)),
+            ffi::QVariantType::QPointF => {
+                QVariantValue::QPointF(ffi::qvariant_to_qpointf(&self.inner))
+            }
+            ffi::QVariantType::QRect => QVariantValue::QRect(ffi::qvariant_to_qrect(&self.inner)),
+            ffi::QVariantType::QRectF => {
+                QVariantValue::QRectF(ffi::qvariant_to_qrectf(&self.inner))
+            }
+            ffi::QVariantType::QSize => QVariantValue::QSize(ffi::qvariant_to_qsize(&self.inner)),
+            ffi::QVariantType::QSizeF => {
+                QVariantValue::QSizeF(ffi::qvariant_to_qsizef(&self.inner))
+            }
+            ffi::QVariantType::QTime => QVariantValue::QTime(ffi::qvariant_to_qtime(&self.inner)),
             ffi::QVariantType::QUrl => {
-                VariantValue::QUrl(Url::from_unique_ptr(ffi::qvariant_to_qurl(&self.inner)))
+                QVariantValue::QUrl(Url::from_unique_ptr(ffi::qvariant_to_qurl(&self.inner)))
             }
             ffi::QVariantType::String => {
-                VariantValue::String(ffi::qvariant_to_rust_string(&self.inner))
+                QVariantValue::String(ffi::qvariant_to_rust_string(&self.inner))
             }
-            ffi::QVariantType::U8 => VariantValue::U8(ffi::qvariant_to_u8(&self.inner)),
-            ffi::QVariantType::U16 => VariantValue::U16(ffi::qvariant_to_u16(&self.inner)),
-            ffi::QVariantType::U32 => VariantValue::U32(ffi::qvariant_to_u32(&self.inner)),
-            _others => VariantValue::Unsupported,
+            ffi::QVariantType::U8 => QVariantValue::U8(ffi::qvariant_to_u8(&self.inner)),
+            ffi::QVariantType::U16 => QVariantValue::U16(ffi::qvariant_to_u16(&self.inner)),
+            ffi::QVariantType::U32 => QVariantValue::U32(ffi::qvariant_to_u32(&self.inner)),
+            _others => QVariantValue::Unsupported,
         }
     }
 }
 
-impl crate::ToUniquePtr for Variant {
-    type CppType = QVariant;
+impl crate::ToUniquePtr for QVariant {
+    type CppType = QVariantCpp;
 
-    /// Retrieve the UniquePtr to the Qt QVariant of this Rust Variant
+    /// Retrieve the UniquePtr to the Qt QVariantCpp of this Rust QVariant
     /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QVariant> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QVariantCpp> {
         self.inner
     }
 }

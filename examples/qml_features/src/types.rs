@@ -7,16 +7,16 @@ use cxx_qt::make_qobject;
 // ANCHOR: book_macro_code
 #[make_qobject]
 mod types {
-    use cxx_qt_lib::{Variant, VariantValue};
+    use cxx_qt_lib::{QVariant, QVariantValue};
 
     pub struct Data {
-        variant: Variant,
+        variant: QVariant,
     }
 
     impl Default for Data {
         fn default() -> Self {
             Data {
-                variant: Variant::from(1_i32),
+                variant: QVariant::from(1_i32),
             }
         }
     }
@@ -28,21 +28,21 @@ mod types {
         #[invokable]
         fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
-                VariantValue::Bool(b) => {
-                    cpp.set_variant(Variant::from(!b));
+                QVariantValue::Bool(b) => {
+                    cpp.set_variant(QVariant::from(!b));
                 }
-                VariantValue::I32(i) => {
-                    cpp.set_variant(Variant::from(i * 2));
+                QVariantValue::I32(i) => {
+                    cpp.set_variant(QVariant::from(i * 2));
                 }
                 _ => panic!("Incorrect variant type!"),
             }
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &Variant) -> Variant {
+        fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
             match variant.value() {
-                VariantValue::Bool(b) => Variant::from(!b),
-                VariantValue::I32(i) => Variant::from(i * 2),
+                QVariantValue::Bool(b) => QVariant::from(!b),
+                QVariantValue::I32(i) => QVariant::from(i * 2),
                 _ => panic!("Incorrect variant type!"),
             }
         }

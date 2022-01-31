@@ -40,7 +40,7 @@ mod qurl;
 pub use qurl::{QUrl, Url};
 
 mod qvariant;
-pub use qvariant::{QVariant, Variant, VariantValue};
+pub use qvariant::{QVariant, QVariantCpp, QVariantValue};
 
 mod update_requester;
 pub use update_requester::{UpdateRequester, UpdateRequesterCpp};

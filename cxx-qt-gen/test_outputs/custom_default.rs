@@ -38,7 +38,7 @@ mod my_object {
             #[namespace = ""]
             type QUrl = cxx_qt_lib::QUrl;
             #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariant;
+            type QVariant = cxx_qt_lib::QVariantCpp;
 
             #[rust_name = "public"]
             fn getPublic(self: &MyObject) -> i32;
