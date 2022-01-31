@@ -50,7 +50,7 @@ mod my_object {
             #[namespace = ""]
             type QUrl = cxx_qt_lib::QUrl;
             #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariant;
+            type QVariant = cxx_qt_lib::QVariantCpp;
 
             #[rust_name = "color"]
             fn getColor(self: &MyObject) -> &QColor;
@@ -245,11 +245,11 @@ mod my_object {
             self.cpp.as_mut().set_url(&value.to_unique_ptr());
         }
 
-        pub fn variant(&self) -> cxx_qt_lib::Variant {
+        pub fn variant(&self) -> cxx_qt_lib::QVariant {
             self.cpp.variant().to_rust()
         }
 
-        pub fn set_variant(&mut self, value: cxx_qt_lib::Variant) {
+        pub fn set_variant(&mut self, value: cxx_qt_lib::QVariant) {
             self.cpp.as_mut().set_variant(&value.to_unique_ptr());
         }
 
@@ -284,7 +284,7 @@ mod my_object {
         string: String,
         time: QTime,
         url: Url,
-        variant: Variant,
+        variant: QVariant,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

@@ -7,7 +7,7 @@
 use core::pin::Pin;
 use cxx_qt_lib::{
     Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
-    QString, QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
+    QString, QTime, QUrl, QVariant, QVariantValue, ToUniquePtr, Url,
 };
 use std::str::FromStr;
 
@@ -53,7 +53,7 @@ mod ffi {
         type QDateTime = cxx_qt_lib::QDateTime;
         type QString = cxx_qt_lib::QString;
         type QUrl = cxx_qt_lib::QUrl;
-        type QVariant = cxx_qt_lib::QVariant;
+        type QVariant = cxx_qt_lib::QVariantCpp;
         type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPoint = cxx_qt_lib::QPoint;
@@ -227,35 +227,35 @@ fn can_read_qurl(u: &QUrl, test: &QString) -> bool {
     u.to_rust().string() == test.to_rust()
 }
 
-fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
+fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
     match test {
-        VariantTest::Bool => Variant::from(true).to_unique_ptr(),
-        VariantTest::F32 => Variant::from(1.23_f32).to_unique_ptr(),
-        VariantTest::F64 => Variant::from(1.23_f64).to_unique_ptr(),
-        VariantTest::I8 => Variant::from(12_i8).to_unique_ptr(),
-        VariantTest::I16 => Variant::from(123_i16).to_unique_ptr(),
-        VariantTest::I32 => Variant::from(123_i32).to_unique_ptr(),
-        VariantTest::QColor => Variant::from(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
-        VariantTest::QDate => Variant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
-        VariantTest::QDateTime => Variant::from(DateTime::from_date_and_time(
+        VariantTest::Bool => QVariant::from(true).to_unique_ptr(),
+        VariantTest::F32 => QVariant::from(1.23_f32).to_unique_ptr(),
+        VariantTest::F64 => QVariant::from(1.23_f64).to_unique_ptr(),
+        VariantTest::I8 => QVariant::from(12_i8).to_unique_ptr(),
+        VariantTest::I16 => QVariant::from(123_i16).to_unique_ptr(),
+        VariantTest::I32 => QVariant::from(123_i32).to_unique_ptr(),
+        VariantTest::QColor => QVariant::from(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
+        VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
+        VariantTest::QDateTime => QVariant::from(DateTime::from_date_and_time(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
         ))
         .to_unique_ptr(),
-        VariantTest::QPoint => Variant::from(QPoint::new(1, 3)).to_unique_ptr(),
-        VariantTest::QPointF => Variant::from(QPointF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QRect => Variant::from(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
-        VariantTest::QRectF => Variant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr(),
-        VariantTest::QSize => Variant::from(QSize::new(1, 3)).to_unique_ptr(),
-        VariantTest::QSizeF => Variant::from(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QTime => Variant::from(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
+        VariantTest::QPoint => QVariant::from(QPoint::new(1, 3)).to_unique_ptr(),
+        VariantTest::QPointF => QVariant::from(QPointF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QRect => QVariant::from(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
+        VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr(),
+        VariantTest::QSize => QVariant::from(QSize::new(1, 3)).to_unique_ptr(),
+        VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
         VariantTest::QUrl => {
-            Variant::from(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
+            QVariant::from(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
         }
-        VariantTest::String => Variant::from("Rust string".to_owned()).to_unique_ptr(),
-        VariantTest::U8 => Variant::from(12_u8).to_unique_ptr(),
-        VariantTest::U16 => Variant::from(123_u16).to_unique_ptr(),
-        VariantTest::U32 => Variant::from(123_u32).to_unique_ptr(),
+        VariantTest::String => QVariant::from("Rust string".to_owned()).to_unique_ptr(),
+        VariantTest::U8 => QVariant::from(12_u8).to_unique_ptr(),
+        VariantTest::U16 => QVariant::from(123_u16).to_unique_ptr(),
+        VariantTest::U32 => QVariant::from(123_u32).to_unique_ptr(),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
@@ -265,35 +265,35 @@ fn can_construct_qvariant(test: VariantTest) -> bool {
     ffi::test_constructed_qvariant(&variant, test)
 }
 
-fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
+fn can_read_qvariant(v: &cxx_qt_lib::QVariantCpp, test: VariantTest) -> bool {
     let variant = v.to_rust().value();
     match test {
         VariantTest::Bool => match variant {
-            VariantValue::Bool(b) => !b,
+            QVariantValue::Bool(b) => !b,
             _others => false,
         },
         VariantTest::F32 => match variant {
-            VariantValue::F32(f) => f == 89.1,
+            QVariantValue::F32(f) => f == 89.1,
             _others => false,
         },
         VariantTest::F64 => match variant {
-            VariantValue::F64(f) => f == 89.1,
+            QVariantValue::F64(f) => f == 89.1,
             _others => false,
         },
         VariantTest::I8 => match variant {
-            VariantValue::I8(i) => i == 89,
+            QVariantValue::I8(i) => i == 89,
             _others => false,
         },
         VariantTest::I16 => match variant {
-            VariantValue::I16(i) => i == 8910,
+            QVariantValue::I16(i) => i == 8910,
             _others => false,
         },
         VariantTest::I32 => match variant {
-            VariantValue::I32(i) => i == 8910,
+            QVariantValue::I32(i) => i == 8910,
             _others => false,
         },
         VariantTest::QColor => match variant {
-            VariantValue::QColor(color) => {
+            QVariantValue::QColor(color) => {
                 color.alpha() == 255
                     && color.red() == 0
                     && color.green() == 255
@@ -302,13 +302,13 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             _others => false,
         },
         VariantTest::QDate => match variant {
-            VariantValue::QDate(date) => {
+            QVariantValue::QDate(date) => {
                 date.year() == 2021 && date.month() == 12 && date.day() == 31
             }
             _others => false,
         },
         VariantTest::QDateTime => match variant {
-            VariantValue::QDateTime(date_time) => {
+            QVariantValue::QDateTime(date_time) => {
                 date_time.date().year() == 2021
                     && date_time.date().month() == 12
                     && date_time.date().day() == 31
@@ -320,21 +320,21 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             _others => false,
         },
         VariantTest::QPoint => match variant {
-            VariantValue::QPoint(point) => point.x() == 8 && point.y() == 9,
+            QVariantValue::QPoint(point) => point.x() == 8 && point.y() == 9,
             _others => false,
         },
         VariantTest::QPointF => match variant {
-            VariantValue::QPointF(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
+            QVariantValue::QPointF(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
             _others => false,
         },
         VariantTest::QRect => match variant {
-            VariantValue::QRect(rect) => {
+            QVariantValue::QRect(rect) => {
                 rect.x() == 123 && rect.y() == 456 && rect.width() == 246 && rect.height() == 912
             }
             _others => false,
         },
         VariantTest::QRectF => match variant {
-            VariantValue::QRectF(rectf) => {
+            QVariantValue::QRectF(rectf) => {
                 ((rectf.x() - 1.23).abs() < f64::EPSILON)
                     && ((rectf.y() - 4.56).abs() < f64::EPSILON)
                     && ((rectf.width() - 2.46).abs() < f64::EPSILON)
@@ -343,37 +343,37 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             _others => false,
         },
         VariantTest::QSize => match variant {
-            VariantValue::QSize(size) => size.width() == 8 && size.height() == 9,
+            QVariantValue::QSize(size) => size.width() == 8 && size.height() == 9,
             _others => false,
         },
         VariantTest::QSizeF => match variant {
-            VariantValue::QSizeF(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
+            QVariantValue::QSizeF(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
             _others => false,
         },
         VariantTest::QTime => match variant {
-            VariantValue::QTime(time) => {
+            QVariantValue::QTime(time) => {
                 time.hour() == 4 && time.minute() == 3 && time.second() == 2 && time.msec() == 1
             }
             _others => false,
         },
         VariantTest::QUrl => match variant {
-            VariantValue::QUrl(url) => url.string() == "https://github.com/KDAB/cxx-qt",
+            QVariantValue::QUrl(url) => url.string() == "https://github.com/KDAB/cxx-qt",
             _others => false,
         },
         VariantTest::String => match variant {
-            VariantValue::String(s) => s == "C++ string",
+            QVariantValue::String(s) => s == "C++ string",
             _others => false,
         },
         VariantTest::U8 => match variant {
-            VariantValue::U8(i) => i == 89,
+            QVariantValue::U8(i) => i == 89,
             _others => false,
         },
         VariantTest::U16 => match variant {
-            VariantValue::U16(i) => i == 8910,
+            QVariantValue::U16(i) => i == 8910,
             _others => false,
         },
         VariantTest::U32 => match variant {
-            VariantValue::U32(i) => i == 8910,
+            QVariantValue::U32(i) => i == 8910,
             _others => false,
         },
         _others => panic!("Unsupported test: {}", test.repr),

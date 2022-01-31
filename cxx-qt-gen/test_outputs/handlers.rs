@@ -41,7 +41,7 @@ mod my_object {
             #[namespace = ""]
             type QUrl = cxx_qt_lib::QUrl;
             #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariant;
+            type QVariant = cxx_qt_lib::QVariantCpp;
 
             #[namespace = "rust::cxxqtlib1"]
             type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;

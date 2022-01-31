@@ -92,8 +92,7 @@ impl CppType for QtTypes {
             Self::QSizeF => vec!["#include <QtCore/QSizeF>".to_owned()],
             Self::QTime => vec!["#include <QtCore/QTime>".to_owned()],
             Self::QUrl | Self::Url => vec!["#include <QtCore/QUrl>".to_owned()],
-            // FIXME: do we need both variant and qvariant here?
-            Self::QVariant | Self::Variant => vec!["#include <QtCore/QVariant>".to_owned()],
+            Self::QVariant => vec!["#include <QtCore/QVariant>".to_owned()],
             _others => vec![],
         }
     }
@@ -120,7 +119,7 @@ impl CppType for QtTypes {
             Self::Str | Self::String | Self::QString => true,
             Self::QTime => true,
             Self::QUrl | Self::Url => true,
-            Self::QVariant | Self::Variant => true,
+            Self::QVariant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
@@ -169,7 +168,7 @@ impl CppType for QtTypes {
             Self::Str | Self::String | Self::QString => true,
             Self::QTime => true,
             Self::QUrl | Self::Url => true,
-            Self::QVariant | Self::Variant => true,
+            Self::QVariant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
         }
@@ -209,7 +208,7 @@ impl CppType for QtTypes {
             Self::Str | Self::String | Self::QString => "QString",
             Self::QTime => "QTime",
             Self::QUrl | Self::Url => "QUrl",
-            Self::QVariant | Self::Variant => "QVariant",
+            Self::QVariant => "QVariant",
             Self::U8 => "quint8",
             Self::U16 => "quint16",
             Self::U32 => "quint32",

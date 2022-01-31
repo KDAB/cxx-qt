@@ -67,7 +67,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &Variant) -> Variant {
+        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
             variant
         }
     }
