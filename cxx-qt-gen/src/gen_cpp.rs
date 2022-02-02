@@ -24,8 +24,6 @@ trait CppType {
     fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
-    /// Whether this type is opaque so will be a UniquePtr<T> when returned
-    fn is_opaque(&self) -> bool;
     /// Whether this type is a Pin<T>
     fn is_pin(&self) -> bool;
     /// Whether this type is a pointer
@@ -117,16 +115,6 @@ impl CppType for QtTypes {
             Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
-        }
-    }
-
-    /// Whether this type is opaque so will be a UniquePtr<T> when returned
-    fn is_opaque(&self) -> bool {
-        match self {
-            Self::QColor | Self::Color => true,
-            Self::QString | Self::String | Self::Str => true,
-            Self::QVariant | Self::Variant => true,
-            _others => false,
         }
     }
 

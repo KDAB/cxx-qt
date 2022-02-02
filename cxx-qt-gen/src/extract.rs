@@ -70,6 +70,18 @@ pub(crate) enum QtTypes {
     Unknown,
 }
 
+impl QtTypes {
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned from Rust to C++
+    pub(crate) fn is_opaque(&self) -> bool {
+        match self {
+            Self::QColor | Self::Color => true,
+            Self::QString | Self::String | Self::Str => true,
+            Self::QVariant | Self::Variant => true,
+            _others => false,
+        }
+    }
+}
+
 /// Describes a type
 #[derive(Debug)]
 pub(crate) struct ParameterType {
@@ -514,22 +526,9 @@ fn extract_invokable(
         rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
     };
     // We need a wrapper for any opaque types or pointers in the parameters or return types
-    let return_is_opaque = if let Some(return_type) = &return_type {
-        matches!(
-            return_type.qt_type,
-            QtTypes::CppObj { .. }
-                | QtTypes::QColor
-                | QtTypes::Color
-                | QtTypes::QString
-                | QtTypes::String
-                | QtTypes::Str
-                | QtTypes::QVariant
-                | QtTypes::Variant
-        )
-    } else {
-        false
-    };
-    let ident_wrapper = if return_is_opaque
+    let ident_wrapper = if return_type
+        .as_ref()
+        .map_or(false, |return_type| return_type.qt_type.is_opaque())
         || parameters
             .iter()
             .any(|parameter| matches!(parameter.type_ident.qt_type, QtTypes::CppObj { .. }))

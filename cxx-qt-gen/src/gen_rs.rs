@@ -17,8 +17,6 @@ trait RustType {
     fn is_ref(&self) -> bool;
     /// Whether this type is a this (eg the T in Pin<T>)
     fn is_this(&self) -> bool;
-    /// Whether this type is opaque so will be a UniquePtr<T> when returned
-    fn is_opaque(&self) -> bool;
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
@@ -46,16 +44,6 @@ impl RustType for QtTypes {
     fn is_this(&self) -> bool {
         match self {
             Self::CppObj { external, .. } => external == &false,
-            _others => false,
-        }
-    }
-
-    /// Whether this type is opaque so will be a UniquePtr<T> when returned
-    fn is_opaque(&self) -> bool {
-        match self {
-            Self::QColor | Self::Color => true,
-            Self::QString | Self::String | Self::Str => true,
-            Self::QVariant | Self::Variant => true,
             _others => false,
         }
     }
