@@ -11,6 +11,8 @@ mod my_object {
 
             type MyObject;
             #[namespace = ""]
+            type QColor = cxx_qt_lib::QColor;
+            #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
             type QPointF = cxx_qt_lib::QPointF;

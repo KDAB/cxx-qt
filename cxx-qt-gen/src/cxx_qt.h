@@ -18,6 +18,7 @@
 #include <QEvent>
 #include <QObject>
 #include <QString>
+#include <QVariant>
 
 #include "rust/cxx.h"
 

@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    let_qcolor, let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRect,
-    QRectF, QSize, QSizeF, QString, QVariant, Variant, VariantImpl,
+    let_qstring, let_qvariant, Color, MapQtValue, QColor, QPoint, QPointF, QRect, QRectF, QSize,
+    QSizeF, QString, QVariant, Variant, VariantImpl,
 };
 
 #[cxx::bridge]
@@ -64,6 +64,7 @@ mod ffi {
         fn can_map_to_qstring() -> bool;
         fn can_handle_qstring_change() -> bool;
 
+        fn make_color(test: ColorTest) -> UniquePtr<QColor>;
         fn can_construct_qcolor(test: ColorTest) -> bool;
         fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
 
@@ -145,88 +146,35 @@ fn can_handle_qstring_change() -> bool {
     rs == long_s
 }
 
-fn can_construct_qcolor(test: ColorTest) -> bool {
-    let color = match test {
-        ColorTest::Rgb_Red => Color::ARGB {
-            alpha: 255,
-            red: 255,
-            green: 0,
-            blue: 0,
-        },
-        ColorTest::Rgb_Green => Color::ARGB {
-            alpha: 255,
-            red: 0,
-            green: 255,
-            blue: 0,
-        },
-        ColorTest::Rgb_Blue => Color::ARGB {
-            alpha: 255,
-            red: 0,
-            green: 0,
-            blue: 255,
-        },
-        ColorTest::Rgb_Transparent => Color::ARGB {
-            alpha: 0,
-            red: 0,
-            green: 0,
-            blue: 0,
-        },
+fn make_color(test: ColorTest) -> cxx::UniquePtr<QColor> {
+    match test {
+        ColorTest::Rgb_Red => Color::from_rgba(255, 0, 0, 255).to_unique_ptr(),
+        ColorTest::Rgb_Green => Color::from_rgba(0, 255, 0, 255).to_unique_ptr(),
+        ColorTest::Rgb_Blue => Color::from_rgba(0, 0, 255, 255).to_unique_ptr(),
+        ColorTest::Rgb_Transparent => Color::from_rgba(0, 0, 0, 0).to_unique_ptr(),
         _others => panic!("Unsupported test: {}", test.repr),
-    };
+    }
+}
 
-    let_qcolor!(c = &color);
-    ffi::test_constructed_qcolor(&c, test)
+fn can_construct_qcolor(test: ColorTest) -> bool {
+    let color = make_color(test);
+    ffi::test_constructed_qcolor(&color, test)
 }
 
 fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
+    let color = c.to_rust();
     match test {
         ColorTest::Rgb_Red => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 255 && green == 0 && blue == 0,
-                _others => false,
-            }
+            color.alpha() == 255 && color.red() == 255 && color.green() == 0 && color.blue() == 0
         }
         ColorTest::Rgb_Green => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 0 && green == 255 && blue == 0,
-                _others => false,
-            }
+            color.alpha() == 255 && color.red() == 0 && color.green() == 255 && color.blue() == 0
         }
         ColorTest::Rgb_Blue => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 255 && red == 0 && green == 0 && blue == 255,
-                _others => false,
-            }
+            color.alpha() == 255 && color.red() == 0 && color.green() == 0 && color.blue() == 255
         }
         ColorTest::Rgb_Transparent => {
-            let rs_c = c.to_rust();
-            match rs_c {
-                Some(Color::ARGB {
-                    alpha,
-                    red,
-                    green,
-                    blue,
-                }) => alpha == 0 && red == 0 && green == 0 && blue == 0,
-                _others => false,
-            }
+            color.alpha() == 0 && color.red() == 0 && color.green() == 0 && color.blue() == 0
         }
         _others => panic!("Unsupported test: {}", test.repr),
     }

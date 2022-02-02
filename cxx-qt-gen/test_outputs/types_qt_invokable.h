@@ -11,6 +11,7 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QVariant>
+#include <QtGui/QColor>
 
 namespace cxx_qt::my_object {
 
@@ -24,6 +25,7 @@ public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
 
+  Q_INVOKABLE QColor testColor(const QColor& color);
   Q_INVOKABLE QPoint testPoint(const QPoint& point);
   Q_INVOKABLE QPointF testPointf(const QPointF& pointf);
   Q_INVOKABLE QRect testRect(const QRect& rect);

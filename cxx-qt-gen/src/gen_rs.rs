@@ -17,6 +17,8 @@ trait RustType {
     fn is_ref(&self) -> bool;
     /// Whether this type is a this (eg the T in Pin<T>)
     fn is_this(&self) -> bool;
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool;
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
@@ -27,6 +29,7 @@ impl RustType for QtTypes {
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
+            Self::Color => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
@@ -47,6 +50,14 @@ impl RustType for QtTypes {
         }
     }
 
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool {
+        match self {
+            Self::QColor | Self::Color => true,
+            _others => false,
+        }
+    }
+
     /// The ident of the type when used as a parameter on a function
     fn param_type_ident(&self) -> Ident {
         match self {
@@ -56,6 +67,7 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
+            Self::Color | Self::QColor => format_ident!("QColor"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
@@ -87,6 +99,7 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
+            Self::Color | Self::QColor => quote! {cxx_qt_lib::QColor},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
@@ -211,7 +224,13 @@ pub fn generate_qobject_cxx(
                 let type_idents = &return_type.idents;
 
                 // Determine if the return type is a ref
-                if return_type.is_ref {
+                if return_type.qt_type.is_opaque() {
+                    let return_type_ident = return_type.qt_type.param_type_ident();
+                    rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
+                        fn #ident(self: &#rust_class_name) -> UniquePtr<#return_type_ident>;
+                    });
+                } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name) -> &#(#type_idents)::*;
@@ -293,7 +312,13 @@ pub fn generate_qobject_cxx(
                 let type_idents = &return_type.idents;
 
                 // Determine if the return type is a ref
-                if return_type.is_ref {
+                if return_type.qt_type.is_opaque() {
+                    let return_type_ident = return_type.qt_type.param_type_ident();
+                    rs_functions.push(quote! {
+                        #[cxx_name = #ident_cpp_str]
+                        fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> UniquePtr<#return_type_ident>;
+                    });
+                } else if return_type.is_ref {
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
                         fn #ident(self: &#rust_class_name, #(#parameters_quotes),*) -> &#(#type_idents)::*;
@@ -428,6 +453,8 @@ pub fn generate_qobject_cxx(
 
                 type #class_name;
 
+                #[namespace = ""]
+                type QColor = cxx_qt_lib::QColor;
                 #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
@@ -602,7 +629,7 @@ fn invokable_generate_wrapper(
     ident_wrapper: &Ident,
 ) -> Result<TokenStream, TokenStream> {
     let ident = &invokable.ident.rust_ident;
-    let return_type = invokable.original_method.sig.output.clone();
+    let return_type_orig = invokable.original_method.sig.output.clone();
 
     let mut input_parameters = vec![];
     let mut output_parameters = vec![];
@@ -654,8 +681,20 @@ fn invokable_generate_wrapper(
         }
     }
 
+    if let Some(return_type) = &invokable.return_type {
+        if return_type.qt_type.is_opaque() {
+            let return_type_ident = return_type.qt_type.full_param_type();
+            return Ok(quote! {
+                fn #ident_wrapper(&self, #(#input_parameters),*) -> cxx::UniquePtr<#return_type_ident> {
+                    #(#wrappers)*
+                    return self.#ident(#(#output_parameters),*).to_unique_ptr();
+                }
+            });
+        }
+    }
+
     Ok(quote! {
-        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type {
+        fn #ident_wrapper(&self, #(#input_parameters),*) #return_type_orig {
             #(#wrappers)*
             return self.#ident(#(#output_parameters),*);
         }

@@ -26,6 +26,8 @@ trait CppType {
     fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool;
     /// Whether this type is a Pin<T>
     fn is_pin(&self) -> bool;
     /// Whether this type is a pointer
@@ -70,6 +72,7 @@ impl CppType for QtTypes {
     fn convert_into_cpp(&self) -> Option<&'static str> {
         match self {
             Self::Bool => None,
+            Self::Color => None,
             Self::F32 | Self::F64 => None,
             Self::I8 | Self::I16 | Self::I32 => None,
             Self::QPoint => None,
@@ -80,7 +83,6 @@ impl CppType for QtTypes {
             Self::QSizeF => None,
             Self::Str => Some("rustStrToQString"),
             Self::String => Some("rustStringToQString"),
-            Self::QVariant => None,
             Self::Variant => Some("::CxxQt::rustVariantToQVariant"),
             Self::U8 | Self::U16 | Self::U32 => None,
             _others => unreachable!(),
@@ -104,6 +106,7 @@ impl CppType for QtTypes {
                 "#include \"cxx-qt-gen/include/{}.h\"",
                 cpp_type_idents[cpp_type_idents.len() - 2]
             )],
+            Self::Color | Self::QColor => vec!["#include <QtGui/QColor>".to_owned()],
             Self::QPoint => vec!["#include <QtCore/QPoint>".to_owned()],
             Self::QPointF => vec!["#include <QtCore/QPointF>".to_owned()],
             Self::QRect => vec!["#include <QtCore/QRect>".to_owned()],
@@ -126,18 +129,25 @@ impl CppType for QtTypes {
             Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
+            Self::Color | Self::QColor => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str => true,
-            Self::String => true,
-            Self::QString => true,
+            Self::Str | Self::String | Self::QString => true,
             Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
+        }
+    }
+
+    /// Whether this type is opaque so will be a UniquePtr<T> when returned
+    fn is_opaque(&self) -> bool {
+        match self {
+            Self::QColor | Self::Color => true,
+            _others => false,
         }
     }
 
@@ -172,15 +182,14 @@ impl CppType for QtTypes {
             Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
+            Self::Color | Self::QColor => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str => true,
-            Self::String => true,
-            Self::QString => true,
+            Self::Str | Self::String | Self::QString => true,
             Self::QVariant | Self::Variant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
             _other => unreachable!(),
@@ -209,6 +218,7 @@ impl CppType for QtTypes {
             Self::I8 => "qint8",
             Self::I16 => "qint16",
             Self::I32 => "qint32",
+            Self::Color | Self::QColor => "QColor",
             Self::QPoint => "QPoint",
             Self::QPointF => "QPointF",
             Self::QRect => "QRect",
@@ -414,7 +424,9 @@ fn generate_invokables_cpp(
                 "#,
                 // Decide if the body needs a return or converter
                 body = if let Some(return_type) = &return_type {
-                    if let Some(converter_ident) = return_type.convert_into_cpp() {
+                    if return_type.is_opaque() {
+                        format!("return std::move(*{body})", body = body)
+                    } else if let Some(converter_ident) = return_type.convert_into_cpp() {
                         format!("return {converter}({body})", converter = converter_ident, body = body)
                     } else {
                         format!("return {body}", body = body)

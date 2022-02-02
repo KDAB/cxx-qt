@@ -47,7 +47,6 @@ pub trait PropertyChangeHandler<C, P> {
 /// they can be used inside macros. You should not use anything inside here
 /// from another crate even though that would compile.
 pub mod private {
-    pub use crate::qcolor::StackQColor;
     pub use crate::qstring::StackQString;
     pub use crate::qvariant::StackQVariant;
 }

@@ -9,10 +9,12 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        let_qvariant, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant, Variant, VariantImpl,
+        let_qvariant, Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QVariant,
+        Variant, VariantImpl,
     };
 
     pub struct Data {
+        color: Color,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -25,6 +27,7 @@ mod mock_qt_types {
     impl Default for Data {
         fn default() -> Self {
             Data {
+                color: Color::from_rgba(255, 0, 0, 255),
                 point: QPoint::new(1, 3),
                 pointf: QPointF::new(1.0, 3.0),
                 rect: QRect::new(1, 2, 3, 4),
@@ -40,6 +43,17 @@ mod mock_qt_types {
     struct RustObj;
 
     impl RustObj {
+        #[invokable]
+        fn test_color_property(&self, cpp: &mut CppObj) {
+            let color = Color::from_rgba(0, 0, 255, 255).to_unique_ptr();
+            cpp.set_color(&color);
+        }
+
+        #[invokable]
+        fn test_color_invokable(&self, _color: &QColor) -> Color {
+            Color::from_rgba(0, 255, 0, 255)
+        }
+
         #[invokable]
         fn test_point_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.point();

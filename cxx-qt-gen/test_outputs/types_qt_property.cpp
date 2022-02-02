@@ -13,6 +13,27 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
+const QColor&
+MyObject::getColor() const
+{
+  return m_color;
+}
+
+void
+MyObject::setColor(const QColor& value)
+{
+  if (!m_initialised) {
+    m_color = value;
+    return;
+  }
+
+  if (value != m_color) {
+    m_color = value;
+
+    runOnGUIThread([&]() { Q_EMIT colorChanged(); });
+  }
+}
+
 const QPoint&
 MyObject::getPoint() const
 {
