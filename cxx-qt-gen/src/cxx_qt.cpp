@@ -703,16 +703,17 @@ enum class QVariantType : uint8_t
   I8 = 4,
   I16 = 5,
   I32 = 6,
-  QPoint = 7,
-  QPointF = 8,
-  QRect = 9,
-  QRectF = 10,
-  QSize = 11,
-  QSizeF = 12,
-  String = 13,
-  U8 = 14,
-  U16 = 15,
-  U32 = 16,
+  QColor = 7,
+  QPoint = 8,
+  QPointF = 9,
+  QRect = 10,
+  QRectF = 11,
+  QSize = 12,
+  QSizeF = 13,
+  String = 14,
+  U8 = 15,
+  U16 = 16,
+  U32 = 17,
 };
 
 } // namespace
@@ -759,6 +760,12 @@ extern "C"
                                      qint32 i) noexcept
   {
     new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
+  }
+
+  void cxxqt1$qvariant$init$from$qcolor(std::unique_ptr<QVariant>* ptr,
+                                        const QColor& color) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(color));
   }
 
   void cxxqt1$qvariant$init$from$qpoint(std::unique_ptr<QVariant>* ptr,
@@ -839,6 +846,8 @@ extern "C"
         return QVariantType::I16;
       case QMetaType::Int:
         return QVariantType::I32;
+      case QMetaType::QColor:
+        return QVariantType::QColor;
       case QMetaType::QPoint:
         return QVariantType::QPoint;
       case QMetaType::QPointF:
@@ -898,6 +907,13 @@ extern "C"
   {
     Q_ASSERT(self.canConvert<qint32>());
     return self.value<qint32>();
+  }
+
+  void cxxqt1$qvariant$to$qcolor(const QVariant& self,
+                                 std::unique_ptr<QColor>* ptr) noexcept
+  {
+    Q_ASSERT(self.canConvert<QColor>());
+    new (ptr) std::unique_ptr<QColor>(new QColor(self.value<QColor>()));
   }
 
   QPoint cxxqt1$qvariant$to$qpoint(const QVariant& self) noexcept

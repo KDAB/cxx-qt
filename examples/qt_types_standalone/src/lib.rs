@@ -27,6 +27,7 @@ mod ffi {
         I8,
         I16,
         I32,
+        QColor,
         QPoint,
         QPointF,
         QRect,
@@ -238,6 +239,9 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::I8 => Variant::from_i8(12).to_unique_ptr(),
         VariantTest::I16 => Variant::from_i16(123).to_unique_ptr(),
         VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
+        VariantTest::QColor => {
+            Variant::from_qcolor(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr()
+        }
         VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
         VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::QRect => Variant::from_qrect(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
@@ -284,6 +288,15 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         VariantTest::I32 => match variant {
             VariantValue::I32(i) => i == 8910,
+            _others => false,
+        },
+        VariantTest::QColor => match variant {
+            VariantValue::QColor(color) => {
+                color.alpha() == 255
+                    && color.red() == 0
+                    && color.green() == 255
+                    && color.blue() == 0
+            }
             _others => false,
         },
         VariantTest::QPoint => match variant {
