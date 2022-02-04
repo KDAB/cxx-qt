@@ -139,6 +139,13 @@ pub struct Color {
 }
 
 impl Color {
+    /// Construct a Rust Color from an existing UniquePtr<QColor> this is a move operation
+    ///
+    /// This is used in QVariant::value so that we don't need to perform another copy
+    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QColor>) -> Self {
+        Self { inner: ptr }
+    }
+
     /// Construct a Rust Color from an existing QColor, this is a copy operation.
     pub fn from_qcolor(qcolor: &QColor) -> Self {
         Self {

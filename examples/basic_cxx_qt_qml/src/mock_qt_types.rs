@@ -282,6 +282,14 @@ mod mock_qt_types {
                     let variant = Variant::from_i32(i * 2).to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QColor(mut color) => {
+                    color.set_red(0);
+                    color.set_green(0);
+                    color.set_blue(255);
+                    color.set_alpha(255);
+                    let variant = Variant::from_qcolor(color).to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::QPoint(point) => {
                     let variant = Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
                         .to_unique_ptr();
@@ -352,6 +360,13 @@ mod mock_qt_types {
                 VariantValue::I8(i) => Variant::from_i8(i * 2),
                 VariantValue::I16(i) => Variant::from_i16(i * 2),
                 VariantValue::I32(i) => Variant::from_i32(i * 2),
+                VariantValue::QColor(mut color) => {
+                    color.set_red(0);
+                    color.set_green(255);
+                    color.set_blue(0);
+                    color.set_alpha(255);
+                    Variant::from_qcolor(color)
+                }
                 VariantValue::QPoint(point) => {
                     Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
                 }
