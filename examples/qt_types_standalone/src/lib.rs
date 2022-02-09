@@ -9,6 +9,7 @@ use cxx_qt_lib::{
     Color, DateTime, MapQtValue, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize,
     QSizeF, QString, QTime, QUrl, QVariant, ToUniquePtr, Url, Variant, VariantValue,
 };
+use std::str::FromStr;
 
 #[cxx::bridge]
 mod ffi {
@@ -214,7 +215,7 @@ fn can_read_qdatetime(dt: &QDateTime, date: &QDate, time: &QTime) -> bool {
 }
 
 fn can_construct_qurl(test: &QString) -> bool {
-    let url = Url::from_str(&test.to_rust()).to_unique_ptr();
+    let url = Url::from_str(&test.to_rust()).unwrap().to_unique_ptr();
 
     ffi::test_constructed_qurl(&url, test)
 }
