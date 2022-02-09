@@ -174,6 +174,7 @@ TEST_CASE("Can construct a QVariant on the Rust side")
   CHECK(can_construct_qvariant(VariantTest::QSize));
   CHECK(can_construct_qvariant(VariantTest::QSizeF));
   CHECK(can_construct_qvariant(VariantTest::QTime));
+  CHECK(can_construct_qvariant(VariantTest::QUrl));
   CHECK(can_construct_qvariant(VariantTest::String));
   CHECK(can_construct_qvariant(VariantTest::U8));
   CHECK(can_construct_qvariant(VariantTest::U16));
@@ -224,6 +225,9 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
     case VariantTest::QTime:
       return v.value<QTime>().hour() == 1 && v.value<QTime>().minute() == 2 &&
              v.value<QTime>().second() == 3 && v.value<QTime>().msec() == 4;
+    case VariantTest::QUrl:
+      return v.value<QUrl>().toString() ==
+             QStringLiteral("https://github.com/KDAB");
     case VariantTest::String:
       return v.toString() == QStringLiteral("Rust string");
     case VariantTest::U8:
@@ -259,6 +263,7 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   CHECK(runTest(VariantTest::QSize));
   CHECK(runTest(VariantTest::QSizeF));
   CHECK(runTest(VariantTest::QTime));
+  CHECK(runTest(VariantTest::QUrl));
   CHECK(runTest(VariantTest::String));
   CHECK(runTest(VariantTest::U8));
   CHECK(runTest(VariantTest::U16));
@@ -293,6 +298,9 @@ TEST_CASE("Can read a QVariant on the Rust side")
                           VariantTest::QSizeF));
   CHECK(can_read_qvariant(QVariant::fromValue<QTime>(QTime(4, 3, 2, 1)),
                           VariantTest::QTime));
+  CHECK(can_read_qvariant(QVariant::fromValue<QUrl>(QUrl(
+                            QStringLiteral("https://github.com/KDAB/cxx-qt"))),
+                          VariantTest::QUrl));
   CHECK(can_read_qvariant(QVariant::fromValue(QStringLiteral("C++ string")),
                           VariantTest::String));
   CHECK(can_read_qvariant(QVariant::fromValue<quint8>(89), VariantTest::U8));

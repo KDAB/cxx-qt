@@ -12,6 +12,14 @@ TestCase {
     name: "MockQtTypesTests"
 
     Component {
+        id: componentQtObjectUrl
+
+        QtObject {
+            property url value
+        }
+    }
+
+    Component {
         id: componentMockQtTypes
 
         MockQtTypes {
@@ -529,6 +537,12 @@ TestCase {
 
         result = mock.testVariantInvokable(Qt.size(1.0, 3.0));
         compare(result, Qt.size(2.0, 6.0));
+
+        const urlComponent = createTemporaryObject(componentQtObjectUrl, null, {
+            value: "https://github.com/KDAB",
+        });
+        result = mock.testVariantInvokable(urlComponent.value);
+        compare(result, "https://github.com/KDAB/cxx-qt");
     }
 
     // Check that an invokable can adjust (read and write) a property for the type
