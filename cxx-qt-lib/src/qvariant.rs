@@ -7,7 +7,7 @@
 // We are only using references to QVariant so it is actually ffi safe as far as we are concerned
 #![allow(improper_ctypes)]
 
-use crate::{Color, QColor, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, ToUniquePtr};
+use crate::{Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, ToUniquePtr};
 use cxx::{memory::UniquePtrTarget, type_id, ExternType};
 use std::{
     ffi::c_void,
@@ -26,16 +26,17 @@ enum QVariantType {
     I16 = 5,
     I32 = 6,
     QColor = 7,
-    QPoint = 8,
-    QPointF = 9,
-    QRect = 10,
-    QRectF = 11,
-    QSize = 12,
-    QSizeF = 13,
-    String = 14,
-    U8 = 15,
-    U16 = 16,
-    U32 = 17,
+    QDate = 8,
+    QPoint = 9,
+    QPointF = 10,
+    QRect = 11,
+    QRectF = 12,
+    QSize = 13,
+    QSizeF = 14,
+    String = 15,
+    U8 = 16,
+    U16 = 17,
+    U32 = 18,
 }
 
 extern "C" {
@@ -58,6 +59,8 @@ extern "C" {
     fn qvariant_init_from_i32(ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, i: i32);
     #[link_name = "cxxqt1$qvariant$init$from$qcolor"]
     fn qvariant_init_from_qcolor(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, color: &QColor);
+    #[link_name = "cxxqt1$qvariant$init$from$qdate"]
+    fn qvariant_init_from_qdate(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, date: &QDate);
     #[link_name = "cxxqt1$qvariant$init$from$qpoint"]
     fn qvariant_init_from_qpoint(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, point: &QPoint);
     #[link_name = "cxxqt1$qvariant$init$from$qpointf"]
@@ -98,6 +101,8 @@ extern "C" {
     // Note that we cannot return QColor as it's opaque so we use the UniquePtr pattern
     #[link_name = "cxxqt1$qvariant$to$qcolor"]
     fn qvariant_to_qcolor(this: &QVariant, ptr: &mut MaybeUninit<cxx::UniquePtr<QColor>>);
+    #[link_name = "cxxqt1$qvariant$to$qdate"]
+    fn qvariant_to_qdate(this: &QVariant) -> QDate;
     #[link_name = "cxxqt1$qvariant$to$qpoint"]
     fn qvariant_to_qpoint(this: &QVariant) -> QPoint;
     #[link_name = "cxxqt1$qvariant$to$qpointf"]
@@ -213,6 +218,7 @@ pub enum VariantValue {
     I16(i16),
     I32(i32),
     QColor(Color),
+    QDate(QDate),
     QPoint(QPoint),
     QPointF(QPointF),
     QRect(QRect),
@@ -305,6 +311,16 @@ impl Variant {
             inner: unsafe {
                 let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
                 qvariant_init_from_qcolor(&mut ptr, &color.to_unique_ptr());
+                ptr.assume_init()
+            },
+        }
+    }
+
+    pub fn from_qdate(date: QDate) -> Self {
+        Self {
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
+                qvariant_init_from_qdate(&mut ptr, &date);
                 ptr.assume_init()
             },
         }
@@ -426,6 +442,7 @@ impl Variant {
                 qvariant_to_qcolor(&self.inner, &mut ptr);
                 Color::from_unique_ptr(ptr.assume_init())
             }),
+            QVariantType::QDate => VariantValue::QDate(unsafe { qvariant_to_qdate(&self.inner) }),
             QVariantType::QPoint => {
                 VariantValue::QPoint(unsafe { qvariant_to_qpoint(&self.inner) })
             }
