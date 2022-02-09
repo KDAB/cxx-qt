@@ -29,6 +29,7 @@ mod ffi {
         I32,
         QColor,
         QDate,
+        QDateTime,
         QPoint,
         QPointF,
         QRect,
@@ -246,6 +247,11 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
             Variant::from_qcolor(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr()
         }
         VariantTest::QDate => Variant::from_qdate(QDate::new(2022, 1, 1)).to_unique_ptr(),
+        VariantTest::QDateTime => Variant::from_qdatetime(DateTime::from_date_and_time(
+            &QDate::new(2022, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+        ))
+        .to_unique_ptr(),
         VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
         VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::QRect => Variant::from_qrect(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
@@ -310,6 +316,18 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         VariantTest::QDate => match variant {
             VariantValue::QDate(date) => {
                 date.year() == 2021 && date.month() == 12 && date.day() == 31
+            }
+            _others => false,
+        },
+        VariantTest::QDateTime => match variant {
+            VariantValue::QDateTime(date_time) => {
+                date_time.date().year() == 2021
+                    && date_time.date().month() == 12
+                    && date_time.date().day() == 31
+                    && date_time.time().hour() == 4
+                    && date_time.time().minute() == 3
+                    && date_time.time().second() == 2
+                    && date_time.time().msec() == 1
             }
             _others => false,
         },
