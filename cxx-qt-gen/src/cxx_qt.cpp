@@ -115,20 +115,7 @@ extern "C"
 
 namespace {
 
-// We do these checks to ensure that we can safely store a QString
-// inside a block of memory that Rust thinks contains as usize.
-//
-// We assume that std::size_t is the same size as Rust's usize.
-// cxx.cc has some asserts to ensure that is true.
-
-static_assert(alignof(QString) <= alignof(std::size_t),
-              "unexpectedly large QString alignment");
-
-static_assert(sizeof(QString) <= sizeof(std::size_t),
-              "unexpectedly large QString size");
-
-// We also assume that C++ char and Rust u8 are the same
-
+// We assume that C++ char and Rust u8 are the same
 static_assert(sizeof(char) == sizeof(std::uint8_t));
 
 } // namespace
@@ -460,20 +447,6 @@ extern "C"
   }
 }
 
-namespace {
-
-// We do these checks to ensure that we can safely store a QColor
-// inside a block of memory that Rust thinks contains as 2 usizes.
-//
-// We assume that std::size_t is the same size as Rust's usize.
-// cxx.cc has some asserts to ensure that is true.
-static_assert(alignof(QColor) <= alignof(std::size_t[2]),
-              "unexpectedly large QColor alignment");
-static_assert(sizeof(QColor) <= sizeof(std::size_t[2]),
-              "unexpectedly large QColor size");
-
-} // namespace
-
 extern "C"
 {
   void cxxqt1$qcolor$init$from$qcolor(std::unique_ptr<QColor>* ptr,
@@ -684,16 +657,6 @@ extern "C"
 
 namespace {
 
-// We do these checks to ensure that we can safely store a QVariant
-// inside a block of memory that Rust thinks contains as 2 usizes.
-//
-// We assume that std::size_t is the same size as Rust's usize.
-// cxx.cc has some asserts to ensure that is true.
-static_assert(alignof(QVariant) <= alignof(std::size_t[2]),
-              "unexpectedly large QVariant alignment");
-static_assert(sizeof(QVariant) <= sizeof(std::size_t[2]),
-              "unexpectedly large QVariant size");
-
 enum class QVariantType : uint8_t
 {
   Unsupported = 0,
@@ -785,9 +748,13 @@ extern "C"
 
   QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
   {
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    switch (static_cast<QMetaType::Type>(self.metaType().id())) {
+#else
     // QVariant::Type is obsolete, ensure we use QMetaType::Type to avoid
     // warnings
     switch (static_cast<QMetaType::Type>(self.type())) {
+#endif
       case QMetaType::Bool:
         return QVariantType::Bool;
       case QMetaType::Float:

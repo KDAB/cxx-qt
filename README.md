@@ -30,7 +30,7 @@ Ensure that you have the following installed
   * C++ compiler
   * [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
   * [CMake v3.16+](https://cmake.org/)
-  * [Qt 5](https://www.qt.io/)
+  * [Qt 5 or Qt 6 (experimental)](https://www.qt.io/)
   * [Rust](https://www.rust-lang.org/)
 
 ## Compiling
