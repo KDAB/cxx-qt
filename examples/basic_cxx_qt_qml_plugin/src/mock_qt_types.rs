@@ -290,6 +290,11 @@ mod mock_qt_types {
                     let variant = Variant::from_qcolor(color).to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QDate(mut date) => {
+                    date.set_date(2021, 12, 31);
+                    let variant = Variant::from_qdate(date).to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::QPoint(point) => {
                     let variant = Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
                         .to_unique_ptr();
@@ -366,6 +371,10 @@ mod mock_qt_types {
                     color.set_blue(0);
                     color.set_alpha(255);
                     Variant::from_qcolor(color)
+                }
+                VariantValue::QDate(mut date) => {
+                    date.set_date(2021, 12, 31);
+                    Variant::from_qdate(date)
                 }
                 VariantValue::QPoint(point) => {
                     Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))

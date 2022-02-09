@@ -28,6 +28,7 @@ mod ffi {
         I16,
         I32,
         QColor,
+        QDate,
         QPoint,
         QPointF,
         QRect,
@@ -242,6 +243,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::QColor => {
             Variant::from_qcolor(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr()
         }
+        VariantTest::QDate => Variant::from_qdate(QDate::new(2022, 1, 1)).to_unique_ptr(),
         VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
         VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::QRect => Variant::from_qrect(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
@@ -296,6 +298,12 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
                     && color.red() == 0
                     && color.green() == 255
                     && color.blue() == 0
+            }
+            _others => false,
+        },
+        VariantTest::QDate => match variant {
+            VariantValue::QDate(date) => {
+                date.year() == 2021 && date.month() == 12 && date.day() == 31
             }
             _others => false,
         },
