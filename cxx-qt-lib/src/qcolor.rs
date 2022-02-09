@@ -135,7 +135,7 @@ unsafe impl UniquePtrTarget for QColor {
 pub struct Color {
     // Note that once map_qt_value is removed later, this can become private again
     #[doc(hidden)]
-    pub inner: cxx::UniquePtr<QColor>,
+    pub(crate) inner: cxx::UniquePtr<QColor>,
 }
 
 impl Color {

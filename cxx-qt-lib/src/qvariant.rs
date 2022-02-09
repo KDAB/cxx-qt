@@ -179,7 +179,7 @@ pub enum VariantValue {
 }
 
 pub struct Variant {
-    pub inner: cxx::UniquePtr<QVariant>,
+    pub(crate) inner: cxx::UniquePtr<QVariant>,
 }
 
 impl Variant {
