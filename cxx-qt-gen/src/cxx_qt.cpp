@@ -712,9 +712,10 @@ enum class QVariantType : uint8_t
   QSize = 13,
   QSizeF = 14,
   String = 15,
-  U8 = 16,
-  U16 = 17,
-  U32 = 18,
+  QTime = 16,
+  U8 = 17,
+  U16 = 18,
+  U32 = 19,
 };
 
 } // namespace
@@ -811,6 +812,12 @@ extern "C"
     new (ptr) std::unique_ptr<QVariant>(new QVariant(sizef));
   }
 
+  void cxxqt1$qvariant$init$from$qtime(std::unique_ptr<QVariant>* ptr,
+                                       const QTime& time) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(time));
+  }
+
   void cxxqt1$qvariant$init$from$str(std::unique_ptr<QVariant>* ptr,
                                      rust::Str s) noexcept
   {
@@ -871,6 +878,8 @@ extern "C"
         return QVariantType::QSizeF;
       case QMetaType::QString:
         return QVariantType::String;
+      case QMetaType::QTime:
+        return QVariantType::QTime;
       case QMetaType::UChar:
         return QVariantType::U8;
       case QMetaType::UShort:
@@ -965,6 +974,12 @@ extern "C"
   {
     Q_ASSERT(self.canConvert<QSizeF>());
     return self.value<QSizeF>();
+  }
+
+  QTime cxxqt1$qvariant$to$qtime(const QVariant& self) noexcept
+  {
+    Q_ASSERT(self.canConvert<QTime>());
+    return self.value<QTime>();
   }
 
   void cxxqt1$qvariant$copy$to$string(const QVariant& self,
