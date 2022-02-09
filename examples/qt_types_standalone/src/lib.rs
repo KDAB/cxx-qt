@@ -35,6 +35,7 @@ mod ffi {
         QRectF,
         QSize,
         QSizeF,
+        QTime,
         String,
         U8,
         U16,
@@ -252,6 +253,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         }
         VariantTest::QSize => Variant::from_qsize(QSize::new(1, 3)).to_unique_ptr(),
         VariantTest::QSizeF => Variant::from_qsizef(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QTime => Variant::from_qtime(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
         VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
         VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
         VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
@@ -336,6 +338,12 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
         },
         VariantTest::QSizeF => match variant {
             VariantValue::QSizeF(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
+            _others => false,
+        },
+        VariantTest::QTime => match variant {
+            VariantValue::QTime(time) => {
+                time.hour() == 4 && time.minute() == 3 && time.second() == 2 && time.msec() == 1
+            }
             _others => false,
         },
         VariantTest::String => match variant {
