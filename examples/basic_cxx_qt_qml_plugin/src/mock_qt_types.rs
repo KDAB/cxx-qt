@@ -350,6 +350,11 @@ mod mock_qt_types {
                     let variant = Variant::from_qtime(time).to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QUrl(url) => {
+                    let url = Url::from_str(&(url.string() + "/cxx-qt")).unwrap();
+                    let variant = Variant::from_qurl(url).to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::U8(i) => {
                     let variant = Variant::from_u8(i * 2).to_unique_ptr();
                     cpp.set_variant(&variant);
@@ -418,6 +423,10 @@ mod mock_qt_types {
                         time.msec() * 5,
                     );
                     Variant::from_qtime(time)
+                }
+                VariantValue::QUrl(url) => {
+                    let url = Url::from_str(&(url.string() + "/cxx-qt")).unwrap();
+                    Variant::from_qurl(url)
                 }
                 VariantValue::U8(i) => Variant::from_u8(i * 2),
                 VariantValue::U16(i) => Variant::from_u16(i * 2),

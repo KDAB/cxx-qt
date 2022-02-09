@@ -118,6 +118,13 @@ pub struct Url {
 }
 
 impl Url {
+    /// Construct a Rust Url from an existing UniquePtr<QUrl> this is a move operation
+    ///
+    /// This is used in QVariant::value so that we don't need to perform another copy
+    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QUrl>) -> Self {
+        Self { inner: ptr }
+    }
+
     pub fn from_qurl(qurl: &QUrl) -> Self {
         Self {
             // Safety: TODO

@@ -8,7 +8,8 @@
 #![allow(improper_ctypes)]
 
 use crate::{
-    Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr,
+    Color, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl, ToUniquePtr,
+    Url,
 };
 use cxx::{memory::UniquePtrTarget, type_id, ExternType};
 use std::{
@@ -37,9 +38,10 @@ enum QVariantType {
     QSizeF = 14,
     String = 15,
     QTime = 16,
-    U8 = 17,
-    U16 = 18,
-    U32 = 19,
+    QUrl = 17,
+    U8 = 18,
+    U16 = 19,
+    U32 = 20,
 }
 
 extern "C" {
@@ -81,6 +83,8 @@ extern "C" {
     fn qvariant_init_from_qsizef(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, sizef: &QSizeF);
     #[link_name = "cxxqt1$qvariant$init$from$qtime"]
     fn qvariant_init_from_qtime(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, time: &QTime);
+    #[link_name = "cxxqt1$qvariant$init$from$qurl"]
+    fn qvariant_init_from_qurl(this: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, url: &QUrl);
     #[link_name = "cxxqt1$qvariant$init$from$str"]
     fn qvariant_init_from_str(ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>, s: &str);
     #[link_name = "cxxqt1$qvariant$init$from$u8"]
@@ -122,6 +126,9 @@ extern "C" {
     fn qvariant_to_qsizef(this: &QVariant) -> QSizeF;
     #[link_name = "cxxqt1$qvariant$to$qtime"]
     fn qvariant_to_qtime(this: &QVariant) -> QTime;
+    // Note that we cannot return QUrl as it's opaque so we use the UniquePtr pattern
+    #[link_name = "cxxqt1$qvariant$to$qurl"]
+    fn qvariant_to_qurl(this: &QVariant, ptr: &mut MaybeUninit<cxx::UniquePtr<QUrl>>);
     #[link_name = "cxxqt1$qvariant$copy$to$string"]
     fn qvariant_copy_to_string(this: &QVariant, s: &mut String);
     #[link_name = "cxxqt1$qvariant$to$u8"]
@@ -233,6 +240,7 @@ pub enum VariantValue {
     QSize(QSize),
     QSizeF(QSizeF),
     QTime(QTime),
+    QUrl(Url),
     String(String),
     U8(u8),
     U16(u16),
@@ -404,6 +412,16 @@ impl Variant {
         }
     }
 
+    pub fn from_qurl(url: Url) -> Self {
+        Self {
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
+                qvariant_init_from_qurl(&mut ptr, &url.to_unique_ptr());
+                ptr.assume_init()
+            },
+        }
+    }
+
     pub fn from_string(s: String) -> Self {
         Self {
             inner: unsafe {
@@ -476,6 +494,11 @@ impl Variant {
                 VariantValue::QSizeF(unsafe { qvariant_to_qsizef(&self.inner) })
             }
             QVariantType::QTime => VariantValue::QTime(unsafe { qvariant_to_qtime(&self.inner) }),
+            QVariantType::QUrl => VariantValue::QUrl(unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QUrl>>::zeroed();
+                qvariant_to_qurl(&self.inner, &mut ptr);
+                Url::from_unique_ptr(ptr.assume_init())
+            }),
             QVariantType::String => {
                 let mut s = String::new();
                 unsafe { qvariant_copy_to_string(&self.inner, &mut s) };

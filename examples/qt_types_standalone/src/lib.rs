@@ -36,6 +36,7 @@ mod ffi {
         QSize,
         QSizeF,
         QTime,
+        QUrl,
         String,
         U8,
         U16,
@@ -254,6 +255,9 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
         VariantTest::QSize => Variant::from_qsize(QSize::new(1, 3)).to_unique_ptr(),
         VariantTest::QSizeF => Variant::from_qsizef(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::QTime => Variant::from_qtime(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
+        VariantTest::QUrl => {
+            Variant::from_qurl(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
+        }
         VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
         VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
         VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
@@ -344,6 +348,10 @@ fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool {
             VariantValue::QTime(time) => {
                 time.hour() == 4 && time.minute() == 3 && time.second() == 2 && time.msec() == 1
             }
+            _others => false,
+        },
+        VariantTest::QUrl => match variant {
+            VariantValue::QUrl(url) => url.string() == "https://github.com/KDAB/cxx-qt",
             _others => false,
         },
         VariantTest::String => match variant {
