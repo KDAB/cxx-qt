@@ -77,6 +77,7 @@ endfunction()
 add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt_lib "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-lib/Cargo.toml" DOCTESTS_ON)
 
 # Ensure test inputs and outputs are formatted
 file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/test_inputs/*.rs)

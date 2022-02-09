@@ -295,6 +295,17 @@ mod mock_qt_types {
                     let variant = Variant::from_qdate(date).to_unique_ptr();
                     cpp.set_variant(&variant);
                 }
+                VariantValue::QDateTime(mut date_time) => {
+                    date_time.set_date(&QDate::new(2021, 12, 31));
+                    date_time.set_time(&QTime::new(
+                        date_time.time().hour() * 2,
+                        date_time.time().minute() * 3,
+                        date_time.time().second() * 4,
+                        date_time.time().msec() * 5,
+                    ));
+                    let variant = Variant::from_qdatetime(date_time).to_unique_ptr();
+                    cpp.set_variant(&variant);
+                }
                 VariantValue::QPoint(point) => {
                     let variant = Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))
                         .to_unique_ptr();
@@ -390,6 +401,16 @@ mod mock_qt_types {
                 VariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
                     Variant::from_qdate(date)
+                }
+                VariantValue::QDateTime(mut date_time) => {
+                    date_time.set_date(&QDate::new(2021, 12, 31));
+                    date_time.set_time(&QTime::new(
+                        date_time.time().hour() * 2,
+                        date_time.time().minute() * 3,
+                        date_time.time().second() * 4,
+                        date_time.time().msec() * 5,
+                    ));
+                    Variant::from_qdatetime(date_time)
                 }
                 VariantValue::QPoint(point) => {
                     Variant::from_qpoint(QPoint::new(point.x() * 2, point.y() * 2))

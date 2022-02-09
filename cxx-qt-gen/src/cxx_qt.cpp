@@ -705,18 +705,19 @@ enum class QVariantType : uint8_t
   I32 = 6,
   QColor = 7,
   QDate = 8,
-  QPoint = 9,
-  QPointF = 10,
-  QRect = 11,
-  QRectF = 12,
-  QSize = 13,
-  QSizeF = 14,
-  String = 15,
-  QTime = 16,
-  QUrl = 17,
-  U8 = 18,
-  U16 = 19,
-  U32 = 20,
+  QDateTime = 9,
+  QPoint = 10,
+  QPointF = 11,
+  QRect = 12,
+  QRectF = 13,
+  QSize = 14,
+  QSizeF = 15,
+  String = 16,
+  QTime = 17,
+  QUrl = 18,
+  U8 = 19,
+  U16 = 20,
+  U32 = 21,
 };
 
 } // namespace
@@ -775,6 +776,12 @@ extern "C"
                                        const QDate& date) noexcept
   {
     new (ptr) std::unique_ptr<QVariant>(new QVariant(date));
+  }
+
+  void cxxqt1$qvariant$init$from$qdatetime(std::unique_ptr<QVariant>* ptr,
+                                           const QDateTime& dateTime) noexcept
+  {
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(dateTime));
   }
 
   void cxxqt1$qvariant$init$from$qpoint(std::unique_ptr<QVariant>* ptr,
@@ -871,6 +878,8 @@ extern "C"
         return QVariantType::QColor;
       case QMetaType::QDate:
         return QVariantType::QDate;
+      case QMetaType::QDateTime:
+        return QVariantType::QDateTime;
       case QMetaType::QPoint:
         return QVariantType::QPoint;
       case QMetaType::QPointF:
@@ -947,6 +956,14 @@ extern "C"
   {
     Q_ASSERT(self.canConvert<QDate>());
     return self.value<QDate>();
+  }
+
+  void cxxqt1$qvariant$to$qdatetime(const QVariant& self,
+                                    std::unique_ptr<QDateTime>* ptr) noexcept
+  {
+    Q_ASSERT(self.canConvert<QDateTime>());
+    new (ptr)
+      std::unique_ptr<QDateTime>(new QDateTime(self.value<QDateTime>()));
   }
 
   QPoint cxxqt1$qvariant$to$qpoint(const QVariant& self) noexcept

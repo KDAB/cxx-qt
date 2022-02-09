@@ -529,6 +529,9 @@ TestCase {
         result = mock.testVariantInvokable(Qt.rgba(1.0, 1.0, 1.0, 1.0));
         compare(result, Qt.rgba(0.0, 1.0, 0.0, 1.0));
 
+        result = mock.testVariantInvokable(new Date(2022, 0, 1, 1, 2, 3, 4));
+        compare(result, new Date(2021, 11, 31, 2, 6, 12, 20));
+
         result = mock.testVariantInvokable(Qt.point(1.0, 3.0));
         compare(result, Qt.point(2.0, 6.0));
 

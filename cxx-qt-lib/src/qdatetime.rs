@@ -132,6 +132,13 @@ pub struct DateTime {
 }
 
 impl DateTime {
+    /// Construct a Rust DateTime from an existing UniquePtr<QDateTime> this is a move operation
+    ///
+    /// This is used in QVariant::value so that we don't need to perform another copy
+    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QDateTime>) -> Self {
+        Self { inner: ptr }
+    }
+
     /// Construct a Rust DateTime from an existing QDateTime, this is a copy operation.
     pub fn from_qdatetime(qdatetime: &QDateTime) -> Self {
         Self {

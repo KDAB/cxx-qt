@@ -167,6 +167,7 @@ TEST_CASE("Can construct a QVariant on the Rust side")
   CHECK(can_construct_qvariant(VariantTest::I32));
   CHECK(can_construct_qvariant(VariantTest::QColor));
   CHECK(can_construct_qvariant(VariantTest::QDate));
+  CHECK(can_construct_qvariant(VariantTest::QDateTime));
   CHECK(can_construct_qvariant(VariantTest::QPoint));
   CHECK(can_construct_qvariant(VariantTest::QPointF));
   CHECK(can_construct_qvariant(VariantTest::QRect));
@@ -204,6 +205,14 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
     case VariantTest::QDate:
       return v.value<QDate>().year() == 2022 && v.value<QDate>().month() == 1 &&
              v.value<QDate>().day() == 1;
+    case VariantTest::QDateTime:
+      return v.value<QDateTime>().date().year() == 2022 &&
+             v.value<QDateTime>().date().month() == 1 &&
+             v.value<QDateTime>().date().day() == 1 &&
+             v.value<QDateTime>().time().hour() == 1 &&
+             v.value<QDateTime>().time().minute() == 2 &&
+             v.value<QDateTime>().time().second() == 3 &&
+             v.value<QDateTime>().time().msec() == 4;
     case VariantTest::QPoint:
       return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
     case VariantTest::QPointF:
@@ -256,6 +265,7 @@ TEST_CASE("Can convert Rust Variant to QVariant")
   CHECK(runTest(VariantTest::I32));
   CHECK(runTest(VariantTest::QColor));
   CHECK(runTest(VariantTest::QDate));
+  CHECK(runTest(VariantTest::QDateTime));
   CHECK(runTest(VariantTest::QPoint));
   CHECK(runTest(VariantTest::QPointF));
   CHECK(runTest(VariantTest::QRect));
@@ -283,6 +293,9 @@ TEST_CASE("Can read a QVariant on the Rust side")
                           VariantTest::QColor));
   CHECK(can_read_qvariant(QVariant::fromValue<QDate>(QDate(2021, 12, 31)),
                           VariantTest::QDate));
+  CHECK(can_read_qvariant(QVariant::fromValue<QDateTime>(
+                            QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1))),
+                          VariantTest::QDateTime));
   CHECK(can_read_qvariant(QVariant::fromValue<QPoint>(QPoint(8, 9)),
                           VariantTest::QPoint));
   CHECK(can_read_qvariant(QVariant::fromValue<QPointF>(QPointF(8.0, 9.0)),
