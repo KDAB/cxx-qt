@@ -129,17 +129,6 @@ impl Url {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        Self {
-            // Safety: TODO
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QUrl>>::zeroed();
-                qurl_init_from_string(&mut ptr, s.as_ptr(), s.len());
-                ptr.assume_init()
-            },
-        }
-    }
-
     // TODO: other QUrl methods
     //
     // fragment: Option<String>,
@@ -155,6 +144,21 @@ impl Url {
         let mut s = String::new();
         unsafe { qurl_to_rust_string(&self.inner, &mut s) };
         s
+    }
+}
+
+impl std::str::FromStr for Url {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, std::convert::Infallible> {
+        Ok(Self {
+            // Safety: TODO
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QUrl>>::zeroed();
+                qurl_init_from_string(&mut ptr, s.as_ptr(), s.len());
+                ptr.assume_init()
+            },
+        })
     }
 }
 

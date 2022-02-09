@@ -12,6 +12,7 @@ mod mock_qt_types {
         Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
         QTime, QUrl, QVariant, Url, Variant, VariantValue,
     };
+    use std::str::FromStr;
 
     pub struct Data {
         color: Color,
@@ -44,7 +45,7 @@ mod mock_qt_types {
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
                 time: QTime::new(1, 2, 3, 4),
-                url: Url::from_str("https://github.com/KDAB"),
+                url: Url::from_str("https://github.com/KDAB").unwrap(),
                 variant: Variant::from_i32(1),
             }
         }
@@ -243,13 +244,15 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = Url::from_str(&(cpp.url().to_rust().string() + "/cxx-qt")).to_unique_ptr();
+            let url = Url::from_str(&(cpp.url().to_rust().string() + "/cxx-qt"))
+                .unwrap()
+                .to_unique_ptr();
             cpp.set_url(&url);
         }
 
         #[invokable]
         fn test_url_invokable(&self, url: &QUrl) -> Url {
-            Url::from_str(&(url.to_rust().string() + "/cxx-qt"))
+            Url::from_str(&(url.to_rust().string() + "/cxx-qt")).unwrap()
         }
 
         #[invokable]
