@@ -78,6 +78,12 @@ add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_O
 add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
 
+# Ensure test inputs and outputs are formatted
+file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/test_inputs/*.rs)
+file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/test_outputs/*.rs)
+add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
+add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
+
 # Create helper method which adds relevent tests for the given example
 function(add_example_tests EXAMPLE_NAME)
     set(NAME_WITH_PREFIX example_${EXAMPLE_NAME})
