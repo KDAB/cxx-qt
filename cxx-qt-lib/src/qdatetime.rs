@@ -21,8 +21,8 @@ extern "C" {
         ptr: &mut MaybeUninit<cxx::UniquePtr<QDateTime>>,
         qdatetime: &QDateTime,
     );
-    #[link_name = "cxxqt1$qdatetime$init$from$date$time"]
-    fn qdatetime_init_from_date_time(
+    #[link_name = "cxxqt1$qdatetime$init$from$date$and$time"]
+    fn qdatetime_init_from_date_and_time(
         ptr: &mut MaybeUninit<cxx::UniquePtr<QDateTime>>,
         date: &QDate,
         time: &QTime,
@@ -145,12 +145,12 @@ impl DateTime {
     }
 
     /// Construct a Rust DateTime from a given QDate and QTime
-    pub fn from_date_time(date: &QDate, time: &QTime) -> Self {
+    pub fn from_date_and_time(date: &QDate, time: &QTime) -> Self {
         Self {
             // Safety: TODO
             inner: unsafe {
                 let mut ptr = MaybeUninit::<cxx::UniquePtr<QDateTime>>::zeroed();
-                qdatetime_init_from_date_time(&mut ptr, date, time);
+                qdatetime_init_from_date_and_time(&mut ptr, date, time);
                 ptr.assume_init()
             },
         }

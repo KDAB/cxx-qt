@@ -33,7 +33,7 @@ mod mock_qt_types {
             Data {
                 color: Color::from_rgba(255, 0, 0, 255),
                 date: QDate::new(2022, 1, 1),
-                date_time: DateTime::from_date_time(
+                date_time: DateTime::from_date_and_time(
                     &QDate::new(2022, 1, 1),
                     &QTime::new(1, 2, 3, 4),
                 ),
@@ -82,7 +82,7 @@ mod mock_qt_types {
         #[invokable]
         fn test_date_time_property(&self, cpp: &mut CppObj) {
             let date_time = cpp.date_time().to_rust();
-            let new_date_time = DateTime::from_date_time(
+            let new_date_time = DateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
                     date_time.time().hour() * 2,
@@ -98,7 +98,7 @@ mod mock_qt_types {
         #[invokable]
         fn test_date_time_invokable(&self, date_time: &QDateTime) -> DateTime {
             let date_time = date_time.to_rust();
-            DateTime::from_date_time(
+            DateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
                     date_time.time().hour() * 2,

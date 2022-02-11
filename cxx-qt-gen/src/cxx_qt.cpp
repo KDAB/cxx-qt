@@ -535,9 +535,9 @@ extern "C"
     new (ptr) std::unique_ptr<QDateTime>(new QDateTime(qdatetime));
   }
 
-  void cxxqt1$qdatetime$init$from$date$time(std::unique_ptr<QDateTime>* ptr,
-                                            const QDate& date,
-                                            const QTime& time) noexcept
+  void cxxqt1$qdatetime$init$from$date$and$time(std::unique_ptr<QDateTime>* ptr,
+                                                const QDate& date,
+                                                const QTime& time) noexcept
   {
     new (ptr) std::unique_ptr<QDateTime>(new QDateTime(date, time));
   }
