@@ -198,7 +198,7 @@ fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
 }
 
 fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
-    let dt = DateTime::from_date_time(date, time).to_unique_ptr();
+    let dt = DateTime::from_date_and_time(date, time).to_unique_ptr();
     ffi::test_constructed_qdatetime(&dt, date, time)
 }
 
