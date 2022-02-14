@@ -10,7 +10,7 @@ mod qdate;
 pub use qdate::QDate;
 
 mod qdatetime;
-pub use qdatetime::{DateTime, QDateTime};
+pub use qdatetime::{QDateTime, QDateTimeCpp};
 
 mod qrect;
 pub use qrect::QRect;

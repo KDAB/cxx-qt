@@ -9,7 +9,7 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        DateTime, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
+        QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
         QVariantValue, Url,
     };
     use std::str::FromStr;
@@ -17,7 +17,7 @@ mod mock_qt_types {
     pub struct Data {
         color: QColor,
         date: QDate,
-        date_time: DateTime,
+        date_time: QDateTime,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -34,7 +34,7 @@ mod mock_qt_types {
             Data {
                 color: QColor::from_rgba(255, 0, 0, 255),
                 date: QDate::new(2022, 1, 1),
-                date_time: DateTime::from_date_and_time(
+                date_time: QDateTime::from_date_and_time(
                     &QDate::new(2022, 1, 1),
                     &QTime::new(1, 2, 3, 4),
                 ),
@@ -82,7 +82,7 @@ mod mock_qt_types {
         #[invokable]
         fn test_date_time_property(&self, cpp: &mut CppObj) {
             let date_time = cpp.date_time();
-            let new_date_time = DateTime::from_date_and_time(
+            let new_date_time = QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
                     date_time.time().hour() * 2,
@@ -95,8 +95,8 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_date_time_invokable(&self, date_time: &DateTime) -> DateTime {
-            DateTime::from_date_and_time(
+        fn test_date_time_invokable(&self, date_time: &QDateTime) -> QDateTime {
+            QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
                     date_time.time().hour() * 2,

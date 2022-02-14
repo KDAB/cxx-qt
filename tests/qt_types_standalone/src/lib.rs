@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QTime, QUrl, QVariant, QVariantValue, ToUniquePtr, Url,
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+    QVariant, QVariantValue, ToUniquePtr, Url,
 };
 use std::str::FromStr;
 
@@ -50,7 +50,7 @@ mod ffi {
 
         type QColor = cxx_qt_lib::QColorCpp;
         type QDate = cxx_qt_lib::QDate;
-        type QDateTime = cxx_qt_lib::QDateTime;
+        type QDateTime = cxx_qt_lib::QDateTimeCpp;
         type QString = cxx_qt_lib::QString;
         type QUrl = cxx_qt_lib::QUrl;
         type QVariant = cxx_qt_lib::QVariantCpp;
@@ -202,11 +202,11 @@ fn can_read_qcolor(c: &cxx_qt_lib::QColorCpp, test: ColorTest) -> bool {
 }
 
 fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
-    let dt = DateTime::from_date_and_time(date, time).to_unique_ptr();
+    let dt = QDateTime::from_date_and_time(date, time).to_unique_ptr();
     ffi::test_constructed_qdatetime(&dt, date, time)
 }
 
-fn can_read_qdatetime(dt: &QDateTime, date: &QDate, time: &QTime) -> bool {
+fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTimeCpp, date: &QDate, time: &QTime) -> bool {
     let dt = dt.to_rust();
     dt.date().year() == date.year()
         && dt.date().month() == date.month()
@@ -237,7 +237,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
         VariantTest::I32 => QVariant::from(123_i32).to_unique_ptr(),
         VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
         VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
-        VariantTest::QDateTime => QVariant::from(DateTime::from_date_and_time(
+        VariantTest::QDateTime => QVariant::from(QDateTime::from_date_and_time(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
         ))

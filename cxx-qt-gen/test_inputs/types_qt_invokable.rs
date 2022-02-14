@@ -17,7 +17,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> DateTime {
+        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
             dateTime
         }
 

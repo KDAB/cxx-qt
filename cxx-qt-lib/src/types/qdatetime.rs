@@ -42,46 +42,48 @@ mod ffi {
     impl UniquePtr<QDateTime> {}
 }
 
-/// The QDateTime class provides date and time functions.
-pub type QDateTime = ffi::QDateTime;
+/// The QDateTimeCpp class provides date and time functions.
+///
+/// Note that this is the C++ representation and QDateTime should be used in Rust.
+pub type QDateTimeCpp = ffi::QDateTime;
 
-impl QDateTime {
-    /// Create a new Rust DateTime from this QDateTime.
-    /// This is a copy operation so any changes will not propagate to the original QDateTime.
-    pub fn to_rust(&self) -> DateTime {
-        DateTime::from_qdatetime(self)
+impl QDateTimeCpp {
+    /// Create a new Rust QDateTime from this QDateTimeCpp.
+    /// This is a copy operation so any changes will not propagate to the original QDateTimeCpp.
+    pub fn to_rust(&self) -> QDateTime {
+        QDateTime::from_qdatetime(self)
     }
 }
 
 /// The Rust representation of Qt's QDateTime
 ///
-/// Internally this holds a UniquePtr to a QDateTime which has been constructed on the C++ side.
-pub struct DateTime {
-    inner: cxx::UniquePtr<QDateTime>,
+/// Internally this holds a UniquePtr to a QDateTimeCpp which has been constructed on the C++ side.
+pub struct QDateTime {
+    inner: cxx::UniquePtr<QDateTimeCpp>,
 }
 
-impl Default for DateTime {
+impl Default for QDateTime {
     fn default() -> Self {
-        DateTime::from_unique_ptr(ffi::qdatetime_init())
+        QDateTime::from_unique_ptr(ffi::qdatetime_init())
     }
 }
 
-impl DateTime {
-    /// Construct a Rust DateTime from an existing UniquePtr<QDateTime> this is a move operation
+impl QDateTime {
+    /// Construct a Rust QDateTime from an existing UniquePtr<QDateTimeCpp> this is a move operation
     ///
     /// This is used in QVariant::value so that we don't need to perform another copy
-    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QDateTime>) -> Self {
+    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QDateTimeCpp>) -> Self {
         Self { inner: ptr }
     }
 
-    /// Construct a Rust DateTime from an existing QDateTime, this is a copy operation.
-    pub fn from_qdatetime(qdatetime: &QDateTime) -> Self {
+    /// Construct a Rust QDateTime from an existing QDateTimeCpp, this is a copy operation.
+    pub fn from_qdatetime(qdatetime: &QDateTimeCpp) -> Self {
         Self {
             inner: ffi::qdatetime_init_from_qdatetime(qdatetime),
         }
     }
 
-    /// Construct a Rust DateTime from a given QDate and QTime
+    /// Construct a Rust QDateTime from a given QDate and QTime
     pub fn from_date_and_time(date: &QDate, time: &QTime) -> Self {
         Self {
             inner: ffi::qdatetime_init_from_date_and_time(date, time),
@@ -115,7 +117,7 @@ impl DateTime {
     }
 
     /// Sets the time part of this datetime to time. If time is not valid, this function sets it to midnight.
-    /// Therefore, it's possible to clear any set time in a QDateTime by setting it to a default QTime:
+    /// Therefore, it's possible to clear any set time in a QDateTimeCpp by setting it to a default QTime:
     pub fn set_time(&mut self, time: QTime) {
         if let Some(inner) = self.inner.as_mut() {
             ffi::qdatetime_set_time(inner, time);
@@ -123,18 +125,18 @@ impl DateTime {
     }
 }
 
-impl crate::ToUniquePtr for DateTime {
-    type CppType = QDateTime;
+impl crate::ToUniquePtr for QDateTime {
+    type CppType = QDateTimeCpp;
 
-    /// Retrieve the UniquePtr to the Qt QDateTime of this Rust DateTime
+    /// Retrieve the UniquePtr to the Qt QDateTimeCpp of this Rust QDateTime
     /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QDateTime> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QDateTimeCpp> {
         self.inner
     }
 }
 
-impl From<&QDateTime> for DateTime {
-    fn from(qdatetime: &QDateTime) -> Self {
+impl From<&QDateTimeCpp> for QDateTime {
+    fn from(qdatetime: &QDateTimeCpp) -> Self {
         qdatetime.to_rust()
     }
 }
