@@ -31,7 +31,7 @@ impl RustType for QtTypes {
     /// Whether this type should be a reference when used in Rust methods
     fn is_ref(&self) -> bool {
         match self {
-            Self::Color => true,
+            Self::QColor => true,
             Self::QDate => true,
             Self::DateTime => true,
             Self::QPoint => true,
@@ -60,9 +60,9 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
-            Self::Color | Self::QColor => match target_type {
+            Self::QColor => match target_type {
                 TargetType::Cpp => format_ident!("QColor"),
-                TargetType::Rust => format_ident!("Color"),
+                TargetType::Rust => format_ident!("QColor"),
             },
             Self::QDate => format_ident!("QDate"),
             Self::QDateTime | Self::DateTime => match target_type {
@@ -113,9 +113,9 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
-            Self::Color | Self::QColor => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QColor},
-                TargetType::Rust => quote! {cxx_qt_lib::Color},
+            Self::QColor => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QColorCpp},
+                TargetType::Rust => quote! {cxx_qt_lib::QColor},
             },
             Self::QDate => quote! {cxx_qt_lib::QDate},
             Self::QDateTime | Self::DateTime => match target_type {
@@ -507,7 +507,7 @@ pub fn generate_qobject_cxx(
 
                 include!("cxx-qt-lib/include/qt_types.h");
                 #[namespace = ""]
-                type QColor = cxx_qt_lib::QColor;
+                type QColor = cxx_qt_lib::QColorCpp;
                 #[namespace = ""]
                 type QDate = cxx_qt_lib::QDate;
                 #[namespace = ""]

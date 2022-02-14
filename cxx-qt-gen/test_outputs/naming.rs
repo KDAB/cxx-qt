@@ -14,7 +14,7 @@ mod my_object {
 
             include!("cxx-qt-lib/include/qt_types.h");
             #[namespace = ""]
-            type QColor = cxx_qt_lib::QColor;
+            type QColor = cxx_qt_lib::QColorCpp;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]

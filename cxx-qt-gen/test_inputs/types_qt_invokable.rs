@@ -7,7 +7,7 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> Color {
+        fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
             color
         }
 

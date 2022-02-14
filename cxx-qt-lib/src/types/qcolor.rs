@@ -38,52 +38,54 @@ mod ffi {
     impl UniquePtr<QColor> {}
 }
 
-/// The QColor class provides colors based on RGB, HSV or CMYK values.
+/// The QColorCpp class provides colors based on RGB, HSV or CMYK values.
 ///
 /// Note that we only expose RGB methods for now.
-pub type QColor = ffi::QColor;
+///
+/// Note that this is the C++ representation and QColor should be used in Rust.
+pub type QColorCpp = ffi::QColor;
 
-impl QColor {
-    /// Create a new Rust Color from this QColor.
-    /// This is a copy operation so any changes will not propagate to the original QColor.
-    pub fn to_rust(&self) -> Color {
-        Color::from_qcolor(self)
+impl QColorCpp {
+    /// Create a new Rust QColor from this QColorCpp.
+    /// This is a copy operation so any changes will not propagate to the original QColorCpp.
+    pub fn to_rust(&self) -> QColor {
+        QColor::from_qcolor(self)
     }
 }
 
 /// The Rust representation of Qt's QColor
 ///
-/// Internally this holds a UniquePtr to a QColor which has been constructed on the C++ side.
-pub struct Color {
-    inner: cxx::UniquePtr<QColor>,
+/// Internally this holds a UniquePtr to a QColorCpp which has been constructed on the C++ side.
+pub struct QColor {
+    inner: cxx::UniquePtr<QColorCpp>,
 }
 
-impl Default for Color {
+impl Default for QColor {
     fn default() -> Self {
-        Color::from_unique_ptr(ffi::qcolor_init())
+        QColor::from_unique_ptr(ffi::qcolor_init())
     }
 }
 
-impl Color {
-    /// Construct a Rust Color from an existing UniquePtr<QColor> this is a move operation
+impl QColor {
+    /// Construct a Rust QColor from an existing UniquePtr<QColorCpp> this is a move operation
     ///
     /// This is used in QVariant::value so that we don't need to perform another copy
-    pub(crate) fn from_unique_ptr(color: cxx::UniquePtr<QColor>) -> Self {
+    pub(crate) fn from_unique_ptr(color: cxx::UniquePtr<QColorCpp>) -> Self {
         Self { inner: color }
     }
 
-    /// Construct a Rust Color from an existing QColor, this is a copy operation.
-    pub fn from_qcolor(color: &QColor) -> Self {
+    /// Construct a Rust QColor from an existing QColorCpp, this is a copy operation.
+    pub fn from_qcolor(color: &QColorCpp) -> Self {
         Self {
             inner: ffi::qcolor_init_from_qcolor(color),
         }
     }
 
-    /// Constructs a color with the RGB value r, g, b, and the alpha-channel (transparency) value of a.
+    /// Constructs a QColor with the RGB value r, g, b, and the alpha-channel (transparency) value of a.
     ///
     /// The color is left invalid if any of the arguments are invalid.
     pub fn from_rgba(red: i32, green: i32, blue: i32, alpha: i32) -> Self {
-        Color::from_unique_ptr(ffi::qcolor_init_from_rgba(red, green, blue, alpha))
+        QColor::from_unique_ptr(ffi::qcolor_init_from_rgba(red, green, blue, alpha))
     }
 
     /// Returns the alpha color component of this color.
@@ -151,18 +153,18 @@ impl Color {
     }
 }
 
-impl crate::ToUniquePtr for Color {
-    type CppType = QColor;
+impl crate::ToUniquePtr for QColor {
+    type CppType = QColorCpp;
 
-    /// Retrieve the UniquePtr to the Qt QColor of this Rust Color
+    /// Retrieve the UniquePtr to the Qt QColorCpp of this Rust QColor
     /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QColor> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QColorCpp> {
         self.inner
     }
 }
 
-impl From<&QColor> for Color {
-    fn from(qcolor: &QColor) -> Self {
+impl From<&QColorCpp> for QColor {
+    fn from(qcolor: &QColorCpp) -> Self {
         qcolor.to_rust()
     }
 }

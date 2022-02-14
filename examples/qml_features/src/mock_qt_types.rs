@@ -9,13 +9,13 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        Color, DateTime, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
+        DateTime, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
         QVariantValue, Url,
     };
     use std::str::FromStr;
 
     pub struct Data {
-        color: Color,
+        color: QColor,
         date: QDate,
         date_time: DateTime,
         point: QPoint,
@@ -32,7 +32,7 @@ mod mock_qt_types {
     impl Default for Data {
         fn default() -> Self {
             Data {
-                color: Color::from_rgba(255, 0, 0, 255),
+                color: QColor::from_rgba(255, 0, 0, 255),
                 date: QDate::new(2022, 1, 1),
                 date_time: DateTime::from_date_and_time(
                     &QDate::new(2022, 1, 1),
@@ -57,12 +57,12 @@ mod mock_qt_types {
     impl RustObj {
         #[invokable]
         fn test_color_property(&self, cpp: &mut CppObj) {
-            cpp.set_color(Color::from_rgba(0, 0, 255, 255));
+            cpp.set_color(QColor::from_rgba(0, 0, 255, 255));
         }
 
         #[invokable]
-        fn test_color_invokable(&self, _color: &Color) -> Color {
-            Color::from_rgba(0, 255, 0, 255)
+        fn test_color_invokable(&self, _color: &QColor) -> QColor {
+            QColor::from_rgba(0, 255, 0, 255)
         }
 
         #[invokable]
