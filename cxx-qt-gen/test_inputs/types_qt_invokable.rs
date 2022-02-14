@@ -62,7 +62,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn test_url(&self, _cpp: &mut CppObj, url: &Url) -> Url {
+        fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
             url
         }
 

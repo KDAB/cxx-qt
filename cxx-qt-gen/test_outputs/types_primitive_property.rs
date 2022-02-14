@@ -44,7 +44,7 @@ mod my_object {
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrl;
+            type QUrl = cxx_qt_lib::QUrlCpp;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariantCpp;
 

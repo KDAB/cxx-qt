@@ -32,7 +32,7 @@ mod my_object {
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrl;
+            type QUrl = cxx_qt_lib::QUrlCpp;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariantCpp;
 
@@ -237,8 +237,8 @@ mod my_object {
         fn test_url_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            url: &cxx_qt_lib::QUrl,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QUrl> {
+            url: &cxx_qt_lib::QUrlCpp,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QUrlCpp> {
             let mut _cpp = CppObj::new(_cpp);
             let url = url.to_rust();
             return self.test_url(&mut _cpp, &url).to_unique_ptr();
@@ -298,7 +298,7 @@ mod my_object {
             time
         }
 
-        fn test_url(&self, _cpp: &mut CppObj, url: &Url) -> Url {
+        fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
             url
         }
 
