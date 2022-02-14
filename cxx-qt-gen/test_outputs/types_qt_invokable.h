@@ -12,6 +12,7 @@
 #include <QtCore/QRectF>
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
+#include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>

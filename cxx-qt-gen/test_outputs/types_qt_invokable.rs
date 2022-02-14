@@ -28,7 +28,7 @@ mod my_object {
             #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
-            type QString = cxx_qt_lib::QString;
+            type QString = cxx_qt_lib::QStringCpp;
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
@@ -218,8 +218,8 @@ mod my_object {
         fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &cxx_qt_lib::QString,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QString> {
+            string: &cxx_qt_lib::QStringCpp,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
             let mut _cpp = CppObj::new(_cpp);
             let string = string.to_rust();
             return self.test_string(&mut _cpp, &string).to_unique_ptr();

@@ -4,6 +4,8 @@
 
 #include "cxx-qt-lib/include/qt_types.h"
 
+#include <QtCore/QString>
+
 namespace cxx_qt::my_object {
 
 class RustObj;

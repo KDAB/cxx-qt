@@ -25,7 +25,7 @@ mod qsizef;
 pub use qsizef::QSizeF;
 
 mod qstring;
-pub use qstring::QString;
+pub use qstring::QStringCpp;
 
 mod qtime;
 pub use qtime::QTime;

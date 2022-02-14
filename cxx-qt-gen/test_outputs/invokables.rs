@@ -29,7 +29,7 @@ mod my_object {
             #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
-            type QString = cxx_qt_lib::QString;
+            type QString = cxx_qt_lib::QStringCpp;
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
@@ -122,7 +122,7 @@ mod my_object {
             return self.invokable_return_opaque().to_unique_ptr();
         }
 
-        fn invokable_return_static_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QString> {
+        fn invokable_return_static_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
             return self.invokable_return_static().to_unique_ptr();
         }
 
