@@ -40,7 +40,7 @@ mod my_object {
             #[namespace = ""]
             type QSizeF = cxx_qt_lib::QSizeF;
             #[namespace = ""]
-            type QString = cxx_qt_lib::QString;
+            type QString = cxx_qt_lib::QStringCpp;
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]

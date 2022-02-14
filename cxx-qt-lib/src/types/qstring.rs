@@ -22,40 +22,43 @@ mod ffi {
     impl UniquePtr<QString> {}
 }
 
-pub type QString = ffi::QString;
+/// The QStringCpp class provides a Unicode character string.
+///
+/// Note that this is the C++ representation and String or &str should be used in Rust.
+pub type QStringCpp = ffi::QString;
 
-impl QString {
-    /// Create a new Rust string from this QString. This operation
+impl QStringCpp {
+    /// Create a new Rust String from this QStringCpp. This operation
     /// needs to convert the UTF-16 data in the QString to UTF-8
     /// data and thus likely needs to an allocate. This is essentially
-    /// a copy and so any changes will not propagate to the QString.
+    /// a copy and so any changes will not propagate to the QStringCpp.
     pub fn to_rust(&self) -> String {
         ffi::qstring_to_rust_string(self)
     }
 }
 
 impl crate::ToUniquePtr for &String {
-    type CppType = QString;
+    type CppType = QStringCpp;
 
-    /// Retrieve the UniquePtr to the Qt QString of this Rust String
+    /// Retrieve the UniquePtr to the Qt QStringCpp of this Rust String
     /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QString> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QStringCpp> {
         ffi::qstring_init_from_rust_string(self.as_ref())
     }
 }
 
 impl crate::ToUniquePtr for &str {
-    type CppType = QString;
+    type CppType = QStringCpp;
 
-    /// Retrieve the UniquePtr to the Qt QString of this Rust &str
+    /// Retrieve the UniquePtr to the Qt QStringCpp of this Rust &str
     /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QString> {
+    fn to_unique_ptr(self) -> cxx::UniquePtr<QStringCpp> {
         ffi::qstring_init_from_rust_string(self)
     }
 }
 
-impl From<&QString> for String {
-    fn from(qstring: &QString) -> Self {
+impl From<&QStringCpp> for String {
+    fn from(qstring: &QStringCpp) -> Self {
         qstring.to_rust()
     }
 }

@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
-    QVariant, QVariantValue, ToUniquePtr,
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl, QVariant,
+    QVariantValue, ToUniquePtr,
 };
 use std::str::FromStr;
 
@@ -51,7 +51,7 @@ mod ffi {
         type QColor = cxx_qt_lib::QColorCpp;
         type QDate = cxx_qt_lib::QDate;
         type QDateTime = cxx_qt_lib::QDateTimeCpp;
-        type QString = cxx_qt_lib::QString;
+        type QString = cxx_qt_lib::QStringCpp;
         type QUrl = cxx_qt_lib::QUrlCpp;
         type QVariant = cxx_qt_lib::QVariantCpp;
         type QSize = cxx_qt_lib::QSize;
@@ -148,12 +148,12 @@ fn can_construct_qstring(slice: bool) -> bool {
     }
 }
 
-fn can_read_qstring(s: &QString) -> bool {
+fn can_read_qstring(s: &cxx_qt_lib::QStringCpp) -> bool {
     let rs = s.to_rust();
     rs == "String constructed by C++"
 }
 
-fn modify_qstring(s: Pin<&mut QString>) {
+fn modify_qstring(s: Pin<&mut cxx_qt_lib::QStringCpp>) {
     ffi::assign_to_qstring(s, &"Updated string value".to_unique_ptr());
 }
 
@@ -217,13 +217,13 @@ fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTimeCpp, date: &QDate, time: &QTime)
         && dt.time().msec() == time.msec()
 }
 
-fn can_construct_qurl(test: &QString) -> bool {
+fn can_construct_qurl(test: &cxx_qt_lib::QStringCpp) -> bool {
     let url = QUrl::from_str(&test.to_rust()).unwrap().to_unique_ptr();
 
     ffi::test_constructed_qurl(&url, test)
 }
 
-fn can_read_qurl(u: &cxx_qt_lib::QUrlCpp, test: &QString) -> bool {
+fn can_read_qurl(u: &cxx_qt_lib::QUrlCpp, test: &cxx_qt_lib::QStringCpp) -> bool {
     u.to_rust().string() == test.to_rust()
 }
 

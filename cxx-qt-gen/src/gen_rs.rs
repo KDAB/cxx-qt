@@ -79,9 +79,9 @@ impl RustType for QtTypes {
                 TargetType::Cpp => format_ident!("QString"),
                 TargetType::Rust => format_ident!("str"),
             },
-            Self::QString | Self::String => match target_type {
+            Self::String => match target_type {
                 TargetType::Cpp => format_ident!("QString"),
-                TargetType::Rust => format_ident!("String"),
+                TargetType::Rust => format_ident!("QString"),
             },
             Self::QTime => format_ident!("QTime"),
             Self::QUrl => match target_type {
@@ -129,11 +129,11 @@ impl RustType for QtTypes {
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
             Self::Str => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QString},
+                TargetType::Cpp => quote! {cxx_qt_lib::QStringCpp},
                 TargetType::Rust => quote! {str},
             },
-            Self::QString | Self::String => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QString},
+            Self::String => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QStringCpp},
                 TargetType::Rust => quote! {String},
             },
             Self::QTime => quote! {cxx_qt_lib::QTime},
@@ -479,7 +479,7 @@ pub fn generate_qobject_cxx(
     // Generate an enum representing all the properties that the object has
     let property_enum = generate_property_enum(obj);
 
-    // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QString;"
+    // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QStringCpp;"
     // if we actually generate some code that uses QString.
 
     // Build the namespace string, rust::module
@@ -525,7 +525,7 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QSizeF = cxx_qt_lib::QSizeF;
                 #[namespace = ""]
-                type QString = cxx_qt_lib::QString;
+                type QString = cxx_qt_lib::QStringCpp;
                 #[namespace = ""]
                 type QTime = cxx_qt_lib::QTime;
                 #[namespace = ""]
@@ -660,7 +660,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                     //
                     // FIXME: can we make this generic in the RustType trait somewhere?
                     let rust_param_type = match qt_type {
-                        QtTypes::QString | QtTypes::String => quote! {&str},
+                        QtTypes::String => quote! {&str},
                         _others => rust_param_type,
                     };
 
@@ -1003,9 +1003,7 @@ pub fn generate_qobject_rs(
             let field_name = field_ident.clone();
             let setter_name = format_ident!("set_{}", field_name);
 
-            if qt_type.is_opaque()
-                && !matches!(qt_type, QtTypes::QString | QtTypes::String | QtTypes::Str)
-            {
+            if qt_type.is_opaque() && !matches!(qt_type, QtTypes::String | QtTypes::Str) {
                 grab_values.push(quote! {
                     self.#setter_name(std::mem::take(&mut data.#field_name));
                 });
