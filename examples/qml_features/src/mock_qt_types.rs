@@ -9,8 +9,8 @@ use cxx_qt::make_qobject;
 #[make_qobject]
 mod mock_qt_types {
     use cxx_qt_lib::{
-        QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QVariant,
-        QVariantValue, Url,
+        QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl,
+        QVariant, QVariantValue,
     };
     use std::str::FromStr;
 
@@ -25,7 +25,7 @@ mod mock_qt_types {
         size: QSize,
         sizef: QSizeF,
         time: QTime,
-        url: Url,
+        url: QUrl,
         variant: QVariant,
     }
 
@@ -45,7 +45,7 @@ mod mock_qt_types {
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
                 time: QTime::new(1, 2, 3, 4),
-                url: Url::from_str("https://github.com/KDAB").unwrap(),
+                url: QUrl::from_str("https://github.com/KDAB").unwrap(),
                 variant: QVariant::from(1_i32),
             }
         }
@@ -245,13 +245,13 @@ mod mock_qt_types {
 
         #[invokable]
         fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = Url::from_str(&(cpp.url().string() + "/cxx-qt")).unwrap();
+            let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt")).unwrap();
             cpp.set_url(url);
         }
 
         #[invokable]
-        fn test_url_invokable(&self, url: &Url) -> Url {
-            Url::from_str(&(url.string() + "/cxx-qt")).unwrap()
+        fn test_url_invokable(&self, url: &QUrl) -> QUrl {
+            QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap()
         }
 
         #[invokable]
@@ -331,7 +331,7 @@ mod mock_qt_types {
                     cpp.set_variant(QVariant::from(time));
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = Url::from_str(&(url.string() + "/cxx-qt")).unwrap();
+                    let url = QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap();
                     cpp.set_variant(QVariant::from(url));
                 }
                 QVariantValue::U8(i) => cpp.set_variant(QVariant::from(i * 2)),
@@ -405,7 +405,7 @@ mod mock_qt_types {
                     QVariant::from(time)
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = Url::from_str(&(url.string() + "/cxx-qt")).unwrap();
+                    let url = QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap();
                     QVariant::from(url)
                 }
                 QVariantValue::U8(i) => QVariant::from(i * 2),

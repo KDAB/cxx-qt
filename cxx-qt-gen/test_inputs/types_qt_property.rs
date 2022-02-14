@@ -12,7 +12,7 @@ mod my_object {
         sizef: QSizeF,
         string: String,
         time: QTime,
-        url: Url,
+        url: QUrl,
         variant: QVariant,
     }
 

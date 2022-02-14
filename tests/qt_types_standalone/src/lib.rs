@@ -7,7 +7,7 @@
 use core::pin::Pin;
 use cxx_qt_lib::{
     QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
-    QVariant, QVariantValue, ToUniquePtr, Url,
+    QVariant, QVariantValue, ToUniquePtr,
 };
 use std::str::FromStr;
 
@@ -52,7 +52,7 @@ mod ffi {
         type QDate = cxx_qt_lib::QDate;
         type QDateTime = cxx_qt_lib::QDateTimeCpp;
         type QString = cxx_qt_lib::QString;
-        type QUrl = cxx_qt_lib::QUrl;
+        type QUrl = cxx_qt_lib::QUrlCpp;
         type QVariant = cxx_qt_lib::QVariantCpp;
         type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
@@ -218,12 +218,12 @@ fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTimeCpp, date: &QDate, time: &QTime)
 }
 
 fn can_construct_qurl(test: &QString) -> bool {
-    let url = Url::from_str(&test.to_rust()).unwrap().to_unique_ptr();
+    let url = QUrl::from_str(&test.to_rust()).unwrap().to_unique_ptr();
 
     ffi::test_constructed_qurl(&url, test)
 }
 
-fn can_read_qurl(u: &QUrl, test: &QString) -> bool {
+fn can_read_qurl(u: &cxx_qt_lib::QUrlCpp, test: &QString) -> bool {
     u.to_rust().string() == test.to_rust()
 }
 
@@ -250,7 +250,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
         VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
         VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
         VariantTest::QUrl => {
-            QVariant::from(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
+            QVariant::from(QUrl::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
         }
         VariantTest::String => QVariant::from("Rust string".to_owned()).to_unique_ptr(),
         VariantTest::U8 => QVariant::from(12_u8).to_unique_ptr(),

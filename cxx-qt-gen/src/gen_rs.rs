@@ -42,7 +42,7 @@ impl RustType for QtTypes {
             Self::QSizeF => true,
             Self::QTime => true,
             Self::String | Self::Str => true,
-            Self::Url => true,
+            Self::QUrl => true,
             Self::QVariant => true,
             _others => false,
         }
@@ -84,9 +84,9 @@ impl RustType for QtTypes {
                 TargetType::Rust => format_ident!("String"),
             },
             Self::QTime => format_ident!("QTime"),
-            Self::QUrl | Self::Url => match target_type {
+            Self::QUrl => match target_type {
                 TargetType::Cpp => format_ident!("QUrl"),
-                TargetType::Rust => format_ident!("Url"),
+                TargetType::Rust => format_ident!("QUrl"),
             },
             Self::QVariant => match target_type {
                 TargetType::Cpp => format_ident!("QVariant"),
@@ -137,9 +137,9 @@ impl RustType for QtTypes {
                 TargetType::Rust => quote! {String},
             },
             Self::QTime => quote! {cxx_qt_lib::QTime},
-            Self::QUrl | Self::Url => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QUrl},
-                TargetType::Rust => quote! {cxx_qt_lib::Url},
+            Self::QUrl => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QUrlCpp},
+                TargetType::Rust => quote! {cxx_qt_lib::QUrl},
             },
             Self::QVariant => match target_type {
                 TargetType::Cpp => quote! {cxx_qt_lib::QVariantCpp},
@@ -529,7 +529,7 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QTime = cxx_qt_lib::QTime;
                 #[namespace = ""]
-                type QUrl = cxx_qt_lib::QUrl;
+                type QUrl = cxx_qt_lib::QUrlCpp;
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariantCpp;
                 #update_requester_type

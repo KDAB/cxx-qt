@@ -48,7 +48,7 @@ mod my_object {
             #[namespace = ""]
             type QTime = cxx_qt_lib::QTime;
             #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrl;
+            type QUrl = cxx_qt_lib::QUrlCpp;
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariantCpp;
 
@@ -237,11 +237,11 @@ mod my_object {
             self.cpp.as_mut().set_time(value);
         }
 
-        pub fn url(&self) -> cxx_qt_lib::Url {
+        pub fn url(&self) -> cxx_qt_lib::QUrl {
             self.cpp.url().to_rust()
         }
 
-        pub fn set_url(&mut self, value: cxx_qt_lib::Url) {
+        pub fn set_url(&mut self, value: cxx_qt_lib::QUrl) {
             self.cpp.as_mut().set_url(&value.to_unique_ptr());
         }
 
@@ -283,7 +283,7 @@ mod my_object {
         sizef: QSizeF,
         string: String,
         time: QTime,
-        url: Url,
+        url: QUrl,
         variant: QVariant,
     }
 

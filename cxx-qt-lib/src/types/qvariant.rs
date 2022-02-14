@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr,
-    Url,
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl,
+    ToUniquePtr,
 };
 
 #[cxx::bridge]
@@ -51,7 +51,7 @@ mod ffi {
         type QSize = crate::QSize;
         type QSizeF = crate::QSizeF;
         type QTime = crate::QTime;
-        type QUrl = crate::QUrl;
+        type QUrl = crate::QUrlCpp;
         type QVariant;
 
         #[namespace = "rust::cxxqtlib1::types"]
@@ -191,7 +191,7 @@ pub enum QVariantValue {
     QSize(QSize),
     QSizeF(QSizeF),
     QTime(QTime),
-    QUrl(Url),
+    QUrl(QUrl),
     String(String),
     U8(u8),
     U16(u16),
@@ -250,7 +250,7 @@ into_qvariant_ref!(QRectF, ffi::qvariant_init_from_qrectf);
 into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
 into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
 into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
-into_qvariant_opaque!(Url, ffi::qvariant_init_from_qurl);
+into_qvariant_opaque!(QUrl, ffi::qvariant_init_from_qurl);
 into_qvariant_ref!(String, ffi::qvariant_init_from_rust_string);
 into_qvariant!(u8, ffi::qvariant_init_from_u8);
 into_qvariant!(u16, ffi::qvariant_init_from_u16);
@@ -323,7 +323,7 @@ impl QVariant {
             }
             ffi::QVariantType::QTime => QVariantValue::QTime(ffi::qvariant_to_qtime(&self.inner)),
             ffi::QVariantType::QUrl => {
-                QVariantValue::QUrl(Url::from_unique_ptr(ffi::qvariant_to_qurl(&self.inner)))
+                QVariantValue::QUrl(QUrl::from_unique_ptr(ffi::qvariant_to_qurl(&self.inner)))
             }
             ffi::QVariantType::String => {
                 QVariantValue::String(ffi::qvariant_to_rust_string(&self.inner))

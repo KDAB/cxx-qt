@@ -37,7 +37,7 @@ mod qpointf;
 pub use qpointf::QPointF;
 
 mod qurl;
-pub use qurl::{QUrl, Url};
+pub use qurl::{QUrl, QUrlCpp};
 
 mod qvariant;
 pub use qvariant::{QVariant, QVariantCpp, QVariantValue};
