@@ -14,7 +14,7 @@ mod my_object {
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTime;
+            type QDateTime = cxx_qt_lib::QDateTimeCpp;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -154,8 +154,8 @@ mod my_object {
         fn test_date_time_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            dateTime: &cxx_qt_lib::QDateTime,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QDateTime> {
+            dateTime: &cxx_qt_lib::QDateTimeCpp,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QDateTimeCpp> {
             let mut _cpp = CppObj::new(_cpp);
             let dateTime = dateTime.to_rust();
             return self.test_date_time(&mut _cpp, &dateTime).to_unique_ptr();
@@ -262,7 +262,7 @@ mod my_object {
             date
         }
 
-        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> DateTime {
+        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
             dateTime
         }
 

@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    DateTime, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr, Url,
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr,
+    Url,
 };
 
 #[cxx::bridge]
@@ -42,7 +43,7 @@ mod ffi {
 
         type QColor = crate::QColorCpp;
         type QDate = crate::QDate;
-        type QDateTime = crate::QDateTime;
+        type QDateTime = crate::QDateTimeCpp;
         type QPoint = crate::QPoint;
         type QPointF = crate::QPointF;
         type QRect = crate::QRect;
@@ -182,7 +183,7 @@ pub enum QVariantValue {
     I32(i32),
     QColor(QColor),
     QDate(QDate),
-    QDateTime(DateTime),
+    QDateTime(QDateTime),
     QPoint(QPoint),
     QPointF(QPointF),
     QRect(QRect),
@@ -241,7 +242,7 @@ into_qvariant!(i16, ffi::qvariant_init_from_i16);
 into_qvariant!(i32, ffi::qvariant_init_from_i32);
 into_qvariant_opaque!(QColor, ffi::qvariant_init_from_qcolor);
 into_qvariant_ref!(QDate, ffi::qvariant_init_from_qdate);
-into_qvariant_opaque!(DateTime, ffi::qvariant_init_from_qdatetime);
+into_qvariant_opaque!(QDateTime, ffi::qvariant_init_from_qdatetime);
 into_qvariant_ref!(QPoint, ffi::qvariant_init_from_qpoint);
 into_qvariant_ref!(QPointF, ffi::qvariant_init_from_qpointf);
 into_qvariant_ref!(QRect, ffi::qvariant_init_from_qrect);
@@ -303,7 +304,7 @@ impl QVariant {
                 ffi::qvariant_to_qcolor(&self.inner),
             )),
             ffi::QVariantType::QDate => QVariantValue::QDate(ffi::qvariant_to_qdate(&self.inner)),
-            ffi::QVariantType::QDateTime => QVariantValue::QDateTime(DateTime::from_unique_ptr(
+            ffi::QVariantType::QDateTime => QVariantValue::QDateTime(QDateTime::from_unique_ptr(
                 ffi::qvariant_to_qdatetime(&self.inner),
             )),
             ffi::QVariantType::QPoint => {

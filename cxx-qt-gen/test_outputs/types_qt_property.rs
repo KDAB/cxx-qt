@@ -30,7 +30,7 @@ mod my_object {
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTime;
+            type QDateTime = cxx_qt_lib::QDateTimeCpp;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]
@@ -165,11 +165,11 @@ mod my_object {
             self.cpp.as_mut().set_date(value);
         }
 
-        pub fn date_time(&self) -> cxx_qt_lib::DateTime {
+        pub fn date_time(&self) -> cxx_qt_lib::QDateTime {
             self.cpp.date_time().to_rust()
         }
 
-        pub fn set_date_time(&mut self, value: cxx_qt_lib::DateTime) {
+        pub fn set_date_time(&mut self, value: cxx_qt_lib::QDateTime) {
             self.cpp.as_mut().set_date_time(&value.to_unique_ptr());
         }
 
@@ -274,7 +274,7 @@ mod my_object {
     struct Data {
         color: QColor,
         date: QDate,
-        date_time: DateTime,
+        date_time: QDateTime,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,

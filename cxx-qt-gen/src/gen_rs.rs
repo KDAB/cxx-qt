@@ -33,7 +33,7 @@ impl RustType for QtTypes {
         match self {
             Self::QColor => true,
             Self::QDate => true,
-            Self::DateTime => true,
+            Self::QDateTime => true,
             Self::QPoint => true,
             Self::QPointF => true,
             Self::QRect => true,
@@ -65,9 +65,9 @@ impl RustType for QtTypes {
                 TargetType::Rust => format_ident!("QColor"),
             },
             Self::QDate => format_ident!("QDate"),
-            Self::QDateTime | Self::DateTime => match target_type {
+            Self::QDateTime => match target_type {
                 TargetType::Cpp => format_ident!("QDateTime"),
-                TargetType::Rust => format_ident!("DateTime"),
+                TargetType::Rust => format_ident!("QDateTime"),
             },
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
@@ -118,9 +118,9 @@ impl RustType for QtTypes {
                 TargetType::Rust => quote! {cxx_qt_lib::QColor},
             },
             Self::QDate => quote! {cxx_qt_lib::QDate},
-            Self::QDateTime | Self::DateTime => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QDateTime},
-                TargetType::Rust => quote! {cxx_qt_lib::DateTime},
+            Self::QDateTime => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QDateTimeCpp},
+                TargetType::Rust => quote! {cxx_qt_lib::QDateTime},
             },
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
@@ -511,7 +511,7 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QDate = cxx_qt_lib::QDate;
                 #[namespace = ""]
-                type QDateTime = cxx_qt_lib::QDateTime;
+                type QDateTime = cxx_qt_lib::QDateTimeCpp;
                 #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]

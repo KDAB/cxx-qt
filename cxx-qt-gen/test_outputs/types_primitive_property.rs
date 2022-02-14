@@ -26,7 +26,7 @@ mod my_object {
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTime;
+            type QDateTime = cxx_qt_lib::QDateTimeCpp;
             #[namespace = ""]
             type QPoint = cxx_qt_lib::QPoint;
             #[namespace = ""]

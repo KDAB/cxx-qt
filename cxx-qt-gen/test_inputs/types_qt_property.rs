@@ -3,7 +3,7 @@ mod my_object {
     struct Data {
         color: QColor,
         date: QDate,
-        date_time: DateTime,
+        date_time: QDateTime,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
