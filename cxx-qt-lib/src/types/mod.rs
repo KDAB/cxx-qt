@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qcolor;
-pub use qcolor::{Color, QColor};
+pub use qcolor::{QColor, QColorCpp};
 
 mod qdate;
 pub use qdate::QDate;

@@ -1,5 +1,5 @@
 mod my_object {
-    use cxx_qt_lib::Color;
+    use cxx_qt_lib::QColor;
 
     #[derive(Default)]
     struct RustObj;
@@ -31,7 +31,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn invokable_parameters(&self, opaque: &Color, primitive: i32) {
+        fn invokable_parameters(&self, opaque: &QColor, primitive: i32) {
             println!("Red: {} Number: {}", opaque.red(), primitive);
         }
 
@@ -41,8 +41,8 @@ mod my_object {
         }
 
         #[invokable]
-        fn invokable_return_opaque(&mut self) -> Color {
-            cxx_qt_lib::Color::from_rgba(255, 0, 0, 0)
+        fn invokable_return_opaque(&mut self) -> QColor {
+            cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
         #[invokable]

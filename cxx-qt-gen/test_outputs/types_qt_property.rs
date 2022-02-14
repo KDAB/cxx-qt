@@ -26,7 +26,7 @@ mod my_object {
 
             include!("cxx-qt-lib/include/qt_types.h");
             #[namespace = ""]
-            type QColor = cxx_qt_lib::QColor;
+            type QColor = cxx_qt_lib::QColorCpp;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
@@ -149,11 +149,11 @@ mod my_object {
             Self { cpp }
         }
 
-        pub fn color(&self) -> cxx_qt_lib::Color {
+        pub fn color(&self) -> cxx_qt_lib::QColor {
             self.cpp.color().to_rust()
         }
 
-        pub fn set_color(&mut self, value: cxx_qt_lib::Color) {
+        pub fn set_color(&mut self, value: cxx_qt_lib::QColor) {
             self.cpp.as_mut().set_color(&value.to_unique_ptr());
         }
 
@@ -272,7 +272,7 @@ mod my_object {
 
     #[derive(Default)]
     struct Data {
-        color: Color,
+        color: QColor,
         date: QDate,
         date_time: DateTime,
         point: QPoint,

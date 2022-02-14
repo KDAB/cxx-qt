@@ -1,10 +1,10 @@
 mod my_object {
-    use cxx_qt_lib::Color;
+    use cxx_qt_lib::QColor;
 
     #[derive(Default)]
     struct Data {
         primitive: i32,
-        opaque: Color,
+        opaque: QColor,
         nested: crate::nested_object::CppObj,
     }
 

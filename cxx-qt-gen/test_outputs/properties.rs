@@ -1,5 +1,5 @@
 mod my_object {
-    use cxx_qt_lib::Color;
+    use cxx_qt_lib::QColor;
     use cxx_qt_lib::ToUniquePtr;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
@@ -17,7 +17,7 @@ mod my_object {
 
             include!("cxx-qt-lib/include/qt_types.h");
             #[namespace = ""]
-            type QColor = cxx_qt_lib::QColor;
+            type QColor = cxx_qt_lib::QColorCpp;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
@@ -101,11 +101,11 @@ mod my_object {
             self.cpp.as_mut().set_primitive(value);
         }
 
-        pub fn opaque(&self) -> cxx_qt_lib::Color {
+        pub fn opaque(&self) -> cxx_qt_lib::QColor {
             self.cpp.opaque().to_rust()
         }
 
-        pub fn set_opaque(&mut self, value: cxx_qt_lib::Color) {
+        pub fn set_opaque(&mut self, value: cxx_qt_lib::QColor) {
             self.cpp.as_mut().set_opaque(&value.to_unique_ptr());
         }
 
@@ -126,7 +126,7 @@ mod my_object {
     #[derive(Default)]
     struct Data {
         primitive: i32,
-        opaque: Color,
+        opaque: QColor,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

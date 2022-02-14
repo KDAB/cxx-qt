@@ -54,7 +54,6 @@ pub(crate) enum QtTypes {
     I16,
     I32,
     QColor,
-    Color,
     QDate,
     QPoint,
     QPointF,
@@ -80,7 +79,7 @@ impl QtTypes {
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
             Self::CppObj { .. } => true,
-            Self::QColor | Self::Color => true,
+            Self::QColor => true,
             Self::QDateTime | Self::DateTime => true,
             Self::QString | Self::String | Self::Str => true,
             Self::QUrl | Self::Url => true,
@@ -221,7 +220,6 @@ fn extract_qt_type(
             "i16" => Ok(QtTypes::I16),
             "i32" => Ok(QtTypes::I32),
             "QColor" => Ok(QtTypes::QColor),
-            "Color" => Ok(QtTypes::Color),
             "QDate" => Ok(QtTypes::QDate),
             "QPoint" => Ok(QtTypes::QPoint),
             "QPointF" => Ok(QtTypes::QPointF),
@@ -1056,7 +1054,7 @@ mod tests {
         let parameter = &invokable.parameters[0];
         assert_eq!(parameter.ident.to_string(), "opaque");
         assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "Color");
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "QColor");
         assert!(parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
         let parameter = &invokable.parameters[1];
@@ -1250,7 +1248,7 @@ mod tests {
         assert_eq!(prop_second.ident.cpp_ident.to_string(), "opaque");
         assert_eq!(prop_second.ident.rust_ident.to_string(), "opaque");
         assert_eq!(prop_second.type_ident.idents.len(), 1);
-        assert_eq!(prop_second.type_ident.idents[0].to_string(), "Color");
+        assert_eq!(prop_second.type_ident.idents[0].to_string(), "QColor");
         assert!(!prop_second.type_ident.is_ref);
 
         assert!(prop_second.getter.is_some());

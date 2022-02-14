@@ -6,8 +6,8 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
-    QString, QTime, QUrl, QVariant, QVariantValue, ToUniquePtr, Url,
+    DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
+    QTime, QUrl, QVariant, QVariantValue, ToUniquePtr, Url,
 };
 use std::str::FromStr;
 
@@ -48,7 +48,7 @@ mod ffi {
         include!("cxx-qt-lib/include/qt_types.h");
         include!("bridge.h");
 
-        type QColor = cxx_qt_lib::QColor;
+        type QColor = cxx_qt_lib::QColorCpp;
         type QDate = cxx_qt_lib::QDate;
         type QDateTime = cxx_qt_lib::QDateTime;
         type QString = cxx_qt_lib::QString;
@@ -167,12 +167,12 @@ fn can_handle_qstring_change() -> bool {
     short_s_ptr.to_rust() == long_s
 }
 
-fn make_color(test: ColorTest) -> cxx::UniquePtr<QColor> {
+fn make_color(test: ColorTest) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
     match test {
-        ColorTest::Rgb_Red => Color::from_rgba(255, 0, 0, 255).to_unique_ptr(),
-        ColorTest::Rgb_Green => Color::from_rgba(0, 255, 0, 255).to_unique_ptr(),
-        ColorTest::Rgb_Blue => Color::from_rgba(0, 0, 255, 255).to_unique_ptr(),
-        ColorTest::Rgb_Transparent => Color::from_rgba(0, 0, 0, 0).to_unique_ptr(),
+        ColorTest::Rgb_Red => QColor::from_rgba(255, 0, 0, 255).to_unique_ptr(),
+        ColorTest::Rgb_Green => QColor::from_rgba(0, 255, 0, 255).to_unique_ptr(),
+        ColorTest::Rgb_Blue => QColor::from_rgba(0, 0, 255, 255).to_unique_ptr(),
+        ColorTest::Rgb_Transparent => QColor::from_rgba(0, 0, 0, 0).to_unique_ptr(),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
@@ -182,7 +182,7 @@ fn can_construct_qcolor(test: ColorTest) -> bool {
     ffi::test_constructed_qcolor(&color, test)
 }
 
-fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool {
+fn can_read_qcolor(c: &cxx_qt_lib::QColorCpp, test: ColorTest) -> bool {
     let color = c.to_rust();
     match test {
         ColorTest::Rgb_Red => {
@@ -235,7 +235,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
         VariantTest::I8 => QVariant::from(12_i8).to_unique_ptr(),
         VariantTest::I16 => QVariant::from(123_i16).to_unique_ptr(),
         VariantTest::I32 => QVariant::from(123_i32).to_unique_ptr(),
-        VariantTest::QColor => QVariant::from(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
+        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
         VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
         VariantTest::QDateTime => QVariant::from(DateTime::from_date_and_time(
             &QDate::new(2022, 1, 1),

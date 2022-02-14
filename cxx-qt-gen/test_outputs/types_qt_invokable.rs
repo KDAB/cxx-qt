@@ -10,7 +10,7 @@ mod my_object {
 
             include!("cxx-qt-lib/include/qt_types.h");
             #[namespace = ""]
-            type QColor = cxx_qt_lib::QColor;
+            type QColor = cxx_qt_lib::QColorCpp;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
@@ -135,8 +135,8 @@ mod my_object {
         fn test_color_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            color: &cxx_qt_lib::QColor,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
+            color: &cxx_qt_lib::QColorCpp,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
             let mut _cpp = CppObj::new(_cpp);
             let color = color.to_rust();
             return self.test_color(&mut _cpp, &color).to_unique_ptr();
@@ -254,7 +254,7 @@ mod my_object {
             return self.test_variant(&mut _cpp, &variant).to_unique_ptr();
         }
 
-        fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> Color {
+        fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
             color
         }
 

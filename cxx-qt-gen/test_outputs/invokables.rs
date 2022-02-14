@@ -1,5 +1,5 @@
 mod my_object {
-    use cxx_qt_lib::Color;
+    use cxx_qt_lib::QColor;
     use cxx_qt_lib::ToUniquePtr;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
@@ -11,7 +11,7 @@ mod my_object {
 
             include!("cxx-qt-lib/include/qt_types.h");
             #[namespace = ""]
-            type QColor = cxx_qt_lib::QColor;
+            type QColor = cxx_qt_lib::QColorCpp;
             #[namespace = ""]
             type QDate = cxx_qt_lib::QDate;
             #[namespace = ""]
@@ -104,7 +104,7 @@ mod my_object {
             self.invokable_nested_parameter(&mut nested);
         }
 
-        fn invokable_parameters_wrapper(&self, opaque: &cxx_qt_lib::QColor, primitive: i32) {
+        fn invokable_parameters_wrapper(&self, opaque: &cxx_qt_lib::QColorCpp, primitive: i32) {
             let opaque = opaque.to_rust();
             self.invokable_parameters(&opaque, primitive);
         }
@@ -118,7 +118,7 @@ mod my_object {
             self.invokable_parameters_cpp_obj(primitive, &mut cpp);
         }
 
-        fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
+        fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
             return self.invokable_return_opaque().to_unique_ptr();
         }
 
@@ -146,7 +146,7 @@ mod my_object {
             println!("nested!");
         }
 
-        fn invokable_parameters(&self, opaque: &Color, primitive: i32) {
+        fn invokable_parameters(&self, opaque: &QColor, primitive: i32) {
             println!("Red: {} Number: {}", opaque.red(), primitive);
         }
 
@@ -154,8 +154,8 @@ mod my_object {
             println!("{}", primitive);
         }
 
-        fn invokable_return_opaque(&mut self) -> Color {
-            cxx_qt_lib::Color::from_rgba(255, 0, 0, 0)
+        fn invokable_return_opaque(&mut self) -> QColor {
+            cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
         fn invokable_return_primitive(&mut self) -> i32 {

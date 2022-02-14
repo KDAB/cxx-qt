@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    Color, DateTime, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr, Url,
+    DateTime, QColor, QDate, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, ToUniquePtr, Url,
 };
 
 #[cxx::bridge]
@@ -40,7 +40,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
 
-        type QColor = crate::QColor;
+        type QColor = crate::QColorCpp;
         type QDate = crate::QDate;
         type QDateTime = crate::QDateTime;
         type QPoint = crate::QPoint;
@@ -180,7 +180,7 @@ pub enum QVariantValue {
     I8(i8),
     I16(i16),
     I32(i32),
-    QColor(Color),
+    QColor(QColor),
     QDate(QDate),
     QDateTime(DateTime),
     QPoint(QPoint),
@@ -239,7 +239,7 @@ into_qvariant!(f64, ffi::qvariant_init_from_f64);
 into_qvariant!(i8, ffi::qvariant_init_from_i8);
 into_qvariant!(i16, ffi::qvariant_init_from_i16);
 into_qvariant!(i32, ffi::qvariant_init_from_i32);
-into_qvariant_opaque!(Color, ffi::qvariant_init_from_qcolor);
+into_qvariant_opaque!(QColor, ffi::qvariant_init_from_qcolor);
 into_qvariant_ref!(QDate, ffi::qvariant_init_from_qdate);
 into_qvariant_opaque!(DateTime, ffi::qvariant_init_from_qdatetime);
 into_qvariant_ref!(QPoint, ffi::qvariant_init_from_qpoint);
@@ -299,9 +299,9 @@ impl QVariant {
             ffi::QVariantType::I8 => QVariantValue::I8(ffi::qvariant_to_i8(&self.inner)),
             ffi::QVariantType::I16 => QVariantValue::I16(ffi::qvariant_to_i16(&self.inner)),
             ffi::QVariantType::I32 => QVariantValue::I32(ffi::qvariant_to_i32(&self.inner)),
-            ffi::QVariantType::QColor => {
-                QVariantValue::QColor(Color::from_unique_ptr(ffi::qvariant_to_qcolor(&self.inner)))
-            }
+            ffi::QVariantType::QColor => QVariantValue::QColor(QColor::from_unique_ptr(
+                ffi::qvariant_to_qcolor(&self.inner),
+            )),
             ffi::QVariantType::QDate => QVariantValue::QDate(ffi::qvariant_to_qdate(&self.inner)),
             ffi::QVariantType::QDateTime => QVariantValue::QDateTime(DateTime::from_unique_ptr(
                 ffi::qvariant_to_qdatetime(&self.inner),
