@@ -7,7 +7,7 @@
 # TODO: figure out what the actual hard minimum is
 cmake_minimum_required(VERSION 3.16)
 
-project(example_basic_cxx_qt_qml)
+project(example_qml_features)
 set(APP_NAME ${PROJECT_NAME})
 
 # TODO: Add a helper function to our CMake module which automatically
