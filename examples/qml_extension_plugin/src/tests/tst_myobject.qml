@@ -19,112 +19,34 @@ TestCase {
         }
     }
 
-    Component {
-        id: componentSubObject
-
-        SubObject {
-
-        }
-    }
-
-    Component {
-        id: componentSpy
-
-        SignalSpy {
-
-        }
+    function test_default() {
+        const myObject = createTemporaryObject(componentMyObject, null, {});
+        compare(myObject.number, 1);
+        compare(myObject.string, "Hello World!");
     }
 
     function test_increment() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
-        compare(myObject.incrementNumber(1), 2);
-    }
-
-    function test_increment_self() {
         const myObject = createTemporaryObject(componentMyObject, null, {
-            number: 1,
+            number: 5,
         });
-        myObject.incrementNumberSelf();
-        compare(myObject.number, 2);
+        myObject.increment();
+        compare(myObject.number, 6);
     }
 
-    function test_increment_sub() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            number: 1,
-        });
-        myObject.incrementNumberSub(subObject);
-        compare(subObject.number, 2);
-    }
-
-    function test_number() {
+    function test_reset() {
         const myObject = createTemporaryObject(componentMyObject, null, {
-            number: 1,
-        });
-        const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "numberChanged",
-            target: myObject,
+            number: 5,
+            string: "KDAB",
         });
         compare(myObject.number, 1);
-        compare(spy.count, 0);
-        // Wait for init value to be set
-        tryCompare(spy, "count", 1);
-
-        myObject.number = 2;
-
-        compare(myObject.number, 2);
-        tryCompare(spy, "count", 2);
+        compare(myObject.string, "Hello World!");
     }
 
-    function test_string() {
+    function test_serialize() {
         const myObject = createTemporaryObject(componentMyObject, null, {
-            string: "hello",
+            number: 5,
+            string: "KDAB",
         });
-        const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "stringChanged",
-            target: myObject,
-        });
-        compare(myObject.string, "hello");
-        compare(spy.count, 0);
-        // Wait for init value to be set
-        tryCompare(spy, "count", 1);
-
-        myObject.string = "world";
-
-        compare(myObject.string, "world");
-        tryCompare(spy, "count", 2);
-    }
-
-    function test_sub_object() {
-        const myObject = createTemporaryObject(componentMyObject, null, {
-            string: "hello",
-        });
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            string: "world",
-        });
-        const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "subChanged",
-            target: myObject,
-        });
-        compare(myObject.string, "hello");
-        compare(myObject.sub, null);
-        compare(subObject.string, "world");
-        compare(spy.count, 0);
-
-        myObject.sub = subObject;
-
-        compare(myObject.sub, subObject);
-        compare(myObject.sub.string, "world");
-        tryCompare(spy, "count", 1);
-    }
-
-    function test_subobject_increment_self() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            number: 1,
-        });
-        myObject.sub = subObject;
-        myObject.sub.incrementNumberSelf();
-        compare(myObject.sub.number, 2);
+        compare(myObject.serialize(), `{"number":5,"string":"KDAB"}`);
     }
 }
