@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-add_subdirectory(minimal_cxx_qt_qml)
 add_subdirectory(qml_extension_plugin)
 add_subdirectory(qml_features)
+add_subdirectory(qml_minimal)
 add_subdirectory(qml_with_threaded_logic)
