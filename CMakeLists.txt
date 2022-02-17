@@ -88,7 +88,7 @@ add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_T
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
 add_test_cargo(qml_features "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_features/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(minimal_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/minimal_cxx_qt_qml/Cargo.toml" DOCTESTS_OFF)
+add_test_cargo(qml_minimal "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_minimal/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_with_threaded_logic "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_with_threaded_logic/Cargo.toml" DOCTESTS_OFF)
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format

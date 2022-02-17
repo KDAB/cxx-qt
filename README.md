@@ -47,7 +47,7 @@ cmake --build . -j$(nproc)
 ## Run the basic QML example
 
 ```bash
-./build/examples/basic_cxx_qt_qml/example_basic_cxx_qt_qml
+./build/examples/qml_minimal/example_qml_minimal
 ```
 
 ## Testing
