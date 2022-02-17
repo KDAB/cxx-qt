@@ -10,12 +10,9 @@ fn main() {
     CxxQtBuilder::new()
         .qqmlextensionplugin(
             "com.kdab.cxx_qt.demo",
-            "example_basic_cxx_qt_qml_plugin_qmlplugin",
+            "example_qml_extension_plugin_qmlplugin",
         )
         .cpp_format(ClangFormatStyle::Mozilla)
-        .file("src/data.rs")
         .file("src/lib.rs")
-        .file("src/mock_qt_types.rs")
-        .file("src/sub.rs")
         .build();
 }

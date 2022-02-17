@@ -5,20 +5,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
-mod data;
-// TODO: move to subdir when cxx-qt-build supports it
-mod mock_qt_types;
-pub mod sub;
+const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
 #[make_qobject]
 mod my_object {
-    use cxx_qt_lib::QString;
+    use serde::{Deserialize, Serialize};
 
-    #[derive(Default)]
+    #[derive(Deserialize, Serialize)]
     pub struct Data {
         number: i32,
         string: String,
-        sub: crate::sub::sub_object::CppObj,
+    }
+
+    impl Default for Data {
+        fn default() -> Self {
+            serde_json::from_str(super::DEFAULT_STR).unwrap()
+        }
     }
 
     #[derive(Default)]
@@ -26,26 +28,20 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        fn increment_number_self(&self, cpp: &mut CppObj) {
-            let value = cpp.number() + 1;
-            cpp.set_number(value);
+        fn increment(&self, cpp: &mut CppObj) {
+            cpp.set_number(cpp.number() + 1);
         }
 
         #[invokable]
-        fn increment_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
-            let value = sub.number() + 1;
-            sub.set_number(value);
+        fn reset(&self, cpp: &mut CppObj) {
+            let data: Data = serde_json::from_str(super::DEFAULT_STR).unwrap();
+            cpp.grab_values_from_data(&data);
         }
 
         #[invokable]
-        fn increment_number(&self, number: i32) -> i32 {
-            number + 1
-        }
-
-        #[invokable]
-        fn say_hi(&self, string: &QString, number: i32) {
-            let s: String = string.into();
-            println!("Hi from Rust! String is {} and number is {}", s, number);
+        fn serialize(&self, cpp: &mut CppObj) -> String {
+            let data = Data::from(cpp);
+            serde_json::to_string(&data).unwrap()
         }
     }
 }
