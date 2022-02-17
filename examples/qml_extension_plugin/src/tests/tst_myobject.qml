@@ -38,6 +38,7 @@ TestCase {
             number: 5,
             string: "KDAB",
         });
+        myObject.reset();
         compare(myObject.number, 1);
         compare(myObject.string, "Hello World!");
     }
