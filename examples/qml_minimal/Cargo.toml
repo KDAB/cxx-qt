@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
-name = "example-minimal-cxx-qt-qml"
+name = "qml-minimal"
 version = "0.1.0"
 authors = [
   "Andrew Hayzen <andrew.hayzen@kdab.com>",
