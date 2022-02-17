@@ -84,29 +84,10 @@ file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/test_ou
 add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
 
-# Create helper method which adds relevent tests for the given example
-function(add_example_tests EXAMPLE_NAME)
-    set(NAME_WITH_PREFIX example_${EXAMPLE_NAME})
-
-    # Add all the normal tests used on the other modules
-    add_test_cargo(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_SOURCE_DIR}/examples/${EXAMPLE_NAME}/Cargo.toml" DOCTESTS_OFF)
-
-    # The example executable itself is a test that needs to be run
-    add_test(NAME ${NAME_WITH_PREFIX}_cpp_tests COMMAND ${NAME_WITH_PREFIX})
-
-    # Add valgrind test
-    add_valgrind_test(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_BINARY_DIR}/examples/${EXAMPLE_NAME}/example_${EXAMPLE_NAME}" "${CMAKE_CURRENT_BINARY_DIR}/examples/${EXAMPLE_NAME}")
-endfunction()
-
-# Add tests for all the examples
-# TODO: we probably want to move tests of examples into the CMakeLists under the examples folder
-add_example_tests(basic_cxx_only)
-add_example_tests(qt_types_standalone)
-add_example_tests(update_requester_standalone)
-add_example_tests(basic_cxx_qt)
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
 add_test_cargo(basic_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_qt_qml/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(basic_cxx_qt_qml_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/basic_cxx_qt_qml_plugin/Cargo.toml" DOCTESTS_OFF)
+add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/Cargo.toml" DOCTESTS_OFF)
+add_test_cargo(minimal_cxx_qt_qml "${CMAKE_CURRENT_SOURCE_DIR}/examples/minimal_cxx_qt_qml/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_with_threaded_logic "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_with_threaded_logic/Cargo.toml" DOCTESTS_OFF)
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format
@@ -114,3 +95,5 @@ add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format
 
 # Add test which checks all files have a valid license
 add_test(NAME reuse_lint COMMAND reuse lint)
+
+add_subdirectory(tests)
