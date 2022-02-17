@@ -7,7 +7,7 @@
 # TODO: figure out what the actual hard minimum is
 cmake_minimum_required(VERSION 3.16)
 
-project(example_update_requester_standalone)
+project(tests_qt_types_standalone)
 set(APP_NAME ${PROJECT_NAME})
 
 # TODO: Add a helper function to our CMake module which automatically
@@ -22,11 +22,10 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 include(CxxQt)
-
 set(
     CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/TestObject.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/bridge.h
 )
 
 # Generate the C++ code
