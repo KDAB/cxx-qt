@@ -5,33 +5,19 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Dialogs 1.1
 import QtQuick.Window 2.12
 
 import com.kdab.cxx_qt.demo 1.0
 
 Window {
-    height: 480
+    height: 300
     title: qsTr("Hello World")
     visible: true
-    width: 640
-
-    MyData {
-        id: myData
-        number: myObject.number
-        string: myObject.string
-    }
+    width: 300
 
     MyObject {
         id: myObject
-        number: 1
-        string: "My String " + myObject.number
-        sub: subObject
-    }
-
-    SubObject {
-        id: subObject
-        number: 2
-        string: "substr"
     }
 
     Column {
@@ -40,43 +26,39 @@ Window {
         spacing: 10
 
         Label {
-            text: "Number: " + myObject.number + " SubNumber: " + myObject.sub.number
+            text: "Number: " + myObject.number
         }
 
         Label {
-            text: "String: " + myObject.string + " SubString: " + myObject.sub.string
+            text: "String: " + myObject.string
         }
 
         Button {
-            text: "Increment Number"
+            text: "Increment"
 
-            onClicked: myObject.number = myObject.incrementNumber(myObject.number)
+            onClicked: myObject.increment()
         }
 
         Button {
-            text: "Increment Number (self)"
+            text: "Reset"
 
-            onClicked: myObject.incrementNumberSelf()
+            onClicked: myObject.reset()
         }
 
         Button {
-            text: "Increment Number (sub) from myObject"
+            text: "Serialize"
 
-            onClicked: myObject.incrementNumberSub(myObject.sub)
-        }
-
-        Button {
-            text: "Increment Number (sub) from sub"
-
-            onClicked: myObject.sub.incrementNumberSelf()
-        }
-
-        Button {
-            text: "Print Data"
-
-            onClicked: console.warn(myData.asJsonStr())
+            onClicked: {
+                serializedMessageDialog.text = myObject.serialize();
+                serializedMessageDialog.open();
+            }
         }
     }
 
-    Component.onCompleted: myObject.sayHi(myObject.string, myObject.number)
+    MessageDialog {
+        id: serializedMessageDialog
+        title: qsTr("Serialized Object")
+
+        onAccepted: close()
+    }
 }
