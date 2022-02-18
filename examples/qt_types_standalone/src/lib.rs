@@ -237,37 +237,33 @@ fn can_read_qurl(u: &QUrl, test: &QString) -> bool {
 
 fn make_variant(test: VariantTest) -> cxx::UniquePtr<QVariant> {
     match test {
-        VariantTest::Bool => Variant::from_bool(true).to_unique_ptr(),
-        VariantTest::F32 => Variant::from_f32(1.23).to_unique_ptr(),
-        VariantTest::F64 => Variant::from_f64(1.23).to_unique_ptr(),
-        VariantTest::I8 => Variant::from_i8(12).to_unique_ptr(),
-        VariantTest::I16 => Variant::from_i16(123).to_unique_ptr(),
-        VariantTest::I32 => Variant::from_i32(123).to_unique_ptr(),
-        VariantTest::QColor => {
-            Variant::from_qcolor(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr()
-        }
-        VariantTest::QDate => Variant::from_qdate(QDate::new(2022, 1, 1)).to_unique_ptr(),
-        VariantTest::QDateTime => Variant::from_qdatetime(DateTime::from_date_and_time(
+        VariantTest::Bool => Variant::from(true).to_unique_ptr(),
+        VariantTest::F32 => Variant::from(1.23_f32).to_unique_ptr(),
+        VariantTest::F64 => Variant::from(1.23_f64).to_unique_ptr(),
+        VariantTest::I8 => Variant::from(12_i8).to_unique_ptr(),
+        VariantTest::I16 => Variant::from(123_i16).to_unique_ptr(),
+        VariantTest::I32 => Variant::from(123_i32).to_unique_ptr(),
+        VariantTest::QColor => Variant::from(Color::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
+        VariantTest::QDate => Variant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
+        VariantTest::QDateTime => Variant::from(DateTime::from_date_and_time(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
         ))
         .to_unique_ptr(),
-        VariantTest::QPoint => Variant::from_qpoint(QPoint::new(1, 3)).to_unique_ptr(),
-        VariantTest::QPointF => Variant::from_qpointf(QPointF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QRect => Variant::from_qrect(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
-        VariantTest::QRectF => {
-            Variant::from_qrectf(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr()
-        }
-        VariantTest::QSize => Variant::from_qsize(QSize::new(1, 3)).to_unique_ptr(),
-        VariantTest::QSizeF => Variant::from_qsizef(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QTime => Variant::from_qtime(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
+        VariantTest::QPoint => Variant::from(QPoint::new(1, 3)).to_unique_ptr(),
+        VariantTest::QPointF => Variant::from(QPointF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QRect => Variant::from(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
+        VariantTest::QRectF => Variant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr(),
+        VariantTest::QSize => Variant::from(QSize::new(1, 3)).to_unique_ptr(),
+        VariantTest::QSizeF => Variant::from(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
+        VariantTest::QTime => Variant::from(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
         VariantTest::QUrl => {
-            Variant::from_qurl(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
+            Variant::from(Url::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
         }
-        VariantTest::String => Variant::from_string("Rust string".to_owned()).to_unique_ptr(),
-        VariantTest::U8 => Variant::from_u8(12).to_unique_ptr(),
-        VariantTest::U16 => Variant::from_u16(123).to_unique_ptr(),
-        VariantTest::U32 => Variant::from_u32(123).to_unique_ptr(),
+        VariantTest::String => Variant::from("Rust string".to_owned()).to_unique_ptr(),
+        VariantTest::U8 => Variant::from(12_u8).to_unique_ptr(),
+        VariantTest::U16 => Variant::from(123_u16).to_unique_ptr(),
+        VariantTest::U32 => Variant::from(123_u32).to_unique_ptr(),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }

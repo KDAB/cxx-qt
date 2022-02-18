@@ -167,7 +167,7 @@ impl QVariant {
     /// Create a new Rust Variant from this QVariant.
     /// This is a copy operation so any changes will not propagate to the original QVariant.
     pub fn to_rust(&self) -> Variant {
-        Variant::from_qvariant(self)
+        Variant::from(self)
     }
 }
 
@@ -257,231 +257,84 @@ pub enum VariantValue {
     U32(u32),
 }
 
+// Define how we convert from other types into a QVariant
+pub trait IntoQVariant {
+    unsafe fn into_qvariant(self, ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>);
+}
+
+macro_rules! into_qvariant {
+    ($typeName:ty, $name:ident) => {
+        impl IntoQVariant for $typeName {
+            unsafe fn into_qvariant(self, ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>) {
+                $name(ptr, self);
+            }
+        }
+    };
+}
+
+macro_rules! into_qvariant_ref {
+    ($typeName:ty, $name:ident) => {
+        impl IntoQVariant for $typeName {
+            unsafe fn into_qvariant(self, ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>) {
+                $name(ptr, &self);
+            }
+        }
+    };
+}
+
+macro_rules! into_qvariant_opaque {
+    ($typeName:ty, $name:ident) => {
+        impl IntoQVariant for $typeName {
+            unsafe fn into_qvariant(self, ptr: &mut MaybeUninit<cxx::UniquePtr<QVariant>>) {
+                $name(ptr, &self.to_unique_ptr());
+            }
+        }
+    };
+}
+
+into_qvariant!(&QVariant, qvariant_init_from_qvariant);
+into_qvariant!(bool, qvariant_init_from_bool);
+into_qvariant!(f32, qvariant_init_from_f32);
+into_qvariant!(f64, qvariant_init_from_f64);
+into_qvariant!(i8, qvariant_init_from_i8);
+into_qvariant!(i16, qvariant_init_from_i16);
+into_qvariant!(i32, qvariant_init_from_i32);
+into_qvariant_opaque!(Color, qvariant_init_from_qcolor);
+into_qvariant_ref!(QDate, qvariant_init_from_qdate);
+into_qvariant_opaque!(DateTime, qvariant_init_from_qdatetime);
+into_qvariant_ref!(QPoint, qvariant_init_from_qpoint);
+into_qvariant_ref!(QPointF, qvariant_init_from_qpointf);
+into_qvariant_ref!(QRect, qvariant_init_from_qrect);
+into_qvariant_ref!(QRectF, qvariant_init_from_qrectf);
+into_qvariant_ref!(QSize, qvariant_init_from_qsize);
+into_qvariant_ref!(QSizeF, qvariant_init_from_qsizef);
+into_qvariant_ref!(QTime, qvariant_init_from_qtime);
+into_qvariant_opaque!(Url, qvariant_init_from_qurl);
+into_qvariant_ref!(String, qvariant_init_from_str);
+into_qvariant!(u8, qvariant_init_from_u8);
+into_qvariant!(u16, qvariant_init_from_u16);
+into_qvariant!(u32, qvariant_init_from_u32);
+
 pub struct Variant {
     pub(crate) inner: cxx::UniquePtr<QVariant>,
 }
 
+impl<T> From<T> for Variant
+where
+    T: IntoQVariant,
+{
+    fn from(t: T) -> Self {
+        Self {
+            inner: unsafe {
+                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
+                t.into_qvariant(&mut ptr);
+                ptr.assume_init()
+            },
+        }
+    }
+}
+
 impl Variant {
-    pub fn from_qvariant(qvariant: &QVariant) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qvariant(&mut ptr, qvariant);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_bool(b: bool) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_bool(&mut ptr, b);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_f32(f: f32) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_f32(&mut ptr, f);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_f64(f: f64) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_f64(&mut ptr, f);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_i8(i: i8) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_i8(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_i16(i: i16) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_i16(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_i32(i: i32) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_i32(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qcolor(color: Color) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qcolor(&mut ptr, &color.to_unique_ptr());
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qdate(date: QDate) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qdate(&mut ptr, &date);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qdatetime(date_time: DateTime) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qdatetime(&mut ptr, &date_time.to_unique_ptr());
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qpoint(point: QPoint) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qpoint(&mut ptr, &point);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qpointf(pointf: QPointF) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qpointf(&mut ptr, &pointf);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qrect(rect: QRect) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qrect(&mut ptr, &rect);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qrectf(rectf: QRectF) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qrectf(&mut ptr, &rectf);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qsize(size: QSize) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qsize(&mut ptr, &size);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qsizef(sizef: QSizeF) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qsizef(&mut ptr, &sizef);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qtime(time: QTime) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qtime(&mut ptr, &time);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_qurl(url: Url) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_qurl(&mut ptr, &url.to_unique_ptr());
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_string(s: String) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_str(&mut ptr, &s);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_u8(i: u8) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_u8(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_u16(i: u16) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_u16(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
-    pub fn from_u32(i: u32) -> Self {
-        Self {
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QVariant>>::zeroed();
-                qvariant_init_from_u32(&mut ptr, i);
-                ptr.assume_init()
-            },
-        }
-    }
-
     // TODO: add a set_value(&mut self, value: VariantValue);
 
     pub fn value(&self) -> VariantValue {
@@ -549,10 +402,4 @@ impl crate::ToUniquePtr for Variant {
 unsafe impl ExternType for Variant {
     type Id = type_id!("CxxQt::Variant");
     type Kind = cxx::kind::Opaque;
-}
-
-impl From<&QVariant> for Variant {
-    fn from(qvariant: &QVariant) -> Self {
-        qvariant.to_rust()
-    }
 }
