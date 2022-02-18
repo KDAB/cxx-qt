@@ -25,6 +25,8 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QuickT
 #
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+
+# ANCHOR: book_cmake_generation
 include(CxxQt)
 
 set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/qml)
@@ -49,6 +51,7 @@ cxx_qt_link_rustlib(${APP_NAME}_qmlplugin)
 target_link_libraries(${APP_NAME}_qmlplugin Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/plugin/qmldir ${PLUGIN_OUTPUT_DIR}/qmldir COPYONLY)
+# ANCHOR_END: book_cmake_generation
 
 #
 # App

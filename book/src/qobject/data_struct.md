@@ -12,13 +12,7 @@ The data struct defines which properties should exist on the QObject. It also al
 Note that you can also use serde on the Data struct and derive `Deserialize` and `Serialize`, this then allows you deserialize and serialize the properties in the QObject.
 
 ```rust,ignore,noplayground
-#[make_qobject]
-mod my_object {
-    #[derive(Default)]
-    struct Data {
-        number: i32,
-    }
-}
+{{#include ../../../examples/qml_features/src/data_struct_properties.rs:book_macro_code}}
 ```
 
 ## Default
@@ -40,5 +34,5 @@ To deseralise an object from a string to a `Data` struct use serde as normal. Th
 Note that Qt types cannot be (de)seralised yet ( [https://github.com/KDAB/cxx-qt/issues/16](https://github.com/KDAB/cxx-qt/issues/16) ).
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/basic_cxx_qt_qml/src/data.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/src/serialisation.rs:book_macro_code}}
 ```

@@ -23,23 +23,7 @@ The example below listens to the number property and `handle_property_change` is
 Note that this is called from the Qt event loop thread.
 
 ```rust,ignore,noplayground
-mod my_object {
-    #[derive(Default)]
-    struct Data {
-        number: i32,
-    }
-
-    #[derive(Default)]
-    struct RustObj;
-
-    impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
-        fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
-            match property {
-                Property::Number => println!("New Number: {}", cpp.number()),
-            }
-        }
-    }
-}
+{{#include ../../../examples/qml_features/src/handler_property_change.rs:book_macro_code}}
 ```
 
 ## UpdateRequestHandler

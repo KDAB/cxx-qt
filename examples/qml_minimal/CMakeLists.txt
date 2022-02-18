@@ -21,8 +21,14 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QuickTest T
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QuickTest Test REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+
+# ANCHOR: book_cmake_generation
 include(CxxQt)
 
+# Generate the C++ code
+cxx_qt_generate_cpp(GEN_SOURCES)
+
+# Define our sources
 set(
     CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
@@ -33,15 +39,18 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
 )
 
-# Generate the C++ code
-cxx_qt_generate_cpp(GEN_SOURCES)
-# Define our executable with our QML resource files
+# Define our executable with our C++ source, generated sources, and QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
+
 # Include generated sources
 cxx_qt_include(${APP_NAME})
+
 # Link to generated rust library
 cxx_qt_link_rustlib(${APP_NAME})
+
+# Link to Qt in the normal way
 target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
+# ANCHOR_END: book_cmake_generation
 
 #
 # Unit test

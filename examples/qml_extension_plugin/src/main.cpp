@@ -14,10 +14,12 @@ main(int argc, char* argv[])
 {
   QGuiApplication app(argc, argv);
 
+  // ANCHOR: book_extension_plugin_register
   QQmlApplicationEngine engine;
   // Add qml dir in runtime folder to QML import paths
   engine.addImportPath(QDir(QCoreApplication::applicationDirPath())
                          .filePath(QStringLiteral("qml")));
+  // ANCHOR_END: book_extension_plugin_register
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
   QObject::connect(
