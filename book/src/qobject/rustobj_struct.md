@@ -15,42 +15,7 @@ The RustObj struct allows you to define the following items
   * Implement [handlers](./handlers.md) for property or update requests
 
 ```rust,ignore,noplayground
-#[make_qobject]
-mod my_object {
-    #[derive(Default)]
-    struct Data {
-        number: i32,
-    }
-
-    struct RustObj {
-        rust_only_field: i32
-    }
-
-    impl Default for RustObj {
-        fn default() -> Self {
-            Self {
-                rust_only_field: 1,
-            }
-        }
-    }
-
-    impl RustObj {
-        #[invokable]
-        fn modify_number(&self, cpp: &mut CppObj) {
-            cpp.set_number(cpp.number() * 2);
-        }
-
-        #[invokable]
-        fn double_number(&self,number: i32) -> i32 {
-            number * 2
-        }
-
-        fn rust_only_method(&mut self) {
-            self.rust_only_field *= 2;
-        }
-    }
-
-}
+{{#include ../../../examples/qml_features/src/rust_obj_invokables.rs:book_macro_code}}
 ```
 
 ## Invokables
