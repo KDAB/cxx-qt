@@ -8,9 +8,12 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/my_data.h"
+#include "cxx-qt-gen/include/data_struct_properties.h"
+#include "cxx-qt-gen/include/handler_property_change.h"
 #include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/serialisation.h"
 #include "cxx-qt-gen/include/sub_object.h"
+#include "cxx-qt-gen/include/types.h"
 
 int
 main(int argc, char* argv[])
@@ -30,12 +33,20 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
-  qmlRegisterType<cxx_qt::my_data::MyData>(
-    "com.kdab.cxx_qt.demo", 1, 0, "MyData");
-  qmlRegisterType<cxx_qt::my_object::MyObject>(
+  qmlRegisterType<
+    custom_namespace::data_struct_properties::DataStructProperties>(
+    "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
+  qmlRegisterType<
+    custom_namespace::handler_property_change::HandlerPropertyChange>(
+    "com.kdab.cxx_qt.demo", 1, 0, "HandlerPropertyChange");
+  qmlRegisterType<custom_namespace::my_object::MyObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-  qmlRegisterType<cxx_qt::sub_object::SubObject>(
+  qmlRegisterType<custom_namespace::serialisation::Serialisation>(
+    "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
+  qmlRegisterType<custom_namespace::sub_object::SubObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "SubObject");
+  qmlRegisterType<custom_namespace::types::Types>(
+    "com.kdab.cxx_qt.demo", 1, 0, "Types");
 
   engine.load(url);
 

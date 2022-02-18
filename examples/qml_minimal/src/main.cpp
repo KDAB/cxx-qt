@@ -8,7 +8,9 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
+// ANCHOR: book_cpp_include
 #include "cxx-qt-gen/include/my_object.h"
+// ANCHOR_END: book_cpp_include
 
 int
 main(int argc, char* argv[])
@@ -28,8 +30,10 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
+  // ANCHOR: book_qml_register
   qmlRegisterType<cxx_qt::my_object::MyObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+  // ANCHOR_END: book_qml_register
 
   engine.load(url);
 

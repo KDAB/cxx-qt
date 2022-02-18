@@ -76,50 +76,7 @@ Note that in the future custom opaque types will be transparent so there won't b
 An example of a QVariant as a parameter, return type, and property is shown below.
 
 ```rust,ignore,noplayground
-mod my_object {
-    use cxx_qt_lib::{QVariant, Variant, VariantValue};
-
-    struct Data {
-        variant: Variant,
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            Data {
-                variant: Variant::from_int(1),
-            }
-        }
-    }
-
-    #[derive(Default)]
-    struct RustObj;
-
-    impl RustObj {
-        #[invokable]
-        fn test_variant_property(&self, cpp: &mut CppObj) {
-            match cpp.variant().to_rust().value() {
-                VariantValue::Bool(b) => {
-                    let new_variant = Variant::from_bool(!b);
-                    cpp.set_variant(&new_variant);
-                }
-                VariantValue::Int(i) => {
-                    let new_variant = Variant::from_int(i * 2);
-                    cpp.set_variant(&new_variant);
-                }
-                _ => panic!("Incorrect variant type!"),
-            }
-        }
-
-        #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> Variant {
-            match variant.to_rust().value() {
-                VariantValue::Bool(b) => Variant::from_bool(!b),
-                VariantValue::Int(i) => Variant::from_int(i * 2),
-                _ => panic!("Incorrect variant type!"),
-            }
-        }
-    }
-}
+{{#include ../../../examples/qml_features/src/types.rs:book_macro_code}}
 ```
 
 ## Future possible types

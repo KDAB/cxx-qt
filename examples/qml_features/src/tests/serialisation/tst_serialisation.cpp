@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/include/my_data.h"
+#include "cxx-qt-gen/include/serialisation.h"
 
 class Setup : public QObject
 {
@@ -18,11 +18,11 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<cxx_qt::my_data::MyData>(
-      "com.kdab.cxx_qt.demo", 1, 0, "MyData");
+    qmlRegisterType<custom_namespace::serialisation::Serialisation>(
+      "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
   }
 };
 
-QUICK_TEST_MAIN_WITH_SETUP(mydata, Setup)
+QUICK_TEST_MAIN_WITH_SETUP(serialisation, Setup)
 
-#include "tst_mydata.moc"
+#include "tst_serialisation.moc"

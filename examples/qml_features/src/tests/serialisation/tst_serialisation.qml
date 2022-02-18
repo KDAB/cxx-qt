@@ -9,12 +9,12 @@ import QtTest 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 TestCase {
-    name: "MyDataTests"
+    name: "SerialisationTests"
 
     Component {
-        id: componentMyData
+        id: componentSerialisation
 
-        MyData {
+        Serialisation {
 
         }
     }
@@ -28,49 +28,49 @@ TestCase {
     }
 
     function test_deserialise() {
-        const myData = createTemporaryObject(componentMyData, null, {});
-        compare(myData.number, 4);
-        compare(myData.string, "Hello World!");
+        const serialisation = createTemporaryObject(componentSerialisation, null, {});
+        compare(serialisation.number, 4);
+        compare(serialisation.string, "Hello World!");
     }
 
     function test_serialize() {
-        const myData = createTemporaryObject(componentMyData, null, {});
+        const serialisation = createTemporaryObject(componentSerialisation, null, {});
         const spyNumber = createTemporaryObject(componentSpy, null, {
             signalName: "numberChanged",
-            target: myData,
+            target: serialisation,
         });
         const spyString = createTemporaryObject(componentSpy, null, {
             signalName: "stringChanged",
-            target: myData,
+            target: serialisation,
         });
         compare(spyNumber.count, 0);
         compare(spyString.count, 0);
 
         // Test initial values from serialization
-        const data = myData.asJsonStr();
+        const data = serialisation.asJsonStr();
         compare(data, `{"number":4,"string":"Hello World!"}`);
 
         // Change some values
-        myData.number = 2;
-        myData.string = "Test!";
+        serialisation.number = 2;
+        serialisation.string = "Test!";
 
-        compare(myData.number, 2);
-        compare(myData.string, "Test!");
+        compare(serialisation.number, 2);
+        compare(serialisation.string, "Test!");
         tryCompare(spyNumber, "count", 1);
         compare(spyString.count, 1);
 
         // Test these new values appear in the serialization
-        const newData = myData.asJsonStr();
+        const newData = serialisation.asJsonStr();
         compare(newData, `{"number":2,"string":"Test!"}`);
     }
 
     function test_grab_valuess() {
-        const myData = createTemporaryObject(componentMyData, null, {});
-        compare(myData.number, 4);
-        compare(myData.string, "Hello World!");
+        const serialisation = createTemporaryObject(componentSerialisation, null, {});
+        compare(serialisation.number, 4);
+        compare(serialisation.string, "Hello World!");
 
-        myData.grabValues();
-        compare(myData.number, 2);
-        compare(myData.string, "Goodbye!");
+        serialisation.grabValues();
+        compare(serialisation.number, 2);
+        compare(serialisation.string, "Goodbye!");
     }
 }

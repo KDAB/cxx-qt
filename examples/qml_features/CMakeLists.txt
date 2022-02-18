@@ -65,5 +65,5 @@ function(add_qml_test TEST_NAME)
 endfunction()
 
 add_qml_test(myobject)
-add_qml_test(mydata)
+add_qml_test(serialisation)
 add_qml_test(qttypes)

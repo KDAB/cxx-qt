@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt::make_qobject;
 
-mod data;
-// TODO: move to subdir when cxx-qt-build supports it
+mod data_struct_properties;
+mod handler_property_change;
 mod mock_qt_types;
+mod rust_obj_invokables;
+mod serialisation;
 pub mod sub;
+mod types;
 
 #[make_qobject]
 mod my_object {
