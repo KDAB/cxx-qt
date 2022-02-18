@@ -722,115 +722,55 @@ enum class QVariantType : uint8_t
 
 } // namespace
 
+#define CXX_QT_VARIANT_INIT(typeName, name)                                    \
+  void cxxqt1$qvariant$init$from$##name(std::unique_ptr<QVariant>* ptr,        \
+                                        typeName value) noexcept               \
+  {                                                                            \
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(value));                  \
+  }
+
+#define CXX_QT_VARIANT_INIT_REF(typeName, name)                                \
+  void cxxqt1$qvariant$init$from$##name(std::unique_ptr<QVariant>* ptr,        \
+                                        const typeName& value) noexcept        \
+  {                                                                            \
+    new (ptr) std::unique_ptr<QVariant>(new QVariant(value));                  \
+  }
+
+#define CXX_QT_VARIANT_OPAQUE_VALUE(typeName, name)                            \
+  void cxxqt1$qvariant$to$##name(const QVariant& self,                         \
+                                 std::unique_ptr<typeName>* ptr) noexcept      \
+  {                                                                            \
+    Q_ASSERT(self.canConvert<typeName>());                                     \
+    new (ptr) std::unique_ptr<typeName>(new typeName(self.value<typeName>())); \
+  }
+
+#define CXX_QT_VARIANT_TRIVIAL_VALUE(typeName, name)                           \
+  typeName cxxqt1$qvariant$to$##name(const QVariant& self) noexcept            \
+  {                                                                            \
+    Q_ASSERT(self.canConvert<typeName>());                                     \
+    return self.value<typeName>();                                             \
+  }
+
 extern "C"
 {
-  void cxxqt1$qvariant$init$from$qvariant(std::unique_ptr<QVariant>* ptr,
-                                          const QVariant& qvariant) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(qvariant));
-  }
-
-  void cxxqt1$qvariant$init$from$bool(std::unique_ptr<QVariant>* ptr,
-                                      bool b) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(b));
-  }
-
-  void cxxqt1$qvariant$init$from$f32(std::unique_ptr<QVariant>* ptr,
-                                     float f) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(f));
-  }
-
-  void cxxqt1$qvariant$init$from$f64(std::unique_ptr<QVariant>* ptr,
-                                     double d) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(d));
-  }
-
-  void cxxqt1$qvariant$init$from$i8(std::unique_ptr<QVariant>* ptr,
-                                    qint8 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
-
-  void cxxqt1$qvariant$init$from$i16(std::unique_ptr<QVariant>* ptr,
-                                     qint16 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
-
-  void cxxqt1$qvariant$init$from$i32(std::unique_ptr<QVariant>* ptr,
-                                     qint32 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
-
-  void cxxqt1$qvariant$init$from$qcolor(std::unique_ptr<QVariant>* ptr,
-                                        const QColor& color) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(color));
-  }
-
-  void cxxqt1$qvariant$init$from$qdate(std::unique_ptr<QVariant>* ptr,
-                                       const QDate& date) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(date));
-  }
-
-  void cxxqt1$qvariant$init$from$qdatetime(std::unique_ptr<QVariant>* ptr,
-                                           const QDateTime& dateTime) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(dateTime));
-  }
-
-  void cxxqt1$qvariant$init$from$qpoint(std::unique_ptr<QVariant>* ptr,
-                                        const QPoint& point) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(point));
-  }
-
-  void cxxqt1$qvariant$init$from$qpointf(std::unique_ptr<QVariant>* ptr,
-                                         const QPointF& pointf) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(pointf));
-  }
-
-  void cxxqt1$qvariant$init$from$qrect(std::unique_ptr<QVariant>* ptr,
-                                       const QRect& rect) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(rect));
-  }
-
-  void cxxqt1$qvariant$init$from$qrectf(std::unique_ptr<QVariant>* ptr,
-                                        const QRectF& rectf) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(rectf));
-  }
-
-  void cxxqt1$qvariant$init$from$qsize(std::unique_ptr<QVariant>* ptr,
-                                       const QSize& size) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(size));
-  }
-
-  void cxxqt1$qvariant$init$from$qsizef(std::unique_ptr<QVariant>* ptr,
-                                        const QSizeF& sizef) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(sizef));
-  }
-
-  void cxxqt1$qvariant$init$from$qtime(std::unique_ptr<QVariant>* ptr,
-                                       const QTime& time) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(time));
-  }
-
-  void cxxqt1$qvariant$init$from$qurl(std::unique_ptr<QVariant>* ptr,
-                                      const QUrl& url) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(url));
-  }
+  CXX_QT_VARIANT_INIT(QVariant, qvariant)
+  CXX_QT_VARIANT_INIT(bool, bool)
+  CXX_QT_VARIANT_INIT(float, f32)
+  CXX_QT_VARIANT_INIT(double, f64)
+  CXX_QT_VARIANT_INIT(qint8, i8)
+  CXX_QT_VARIANT_INIT(qint16, i16)
+  CXX_QT_VARIANT_INIT(qint32, i32)
+  CXX_QT_VARIANT_INIT_REF(QColor, qcolor)
+  CXX_QT_VARIANT_INIT_REF(QDate, qdate)
+  CXX_QT_VARIANT_INIT_REF(QDateTime, qdatetime)
+  CXX_QT_VARIANT_INIT_REF(QPoint, qpoint)
+  CXX_QT_VARIANT_INIT_REF(QPointF, qpointf)
+  CXX_QT_VARIANT_INIT_REF(QRect, qrect)
+  CXX_QT_VARIANT_INIT_REF(QRectF, qrectf)
+  CXX_QT_VARIANT_INIT_REF(QSize, qsize)
+  CXX_QT_VARIANT_INIT_REF(QSizeF, qsizef)
+  CXX_QT_VARIANT_INIT_REF(QTime, qtime)
+  CXX_QT_VARIANT_INIT_REF(QUrl, qurl)
 
   void cxxqt1$qvariant$init$from$str(std::unique_ptr<QVariant>* ptr,
                                      rust::Str s) noexcept
@@ -839,23 +779,9 @@ extern "C"
       new QVariant(QString::fromUtf8(s.data(), s.size())));
   }
 
-  void cxxqt1$qvariant$init$from$u8(std::unique_ptr<QVariant>* ptr,
-                                    quint8 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
-
-  void cxxqt1$qvariant$init$from$u16(std::unique_ptr<QVariant>* ptr,
-                                     quint16 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
-
-  void cxxqt1$qvariant$init$from$u32(std::unique_ptr<QVariant>* ptr,
-                                     quint32 i) noexcept
-  {
-    new (ptr) std::unique_ptr<QVariant>(new QVariant(i));
-  }
+  CXX_QT_VARIANT_INIT(quint8, u8)
+  CXX_QT_VARIANT_INIT(quint16, u16)
+  CXX_QT_VARIANT_INIT(quint32, u32)
 
   QVariantType cxxqt1$qvariant$get$type(const QVariant& self) noexcept
   {
@@ -910,110 +836,23 @@ extern "C"
     }
   }
 
-  bool cxxqt1$qvariant$to$bool(const QVariant& self) noexcept
-  {
-    return self.toBool();
-  }
-
-  float cxxqt1$qvariant$to$f32(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<float>());
-    return self.value<float>();
-  }
-
-  double cxxqt1$qvariant$to$f64(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<double>());
-    return self.value<double>();
-  }
-
-  qint8 cxxqt1$qvariant$to$i8(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<qint8>());
-    return self.value<qint8>();
-  }
-
-  qint16 cxxqt1$qvariant$to$i16(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<qint16>());
-    return self.value<qint16>();
-  }
-
-  qint32 cxxqt1$qvariant$to$i32(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<qint32>());
-    return self.value<qint32>();
-  }
-
-  void cxxqt1$qvariant$to$qcolor(const QVariant& self,
-                                 std::unique_ptr<QColor>* ptr) noexcept
-  {
-    Q_ASSERT(self.canConvert<QColor>());
-    new (ptr) std::unique_ptr<QColor>(new QColor(self.value<QColor>()));
-  }
-
-  QDate cxxqt1$qvariant$to$qdate(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QDate>());
-    return self.value<QDate>();
-  }
-
-  void cxxqt1$qvariant$to$qdatetime(const QVariant& self,
-                                    std::unique_ptr<QDateTime>* ptr) noexcept
-  {
-    Q_ASSERT(self.canConvert<QDateTime>());
-    new (ptr)
-      std::unique_ptr<QDateTime>(new QDateTime(self.value<QDateTime>()));
-  }
-
-  QPoint cxxqt1$qvariant$to$qpoint(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QPoint>());
-    return self.value<QPoint>();
-  }
-
-  QPointF cxxqt1$qvariant$to$qpointf(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QPointF>());
-    return self.value<QPointF>();
-  }
-
-  QRect cxxqt1$qvariant$to$qrect(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QRect>());
-    return self.value<QRect>();
-  }
-
-  QRectF cxxqt1$qvariant$to$qrectf(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QRectF>());
-    return self.value<QRectF>();
-  }
-
-  QSize cxxqt1$qvariant$to$qsize(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QSize>());
-    return self.value<QSize>();
-  }
-
-  QSizeF cxxqt1$qvariant$to$qsizef(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QSizeF>());
-    return self.value<QSizeF>();
-  }
-
-  QTime cxxqt1$qvariant$to$qtime(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<QTime>());
-    return self.value<QTime>();
-  }
-
-  void cxxqt1$qvariant$to$qurl(const QVariant& self,
-                               std::unique_ptr<QUrl>* ptr) noexcept
-  {
-    Q_ASSERT(self.canConvert<QUrl>());
-    new (ptr) std::unique_ptr<QUrl>(new QUrl(self.value<QUrl>()));
-  }
+  CXX_QT_VARIANT_TRIVIAL_VALUE(bool, bool)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(float, f32)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(double, f64)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(qint8, i8)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(qint16, i16)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(qint32, i32)
+  CXX_QT_VARIANT_OPAQUE_VALUE(QColor, qcolor)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QDate, qdate)
+  CXX_QT_VARIANT_OPAQUE_VALUE(QDateTime, qdatetime)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QPoint, qpoint)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QPointF, qpointf)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QRect, qrect)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QRectF, qrectf)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QSize, qsize)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QSizeF, qsizef)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(QTime, qtime)
+  CXX_QT_VARIANT_OPAQUE_VALUE(QUrl, qurl)
 
   void cxxqt1$qvariant$copy$to$string(const QVariant& self,
                                       rust::String& string) noexcept
@@ -1021,23 +860,9 @@ extern "C"
     cxxqt1$qstring$to$rust$string(self.toString(), string);
   }
 
-  quint8 cxxqt1$qvariant$to$u8(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<quint8>());
-    return self.value<quint8>();
-  }
-
-  quint16 cxxqt1$qvariant$to$u16(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<quint16>());
-    return self.value<quint16>();
-  }
-
-  quint32 cxxqt1$qvariant$to$u32(const QVariant& self) noexcept
-  {
-    Q_ASSERT(self.canConvert<quint32>());
-    return self.value<quint32>();
-  }
+  CXX_QT_VARIANT_TRIVIAL_VALUE(quint8, u8)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(quint16, u16)
+  CXX_QT_VARIANT_TRIVIAL_VALUE(quint32, u32)
 
   void cxxqt1$unique_ptr$qvariant$null(std::unique_ptr<QVariant>* ptr) noexcept
   {
