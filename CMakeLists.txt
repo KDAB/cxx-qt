@@ -68,16 +68,13 @@ function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add clippy as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --all-features --manifest-path ${MANIFEST_PATH} -- -D warnings)
     # Add rustfmt as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --all --manifest-path ${MANIFEST_PATH} -- --check)
 endfunction()
 
 # Add cargo tests for all our manifests
 #
 # Note doctests are not supported on the staticlib in root
-add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_lib "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-lib/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml" DOCTESTS_ON)
 
 # Ensure test inputs and outputs are formatted
 file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-gen/test_inputs/*.rs)
