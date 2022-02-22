@@ -25,7 +25,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 # ANCHOR: book_cmake_generation
 include(CxxQt)
 
-# Generate the C++ code
+# Generate C++ code from Rust using Cargo in the current folder
 cxx_qt_generate_cpp(GEN_SOURCES)
 
 # Define our sources
@@ -49,7 +49,13 @@ cxx_qt_include(${APP_NAME})
 cxx_qt_link_rustlib(${APP_NAME})
 
 # Link to Qt in the normal way
-target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(${APP_NAME}
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Qml
+    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt${QT_VERSION_MAJOR}::Test
+)
 # ANCHOR_END: book_cmake_generation
 
 #

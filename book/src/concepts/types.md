@@ -71,7 +71,7 @@ For return types from invokables the Rust Output column should be used.
 | &cxx_qt_lib::QUrl | cxx_qt_lib::Url | QUrl |
 | &cxx_qt_lib::QVariant | cxx_qt_lib::Variant | QVariant |
 
-Note that in the future custom opaque types will be transparent so there won't be a different between the input and output ( [https://github.com/KDAB/cxx-qt/issues/9](https://github.com/KDAB/cxx-qt/issues/9) ).
+Note that in the future custom opaque types will be transparent so there won't be a difference between the input and output ( [https://github.com/KDAB/cxx-qt/issues/9](https://github.com/KDAB/cxx-qt/issues/9) ).
 
 An example of a QVariant as a parameter, return type, and property is shown below.
 
