@@ -15,6 +15,12 @@ To use this as a property in another object write `secondary_object: crate::mymo
 
 For use as a parameter in an invokable write `secondary_object: &mut crate::mymod::secondary_object::CppObj` as the parameter. Then the `secondary_object` parameter can be used via the normal [`CppObj`](../qobject/cpp_object.md) methods.
 
+The following example shows a nested object as a property and parameter.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/src/nested.rs:book_macro_code}}
+```
+
 Note that nested objects cannot be used as return types yet ( [https://github.com/KDAB/cxx-qt/issues/66](https://github.com/KDAB/cxx-qt/issues/66) ).
 
 Note that nested objects are ignored from (de)serialisation ( [https://github.com/KDAB/cxx-qt/issues/35](https://github.com/KDAB/cxx-qt/issues/35) ).
