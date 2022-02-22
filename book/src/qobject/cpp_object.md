@@ -15,7 +15,9 @@ To use the `CppObj` add `cpp: &mut CppObj` to your parameters of an invokable.
 
 If the [`Data` struct](./data_struct.md) has a field called `number: i32`, then you can access properties by using `number(&self) -> i32` and `set_number(&mut self, number: i32)` on the `CppObj`.
 
-If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` or `unsafe emit_immediate(&mut self, Signals)` on the `CppObj` to emit a signal. Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`.
+If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` or `unsafe emit_immediate(&mut self, Signals)` on the `CppObj` to emit a signal.
+
+Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the `RustObj` which is already locked.
 
 Note: signals are not implemented yet [https://github.com/KDAB/cxx-qt/issues/31](https://github.com/KDAB/cxx-qt/issues/31).
 

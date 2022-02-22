@@ -17,7 +17,11 @@ We provide a solution to prevent entering deadlocks from signal connections, eg 
 
 If Rust code needs to listen to property changes, handlers can be implemented (eg PropertyChangeHandler) in the [RustObj Handlers](../qobject/handlers.md). These are called directly in the event loop from the Qt thread.
 
-![Threading Abstract](../images/threading_abstract.png)
+<div style="background-color: white; padding: 1rem; text-align: center;">
+
+![Threading Abstract](../images/threading_abstract.svg)
+
+</div>
 
 ## Multi threading
 
