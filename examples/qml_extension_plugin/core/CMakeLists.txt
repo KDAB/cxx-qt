@@ -13,7 +13,7 @@ set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/../qml)
 # TODO: generate this path and name from the build.rs then our cmake helpers can read this from .txt
 set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
 
-# Generate the C++ code
+# Generate C++ code from Rust using Cargo in the current folder
 cxx_qt_generate_cpp(GEN_SOURCES)
 
 # Define our QML plugin library

@@ -11,7 +11,7 @@ This library provides a safe mechanism for bridging between Qt code and Rust cod
 
 We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrap from one to another.
 
-Instead we use [CXX](https://cxx.rs/) to [bridge](./concepts/bridge.md) between, this allows for normal Qt code and normal Rust code.
+Instead of one-to-one bindings we use [CXX](https://cxx.rs/) to [bridge](./concepts/bridge.md) between, this allows for normal Qt code and normal Rust code.
 
 We feel this is more powerful than typical bindings as this allows us to provide a safe API and safe [multi-threading](./concepts/threading.md) between Qt and Rust.
 

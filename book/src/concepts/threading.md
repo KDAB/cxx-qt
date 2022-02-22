@@ -25,7 +25,7 @@ If Rust code needs to listen to property changes, handlers can be implemented (e
 
 ## Multi threading
 
-To achieve safe multi-threading on the Rust side we use an `UpdateRequester`. Where the Rust thread is started (eg in an invokable) the `UpdateRequester` should be cloned into the thread.
+To achieve safe multi-threading on the Rust side we use an `UpdateRequester`. Where the Rust thread is started (eg an invokable) the `UpdateRequester` should be cloned into the thread.
 
 Then when the background thread needs to update a value in the Qt object it requests an update, this is posted into the same queue as above. Once the event loop occurs this calls `UpdateRequestHandler` in the [RustObj Handlers](../qobject/handlers.md) so that you can safely call setters or emit signals from the Qt thread and synchronise your state to the foreground.
 
