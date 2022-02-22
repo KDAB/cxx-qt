@@ -7,7 +7,7 @@ SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 <RCC version="1.0">
-    <qresource prefix="/">
+    <qresource prefix="/qml">
         <file>main.qml</file>
     </qresource>
 </RCC>

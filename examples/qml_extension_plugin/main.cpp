@@ -21,7 +21,7 @@ main(int argc, char* argv[])
                          .filePath(QStringLiteral("qml")));
   // ANCHOR_END: book_extension_plugin_register
 
-  const QUrl url(QStringLiteral("qrc:/main.qml"));
+  const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
   QObject::connect(
     &engine,
     &QQmlApplicationEngine::objectCreated,

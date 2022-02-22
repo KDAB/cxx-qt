@@ -44,10 +44,10 @@ A build.rs script could look like the following
 {{#include ../../../examples/qml_minimal/build.rs:book_build_rs}}
 ```
 
-If you are registering as a plugin, with a different clang-format style, and a non-default C++ namespace it could like the following
+If you are registering as a plugin it could like the following
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_extension_plugin/build.rs:book_build_rs}}
+{{#include ../../../examples/qml_extension_plugin/core/build.rs:book_build_rs}}
 ```
 
 A non-default C++ namespace could be like the following
@@ -67,7 +67,7 @@ We need to add cmake to generate the C++ code and then link to it, ensure that `
 If you are using a QQmlExtensionPlugin then we build a library and use that in the normal way.
 
 ```cmake,ignore
-{{#include ../../../examples/qml_extension_plugin/CMakeLists.txt:book_cmake_generation}}
+{{#include ../../../examples/qml_extension_plugin/core/CMakeLists.txt:book_cmake_generation}}
 ```
 
 ## C++ Registering QML types
@@ -87,7 +87,7 @@ If you are registering the types to the engine, then you can include the generat
 If you are using a QQmlExtensionPlugin then ensure the generated library is in the import path.
 
 ```cpp,ignore
-{{#include ../../../examples/qml_extension_plugin/src/main.cpp:book_extension_plugin_register}}
+{{#include ../../../examples/qml_extension_plugin/main.cpp:book_extension_plugin_register}}
 ```
 
 Then from QML you can include these like a normal C++ module.
