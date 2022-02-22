@@ -6,7 +6,7 @@ use cxx_qt::make_qobject;
 
 // ANCHOR: book_macro_code
 #[make_qobject]
-mod rust_obj_invokables {
+pub mod rust_obj_invokables {
     #[derive(Default)]
     pub struct Data {
         number: i32,

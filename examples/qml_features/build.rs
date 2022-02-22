@@ -16,6 +16,7 @@ fn main() {
         .file("src/handler_property_change.rs")
         .file("src/lib.rs")
         .file("src/mock_qt_types.rs")
+        .file("src/nested.rs")
         .file("src/rust_obj_invokables.rs")
         .file("src/serialisation.rs")
         .file("src/sub.rs")
