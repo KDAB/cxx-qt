@@ -24,6 +24,7 @@ enum Status {
     Ok,
     Error,
     ErrorNoUuid,
+    ErrorInvalidPower,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -51,10 +52,17 @@ mod energy_usage {
         executor::block_on,
         stream::StreamExt,
     };
-    use std::{collections::HashMap, thread::JoinHandle};
+    use futures_timer::Delay;
+    use std::{collections::HashMap, thread::JoinHandle, time::Duration};
     use uuid::Uuid;
 
-    enum EventArrived {
+    enum QtValueArrived {
+        AverageUseChanged(f64),
+        SensorsChanged(u32),
+        TotalUsageChanged(f64),
+    }
+
+    enum NetworkDataArrived {
         Connect(Uuid),
         Disconnect(Uuid),
         Power(Uuid, f64),
@@ -77,21 +85,21 @@ mod energy_usage {
     }
 
     struct RustObj {
-        event_sender: Sender<EventArrived>,
-        event_receiver: Receiver<EventArrived>,
-        join_handle: Option<JoinHandle<()>>,
-        sensors: HashMap<Uuid, f64>,
+        qt_sender: Sender<QtValueArrived>,
+        qt_receiver: Receiver<QtValueArrived>,
+        join_handle_network: Option<JoinHandle<()>>,
+        join_handle_processing: Option<JoinHandle<()>>,
     }
 
     impl Default for RustObj {
         fn default() -> Self {
-            let (event_sender, event_receiver) = channel(4096);
+            let (qt_sender, qt_receiver) = channel(4096);
 
             Self {
-                event_sender,
-                event_receiver,
-                join_handle: None,
-                sensors: HashMap::new(),
+                qt_sender,
+                qt_receiver,
+                join_handle_network: None,
+                join_handle_processing: None,
             }
         }
     }
@@ -99,8 +107,7 @@ mod energy_usage {
     impl RustObj {
         async fn handle_connection(
             mut stream: TcpStream,
-            mut event_sender: Sender<EventArrived>,
-            update_requester: cxx_qt_lib::update_requester::UpdateRequester,
+            mut event_sender: Sender<NetworkDataArrived>,
         ) {
             let mut buf = vec![0u8; 1024];
             let _ = stream.read(&mut buf).await.unwrap();
@@ -112,8 +119,9 @@ mod energy_usage {
                 Ok(request) => match request.command {
                     RequestCommand::Connect => {
                         let uuid = Uuid::new_v4();
-                        event_sender.try_send(EventArrived::Connect(uuid)).unwrap();
-                        update_requester.request_update();
+                        event_sender
+                            .try_send(NetworkDataArrived::Connect(uuid))
+                            .unwrap();
 
                         Response {
                             status: Status::Ok,
@@ -123,9 +131,8 @@ mod energy_usage {
                     RequestCommand::Disconnect => {
                         if let Some(uuid) = request.uuid {
                             event_sender
-                                .try_send(EventArrived::Disconnect(uuid))
+                                .try_send(NetworkDataArrived::Disconnect(uuid))
                                 .unwrap();
-                            update_requester.request_update();
 
                             Response {
                                 status: Status::Ok,
@@ -140,14 +147,21 @@ mod energy_usage {
                     }
                     RequestCommand::Power { value } => {
                         if let Some(uuid) = request.uuid {
-                            event_sender
-                                .try_send(EventArrived::Power(uuid, value))
-                                .unwrap();
-                            update_requester.request_update();
+                            // Validate that our power is within the expected range
+                            if value < 0.0 || value > 1000.0 {
+                                Response {
+                                    status: Status::ErrorInvalidPower,
+                                    uuid: None,
+                                }
+                            } else {
+                                event_sender
+                                    .try_send(NetworkDataArrived::Power(uuid, value))
+                                    .unwrap();
 
-                            Response {
-                                status: Status::Ok,
-                                uuid: Some(uuid),
+                                Response {
+                                    status: Status::Ok,
+                                    uuid: Some(uuid),
+                                }
                             }
                         } else {
                             Response {
@@ -172,69 +186,103 @@ mod energy_usage {
 
         #[invokable]
         fn start_server(&mut self, cpp: &mut CppObj) {
-            if self.join_handle.is_some() {
+            if self.join_handle_network.is_some() || self.join_handle_processing.is_some() {
                 println!("Already running a thread!");
                 return;
             }
 
-            // Prepare for moving into the thread
+            let (network_sender, mut network_receiver) = channel(4096);
+            let mut qt_sender = self.qt_sender.clone();
             let update_requester = cpp.update_requester();
-            let event_sender = self.event_sender.clone();
 
+            // Prepare our processing thread which builds average, count, total
+            let run_processing = async move {
+                let mut sensors: HashMap<Uuid, f64> = HashMap::new();
+
+                loop {
+                    let mut changed = false;
+
+                    Delay::new(Duration::from_millis(8)).await;
+
+                    // Read our channel of sensor data from the network thread
+                    while let Ok(event) = network_receiver.try_next() {
+                        if let Some(event) = event {
+                            changed = true;
+
+                            match event {
+                                NetworkDataArrived::Connect(uuid) => {
+                                    sensors.insert(uuid, 0.0);
+                                }
+                                NetworkDataArrived::Disconnect(uuid) => {
+                                    sensors.remove(&uuid);
+                                }
+                                NetworkDataArrived::Power(uuid, value) => {
+                                    *sensors.entry(uuid).or_default() = value;
+                                }
+                            }
+                        }
+                    }
+
+                    // If there is new sensor info then build average, count, total and inform Qt
+                    if changed {
+                        let total = sensors.values().fold(0.0, |acc, x| acc + x);
+                        let count = sensors.len() as u32;
+                        let average = if count > 0 {
+                            total / (count as f64)
+                        } else {
+                            0.0
+                        };
+
+                        qt_sender
+                            .try_send(QtValueArrived::TotalUsageChanged(total))
+                            .unwrap();
+                        qt_sender
+                            .try_send(QtValueArrived::SensorsChanged(count))
+                            .unwrap();
+                        qt_sender
+                            .try_send(QtValueArrived::AverageUseChanged(average))
+                            .unwrap();
+
+                        update_requester.request_update();
+                    }
+                }
+            };
+
+            // Prepare our Tcp server which listens for sensors
             let run_server = async move {
                 let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
                 listener
                     .incoming()
-                    .map(|stream| (stream, event_sender.clone(), update_requester.clone()))
+                    .map(|stream| (stream, network_sender.clone()))
                     .for_each_concurrent(
                         /* limit */ None,
-                        |(stream, event_sender, update_requester)| async move {
+                        |(stream, network_sender)| async move {
                             let stream = stream.unwrap();
-                            spawn(RustObj::handle_connection(
-                                stream,
-                                event_sender,
-                                update_requester,
-                            ));
+                            spawn(RustObj::handle_connection(stream, network_sender));
                         },
                     )
                     .await;
             };
 
-            // Start our thread
-            self.join_handle = Some(std::thread::spawn(move || block_on(run_server)));
+            // Start our threads
+            self.join_handle_processing =
+                Some(std::thread::spawn(move || block_on(run_processing)));
+            self.join_handle_network = Some(std::thread::spawn(move || block_on(run_server)));
         }
     }
 
     impl UpdateRequestHandler<CppObj<'_>> for RustObj {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             // Process each of the update requests from the background thread
-            while let Ok(event) = self.event_receiver.try_next() {
+            while let Ok(event) = self.qt_receiver.try_next() {
                 if let Some(event) = event {
                     match event {
-                        // TODO: should this happen here or in the background thread?
-                        EventArrived::Connect(uuid) => {
-                            self.sensors.insert(uuid, 0.0);
-                        }
-                        EventArrived::Disconnect(uuid) => {
-                            self.sensors.remove(&uuid);
-                        }
-                        EventArrived::Power(uuid, value) => {
-                            *self.sensors.entry(uuid).or_default() = value;
-                        }
+                        QtValueArrived::AverageUseChanged(average) => cpp.set_average_use(average),
+                        QtValueArrived::SensorsChanged(sensors) => cpp.set_sensors(sensors),
+                        QtValueArrived::TotalUsageChanged(total) => cpp.set_total_use(total),
                     }
                 }
             }
-
-            // TODO: should this happen on the "GUI" thread?
-            let total = self.sensors.values().fold(0.0, |acc, x| acc + x);
-            let count = self.sensors.len() as u32;
-            cpp.set_total_use(total);
-            if count != 0 {
-                cpp.set_average_use(total / (count as f64));
-            } else {
-                cpp.set_average_use(0.0);
-            }
-            cpp.set_sensors(count);
         }
     }
 }
