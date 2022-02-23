@@ -23,10 +23,12 @@ pub mod rust_obj_invokables {
     }
 
     impl RustObj {
+        // ANCHOR: book_cpp_obj
         #[invokable]
         fn invokable_mutate_cpp(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() * 2);
         }
+        // ANCHOR_END: book_cpp_obj
 
         #[invokable]
         fn invokable_return(&self) -> i32 {

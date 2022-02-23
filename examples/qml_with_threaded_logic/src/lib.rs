@@ -79,7 +79,10 @@ mod website {
             cpp.set_title(&"Loading...".to_unique_ptr());
 
             let url = cpp.url().to_rust();
+            // ANCHOR: book_cpp_update_requester
+            // Retrieve the update requester from the CppObj
             let update_requester = cpp.update_requester();
+            // ANCHOR_END: book_cpp_update_requester
             let event_sender = self.event_sender.clone();
 
             let fetch_title = async move {
@@ -95,7 +98,10 @@ mod website {
                 event_sender
                     .unbounded_send(Event::TitleArrived(title.to_owned()))
                     .unwrap();
+                // ANCHOR: book_request_update
+                // Request an update from the background thread
                 update_requester.request_update();
+                // ANCHOR_END: book_request_update
             };
             thread::spawn(move || block_on(fetch_title));
         }

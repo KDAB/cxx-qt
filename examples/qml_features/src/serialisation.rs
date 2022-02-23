@@ -33,12 +33,14 @@ mod serialisation {
             serde_json::to_string(&data).unwrap()
         }
 
+        // ANCHOR: book_grab_values
         #[invokable]
         fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: Data = serde_json::from_str(string).unwrap();
             cpp.grab_values_from_data(&data);
         }
+        // ANCHOR_END: book_grab_values
     }
 }
 // ANCHOR_END: book_macro_code

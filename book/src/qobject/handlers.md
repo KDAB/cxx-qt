@@ -30,10 +30,21 @@ Note that this is called from the Qt event loop thread.
 
 When a background Rust thread uses an `UpdateRequester` to request the Qt thread to synchronise via calling `request_update` this triggers the `handle_update_request` method of the `UpdateRequestHandler`.
 
-The snippet below shows a `handle_update_request` that when triggered iterates over an event_queue (which could be a channel from the background thread), to then update the values into the Qt object (via process_event with the CppObj).
+For example in an invokable the [`CppObj`](./cpp_object.md) is used to retrieve an `UpdateRequester`.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_cpp_update_requester}}
+```
+
+The `UpdateRequester` is moved into the thread, then when required an update is requested.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_request_update}}
+```
+
+This then triggers `handle_update_request` to be called at a later stage from the Qt event loop thread. Which can iterate over an event_queue (eg a channel from the background thread), to update the values into the Qt object (via process_event with the CppObj).
 
 Note that this is called from the Qt event loop thread.
-
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_update_request_handler}}
