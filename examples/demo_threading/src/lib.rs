@@ -10,10 +10,6 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum RequestCommand {
-    // TODO: should we have connect + disconnect + power?
-    // or just power + disconnect and accept any new uuid as a new sensor,
-    // then have graceful disconnect?
-    Connect,
     Disconnect,
     Power { value: f64 },
 }
@@ -53,17 +49,20 @@ mod energy_usage {
         stream::StreamExt,
     };
     use futures_timer::Delay;
-    use std::{collections::HashMap, thread::JoinHandle, time::Duration};
+    use std::{
+        collections::HashMap,
+        thread::JoinHandle,
+        time::{Duration, SystemTime},
+    };
     use uuid::Uuid;
 
     enum QtValueArrived {
-        AverageUseChanged(f64),
-        SensorsChanged(u32),
-        TotalUsageChanged(f64),
+        AverageUse(f64),
+        Sensors(u32),
+        TotalUsage(f64),
     }
 
     enum NetworkDataArrived {
-        Connect(Uuid),
         Disconnect(Uuid),
         Power(Uuid, f64),
     }
@@ -117,17 +116,6 @@ mod energy_usage {
 
             let response = match serde_json::from_str::<Request>(trimmed) {
                 Ok(request) => match request.command {
-                    RequestCommand::Connect => {
-                        let uuid = Uuid::new_v4();
-                        event_sender
-                            .try_send(NetworkDataArrived::Connect(uuid))
-                            .unwrap();
-
-                        Response {
-                            status: Status::Ok,
-                            uuid: Some(uuid),
-                        }
-                    }
                     RequestCommand::Disconnect => {
                         if let Some(uuid) = request.uuid {
                             event_sender
@@ -148,7 +136,7 @@ mod energy_usage {
                     RequestCommand::Power { value } => {
                         if let Some(uuid) = request.uuid {
                             // Validate that our power is within the expected range
-                            if value < 0.0 || value > 1000.0 {
+                            if !(0.0..=1000.0).contains(&value) {
                                 Response {
                                     status: Status::ErrorInvalidPower,
                                     uuid: None,
@@ -197,7 +185,21 @@ mod energy_usage {
 
             // Prepare our processing thread which builds average, count, total
             let run_processing = async move {
-                let mut sensors: HashMap<Uuid, f64> = HashMap::new();
+                struct SensorData {
+                    power: f64,
+                    last_seen: SystemTime,
+                }
+
+                impl Default for SensorData {
+                    fn default() -> Self {
+                        Self {
+                            power: 0.0,
+                            last_seen: SystemTime::now(),
+                        }
+                    }
+                }
+
+                let mut sensors: HashMap<Uuid, SensorData> = HashMap::new();
 
                 loop {
                     let mut changed = false;
@@ -210,14 +212,13 @@ mod energy_usage {
                             changed = true;
 
                             match event {
-                                NetworkDataArrived::Connect(uuid) => {
-                                    sensors.insert(uuid, 0.0);
-                                }
                                 NetworkDataArrived::Disconnect(uuid) => {
                                     sensors.remove(&uuid);
                                 }
                                 NetworkDataArrived::Power(uuid, value) => {
-                                    *sensors.entry(uuid).or_default() = value;
+                                    let mut sensor = sensors.entry(uuid).or_default();
+                                    sensor.power = value;
+                                    sensor.last_seen = SystemTime::now();
                                 }
                             }
                         }
@@ -225,7 +226,7 @@ mod energy_usage {
 
                     // If there is new sensor info then build average, count, total and inform Qt
                     if changed {
-                        let total = sensors.values().fold(0.0, |acc, x| acc + x);
+                        let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
                         let count = sensors.len() as u32;
                         let average = if count > 0 {
                             total / (count as f64)
@@ -234,13 +235,13 @@ mod energy_usage {
                         };
 
                         qt_sender
-                            .try_send(QtValueArrived::TotalUsageChanged(total))
+                            .try_send(QtValueArrived::TotalUsage(total))
                             .unwrap();
                         qt_sender
-                            .try_send(QtValueArrived::SensorsChanged(count))
+                            .try_send(QtValueArrived::Sensors(count))
                             .unwrap();
                         qt_sender
-                            .try_send(QtValueArrived::AverageUseChanged(average))
+                            .try_send(QtValueArrived::AverageUse(average))
                             .unwrap();
 
                         update_requester.request_update();
@@ -277,9 +278,9 @@ mod energy_usage {
             while let Ok(event) = self.qt_receiver.try_next() {
                 if let Some(event) = event {
                     match event {
-                        QtValueArrived::AverageUseChanged(average) => cpp.set_average_use(average),
-                        QtValueArrived::SensorsChanged(sensors) => cpp.set_sensors(sensors),
-                        QtValueArrived::TotalUsageChanged(total) => cpp.set_total_use(total),
+                        QtValueArrived::AverageUse(average) => cpp.set_average_use(average),
+                        QtValueArrived::Sensors(sensors) => cpp.set_sensors(sensors),
+                        QtValueArrived::TotalUsage(total) => cpp.set_total_use(total),
                     }
                 }
             }
