@@ -9,6 +9,7 @@ import json
 import socket
 import random
 import time
+import uuid
 
 class Client():
     def __init__(self, target_host, target_port):
@@ -27,15 +28,14 @@ if __name__ == "__main__":
 
     # Connect 100 sensors
     for i in range(100):
-        res = client.send_json({"command": "connect"})
-        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": res["uuid"] })
-        uuids.append(res["uuid"])
+        uuids.append(str(uuid.uuid4()))
 
     # Randomly change their values once
-    for uuid in uuids:
-        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": uuid })
+    for id in uuids:
+        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
         time.sleep(0.016)
 
+
     # Disconnect the sensors
-    for uuid in uuids:
-        client.send_json({"command": "disconnect", "uuid": uuid})
+    for id in uuids:
+        client.send_json({"command": "disconnect", "uuid": id})
