@@ -43,8 +43,10 @@ jobs:
         # Delete the ref to avoid keeping history.
         git update-ref -d refs/heads/gh-pages
         rm -rf *
+        # We want the book to be in it's own folder
+        mkdir book/
         # We want only the html directory not the linkcheck one
-        mv ../book/html/* .
+        mv ../book/html/* book/
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
         git push --force
