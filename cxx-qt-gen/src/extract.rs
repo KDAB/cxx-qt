@@ -376,12 +376,11 @@ fn extract_invokables(
         //
         // TODO: later should we pass through unknown items
         // or should they have an attribute to ignore
-        let mut method;
-        if let ImplItem::Method(m) = item {
-            method = m.clone();
+        let mut method = if let ImplItem::Method(m) = item {
+            m.clone()
         } else {
             return Err(Error::new(item.span(), "Only methods are supported.").to_compile_error());
-        }
+        };
 
         let filtered_attrs: Vec<syn::Attribute> = method
             .attrs
@@ -435,20 +434,18 @@ pub(crate) fn extract_method_params(
             // TODO: does this mean that if self is Typed we need to skip it?
             // so should we ignore the first parameter if it is named "self"?
             if let FnArg::Typed(PatType { pat, ty, .. }) = parameter {
-                // The name ident of the parameter
-                let parameter_ident;
                 // The type ident of the parameter
                 let type_ident;
 
                 // Try to extract the name of the parameter
-                if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                    parameter_ident = ident;
+                let parameter_ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                    ident
                 } else {
                     return Err(
                         Error::new(parameter.span(), "Invalid argument ident format.")
                             .to_compile_error(),
                     );
-                }
+                };
 
                 // Try to extract the type of the parameter
                 match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {

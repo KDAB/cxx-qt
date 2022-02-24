@@ -813,12 +813,11 @@ pub fn generate_qobject_rs(
     let invokable_method_wrappers = obj
         .invokables
         .iter()
-        .map(|i| {
+        .filter_map(|i| {
             i.ident_wrapper
                 .as_ref()
                 .map(|ident_wrapper| invokable_generate_wrapper(i, &ident_wrapper.rust_ident))
         })
-        .flatten()
         .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
 
     let invokable_methods = obj
