@@ -43,7 +43,8 @@ jobs:
         # Delete the ref to avoid keeping history.
         git update-ref -d refs/heads/gh-pages
         rm -rf *
-        mv ../book/* .
+        # We want only the html directory not the linkcheck one
+        mv ../book/html/* .
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
         git push --force
