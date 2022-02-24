@@ -13,3 +13,4 @@ title = "CXX-Qt Documentation"
 [output.html]
 
 [output.linkcheck]
+optional = true
