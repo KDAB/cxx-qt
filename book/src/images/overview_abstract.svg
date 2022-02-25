@@ -3,22 +3,22 @@
 <svg width="30cm" height="11cm" viewBox="459 199 585 215" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g id="Background">
     <g>
-      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="680" y="200" width="147.1" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="753.55" y="221.881">
+      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="680" y="200" width="147.1" height="52" rx="10" ry="10"/>
+      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="753.55" y="221.881">
         <tspan x="753.55" y="221.881">CXX-Qt Macro</tspan>
         <tspan x="753.55" y="237.881">QObject description</tspan>
       </text>
     </g>
     <g>
-      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="880" y="360" width="162.35" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="961.175" y="381.881">
+      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="880" y="360" width="162.35" height="52" rx="10" ry="10"/>
+      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="961.175" y="381.881">
         <tspan x="961.175" y="381.881">struct RustObj</tspan>
         <tspan x="961.175" y="397.881">Rust-Side data &amp; code</tspan>
       </text>
     </g>
     <g>
-      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="460" y="360" width="163.95" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="541.975" y="381.881">
+      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="460" y="360" width="163.95" height="52" rx="10" ry="10"/>
+      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="541.975" y="381.881">
         <tspan x="541.975" y="381.881">QObject subclass</tspan>
         <tspan x="541.975" y="397.881">Qt-side representation</tspan>
       </text>
@@ -29,12 +29,12 @@
       <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="877.764,386 867.764,391 870.264,386 867.764,381 "/>
     </g>
     <g>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,252 753.55,320 961.026,320 961.026,355.528 "/>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="956.026,347.764 961.026,357.764 966.026,347.764 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,252 753.55,320 961.175,320 961.175,355.528 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="956.175,347.764 961.175,357.764 966.175,347.764 "/>
     </g>
     <g>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,253 753.55,320 541.8,320 541.8,355.528 "/>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="536.8,347.764 541.8,357.764 546.8,347.764 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,253 753.55,320 541.975,320 541.975,355.528 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="536.975,347.764 541.975,357.764 546.975,347.764 "/>
     </g>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="680" y="400">
       <tspan x="680" y="400">Safe Interop using CXX</tspan>
