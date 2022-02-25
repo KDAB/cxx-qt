@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   * [Qt features that are supported](./qt.md)
   * [Supported types between Rust and C++](./types.md)
   * [Integrating into a CMake project](./build_tooling.md)
+  * [Exposing Rust objects as a QQmlExtensionPlugin](./qqmlextensionplugin.md)
 
 ## Advanced Concepts
 
