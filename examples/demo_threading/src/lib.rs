@@ -5,6 +5,7 @@
 use cxx_qt::make_qobject;
 
 use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
@@ -35,9 +36,23 @@ struct Response {
     uuid: Option<Uuid>,
 }
 
+struct SensorData {
+    power: f64,
+    last_seen: SystemTime,
+}
+
+impl Default for SensorData {
+    fn default() -> Self {
+        Self {
+            power: 0.0,
+            last_seen: SystemTime::now(),
+        }
+    }
+}
+
 #[make_qobject]
 mod energy_usage {
-    use super::{Request, RequestCommand, Response, Status};
+    use super::{Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
         net::{TcpListener, TcpStream},
         prelude::*,
@@ -51,6 +66,7 @@ mod energy_usage {
     use futures_timer::Delay;
     use std::{
         collections::HashMap,
+        sync::{Arc, Mutex},
         thread::JoinHandle,
         time::{Duration, SystemTime},
     };
@@ -88,6 +104,8 @@ mod energy_usage {
         qt_receiver: Receiver<QtValueArrived>,
         join_handle_network: Option<JoinHandle<()>>,
         join_handle_processing: Option<JoinHandle<()>>,
+        join_handle_timeout: Option<JoinHandle<()>>,
+        join_handle_update: Option<JoinHandle<()>>,
     }
 
     impl Default for RustObj {
@@ -99,6 +117,8 @@ mod energy_usage {
                 qt_receiver,
                 join_handle_network: None,
                 join_handle_processing: None,
+                join_handle_timeout: None,
+                join_handle_update: None,
             }
         }
     }
@@ -179,72 +199,117 @@ mod energy_usage {
                 return;
             }
 
+            // Here we start four threads with different tasks to manage sensors
+            //
+            // - Network thread
+            //      - handles a TCP connection
+            //      - validates values
+            //      - writes items to a network queue
+            // - Processing thread
+            //      - reads the network queue
+            //      - updates values in the sensors hashmap
+            //      - notifies that sensors has changed
+            // - Timeout thread
+            //      - polls the sensors hashmap and checks for old data
+            //      - notifies that sensors has changed
+            // - Update thread
+            //      - waits for sensors changed notification
+            //      - reads the hashmap
+            //      - writes new Qt values to qt queue
+
+            let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::new()));
+
             let (network_sender, mut network_receiver) = channel(4096);
+            let (update_sender, mut update_receiver) = channel(8);
             let mut qt_sender = self.qt_sender.clone();
             let update_requester = cpp.update_requester();
 
-            // Prepare our processing thread which builds average, count, total
-            let run_processing = async move {
-                struct SensorData {
-                    power: f64,
-                    last_seen: SystemTime,
-                }
+            // Prepare our timeout thread, if a sensor is not seen for 10 seconds we remove it
+            let sensors_mutex_timeout = sensors_mutex.clone();
+            let mut update_sender_timeout = update_sender.clone();
+            let run_timeout = async move {
+                loop {
+                    Delay::new(Duration::from_millis(256)).await;
 
-                impl Default for SensorData {
-                    fn default() -> Self {
-                        Self {
-                            power: 0.0,
-                            last_seen: SystemTime::now(),
+                    if let Ok(mut sensors) = sensors_mutex_timeout.try_lock() {
+                        let sensors_count = sensors.len();
+                        sensors.retain(|_, sensor| {
+                            if let Ok(duration) = sensor.last_seen.elapsed() {
+                                duration.as_secs() < 10
+                            } else {
+                                false
+                            }
+                        });
+
+                        if sensors.len() < sensors_count {
+                            update_sender_timeout.try_send(()).unwrap();
                         }
                     }
                 }
-
-                let mut sensors: HashMap<Uuid, SensorData> = HashMap::new();
-
+            };
+            // Prepare our processing thread which builds average, count, total
+            let sensors_mutex_processing = sensors_mutex.clone();
+            let mut update_sender_processing = update_sender.clone();
+            let run_processing = async move {
                 loop {
-                    let mut changed = false;
-
+                    // TODO: instead block on channel or condition?
                     Delay::new(Duration::from_millis(8)).await;
+
+                    let mut changed = false;
 
                     // Read our channel of sensor data from the network thread
                     while let Ok(event) = network_receiver.try_next() {
                         if let Some(event) = event {
-                            changed = true;
+                            if let Ok(mut sensors) = sensors_mutex_processing.lock() {
+                                changed = true;
 
-                            match event {
-                                NetworkDataArrived::Disconnect(uuid) => {
-                                    sensors.remove(&uuid);
-                                }
-                                NetworkDataArrived::Power(uuid, value) => {
-                                    let mut sensor = sensors.entry(uuid).or_default();
-                                    sensor.power = value;
-                                    sensor.last_seen = SystemTime::now();
+                                match event {
+                                    NetworkDataArrived::Disconnect(uuid) => {
+                                        sensors.remove(&uuid);
+                                    }
+                                    NetworkDataArrived::Power(uuid, value) => {
+                                        let mut sensor = sensors.entry(uuid).or_default();
+                                        sensor.power = value;
+                                        sensor.last_seen = SystemTime::now();
+                                    }
                                 }
                             }
                         }
                     }
 
-                    // If there is new sensor info then build average, count, total and inform Qt
                     if changed {
-                        let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                        let count = sensors.len() as u32;
-                        let average = if count > 0 {
-                            total / (count as f64)
-                        } else {
-                            0.0
-                        };
+                        update_sender_processing.try_send(()).unwrap();
+                    }
+                }
+            };
 
-                        qt_sender
-                            .try_send(QtValueArrived::TotalUsage(total))
-                            .unwrap();
-                        qt_sender
-                            .try_send(QtValueArrived::Sensors(count))
-                            .unwrap();
-                        qt_sender
-                            .try_send(QtValueArrived::AverageUse(average))
-                            .unwrap();
+            let sensors_mutex_update = sensors_mutex.clone();
+            let run_update = async move {
+                loop {
+                    // TODO: instead block on channel or condition?
+                    Delay::new(Duration::from_millis(8)).await;
 
-                        update_requester.request_update();
+                    while let Ok(_) = update_receiver.try_next() {
+                        if let Ok(sensors) = sensors_mutex_update.lock() {
+                            // If there is new sensor info then build average, count, total and inform Qt
+                            let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
+                            let count = sensors.len() as u32;
+                            let average = if count > 0 {
+                                total / (count as f64)
+                            } else {
+                                0.0
+                            };
+
+                            qt_sender
+                                .try_send(QtValueArrived::TotalUsage(total))
+                                .unwrap();
+                            qt_sender.try_send(QtValueArrived::Sensors(count)).unwrap();
+                            qt_sender
+                                .try_send(QtValueArrived::AverageUse(average))
+                                .unwrap();
+
+                            update_requester.request_update();
+                        }
                     }
                 }
             };
@@ -268,7 +333,9 @@ mod energy_usage {
             // Start our threads
             self.join_handle_processing =
                 Some(std::thread::spawn(move || block_on(run_processing)));
+            self.join_handle_timeout = Some(std::thread::spawn(move || block_on(run_timeout)));
             self.join_handle_network = Some(std::thread::spawn(move || block_on(run_server)));
+            self.join_handle_update = Some(std::thread::spawn(move || block_on(run_update)));
         }
     }
 
