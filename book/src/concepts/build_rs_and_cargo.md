@@ -58,4 +58,4 @@ Finally the following build dependencies are required for the build.rs file to f
 {{#include ../../../examples/qml_minimal/Cargo.toml:book_build_dependencies}}
 ```
 
-Note that for the dependencies if you are using [crates.io](https://crates.io/) then you don't need the path parameter and can place the version as usual (eg `cxx-qt = "0.1"`).
+Note that for the dependencies if you are using [crates.io](https://crates.io/) then you don't need the path parameter and can place the version as usual (eg `cxx-qt = "0.2"`).
