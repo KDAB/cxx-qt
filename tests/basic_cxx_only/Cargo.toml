@@ -20,4 +20,4 @@ cxx = "1.0"
 
 [build-dependencies]
 clang-format = "0.1"
-cxx-qt-build = { path = "../../cxx-qt-build" }
+cxx-qt-build = { path = "../../cxx-qt-build", version = "0.2" }

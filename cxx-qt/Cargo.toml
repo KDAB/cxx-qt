@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -17,6 +17,6 @@ readme = "README.md"
 proc-macro = true
 
 [dependencies]
-cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.1" }
+cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.2" }
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
