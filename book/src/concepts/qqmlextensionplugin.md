@@ -13,6 +13,23 @@ This allows for a clean split between disciplines of business logic and GUI code
 
 CXX-Qt allows for generating a plugin and qmldir file so that you can load Rust objects as a plugin into your application.
 
+When using QQmlExtensionPlugin the folder structure of your project may look like the following, you can see the clear split between "core" and "ui".
+
+```ignore
+src/
+ - core/
+   - build.rs
+   - Cargo.toml
+   - CMakeLists.txt
+   - src/
+     - lib.rs
+ - ui/
+   - main.qml
+   - qml.qrc
+ CMakeLists.txt
+ main.cpp
+```
+
 ## Rust build.rs changes
 
 In your `build.rs` specify that you want to use a QQmlExtensionPlugin by invoking the method `qqmlextensionplugin` as seen in the following example.
