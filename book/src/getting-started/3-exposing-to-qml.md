@@ -35,4 +35,13 @@ This works the same as it would for any other QObject subclass, as that is exact
 The only thing to note here is that the class is generated in the `cxx_qt::my_object` namespace.
 Where `my_object` is the name of the Rust module we defined earlier.
 
+As we want to include the `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file as well:
+```
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>main.qml</file>
+    </qresource>
+</RCC>
+```
+
 And that's it already. We can now [use our cool new class from QML](./4-qml-gui.md).

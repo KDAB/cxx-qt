@@ -3,6 +3,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+// ANCHOR: book_main_qml
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
@@ -49,3 +51,4 @@ Window {
         }
     }
 }
+// ANCHOR_END: book_main_qml
