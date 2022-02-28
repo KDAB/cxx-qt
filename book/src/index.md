@@ -24,3 +24,8 @@ Through the use of macros and code generation as seen in the figure below, the d
 ![Overview of CXX-Qt concept](./images/overview_abstract.svg)
 
 </div>
+
+If you are new to CXX-Qt, we recommend you visit our [Getting Started Guide](./getting-started/index.md).
+
+To get detailed information on which features of a QObject are available in CXX-Qt, see the [QObject chapter](./qobject/index.md).
+Should you be interested in a deeper dive into the concepts of CXX-Qt, take a look at the [concepts chapter](./concepts/index.md), which explains the concepts CXX-Qt introduces in detail.
