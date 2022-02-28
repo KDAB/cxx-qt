@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 After [defining our first CXX-Qt module](./2-our-first-cxx-qt-module.md), we're ready to create our Qt application and export our new `MyObject` class to QML.
 
 The easiest way to do this is to add a `main.cpp` file next to our `lib.rs` file in the `src` folder.
-```cpp,noplayground
+```cpp,ignore
 {{#include ../../../examples/qml_minimal/src/main.cpp:book_main_cpp}}
 ```
 
@@ -18,11 +18,11 @@ This C++ file creates a basic Qt application and executes it.
 If you're unfamiliar with this, I recommend you take a look at the [Qt documentation](https://doc.qt.io/qt-5/gettingstarted.html).
 
 There are two notable changes compared to a normal Qt application though:
-```cpp,noplayground
+```cpp,ignore
 {{#include ../../../examples/qml_minimal/src/main.cpp:book_cpp_include}}
 ```
 
-```cpp,noplayground
+```cpp,ignore
 {{#include ../../../examples/qml_minimal/src/main.cpp:book_qml_register}}
 ```
 

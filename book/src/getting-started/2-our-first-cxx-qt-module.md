@@ -16,13 +16,13 @@ As outlined in the previous section, to define a new QObject subclass, we'll nee
 So let's go into the `src/lib.rs` file.
 We'll modify this file until it looks like this:
 
-```rust,noplayground
+```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_cxx_qt_module}}
 ```
 
 This is a lot to take in, so let's go one step at a time.
 Starting with the module definition:
-```rust,noplayground
+```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_make_qobject_macro}}
 ```
 
@@ -32,7 +32,7 @@ CXX-Qt is all about idiomatic code in both Rust and C++, so it will do its best 
 
 For the `#[make_qobject]` macro to work, we first need to define the data that will live in the new C++ object.
 This is done with the `Data` struct:
-```rust,noplayground
+```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_data_struct}}
 ```
 That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will again perform the snake_case to camelCase conversion to fit with C++/QML naming conventions.
@@ -50,7 +50,7 @@ The data returned by the implementation of `Default` will be converted to the ap
 Alternatively, we could also provide our own `Default` implementation for Data.
 
 Now that we've defined the data that will live on the C++ side of things, let's take a look at the Rust side:
-```rust,noplayground
+```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_struct}}
 ```
 In our case, this is just an empty struct.
@@ -62,7 +62,7 @@ Every instance of the `MyObject` class will automatically create a corresponding
 
 Just because the `RustObj` struct doesn't contain any data, that still doesn't mean its not an important part of our `MyObject` class.
 That is because it actually defines the behavior of our class through its `impl`:
-```rust,noplayground
+```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_impl}}
 ```
 
