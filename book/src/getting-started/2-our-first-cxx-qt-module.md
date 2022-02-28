@@ -11,6 +11,7 @@ As with all things Rust, we'll first want to create a cargo project.
 ```bash
 cargo new --lib cxx-qt-getting-started
 ```
+Note the `--lib` option here. It is important that we create a static library in Rust, rather than an executable.
 
 As outlined in the previous section, to define a new QObject subclass, we'll need to create a Rust module.
 So let's go into the `src/lib.rs` file.
