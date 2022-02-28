@@ -222,6 +222,9 @@ mod energy_usage {
             let (network_sender, mut network_receiver) = channel(4096);
             let mut qt_sender = self.qt_sender.clone();
             let update_requester = cpp.update_requester();
+            // This is a false positive from clippy that will be removed later
+            // https://github.com/rust-lang/rust-clippy/pull/8260
+            #[allow(clippy::mutex_atomic)]
             let update_pair = Arc::new((Mutex::new(false), Condvar::new()));
 
             // Prepare our timeout thread, if a sensor is not seen for 10 seconds we remove it
@@ -284,16 +287,14 @@ mod energy_usage {
                 }
             };
 
-            let sensors_mutex_update = sensors_mutex.clone();
-            let update_pair_update = update_pair.clone();
             let run_update = async move {
                 loop {
-                    let (lock, cvar) = &*update_pair_update;
+                    let (lock, cvar) = &*update_pair;
                     if let Ok(mut changed) = lock.lock() {
                         changed = cvar.wait(changed).unwrap();
 
                         if *changed {
-                            if let Ok(sensors) = sensors_mutex_update.lock() {
+                            if let Ok(sensors) = sensors_mutex.lock() {
                                 // If there is new sensor info then build average, count, total and inform Qt
                                 let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
                                 let count = sensors.len() as u32;
