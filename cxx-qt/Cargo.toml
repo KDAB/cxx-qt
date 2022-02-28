@@ -11,7 +11,10 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Safe interop between Rust and Qt"
 repository = "https://github.com/KDAB/cxx-qt/"
+homepage = "https://kdab.github.io/cxx-qt/book/"
 readme = "README.md"
+keywords = ["cxx", "ffi", "QML", "Qt"]
+categories = ["api-bindings", "gui"]
 
 [lib]
 proc-macro = true
