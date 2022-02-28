@@ -8,8 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use uuid::Uuid;
 
-const SENSOR_TIMEOUT_SECS: u64 = 10;
-const SENSOR_MAXIMUM: usize = 1000;
+const SENSOR_TIMEOUT_MILLIS: u128 = 10_000;
+const SENSOR_TIMEOUT_POLL_RATE_MILLIS: u64 = 256;
+const SENSOR_MAXIMUM_COUNT: usize = 1000;
+const SENSOR_MAXIMUM_POWER: f64 = 1000.0;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -24,8 +26,8 @@ enum Status {
     Ok,
     Error,
     ErrorFailedToLock,
-    ErrorNoUuid,
     ErrorInvalidPower,
+    ErrorNoUuid,
     ErrorMaximumSensorsReached,
 }
 
@@ -103,7 +105,6 @@ mod energy_usage {
         qt_sender: Sender<QtValueArrived>,
         qt_receiver: Receiver<QtValueArrived>,
         join_handle_network: Option<JoinHandle<()>>,
-        join_handle_processing: Option<JoinHandle<()>>,
         join_handle_timeout: Option<JoinHandle<()>>,
         join_handle_update: Option<JoinHandle<()>>,
     }
@@ -116,7 +117,6 @@ mod energy_usage {
                 qt_sender,
                 qt_receiver,
                 join_handle_network: None,
-                join_handle_processing: None,
                 join_handle_timeout: None,
                 join_handle_update: None,
             }
@@ -134,92 +134,80 @@ mod energy_usage {
             let trimmed = std::str::from_utf8(&buf)
                 .unwrap()
                 .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
+            let notify_change = || {
+                let (lock, cvar) = &*update_pair_network;
+                if let Ok(mut changed) = lock.lock() {
+                    if !*changed {
+                        *changed = true;
+                        cvar.notify_one();
+                    }
+                }
+            };
 
             let response = match serde_json::from_str::<Request>(trimmed) {
-                Ok(request) => match request.command {
-                    RequestCommand::Disconnect => {
-                        if let Some(uuid) = request.uuid {
-                            if let Ok(mut sensors) = sensors_mutex_network.lock() {
-                                sensors.remove(&uuid);
-
-                                let (lock, cvar) = &*update_pair_network;
-                                if let Ok(mut changed) = lock.lock() {
-                                    if !*changed {
-                                        *changed = true;
-                                        cvar.notify_one();
-                                    }
-                                }
-
-                                Response {
-                                    status: Status::Ok,
-                                    uuid: Some(uuid),
-                                }
-                            } else {
-                                Response {
-                                    status: Status::ErrorFailedToLock,
-                                    uuid: Some(uuid),
-                                }
-                            }
-                        } else {
-                            Response {
-                                status: Status::ErrorNoUuid,
-                                uuid: None,
-                            }
-                        }
-                    }
-                    RequestCommand::Power { value } => {
-                        if let Some(uuid) = request.uuid {
-                            // Validate that our power is within the expected range
-                            if !(0.0..=1000.0).contains(&value) {
-                                Response {
-                                    status: Status::ErrorInvalidPower,
-                                    uuid: None,
-                                }
-                            } else if let Ok(mut sensors) = sensors_mutex_network.lock() {
-                                let sensors_len = sensors.len();
-                                let entry = sensors.entry(uuid);
-                                if sensors_len < super::SENSOR_MAXIMUM
-                                    || matches!(
-                                        entry,
-                                        std::collections::hash_map::Entry::Occupied(..)
-                                    )
-                                {
-                                    let mut sensor = entry.or_default();
-                                    sensor.power = value;
-                                    sensor.last_seen = SystemTime::now();
-
-                                    let (lock, cvar) = &*update_pair_network;
-                                    if let Ok(mut changed) = lock.lock() {
-                                        if !*changed {
-                                            *changed = true;
-                                            cvar.notify_one();
-                                        }
-                                    }
+                Ok(request) => {
+                    // Validate that we have a uuid
+                    if let Some(uuid) = request.uuid {
+                        // Lock the sensors hashmap so that we can mutate it
+                        if let Ok(mut sensors) = sensors_mutex_network.lock() {
+                            match request.command {
+                                RequestCommand::Disconnect => {
+                                    sensors.remove(&uuid);
+                                    notify_change();
 
                                     Response {
                                         status: Status::Ok,
                                         uuid: Some(uuid),
                                     }
-                                } else {
-                                    Response {
-                                        status: Status::ErrorMaximumSensorsReached,
-                                        uuid: Some(uuid),
-                                    }
                                 }
-                            } else {
-                                Response {
-                                    status: Status::ErrorFailedToLock,
-                                    uuid: Some(uuid),
+                                RequestCommand::Power { value } => {
+                                    // Validate that our power is within the expected range
+                                    if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
+                                        // Validate that we would still be below the sensors max count
+                                        let sensors_len = sensors.len();
+                                        let entry = sensors.entry(uuid);
+                                        if sensors_len < super::SENSOR_MAXIMUM_COUNT
+                                            || matches!(
+                                                entry,
+                                                std::collections::hash_map::Entry::Occupied(..)
+                                            )
+                                        {
+                                            let mut sensor = entry.or_default();
+                                            sensor.power = value;
+                                            sensor.last_seen = SystemTime::now();
+                                            notify_change();
+
+                                            Response {
+                                                status: Status::Ok,
+                                                uuid: Some(uuid),
+                                            }
+                                        } else {
+                                            Response {
+                                                status: Status::ErrorMaximumSensorsReached,
+                                                uuid: Some(uuid),
+                                            }
+                                        }
+                                    } else {
+                                        Response {
+                                            status: Status::ErrorInvalidPower,
+                                            uuid: Some(uuid),
+                                        }
+                                    }
                                 }
                             }
                         } else {
                             Response {
-                                status: Status::ErrorNoUuid,
-                                uuid: None,
+                                status: Status::ErrorFailedToLock,
+                                uuid: Some(uuid),
                             }
                         }
+                    } else {
+                        Response {
+                            status: Status::ErrorNoUuid,
+                            uuid: None,
+                        }
                     }
-                },
+                }
                 Err(_) => Response {
                     status: Status::Error,
                     uuid: None,
@@ -235,7 +223,10 @@ mod energy_usage {
 
         #[invokable]
         fn start_server(&mut self, cpp: &mut CppObj) {
-            if self.join_handle_network.is_some() || self.join_handle_processing.is_some() {
+            if self.join_handle_network.is_some()
+                || self.join_handle_timeout.is_some()
+                || self.join_handle_update.is_some()
+            {
                 println!("Already running a thread!");
                 return;
             }
@@ -256,7 +247,7 @@ mod energy_usage {
             //      - writes new Qt values to qt queue
 
             let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::with_capacity(
-                super::SENSOR_MAXIMUM,
+                super::SENSOR_MAXIMUM_COUNT,
             )));
 
             // This is a false positive from clippy that will be removed later
@@ -269,13 +260,16 @@ mod energy_usage {
             let update_pair_timeout = update_pair.clone();
             let run_timeout = async move {
                 loop {
-                    Delay::new(Duration::from_millis(256)).await;
+                    Delay::new(Duration::from_millis(
+                        super::SENSOR_TIMEOUT_POLL_RATE_MILLIS,
+                    ))
+                    .await;
 
                     if let Ok(mut sensors) = sensors_mutex_timeout.try_lock() {
                         let sensors_count = sensors.len();
                         sensors.retain(|_, sensor| {
                             if let Ok(duration) = sensor.last_seen.elapsed() {
-                                duration.as_secs() < super::SENSOR_TIMEOUT_SECS
+                                duration.as_millis() < super::SENSOR_TIMEOUT_MILLIS
                             } else {
                                 false
                             }
