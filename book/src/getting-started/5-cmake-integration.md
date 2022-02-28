@@ -64,6 +64,9 @@ We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
 This is what generates the C++ code for our `MyObject` class at compile-time.
 It will output the `cxx-qt-gen/include/my_object.h` file we included earlier in `main.cpp`.
 
+Note that all Rust source files that uses the `#[make_qobject]` macro need to be included in this script!
+In our case, this is only the `src/lib.rs` file.
+
 Then we can write our `CMakeLists.txt` file:
 
 ```cmake,ignore
@@ -136,8 +139,10 @@ Which will do the code generation and include it into the C++ build.
 
 An important thing to note here is that CMake must be able to resolve the call to `include(CxxQt)`.
 For this to work, you'll want to clone the [CXX-Qt repository](https://github.com/KDAB/cxx-qt/) and add the `CxxQt.cmake` file to the `CMAKE_MODULE_PATH` CMake variable.
+An easy way to achieve this is by using CMake's `-D` option.
+For some alternatives, see the [CMake concepts chapter](../concepts/cmake.md).
 
-We can do this when building our project by running:
+Therefore building our project can be done like this:
 ```shell
 $ mkdir build && cd build
 $ cmake -DCMAKE_MODULE_PATH="<path-to-cxx-qt-repo>/cmake" ..

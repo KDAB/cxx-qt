@@ -7,7 +7,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # CMake
 
-We need to add cmake to generate the C++ code and then link to it, ensure that `CxxQt.cmake` is in CMake's path.
+We need to add CMake to generate the C++ code and then link to it, ensure that `CxxQt.cmake` can be found by CMake.
+For this to work, the [`CMAKE_MODULE_PATH` CMake variable](https://cmake.org/cmake/help/latest/variable/CMAKE_MODULE_PATH.html) must be adapted to include the `cmake` folder in the cxx-qt repository.
+
+Some ways to achieve this include:
+- Providing the `-DCMAKE_MODULE_PATH=<path-to-cxx-qt-repo>/cmake` option when calling CMake.
+- Adding `list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cxx-qt/cmake")` with the relative path to the cxx-qt repository.
+    - This option is especially useful if cxx-qt is added as a git submodule to your project.
+- Using a CMake GUI to change the variable
 
 Then we have multiple phases to perform in the CMake
 
