@@ -6,6 +6,7 @@
 use cxx_qt::make_qobject;
 
 mod data_struct_properties;
+mod empty;
 mod handler_property_change;
 mod mock_qt_types;
 mod nested;

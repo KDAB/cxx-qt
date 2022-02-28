@@ -444,6 +444,15 @@ pub fn generate_qobject_cxx(
     // Build the namespace string, rust::module
     let namespace = obj.namespace.join("::");
 
+    // Build the properties FFI
+    let property_ffi = if !obj.properties.is_empty() {
+        quote! {
+            pub type Property = ffi::Property;
+        }
+    } else {
+        quote! {}
+    };
+
     // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
@@ -505,7 +514,7 @@ pub fn generate_qobject_cxx(
         }
 
         pub type FFICppObj = ffi::#class_name;
-        pub type Property = ffi::Property;
+        #property_ffi
     };
 
     Ok(output.into_token_stream())
@@ -534,10 +543,14 @@ fn generate_property_enum(obj: &QObject) -> TokenStream {
         quote! { #ident }
     });
 
-    quote! {
-        enum Property {
-            #(#properties),*
+    if properties.len() > 0 {
+        quote! {
+            enum Property {
+                #(#properties),*
+            }
         }
+    } else {
+        quote! {}
     }
 }
 
