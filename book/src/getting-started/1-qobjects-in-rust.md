@@ -54,9 +54,9 @@ CXX-Qt will then expand this Rust module into two separate parts:
 - A C++ subclass of QObject with the same name as the module
 - The Rust struct `RustObj`
 
-<div style="padding: 1rem; text-align: center;">
+<div style="background-color: white; padding: 1rem; text-align: center;">
 
-![Overview of CXX-Qt module generation](../images/cxx_qt_module_generation.png)
+![Overview of CXX-Qt module generation](../images/overview_abstract.svg)
 
 </div>
 
