@@ -5,6 +5,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+// ANCHOR: book_main_cpp
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
@@ -39,3 +41,4 @@ main(int argc, char* argv[])
 
   return app.exec();
 }
+// ANCHOR_END: book_main_cpp
