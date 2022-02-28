@@ -66,7 +66,7 @@ mod energy_usage {
     use futures_timer::Delay;
     use std::{
         collections::HashMap,
-        sync::{Arc, Mutex},
+        sync::{Arc, Condvar, Mutex},
         thread::JoinHandle,
         time::{Duration, SystemTime},
     };
@@ -220,13 +220,13 @@ mod energy_usage {
             let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::new()));
 
             let (network_sender, mut network_receiver) = channel(4096);
-            let (update_sender, mut update_receiver) = channel(8);
             let mut qt_sender = self.qt_sender.clone();
             let update_requester = cpp.update_requester();
+            let update_pair = Arc::new((Mutex::new(false), Condvar::new()));
 
             // Prepare our timeout thread, if a sensor is not seen for 10 seconds we remove it
             let sensors_mutex_timeout = sensors_mutex.clone();
-            let mut update_sender_timeout = update_sender.clone();
+            let update_pair_timeout = update_pair.clone();
             let run_timeout = async move {
                 loop {
                     Delay::new(Duration::from_millis(256)).await;
@@ -242,14 +242,18 @@ mod energy_usage {
                         });
 
                         if sensors.len() < sensors_count {
-                            update_sender_timeout.try_send(()).unwrap();
+                            let (lock, cvar) = &*update_pair_timeout;
+                            if let Ok(mut changed) = lock.lock() {
+                                *changed = true;
+                                cvar.notify_one();
+                            }
                         }
                     }
                 }
             };
             // Prepare our processing thread which builds average, count, total
             let sensors_mutex_processing = sensors_mutex.clone();
-            let mut update_sender_processing = update_sender.clone();
+            let update_pair_processing = update_pair.clone();
             let run_processing = async move {
                 loop {
                     // TODO: instead block on channel or condition?
@@ -278,37 +282,46 @@ mod energy_usage {
                     }
 
                     if changed {
-                        update_sender_processing.try_send(()).unwrap();
+                        let (lock, cvar) = &*update_pair_processing;
+                        if let Ok(mut changed) = lock.lock() {
+                            *changed = true;
+                            cvar.notify_one();
+                        }
                     }
                 }
             };
 
             let sensors_mutex_update = sensors_mutex.clone();
+            let update_pair_update = update_pair.clone();
             let run_update = async move {
                 loop {
-                    // TODO: instead block on channel or condition?
-                    Delay::new(Duration::from_millis(8)).await;
+                    let (lock, cvar) = &*update_pair_update;
+                    if let Ok(mut changed) = lock.lock() {
+                        changed = cvar.wait(changed).unwrap();
 
-                    while let Ok(_) = update_receiver.try_next() {
-                        if let Ok(sensors) = sensors_mutex_update.lock() {
-                            // If there is new sensor info then build average, count, total and inform Qt
-                            let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                            let count = sensors.len() as u32;
-                            let average = if count > 0 {
-                                total / (count as f64)
-                            } else {
-                                0.0
-                            };
+                        if *changed {
+                            if let Ok(sensors) = sensors_mutex_update.lock() {
+                                // If there is new sensor info then build average, count, total and inform Qt
+                                let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
+                                let count = sensors.len() as u32;
+                                let average = if count > 0 {
+                                    total / (count as f64)
+                                } else {
+                                    0.0
+                                };
 
-                            qt_sender
-                                .try_send(QtValueArrived::TotalUsage(total))
-                                .unwrap();
-                            qt_sender.try_send(QtValueArrived::Sensors(count)).unwrap();
-                            qt_sender
-                                .try_send(QtValueArrived::AverageUse(average))
-                                .unwrap();
+                                qt_sender
+                                    .try_send(QtValueArrived::TotalUsage(total))
+                                    .unwrap();
+                                qt_sender.try_send(QtValueArrived::Sensors(count)).unwrap();
+                                qt_sender
+                                    .try_send(QtValueArrived::AverageUse(average))
+                                    .unwrap();
 
-                            update_requester.request_update();
+                                update_requester.request_update();
+                            }
+
+                            *changed = false;
                         }
                     }
                 }
