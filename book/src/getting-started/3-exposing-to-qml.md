@@ -26,7 +26,7 @@ There are two notable changes compared to a normal Qt application though:
 {{#include ../../../examples/qml_minimal/src/main.cpp:book_qml_register}}
 ```
 
-For every QObject subclass that is defined in Rust, CXX-Qt will generate a corresponding C++ class.
+For every QObject subclass that we define in Rust, CXX-Qt will generate a corresponding C++ class.
 This class is included by the first code snippet.
 They will always be in the `cxx-qt-gen/include/` include path and use the snake_case naming convention.
 
@@ -35,8 +35,8 @@ This works the same as it would for any other QObject subclass, as that is exact
 The only thing to note here is that the class is generated in the `cxx_qt::my_object` namespace.
 Where `my_object` is the name of the Rust module we defined earlier.
 
-As we want to include the `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file as well:
-```
+As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file as well:
+```qrc,ignore
 <RCC version="1.0">
     <qresource prefix="/">
         <file>main.qml</file>
