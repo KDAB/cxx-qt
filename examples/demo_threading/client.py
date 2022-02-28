@@ -32,10 +32,9 @@ if __name__ == "__main__":
 
     # Randomly change their values once
     for id in uuids:
-        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
+        print(client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id }))
         time.sleep(0.016)
-
 
     # Disconnect the sensors
     for id in uuids:
-        client.send_json({"command": "disconnect", "uuid": id})
+        print(client.send_json({"command": "disconnect", "uuid": id}))
