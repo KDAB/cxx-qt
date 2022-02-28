@@ -78,11 +78,6 @@ mod energy_usage {
         TotalUsage(f64),
     }
 
-    enum NetworkDataArrived {
-        Disconnect(Uuid),
-        Power(Uuid, f64),
-    }
-
     pub struct Data {
         average_use: f64,
         sensors: u32,
@@ -126,7 +121,8 @@ mod energy_usage {
     impl RustObj {
         async fn handle_connection(
             mut stream: TcpStream,
-            mut event_sender: Sender<NetworkDataArrived>,
+            sensors_mutex_network: Arc<Mutex<HashMap<Uuid, SensorData>>>,
+            update_pair_network: Arc<(Mutex<bool>, Condvar)>,
         ) {
             let mut buf = vec![0u8; 1024];
             let _ = stream.read(&mut buf).await.unwrap();
@@ -138,9 +134,17 @@ mod energy_usage {
                 Ok(request) => match request.command {
                     RequestCommand::Disconnect => {
                         if let Some(uuid) = request.uuid {
-                            event_sender
-                                .try_send(NetworkDataArrived::Disconnect(uuid))
-                                .unwrap();
+                            if let Ok(mut sensors) = sensors_mutex_network.lock() {
+                                sensors.remove(&uuid);
+
+                                let (lock, cvar) = &*update_pair_network;
+                                if let Ok(mut changed) = lock.lock() {
+                                    if !*changed {
+                                        *changed = true;
+                                        cvar.notify_one();
+                                    }
+                                }
+                            }
 
                             Response {
                                 status: Status::Ok,
@@ -162,9 +166,19 @@ mod energy_usage {
                                     uuid: None,
                                 }
                             } else {
-                                event_sender
-                                    .try_send(NetworkDataArrived::Power(uuid, value))
-                                    .unwrap();
+                                if let Ok(mut sensors) = sensors_mutex_network.lock() {
+                                    let mut sensor = sensors.entry(uuid).or_default();
+                                    sensor.power = value;
+                                    sensor.last_seen = SystemTime::now();
+
+                                    let (lock, cvar) = &*update_pair_network;
+                                    if let Ok(mut changed) = lock.lock() {
+                                        if !*changed {
+                                            *changed = true;
+                                            cvar.notify_one();
+                                        }
+                                    }
+                                }
 
                                 Response {
                                     status: Status::Ok,
@@ -204,9 +218,6 @@ mod energy_usage {
             // - Network thread
             //      - handles a TCP connection
             //      - validates values
-            //      - writes items to a network queue
-            // - Processing thread
-            //      - reads the network queue
             //      - updates values in the sensors hashmap
             //      - notifies that sensors has changed
             // - Timeout thread
@@ -219,9 +230,6 @@ mod energy_usage {
 
             let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::new()));
 
-            let (network_sender, mut network_receiver) = channel(4096);
-            let mut qt_sender = self.qt_sender.clone();
-            let update_requester = cpp.update_requester();
             // This is a false positive from clippy that will be removed later
             // https://github.com/rust-lang/rust-clippy/pull/8260
             #[allow(clippy::mutex_atomic)]
@@ -256,45 +264,19 @@ mod energy_usage {
                     }
                 }
             };
-            // Prepare our processing thread which builds average, count, total
-            let sensors_mutex_processing = sensors_mutex.clone();
-            let update_pair_processing = update_pair.clone();
-            let run_processing = async move {
-                loop {
-                    while let Some(event) = network_receiver.next().await {
-                        // Read our channel of sensor data from the network thread
-                        if let Ok(mut sensors) = sensors_mutex_processing.lock() {
-                            match event {
-                                NetworkDataArrived::Disconnect(uuid) => {
-                                    sensors.remove(&uuid);
-                                }
-                                NetworkDataArrived::Power(uuid, value) => {
-                                    let mut sensor = sensors.entry(uuid).or_default();
-                                    sensor.power = value;
-                                    sensor.last_seen = SystemTime::now();
-                                }
-                            }
 
-                            let (lock, cvar) = &*update_pair_processing;
-                            if let Ok(mut changed) = lock.lock() {
-                                if !*changed {
-                                    *changed = true;
-                                    cvar.notify_one();
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
+            let mut qt_sender = self.qt_sender.clone();
+            let sensors_mutex_update = sensors_mutex.clone();
+            let update_requester = cpp.update_requester();
+            let update_pair_update = update_pair.clone();
             let run_update = async move {
                 loop {
-                    let (lock, cvar) = &*update_pair;
+                    let (lock, cvar) = &*update_pair_update;
                     if let Ok(mut changed) = lock.lock() {
                         changed = cvar.wait(changed).unwrap();
 
                         if *changed {
-                            if let Ok(sensors) = sensors_mutex.lock() {
+                            if let Ok(sensors) = sensors_mutex_update.lock() {
                                 // If there is new sensor info then build average, count, total and inform Qt
                                 let total = sensors.values().fold(0.0, |acc, x| acc + x.power);
                                 let count = sensors.len() as u32;
@@ -326,20 +308,22 @@ mod energy_usage {
                 let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
                 listener
                     .incoming()
-                    .map(|stream| (stream, network_sender.clone()))
+                    .map(|stream| (stream, sensors_mutex.clone(), update_pair.clone()))
                     .for_each_concurrent(
                         /* limit */ None,
-                        |(stream, network_sender)| async move {
+                        |(stream, sensors_mutex_network, update_pair)| async move {
                             let stream = stream.unwrap();
-                            spawn(RustObj::handle_connection(stream, network_sender));
+                            spawn(RustObj::handle_connection(
+                                stream,
+                                sensors_mutex_network,
+                                update_pair,
+                            ));
                         },
                     )
                     .await;
             };
 
             // Start our threads
-            self.join_handle_processing =
-                Some(std::thread::spawn(move || block_on(run_processing)));
             self.join_handle_timeout = Some(std::thread::spawn(move || block_on(run_timeout)));
             self.join_handle_network = Some(std::thread::spawn(move || block_on(run_server)));
             self.join_handle_update = Some(std::thread::spawn(move || block_on(run_update)));
