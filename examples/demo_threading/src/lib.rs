@@ -8,6 +8,9 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use uuid::Uuid;
 
+const SENSOR_TIMEOUT_SECS: u64 = 10;
+const SENSOR_MAXIMUM: usize = 1000;
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum RequestCommand {
@@ -20,8 +23,10 @@ enum RequestCommand {
 enum Status {
     Ok,
     Error,
+    ErrorFailedToLock,
     ErrorNoUuid,
     ErrorInvalidPower,
+    ErrorMaximumSensorsReached,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -144,11 +149,16 @@ mod energy_usage {
                                         cvar.notify_one();
                                     }
                                 }
-                            }
 
-                            Response {
-                                status: Status::Ok,
-                                uuid: Some(uuid),
+                                Response {
+                                    status: Status::Ok,
+                                    uuid: Some(uuid),
+                                }
+                            } else {
+                                Response {
+                                    status: Status::ErrorFailedToLock,
+                                    uuid: Some(uuid),
+                                }
                             }
                         } else {
                             Response {
@@ -165,9 +175,16 @@ mod energy_usage {
                                     status: Status::ErrorInvalidPower,
                                     uuid: None,
                                 }
-                            } else {
-                                if let Ok(mut sensors) = sensors_mutex_network.lock() {
-                                    let mut sensor = sensors.entry(uuid).or_default();
+                            } else if let Ok(mut sensors) = sensors_mutex_network.lock() {
+                                let sensors_len = sensors.len();
+                                let entry = sensors.entry(uuid);
+                                if sensors_len < super::SENSOR_MAXIMUM
+                                    || matches!(
+                                        entry,
+                                        std::collections::hash_map::Entry::Occupied(..)
+                                    )
+                                {
+                                    let mut sensor = entry.or_default();
                                     sensor.power = value;
                                     sensor.last_seen = SystemTime::now();
 
@@ -178,10 +195,20 @@ mod energy_usage {
                                             cvar.notify_one();
                                         }
                                     }
-                                }
 
+                                    Response {
+                                        status: Status::Ok,
+                                        uuid: Some(uuid),
+                                    }
+                                } else {
+                                    Response {
+                                        status: Status::ErrorMaximumSensorsReached,
+                                        uuid: Some(uuid),
+                                    }
+                                }
+                            } else {
                                 Response {
-                                    status: Status::Ok,
+                                    status: Status::ErrorFailedToLock,
                                     uuid: Some(uuid),
                                 }
                             }
@@ -228,7 +255,9 @@ mod energy_usage {
             //      - reads the hashmap
             //      - writes new Qt values to qt queue
 
-            let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::new()));
+            let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::with_capacity(
+                super::SENSOR_MAXIMUM,
+            )));
 
             // This is a false positive from clippy that will be removed later
             // https://github.com/rust-lang/rust-clippy/pull/8260
@@ -246,7 +275,7 @@ mod energy_usage {
                         let sensors_count = sensors.len();
                         sensors.retain(|_, sensor| {
                             if let Ok(duration) = sensor.last_seen.elapsed() {
-                                duration.as_secs() < 10
+                                duration.as_secs() < super::SENSOR_TIMEOUT_SECS
                             } else {
                                 false
                             }
