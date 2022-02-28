@@ -3,20 +3,30 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+// ANCHOR: book_cxx_qt_module
+// ANCHOR: book_make_qobject_macro
 use cxx_qt::make_qobject;
 
 #[make_qobject]
 mod my_object {
-    use cxx_qt_lib::QString;
+    // ANCHOR_END: book_make_qobject_macro
 
+    // ANCHOR: book_data_struct
     #[derive(Default)]
     pub struct Data {
         number: i32,
         string: String,
     }
+    // ANCHOR_END: book_data_struct
 
+    // ANCHOR: book_rustobj_struct
     #[derive(Default)]
     struct RustObj;
+    // ANCHOR_END: book_rustobj_struct
+
+    // ANCHOR: book_rustobj_impl
+    use cxx_qt_lib::QString;
 
     impl RustObj {
         #[invokable]
@@ -30,4 +40,6 @@ mod my_object {
             println!("Hi from Rust! String is '{}' and number is {}", s, number);
         }
     }
+    // ANCHOR_END: book_rustobj_impl
 }
+// ANCHOR_END: book_cxx_qt_module
