@@ -12,6 +12,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 ---
 
 - [Getting-Started](./getting-started/index.md)
+    - [QObjects in Rust](./getting-started/1-qobjects-in-rust.md)
+    - [Our first CXX-Qt module](./getting-started/2-our-first-cxx-qt-module.md)
+    - [Exposing to QML](./getting-started/3-exposing-to-qml.md)
+    - [Creating the QML GUI](./getting-started/4-qml-gui.md)
+    - [Building with CMake](./getting-started/5-cmake-integration.md)
 - [QObject](./qobject/index.md)
     - [Macro](./qobject/macro.md)
     - [Data Struct](./qobject/data_struct.md)
