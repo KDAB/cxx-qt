@@ -179,6 +179,7 @@ add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TE
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
 
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
+add_test_cargo(demo_threading "${CMAKE_CURRENT_SOURCE_DIR}/examples/demo_threading/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_features "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_features/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/core/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_minimal "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_minimal/Cargo.toml" DOCTESTS_OFF)
