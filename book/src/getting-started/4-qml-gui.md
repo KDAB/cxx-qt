@@ -22,11 +22,11 @@ This code will create a pretty simple GUI that consists of two Labels and two Bu
 The important part here is the use of the `MyObject` type.
 As you can see, the class we defined earlier is now usable in QML.
 
-As it is just another QObject subclass, it can be used in Qts property binding system, as is done with the `myObject.string`, which is bound to the number of `myObject`.
+As it is just another QObject subclass, it can be used in Qts property binding system, as is done with the `myObject.string`, which is bound to `myObject.number`.
 
 The labels then simply display the data defined in the `MyObject` class.
 We can use the two buttons to interact with the `MyObject` instance.
-As you can see here, CXX-Qt has converted the snake_case of the function names to camelCase `incrementNumber` and `sayHi`.
+As you can see here, CXX-Qt has converted the snake_case of the function names to camelCase - `incrementNumber` and `sayHi`.
 This way the `MyObject` doesn't seem at all out of place in QML.
 
 It is again important to emphasize here that `MyObject` is just another QObject subclass and can be used just like any other `QObject` subclass.

@@ -8,15 +8,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 # Building with CMake
 
 ```diff,ignore
-- Disclaimer: The CMake integration for CXX-Qt is still WIP.
-- The current state is far from optimal and will likely improve
-- a lot in the future, so don't be discouraged by anything in
-- this chapter.
+- Disclaimer: The CMake integration for CXX-Qt is still work-in-progress.
+- The current state is far from optimal and will likely improve a lot
+- in the future, so don't be discouraged by anything in this chapter.
 - Contributions are also welcome.
 ```
 
-Before we can get started on building Qt with CMake, we should first make our Cargo build ready for it.
-If you've generated your project with the `cargo new --lib` command, your Cargo.toml likely looks something like this:
+Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
+If you've generated your project with the `cargo new --lib` command, your `Cargo.toml` likely looks something like this:
 ```toml,ignore
 [package]
 name = "cxx-qt-getting-started"
@@ -27,7 +26,7 @@ edition = "2021"
 ```
 
 We'll have to do multiple things:
-- Instruct cargo to create a static lib with a defined name for CMake to link against ("rust").
+- Instruct cargo to create a static lib with a defined name ("rust") for CMake to link against.
 - Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies.
 - Add `clang-format` and `cxx-qt-build` as build-dependencies.
 
@@ -38,7 +37,8 @@ name = "cxx-qt-getting-started"
 version = "0.1.0"
 edition = "2021"
 
-# Don't touch this, the CMake file expects a static lib with a specific name
+# This will instruct Cargo to create a static
+# lib named "rust" which CMake can link against
 [lib]
 name = "rust"
 crate-type = ["staticlib"]
@@ -48,6 +48,10 @@ cxx = "1.0"
 cxx-qt = "0.2"
 cxx-qt-lib = "0.2"
 
+# cxx-qt needs to be able to generate C++ code at
+# compile time, which is what cxx-qt-build is needed for.
+# cxx-qt uses clang-format, if available, to format all
+# C++ code in a consistent manner.
 [build-dependencies]
 clang-format = "0.1"
 cxx-qt-build = "0.2"
@@ -76,6 +80,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QuickTest Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QuickTest Test REQUIRED)
 
+# Include the CXX-Qt CMake code, which provides some easy functions
+# to generate the CXX-Qt code.
 include(CxxQt)
 
 # Generate C++ code from Rust using Cargo in the current folder
