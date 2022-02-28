@@ -244,8 +244,10 @@ mod energy_usage {
                         if sensors.len() < sensors_count {
                             let (lock, cvar) = &*update_pair_timeout;
                             if let Ok(mut changed) = lock.lock() {
-                                *changed = true;
-                                cvar.notify_one();
+                                if !*changed {
+                                    *changed = true;
+                                    cvar.notify_one();
+                                }
                             }
                         }
                     }
@@ -256,36 +258,27 @@ mod energy_usage {
             let update_pair_processing = update_pair.clone();
             let run_processing = async move {
                 loop {
-                    // TODO: instead block on channel or condition?
-                    Delay::new(Duration::from_millis(8)).await;
-
-                    let mut changed = false;
-
-                    // Read our channel of sensor data from the network thread
-                    while let Ok(event) = network_receiver.try_next() {
-                        if let Some(event) = event {
-                            if let Ok(mut sensors) = sensors_mutex_processing.lock() {
-                                changed = true;
-
-                                match event {
-                                    NetworkDataArrived::Disconnect(uuid) => {
-                                        sensors.remove(&uuid);
-                                    }
-                                    NetworkDataArrived::Power(uuid, value) => {
-                                        let mut sensor = sensors.entry(uuid).or_default();
-                                        sensor.power = value;
-                                        sensor.last_seen = SystemTime::now();
-                                    }
+                    while let Some(event) = network_receiver.next().await {
+                        // Read our channel of sensor data from the network thread
+                        if let Ok(mut sensors) = sensors_mutex_processing.lock() {
+                            match event {
+                                NetworkDataArrived::Disconnect(uuid) => {
+                                    sensors.remove(&uuid);
+                                }
+                                NetworkDataArrived::Power(uuid, value) => {
+                                    let mut sensor = sensors.entry(uuid).or_default();
+                                    sensor.power = value;
+                                    sensor.last_seen = SystemTime::now();
                                 }
                             }
-                        }
-                    }
 
-                    if changed {
-                        let (lock, cvar) = &*update_pair_processing;
-                        if let Ok(mut changed) = lock.lock() {
-                            *changed = true;
-                            cvar.notify_one();
+                            let (lock, cvar) = &*update_pair_processing;
+                            if let Ok(mut changed) = lock.lock() {
+                                if !*changed {
+                                    *changed = true;
+                                    cvar.notify_one();
+                                }
+                            }
                         }
                     }
                 }
