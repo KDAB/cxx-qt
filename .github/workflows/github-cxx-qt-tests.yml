@@ -31,8 +31,6 @@ jobs:
           - name: Ubuntu 20.04 (gcc) Qt6
             os: ubuntu-20.04
             qt_version: 6
-            # FIXME: fix valgrind failures
-            ctest_args: --exclude-regex '^.*valgrind$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
             cargo_dir: ~/.cargo
