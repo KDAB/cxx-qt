@@ -31,3 +31,37 @@
    fun:*quick_test_main_with_setup*QObject
    fun:*
 }
+{
+   qt_6_hash_function_aeshash
+   Memcheck:Addr16
+   fun:_mm_loadu_si128
+   fun:*aeshash*
+   fun:qHash
+   fun:calculateHash<QString>
+   fun:find
+   ...
+   fun:registerString
+   fun:*SignalHandlerResolver*resolveSignalHandlerExpressions*Qml*Object*QString*QQmlPropertyCache
+   ...
+   fun:*QQmlTypeCompiler*compile*
+   fun:*QQmlTypeData*compile*QQmlRefPointer*QQmlTypeNameCache*ResolvedTypeReferenceMap*function*QByteArray*
+   fun:*QQmlTypeData*done*
+   fun:tryDone
+   fun:*QQmlDataBlob*tryDone*
+   fun:*QQmlTypeLoader*setCachedUnit*QQmlDataBlob*QQmlPrivate*CachedQmlUnit*
+   fun:loadThread
+   fun:*QQmlTypeLoader*doLoad*CachedLoader*QQmlDataBlob*
+   ...
+}
+{
+   qt_6_register_string_qstring
+   Memcheck:Addr16
+   ...
+   fun:*Compiler*StringTableGenerator*registerString*QString
+   ...
+   fun:*QQmlDataBlob*tryDone*
+   fun:*QQmlTypeLoader*setCachedUnit*QQmlDataBlob*QQmlPrivate*CachedQmlUnit*
+   fun:*QQmlTypeLoader*Load*CachedLoader*QQmlDataBlob*Mode*
+   fun:*QQmlTypeLoader*loadWithCachedUnit*QQmlDataBlob*QQmlPrivate*CachedQmlUnit*Mode*
+   ...
+}
