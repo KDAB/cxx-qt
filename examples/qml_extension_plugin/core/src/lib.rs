@@ -7,6 +7,8 @@ use cxx_qt::make_qobject;
 
 const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
+// Note: keep any changes here in sync with the main README.md
+
 #[make_qobject]
 mod my_object {
     use serde::{Deserialize, Serialize};

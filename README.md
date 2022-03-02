@@ -27,37 +27,59 @@ In future we might improve upon this with a custom CMake module for instance.
 
 If you want to use CXX-Qt and see it in action visit our Getting Started guide in our Rust book [https://kdab.github.io/cxx-qt/book/getting-started/index.html](https://kdab.github.io/cxx-qt/book/getting-started/index.html).
 
-Here we go through the steps of creating a Rust project and exposing to QML. This results in the following Rust code which exposes two Q_PROPERTY's and two Q_INVOKABLE's.
+Here we go through the steps of creating a Rust project and exposing to QML.
 
-For more complex examples navigate to the examples folder [https://github.com/KDAB/cxx-qt/tree/main/examples](https://github.com/KDAB/cxx-qt/tree/main/examples) where there are demonstrations of using threading, QQmlExtensionPlugin, and various other features.
+For more complex examples navigate to the [examples folder](./examples) where there are demonstrations of using threading, QQmlExtensionPlugin, and various other features.
+
+Below is an example of Rust code that exposes a QObject with two properties and four invokable methods to Qt.
 
 ```rust
 use cxx_qt::make_qobject;
 
+const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
+
 #[make_qobject]
 mod my_object {
+    use serde::{Deserialize, Serialize};
 
-    #[derive(Default)]
+    #[derive(Deserialize, Serialize)]
     pub struct Data {
         number: i32,
         string: String,
     }
 
+    impl Default for Data {
+        fn default() -> Self {
+            serde_json::from_str(super::DEFAULT_STR).unwrap()
+        }
+    }
+
     #[derive(Default)]
     struct RustObj;
 
-    use cxx_qt_lib::QString;
-
     impl RustObj {
         #[invokable]
-        fn increment_number(&self, cpp: &mut CppObj) {
+        fn increment(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
         }
 
         #[invokable]
-        fn say_hi(&self, string: &QString, number: i32) {
-            let s: String = string.into();
-            println!("Hi from Rust! String is '{}' and number is {}", s, number);
+        fn reset(&self, cpp: &mut CppObj) {
+            let data: Data = serde_json::from_str(super::DEFAULT_STR).unwrap();
+            cpp.grab_values_from_data(&data);
+        }
+
+        #[invokable]
+        fn serialize(&self, cpp: &mut CppObj) -> String {
+            let data = Data::from(cpp);
+            serde_json::to_string(&data).unwrap()
+        }
+
+        #[invokable]
+        fn grab_values(&self, cpp: &mut CppObj) {
+            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
+            let data: Data = serde_json::from_str(string).unwrap();
+            cpp.grab_values_from_data(&data);
         }
     }
 }
