@@ -23,7 +23,50 @@ the source for a crate which provides helper functions to be used in a `build.rs
 Initially the projects in the examples folder will also serve as a template for new projects should use cxx-qt.
 In future we might improve upon this with a custom CMake module for instance.
 
-## Building
+## Getting Started
+
+If you want to use CXX-Qt and see it in action visit our Getting Started guide in our Rust book [https://kdab.github.io/cxx-qt/book/getting-started/index.html](https://kdab.github.io/cxx-qt/book/getting-started/index.html).
+
+Here we go through the steps of creating a Rust project and exposing to QML. This results in the following Rust code which exposes two Q_PROPERTY's and two Q_INVOKABLE's.
+
+For more complex examples navigate to the examples folder [https://github.com/KDAB/cxx-qt/tree/main/examples](https://github.com/KDAB/cxx-qt/tree/main/examples) where there are demonstrations of using threading, QQmlExtensionPlugin, and various other features.
+
+```rust
+use cxx_qt::make_qobject;
+
+#[make_qobject]
+mod my_object {
+
+    #[derive(Default)]
+    pub struct Data {
+        number: i32,
+        string: String,
+    }
+
+    #[derive(Default)]
+    struct RustObj;
+
+    use cxx_qt_lib::QString;
+
+    impl RustObj {
+        #[invokable]
+        fn increment_number(&self, cpp: &mut CppObj) {
+            cpp.set_number(cpp.number() + 1);
+        }
+
+        #[invokable]
+        fn say_hi(&self, string: &QString, number: i32) {
+            let s: String = string.into();
+            println!("Hi from Rust! String is '{}' and number is {}", s, number);
+        }
+    }
+}
+```
+
+
+## Contributing to CXX-Qt
+
+### Building
 
 Ensure that you have the following installed
 
@@ -33,7 +76,7 @@ Ensure that you have the following installed
   * [Qt 5 or Qt 6 (experimental)](https://www.qt.io/)
   * [Rust](https://www.rust-lang.org/)
 
-## Compiling
+### Compiling
 In a cxx-qt project, the build system is based on CMake, which uses Cargo under the hood.
 Therefore, unlike a typical Rust project, CMake must be used to build cxx-qt.
 
@@ -44,17 +87,17 @@ cmake ../
 cmake --build . -j$(nproc)
 ```
 
-## Run the basic QML example
+### Run the basic QML example
 
 ```bash
 ./build/examples/qml_minimal/example_qml_minimal
 ```
 
-## Book
+### Book
 
 You can build the book using `mdbook serve` from the `book` folder, you should install `mdbook` and `mdbook-linkcheck` from cargo.
 
-## Testing
+### Testing
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
 For testing the book, it assumes that `mdbook` and `mdbook-linkcheck` from cargo have been installed.
