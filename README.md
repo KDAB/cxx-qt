@@ -97,6 +97,7 @@ Ensure that you have the following installed
   * [CMake v3.16+](https://cmake.org/)
   * [Qt 5 or Qt 6 (experimental)](https://www.qt.io/)
   * [Rust](https://www.rust-lang.org/)
+  * Linux 64-bit x86 - currently we only support Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future
 
 ### Compiling
 In a cxx-qt project, the build system is based on CMake, which uses Cargo under the hood.

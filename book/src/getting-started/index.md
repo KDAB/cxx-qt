@@ -19,4 +19,6 @@ Once we've done that, its time to [expose the defined QObject to QML](./3-exposi
 Followed by actually [defining our GUI using QML](./4-qml-gui.md).
 And finally we [integrate our code with CMake](./5-cmake-integration.md) so we can build and run it.
 
+Note we only support 64-bit x86 Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future.
+
 So, without further ado - let's [Get Started](./1-qobjects-in-rust.md)
