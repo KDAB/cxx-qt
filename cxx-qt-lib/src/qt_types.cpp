@@ -24,6 +24,18 @@ qcolorInitFromQColor(const QColor& color)
   return std::make_unique<QColor>(color);
 }
 
+QDate
+qdateInitDefault()
+{
+  return QDate();
+}
+
+QDate
+qdateInit(int y, int m, int d)
+{
+  return QDate(y, m, d);
+}
+
 QPoint
 qpointInitDefault()
 {

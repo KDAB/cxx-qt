@@ -4,61 +4,57 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
 
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+
+        type QDate = super::QDate;
+
+        /// Returns the year of this date.
+        fn year(self: &QDate) -> i32;
+        /// Returns the month-number for the date.
+        ///
+        /// Numbers the months of the year starting with 1 for the first
+        fn month(self: &QDate) -> i32;
+        /// Returns the day of the month for this date.
+        fn day(self: &QDate) -> i32;
+
+        /// Sets this to represent the date, in the Gregorian calendar, with the given year, month and day numbers.
+        /// Returns true if the resulting date is valid, otherwise it sets this to represent an invalid date and returns false.
+        #[rust_name = "set_date"]
+        fn setDate(self: &mut QDate, y: i32, m: i32, d: i32) -> bool;
+
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qdate_init_default"]
+        fn qdateInitDefault() -> QDate;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qdate_init"]
+        fn qdateInit(y: i32, m: i32, d: i32) -> QDate;
+    }
+}
+
+/// The QDate class provides date functions.
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
 }
 
-extern "C" {
-    #[link_name = "cxxqt1$qdate$init"]
-    fn qdate_init(this: &mut MaybeUninit<QDate>, y: i32, m: i32, d: i32);
-    #[link_name = "cxxqt1$qdate$year"]
-    fn qdate_year(this: &QDate) -> i32;
-    #[link_name = "cxxqt1$qdate$month"]
-    fn qdate_month(this: &QDate) -> i32;
-    #[link_name = "cxxqt1$qdate$day"]
-    fn qdate_day(this: &QDate) -> i32;
-    #[link_name = "cxxqt1$qdate$set$date"]
-    fn qdate_set_date(this: &mut QDate, y: i32, m: i32, d: i32) -> bool;
-}
-
 impl Default for QDate {
+    /// Constructs a null date. Null dates are invalid.
     fn default() -> Self {
-        Self::new(0, 0, 0)
+        ffi::qdate_init_default()
     }
 }
 
 impl QDate {
+    /// Constructs a date with year y, month m and day d.
     pub fn new(y: i32, m: i32, d: i32) -> Self {
-        let mut s = MaybeUninit::<QDate>::uninit();
-
-        // Safety:
-        //
-        // Static checks on the C++ side ensure that QDate has the
-        // same binary footprint in C++ and Rust.
-        unsafe {
-            qdate_init(&mut s, y, m, d);
-            s.assume_init()
-        }
-    }
-
-    pub fn year(&self) -> i32 {
-        unsafe { qdate_year(self) }
-    }
-
-    pub fn month(&self) -> i32 {
-        unsafe { qdate_month(self) }
-    }
-
-    pub fn day(&self) -> i32 {
-        unsafe { qdate_day(self) }
-    }
-
-    pub fn set_date(&mut self, y: i32, m: i32, d: i32) -> bool {
-        unsafe { qdate_set_date(self, y, m, d) }
+        ffi::qdate_init(y, m, d)
     }
 }
 
@@ -70,7 +66,9 @@ unsafe impl ExternType for QDate {
     type Kind = cxx::kind::Trivial;
 }
 
+#[doc(hidden)]
 impl From<&QDate> for QDate {
+    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qdate: &QDate) -> Self {
         *qdate
     }
