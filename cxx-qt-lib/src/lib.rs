@@ -52,6 +52,10 @@ pub use map_qt_value::*;
 pub const QT_TYPES_HEADER: &str = include_str!("../include/qt_types.h");
 pub const QT_TYPES_SOURCE: &str = include_str!("qt_types.cpp");
 
+pub const QCOLOR_CXX_HEADER: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qcolor_cxx.h"));
+pub const QCOLOR_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qcolor_cxx.cpp"));
 pub const QPOINT_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qpoint_cxx.h"));
 pub const QPOINT_CXX_SOURCE: &str =
