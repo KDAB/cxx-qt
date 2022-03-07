@@ -122,48 +122,12 @@ static_assert(sizeof(char) == sizeof(std::uint8_t));
 
 extern "C"
 {
-  void cxxqt1$qstring$init$from$rust$string(std::unique_ptr<QString>* ptr,
-                                            const char* data,
-                                            std::size_t len) noexcept
-  {
-    new (ptr)
-      std::unique_ptr<QString>(new QString(QString::fromUtf8(data, len)));
-  }
-
   void cxxqt1$qstring$to$rust$string(const QString& qt,
                                      rust::String& rust) noexcept
   {
     static_assert(sizeof(char16_t) == sizeof(QChar));
     rust = rust::String(reinterpret_cast<const char16_t*>(qt.constData()),
                         qt.size());
-  }
-
-  void cxxqt1$unique_ptr$qstring$null(std::unique_ptr<QString>* ptr) noexcept
-  {
-    new (ptr) std::unique_ptr<QString>();
-  }
-
-  void cxxqt1$unique_ptr$qstring$raw(std::unique_ptr<QString>* ptr,
-                                     QString* raw) noexcept
-  {
-    new (ptr) std::unique_ptr<QString>(raw);
-  }
-
-  const QString* cxxqt1$unique_ptr$qstring$get(
-    const std::unique_ptr<QString>& ptr) noexcept
-  {
-    return ptr.get();
-  }
-
-  QString* cxxqt1$unique_ptr$qstring$release(
-    std::unique_ptr<QString>& ptr) noexcept
-  {
-    return ptr.release();
-  }
-
-  void cxxqt1$unique_ptr$qstring$drop(std::unique_ptr<QString>* ptr) noexcept
-  {
-    ptr->~unique_ptr();
   }
 }
 

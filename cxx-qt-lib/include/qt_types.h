@@ -9,6 +9,9 @@
 
 #include <QColor>
 #include <QPoint>
+#include <QString>
+
+#include "rust/cxx.h"
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -25,6 +28,11 @@ QPoint
 qpointInitDefault();
 QPoint
 qpointInit(int x, int y);
+
+std::unique_ptr<QString>
+qstringInitFromRustString(rust::Str string);
+rust::String
+qstringToRustString(const QString& string);
 
 }
 }
