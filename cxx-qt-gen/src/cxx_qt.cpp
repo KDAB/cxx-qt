@@ -237,36 +237,6 @@ extern "C"
 
 namespace {
 
-// We do these checks to ensure that we can safely store a QRect
-// inside a block of memory that Rust thinks contains four i32-s.
-// We also make sure that i32 and int are equivalent.
-
-static_assert(sizeof(int) == 4);
-static_assert(alignof(int) <= 4);
-
-static_assert(sizeof(QRect) == 16);
-static_assert(alignof(QRect) <= 16);
-
-// Our Rust code assumes that QRect is trivial. Because it is trivial to move,
-// we don't need to use Pin. Because it is trivial to destruct we do not
-// need a special C++ function to destruct the object.
-
-static_assert(std::is_trivially_move_assignable<QRect>::value);
-static_assert(std::is_trivially_copy_assignable<QRect>::value);
-static_assert(std::is_trivially_destructible<QRect>::value);
-
-} // namespace
-
-extern "C"
-{
-  void cxxqt1$qrect$init(QRect* self, int xp, int yp, int w, int h) noexcept
-  {
-    new (self) QRect(xp, yp, w, h);
-  }
-}
-
-namespace {
-
 // We do these checks to ensure that we can safely store a QSizeF
 // inside a block of memory that Rust thinks contains two f64-s.
 // We also make sure that f64 and qreal are equivalent.

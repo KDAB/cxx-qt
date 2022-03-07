@@ -66,6 +66,10 @@ pub const QPOINTF_CXX_HEADER: &str = include_str!(concat!(
 ));
 pub const QPOINTF_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qpointf_cxx.cpp"));
+pub const QRECT_CXX_HEADER: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qrect_cxx.h"));
+pub const QRECT_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qrect_cxx.cpp"));
 pub const QSTRING_CXX_HEADER: &str = include_str!(concat!(
     env!("OUT_DIR"),
     "/cxx-qt-lib/include/qstring_cxx.h"

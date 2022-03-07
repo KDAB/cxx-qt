@@ -10,6 +10,7 @@
 #include <QColor>
 #include <QPoint>
 #include <QPointF>
+#include <QRect>
 #include <QString>
 
 #include "rust/cxx.h"
@@ -34,6 +35,11 @@ QPointF
 qpointfInitDefault();
 QPointF
 qpointfInit(qreal x, qreal y);
+
+QRect
+qrectInitDefault();
+QRect
+qrectInit(int x, int y, int w, int h);
 
 std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string);
