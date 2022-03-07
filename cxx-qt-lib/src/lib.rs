@@ -49,6 +49,9 @@ pub use qvariant::{QVariant, Variant, VariantValue};
 mod map_qt_value;
 pub use map_qt_value::*;
 
+pub const QT_TYPES_HEADER: &str = include_str!("../include/qt_types.h");
+pub const QT_TYPES_SOURCE: &str = include_str!("qt_types.cpp");
+
 pub trait PropertyChangeHandler<C, P> {
     fn handle_property_change(&mut self, cpp: &mut C, property: P);
 }
