@@ -389,6 +389,12 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
     ));
 
     paths.append(&mut write_cxx_qt_lib_set(
+        "qcolor_cxx",
+        &cxx_qt_lib_target_dir,
+        cxx_qt_lib::QCOLOR_CXX_HEADER,
+        cxx_qt_lib::QCOLOR_CXX_SOURCE,
+    ));
+    paths.append(&mut write_cxx_qt_lib_set(
         "qpoint_cxx",
         &cxx_qt_lib_target_dir,
         cxx_qt_lib::QPOINT_CXX_HEADER,

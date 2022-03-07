@@ -9,6 +9,21 @@
 namespace rust {
 namespace cxxqtlib1 {
 
+std::unique_ptr<QColor>
+qcolorInitFromRgba(std::int32_t r,
+                   std::int32_t g,
+                   std::int32_t b,
+                   std::int32_t a)
+{
+  return std::make_unique<QColor>(r, g, b, a);
+}
+
+std::unique_ptr<QColor>
+qcolorInitFromQColor(const QColor& color)
+{
+  return std::make_unique<QColor>(color);
+}
+
 QPoint
 qpointInitDefault()
 {
