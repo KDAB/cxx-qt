@@ -4,8 +4,48 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
 
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+
+        type QRect = super::QRect;
+
+        /// Returns the height of the rectangle.
+        fn height(self: &QRect) -> i32;
+        /// Returns the width of the rectangle.
+        fn width(self: &QRect) -> i32;
+        /// Returns the x-coordinate of the rectangle's left edge.
+        fn x(self: &QRect) -> i32;
+        /// Returns the y-coordinate of the rectangle's top edge.
+        fn y(self: &QRect) -> i32;
+
+        /// Sets the height of the rectangle to the given height. The bottom edge is changed, but not the top one.
+        #[rust_name = "set_height"]
+        fn setHeight(self: &mut QRect, h: i32);
+        /// Sets the width of the rectangle to the given width. The right edge is changed, but not the left one.
+        #[rust_name = "set_width"]
+        fn setWidth(self: &mut QRect, w: i32);
+        /// Sets the left edge of the rectangle to the given x coordinate. May change the width, but will never change the right edge of the rectangle.
+        #[rust_name = "set_x"]
+        fn setX(self: &mut QRect, x: i32);
+        /// Sets the top edge of the rectangle to the given y coordinate. May change the height, but will never change the bottom edge of the rectangle.
+        #[rust_name = "set_y"]
+        fn setY(self: &mut QRect, y: i32);
+
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qrect_init_default"]
+        fn qrectInitDefault() -> QRect;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qrect_init"]
+        fn qrectInit(x: i32, y: i32, width: i32, height: i32) -> QRect;
+    }
+}
+
+/// The QRect struct defines a rectangle in the plane using integer precision.
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QRect {
@@ -16,63 +56,17 @@ pub struct QRect {
     y2: i32,
 }
 
-extern "C" {
-    #[link_name = "cxxqt1$qrect$init"]
-    fn qrect_init(this: &mut MaybeUninit<QRect>, xp: i32, yp: i32, w: i32, h: i32);
+impl QRect {
+    /// Constructs a rectangle with (x, y) as its top-left corner and the given width and height.
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+        ffi::qrect_init(x, y, width, height)
+    }
 }
 
 impl Default for QRect {
+    /// Constructs a null rectangle.
     fn default() -> Self {
-        Self::new(0, 0, 0, 0)
-    }
-}
-
-impl QRect {
-    pub fn new(xp: i32, yp: i32, w: i32, h: i32) -> Self {
-        let mut s = MaybeUninit::<QRect>::uninit();
-
-        // Safety:
-        //
-        // Static checks on the C++ side ensure that QRect has the
-        // same binary footprint in C++ and Rust.
-        unsafe {
-            qrect_init(&mut s, xp, yp, w, h);
-            s.assume_init()
-        }
-    }
-
-    pub fn height(&self) -> i32 {
-        self.y2 - self.y1 + 1
-    }
-
-    pub fn set_height(&mut self, h: i32) {
-        self.y2 = self.y1 + h - 1;
-    }
-
-    pub fn set_width(&mut self, w: i32) {
-        self.x2 = self.x1 + w - 1;
-    }
-
-    /// Note that this adjusts the width as well as the left edge
-    pub fn set_x(&mut self, x: i32) {
-        self.x1 = x;
-    }
-
-    /// Note that this adjusts the height as well as the top edge
-    pub fn set_y(&mut self, y: i32) {
-        self.y1 = y;
-    }
-
-    pub fn width(&self) -> i32 {
-        self.x2 - self.x1 + 1
-    }
-
-    pub fn x(&self) -> i32 {
-        self.x1
-    }
-
-    pub fn y(&self) -> i32 {
-        self.y1
+        ffi::qrect_init_default()
     }
 }
 
@@ -84,7 +78,9 @@ unsafe impl ExternType for QRect {
     type Kind = cxx::kind::Trivial;
 }
 
+#[doc(hidden)]
 impl From<&QRect> for QRect {
+    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qrect: &QRect) -> Self {
         *qrect
     }
