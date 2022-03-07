@@ -60,6 +60,12 @@ pub const QPOINT_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qpoint_cxx.h"));
 pub const QPOINT_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qpoint_cxx.cpp"));
+pub const QPOINTF_CXX_HEADER: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/cxx-qt-lib/include/qpointf_cxx.h"
+));
+pub const QPOINTF_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qpointf_cxx.cpp"));
 pub const QSTRING_CXX_HEADER: &str = include_str!(concat!(
     env!("OUT_DIR"),
     "/cxx-qt-lib/include/qstring_cxx.h"

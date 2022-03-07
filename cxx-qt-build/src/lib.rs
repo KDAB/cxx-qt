@@ -401,6 +401,12 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
         cxx_qt_lib::QPOINT_CXX_SOURCE,
     ));
     paths.append(&mut write_cxx_qt_lib_set(
+        "qpointf_cxx",
+        &cxx_qt_lib_target_dir,
+        cxx_qt_lib::QPOINTF_CXX_HEADER,
+        cxx_qt_lib::QPOINTF_CXX_SOURCE,
+    ));
+    paths.append(&mut write_cxx_qt_lib_set(
         "qstring_cxx",
         &cxx_qt_lib_target_dir,
         cxx_qt_lib::QSTRING_CXX_HEADER,
