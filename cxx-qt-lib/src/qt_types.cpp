@@ -60,6 +60,18 @@ qrectInit(int x, int y, int w, int h)
   return QRect(x, y, w, h);
 }
 
+QRectF
+qrectfInitDefault()
+{
+  return QRectF();
+}
+
+QRectF
+qrectfInit(qreal x, qreal y, qreal w, qreal h)
+{
+  return QRectF(x, y, w, h);
+}
+
 std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string)
 {

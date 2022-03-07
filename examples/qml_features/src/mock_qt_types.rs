@@ -169,20 +169,24 @@ mod mock_qt_types {
         #[invokable]
         fn test_rectf_property(&self, cpp: &mut CppObj) {
             let mut rect = *cpp.rectf();
+            // Copy width and height, otherwise when we adjust the x and y it affects the width and height
+            let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
             rect.set_y(rect.y() * 3.0);
-            rect.set_width(rect.width() * 4.0);
-            rect.set_height(rect.height() * 5.0);
+            rect.set_width(width * 4.0);
+            rect.set_height(height * 5.0);
             cpp.set_rectf(&rect);
         }
 
         #[invokable]
         fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
             let mut rect = *rect;
+            // Copy width and height, otherwise when we adjust the x and y it affects the width and height
+            let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
             rect.set_y(rect.y() * 3.0);
-            rect.set_width(rect.width() * 4.0);
-            rect.set_height(rect.height() * 5.0);
+            rect.set_width(width * 4.0);
+            rect.set_height(height * 5.0);
             rect
         }
 

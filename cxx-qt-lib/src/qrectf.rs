@@ -4,8 +4,48 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
 
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+
+        type QRectF = super::QRectF;
+
+        /// Returns the height of the rectangle.
+        fn height(self: &QRectF) -> f64;
+        /// Returns the width of the rectangle.
+        fn width(self: &QRectF) -> f64;
+        /// Returns the x-coordinate of the rectangle's left edge.
+        fn x(self: &QRectF) -> f64;
+        /// Returns the y-coordinate of the rectangle's top edge.
+        fn y(self: &QRectF) -> f64;
+
+        /// Sets the height of the rectangle to the given height. The bottom edge is changed, but not the top one.
+        #[rust_name = "set_height"]
+        fn setHeight(self: &mut QRectF, h: f64);
+        /// Sets the width of the rectangle to the given width. The right edge is changed, but not the left one.
+        #[rust_name = "set_width"]
+        fn setWidth(self: &mut QRectF, w: f64);
+        /// Sets the left edge of the rectangle to the given x coordinate. May change the width, but will never change the right edge of the rectangle.
+        #[rust_name = "set_x"]
+        fn setX(self: &mut QRectF, x: f64);
+        /// Sets the top edge of the rectangle to the given y coordinate. May change the height, but will never change the bottom edge of the rectangle.
+        #[rust_name = "set_y"]
+        fn setY(self: &mut QRectF, y: f64);
+
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qrectf_init_default"]
+        fn qrectfInitDefault() -> QRectF;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qrectf_init"]
+        fn qrectfInit(x: f64, y: f64, width: f64, height: f64) -> QRectF;
+    }
+}
+
+/// The QRectF struct defines a rectangle in the plane using floating point precision.
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QRectF {
@@ -15,61 +55,17 @@ pub struct QRectF {
     h: f64,
 }
 
-extern "C" {
-    #[link_name = "cxxqt1$qrectf$init"]
-    fn qrectf_init(this: &mut MaybeUninit<QRectF>, xp: f64, yp: f64, w: f64, h: f64);
+impl QRectF {
+    /// Constructs a rectangle with (x, y) as its top-left corner and the given width and height.
+    pub fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
+        ffi::qrectf_init(x, y, width, height)
+    }
 }
 
 impl Default for QRectF {
+    /// Constructs a null rectangle.
     fn default() -> Self {
-        Self::new(0.0, 0.0, 0.0, 0.0)
-    }
-}
-
-impl QRectF {
-    pub fn new(xp: f64, yp: f64, w: f64, h: f64) -> Self {
-        let mut s = MaybeUninit::<QRectF>::uninit();
-
-        // Safety:
-        //
-        // Static checks on the C++ side ensure that QRectF has the
-        // same binary footprint in C++ and Rust.
-        unsafe {
-            qrectf_init(&mut s, xp, yp, w, h);
-            s.assume_init()
-        }
-    }
-
-    pub fn height(&self) -> f64 {
-        self.h
-    }
-
-    pub fn set_height(&mut self, h: f64) {
-        self.h = h;
-    }
-
-    pub fn set_width(&mut self, w: f64) {
-        self.w = w;
-    }
-
-    pub fn set_x(&mut self, x: f64) {
-        self.xp = x;
-    }
-
-    pub fn set_y(&mut self, y: f64) {
-        self.yp = y;
-    }
-
-    pub fn width(&self) -> f64 {
-        self.w
-    }
-
-    pub fn x(&self) -> f64 {
-        self.xp
-    }
-
-    pub fn y(&self) -> f64 {
-        self.yp
+        ffi::qrectf_init_default()
     }
 }
 
@@ -81,7 +77,9 @@ unsafe impl ExternType for QRectF {
     type Kind = cxx::kind::Trivial;
 }
 
+#[doc(hidden)]
 impl From<&QRectF> for QRectF {
+    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qrectf: &QRectF) -> Self {
         *qrectf
     }
