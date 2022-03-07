@@ -8,6 +8,7 @@
 #include <memory>
 
 #include <QColor>
+#include <QDate>
 #include <QPoint>
 #include <QPointF>
 #include <QRect>
@@ -26,6 +27,11 @@ qcolorInitFromRgba(std::int32_t r,
                    std::int32_t a);
 std::unique_ptr<QColor>
 qcolorInitFromQColor(const QColor& color);
+
+QDate
+qdateInitDefault();
+QDate
+qdateInit(int y, int m, int d);
 
 QPoint
 qpointInitDefault();

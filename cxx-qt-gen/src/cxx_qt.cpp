@@ -133,47 +133,6 @@ extern "C"
 
 namespace {
 
-// We do these checks to ensure that we can safely store a QDate
-// inside a block of memory that Rust thinks contains one i64.
-// We also make sure that i64 and qint64 are equivalent.
-
-static_assert(sizeof(qint64) == 8);
-static_assert(alignof(qint64) <= 8);
-
-static_assert(sizeof(QDate) == 8);
-static_assert(alignof(QDate) <= 8);
-
-// Our Rust code assumes that QDate is trivial. Because it is trivial to move,
-// we don't need to use Pin. Because it is trivial to destruct we do not
-// need a special C++ function to destruct the object.
-
-static_assert(std::is_trivially_move_assignable<QDate>::value);
-static_assert(std::is_trivially_copy_assignable<QDate>::value);
-static_assert(std::is_trivially_destructible<QDate>::value);
-
-} // namespace
-
-extern "C"
-{
-  void cxxqt1$qdate$init(QDate* self, qint32 y, qint32 m, qint32 d) noexcept
-  {
-    new (self) QDate(y, m, d);
-  }
-
-  qint32 cxxqt1$qdate$year(const QDate& self) noexcept { return self.year(); }
-
-  qint32 cxxqt1$qdate$month(const QDate& self) noexcept { return self.month(); }
-
-  qint32 cxxqt1$qdate$day(const QDate& self) noexcept { return self.day(); }
-
-  bool cxxqt1$qdate$set$date(QDate& self, qint32 y, qint32 m, qint32 d) noexcept
-  {
-    return self.setDate(y, m, d);
-  }
-}
-
-namespace {
-
 // We do these checks to ensure that we can safely store a QSize
 // inside a block of memory that Rust thinks contains two i32-s.
 // We also make sure that i32 and int are equivalent.
