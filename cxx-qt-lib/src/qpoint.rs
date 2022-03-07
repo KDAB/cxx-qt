@@ -4,8 +4,38 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
 
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+
+        type QPoint = super::QPoint;
+
+        /// Returns the x coordinate of this point.
+        fn x(self: &QPoint) -> i32;
+        /// Returns the y coordinate of this point.
+        fn y(self: &QPoint) -> i32;
+
+        /// Sets the x coordinate of this point to the given x coordinate.
+        #[rust_name = "set_x"]
+        fn setX(self: &mut QPoint, x: i32);
+        /// Sets the y coordinate of this point to the given y coordinate.
+        #[rust_name = "set_y"]
+        fn setY(self: &mut QPoint, y: i32);
+
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qpoint_init_default"]
+        fn qpointInitDefault() -> QPoint;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qpoint_init"]
+        fn qpointInit(x: i32, y: i32) -> QPoint;
+    }
+}
+
+/// The QPoint struct defines a point in the plane using integer precision.
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QPoint {
@@ -13,45 +43,17 @@ pub struct QPoint {
     y: i32,
 }
 
-extern "C" {
-    #[link_name = "cxxqt1$qpoint$init"]
-    fn qpoint_init(this: &mut MaybeUninit<QPoint>, x: i32, y: i32);
+impl QPoint {
+    /// Constructs a point with the given coordinates (x, y).
+    pub fn new(x: i32, y: i32) -> Self {
+        ffi::qpoint_init(x, y)
+    }
 }
 
 impl Default for QPoint {
+    /// Constructs a null point, i.e. with coordinates (0, 0)
     fn default() -> Self {
-        Self::new(0, 0)
-    }
-}
-
-impl QPoint {
-    pub fn new(x: i32, y: i32) -> Self {
-        let mut s = MaybeUninit::<QPoint>::uninit();
-
-        // Safety:
-        //
-        // Static checks on the C++ side ensure that QPointF has the
-        // same binary footprint in C++ and Rust.
-        unsafe {
-            qpoint_init(&mut s, x, y);
-            s.assume_init()
-        }
-    }
-
-    pub fn set_x(&mut self, x: i32) {
-        self.x = x;
-    }
-
-    pub fn set_y(&mut self, y: i32) {
-        self.y = y;
-    }
-
-    pub fn x(&self) -> i32 {
-        self.x
-    }
-
-    pub fn y(&self) -> i32 {
-        self.y
+        ffi::qpoint_init_default()
     }
 }
 
@@ -63,7 +65,9 @@ unsafe impl ExternType for QPoint {
     type Kind = cxx::kind::Trivial;
 }
 
+#[doc(hidden)]
 impl From<&QPoint> for QPoint {
+    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qpoint: &QPoint) -> Self {
         *qpoint
     }

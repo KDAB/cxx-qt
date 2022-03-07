@@ -207,35 +207,6 @@ extern "C"
     return self.setDate(y, m, d);
   }
 }
-namespace {
-
-// We do these checks to ensure that we can safely store a QPoint
-// inside a block of memory that Rust thinks contains two i32-s.
-// We also make sure that i32 and int are equivalent.
-
-static_assert(sizeof(int) == 4);
-static_assert(alignof(int) <= 4);
-
-static_assert(sizeof(QPoint) == 8);
-static_assert(alignof(QPoint) <= 8);
-
-// Our Rust code assumes that QPoint is trivial. Because it is trivial to move,
-// we don't need to use Pin. Because it is trivial to destruct we do not
-// need a special C++ function to destruct the object.
-
-static_assert(std::is_trivially_move_assignable<QPoint>::value);
-static_assert(std::is_trivially_copy_assignable<QPoint>::value);
-static_assert(std::is_trivially_destructible<QPoint>::value);
-
-} // namespace
-
-extern "C"
-{
-  void cxxqt1$qpoint$init(QPoint* self, int x, int y) noexcept
-  {
-    new (self) QPoint(x, y);
-  }
-}
 
 namespace {
 
