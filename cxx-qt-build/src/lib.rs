@@ -388,6 +388,13 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
         cxx_qt_lib::QT_TYPES_SOURCE,
     ));
 
+    paths.append(&mut write_cxx_qt_lib_set(
+        "qpoint_cxx",
+        &cxx_qt_lib_target_dir,
+        cxx_qt_lib::QPOINT_CXX_HEADER,
+        cxx_qt_lib::QPOINT_CXX_SOURCE,
+    ));
+
     paths
 }
 
@@ -424,6 +431,7 @@ pub struct CxxQtBuilder {
     cpp_format: Option<ClangFormatStyle>,
     cpp_namespace_prefix: Vec<&'static str>,
     rust_sources: Vec<&'static str>,
+    qt_enabled: bool,
 }
 
 impl CxxQtBuilder {
@@ -434,6 +442,7 @@ impl CxxQtBuilder {
             cpp_format: None,
             cpp_namespace_prefix: vec!["cxx_qt"],
             rust_sources: vec![],
+            qt_enabled: true,
         }
     }
 
@@ -461,6 +470,14 @@ impl CxxQtBuilder {
     /// Defaults to `cxx_qt`.
     pub fn cpp_namespace_prefix(mut self, namespace: Vec<&'static str>) -> Self {
         self.cpp_namespace_prefix = namespace;
+        self
+    }
+
+    /// Choose to disable Qt support
+    ///
+    /// This will disable including cxx-qt-lib headers and prevent qqmlextensionplugin from being built.
+    pub fn disable_qt(mut self) -> Self {
+        self.qt_enabled = false;
         self
     }
 
@@ -505,16 +522,19 @@ impl CxxQtBuilder {
             &self.cpp_namespace_prefix,
         );
 
-        // Write any qqmlextensionplugin if there is one and read any C++ files it creates
-        cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));
-
         // TODO: in large projects where where CXX-Qt is used in multiple individual
         // components that end up being linked together, having these same static
         // files in each one could cause issues.
         cpp_paths.append(&mut write_static_headers());
 
-        // Write the cxx-qt-lib sources into the folder
-        cpp_paths.append(&mut write_cxx_qt_lib_sources());
+        // Check if we have Qt support enabled
+        if self.qt_enabled {
+            // Write any qqmlextensionplugin if there is one and read any C++ files it creates
+            cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));
+
+            // Write the cxx-qt-lib sources into the folder
+            cpp_paths.append(&mut write_cxx_qt_lib_sources());
+        }
 
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
         write_cpp_sources_list(&cpp_paths);

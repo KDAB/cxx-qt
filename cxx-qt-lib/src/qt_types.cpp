@@ -5,3 +5,21 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "cxx-qt-lib/include/qt_types.h"
+
+namespace rust {
+namespace cxxqtlib1 {
+
+QPoint
+qpointInitDefault()
+{
+  return QPoint();
+}
+
+QPoint
+qpointInit(int x, int y)
+{
+  return QPoint(x, y);
+}
+
+}
+}

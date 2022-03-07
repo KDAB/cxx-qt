@@ -25,8 +25,7 @@ fn main() {
     let src_path = format!("{}/cxx-qt-lib/src", dir_out);
     std::fs::create_dir_all(&src_path).expect("Could not create cxx-qt-lib sc dir");
 
-    let qfiles: Vec<&str> = vec![];
-
+    let qfiles = vec!["qpoint"];
     for qfile in qfiles {
         // Read the rust source files
         let path = format!("{}/src/{}.rs", dir_manifest, qfile);
