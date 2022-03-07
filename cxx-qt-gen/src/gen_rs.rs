@@ -469,6 +469,7 @@ pub fn generate_qobject_cxx(
 
                 type #class_name;
 
+                include!("cxx-qt-lib/include/qt_types.h");
                 #[namespace = ""]
                 type QColor = cxx_qt_lib::QColor;
                 #[namespace = ""]
