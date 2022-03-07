@@ -36,5 +36,21 @@ qpointInit(int x, int y)
   return QPoint(x, y);
 }
 
+std::unique_ptr<QString>
+qstringInitFromRustString(rust::Str string)
+{
+  // Note that rust::Str here is borrowed
+  // and we convert back from UTF-8 to UTF-16
+  return std::make_unique<QString>(
+    QString::fromStdString(static_cast<std::string>(string)));
+}
+
+rust::String
+qstringToRustString(const QString& string)
+{
+  // Note that this changes UTF-16 to UTF-8
+  return rust::String(string.toStdString());
+}
+
 }
 }
