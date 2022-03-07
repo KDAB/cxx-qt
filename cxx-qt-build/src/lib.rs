@@ -347,6 +347,50 @@ fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec
     paths
 }
 
+/// Write our a given cxx-qt-lib header and source set to the given folder
+fn write_cxx_qt_lib_set(
+    file_name: &str,
+    target_dir: &str,
+    header: &str,
+    source: &str,
+) -> Vec<String> {
+    let mut paths = vec![];
+    let path_h = format!("{}/include/{}.h", target_dir, file_name);
+    let path_cpp = format!("{}/src/{}.cpp", target_dir, file_name);
+
+    let mut file = std::fs::File::create(&path_h).expect("Could not create header file");
+    file.write_all(header.as_bytes())
+        .expect("Could not write header file");
+    paths.push(path_h);
+
+    let mut file = std::fs::File::create(&path_cpp).expect("Could not create source file");
+    file.write_all(source.as_bytes())
+        .expect("Could not write source file");
+    paths.push(path_cpp);
+
+    paths
+}
+
+/// Find all the cxx-qt-lib sources and write them to the target directory
+fn write_cxx_qt_lib_sources() -> Vec<String> {
+    let cxx_qt_lib_target_dir = format!("{}/target/cxx-qt-lib", manifest_dir());
+    let cxx_qt_lib_include_dir = format!("{}/include", cxx_qt_lib_target_dir);
+    let cxx_qt_lib_src_dir = format!("{}/src", cxx_qt_lib_target_dir);
+    std::fs::create_dir_all(&cxx_qt_lib_include_dir).unwrap();
+    std::fs::create_dir_all(&cxx_qt_lib_src_dir).unwrap();
+
+    let mut paths = vec![];
+
+    paths.append(&mut write_cxx_qt_lib_set(
+        "qt_types",
+        &cxx_qt_lib_target_dir,
+        cxx_qt_lib::QT_TYPES_HEADER,
+        cxx_qt_lib::QT_TYPES_SOURCE,
+    ));
+
+    paths
+}
+
 /// Write out the static header files for both the cxx and cxx-qt libraries, returns a list
 /// of paths for the written files that need to be sent back to CMake for processing by MOC
 fn write_static_headers() -> Vec<String> {
@@ -468,6 +512,9 @@ impl CxxQtBuilder {
         // components that end up being linked together, having these same static
         // files in each one could cause issues.
         cpp_paths.append(&mut write_static_headers());
+
+        // Write the cxx-qt-lib sources into the folder
+        cpp_paths.append(&mut write_cxx_qt_lib_sources());
 
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
         write_cpp_sources_list(&cpp_paths);

@@ -58,10 +58,11 @@ endfunction()
 #
 # APP_NAME is the executable / library name which include dirs are being set to
 function(cxx_qt_include APP_NAME)
-    # FIXME: should this be target/cxx-qt-gen/include?
+    # TODO: used by only the tests as they have include/ dir in their source? so move to them
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    # FIXME: should this be target/cxx-qt-gen/src ?
+    # Include the target folder so that cxx-qt-gen and cxx-qt-lib can be included
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target")
+    # Our cxx_qt and cxx headers are in this folder and need to be included
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/statics")
 endfunction()
 
