@@ -448,6 +448,12 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
         cxx_qt_lib::QTIME_CXX_HEADER,
         cxx_qt_lib::QTIME_CXX_SOURCE,
     ));
+    paths.append(&mut write_cxx_qt_lib_set(
+        "qurl_cxx",
+        &cxx_qt_lib_target_dir,
+        cxx_qt_lib::QURL_CXX_HEADER,
+        cxx_qt_lib::QURL_CXX_SOURCE,
+    ));
 
     paths
 }

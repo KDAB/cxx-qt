@@ -136,5 +136,27 @@ qtimeInit(int h, int m, int s, int ms)
   return QTime(h, m, s, ms);
 }
 
+std::unique_ptr<QUrl>
+qurlInitFromString(rust::Str string)
+{
+  // Note that rust::Str here is borrowed
+  // and we convert back from UTF-8 to UTF-16
+  return std::make_unique<QUrl>(
+    QString::fromStdString(static_cast<std::string>(string)));
+}
+
+std::unique_ptr<QUrl>
+qurlInitFromQUrl(const QUrl& url)
+{
+  return std::make_unique<QUrl>(url);
+}
+
+rust::String
+qurlToRustString(const QUrl& url)
+{
+  // Note that this changes UTF-16 to UTF-8
+  return rust::String(url.toString().toStdString());
+}
+
 }
 }
