@@ -75,15 +75,23 @@ function(cxx_qt_link_rustlib APP_NAME)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
         set(CARGO_CMD cargo build)
         set(TARGET_DIR "debug")
+        # Hack around Rust standard library linked with Release version of C runtime
+        # Refer to https://github.com/robmikh/linkerissuerepro for explanation
+        if(WIN32)
+            set_property(TARGET "${APP_NAME}" PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        endif()
     else ()
         set(CARGO_CMD cargo build --release)
         set(TARGET_DIR "release")
     endif ()
 
-    # We also list the .a produced by cargo as a dependency so that cargo gets a
-    # chance to rebuild the .a every time that a cmake build is run.
-    # TODO: use correct binary name on windows
-    set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/librust.a")
+    # We also list the static library produced by cargo as a dependency so that cargo gets a
+    # chance to rebuild it every time that a cmake build is run.
+    if(WIN32)
+        set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/rust.lib")
+    else()
+        set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/librust.a")
+    endif()
     add_custom_target(
         "${APP_NAME}_rustlib"
         COMMAND ${CARGO_CMD}
@@ -92,6 +100,8 @@ function(cxx_qt_link_rustlib APP_NAME)
     add_dependencies(${APP_NAME} "${APP_NAME}_rustlib")
 
     # The Rust lib also needs to be linked to pthread and dl
-    # TODO: figure out the equivalent on windows
     target_link_libraries(${APP_NAME} ${RUST_PART_LIB} Threads::Threads ${CMAKE_DL_LIBS})
+    if(WIN32)
+        target_link_libraries(${APP_NAME} shell32 wsock32 ws2_32 crypt32 userenv bcrypt)
+    endif()
 endfunction()
