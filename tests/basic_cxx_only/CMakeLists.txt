@@ -25,4 +25,4 @@ set(
 )
 
 cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
-target_link_libraries(${APP_NAME} doctest)
+target_link_libraries(${APP_NAME} PRIVATE doctest)

@@ -37,4 +37,9 @@ add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}")
 cxx_qt_include(${APP_NAME})
 # Link to generated rust library
 cxx_qt_link_rustlib(${APP_NAME})
-target_link_libraries(${APP_NAME} doctest Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(${APP_NAME} PRIVATE
+    doctest
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Test
+)

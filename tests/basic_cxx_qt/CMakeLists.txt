@@ -28,4 +28,9 @@ set(
 )
 
 cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
-target_link_libraries(${APP_NAME} doctest Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(${APP_NAME} PRIVATE
+    doctest
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Test
+)
