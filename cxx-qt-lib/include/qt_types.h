@@ -9,6 +9,7 @@
 
 #include <QColor>
 #include <QDate>
+#include <QDateTime>
 #include <QPoint>
 #include <QPointF>
 #include <QRect>
@@ -36,6 +37,15 @@ QDate
 qdateInitDefault();
 QDate
 qdateInit(int y, int m, int d);
+
+std::unique_ptr<QDateTime>
+qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time);
+std::unique_ptr<QDateTime>
+qdatetimeInitFromQDateTime(const QDateTime& datetime);
+void
+qdatetimeSetDate(QDateTime& datetime, QDate date);
+void
+qdatetimeSetTime(QDateTime& datetime, QTime time);
 
 QPoint
 qpointInitDefault();

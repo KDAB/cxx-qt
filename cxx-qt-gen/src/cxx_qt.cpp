@@ -23,37 +23,6 @@
 #include <QVariant>
 #include <QtGui/QColor>
 
-// Define macros which allow us to disable warnings from the compiler
-// this is used for disabling -Wreturn-type-c-linkage
-#if defined(_MSC_VER)
-#define DISABLE_WARNING_PUSH __pragma(warning(push))
-#define DISABLE_WARNING_POP __pragma(warning(pop))
-#define DISABLE_WARNING(warningNumber)                                         \
-  __pragma(warning(disable : warningNumber))
-
-#define DISABLE_RETURN_TYPE_C_LINKAGE DISABLE_WARNING(4190)
-#elif defined(__GNUC__) || defined(__clang__)
-#define DO_PRAGMA(X) _Pragma(#X)
-#define DISABLE_WARNING_PUSH DO_PRAGMA(GCC diagnostic push)
-#define DISABLE_WARNING_POP DO_PRAGMA(GCC diagnostic pop)
-#define DISABLE_WARNING(warningName)                                           \
-  DO_PRAGMA(GCC diagnostic ignored #warningName)
-
-#if defined(__clang__)
-// clang-format off
-#define DISABLE_RETURN_TYPE_C_LINKAGE                                          \
-  DISABLE_WARNING(-Wreturn-type-c-linkage)
-// clang-format on
-#else
-#define DISABLE_RETURN_TYPE_C_LINKAGE
-#endif
-
-#else
-#define DISABLE_WARNING_PUSH
-#define DISABLE_WARNING_POP
-#define DISABLE_RETURN_TYPE_C_LINKAGE
-#endif
-
 // UpdateRequester is simply a wrapper around QPtr which allows for Rust code to
 // post an event to a specific CxxQObject.
 //
@@ -128,79 +97,6 @@ extern "C"
     static_assert(sizeof(char16_t) == sizeof(QChar));
     rust = rust::String(reinterpret_cast<const char16_t*>(qt.constData()),
                         qt.size());
-  }
-}
-
-extern "C"
-{
-  void cxxqt1$qdatetime$init$from$qdatetime(std::unique_ptr<QDateTime>* ptr,
-                                            const QDateTime& qdatetime) noexcept
-  {
-    new (ptr) std::unique_ptr<QDateTime>(new QDateTime(qdatetime));
-  }
-
-  void cxxqt1$qdatetime$init$from$date$and$time(std::unique_ptr<QDateTime>* ptr,
-                                                const QDate& date,
-                                                const QTime& time) noexcept
-  {
-    new (ptr) std::unique_ptr<QDateTime>(new QDateTime(date, time));
-  }
-
-  // We know that QDate and QTime are C++ types
-  // but they have a trivial move constructor so this is fine
-  DISABLE_WARNING_PUSH
-  DISABLE_RETURN_TYPE_C_LINKAGE
-  QDate cxxqt1$qdatetime$get$date(const QDateTime& dateTime) noexcept
-  {
-    return dateTime.date();
-  }
-
-  QTime cxxqt1$qdatetime$get$time(const QDateTime& dateTime) noexcept
-  {
-    return dateTime.time();
-  }
-  DISABLE_WARNING_POP
-
-  void cxxqt1$qdatetime$set$date(QDateTime& dateTime,
-                                 const QDate& date) noexcept
-  {
-    dateTime.setDate(date);
-  }
-
-  void cxxqt1$qdatetime$set$time(QDateTime& dateTime,
-                                 const QTime& time) noexcept
-  {
-    dateTime.setTime(time);
-  }
-
-  void cxxqt1$unique_ptr$qdatetime$null(
-    std::unique_ptr<QDateTime>* ptr) noexcept
-  {
-    new (ptr) std::unique_ptr<QDateTime>();
-  }
-
-  void cxxqt1$unique_ptr$qdatetime$raw(std::unique_ptr<QDateTime>* ptr,
-                                       QDateTime* raw) noexcept
-  {
-    new (ptr) std::unique_ptr<QDateTime>(raw);
-  }
-
-  const QDateTime* cxxqt1$unique_ptr$qdatetime$get(
-    const std::unique_ptr<QDateTime>& ptr) noexcept
-  {
-    return ptr.get();
-  }
-
-  QDateTime* cxxqt1$unique_ptr$qdatetime$release(
-    std::unique_ptr<QDateTime>& ptr) noexcept
-  {
-    return ptr.release();
-  }
-
-  void cxxqt1$unique_ptr$qdatetime$drop(
-    std::unique_ptr<QDateTime>* ptr) noexcept
-  {
-    ptr->~unique_ptr();
   }
 }
 

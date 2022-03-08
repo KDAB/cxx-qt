@@ -36,6 +36,30 @@ qdateInit(int y, int m, int d)
   return QDate(y, m, d);
 }
 
+std::unique_ptr<QDateTime>
+qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time)
+{
+  return std::make_unique<QDateTime>(date, time);
+}
+
+std::unique_ptr<QDateTime>
+qdatetimeInitFromQDateTime(const QDateTime& datetime)
+{
+  return std::make_unique<QDateTime>(datetime);
+}
+
+void
+qdatetimeSetDate(QDateTime& datetime, QDate date)
+{
+  datetime.setDate(date);
+}
+
+void
+qdatetimeSetTime(QDateTime& datetime, QTime time)
+{
+  datetime.setTime(time);
+}
+
 QPoint
 qpointInitDefault()
 {
