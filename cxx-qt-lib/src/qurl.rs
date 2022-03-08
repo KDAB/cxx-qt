@@ -3,43 +3,30 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// We are only using references to QUrl so it is actually ffi safe as far as we are concerned
-#![allow(improper_ctypes)]
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
 
-use cxx::{memory::UniquePtrTarget, type_id, ExternType};
-use std::{
-    ffi::c_void,
-    marker::{PhantomData, PhantomPinned},
-    mem::MaybeUninit,
-};
+        type QUrl;
 
-extern "C" {
-    #[link_name = "cxxqt1$qurl$init$from$qurl"]
-    fn qurl_init_from_qurl(this: &mut MaybeUninit<cxx::UniquePtr<QUrl>>, qurl: &QUrl);
-    #[link_name = "cxxqt1$qurl$init$from$string"]
-    fn qurl_init_from_string(
-        this: &mut MaybeUninit<cxx::UniquePtr<QUrl>>,
-        ptr: *const u8,
-        len: usize,
-    );
-    #[link_name = "cxxqt1$qurl$to$rust$string"]
-    fn qurl_to_rust_string(qt: &QUrl, rust: &mut String);
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qurl_to_rust_string"]
+        fn qurlToRustString(url: &QUrl) -> String;
+
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qurl_init_from_string"]
+        fn qurlInitFromString(string: &str) -> UniquePtr<QUrl>;
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qurl_init_from_qurl"]
+        fn qurlInitFromQUrl(url: &QUrl) -> UniquePtr<QUrl>;
+    }
+
+    impl UniquePtr<QUrl> {}
 }
 
-/// Binding to Qt `QUrl`.
-///
-/// # Invariants
-///
-/// As an invariant of this API and the static analysis of the cxx::bridge
-/// macro, in Rust code we can never obtain a `QUrl` by value. Qt's QUrl
-/// requires a move constructor and may hold internal pointers, which is not
-/// compatible with Rust's move behavior. Instead in Rust code we will only ever
-/// look at a QUrl through a reference or smart pointer, as in `&QUrl`
-/// or `UniquePtr<QUrl>`.
-#[repr(C)]
-pub struct QUrl {
-    _pinned: PhantomData<PhantomPinned>,
-}
+/// The QUrl class provides a convenient interface for working with URLs.
+pub type QUrl = ffi::QUrl;
 
 impl QUrl {
     /// Create a new Rust Url from this QUrl.
@@ -49,68 +36,9 @@ impl QUrl {
     }
 }
 
-// Safety:
-//
-// The code in this file ensures that QUrl can only ever be allocated
-// on the stack in pinned form which avoids the pitfalls of trying to
-// move this type that has a non-trivial move constructor.
-unsafe impl ExternType for QUrl {
-    type Id = type_id!("QUrl");
-    type Kind = cxx::kind::Opaque;
-}
-
-extern "C" {
-    #[link_name = "cxxqt1$unique_ptr$qurl$null"]
-    fn unique_ptr_qurl_null(this: *mut MaybeUninit<*mut c_void>);
-    #[link_name = "cxxqt1$unique_ptr$qurl$raw"]
-    fn unique_ptr_qurl_raw(this: *mut MaybeUninit<*mut c_void>, raw: *mut QUrl);
-    #[link_name = "cxxqt1$unique_ptr$qurl$get"]
-    fn unique_ptr_qurl_get(this: *const MaybeUninit<*mut c_void>) -> *const QUrl;
-    #[link_name = "cxxqt1$unique_ptr$qurl$release"]
-    fn unique_ptr_qurl_release(this: *mut MaybeUninit<*mut c_void>) -> *mut QUrl;
-    #[link_name = "cxxqt1$unique_ptr$qurl$drop"]
-    fn unique_ptr_qurl_drop(this: *mut MaybeUninit<*mut c_void>);
-}
-
-// Safety: TODO
-unsafe impl UniquePtrTarget for QUrl {
-    #[doc(hidden)]
-    fn __typename(f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str("QUrl")
-    }
-
-    #[doc(hidden)]
-    fn __null() -> MaybeUninit<*mut c_void> {
-        let mut repr = MaybeUninit::uninit();
-        unsafe {
-            unique_ptr_qurl_null(&mut repr);
-        }
-        repr
-    }
-
-    #[doc(hidden)]
-    unsafe fn __raw(raw: *mut Self) -> MaybeUninit<*mut c_void> {
-        let mut repr = MaybeUninit::uninit();
-        unique_ptr_qurl_raw(&mut repr, raw);
-        repr
-    }
-
-    #[doc(hidden)]
-    unsafe fn __get(repr: MaybeUninit<*mut c_void>) -> *const Self {
-        unique_ptr_qurl_get(&repr)
-    }
-
-    #[doc(hidden)]
-    unsafe fn __release(mut repr: MaybeUninit<*mut c_void>) -> *mut Self {
-        unique_ptr_qurl_release(&mut repr)
-    }
-
-    #[doc(hidden)]
-    unsafe fn __drop(mut repr: MaybeUninit<*mut c_void>) {
-        unique_ptr_qurl_drop(&mut repr)
-    }
-}
-
+/// The Rust representation of Qt's QUrl
+///
+/// Internally this holds a UniquePtr to a QUrl which has been constructed on the C++ side.
 pub struct Url {
     // Note that once map_qt_value is removed later, this can become private again
     #[doc(hidden)]
@@ -125,14 +53,10 @@ impl Url {
         Self { inner: ptr }
     }
 
+    /// Construct a Rust Url from an existing QUrl, this is a copy operation.
     pub fn from_qurl(qurl: &QUrl) -> Self {
         Self {
-            // Safety: TODO
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QUrl>>::zeroed();
-                qurl_init_from_qurl(&mut ptr, qurl);
-                ptr.assume_init()
-            },
+            inner: ffi::qurl_init_from_qurl(qurl),
         }
     }
 
@@ -147,24 +71,23 @@ impl Url {
     // scheme: Option<String>,
     // userName: Option<String>,
 
+    /// Returns a string representation of the URL.
     pub fn string(&self) -> String {
-        let mut s = String::new();
-        unsafe { qurl_to_rust_string(&self.inner, &mut s) };
-        s
+        if let Some(inner) = self.inner.as_ref() {
+            ffi::qurl_to_rust_string(inner)
+        } else {
+            "".to_owned()
+        }
     }
 }
 
 impl std::str::FromStr for Url {
     type Err = std::convert::Infallible;
 
-    fn from_str(s: &str) -> Result<Self, std::convert::Infallible> {
+    /// Constructs a URL by parsing the given string.
+    fn from_str(string: &str) -> Result<Self, std::convert::Infallible> {
         Ok(Self {
-            // Safety: TODO
-            inner: unsafe {
-                let mut ptr = MaybeUninit::<cxx::UniquePtr<QUrl>>::zeroed();
-                qurl_init_from_string(&mut ptr, s.as_ptr(), s.len());
-                ptr.assume_init()
-            },
+            inner: ffi::qurl_init_from_string(string),
         })
     }
 }

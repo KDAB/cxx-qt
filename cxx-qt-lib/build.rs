@@ -27,7 +27,7 @@ fn main() {
 
     let qfiles = vec![
         "qcolor", "qdate", "qpoint", "qpointf", "qrect", "qrectf", "qsize", "qsizef", "qstring",
-        "qtime",
+        "qtime", "qurl",
     ];
     for qfile in qfiles {
         // Read the rust source files

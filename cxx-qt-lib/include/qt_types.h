@@ -17,6 +17,7 @@
 #include <QSizeF>
 #include <QString>
 #include <QTime>
+#include <QUrl>
 
 #include "rust/cxx.h"
 
@@ -75,6 +76,13 @@ QTime
 qtimeInitDefault();
 QTime
 qtimeInit(int h, int m, int s, int ms);
+
+std::unique_ptr<QUrl>
+qurlInitFromString(rust::Str string);
+std::unique_ptr<QUrl>
+qurlInitFromQUrl(const QUrl& url);
+rust::String
+qurlToRustString(const QUrl& url);
 
 }
 }
