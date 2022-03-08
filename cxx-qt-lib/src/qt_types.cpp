@@ -96,6 +96,18 @@ qsizeInit(int width, int height)
   return QSize(width, height);
 }
 
+QSizeF
+qsizefInitDefault()
+{
+  return QSizeF();
+}
+
+QSizeF
+qsizefInit(qreal width, qreal height)
+{
+  return QSizeF(width, height);
+}
+
 std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string)
 {

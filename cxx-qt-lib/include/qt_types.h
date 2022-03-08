@@ -14,6 +14,7 @@
 #include <QRect>
 #include <QRectF>
 #include <QSize>
+#include <QSizeF>
 #include <QString>
 
 #include "rust/cxx.h"
@@ -58,6 +59,11 @@ QSize
 qsizeInitDefault();
 QSize
 qsizeInit(int width, int height);
+
+QSizeF
+qsizefInitDefault();
+QSizeF
+qsizefInit(qreal width, qreal height);
 
 std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string);
