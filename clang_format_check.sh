@@ -16,7 +16,7 @@ function clang_format_files() {
         if ! git check-ignore -q "$file"; then
             clang-format --dry-run -Werror "$file"
         fi
-    done < <(find "$DIR" -type f -name "$1" -a -not -path './.git/*' -print0)
+    done < <(find "$DIR" -type f -name "$1" -a -not -path "$DIR/.git/*" -not -path "$DIR/vcpkg/*" -not -path "$DIR/*/vcpkg_installed/*" -print0)
 }
 
 clang_format_files "*.cpp"
