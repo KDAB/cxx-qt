@@ -16,6 +16,7 @@
 #include <QSize>
 #include <QSizeF>
 #include <QString>
+#include <QTime>
 
 #include "rust/cxx.h"
 
@@ -69,6 +70,11 @@ std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string);
 rust::String
 qstringToRustString(const QString& string);
+
+QTime
+qtimeInitDefault();
+QTime
+qtimeInit(int h, int m, int s, int ms);
 
 }
 }
