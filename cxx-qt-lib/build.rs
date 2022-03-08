@@ -26,7 +26,7 @@ fn main() {
     std::fs::create_dir_all(&src_path).expect("Could not create cxx-qt-lib sc dir");
 
     let qfiles = vec![
-        "qcolor", "qdate", "qpoint", "qpointf", "qrect", "qrectf", "qstring",
+        "qcolor", "qdate", "qpoint", "qpointf", "qrect", "qrectf", "qsize", "qstring",
     ];
     for qfile in qfiles {
         // Read the rust source files

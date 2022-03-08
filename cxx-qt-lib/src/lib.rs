@@ -78,6 +78,10 @@ pub const QRECTF_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qrectf_cxx.h"));
 pub const QRECTF_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qrectf_cxx.cpp"));
+pub const QSIZE_CXX_HEADER: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qsize_cxx.h"));
+pub const QSIZE_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qsize_cxx.cpp"));
 pub const QSTRING_CXX_HEADER: &str = include_str!(concat!(
     env!("OUT_DIR"),
     "/cxx-qt-lib/include/qstring_cxx.h"
