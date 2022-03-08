@@ -131,63 +131,6 @@ extern "C"
   }
 }
 
-namespace {
-
-// We do these checks to ensure that we can safely store a QTime
-// inside a block of memory that Rust thinks contains one i32.
-// We also make sure that i32 and qint32 are equivalent.
-
-static_assert(sizeof(qint32) == 4);
-static_assert(alignof(qint32) <= 4);
-
-static_assert(sizeof(QTime) == 4);
-static_assert(alignof(QTime) <= 4);
-
-// Our Rust code assumes that QTime is trivial. Because it is trivial to move,
-// we don't need to use Pin. Because it is trivial to destruct we do not
-// need a special C++ function to destruct the object.
-
-static_assert(std::is_trivially_move_assignable<QTime>::value);
-static_assert(std::is_trivially_copy_assignable<QTime>::value);
-static_assert(std::is_trivially_destructible<QTime>::value);
-
-} // namespace
-
-extern "C"
-{
-  void cxxqt1$qtime$init(QTime* self,
-                         qint32 h,
-                         qint32 m,
-                         qint32 s,
-                         qint32 ms) noexcept
-  {
-    new (self) QTime(h, m, s, ms);
-  }
-
-  qint32 cxxqt1$qtime$hour(const QTime& self) noexcept { return self.hour(); }
-
-  qint32 cxxqt1$qtime$minute(const QTime& self) noexcept
-  {
-    return self.minute();
-  }
-
-  qint32 cxxqt1$qtime$second(const QTime& self) noexcept
-  {
-    return self.second();
-  }
-
-  qint32 cxxqt1$qtime$msec(const QTime& self) noexcept { return self.msec(); }
-
-  qint32 cxxqt1$qtime$set$hms(QTime& self,
-                              qint32 h,
-                              qint32 m,
-                              qint32 s,
-                              qint32 ms) noexcept
-  {
-    return self.setHMS(h, m, s, ms);
-  }
-}
-
 extern "C"
 {
   void cxxqt1$qdatetime$init$from$qdatetime(std::unique_ptr<QDateTime>* ptr,

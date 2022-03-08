@@ -124,5 +124,17 @@ qstringToRustString(const QString& string)
   return rust::String(string.toStdString());
 }
 
+QTime
+qtimeInitDefault()
+{
+  return QTime();
+}
+
+QTime
+qtimeInit(int h, int m, int s, int ms)
+{
+  return QTime(h, m, s, ms);
+}
+
 }
 }
