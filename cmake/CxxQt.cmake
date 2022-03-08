@@ -105,8 +105,8 @@ function(cxx_qt_link_rustlib APP_NAME)
     add_dependencies(${APP_NAME} "${APP_NAME}_rustlib")
 
     # The Rust lib also needs to be linked to pthread and dl
-    target_link_libraries(${APP_NAME} ${RUST_PART_LIB} Threads::Threads ${CMAKE_DL_LIBS})
+    target_link_libraries(${APP_NAME} PRIVATE ${RUST_PART_LIB} Threads::Threads ${CMAKE_DL_LIBS})
     if(WIN32)
-        target_link_libraries(${APP_NAME} shell32 wsock32 ws2_32 crypt32 userenv bcrypt)
+        target_link_libraries(${APP_NAME} PRIVATE shell32 wsock32 ws2_32 crypt32 userenv bcrypt)
     endif()
 endfunction()
