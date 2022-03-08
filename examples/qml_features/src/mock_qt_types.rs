@@ -300,8 +300,8 @@ mod mock_qt_types {
                     cpp.set_variant(&variant);
                 }
                 VariantValue::QDateTime(mut date_time) => {
-                    date_time.set_date(&QDate::new(2021, 12, 31));
-                    date_time.set_time(&QTime::new(
+                    date_time.set_date(QDate::new(2021, 12, 31));
+                    date_time.set_time(QTime::new(
                         date_time.time().hour() * 2,
                         date_time.time().minute() * 3,
                         date_time.time().second() * 4,
@@ -403,8 +403,8 @@ mod mock_qt_types {
                     Variant::from(date)
                 }
                 VariantValue::QDateTime(mut date_time) => {
-                    date_time.set_date(&QDate::new(2021, 12, 31));
-                    date_time.set_time(&QTime::new(
+                    date_time.set_date(QDate::new(2021, 12, 31));
+                    date_time.set_time(QTime::new(
                         date_time.time().hour() * 2,
                         date_time.time().minute() * 3,
                         date_time.time().second() * 4,

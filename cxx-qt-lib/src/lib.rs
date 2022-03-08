@@ -60,6 +60,14 @@ pub const QDATE_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qdate_cxx.h"));
 pub const QDATE_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qdate_cxx.cpp"));
+pub const QDATETIME_CXX_HEADER: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/cxx-qt-lib/include/qdatetime_cxx.h"
+));
+pub const QDATETIME_CXX_SOURCE: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/cxx-qt-lib/src/qdatetime_cxx.cpp"
+));
 pub const QPOINT_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qpoint_cxx.h"));
 pub const QPOINT_CXX_SOURCE: &str =
