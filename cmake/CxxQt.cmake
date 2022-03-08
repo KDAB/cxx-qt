@@ -68,8 +68,11 @@ function(cxx_qt_link_rustlib APP_NAME)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     find_package(Threads REQUIRED)
 
+    if (NOT CMAKE_BUILD_TYPE)
+        message(WARNING "CMAKE_BUILD_TYPE not set; building Rust in debug mode")
+    endif ()
     # TODO: figure out if RelWithDebInfo is a thing in Rust and fix accordingly
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
         set(CARGO_CMD cargo build)
         set(TARGET_DIR "debug")
     else ()
