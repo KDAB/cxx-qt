@@ -84,6 +84,18 @@ qrectfInit(qreal x, qreal y, qreal w, qreal h)
   return QRectF(x, y, w, h);
 }
 
+QSize
+qsizeInitDefault()
+{
+  return QSize();
+}
+
+QSize
+qsizeInit(int width, int height)
+{
+  return QSize(width, height);
+}
+
 std::unique_ptr<QString>
 qstringInitFromRustString(rust::Str string)
 {
