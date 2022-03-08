@@ -7,6 +7,9 @@
 # TODO: figure out what the actual hard minimum is
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
 project(cxx_qt)
 
 set(CMAKE_CXX_STANDARD 17)
