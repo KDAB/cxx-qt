@@ -25,6 +25,11 @@ endfunction()
 #
 # GEN_SOURCES an output variable that generated C++ files are listed into
 function(cxx_qt_generate_cpp GEN_SOURCES)
+    # FIXME: cxx's build.rs fails without this.
+    # https://github.com/dtolnay/cxx/issues/1020
+    if(APPLE)
+        set(ENV{SDKROOT} ${CMAKE_OSX_SYSROOT})
+    endif()
     # TODO: figure out if RelWithDebInfo is a thing in Rust and fix accordingly
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CARGO_CMD cargo build)
