@@ -82,6 +82,10 @@ pub const QSIZE_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qsize_cxx.h"));
 pub const QSIZE_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qsize_cxx.cpp"));
+pub const QSIZEF_CXX_HEADER: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qsizef_cxx.h"));
+pub const QSIZEF_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qsizef_cxx.cpp"));
 pub const QSTRING_CXX_HEADER: &str = include_str!(concat!(
     env!("OUT_DIR"),
     "/cxx-qt-lib/include/qstring_cxx.h"

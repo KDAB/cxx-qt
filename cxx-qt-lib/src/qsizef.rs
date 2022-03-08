@@ -5,8 +5,38 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
 
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+
+        type QSizeF = super::QSizeF;
+
+        /// Returns the height.
+        fn height(self: &QSizeF) -> f64;
+        /// Returns the width.
+        fn width(self: &QSizeF) -> f64;
+
+        /// Sets the height to the given height.
+        #[rust_name = "set_height"]
+        fn setHeight(self: &mut QSizeF, h: f64);
+        /// Sets the width to the given width.
+        #[rust_name = "set_width"]
+        fn setWidth(self: &mut QSizeF, w: f64);
+
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qsizef_init_default"]
+        fn qsizefInitDefault() -> QSizeF;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "qsizef_init"]
+        fn qsizefInit(w: f64, h: f64) -> QSizeF;
+    }
+}
+
+/// The QSizeF class defines the size of a two-dimensional object using floating point precision.
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct QSizeF {
@@ -14,45 +44,17 @@ pub struct QSizeF {
     h: f64,
 }
 
-extern "C" {
-    #[link_name = "cxxqt1$qsizef$init"]
-    fn qsizef_init(this: &mut MaybeUninit<QSizeF>, w: f64, h: f64);
+impl QSizeF {
+    /// Constructs a size with the given width and height.
+    pub fn new(w: f64, h: f64) -> Self {
+        ffi::qsizef_init(w, h)
+    }
 }
 
 impl Default for QSizeF {
+    /// Constructs an invalid size.
     fn default() -> Self {
-        Self::new(0.0, 0.0)
-    }
-}
-
-impl QSizeF {
-    pub fn new(w: f64, h: f64) -> Self {
-        let mut s = MaybeUninit::<QSizeF>::uninit();
-
-        // Safety:
-        //
-        // Static checks on the C++ side ensure that QSizeF has the
-        // same binary footprint in C++ and Rust.
-        unsafe {
-            qsizef_init(&mut s, w, h);
-            s.assume_init()
-        }
-    }
-
-    pub fn height(&self) -> f64 {
-        self.h
-    }
-
-    pub fn set_height(&mut self, h: f64) {
-        self.h = h;
-    }
-
-    pub fn set_width(&mut self, w: f64) {
-        self.w = w;
-    }
-
-    pub fn width(&self) -> f64 {
-        self.w
+        ffi::qsizef_init_default()
     }
 }
 
@@ -64,7 +66,9 @@ unsafe impl ExternType for QSizeF {
     type Kind = cxx::kind::Trivial;
 }
 
+#[doc(hidden)]
 impl From<&QSizeF> for QSizeF {
+    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(sizef: &QSizeF) -> Self {
         *sizef
     }
