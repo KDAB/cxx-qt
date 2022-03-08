@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 # SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 # SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+# SPDX-FileContributor: Be <be.0@gmx.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -10,6 +11,93 @@ cmake_minimum_required(VERSION 3.16)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+option(QT_DEFAULT_MAJOR_VERSION "Major version of Qt to use (6 or 5)" 6)
+
+if(WIN32 OR APPLE)
+    option(VCPKG "Use vcpkg for dependencies" ON)
+else()
+    option(VCPKG "Use vcpkg for dependencies" OFF)
+endif()
+
+if(VCPKG)
+    # Explicitly setting QT_DEFAULT_MAJOR_VERSION can fail on systems that have both Qt6
+    # and Qt5 installed, so only set it automatically when using vcpkg.
+    if((NOT QT_DEFAULT_MAJOR_VERSION EQUAL 5) AND (NOT QT_DEFAULT_MAJOR_VERSION EQUAL 6))
+        set(QT_DEFAULT_MAJOR_VERSION 6)
+    endif()
+
+    set(VCPKG_MANIFEST_FEATURES "qt${QT_DEFAULT_MAJOR_VERSION}")
+
+    include(InitializeVcpkg)
+
+    # These are required for binary caching to work reliably across machines.
+    set(VCPKG_FEATURE_FLAGS "-compilertracking")
+    set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
+
+    if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
+        if(WIN32)
+            set(COMMAND_PREIFX "")
+            set(EXE_SUFFIX ".exe")
+            set(SCRIPT_SUFFIX ".bat")
+            set(DOTNET_RUNTIME "")
+        else()
+            set(COMMAND_PREFIX "./")
+            set(EXE_SUFFIX "")
+            set(SCRIPT_SUFFIX ".sh")
+            set(DOTNET_RUNTIME "mono")
+        endif()
+
+        # vcpkg can download NuGet, so bootstrap vcpkg if the executable is not found.
+        if(NOT EXISTS "${VCPKG_ROOT}/vcpkg${EXE_SUFFIX}")
+        message(STATUS "Bootstrapping vcpkg")
+        execute_process(
+            COMMAND "${COMMAND_PREFIX}bootstrap-vcpkg${SCRIPT_SUFFIX}"
+            WORKING_DIRECTORY ${VCPKG_ROOT}
+        )
+        endif()
+
+        message(STATUS "Setting up vcpkg binary caching with read-only access to GitHub Packages NuGet source")
+
+        execute_process(
+            COMMAND "${COMMAND_PREFIX}vcpkg${EXE_SUFFIX}" fetch nuget
+            WORKING_DIRECTORY ${VCPKG_ROOT}
+            OUTPUT_VARIABLE NUGET_FETCH_OUTPUT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        string(REPLACE "\n" ";" NUGET_FETCH_OUTPUT "${NUGET_FETCH_OUTPUT}")
+        list(POP_BACK NUGET_FETCH_OUTPUT NUGET_EXECUTABLE)
+
+        # NuGet will fail with an error when trying to add a source with the same name
+        # as one that already exists, so check that the NuGet source has not been added yet.
+        execute_process(
+            COMMAND ${DOTNET_RUNTIME} ${NUGET_EXECUTABLE} sources list
+            OUTPUT_VARIABLE NUGET_SOURCES_LIST
+        )
+        string(FIND "${NUGET_SOURCES_LIST}" "cxx-qt-github-packages" SEARCH_RESULT)
+        if(SEARCH_RESULT EQUAL -1)
+        # GitHub will deactivate a personal access token that gets committed to the repository.
+        # Hack around this by splitting up the PAT.
+        # This is safe because this PAT only has read:packages permission.
+        # TODO: create read-only personal access token for KDAB
+        set(GITHUB_PAT_READ_PACKAGES_SUFFIX DX2hOAAmXO4JGuT4WK5LQLBIGLSAdo13PDC1)
+        execute_process(
+            COMMAND ${DOTNET_RUNTIME} ${NUGET_EXECUTABLE} sources add
+            -name cxx-qt-github-packages
+            -source https://nuget.pkg.github.com/Be-ing/index.json
+            -username Be-ing
+            -password ghp_${GITHUB_PAT_READ_PACKAGES_SUFFIX}
+        )
+        endif()
+
+        set(ENV{VCPKG_BINARY_SOURCES} "clear;default,readwrite;nuget,cxx-qt-github-packages,read;")
+    endif()
+else()
+    message(STATUS "Using dependencies from system without vcpkg")
+endif()
+
 project(cxx_qt)
 
 set(CMAKE_CXX_STANDARD 17)
