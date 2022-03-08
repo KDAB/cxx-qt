@@ -1,46 +1,213 @@
 # SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 # SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Be <be.0@gmx.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
 name: cxx-qt tests
 on: [push, pull_request]
 jobs:
-  ctest:
-    runs-on: ubuntu-20.04
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu 20.04 (gcc) Qt5
+            os: ubuntu-20.04
+            qt_version: 5
+            qt_qpa_platform: offscreen
+            compiler_cache_path: /home/runner/.cache/sccache
+            cargo_dir: ~/.cargo
+            # TODO: Remove PPA for Qt 5.15 when Ubuntu 22.04 is available
+            ppa: ppa:savoury1/qt-5-15
+            packages-extra: >-
+                qtbase5-dev
+                qtdeclarative5-dev
+                qtquickcontrols2-5-dev
+                qml-module-qtquick2
+                qml-module-qtquick-controls2
+                qml-module-qttest
+            workspace: /home/runner/cxx-qt
+          - name: Ubuntu 20.04 (gcc) Qt6
+            os: ubuntu-20.04
+            qt_version: 6
+            # FIXME: fix valgrind failures
+            ctest_args: --exclude-regex '^.*valgrind$'
+            qt_qpa_platform: offscreen
+            compiler_cache_path: /home/runner/.cache/sccache
+            cargo_dir: ~/.cargo
+            # TODO: Remove PPA for Qt 6 when Ubuntu 22.04 is available
+            ppa: ppa:daschuer/qt6-backports
+            packages-extra: >-
+                qt6-base-dev
+                qt6-declarative-dev
+                qt6-declarative-dev-tools
+                qml6-module-qtquick-controls
+                qml6-module-qtquick-window
+                qml6-module-qttest
+                qml6-module-qtqml-workerscript
+                libgl1-mesa-dev
+                libvulkan-dev
+                libxkbcommon-dev
+            workspace: /home/runner/cxx-qt
+
+          - name: macOS 11 (clang) Qt5
+            os: macos-11
+            qt_version: 5
+            # FIXME: qmltestrunner fails to import QtQuick module
+            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|.*valgrind)$'
+            qt_qpa_platform: cocoa
+            compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            cargo_dir: ~/.cargo
+            workspace: /Users/runner/cxx-qt
+          - name: macOS 11 (clang) Qt6
+            os: macos-11
+            qt_version: 6
+            # FIXME: qmltestrunner fails to import QtQuick module
+            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|.*valgrind)$'
+            qt_qpa_platform: cocoa
+            compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            cargo_dir: ~/.cargo
+            workspace: /Users/runner/cxx-qt
+
+          - name: Windows 2022 (MSVC) Qt5
+            os: windows-2022
+            qt_version: 5
+            # FIXME: many tests fail to link
+            ctest_args: --exclude-regex '^(cxx_qt_gen_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind)$'
+            exe_suffix: .exe
+            qt_qpa_platform: windows
+            compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            cargo_dir: C:\Users\runneradmin\.cargo
+            cc: cl
+            cxx: cl
+            # The D drive runs out of space when building dependencies with vcpkg.
+            workspace: C:\cxx-qt
+          - name: Windows 2022 (MSVC) Qt6
+            os: windows-2022
+            qt_version: 6
+            # FIXME: many tests fail to link
+            ctest_args: --exclude-regex '^(cxx_qt_gen_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind)$'
+            exe_suffix: .exe
+            qt_qpa_platform: windows
+            compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            cargo_dir: C:\Users\runneradmin\.cargo
+            cc: cl
+            cxx: cl
+            # The D drive runs out of space when building dependencies with vcpkg.
+            workspace: C:\cxx-qt
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
     steps:
-      - uses: actions/checkout@v2
-      # Install Rust toolchain
-      - uses: actions-rs/toolchain@v1
-        with:
-          components: clippy, rustfmt
-          toolchain: stable
-      # Instal mdbook and mdbook-linkcheck
-      - name: Install mdbook and mdbook-linkcheck from binaries
-        run: |
-          mkdir mdbook
-          curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.14/mdbook-v0.4.14-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=./mdbook
-          echo `pwd`/mdbook >> $GITHUB_PATH
-          curl -sSL https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest/download/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip
-          unzip mdbook-linkcheck.zip -d mdbook-linkcheck/
-          rm mdbook-linkcheck.zip
-          chmod +x ./mdbook-linkcheck/mdbook-linkcheck
-          echo `pwd`/mdbook-linkcheck >> $GITHUB_PATH
-      # FIXME: FUTURE: Remove PPA for Qt 5.15 once 22.04 is available
-      # https://launchpad.net/~savoury1/+archive/ubuntu/qt-5-15
-      - run: sudo add-apt-repository ppa:savoury1/qt-5-15
-      # Install clang-format, Qt, reuse, valgrind
-      - run: sudo apt-get update
-      - run: sudo apt-get install -y clang-format-12 libssl-dev pkg-config python3-pip qtbase5-dev qtdeclarative5-dev qtquickcontrols2-5-dev qml-module-qtquick2 qml-module-qtquick-controls2 qml-module-qttest valgrind
-      - run: sudo ln -s /usr/bin/clang-format-12 /usr/local/bin/clang-format
-      - run: pip3 install reuse
-      # Ensure we have a clean build folder
-      - run: rm -rf build/
-      - run: mkdir -p build/
-      # Configure and build CMake then run ctest
-      #
-      # Note that each github action run command is executed from the same directory even after
-      # performing cd so for the ctest line we need to cd within the same command
-      - run: cmake -S. -Bbuild/ -G "Unix Makefiles"
-      - run: cmake --build build/ --config Debug --target all -j$(nproc)
-      - run: (cd build/ && QT_QPA_PLATFORM=offscreen ctest -j$(nproc) -C Debug -T test --output-on-failure)
+    # On Windows, the D drive that the workspace is on by default runs out of space when
+    # vcpkg builds Qt, so the repo needs to be cloned to the C drive. GitHub's checkout
+    # action does not support cloning to a path outside GITHUB_WORKSPACE:
+    # https://github.com/actions/checkout/issues/197
+    - name: "Clone Git repository"
+      uses: LebedevRI/checkout@issue197
+      with:
+        path: ${{ matrix.workspace }}
+    - name: "Install Rust toolchain"
+      uses: actions-rs/toolchain@v1
+      with:
+        components: clippy, rustfmt
+        toolchain: stable
+
+    - name: "Rust tools cache"
+      uses: actions/cache@v2
+      id: rust-tools-cache
+      with:
+        path: |
+          ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
+          ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
+          ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
+        key: ${{ matrix.os }}_sccache-0.2.15_mdbook-0.4.15_mdbook-linkcheck-0.2.8
+    - name: "Build Rust tools"
+      if: steps.rust-tools-cache.outputs.cache-hit != 'true'
+      run: cargo install sccache mdbook mdbook-linkcheck
+
+    - name: "Compiler cache"
+      uses: actions/cache@v2
+      with:
+        path: ${{ matrix.compiler_cache_path }}
+        key: ${{ matrix.name }}-${{ github.head_ref }}-${{ github.run_number }}
+        restore-keys: |
+          ${{ matrix.name }}-${{ github.head_ref }}
+          ${{ matrix.name }}
+
+    - name: "[Ubuntu] Install dependencies"
+      if: runner.os == 'Linux'
+      run: >-
+        sudo add-apt-repository ${{ matrix.ppa }} &&
+        sudo apt-get update &&
+        sudo apt-get install -y
+        ninja-build
+        clang-format-12
+        libssl-dev
+        pkg-config
+        python3-pip
+        valgrind
+        ${{ matrix.packages-extra }}
+    - name: "[Ubuntu] Install reuse"
+      if: runner.os == 'Linux'
+      run: pip3 install reuse
+    - name: "[macOS] Install dependencies"
+      if: runner.os == 'macOS'
+      # automake is needed for building libicu which is a dependency of Qt
+      run: brew install automake ninja clang-format
+
+    - name: "Authenticate to GitHub Packages"
+      # TODO: replace 'Be-ing' with 'KDAB'
+      if: runner.os != 'Linux' && github.repository_owner == 'Be-ing'
+      shell: bash
+      run: |
+        nuget sources add -Name cxx-qt-github-packages -Source https://nuget.pkg.github.com/Be-ing/index.json -Username Be-ing -Password ${{ secrets.GITHUB_TOKEN }} -NonInteractive
+        nuget setapikey ${{ secrets.GITHUB_TOKEN }} -Source cxx-qt-github-packages -NonInteractive
+        echo "VCPKG_BINARY_SOURCES=clear;nuget,cxx-qt-github-packages,readwrite;" >> "${GITHUB_ENV}"
+
+    # Required for CMake to find Ninja
+    - name: "[Windows] Set up MSVC Developer Command Prompt"
+      if: runner.os == 'Windows'
+      uses: seanmiddleditch/gha-setup-vsdevenv@v3
+
+    # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
+    - name: "Configure"
+      run: >-
+        cmake
+        -D QT_DEFAULT_MAJOR_VERSION=${{ matrix.qt_version }}
+        -D CMAKE_BUILD_TYPE=Debug
+        -G Ninja
+        -S . -B build
+      working-directory: ${{ matrix.workspace }}
+      env:
+        RUSTC_WRAPPER: sccache
+        CC: ${{ matrix.cc }}
+        CXX: ${{ matrix.cxx }}
+    - name: "Build"
+      run: cmake --build build --config Debug --parallel 2
+      working-directory: ${{ matrix.workspace }}
+      env:
+        RUSTC_WRAPPER: sccache
+    - name: "Test"
+      run: ctest ${{ matrix.ctest_args }} -C Debug -T test --output-on-failure --parallel 2
+      working-directory: ${{ matrix.workspace }}/build
+      env:
+        RUSTC_WRAPPER: sccache
+        QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
+        QT_SELECT: qt${{ matrix.qt_version }}
+
+    - name: "Print compiler cache statistics"
+      run: sccache --show-stats
+
+    - name: Upload GitHub Actions artifacts of vcpkg logs
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: vcpkg-logs-${{ matrix.name }}
+        path: |
+          ${{ matrix.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ matrix.workspace }}/build/vcpkg-bootstrap.log
+          ${{ matrix.workspace }}/build/vcpkg-manifest-install.log
+        if-no-files-found: ignore

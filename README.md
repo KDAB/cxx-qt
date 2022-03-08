@@ -103,6 +103,15 @@ Ensure that you have the following installed
 In a cxx-qt project, the build system is based on CMake, which uses Cargo under the hood.
 Therefore, unlike a typical Rust project, CMake must be used to build cxx-qt.
 
+On Windows and macOS, cxx-qt defaults to installing Qt from vcpkg. Prebuilt packages are
+automatically downloaded from GitHub Packages (this will take several minutes the first time
+you run CMake). If you already have Qt installed, you can disable this by adding
+`-D VCPKG=OFF` to the CMake configure step (the first call to `cmake`).
+
+cxx-qt defaults to building with Qt6. If you want to build with Qt5 when both are installed,
+or you want to tell vcpkg to use Qt5, add `-D QT_DEFAULT_MAJOR_VERSION=5` to the CMake
+configure step.
+
 ```bash
 mkdir build/
 cd build/
