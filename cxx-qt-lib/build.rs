@@ -38,6 +38,7 @@ fn main() {
         "qstring",
         "qtime",
         "qurl",
+        "qvariant",
     ];
     for qfile in qfiles {
         // Read the rust source files

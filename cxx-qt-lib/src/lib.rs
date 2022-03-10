@@ -108,6 +108,12 @@ pub const QURL_CXX_HEADER: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/include/qurl_cxx.h"));
 pub const QURL_CXX_SOURCE: &str =
     include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qurl_cxx.cpp"));
+pub const QVARIANT_CXX_HEADER: &str = include_str!(concat!(
+    env!("OUT_DIR"),
+    "/cxx-qt-lib/include/qvariant_cxx.h"
+));
+pub const QVARIANT_CXX_SOURCE: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/cxx-qt-lib/src/qvariant_cxx.cpp"));
 
 pub trait PropertyChangeHandler<C, P> {
     fn handle_property_change(&mut self, cpp: &mut C, property: P);
