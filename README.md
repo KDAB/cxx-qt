@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileCopyrightText: 2021-2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
@@ -153,6 +153,10 @@ services related to this project.
 cxx-qt includes these source files, also available under the terms of the MIT license:
 
 * [doctest.h](https://github.com/onqtam/doctest) - the lightest feature-rich C++ single-header testing framework for unit tests and TDD (C) 2016-2021 Viktor Kirilov <vik.kirilov@gmail.com>
+
+The following CMake source files are available under the BSD-3-Clause
+
+* [cmake/CompilerCaching.cmake](./cmake/CompilerCaching.cmake) - a helper for using sccache
 
 # About KDAB
 cxx-qt is supported and maintained by Klarälvdalens Datakonsult AB (KDAB).
