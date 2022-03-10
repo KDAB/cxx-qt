@@ -159,11 +159,10 @@ jobs:
       run: brew install automake ninja clang-format
 
     - name: "Authenticate to GitHub Packages"
-      # TODO: replace 'Be-ing' with 'KDAB'
-      if: runner.os != 'Linux' && github.repository_owner == 'Be-ing'
+      if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
       shell: bash
       run: |
-        nuget sources add -Name cxx-qt-github-packages -Source https://nuget.pkg.github.com/Be-ing/index.json -Username Be-ing -Password ${{ secrets.GITHUB_TOKEN }} -NonInteractive
+        nuget sources add -Name cxx-qt-github-packages -Source https://nuget.pkg.github.com/KDAB/index.json -Username KDAB -Password ${{ secrets.GITHUB_TOKEN }} -NonInteractive
         nuget setapikey ${{ secrets.GITHUB_TOKEN }} -Source cxx-qt-github-packages -NonInteractive
         echo "VCPKG_BINARY_SOURCES=clear;nuget,cxx-qt-github-packages,readwrite;" >> "${GITHUB_ENV}"
 

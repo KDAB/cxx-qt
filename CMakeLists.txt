@@ -81,13 +81,12 @@ if(VCPKG)
         # GitHub will deactivate a personal access token that gets committed to the repository.
         # Hack around this by splitting up the PAT.
         # This is safe because this PAT only has read:packages permission.
-        # TODO: create read-only personal access token for KDAB
-        set(GITHUB_PAT_READ_PACKAGES_SUFFIX DX2hOAAmXO4JGuT4WK5LQLBIGLSAdo13PDC1)
+        set(GITHUB_PAT_READ_PACKAGES_SUFFIX U2OpRinygfPcWI110P7CJOKLpomyGh2VeZ60)
         execute_process(
             COMMAND ${DOTNET_RUNTIME} ${NUGET_EXECUTABLE} sources add
             -name cxx-qt-github-packages
-            -source https://nuget.pkg.github.com/Be-ing/index.json
-            -username Be-ing
+            -source https://nuget.pkg.github.com/KDAB/index.json
+            -username KDAB
             -password ghp_${GITHUB_PAT_READ_PACKAGES_SUFFIX}
         )
         endif()
