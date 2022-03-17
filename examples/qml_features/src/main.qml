@@ -15,7 +15,7 @@ Window {
     visible: true
     width: 640
 
-    MyData {
+    Serialisation {
         id: myData
         number: myObject.number
         string: myObject.string
