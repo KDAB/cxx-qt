@@ -6,7 +6,7 @@
 [package]
 name = "cxx-qt-lib"
 version = "0.2.0"
-authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Qt types for integrating `cxx-qt` crate with `cxx`"
