@@ -427,6 +427,23 @@ pub fn generate_qobject_cxx(
         quote! {}
     };
 
+    let deferred_call_type = if obj.handle_updates_impl.is_some() {
+        quote! {
+            #[namespace = "rust::cxxqtlib1"]
+            type DeferredCall = cxx_qt_lib::DeferredCall;
+        }
+    } else {
+        quote! {}
+    };
+    let request_updater_method = if obj.handle_updates_impl.is_some() {
+        quote! {
+            #[rust_name = "update_requester"]
+            fn updateRequester(self: Pin<&mut #class_name>) -> DeferredCall;
+        }
+    } else {
+        quote! {}
+    };
+
     // Define a function to handle property changes if we have one
     let handle_property_change = if obj.handle_property_change_impl.is_some() {
         quote! {
@@ -496,11 +513,14 @@ pub fn generate_qobject_cxx(
                 type QUrl = cxx_qt_lib::QUrl;
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
+                #deferred_call_type
 
                 #(#cpp_functions)*
 
                 #[rust_name = "new_cpp_object"]
                 fn newCppObject() -> UniquePtr<#class_name>;
+
+                #request_updater_method
             }
 
             extern "Rust" {
@@ -932,6 +952,16 @@ pub fn generate_qobject_rs(
     // in the first place, the underlying pointer does not refer to a const object
     // as far as C++ is concerned so we are not invoking C++ UB either.
 
+    let update_requester = if obj.handle_updates_impl.is_some() {
+        quote! {
+            pub fn update_requester(&mut self) -> cxx_qt_lib::DeferredCall {
+                self.cpp.as_mut().update_requester()
+            }
+        }
+    } else {
+        quote! {}
+    };
+
     let wrapper_struct_impl = quote! {
         impl<'a> #rust_wrapper_name<'a> {
             pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
@@ -940,12 +970,7 @@ pub fn generate_qobject_rs(
 
             #(#property_methods)*
 
-            pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
-                use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
-
-                let ptr: *const FFICppObj = unsafe { &*self.cpp.as_ref() };
-                unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
-            }
+            #update_requester
 
             pub fn grab_values_from_data(&mut self, data: &#data_struct_name) {
                 use cxx_qt_lib::MapQtValue;

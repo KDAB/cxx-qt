@@ -8,7 +8,6 @@ mod types;
 pub use types::*;
 
 pub mod update_requester;
-pub use update_requester::UpdateRequestHandler;
 
 mod map_qt_value;
 pub use map_qt_value::*;
@@ -47,6 +46,10 @@ pub const QT_TYPES_SOURCE: &str = include_str!("qt_types.cpp");
 
 pub trait PropertyChangeHandler<C, P> {
     fn handle_property_change(&mut self, cpp: &mut C, property: P);
+}
+
+pub trait UpdateRequestHandler<C> {
+    fn handle_update_request(&mut self, cpp: &mut C);
 }
 
 pub trait ToUniquePtr {

@@ -116,7 +116,7 @@ CxxQObject::event(QEvent* event)
     return true;
   }
 
-  return false;
+  return QObject::event(event);
 }
 
 void

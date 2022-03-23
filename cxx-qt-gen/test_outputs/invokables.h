@@ -2,6 +2,7 @@
 
 #include <mutex>
 
+#include "cxx-qt-lib/include/qt_types.h"
 #include "rust/cxx_qt.h"
 
 #include "cxx-qt-gen/include/nested_object.h"

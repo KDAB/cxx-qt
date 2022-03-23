@@ -145,40 +145,6 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
         QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
 }
 
-class UpdateEventCatcher : public QObject
-{
-  Q_OBJECT
-
-public:
-  bool eventFilter(QObject* object, QEvent* event) override
-  {
-    // We assume that the ProcessQueueEvent came from our requestUpdate as
-    // there are no other events being triggered in the test.
-    if (event->type() == CxxQObject::ProcessQueueEvent) {
-      Q_EMIT receivedUpdateRequest();
-      return true;
-    }
-
-    return false;
-  }
-
-Q_SIGNALS:
-  void receivedUpdateRequest();
-};
-
-TEST_CASE("CXX-Qt allows Rust code to request an update")
-{
-  UpdateEventCatcher catcher;
-  QSignalSpy updateSpy(&catcher, &UpdateEventCatcher::receivedUpdateRequest);
-
-  cxx_qt::my_object::MyObject obj;
-  obj.installEventFilter(&catcher);
-
-  obj.requestUpdateTest();
-  CHECK(updateSpy.wait());
-  CHECK(updateSpy.count() == 1);
-}
-
 TEST_CASE("CXX-Qt allows Rust code to handle an update request")
 {
   cxx_qt::my_object::MyObject obj;
@@ -274,5 +240,3 @@ TEST_CASE("CXX-Qt types are exposed to C++ correctly")
   CHECK(uint32Spy.count() == 1);
   CHECK(types.getUint32() == 4);
 }
-
-#include "main.moc"

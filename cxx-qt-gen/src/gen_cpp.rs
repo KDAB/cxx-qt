@@ -772,21 +772,21 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         }
     };
 
-    let mut private_method_headers = vec![];
-    let mut private_method_sources = vec![];
+    let mut public_method_headers = vec![];
+    let mut public_method_sources = vec![];
 
     if obj.handle_updates_impl.is_some() {
-        private_method_headers.push("Q_INVOKABLE void requestUpdate();");
-        private_method_headers.push("void updateState();");
+        public_method_headers.push("rust::cxxqtlib1::DeferredCall updateRequester();");
+        public_method_headers.push("Q_INVOKABLE void updateState();");
 
-        private_method_sources.push(formatdoc! {r#"
-            void {ident}::requestUpdate() {{
-                runOnGUIThread([&]() {{ updateState(); }});
+        public_method_sources.push(formatdoc! {r#"
+            rust::cxxqtlib1::DeferredCall {ident}::updateRequester() {{
+                return rust::cxxqtlib1::DeferredCall(this, "updateState");
             }}
         "#,
         ident = struct_ident_str,
         });
-        private_method_sources.push(formatdoc! {r#"
+        public_method_sources.push(formatdoc! {r#"
             void {ident}::updateState() {{
                 const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                 m_rustObj->handleUpdateRequest(*this);
@@ -811,6 +811,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         #include <mutex>
 
         #include "rust/cxx_qt.h"
+        #include "cxx-qt-lib/include/qt_types.h"
 
         {includes}
 
@@ -830,6 +831,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {invokables}
 
+        {public_method_headers}
+
         {public_slots}
 
         {signals}
@@ -840,8 +843,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
             bool m_initialised = false;
 
             {members_private}
-
-            {private_method_headers}
         }};
 
         typedef {ident} CppObj;
@@ -869,7 +870,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     rust_struct_ident = RUST_STRUCT_IDENT_STR,
     signals = signals,
     public_slots = public_slots,
-    private_method_headers = private_method_headers.join("\n"),
+    public_method_headers = public_method_headers.join("\n"),
     };
 
     // Generate C++ source part
@@ -893,7 +894,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {invokables}
 
-        {private_method_sources}
+        {public_method_sources}
 
         std::unique_ptr<CppObj> newCppObject()
         {{
@@ -907,7 +908,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         invokables = invokables.sources.join("\n"),
         namespace = namespace,
         properties = properties.sources.join("\n"),
-        private_method_sources = private_method_sources.join("\n"),
+        public_method_sources = public_method_sources.join("\n"),
     };
 
     Ok(CppObject {

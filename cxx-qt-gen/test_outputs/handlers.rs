@@ -43,6 +43,9 @@ mod my_object {
             #[namespace = ""]
             type QVariant = cxx_qt_lib::QVariant;
 
+            #[namespace = "rust::cxxqtlib1"]
+            type DeferredCall = cxx_qt_lib::DeferredCall;
+
             #[rust_name = "number"]
             fn getNumber(self: &MyObject) -> i32;
             #[rust_name = "set_number"]
@@ -55,6 +58,9 @@ mod my_object {
 
             #[rust_name = "new_cpp_object"]
             fn newCppObject() -> UniquePtr<MyObject>;
+
+            #[rust_name = "update_requester"]
+            fn updateRequester(self: Pin<&mut MyObject>) -> DeferredCall;
         }
 
         extern "Rust" {
@@ -125,11 +131,8 @@ mod my_object {
             self.cpp.as_mut().set_string(value);
         }
 
-        pub fn update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester {
-            use cxx_qt_lib::update_requester::{CxxQObject, UpdateRequester};
-
-            let ptr: *const FFICppObj = unsafe { &*self.cpp.as_ref() };
-            unsafe { UpdateRequester::new(ptr as *mut CxxQObject) }
+        pub fn update_requester(&mut self) -> cxx_qt_lib::DeferredCall {
+            self.cpp.as_mut().update_requester()
         }
 
         pub fn grab_values_from_data(&mut self, data: &Data) {
