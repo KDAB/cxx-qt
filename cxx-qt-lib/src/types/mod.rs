@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod deferred_call;
+pub use deferred_call::DeferredCall;
+
 mod qcolor;
 pub use qcolor::{Color, QColor};
 

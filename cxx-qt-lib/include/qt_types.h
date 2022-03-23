@@ -12,6 +12,7 @@
 #include <QDateTime>
 #include <QPoint>
 #include <QPointF>
+#include <QPointer>
 #include <QRect>
 #include <QRectF>
 #include <QSize>
@@ -25,6 +26,17 @@
 
 namespace rust {
 namespace cxxqtlib1 {
+
+class DeferredCall
+{
+public:
+  DeferredCall(QObject* obj, const char* method);
+  bool update() const;
+
+private:
+  const char* m_method;
+  QObject* m_obj;
+};
 
 namespace types {
 

@@ -65,10 +65,10 @@ MyObject::setString(const QString& value)
   }
 }
 
-void
-MyObject::requestUpdate()
+rust::cxxqtlib1::DeferredCall
+MyObject::updateRequester()
 {
-  runOnGUIThread([&]() { updateState(); });
+  return rust::cxxqtlib1::DeferredCall(this, "updateState");
 }
 
 void

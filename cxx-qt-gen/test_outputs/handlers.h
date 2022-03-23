@@ -2,6 +2,7 @@
 
 #include <mutex>
 
+#include "cxx-qt-lib/include/qt_types.h"
 #include "rust/cxx_qt.h"
 
 namespace cxx_qt::my_object {
@@ -21,6 +22,9 @@ public:
   qint32 getNumber() const;
   const QString& getString() const;
 
+  rust::cxxqtlib1::DeferredCall updateRequester();
+  Q_INVOKABLE void updateState();
+
 public Q_SLOTS:
   void setNumber(qint32 value);
   void setString(const QString& value);
@@ -36,9 +40,6 @@ private:
 
   qint32 m_number;
   QString m_string;
-
-  Q_INVOKABLE void requestUpdate();
-  void updateState();
 };
 
 typedef MyObject CppObj;

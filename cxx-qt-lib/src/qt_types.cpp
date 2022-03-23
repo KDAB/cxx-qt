@@ -6,8 +6,26 @@
 
 #include "cxx-qt-lib/include/qt_types.h"
 
+#include <QDebug>
+#include <QMetaObject>
+
 namespace rust {
 namespace cxxqtlib1 {
+
+DeferredCall::DeferredCall(QObject* obj, const char* method)
+  : m_obj(obj)
+  , m_method(method)
+{}
+
+bool
+DeferredCall::update() const
+{
+  if (m_obj == nullptr) {
+    return false;
+  }
+
+  return QMetaObject::invokeMethod(m_obj, m_method, Qt::QueuedConnection);
+}
 
 std::unique_ptr<QColor>
 qcolorInitFromRgba(std::int32_t r,

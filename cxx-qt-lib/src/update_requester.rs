@@ -91,7 +91,3 @@ unsafe impl Send for UpdateRequester {}
 unsafe impl Sync for UpdateRequester {}
 unsafe impl Send for QPtr {}
 unsafe impl Sync for QPtr {}
-
-pub trait UpdateRequestHandler<C> {
-    fn handle_update_request(&mut self, cpp: &mut C);
-}
