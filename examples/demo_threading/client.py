@@ -26,15 +26,19 @@ if __name__ == "__main__":
     client = Client("127.0.0.1", 8080)
     uuids = []
 
-    # Connect 100 sensors
+    # Create 100 sensors
     for i in range(100):
         uuids.append(str(uuid.uuid4()))
 
-    # Randomly change their values once
+    # Load the sensors with initial random values
     for id in uuids:
-        print(client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id }))
-        time.sleep(0.016)
+        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
+
+    # Randomly change their values with a delay
+    for id in uuids:
+        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
+        time.sleep(random.randrange(1, 10) / 100)  # 0.01 - 0.1
 
     # Disconnect the sensors
     for id in uuids:
-        print(client.send_json({"command": "disconnect", "uuid": id}))
+        client.send_json({"command": "disconnect", "uuid": id})
