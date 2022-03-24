@@ -1,16 +1,50 @@
 #[attrA]
 #[attrB]
 pub mod my_object {
-    use super::MyTrait;
     use cxx_qt_lib::ToUniquePtr;
+
+    const MAX: u16 = 65535;
 
     enum Event {
         MyEvent,
     }
 
+    extern crate serde;
+
     fn do_something() {
         println!("I am a free function");
     }
+
+    extern "C" {}
+
+    macro_rules! macro1 {
+        () => {
+            0
+        };
+    }
+
+    macro macro2() {
+        0
+    }
+
+    mod m {}
+
+    static BIKE: Event = Event::MyEvent;
+
+    pub trait CustomTrait {
+        fn method();
+    }
+
+    pub trait SharableIterator = CustomTrait + Sync;
+
+    type Result<T> = std::result::Result<T, Event>;
+
+    union Foo<A, B> {
+        x: A,
+        y: B,
+    }
+
+    use super::MyTrait;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
