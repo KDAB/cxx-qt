@@ -2,15 +2,62 @@
 #[make_qobject]
 #[attrB]
 pub mod my_object {
-    use super::MyTrait;
+    // ItemConst
+    const MAX: u16 = 65535;
 
+    // ItemEnum
     enum Event {
         MyEvent,
     }
 
+    // ItemExternCrate
+    extern crate serde;
+
+    // ItemFn
     fn do_something() {
         println!("I am a free function");
     }
+
+    // ItemForeignMod
+    extern "C" {}
+
+    // ItemMacro
+    macro_rules! macro1 {
+        () => {
+            0
+        };
+    }
+
+    // ItemMacro2
+    macro macro2() {
+        0
+    }
+
+    // ItemMod
+    mod m {}
+
+    // ItemStatic
+    static BIKE: Event = Event::MyEvent;
+
+    // ItemTrait
+    pub trait CustomTrait {
+        fn method();
+    }
+
+    // ItemTraitAlias
+    pub trait SharableIterator = CustomTrait + Sync;
+
+    // ItemType
+    type Result<T> = std::result::Result<T, Event>;
+
+    // ItemUnion
+    union Foo<A, B> {
+        x: A,
+        y: B,
+    }
+
+    // ItemUse
+    use super::MyTrait;
 
     #[derive(Default)]
     struct Data {

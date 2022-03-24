@@ -851,14 +851,8 @@ pub fn extract_qobject(
                 }
             }
             // We are an insignificant item that will be directly passed through
-            Item::Use(_) | Item::Enum(_) | Item::Fn(_) => {
-                original_passthrough_decls.push(item.to_owned());
-            }
-            // TODO: consider what other items we allow in the mod, we may just pass through all
-            // the remaining types as an unknown list which the gen side can put at the end?
-            // Are all the remaining types safe to pass through or do we need to exclude any?
             other => {
-                return Err(Error::new(other.span(), "Unsupported item in mod.").to_compile_error());
+                original_passthrough_decls.push(other.to_owned());
             }
         }
     }
@@ -1216,7 +1210,7 @@ mod tests {
         assert_eq!(qobject.normal_methods.len(), 2);
 
         // Check that there is a use, enum and fn declaration
-        assert_eq!(qobject.original_passthrough_decls.len(), 3);
+        assert_eq!(qobject.original_passthrough_decls.len(), 14);
     }
 
     #[test]

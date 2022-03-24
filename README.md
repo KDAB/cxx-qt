@@ -36,11 +36,11 @@ Below is an example of Rust code that exposes a QObject with two properties and 
 ```rust
 use cxx_qt::make_qobject;
 
-const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
-
 #[make_qobject]
 mod my_object {
     use serde::{Deserialize, Serialize};
+
+    const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
     #[derive(Deserialize, Serialize)]
     pub struct Data {
@@ -50,7 +50,7 @@ mod my_object {
 
     impl Default for Data {
         fn default() -> Self {
-            serde_json::from_str(super::DEFAULT_STR).unwrap()
+            serde_json::from_str(DEFAULT_STR).unwrap()
         }
     }
 
@@ -65,7 +65,7 @@ mod my_object {
 
         #[invokable]
         fn reset(&self, cpp: &mut CppObj) {
-            let data: Data = serde_json::from_str(super::DEFAULT_STR).unwrap();
+            let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
             cpp.grab_values_from_data(&data);
         }
 
