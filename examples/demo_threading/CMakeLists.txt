@@ -34,10 +34,20 @@ set(
 
 # Generate the C++ code
 cxx_qt_generate_cpp(GEN_SOURCES)
+
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
+
 # Include generated sources
 cxx_qt_include(${APP_NAME})
+
 # Link to generated rust library
 cxx_qt_link_rustlib(${APP_NAME})
-target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::QuickControls2 Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(${APP_NAME} PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Qml
+    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt${QT_VERSION_MAJOR}::Test
+)
+qt_import_qml_plugins(${APP_NAME})
