@@ -1,0 +1,47 @@
+#pragma once
+
+#include <mutex>
+
+#include "rust/cxx_qt.h"
+
+#include "cxx-qt-gen/include/nested_object.h"
+#include <QtGui/QColor>
+
+namespace cxx_qt::my_object {
+
+class RustObj;
+
+class MyObject : public CxxQObject
+{
+  Q_OBJECT
+
+public:
+  explicit MyObject(QObject* parent = nullptr);
+  ~MyObject();
+
+  Q_INVOKABLE void invokable();
+  Q_INVOKABLE void invokableCppObj();
+  Q_INVOKABLE void invokableMutable();
+  Q_INVOKABLE void invokableMutableCppObj();
+  Q_INVOKABLE void invokableNestedParameter(
+    cxx_qt::nested_object::CppObj* nested);
+  Q_INVOKABLE void invokableParameters(const QColor& opaque, qint32 primitive);
+  Q_INVOKABLE void invokableParametersCppObj(qint32 primitive);
+  Q_INVOKABLE QColor invokableReturnOpaque();
+  Q_INVOKABLE qint32 invokableReturnPrimitive();
+  Q_INVOKABLE QString invokableReturnStatic();
+
+private:
+  rust::Box<RustObj> m_rustObj;
+  std::mutex m_rustObjMutex;
+  bool m_initialised = false;
+};
+
+typedef MyObject CppObj;
+
+std::unique_ptr<CppObj>
+newCppObject();
+
+} // namespace cxx_qt::my_object
+
+Q_DECLARE_METATYPE(cxx_qt::my_object::CppObj*)
