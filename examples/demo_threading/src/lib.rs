@@ -5,30 +5,28 @@
 use cxx_qt::make_qobject;
 
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+use std::{sync::mpsc::TrySendError, time::SystemTime};
 use uuid::Uuid;
 
+/// The size of the network thread to update thread queue
+const CHANNEL_NETWORK_COUNT: usize = 1_024;
+/// The size of the update thread to Qt queue
+const CHANNEL_QT_COUNT: usize = 16;
+/// After how many milliseconds should a sensor be disconnected and considered missing
 const SENSOR_TIMEOUT_MILLIS: u128 = 10_000;
+/// How often should the timeout thread poll sensors
 const SENSOR_TIMEOUT_POLL_RATE_MILLIS: u64 = 256;
+/// The maximum number of sensors we will manage
 const SENSOR_MAXIMUM_COUNT: usize = 1000;
+/// The maximum power a sensor can report
 const SENSOR_MAXIMUM_POWER: f64 = 1000.0;
 
+// Network Serialisation definition
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum RequestCommand {
     Disconnect,
     Power { value: f64 },
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum Status {
-    Ok,
-    Error,
-    ErrorFailedToLock,
-    ErrorInvalidPower,
-    ErrorNoUuid,
-    ErrorMaximumSensorsReached,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -37,12 +35,50 @@ struct Request {
     uuid: Option<Uuid>,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum Status {
+    Ok,
+    Error,
+    ErrorInvalidPower,
+    ErrorNoUuid,
+    ErrorServerQueueFull,
+    ErrorServerDisconnected,
+}
+
 #[derive(Deserialize, Serialize)]
 struct Response {
     status: Status,
-    uuid: Option<Uuid>,
 }
 
+impl From<Status> for Response {
+    fn from(status: Status) -> Self {
+        Response { status }
+    }
+}
+
+impl From<Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>> for Response {
+    fn from(result: Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>) -> Self {
+        match result {
+            Ok(_) => Response { status: Status::Ok },
+            Err(TrySendError::Full { .. }) => Response {
+                status: Status::ErrorServerQueueFull,
+            },
+            Err(TrySendError::Disconnected { .. }) => Response {
+                status: Status::ErrorServerDisconnected,
+            },
+        }
+    }
+}
+
+// Channel definition
+enum NetworkChannel {
+    Disconnect { uuid: Uuid },
+    Power { uuid: Uuid, value: f64 },
+    TimeoutUpdate,
+}
+
+#[derive(Clone)]
 struct SensorData {
     power: f64,
     last_seen: SystemTime,
@@ -59,7 +95,7 @@ impl Default for SensorData {
 
 #[make_qobject]
 mod energy_usage {
-    use super::{Request, RequestCommand, Response, SensorData, Status};
+    use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
         net::{TcpListener, TcpStream},
         prelude::*,
@@ -69,7 +105,7 @@ mod energy_usage {
     use futures_timer::Delay;
     use std::{
         collections::HashMap,
-        sync::{Arc, Condvar, Mutex},
+        sync::mpsc::{sync_channel, Receiver, SyncSender},
         thread::JoinHandle,
         time::{Duration, SystemTime},
     };
@@ -92,7 +128,8 @@ mod energy_usage {
     }
 
     struct RustObj {
-        qt_values: Arc<Mutex<Option<Data>>>,
+        qt_rx: Receiver<Data>,
+        qt_tx: SyncSender<Data>,
         join_handle_network: Option<JoinHandle<()>>,
         join_handle_timeout: Option<JoinHandle<()>>,
         join_handle_update: Option<JoinHandle<()>>,
@@ -100,8 +137,10 @@ mod energy_usage {
 
     impl Default for RustObj {
         fn default() -> Self {
+            let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
             Self {
-                qt_values: Arc::new(Mutex::new(None)),
+                qt_rx,
+                qt_tx,
                 join_handle_network: None,
                 join_handle_timeout: None,
                 join_handle_update: None,
@@ -110,94 +149,33 @@ mod energy_usage {
     }
 
     impl RustObj {
-        async fn handle_connection(
-            mut stream: TcpStream,
-            sensors_mutex_network: Arc<Mutex<HashMap<Uuid, SensorData>>>,
-            update_pair_network: Arc<(Mutex<bool>, Condvar)>,
-        ) {
+        async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
             let mut buf = vec![0u8; 1024];
             let _ = stream.read(&mut buf).await.unwrap();
             let trimmed = std::str::from_utf8(&buf)
                 .unwrap()
                 .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
-            let notify_change = || {
-                let (lock, cvar) = &*update_pair_network;
-                if let Ok(mut changed) = lock.lock() {
-                    if !*changed {
-                        *changed = true;
-                        cvar.notify_one();
-                    }
-                }
-            };
 
-            let response = match serde_json::from_str::<Request>(trimmed) {
+            let response: Response = match serde_json::from_str::<Request>(trimmed) {
                 Ok(request) => {
-                    // Validate that we have a uuid
-                    if let Some(uuid) = request.uuid {
-                        // Lock the sensors hashmap so that we can mutate it
-                        if let Ok(mut sensors) = sensors_mutex_network.lock() {
-                            match request.command {
-                                RequestCommand::Disconnect => {
-                                    sensors.remove(&uuid);
-                                    notify_change();
-
-                                    Response {
-                                        status: Status::Ok,
-                                        uuid: Some(uuid),
-                                    }
-                                }
-                                RequestCommand::Power { value } => {
-                                    // Validate that our power is within the expected range
-                                    if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
-                                        // Validate that we would still be below the sensors max count
-                                        let sensors_len = sensors.len();
-                                        let entry = sensors.entry(uuid);
-                                        if sensors_len < super::SENSOR_MAXIMUM_COUNT
-                                            || matches!(
-                                                entry,
-                                                std::collections::hash_map::Entry::Occupied(..)
-                                            )
-                                        {
-                                            let mut sensor = entry.or_default();
-                                            sensor.power = value;
-                                            sensor.last_seen = SystemTime::now();
-                                            notify_change();
-
-                                            Response {
-                                                status: Status::Ok,
-                                                uuid: Some(uuid),
-                                            }
-                                        } else {
-                                            Response {
-                                                status: Status::ErrorMaximumSensorsReached,
-                                                uuid: Some(uuid),
-                                            }
-                                        }
-                                    } else {
-                                        Response {
-                                            status: Status::ErrorInvalidPower,
-                                            uuid: Some(uuid),
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            Response {
-                                status: Status::ErrorFailedToLock,
-                                uuid: Some(uuid),
+                    match (request.uuid, request.command) {
+                        (Some(uuid), RequestCommand::Power { value }) => {
+                            // Validate that our power is within the expected range
+                            if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
+                                network_tx
+                                    .try_send(NetworkChannel::Power { uuid, value })
+                                    .into()
+                            } else {
+                                Status::ErrorInvalidPower.into()
                             }
                         }
-                    } else {
-                        Response {
-                            status: Status::ErrorNoUuid,
-                            uuid: None,
-                        }
+                        (Some(uuid), RequestCommand::Disconnect) => network_tx
+                            .try_send(NetworkChannel::Disconnect { uuid })
+                            .into(),
+                        (None, _) => Status::ErrorNoUuid.into(),
                     }
                 }
-                Err(_) => Response {
-                    status: Status::Error,
-                    uuid: None,
-                },
+                Err(_) => Status::Error.into(),
             };
 
             stream
@@ -217,33 +195,11 @@ mod energy_usage {
                 return;
             }
 
-            // Here we start four threads with different tasks to manage sensors
-            //
-            // - Network thread
-            //      - handles a TCP connection
-            //      - validates values
-            //      - updates values in the sensors hashmap
-            //      - notifies that sensors has changed
-            // - Timeout thread
-            //      - polls the sensors hashmap and checks for old data
-            //      - notifies that sensors has changed
-            // - Update thread
-            //      - waits for sensors changed notification
-            //      - reads the hashmap
-            //      - writes new Qt values to qt queue
+            let (network_tx, network_rx) = sync_channel(super::CHANNEL_NETWORK_COUNT);
+            let (timeout_tx, timeout_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
 
-            let sensors_mutex = Arc::new(Mutex::new(HashMap::<Uuid, SensorData>::with_capacity(
-                super::SENSOR_MAXIMUM_COUNT,
-            )));
-
-            // This is a false positive from clippy that will be removed later
-            // https://github.com/rust-lang/rust-clippy/pull/8260
-            #[allow(clippy::mutex_atomic)]
-            let update_pair = Arc::new((Mutex::new(false), Condvar::new()));
-
-            // Prepare our timeout thread, if a sensor is not seen for 10 seconds we remove it
-            let sensors_mutex_timeout = sensors_mutex.clone();
-            let update_pair_timeout = update_pair.clone();
+            // Prepare our timeout thread, if a sensor is not seen for N seconds we remove it
+            let timeout_network_tx = network_tx.clone();
             let run_timeout = async move {
                 loop {
                     Delay::new(Duration::from_millis(
@@ -251,62 +207,94 @@ mod energy_usage {
                     ))
                     .await;
 
-                    if let Ok(mut sensors) = sensors_mutex_timeout.try_lock() {
-                        let sensors_count = sensors.len();
-                        sensors.retain(|_, sensor| {
-                            if let Ok(duration) = sensor.last_seen.elapsed() {
-                                duration.as_millis() < super::SENSOR_TIMEOUT_MILLIS
-                            } else {
-                                false
-                            }
-                        });
+                    timeout_network_tx
+                        .send(NetworkChannel::TimeoutUpdate)
+                        .unwrap();
 
-                        if sensors.len() < sensors_count {
-                            let (lock, cvar) = &*update_pair_timeout;
-                            if let Ok(mut changed) = lock.lock() {
-                                if !*changed {
-                                    *changed = true;
-                                    cvar.notify_one();
+                    if let Ok(mut sensors) = timeout_rx.recv() {
+                        for uuid in sensors
+                            .drain()
+                            // Find sensors that have expired
+                            .filter(|(_, sensor)| {
+                                if let Ok(duration) = sensor.last_seen.elapsed() {
+                                    duration.as_millis() > super::SENSOR_TIMEOUT_MILLIS
+                                } else {
+                                    true
                                 }
-                            }
+                            })
+                            .map(|(uuid, _)| uuid)
+                        {
+                            timeout_network_tx
+                                .send(NetworkChannel::Disconnect { uuid })
+                                .unwrap();
                         }
                     }
                 }
             };
 
-            let sensors_mutex_update = sensors_mutex.clone();
+            // Prepare our update thread, which reads from the network channel and collates
+            // the commands into a hashmap.
+            // When values change this then requests an update to Qt
             let update_requester = cpp.update_requester();
-            let update_pair_update = update_pair.clone();
-            let qt_values_mutex = self.qt_values.clone();
+            let qt_tx = self.qt_tx.clone();
             let run_update = async move {
+                let mut sensors =
+                    HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
+
                 loop {
-                    let (lock, cvar) = &*update_pair_update;
-                    if let Ok(mut changed) = lock.lock() {
-                        changed = cvar.wait(changed).unwrap();
+                    if let Ok(command) = network_rx.recv() {
+                        let mut changed = false;
 
-                        if *changed {
-                            if let Ok(sensors) = sensors_mutex_update.lock() {
-                                // If there is new sensor info then build average, count, total and inform Qt
-                                let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                                let sensors = sensors.len() as u32;
-                                let average_use = if sensors > 0 {
-                                    total_use / (sensors as f64)
-                                } else {
-                                    0.0
-                                };
-
-                                if let Ok(mut values) = qt_values_mutex.lock() {
-                                    *values = Some(Data {
-                                        average_use,
-                                        sensors,
-                                        total_use,
-                                    })
-                                }
-
-                                update_requester.request_update();
+                        match command {
+                            NetworkChannel::Disconnect { uuid } => {
+                                sensors.remove(&uuid);
+                                changed = true;
                             }
+                            NetworkChannel::Power { uuid, value } => {
+                                // Validate that we would still be below the sensors max count
+                                let sensors_len = sensors.len();
+                                let entry = sensors.entry(uuid);
+                                if sensors_len < super::SENSOR_MAXIMUM_COUNT
+                                    || matches!(
+                                        entry,
+                                        std::collections::hash_map::Entry::Occupied(..)
+                                    )
+                                {
+                                    let mut sensor = entry.or_default();
+                                    sensor.power = value;
+                                    sensor.last_seen = SystemTime::now();
+                                    changed = true;
+                                } else {
+                                    println!("Maximum sensor count reached!");
+                                }
+                            }
+                            NetworkChannel::TimeoutUpdate => {
+                                timeout_tx.send(sensors.clone()).unwrap();
+                            }
+                        }
 
-                            *changed = false;
+                        // If there is new sensor info then build average, count, total and inform Qt
+                        //
+                        // Note that this part could be in a separate thread like the timeout
+                        // then it could poll for a snapshot of the sensors every N milliseconds
+                        if changed {
+                            let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
+                            let sensors = sensors.len() as u32;
+                            let average_use = if sensors > 0 {
+                                total_use / (sensors as f64)
+                            } else {
+                                0.0
+                            };
+
+                            qt_tx
+                                .send(Data {
+                                    average_use,
+                                    sensors,
+                                    total_use,
+                                })
+                                .unwrap();
+
+                            update_requester.request_update();
                         }
                     }
                 }
@@ -317,18 +305,11 @@ mod energy_usage {
                 let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
                 listener
                     .incoming()
-                    .map(|stream| (stream, sensors_mutex.clone(), update_pair.clone()))
-                    .for_each_concurrent(
-                        /* limit */ None,
-                        |(stream, sensors_mutex_network, update_pair)| async move {
-                            let stream = stream.unwrap();
-                            spawn(RustObj::handle_connection(
-                                stream,
-                                sensors_mutex_network,
-                                update_pair,
-                            ));
-                        },
-                    )
+                    .map(|stream| (stream, network_tx.clone()))
+                    .for_each_concurrent(/* limit */ None, |(stream, network_tx)| async move {
+                        let stream = stream.unwrap();
+                        spawn(RustObj::handle_connection(stream, network_tx));
+                    })
                     .await;
             };
 
@@ -342,12 +323,11 @@ mod energy_usage {
     impl UpdateRequestHandler<CppObj<'_>> for RustObj {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             // Process the new data from the background thread
-            if let Ok(mut values) = self.qt_values.lock() {
-                if let Some(data) = &*values {
-                    cpp.grab_values_from_data(data);
-
-                    *values = None;
-                }
+            if let Some(data) = self.qt_rx.try_iter().last() {
+                // Here we have constructed a new Data struct so can consume it's values
+                // for other uses we could have passed an Enum across the channel
+                // and then process the required action here
+                cpp.grab_values_from_data(data);
             }
         }
     }
