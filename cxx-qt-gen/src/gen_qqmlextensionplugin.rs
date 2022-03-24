@@ -147,15 +147,12 @@ mod tests {
 
     #[test]
     fn generates_basic_qmldir() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_properties.rs");
+        let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_qmldir = include_str!("../test_outputs/basic_qmldir");
+        let expected_qmldir = include_str!("../test_outputs/qmldir");
 
         let mut plugin = QQmlExtensionPluginData::new("MODULE_IDENT", "CPP_PLUGIN_NAME");
         plugin.push_type(&qobject);
@@ -166,18 +163,13 @@ mod tests {
 
     #[test]
     fn generates_basic_qqmlextensionplugin() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_properties.rs");
+        let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_source = clang_format(include_str!(
-            "../test_outputs/basic_qqmlextensionplugin.cpp"
-        ))
-        .unwrap();
+        let expected_source =
+            clang_format(include_str!("../test_outputs/qqmlextensionplugin.cpp")).unwrap();
 
         let mut plugin = QQmlExtensionPluginData::new("MODULE_IDENT", "CPP_PLUGIN_NAME");
         plugin.push_type(&qobject);

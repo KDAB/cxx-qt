@@ -915,21 +915,19 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn parses_basic_custom_default() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_custom_default.rs");
+    fn parses_custom_default() {
+        let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
-        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
 
-        // Check that impl Default was found
-        assert_eq!(qobject.original_trait_impls.len(), 1);
+        assert_eq!(qobject.original_trait_impls.len(), 2);
+
+        // Check that impl Default was found for Data
         let trait_impl = &qobject.original_trait_impls[0];
         if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
             assert_eq!(path.segments.len(), 1);
@@ -937,80 +935,20 @@ mod tests {
         } else {
             panic!("Trait impl was not a TypePath");
         }
+
+        // Check that impl Default was found for RustObj
+        let trait_impl = &qobject.original_trait_impls[1];
+        if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
+            assert_eq!(path.segments.len(), 1);
+            assert_eq!(path.segments[0].ident.to_string(), "RustObj");
+        } else {
+            panic!("Trait impl was not a TypePath");
+        }
     }
 
     #[test]
-    fn parses_basic_ident_changes() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_ident_changes.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        // Check that it got the properties and that the idents are correct
-        assert_eq!(qobject.properties.len(), 1);
-
-        // Check first property
-        let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.cpp_ident.to_string(), "myNumber");
-        assert_eq!(prop_first.ident.rust_ident.to_string(), "my_number");
-        assert_eq!(prop_first.type_ident.idents.len(), 1);
-        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
-        assert!(!prop_first.type_ident.is_ref);
-
-        assert!(prop_first.getter.is_some());
-        let getter = prop_first.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getMyNumber");
-        assert_eq!(getter.rust_ident.to_string(), "my_number");
-
-        assert!(prop_first.setter.is_some());
-        let setter = prop_first.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setMyNumber");
-        assert_eq!(setter.rust_ident.to_string(), "set_my_number");
-
-        assert!(prop_first.notify.is_some());
-        let notify = prop_first.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "myNumberChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "my_number");
-
-        // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 1);
-
-        // Check invokable ident
-        let invokable = &qobject.invokables[0];
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayBye");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "say_bye");
-
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable.parameters.len(), 0);
-    }
-
-    #[test]
-    fn parses_basic_invokable_and_properties() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        // Check that it got the invokables and properties
-        // We only check the counts as the only_invokables and only_properties
-        // will test more than the number.
-        assert_eq!(qobject.invokables.len(), 2);
-        assert_eq!(qobject.properties.len(), 2);
-    }
-
-    #[test]
-    fn parses_basic_only_invokable() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_invokable.rs");
+    fn parses_invokables() {
+        let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
@@ -1021,241 +959,354 @@ mod tests {
         assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
 
         // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 3);
+        assert_eq!(qobject.invokables.len(), 10);
 
-        // Check invokable ident
+        // Check empty invokable ident
         let invokable = &qobject.invokables[0];
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayHi");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "say_hi");
-
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable.parameters.len(), 2);
-
-        let param_first = &invokable.parameters[0];
-        assert_eq!(param_first.ident.to_string(), "string");
-        // TODO: add extra checks when we read if this is a mut or not
-        assert_eq!(param_first.type_ident.idents.len(), 1);
-        assert_eq!(param_first.type_ident.idents[0].to_string(), "QString");
-        assert!(param_first.type_ident.is_ref);
-
-        let param_second = &invokable.parameters[1];
-        assert_eq!(param_second.ident.to_string(), "number");
-        assert_eq!(param_second.type_ident.idents.len(), 1);
-        assert_eq!(param_second.type_ident.idents[0].to_string(), "i32");
-        assert!(!param_second.type_ident.is_ref);
-
-        // Check invokable is not mutable
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokable");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable");
+        assert_eq!(invokable.parameters.len(), 0);
+        assert!(invokable.return_type.is_none());
         assert!(!invokable.mutable);
 
-        // Check invokable ident
-        let invokable_second = &qobject.invokables[1];
-        assert_eq!(invokable_second.ident.cpp_ident.to_string(), "sayBye");
-        assert_eq!(invokable_second.ident.rust_ident.to_string(), "say_bye");
+        // Check CppObj invokable
+        let invokable = &qobject.invokables[1];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableCppObj");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_cpp_obj");
+        assert_eq!(invokable.parameters.len(), 1);
+        assert!(invokable.return_type.is_none());
+        assert!(!invokable.mutable);
+        let parameter = &invokable.parameters[0];
+        assert_eq!(parameter.ident.to_string(), "cpp");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
+        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
+            assert_eq!(external, &false);
+        } else {
+            panic!();
+        }
+        assert!(parameter.type_ident.is_ref);
+        assert!(parameter.type_ident.is_mut);
 
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable_second.parameters.len(), 0);
+        // Check the mutable invokable
+        let invokable = &qobject.invokables[2];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableMutable");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_mutable");
+        assert_eq!(invokable.parameters.len(), 0);
+        assert!(invokable.return_type.is_none());
+        assert!(invokable.mutable);
 
-        // Check invokable is not mutable
-        assert!(!invokable_second.mutable);
-
-        let invokable_third = &qobject.invokables[2];
+        // Check the mutable CppObj invokable
+        let invokable = &qobject.invokables[3];
         assert_eq!(
-            invokable_third.ident.cpp_ident.to_string(),
-            "mutableInvokable"
+            invokable.ident.cpp_ident.to_string(),
+            "invokableMutableCppObj"
         );
         assert_eq!(
-            invokable_third.ident.rust_ident.to_string(),
-            "mutable_invokable"
+            invokable.ident.rust_ident.to_string(),
+            "invokable_mutable_cpp_obj"
         );
+        assert_eq!(invokable.parameters.len(), 1);
+        assert!(invokable.return_type.is_none());
+        assert!(invokable.mutable);
+        let parameter = &invokable.parameters[0];
+        assert_eq!(parameter.ident.to_string(), "cpp");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
+        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
+            assert_eq!(external, &false);
+        } else {
+            panic!();
+        }
+        assert!(parameter.type_ident.is_ref);
+        assert!(parameter.type_ident.is_mut);
 
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable_third.parameters.len(), 0);
+        // Check nested parameter invokable
+        let invokable = &qobject.invokables[4];
+        assert_eq!(
+            invokable.ident.cpp_ident.to_string(),
+            "invokableNestedParameter"
+        );
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_nested_parameter"
+        );
+        assert_eq!(invokable.parameters.len(), 1);
+        assert!(invokable.return_type.is_none());
+        assert!(!invokable.mutable);
+        let parameter = &invokable.parameters[0];
+        assert_eq!(parameter.ident.to_string(), "nested");
+        assert_eq!(parameter.type_ident.idents.len(), 3);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "crate");
+        assert_eq!(parameter.type_ident.idents[1].to_string(), "nested_object");
+        assert_eq!(parameter.type_ident.idents[2].to_string(), "CppObj");
+        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
+            assert_eq!(external, &true);
+        } else {
+            panic!();
+        }
+        assert!(parameter.type_ident.is_ref);
+        assert!(parameter.type_ident.is_mut);
+        assert!(matches!(
+            parameter.type_ident.qt_type,
+            QtTypes::CppObj { .. }
+        ));
 
-        // Check invokable is mutable
-        assert!(invokable_third.mutable);
+        // Check Parameters invokable
+        let invokable = &qobject.invokables[5];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableParameters");
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_parameters"
+        );
+        assert_eq!(invokable.parameters.len(), 2);
+        assert!(invokable.return_type.is_none());
+        assert!(!invokable.mutable);
+        let parameter = &invokable.parameters[0];
+        assert_eq!(parameter.ident.to_string(), "opaque");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "Color");
+        assert!(parameter.type_ident.is_ref);
+        assert!(!parameter.type_ident.is_mut);
+        let parameter = &invokable.parameters[1];
+        assert_eq!(parameter.ident.to_string(), "primitive");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "i32");
+        assert!(!parameter.type_ident.is_ref);
+        assert!(!parameter.type_ident.is_mut);
+
+        // Check Parameters CppObj invokable
+        let invokable = &qobject.invokables[6];
+        assert_eq!(
+            invokable.ident.cpp_ident.to_string(),
+            "invokableParametersCppObj"
+        );
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_parameters_cpp_obj"
+        );
+        assert_eq!(invokable.parameters.len(), 2);
+        assert!(invokable.return_type.is_none());
+        assert!(!invokable.mutable);
+        let parameter = &invokable.parameters[0];
+        assert_eq!(parameter.ident.to_string(), "primitive");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "i32");
+        assert!(!parameter.type_ident.is_ref);
+        assert!(!parameter.type_ident.is_mut);
+        let parameter = &invokable.parameters[1];
+        assert_eq!(parameter.ident.to_string(), "cpp");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
+        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
+            assert_eq!(external, &false);
+        } else {
+            panic!();
+        }
+        assert!(parameter.type_ident.is_ref);
+        assert!(parameter.type_ident.is_mut);
+
+        // Check return opaque invokable
+        let invokable = &qobject.invokables[7];
+        assert_eq!(
+            invokable.ident.cpp_ident.to_string(),
+            "invokableReturnOpaque"
+        );
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_return_opaque"
+        );
+        assert_eq!(invokable.parameters.len(), 0);
+        assert!(invokable.return_type.is_some());
+        assert!(invokable.mutable);
+
+        // Check return primitive invokable
+        let invokable = &qobject.invokables[8];
+        assert_eq!(
+            invokable.ident.cpp_ident.to_string(),
+            "invokableReturnPrimitive"
+        );
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_return_primitive"
+        );
+        assert_eq!(invokable.parameters.len(), 0);
+        assert!(invokable.return_type.is_some());
+        assert!(invokable.mutable);
+
+        // Check return static invokable
+        let invokable = &qobject.invokables[9];
+        assert_eq!(
+            invokable.ident.cpp_ident.to_string(),
+            "invokableReturnStatic"
+        );
+        assert_eq!(
+            invokable.ident.rust_ident.to_string(),
+            "invokable_return_static"
+        );
+        assert_eq!(invokable.parameters.len(), 0);
+        assert!(invokable.return_type.is_some());
+        assert!(invokable.mutable);
 
         // Check that the normal method was also detected
         assert_eq!(qobject.normal_methods.len(), 1);
     }
 
     #[test]
-    fn parses_basic_only_properties() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_properties.rs");
+    fn parsing_naming() {
+        let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
-        assert_eq!(qobject.properties.len(), 2);
-        assert_eq!(qobject.original_data_struct.ident.to_string(), "Data");
+        assert_eq!(qobject.properties.len(), 1);
 
         // Check first property
         let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.cpp_ident.to_string(), "number");
-        assert_eq!(prop_first.ident.rust_ident.to_string(), "number");
+        assert_eq!(prop_first.ident.cpp_ident.to_string(), "propertyName");
+        assert_eq!(prop_first.ident.rust_ident.to_string(), "property_name");
         assert_eq!(prop_first.type_ident.idents.len(), 1);
         assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
         assert!(!prop_first.type_ident.is_ref);
 
         assert!(prop_first.getter.is_some());
         let getter = prop_first.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getNumber");
-        assert_eq!(getter.rust_ident.to_string(), "number");
+        assert_eq!(getter.cpp_ident.to_string(), "getPropertyName");
+        assert_eq!(getter.rust_ident.to_string(), "property_name");
 
         assert!(prop_first.setter.is_some());
         let setter = prop_first.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setNumber");
-        assert_eq!(setter.rust_ident.to_string(), "set_number");
+        assert_eq!(setter.cpp_ident.to_string(), "setPropertyName");
+        assert_eq!(setter.rust_ident.to_string(), "set_property_name");
 
         assert!(prop_first.notify.is_some());
         let notify = prop_first.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "numberChanged");
+        assert_eq!(notify.cpp_ident.to_string(), "propertyNameChanged");
         // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "number");
+        assert_eq!(notify.rust_ident.to_string(), "property_name");
 
-        // Check second property
-        let prop_second = &qobject.properties[1];
-        assert_eq!(prop_second.ident.cpp_ident.to_string(), "string");
-        assert_eq!(prop_second.ident.rust_ident.to_string(), "string");
-        assert_eq!(prop_second.type_ident.idents.len(), 1);
-        assert_eq!(prop_second.type_ident.idents[0].to_string(), "String");
-        assert!(!prop_second.type_ident.is_ref);
+        // Check that it got the invokables
+        assert_eq!(qobject.invokables.len(), 1);
 
-        assert!(prop_second.getter.is_some());
-        let getter = prop_second.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getString");
-        assert_eq!(getter.rust_ident.to_string(), "string");
+        // Check invokable ident
+        let invokable = &qobject.invokables[0];
+        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableName");
+        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_name");
 
-        assert!(prop_second.setter.is_some());
-        let setter = prop_second.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setString");
-        assert_eq!(setter.rust_ident.to_string(), "set_string");
-
-        assert!(prop_second.notify.is_some());
-        let notify = prop_second.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "stringChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "string");
+        // Check invokable parameters ident and type ident
+        assert_eq!(invokable.parameters.len(), 0);
     }
 
     #[test]
-    fn parses_basic_mod_passthrough() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
+    fn parses_passthrough() {
+        let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
+        // Check that it got the names right
+        assert_eq!(qobject.ident.to_string(), "MyObject");
+        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+
         // Check that it got the inovkables and properties
-        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
+        assert_eq!(qobject.normal_methods.len(), 2);
 
         // Check that there is a use, enum and fn declaration
         assert_eq!(qobject.original_passthrough_decls.len(), 3);
     }
 
     #[test]
-    fn parses_basic_pin_invokable() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_pin_invokable.rs");
+    fn parses_properties() {
+        let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        // Check that it got the names right
-        assert_eq!(qobject.ident.to_string(), "MyObject");
-        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+        // Check that it got the properties and that the idents are correct
+        assert_eq!(qobject.properties.len(), 3);
+        assert_eq!(qobject.original_data_struct.ident.to_string(), "Data");
 
-        // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 2);
+        // Check first property
+        let prop_first = &qobject.properties[0];
+        assert_eq!(prop_first.ident.cpp_ident.to_string(), "primitive");
+        assert_eq!(prop_first.ident.rust_ident.to_string(), "primitive");
+        assert_eq!(prop_first.type_ident.idents.len(), 1);
+        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
+        assert!(!prop_first.type_ident.is_ref);
 
-        // Check invokable ident
-        let invokable = &qobject.invokables[0];
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "sayHi");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "say_hi");
+        assert!(prop_first.getter.is_some());
+        let getter = prop_first.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getPrimitive");
+        assert_eq!(getter.rust_ident.to_string(), "primitive");
 
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable.parameters.len(), 3);
+        assert!(prop_first.setter.is_some());
+        let setter = prop_first.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setPrimitive");
+        assert_eq!(setter.rust_ident.to_string(), "set_primitive");
 
-        let param_first = &invokable.parameters[0];
-        assert_eq!(param_first.ident.to_string(), "_cpp");
-        assert_eq!(param_first.type_ident.idents.len(), 1);
-        assert_eq!(param_first.type_ident.idents[0].to_string(), "CppObj");
-        assert!(param_first.type_ident.is_ref);
-        assert!(param_first.type_ident.is_mut);
-        if let QtTypes::CppObj { external, .. } = &param_first.type_ident.qt_type {
-            assert_eq!(external, &false);
-        } else {
-            panic!();
-        }
+        assert!(prop_first.notify.is_some());
+        let notify = prop_first.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "primitiveChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "primitive");
 
-        let param_second = &invokable.parameters[1];
-        assert_eq!(param_second.ident.to_string(), "string");
-        // TODO: add extra checks when we read if this is a mut or not
-        assert_eq!(param_second.type_ident.idents.len(), 1);
-        assert_eq!(param_second.type_ident.idents[0].to_string(), "QString");
-        assert!(param_second.type_ident.is_ref);
+        // Check second property
+        let prop_second = &qobject.properties[1];
+        assert_eq!(prop_second.ident.cpp_ident.to_string(), "opaque");
+        assert_eq!(prop_second.ident.rust_ident.to_string(), "opaque");
+        assert_eq!(prop_second.type_ident.idents.len(), 1);
+        assert_eq!(prop_second.type_ident.idents[0].to_string(), "Color");
+        assert!(!prop_second.type_ident.is_ref);
 
-        let param_third = &invokable.parameters[2];
-        assert_eq!(param_third.ident.to_string(), "number");
-        assert_eq!(param_third.type_ident.idents.len(), 1);
-        assert_eq!(param_third.type_ident.idents[0].to_string(), "i32");
-        assert!(!param_third.type_ident.is_ref);
+        assert!(prop_second.getter.is_some());
+        let getter = prop_second.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getOpaque");
+        assert_eq!(getter.rust_ident.to_string(), "opaque");
 
-        // Check invokable ident
-        let invokable_second = &qobject.invokables[1];
-        assert_eq!(invokable_second.ident.cpp_ident.to_string(), "sayBye");
-        assert_eq!(invokable_second.ident.rust_ident.to_string(), "say_bye");
+        assert!(prop_second.setter.is_some());
+        let setter = prop_second.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setOpaque");
+        assert_eq!(setter.rust_ident.to_string(), "set_opaque");
 
-        // Check invokable parameters ident and type ident
-        assert_eq!(invokable_second.parameters.len(), 1);
+        assert!(prop_second.notify.is_some());
+        let notify = prop_second.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "opaqueChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "opaque");
 
-        let param_first = &invokable_second.parameters[0];
-        assert_eq!(param_first.ident.to_string(), "_cpp");
-        assert_eq!(param_first.type_ident.idents.len(), 1);
-        assert_eq!(param_first.type_ident.idents[0].to_string(), "CppObj");
-        assert!(param_first.type_ident.is_ref);
-        assert!(param_first.type_ident.is_mut);
-        if let QtTypes::CppObj { external, .. } = &param_first.type_ident.qt_type {
-            assert_eq!(external, &false);
-        } else {
-            panic!();
-        }
-    }
+        // Check third property
+        let prop_third = &qobject.properties[2];
+        assert_eq!(prop_third.ident.cpp_ident.to_string(), "nested");
+        assert_eq!(prop_third.ident.rust_ident.to_string(), "nested");
+        assert_eq!(prop_third.type_ident.idents.len(), 3);
+        assert_eq!(prop_third.type_ident.idents[0].to_string(), "crate");
+        assert_eq!(prop_third.type_ident.idents[1].to_string(), "nested_object");
+        assert_eq!(prop_third.type_ident.idents[2].to_string(), "CppObj");
+        assert!(!prop_third.type_ident.is_ref);
 
-    #[test]
-    fn parses_basic_unknown_rust_obj_type() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_unknown_rust_obj_type.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        assert!(prop_third.getter.is_some());
+        let getter = prop_third.getter.as_ref().unwrap();
+        assert_eq!(getter.cpp_ident.to_string(), "getNested");
+        assert_eq!(getter.rust_ident.to_string(), "nested");
 
-        // Check that it got the names right
-        assert_eq!(qobject.ident.to_string(), "MyObject");
-        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+        assert!(prop_third.setter.is_some());
+        let setter = prop_third.setter.as_ref().unwrap();
+        assert_eq!(setter.cpp_ident.to_string(), "setNested");
+        assert_eq!(setter.rust_ident.to_string(), "set_nested");
 
-        // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 0);
-        assert_eq!(qobject.normal_methods.len(), 2);
+        assert!(prop_third.notify.is_some());
+        let notify = prop_third.notify.as_ref().unwrap();
+        assert_eq!(notify.cpp_ident.to_string(), "nestedChanged");
+        // TODO: does rust need a notify ident?
+        assert_eq!(notify.rust_ident.to_string(), "nested");
     }
 
     #[test]
     fn parses_types_primitive_property() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];

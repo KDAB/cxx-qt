@@ -235,7 +235,7 @@ pub fn generate_qobject_cxx(
                     let return_type_ident = return_type.qt_type.param_type_ident();
                     rs_functions.push(quote! {
                         #[cxx_name = #ident_cpp_str]
-                        fn #ident(self: &#rust_class_name) -> UniquePtr<#return_type_ident>;
+                        fn #ident(self: &#mutablility #rust_class_name) -> UniquePtr<#return_type_ident>;
                     });
                 } else if return_type.is_ref {
                     rs_functions.push(quote! {
@@ -1043,16 +1043,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_custom_default() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_custom_default.rs");
+    fn generates_custom_default() {
+        let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_custom_default.rs");
+        let expected_output = include_str!("../test_outputs/custom_default.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1064,16 +1061,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_ident_changes() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_ident_changes.rs");
+    fn generates_handlers() {
+        let source = include_str!("../test_inputs/handlers.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_ident_changes.rs");
+        let expected_output = include_str!("../test_outputs/handlers.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1085,16 +1079,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_invokable_and_properties() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_invokable_and_properties.rs");
+    fn generates_invokables() {
+        let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_invokable_and_properties.rs");
+        let expected_output = include_str!("../test_outputs/invokables.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1106,16 +1097,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_only_invokables() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_invokable.rs");
+    fn generates_naming() {
+        let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_only_invokable.rs");
+        let expected_output = include_str!("../test_outputs/naming.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1127,16 +1115,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_only_invokables_with_return() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_invokable_return.rs");
+    fn generates_passthrough() {
+        let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_only_invokable_return.rs");
+        let expected_output = include_str!("../test_outputs/passthrough.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1148,184 +1133,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_basic_only_properties() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_only_properties.rs");
+    fn generates_properties() {
+        let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
         let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
 
-        let expected_output = include_str!("../test_outputs/basic_only_properties.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_mod_attrs_vis() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_mod_attrs_vis.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_mod_attrs_vis.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_mod_passthrough() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_mod_passthrough.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_mod_passthrough.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_pin_invokable() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_pin_invokable.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_pin_invokable.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_unknown_rust_obj_type() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_unknown_rust_obj_type.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_unknown_rust_obj_type.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_subobject_property() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/subobject_property.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/subobject_property.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_subobject_pin_invokable() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/subobject_pin_invokable.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/subobject_pin_invokable.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_update_requester() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_update_requester.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_update_requester.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
-            .unwrap()
-            .to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_basic_change_handler() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
-        let source = include_str!("../test_inputs/basic_change_handler.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
-
-        let expected_output = include_str!("../test_outputs/basic_change_handler.rs");
+        let expected_output = include_str!("../test_outputs/properties.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject, &cpp_namespace_prefix)
@@ -1338,9 +1152,6 @@ mod tests {
 
     #[test]
     fn generates_types_primitive_property() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
@@ -1359,9 +1170,6 @@ mod tests {
 
     #[test]
     fn generates_types_qt_property() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_qt_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
@@ -1380,9 +1188,6 @@ mod tests {
 
     #[test]
     fn generates_types_qt_invokable() {
-        // TODO: we probably want to parse all the test case files we have
-        // only once as to not slow down different tests on the same input.
-        // This can maybe be done with some kind of static object somewhere.
         let source = include_str!("../test_inputs/types_qt_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
@@ -1398,7 +1203,4 @@ mod tests {
 
         assert_eq!(generated_rs, expected_output);
     }
-
-    // TODO: add tests for more complex cases such as invokables with parameters
-    // and for objects with properties
 }
