@@ -32,16 +32,15 @@ enum RequestCommand {
 #[derive(Deserialize, Serialize)]
 struct Request {
     command: RequestCommand,
-    uuid: Option<Uuid>,
+    uuid: Uuid,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum Status {
     Ok,
-    Error,
     ErrorInvalidPower,
-    ErrorNoUuid,
+    ErrorInvalidRequest,
     ErrorServerQueueFull,
     ErrorServerDisconnected,
 }
@@ -158,24 +157,26 @@ mod energy_usage {
 
             let response: Response = match serde_json::from_str::<Request>(trimmed) {
                 Ok(request) => {
-                    match (request.uuid, request.command) {
-                        (Some(uuid), RequestCommand::Power { value }) => {
+                    match request.command {
+                        RequestCommand::Power { value } => {
                             // Validate that our power is within the expected range
                             if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
                                 network_tx
-                                    .try_send(NetworkChannel::Power { uuid, value })
+                                    .try_send(NetworkChannel::Power {
+                                        uuid: request.uuid,
+                                        value,
+                                    })
                                     .into()
                             } else {
                                 Status::ErrorInvalidPower.into()
                             }
                         }
-                        (Some(uuid), RequestCommand::Disconnect) => network_tx
-                            .try_send(NetworkChannel::Disconnect { uuid })
+                        RequestCommand::Disconnect => network_tx
+                            .try_send(NetworkChannel::Disconnect { uuid: request.uuid })
                             .into(),
-                        (None, _) => Status::ErrorNoUuid.into(),
                     }
                 }
-                Err(_) => Status::Error.into(),
+                Err(_) => Status::ErrorInvalidRequest.into(),
             };
 
             stream
