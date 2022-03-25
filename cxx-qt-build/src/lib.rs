@@ -95,6 +95,7 @@ fn manifest_dir() -> String {
     if cfg!(windows) {
         manifest_dir = manifest_dir.replace('\\', "/");
     }
+    println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
     manifest_dir
 }
 
@@ -181,6 +182,7 @@ fn gen_cxx_for_file(
     // This will require detecting nested modules in a file
 
     let path = format!("{}/{}", manifest_dir, rs_path);
+    println!("cargo:rerun-if-changed={}", path);
     let content = std::fs::read_to_string(path).expect("Could not read Rust file");
     let extracted = extract_modules(&content, rs_path);
 

@@ -14,10 +14,13 @@ fn main() {
     if cfg!(windows) {
         dir_manifest = dir_manifest.replace('\\', "/");
     }
+    println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
+
     let mut dir_out = std::env::var("OUT_DIR").expect("Could not get out dir");
     if cfg!(windows) {
         dir_out = dir_out.replace('\\', "/");
     }
+    println!("cargo:rerun-if-env-changed=OUT_DIR");
 
     // Prepare directories we'll write to
     let include_path = format!("{}/cxx-qt-lib/include", dir_out);
@@ -43,6 +46,7 @@ fn main() {
     for qfile in qfiles {
         // Read the rust source files
         let path = format!("{}/src/{}.rs", dir_manifest, qfile);
+        println!("cargo:rerun-if-changed={}", path);
         let content = std::fs::read_to_string(path).expect("Could not read Rust file");
         let file = syn::parse_file(&content).unwrap();
 
