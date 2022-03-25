@@ -37,7 +37,8 @@ if __name__ == "__main__":
     # Randomly change their values with a delay
     for id in uuids:
         client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
-        time.sleep(random.randrange(1, 10) / 100)  # 0.01 - 0.1
+        # 0.001 - 0.01, frametime is 0.016
+        time.sleep(random.randrange(1, 10) / 1000)
 
     # Disconnect the sensors
     for id in uuids:
