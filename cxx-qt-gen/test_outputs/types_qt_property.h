@@ -3,7 +3,6 @@
 #include <mutex>
 
 #include "cxx-qt-lib/include/qt_types.h"
-#include "rust/cxx_qt.h"
 
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
@@ -22,7 +21,7 @@ namespace cxx_qt::my_object {
 
 class RustObj;
 
-class MyObject : public CxxQObject
+class MyObject : public QObject
 {
   Q_OBJECT
   Q_PROPERTY(QColor color READ getColor WRITE setColor NOTIFY colorChanged)

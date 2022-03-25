@@ -6,7 +6,6 @@
 
 #include "cxx-qt-lib/include/qt_types.h"
 
-#include <QDebug>
 #include <QMetaObject>
 
 namespace rust {

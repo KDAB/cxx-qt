@@ -56,6 +56,33 @@ mod my_object {
         }
 
         #[invokable]
+        fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
+            let update_requester = cpp.update_requester();
+
+            static N_THREADS: usize = 100;
+            static N_REQUESTS: std::sync::atomic::AtomicUsize =
+                std::sync::atomic::AtomicUsize::new(0);
+
+            let mut handles = Vec::new();
+            for _ in 0..N_THREADS {
+                handles.push(std::thread::spawn(move || {
+                    update_requester.update();
+                    N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }));
+            }
+
+            for h in handles {
+                h.join().unwrap();
+            }
+
+            // Make sure we actually ran all the threads
+            assert_eq!(
+                N_REQUESTS.load(std::sync::atomic::Ordering::Relaxed),
+                N_THREADS
+            );
+        }
+
+        #[invokable]
         fn update_call_count(&self) -> i32 {
             self.update_call_count
         }

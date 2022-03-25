@@ -45,7 +45,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-gen/statics/rust/cxx_qt.h");
+        include!("cxx-qt-lib/include/qt_types.h");
         include!("bridge.h");
 
         type QColor = cxx_qt_lib::QColor;

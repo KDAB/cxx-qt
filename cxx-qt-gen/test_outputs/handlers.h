@@ -3,13 +3,12 @@
 #include <mutex>
 
 #include "cxx-qt-lib/include/qt_types.h"
-#include "rust/cxx_qt.h"
 
 namespace cxx_qt::my_object {
 
 class RustObj;
 
-class MyObject : public CxxQObject
+class MyObject : public QObject
 {
   Q_OBJECT
   Q_PROPERTY(qint32 number READ getNumber WRITE setNumber NOTIFY numberChanged)

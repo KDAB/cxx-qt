@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
@@ -30,7 +30,8 @@ MyObject::setColor(const QColor& value)
   if (value != m_color) {
     m_color = value;
 
-    runOnGUIThread([&]() { Q_EMIT colorChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "colorChanged", Qt::QueuedConnection));
   }
 }
 
@@ -51,7 +52,8 @@ MyObject::setDate(const QDate& value)
   if (value != m_date) {
     m_date = value;
 
-    runOnGUIThread([&]() { Q_EMIT dateChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "dateChanged", Qt::QueuedConnection));
   }
 }
 
@@ -72,7 +74,8 @@ MyObject::setDateTime(const QDateTime& value)
   if (value != m_dateTime) {
     m_dateTime = value;
 
-    runOnGUIThread([&]() { Q_EMIT dateTimeChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "dateTimeChanged", Qt::QueuedConnection));
   }
 }
 
@@ -93,7 +96,8 @@ MyObject::setPoint(const QPoint& value)
   if (value != m_point) {
     m_point = value;
 
-    runOnGUIThread([&]() { Q_EMIT pointChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "pointChanged", Qt::QueuedConnection));
   }
 }
 
@@ -114,7 +118,8 @@ MyObject::setPointf(const QPointF& value)
   if (value != m_pointf) {
     m_pointf = value;
 
-    runOnGUIThread([&]() { Q_EMIT pointfChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "pointfChanged", Qt::QueuedConnection));
   }
 }
 
@@ -135,7 +140,8 @@ MyObject::setRect(const QRect& value)
   if (value != m_rect) {
     m_rect = value;
 
-    runOnGUIThread([&]() { Q_EMIT rectChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "rectChanged", Qt::QueuedConnection));
   }
 }
 
@@ -156,7 +162,8 @@ MyObject::setRectf(const QRectF& value)
   if (value != m_rectf) {
     m_rectf = value;
 
-    runOnGUIThread([&]() { Q_EMIT rectfChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "rectfChanged", Qt::QueuedConnection));
   }
 }
 
@@ -177,7 +184,8 @@ MyObject::setSize(const QSize& value)
   if (value != m_size) {
     m_size = value;
 
-    runOnGUIThread([&]() { Q_EMIT sizeChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "sizeChanged", Qt::QueuedConnection));
   }
 }
 
@@ -198,7 +206,8 @@ MyObject::setSizef(const QSizeF& value)
   if (value != m_sizef) {
     m_sizef = value;
 
-    runOnGUIThread([&]() { Q_EMIT sizefChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "sizefChanged", Qt::QueuedConnection));
   }
 }
 
@@ -219,7 +228,8 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    runOnGUIThread([&]() { Q_EMIT stringChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection));
   }
 }
 
@@ -240,7 +250,8 @@ MyObject::setTime(const QTime& value)
   if (value != m_time) {
     m_time = value;
 
-    runOnGUIThread([&]() { Q_EMIT timeChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "timeChanged", Qt::QueuedConnection));
   }
 }
 
@@ -261,7 +272,8 @@ MyObject::setUrl(const QUrl& value)
   if (value != m_url) {
     m_url = value;
 
-    runOnGUIThread([&]() { Q_EMIT urlChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "urlChanged", Qt::QueuedConnection));
   }
 }
 
@@ -282,7 +294,8 @@ MyObject::setVariant(const QVariant& value)
   if (value != m_variant) {
     m_variant = value;
 
-    runOnGUIThread([&]() { Q_EMIT variantChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection));
   }
 }
 

@@ -504,10 +504,10 @@ fn generate_properties_cpp(
         let call_property_change_handler = if has_property_change_handler {
             formatdoc! {
                 r#"
-                runOnGUIThread([&]() {{
+                Q_ASSERT(QMetaObject::invokeMethod(this, [&]() {{
                     const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                     m_rustObj->handlePropertyChange(*this, Property::{ident});
-                }});
+                }}, Qt::QueuedConnection));
                 "#,
                 ident = parameter_ident_pascal
             }
@@ -545,7 +545,7 @@ fn generate_properties_cpp(
 
                         {member_ident} = value;
 
-                        runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
+                        Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
 
                         {call_property_change_handler}
                     }}
@@ -610,7 +610,7 @@ fn generate_properties_cpp(
                   {member_owned_ident} = std::move(value);
                   {member_ident} = {member_owned_ident}.get();
 
-                  runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
+                  Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
 
                   {call_change_handler}
                 }}
@@ -644,7 +644,7 @@ fn generate_properties_cpp(
                     if (value != {member_ident}) {{
                         {member_ident} = value;
 
-                        runOnGUIThread([&]() {{ Q_EMIT {ident_changed}(); }});
+                        Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
 
                         {call_change_handler}
                     }}
@@ -810,7 +810,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         #include <mutex>
 
-        #include "rust/cxx_qt.h"
         #include "cxx-qt-lib/include/qt_types.h"
 
         {includes}
@@ -819,7 +818,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         class {rust_struct_ident};
 
-        class {ident} : public CxxQObject {{
+        class {ident} : public QObject {{
             Q_OBJECT
         {properties_meta}
 
@@ -881,7 +880,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         namespace {namespace} {{
 
         {ident}::{ident}(QObject *parent)
-            : CxxQObject(parent)
+            : QObject(parent)
             , m_rustObj(createRs())
         {{
             initialiseCpp(*this);

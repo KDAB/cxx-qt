@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
@@ -30,7 +30,8 @@ MyObject::setBoolean(bool value)
   if (value != m_boolean) {
     m_boolean = value;
 
-    runOnGUIThread([&]() { Q_EMIT booleanChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "booleanChanged", Qt::QueuedConnection));
   }
 }
 
@@ -51,7 +52,8 @@ MyObject::setFloat32(float value)
   if (value != m_float32) {
     m_float32 = value;
 
-    runOnGUIThread([&]() { Q_EMIT float32Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "float32Changed", Qt::QueuedConnection));
   }
 }
 
@@ -72,7 +74,8 @@ MyObject::setFloat64(double value)
   if (value != m_float64) {
     m_float64 = value;
 
-    runOnGUIThread([&]() { Q_EMIT float64Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "float64Changed", Qt::QueuedConnection));
   }
 }
 
@@ -93,7 +96,8 @@ MyObject::setInt8(qint8 value)
   if (value != m_int8) {
     m_int8 = value;
 
-    runOnGUIThread([&]() { Q_EMIT int8Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "int8Changed", Qt::QueuedConnection));
   }
 }
 
@@ -114,7 +118,8 @@ MyObject::setInt16(qint16 value)
   if (value != m_int16) {
     m_int16 = value;
 
-    runOnGUIThread([&]() { Q_EMIT int16Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "int16Changed", Qt::QueuedConnection));
   }
 }
 
@@ -135,7 +140,8 @@ MyObject::setInt32(qint32 value)
   if (value != m_int32) {
     m_int32 = value;
 
-    runOnGUIThread([&]() { Q_EMIT int32Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "int32Changed", Qt::QueuedConnection));
   }
 }
 
@@ -156,7 +162,8 @@ MyObject::setUint8(quint8 value)
   if (value != m_uint8) {
     m_uint8 = value;
 
-    runOnGUIThread([&]() { Q_EMIT uint8Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "uint8Changed", Qt::QueuedConnection));
   }
 }
 
@@ -177,7 +184,8 @@ MyObject::setUint16(quint16 value)
   if (value != m_uint16) {
     m_uint16 = value;
 
-    runOnGUIThread([&]() { Q_EMIT uint16Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "uint16Changed", Qt::QueuedConnection));
   }
 }
 
@@ -198,7 +206,8 @@ MyObject::setUint32(quint32 value)
   if (value != m_uint32) {
     m_uint32 = value;
 
-    runOnGUIThread([&]() { Q_EMIT uint32Changed(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "uint32Changed", Qt::QueuedConnection));
   }
 }
 

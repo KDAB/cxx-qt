@@ -14,12 +14,6 @@ pub use gen_cpp::{generate_format, generate_qobject_cpp, CppObject};
 pub use gen_qqmlextensionplugin::QQmlExtensionPluginData;
 pub use gen_rs::{generate_qobject_cxx, generate_qobject_rs};
 
-/// The complete contents of the "rust/cxx_qt.h" header.
-pub static HEADER: &str = include_str!("cxx_qt.h");
-
-/// The complete contents of the "rust/cxx_qt.cpp" source file.
-pub static UPDATE_REQUESTER_SOURCE: &str = include_str!("cxx_qt.cpp");
-
 #[cfg(test)]
 mod test {
     use super::*;

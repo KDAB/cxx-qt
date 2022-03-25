@@ -150,8 +150,31 @@ TEST_CASE("CXX-Qt allows Rust code to handle an update request")
   cxx_qt::my_object::MyObject obj;
   CHECK(obj.updateCallCount() == 0);
   obj.requestUpdateTest();
+  CHECK(obj.updateCallCount() == 0);
   QCoreApplication::processEvents();
   CHECK(obj.updateCallCount() == 1);
+}
+
+TEST_CASE("CXX-Qt allows Rust code to handle multiple update requests")
+{
+  cxx_qt::my_object::MyObject obj;
+  CHECK(obj.updateCallCount() == 0);
+  obj.requestUpdateTest();
+  obj.requestUpdateTest();
+  CHECK(obj.updateCallCount() == 0);
+  QCoreApplication::processEvents();
+  CHECK(obj.updateCallCount() == 2);
+}
+
+TEST_CASE(
+  "CXX-Qt allows Rust code to handle update requests in multiple threads")
+{
+  cxx_qt::my_object::MyObject obj;
+  CHECK(obj.updateCallCount() == 0);
+  obj.requestUpdateTestMultiThread();
+  CHECK(obj.updateCallCount() == 0);
+  QCoreApplication::processEvents();
+  CHECK(obj.updateCallCount() == 100);
 }
 
 TEST_CASE("CXX-Qt types are exposed to C++ correctly")
