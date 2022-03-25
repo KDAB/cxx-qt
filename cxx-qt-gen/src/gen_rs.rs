@@ -942,16 +942,6 @@ pub fn generate_qobject_rs(
         }
     }
 
-    // # Safety
-    //
-    // We only generate wrapper code for objects that derive from CxxQObject
-    // so casting self.cpp to a CxxObject pointer is valid. We cast from *const
-    // to *mut so that update_requester() can be called on const wrappers. This
-    // is okay because only C++ code ever uses the pointer so the "const_cast" cannot
-    // result in Rust UB. Since the wrapper was constructed from a non-const reference
-    // in the first place, the underlying pointer does not refer to a const object
-    // as far as C++ is concerned so we are not invoking C++ UB either.
-
     let update_requester = if obj.handle_updates_impl.is_some() {
         quote! {
             pub fn update_requester(&mut self) -> cxx_qt_lib::DeferredCall {

@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
@@ -30,7 +30,8 @@ MyObject::setPropertyName(qint32 value)
   if (value != m_propertyName) {
     m_propertyName = value;
 
-    runOnGUIThread([&]() { Q_EMIT propertyNameChanged(); });
+    Q_ASSERT(QMetaObject::invokeMethod(
+      this, "propertyNameChanged", Qt::QueuedConnection));
   }
 }
 

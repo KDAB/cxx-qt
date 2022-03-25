@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
@@ -30,7 +30,8 @@ MyObject::setPrimitive(qint32 value)
   if (value != m_primitive) {
     m_primitive = value;
 
-    runOnGUIThread([&]() { Q_EMIT primitiveChanged(); });
+    Q_ASSERT(QMetaObject::invokeMethod(
+      this, "primitiveChanged", Qt::QueuedConnection));
   }
 }
 
@@ -51,7 +52,8 @@ MyObject::setOpaque(const QColor& value)
   if (value != m_opaque) {
     m_opaque = value;
 
-    runOnGUIThread([&]() { Q_EMIT opaqueChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection));
   }
 }
 
@@ -71,7 +73,8 @@ MyObject::setNested(cxx_qt::nested_object::CppObj* value)
 
     m_nested = value;
 
-    runOnGUIThread([&]() { Q_EMIT nestedChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection));
   }
 }
 
@@ -91,7 +94,8 @@ MyObject::giveNested(std::unique_ptr<cxx_qt::nested_object::CppObj> value)
   m_ownedNested = std::move(value);
   m_nested = m_ownedNested.get();
 
-  runOnGUIThread([&]() { Q_EMIT nestedChanged(); });
+  Q_ASSERT(
+    QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection));
 }
 
 std::unique_ptr<CppObj>

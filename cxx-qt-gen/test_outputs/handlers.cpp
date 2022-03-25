@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
@@ -30,12 +30,16 @@ MyObject::setNumber(qint32 value)
   if (value != m_number) {
     m_number = value;
 
-    runOnGUIThread([&]() { Q_EMIT numberChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "numberChanged", Qt::QueuedConnection));
 
-    runOnGUIThread([&]() {
-      const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-      m_rustObj->handlePropertyChange(*this, Property::Number);
-    });
+    Q_ASSERT(QMetaObject::invokeMethod(
+      this,
+      [&]() {
+        const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+        m_rustObj->handlePropertyChange(*this, Property::Number);
+      },
+      Qt::QueuedConnection));
   }
 }
 
@@ -56,12 +60,16 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    runOnGUIThread([&]() { Q_EMIT stringChanged(); });
+    Q_ASSERT(
+      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection));
 
-    runOnGUIThread([&]() {
-      const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-      m_rustObj->handlePropertyChange(*this, Property::String);
-    });
+    Q_ASSERT(QMetaObject::invokeMethod(
+      this,
+      [&]() {
+        const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+        m_rustObj->handlePropertyChange(*this, Property::String);
+      },
+      Qt::QueuedConnection));
   }
 }
 

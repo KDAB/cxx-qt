@@ -6,7 +6,6 @@
 add_subdirectory(basic_cxx_qt)
 add_subdirectory(basic_cxx_only)
 add_subdirectory(qt_types_standalone)
-add_subdirectory(update_requester_standalone)
 
 # Create helper method which adds relevent tests for the given acceptance test
 function(add_acceptance_tests TEST_NAME)
@@ -25,5 +24,4 @@ endfunction()
 # Add tests for all the acceptance tests
 add_acceptance_tests(basic_cxx_only)
 add_acceptance_tests(qt_types_standalone)
-add_acceptance_tests(update_requester_standalone)
 add_acceptance_tests(basic_cxx_qt)

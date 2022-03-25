@@ -3,7 +3,6 @@
 #include <mutex>
 
 #include "cxx-qt-lib/include/qt_types.h"
-#include "rust/cxx_qt.h"
 
 #include "cxx-qt-gen/include/nested_object.h"
 #include <QtGui/QColor>
@@ -12,7 +11,7 @@ namespace cxx_qt::my_object {
 
 class RustObj;
 
-class MyObject : public CxxQObject
+class MyObject : public QObject
 {
   Q_OBJECT
   Q_PROPERTY(qint32 primitive READ getPrimitive WRITE setPrimitive NOTIFY

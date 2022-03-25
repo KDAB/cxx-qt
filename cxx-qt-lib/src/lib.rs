@@ -7,8 +7,6 @@
 mod types;
 pub use types::*;
 
-pub mod update_requester;
-
 mod map_qt_value;
 pub use map_qt_value::*;
 

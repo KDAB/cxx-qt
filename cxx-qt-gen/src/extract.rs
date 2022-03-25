@@ -370,7 +370,7 @@ fn extract_invokables(
 
     // TODO: we need to set up an exclude list of invokable names and give
     // the user an error if they use one of those names.
-    // This is to avoid name collisions with CxxQObject standard functions.
+    // This is to avoid name collisions with QObject standard functions.
 
     // Process each impl item and turn into an Invokable or error
     for item in items {

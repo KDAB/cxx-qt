@@ -4,7 +4,7 @@
 namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
-  : CxxQObject(parent)
+  : QObject(parent)
   , m_rustObj(createRs())
 {
   initialiseCpp(*this);
