@@ -57,14 +57,13 @@ mod my_object {
 
         #[invokable]
         fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
-            let update_requester = cpp.update_requester();
-
             static N_THREADS: usize = 100;
             static N_REQUESTS: std::sync::atomic::AtomicUsize =
                 std::sync::atomic::AtomicUsize::new(0);
 
             let mut handles = Vec::new();
             for _ in 0..N_THREADS {
+                let update_requester = cpp.update_requester();
                 handles.push(std::thread::spawn(move || {
                     update_requester.request_update();
                     N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

@@ -44,7 +44,7 @@ mod my_object {
             type QVariant = cxx_qt_lib::QVariant;
 
             #[namespace = "rust::cxxqtlib1"]
-            type UpdateRequester = cxx_qt_lib::UpdateRequester;
+            type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
 
             #[rust_name = "number"]
             fn getNumber(self: &MyObject) -> i32;
@@ -60,7 +60,7 @@ mod my_object {
             fn newCppObject() -> UniquePtr<MyObject>;
 
             #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut MyObject>) -> UpdateRequester;
+            fn updateRequester(self: Pin<&mut MyObject>) -> UniquePtr<UpdateRequester>;
         }
 
         extern "Rust" {
@@ -132,7 +132,7 @@ mod my_object {
         }
 
         pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
-            self.cpp.as_mut().update_requester()
+            cxx_qt_lib::UpdateRequester::from_unique_ptr(self.cpp.as_mut().update_requester())
         }
 
         pub fn grab_values_from_data(&mut self, data: &Data) {

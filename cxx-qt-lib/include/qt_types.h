@@ -30,12 +30,12 @@ namespace cxxqtlib1 {
 class UpdateRequester
 {
 public:
-  UpdateRequester(QObject* obj, const char* method);
+  UpdateRequester(QPointer<QObject> obj, const char* method);
   bool requestUpdate() const;
 
 private:
   const char* m_method;
-  QObject* m_obj;
+  QPointer<QObject> m_obj;
 };
 
 namespace types {

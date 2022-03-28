@@ -430,7 +430,7 @@ pub fn generate_qobject_cxx(
     let update_requester_type = if obj.handle_updates_impl.is_some() {
         quote! {
             #[namespace = "rust::cxxqtlib1"]
-            type UpdateRequester = cxx_qt_lib::UpdateRequester;
+            type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
         }
     } else {
         quote! {}
@@ -438,7 +438,7 @@ pub fn generate_qobject_cxx(
     let request_updater_method = if obj.handle_updates_impl.is_some() {
         quote! {
             #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut #class_name>) -> UpdateRequester;
+            fn updateRequester(self: Pin<&mut #class_name>) -> UniquePtr<UpdateRequester>;
         }
     } else {
         quote! {}
@@ -945,7 +945,7 @@ pub fn generate_qobject_rs(
     let update_requester = if obj.handle_updates_impl.is_some() {
         quote! {
             pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
-                self.cpp.as_mut().update_requester()
+                cxx_qt_lib::UpdateRequester::from_unique_ptr(self.cpp.as_mut().update_requester())
             }
         }
     } else {

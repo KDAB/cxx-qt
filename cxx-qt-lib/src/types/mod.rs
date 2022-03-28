@@ -43,4 +43,4 @@ mod qvariant;
 pub use qvariant::{QVariant, Variant, VariantValue};
 
 mod update_requester;
-pub use update_requester::UpdateRequester;
+pub use update_requester::{UpdateRequester, UpdateRequesterCpp};
