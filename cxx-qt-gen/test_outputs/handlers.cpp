@@ -73,10 +73,10 @@ MyObject::setString(const QString& value)
   }
 }
 
-rust::cxxqtlib1::DeferredCall
+rust::cxxqtlib1::UpdateRequester
 MyObject::updateRequester()
 {
-  return rust::cxxqtlib1::DeferredCall(this, "updateState");
+  return rust::cxxqtlib1::UpdateRequester(this, "updateState");
 }
 
 void

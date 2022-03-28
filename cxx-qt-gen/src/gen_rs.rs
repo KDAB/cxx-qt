@@ -427,10 +427,10 @@ pub fn generate_qobject_cxx(
         quote! {}
     };
 
-    let deferred_call_type = if obj.handle_updates_impl.is_some() {
+    let update_requester_type = if obj.handle_updates_impl.is_some() {
         quote! {
             #[namespace = "rust::cxxqtlib1"]
-            type DeferredCall = cxx_qt_lib::DeferredCall;
+            type UpdateRequester = cxx_qt_lib::UpdateRequester;
         }
     } else {
         quote! {}
@@ -438,7 +438,7 @@ pub fn generate_qobject_cxx(
     let request_updater_method = if obj.handle_updates_impl.is_some() {
         quote! {
             #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut #class_name>) -> DeferredCall;
+            fn updateRequester(self: Pin<&mut #class_name>) -> UpdateRequester;
         }
     } else {
         quote! {}
@@ -513,7 +513,7 @@ pub fn generate_qobject_cxx(
                 type QUrl = cxx_qt_lib::QUrl;
                 #[namespace = ""]
                 type QVariant = cxx_qt_lib::QVariant;
-                #deferred_call_type
+                #update_requester_type
 
                 #(#cpp_functions)*
 
@@ -944,7 +944,7 @@ pub fn generate_qobject_rs(
 
     let update_requester = if obj.handle_updates_impl.is_some() {
         quote! {
-            pub fn update_requester(&mut self) -> cxx_qt_lib::DeferredCall {
+            pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
                 self.cpp.as_mut().update_requester()
             }
         }

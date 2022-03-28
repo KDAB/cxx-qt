@@ -12,22 +12,22 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
 
-        type DeferredCall = super::DeferredCall;
+        type UpdateRequester = super::UpdateRequester;
 
-        #[rust_name = "update"]
-        fn update(self: &DeferredCall) -> bool;
+        #[rust_name = "request_update"]
+        fn requestUpdate(self: &UpdateRequester) -> bool;
     }
 }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct DeferredCall {
+pub struct UpdateRequester {
     method: *mut c_char,
     obj: *mut c_void,
 }
 
-unsafe impl ExternType for ffi::DeferredCall {
-    type Id = type_id!("rust::cxxqtlib1::DeferredCall");
+unsafe impl ExternType for ffi::UpdateRequester {
+    type Id = type_id!("rust::cxxqtlib1::UpdateRequester");
     type Kind = cxx::kind::Trivial;
 }
 
@@ -35,5 +35,5 @@ unsafe impl ExternType for ffi::DeferredCall {
 //
 // The underlying C++ class has been designed to be thread safe and we only
 // store a pointer to it which is valid from any thread.
-unsafe impl Send for DeferredCall {}
-unsafe impl Sync for DeferredCall {}
+unsafe impl Send for UpdateRequester {}
+unsafe impl Sync for UpdateRequester {}

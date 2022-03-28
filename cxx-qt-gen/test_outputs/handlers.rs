@@ -44,7 +44,7 @@ mod my_object {
             type QVariant = cxx_qt_lib::QVariant;
 
             #[namespace = "rust::cxxqtlib1"]
-            type DeferredCall = cxx_qt_lib::DeferredCall;
+            type UpdateRequester = cxx_qt_lib::UpdateRequester;
 
             #[rust_name = "number"]
             fn getNumber(self: &MyObject) -> i32;
@@ -60,7 +60,7 @@ mod my_object {
             fn newCppObject() -> UniquePtr<MyObject>;
 
             #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut MyObject>) -> DeferredCall;
+            fn updateRequester(self: Pin<&mut MyObject>) -> UpdateRequester;
         }
 
         extern "Rust" {
@@ -131,7 +131,7 @@ mod my_object {
             self.cpp.as_mut().set_string(value);
         }
 
-        pub fn update_requester(&mut self) -> cxx_qt_lib::DeferredCall {
+        pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
             self.cpp.as_mut().update_requester()
         }
 

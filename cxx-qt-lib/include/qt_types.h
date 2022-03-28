@@ -27,11 +27,11 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-class DeferredCall
+class UpdateRequester
 {
 public:
-  DeferredCall(QObject* obj, const char* method);
-  bool update() const;
+  UpdateRequester(QObject* obj, const char* method);
+  bool requestUpdate() const;
 
 private:
   const char* m_method;

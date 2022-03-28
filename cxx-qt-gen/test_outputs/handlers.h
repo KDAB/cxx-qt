@@ -21,7 +21,7 @@ public:
   qint32 getNumber() const;
   const QString& getString() const;
 
-  rust::cxxqtlib1::DeferredCall updateRequester();
+  rust::cxxqtlib1::UpdateRequester updateRequester();
   Q_INVOKABLE void updateState();
 
 public Q_SLOTS:

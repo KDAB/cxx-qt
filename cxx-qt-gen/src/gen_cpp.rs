@@ -776,12 +776,12 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let mut public_method_sources = vec![];
 
     if obj.handle_updates_impl.is_some() {
-        public_method_headers.push("rust::cxxqtlib1::DeferredCall updateRequester();");
+        public_method_headers.push("rust::cxxqtlib1::UpdateRequester updateRequester();");
         public_method_headers.push("Q_INVOKABLE void updateState();");
 
         public_method_sources.push(formatdoc! {r#"
-            rust::cxxqtlib1::DeferredCall {ident}::updateRequester() {{
-                return rust::cxxqtlib1::DeferredCall(this, "updateState");
+            rust::cxxqtlib1::UpdateRequester {ident}::updateRequester() {{
+                return rust::cxxqtlib1::UpdateRequester(this, "updateState");
             }}
         "#,
         ident = struct_ident_str,
