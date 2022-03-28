@@ -4,19 +4,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::qcolor::{Color, QColor};
-use crate::qdate::QDate;
-use crate::qdatetime::{DateTime, QDateTime};
-use crate::qpoint::QPoint;
-use crate::qpointf::QPointF;
-use crate::qrect::QRect;
-use crate::qrectf::QRectF;
-use crate::qsize::QSize;
-use crate::qsizef::QSizeF;
-use crate::qstring::QString;
-use crate::qtime::QTime;
-use crate::qurl::{QUrl, Url};
-use crate::qvariant::{QVariant, Variant};
+use crate::types::{
+    Color, DateTime, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
+    QString, QTime, QUrl, QVariant, Url, Variant,
+};
 use crate::ToUniquePtr;
 
 pub trait MapQtValue<C, F, R> {
