@@ -11,7 +11,7 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-UpdateRequester::UpdateRequester(QObject* obj, const char* method)
+UpdateRequester::UpdateRequester(QPointer<QObject> obj, const char* method)
   : m_obj(obj)
   , m_method(method)
 {}

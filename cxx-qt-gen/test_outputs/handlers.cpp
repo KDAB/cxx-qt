@@ -73,10 +73,11 @@ MyObject::setString(const QString& value)
   }
 }
 
-rust::cxxqtlib1::UpdateRequester
+std::unique_ptr<rust::cxxqtlib1::UpdateRequester>
 MyObject::updateRequester()
 {
-  return rust::cxxqtlib1::UpdateRequester(this, "updateState");
+  return std::make_unique<rust::cxxqtlib1::UpdateRequester>(this,
+                                                            "updateState");
 }
 
 void
