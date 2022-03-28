@@ -34,3 +34,5 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [QQmlExtensionPlugin](./concepts/qqmlextensionplugin.md)
     - [Threading](./concepts/threading.md)
     - [Nested Objects](./concepts/nested_objects.md)
+- [Internal](./internal/index.md)
+    - [Build](./internal/build.md)
