@@ -100,7 +100,7 @@ mod website {
                     .unwrap();
                 // ANCHOR: book_request_update
                 // Request an update from the background thread
-                update_requester.update();
+                update_requester.request_update();
                 // ANCHOR_END: book_request_update
             };
             thread::spawn(move || block_on(fetch_title));

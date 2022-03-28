@@ -52,7 +52,7 @@ mod my_object {
         #[invokable]
         fn request_update_test(&self, cpp: &mut CppObj) {
             let update_requester = cpp.update_requester();
-            update_requester.update();
+            update_requester.request_update();
         }
 
         #[invokable]
@@ -66,7 +66,7 @@ mod my_object {
             let mut handles = Vec::new();
             for _ in 0..N_THREADS {
                 handles.push(std::thread::spawn(move || {
-                    update_requester.update();
+                    update_requester.request_update();
                     N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 }));
             }

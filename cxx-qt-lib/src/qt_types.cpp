@@ -11,13 +11,13 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-DeferredCall::DeferredCall(QObject* obj, const char* method)
+UpdateRequester::UpdateRequester(QObject* obj, const char* method)
   : m_obj(obj)
   , m_method(method)
 {}
 
 bool
-DeferredCall::update() const
+UpdateRequester::requestUpdate() const
 {
   if (m_obj == nullptr) {
     return false;
