@@ -4,9 +4,18 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use quote::ToTokens;
-use std::io::Write;
+use serde::{Deserialize, Serialize};
 
-fn gen_cxx_sources(folder: &str, file_stem: &str) -> cxx_gen::GeneratedCode {
+/// Representation of a generated CXX header, source, and name
+#[derive(Serialize, Deserialize)]
+struct GeneratedType {
+    header: String,
+    name: String,
+    source: String,
+}
+
+/// Generate a CXX header, source, name for a given Rust file
+fn gen_cxx_sources(folder: &str, file_stem: &str) -> GeneratedType {
     // Read the rust source files
     let path = format!("{}/{}.rs", folder, file_stem);
     println!("cargo:rerun-if-changed={}", path);
@@ -15,27 +24,20 @@ fn gen_cxx_sources(folder: &str, file_stem: &str) -> cxx_gen::GeneratedCode {
 
     // Generate the CXX header and cc for the file
     let opt = cxx_gen::Opt::default();
-    cxx_gen::generate_header_and_cc(file.into_token_stream(), &opt)
-        .expect("Could not generate C++ from Rust file")
+    let generated = cxx_gen::generate_header_and_cc(file.into_token_stream(), &opt)
+        .expect("Could not generate C++ from Rust file");
+
+    GeneratedType {
+        header: String::from_utf8(generated.header).unwrap(),
+        name: format!("{}_cxx", file_stem),
+        source: String::from_utf8(generated.implementation).unwrap(),
+    }
 }
 
-fn write_cxx_sources(
-    gen_result: cxx_gen::GeneratedCode,
-    file_stem: &str,
-    include_path: &str,
-    src_path: &str,
-) {
-    // Write out the CXX files
-    let h_path = format!("{}/{}_cxx.h", include_path, file_stem);
-    let mut header = std::fs::File::create(&h_path).expect("Could not create header file");
-    header
-        .write_all(&gen_result.header)
-        .expect("Could not write header file");
-
-    let cpp_path = format!("{}/{}_cxx.cpp", src_path, file_stem);
-    let mut cpp = std::fs::File::create(&cpp_path).expect("Could not create cpp file");
-    cpp.write_all(&gen_result.implementation)
-        .expect("Could not write cpp file");
+/// Write generates types to a given file as JSON
+fn write_cxx_sources(gen: Vec<GeneratedType>, path: &str) {
+    let file = std::fs::File::create(path).expect("Could not create generated file");
+    serde_json::to_writer(file, &gen).unwrap();
 }
 
 fn main() {
@@ -52,15 +54,16 @@ fn main() {
     }
     println!("cargo:rerun-if-env-changed=OUT_DIR");
 
-    // Prepare directories we'll write to
-    let include_path = format!("{}/cxx-qt-lib/include", dir_out);
-    std::fs::create_dir_all(&include_path).expect("Could not create cxx-qt-lib include dir");
-    let src_path = format!("{}/cxx-qt-lib/src", dir_out);
-    std::fs::create_dir_all(&src_path).expect("Could not create cxx-qt-lib src dir");
+    // Prepare cxx-qt-lib dir we'll write to
+    let path = format!("{}/cxx-qt-lib", dir_out);
+    std::fs::create_dir_all(&path).expect("Could not create cxx-qt-lib dir");
 
     // Read the types directory for CXX objects
     let types_dir = format!("{}/src/types/", dir_manifest);
+    // If any of the files in this directory change, then we need to re-run
     println!("cargo:rerun-if-changed={}", types_dir);
+
+    let mut generated = vec![];
 
     for entry in std::fs::read_dir(&types_dir).expect("Could not open types folder") {
         let path = entry.expect("Could not open file").path();
@@ -72,12 +75,10 @@ fn main() {
 
         // Check we are a file and not the mod.rs
         if path.is_file() && file_stem != "mod" {
-            write_cxx_sources(
-                gen_cxx_sources(&types_dir, file_stem),
-                file_stem,
-                &include_path,
-                &src_path,
-            );
+            generated.push(gen_cxx_sources(&types_dir, file_stem));
         }
     }
+
+    // Write the generated sources to a qt_types_cxx.json file
+    write_cxx_sources(generated, &format!("{}/qt_types_cxx.json", path));
 }

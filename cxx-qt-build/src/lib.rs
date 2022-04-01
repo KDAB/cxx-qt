@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use convert_case::{Case, Casing};
 use quote::ToTokens;
+use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -33,6 +34,14 @@ impl Default for BuildMode {
         // Default to a normal build, users need to opt-in for a QQmlExtensionPlugin build
         BuildMode::Plain
     }
+}
+
+/// Representation of a generated CXX header, source, and name
+#[derive(Serialize, Deserialize)]
+struct GeneratedType {
+    header: String,
+    name: String,
+    source: String,
 }
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -382,92 +391,24 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
     std::fs::create_dir_all(&cxx_qt_lib_src_dir).unwrap();
 
     let mut paths = vec![];
-
+    // Add the hand written qt_types file
     paths.append(&mut write_cxx_qt_lib_set(
         "qt_types",
         &cxx_qt_lib_target_dir,
         cxx_qt_lib::QT_TYPES_HEADER,
         cxx_qt_lib::QT_TYPES_SOURCE,
     ));
-
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qdate_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QDATE_CXX_HEADER,
-        cxx_qt_lib::QDATE_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qdatetime_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QDATETIME_CXX_HEADER,
-        cxx_qt_lib::QDATETIME_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qcolor_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QCOLOR_CXX_HEADER,
-        cxx_qt_lib::QCOLOR_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qpoint_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QPOINT_CXX_HEADER,
-        cxx_qt_lib::QPOINT_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qpointf_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QPOINTF_CXX_HEADER,
-        cxx_qt_lib::QPOINTF_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qrect_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QRECT_CXX_HEADER,
-        cxx_qt_lib::QRECT_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qrectf_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QRECTF_CXX_HEADER,
-        cxx_qt_lib::QRECTF_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qsize_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QSIZE_CXX_HEADER,
-        cxx_qt_lib::QSIZE_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qsizef_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QSIZEF_CXX_HEADER,
-        cxx_qt_lib::QSIZEF_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qstring_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QSTRING_CXX_HEADER,
-        cxx_qt_lib::QSTRING_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qtime_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QTIME_CXX_HEADER,
-        cxx_qt_lib::QTIME_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qurl_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QURL_CXX_HEADER,
-        cxx_qt_lib::QURL_CXX_SOURCE,
-    ));
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qvariant_cxx",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QVARIANT_CXX_HEADER,
-        cxx_qt_lib::QVARIANT_CXX_SOURCE,
-    ));
+    // Add the generated CXX files
+    let generated: Vec<GeneratedType> =
+        serde_json::from_str(cxx_qt_lib::QT_TYPES_CXX_JSON).unwrap();
+    for gen in generated {
+        paths.append(&mut write_cxx_qt_lib_set(
+            &gen.name,
+            &cxx_qt_lib_target_dir,
+            &gen.header,
+            &gen.source,
+        ));
+    }
 
     paths
 }
