@@ -20,7 +20,7 @@ The RustObj struct allows you to define the following items
 
 ## Invokables
 
-To define a method which is exposed to QML and C++, add a method on the `RustObj` struct and add the attribute `#[invokable]`. The parameters and return type are then matched to the Qt side.
+To define a method which is exposed to QML and C++, add a method on the `RustObj` struct and add the attribute `#[invokable]`. The parameters and return type are then matched to the Qt side. Also CXX-Qt automatically adds wrapper code around your invokable to automatically perform any conversion between the [C++ and Rust types](../concepts/types.md).
 
 Note to access properties on the C++ object use [Cpp Object](./cpp_object.md).
 

@@ -55,23 +55,19 @@ Note that when they are used as a parameter type in invokables they should be pa
 
 ### Custom Opaque Types
 
-Custom opaque types require specific types to be used when being used as an input from C++ to Rust and an output from Rust to C++.
+Custom opaque types wrap a unique pointer to the C++ type, they are used in the same way as custom trivial types but CXX-Qt automatically writes wrappers to convert to and from a C++ unique pointer of the type to a Rust wrapper of the type.
 
-For properties and signals the Rust Output column below should be used.
+On the rust side they appear as the cxx_qt_lib helper type.
 
-For parameter types in invokables a reference as in the Rust Input column below should be used.
+Note that when they are used as a parameter type in invokables they should be passed as a reference, eg `color: &QColor`, and when they are a property or return type they should be a value, eg `QColor`. Also for strings `&str` should be used when passed as a reference and `String` when passed as a value.
 
-For return types from invokables the Rust Output column should be used.
-
-| Rust Input | Rust Output | C++ Type |
-|------------|-------------|----------|
-| &cxx_qt_lib::QColor | cxx_qt_lib::Color | QColor |
-| &cxx_qt_lib::QDateTime | cxx_qt_lib::DateTime | QDateTime |
-| &cxx_qt_lib::QString | String or str | QString |
-| &cxx_qt_lib::QUrl | cxx_qt_lib::Url | QUrl |
-| &cxx_qt_lib::QVariant | cxx_qt_lib::Variant | QVariant |
-
-Note that in the future custom opaque types will be transparent so there won't be a difference between the input and output ( [https://github.com/KDAB/cxx-qt/issues/9](https://github.com/KDAB/cxx-qt/issues/9) ).
+| Rust Type | C++ Type |
+|-----------|----------|
+| cxx_qt_lib::QColor | QColor |
+| cxx_qt_lib::QDateTime | QDateTime |
+| String or &str | QString |
+| cxx_qt_lib::QUrl | QUrl |
+| cxx_qt_lib::QVariant | QVariant |
 
 An example of a QVariant as a parameter, return type, and property is shown below.
 

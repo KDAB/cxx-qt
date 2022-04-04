@@ -60,6 +60,10 @@ As described in the (de)serialisation section of the [Data struct](./data_struct
 {{#include ../../../examples/qml_features/src/serialisation.rs:book_grab_values}}
 ```
 
-TODO: explain the wrappers role with type conversions (once we have [https://github.com/KDAB/cxx-qt/issues/9](https://github.com/KDAB/cxx-qt/issues/9) ) and how we can use this for borrowRustObj later from a sub object etc (and note threading here)
+## Type Wrappers
+
+When using the getters or setters to access the C++ property values, the Rust getter and setter automatically perform any conversion between the [C++ and Rust types](../concepts/types.md). This allows for the Rust code to use the Rust representation of the types without needing to convert to or from the C++ type.
+
+TODO: explain how we can use this for borrowRustObj later from a sub object etc (and note threading here) eg nested_object() could return `Borrow<T>`.
 
 TODO: once we have borrow_rust_obj() explain how this can be used to reach another objects RustObj [https://github.com/KDAB/cxx-qt/issues/30](https://github.com/KDAB/cxx-qt/issues/30) ).

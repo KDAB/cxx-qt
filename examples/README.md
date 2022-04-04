@@ -15,7 +15,7 @@ Then we have multiple other examples availabe inside the projects
   * [Handling property changes on the Rust side](./qml_features/src/handler_property_change.rs)
   * [How to (de)serialise QObjects](./qml_features/src/serialisation.rs)
   * [Using threaded logic](./qml_with_threaded_logic/src/lib.rs)
-  * [Using opaque Qt types such as QVariant](./qml_features/src/types.rs) - note that this will be transparent in the future [https://github.com/KDAB/cxx-qt/issues/9](https://github.com/KDAB/cxx-qt/issues/9)
+  * [Using Qt types such as QVariant](./qml_features/src/types.rs)
   * [Nesting Rust objects as properties and invokables](./qml_features/src/nested.rs)
   * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/core/build.rs)
 
