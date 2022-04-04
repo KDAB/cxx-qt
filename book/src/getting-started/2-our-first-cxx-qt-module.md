@@ -76,7 +76,6 @@ In our case, we define two new functions:
     - The name will be converted to `incrementNumber` in C++.
 - `say_hello`
     - Prints a provided number and string.
-    - It takes a reference to a `QString`, which needs to be converted to a Rust `String` first.
     - The name will be converted to `sayHello` in C++.
 
 Both functions are marked with the `#[invokable]` macro, which means the functions will be added to the C++ code of `MyObject` and will be callable from QML as well.
