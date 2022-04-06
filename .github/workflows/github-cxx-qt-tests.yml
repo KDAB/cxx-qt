@@ -19,6 +19,7 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             cargo_dir: ~/.cargo
             # TODO: Remove PPA for Qt 5.15 when Ubuntu 22.04 is available
+            # https://github.com/KDAB/cxx-qt/issues/121
             ppa: ppa:savoury1/qt-5-15
             packages-extra: >-
                 qtbase5-dev
@@ -35,6 +36,7 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             cargo_dir: ~/.cargo
             # TODO: Remove PPA for Qt 6 when Ubuntu 22.04 is available
+            # https://github.com/KDAB/cxx-qt/issues/121
             ppa: ppa:daschuer/qt6-backports
             packages-extra: >-
                 qt6-base-dev
@@ -53,7 +55,13 @@ jobs:
             os: macos-11
             qt_version: 5
             # FIXME: qmltestrunner fails to import QtQuick module
-            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|.*valgrind)$'
+            # https://github.com/KDAB/cxx-qt/issues/110
+            #
+            # FIXME: clang-format-14 causes formatting differences if it is selected by brew
+            # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
+            # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
+            # https://github.com/KDAB/cxx-qt/issues/121
+            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|cpp_clang_format|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -62,7 +70,13 @@ jobs:
             os: macos-11
             qt_version: 6
             # FIXME: qmltestrunner fails to import QtQuick module
-            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|.*valgrind)$'
+            # https://github.com/KDAB/cxx-qt/issues/110
+            #
+            # FIXME: clang-format-14 causes formatting differences if it is selected by brew
+            # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
+            # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
+            # https://github.com/KDAB/cxx-qt/issues/121
+            ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|cpp_clang_format|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -72,6 +86,7 @@ jobs:
             os: windows-2022
             qt_version: 5
             # FIXME: many tests fail to link
+            # https://github.com/KDAB/cxx-qt/issues/111
             ctest_args: --exclude-regex '^(cxx_qt_gen_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -85,6 +100,7 @@ jobs:
             os: windows-2022
             qt_version: 6
             # FIXME: many tests fail to link
+            # https://github.com/KDAB/cxx-qt/issues/111
             ctest_args: --exclude-regex '^(cxx_qt_gen_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -153,6 +169,11 @@ jobs:
       run: pip3 install reuse
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
+      # FIXME: clang-format-14 causes formatting differences if it is selected by brew
+      # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
+      # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
+      # https://github.com/KDAB/cxx-qt/issues/121
+      #
       # automake is needed for building libicu which is a dependency of Qt
       run: brew install automake ninja clang-format
 
