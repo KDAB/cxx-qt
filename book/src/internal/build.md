@@ -18,10 +18,10 @@ The process of building a CXX-Qt project internally is complex and contains mult
 
 When cargo build is triggered, this causes dependencies to be downloaded and built. One of these is
 `cxx-qt-lib` which defines helper Qt types. It contains a `build.rs` which uses CXX to generate C++
-sources for the Qt types. These are stored into the `OUT_DIR` of the crate.
+sources for the Qt types. These are stored into a single JSON file in the OUT_DIR of the crate.
 Note that we cannot know where the `OUT_DIR` or other files of `cxx-qt-lib` are, from the main
 project, as they are in hashed directories. Therefore as `cxx-qt-lib` is built it uses `include_str!`
-to expose the generates files as `const` strings in the crate.
+to expose the generated JSON into the `QT_TYPES_CXX_JSON` variable.
 
 Next cargo triggers the `build.rs` of the main project, which executes `cxx-qt-build` helper methods.
 
@@ -33,7 +33,8 @@ well known location for CMake (`target/cxx-qt-gen/`).
 Then `cxx-qt-build` writes any static headers (such as CXX headers) and `QQmlExtensionPlugin`
 generated code to the same folder.
 
-Next it uses the `const` strings from `cxx-qt-lib` to write the C++ source files into a well known
+Next it uses the strings `QT_TYPES_HEADER`, `QT_TYPES_SOURCE`, and `QT_TYPES_CXX_JSON` (which
+represents multiple files) from `cxx-qt-lib` to write the C++ source files into a well known
 location for CMake (`target/cxx-qt-lib/`).
 
 Finally it writes a list of the generated C++ sources into a `cpp_sources.txt` file in the
