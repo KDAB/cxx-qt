@@ -413,11 +413,9 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
     paths
 }
 
-/// Write out the static header files for both the cxx and cxx-qt libraries, returns a list
-/// of paths for the written files that need to be sent back to CMake for processing by MOC
-fn write_static_headers() -> Vec<String> {
+/// Write out the static header file for both the cxx
+fn write_cxx_static_header() {
     let manifest_dir = manifest_dir();
-    let mut paths = vec![];
 
     let path = format!("{}/target/cxx-qt-gen/statics/rust", manifest_dir);
     std::fs::create_dir_all(&path).expect("Could not create static header dir");
@@ -425,9 +423,6 @@ fn write_static_headers() -> Vec<String> {
     let h_path = format!("{}/cxx.h", path);
     let mut header = File::create(&h_path).expect("Could not create cxx.h");
     write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
-    paths.push(h_path);
-
-    paths
 }
 
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
@@ -531,7 +526,7 @@ impl CxxQtBuilder {
         // TODO: in large projects where where CXX-Qt is used in multiple individual
         // components that end up being linked together, having these same static
         // files in each one could cause issues.
-        cpp_paths.append(&mut write_static_headers());
+        write_cxx_static_header();
 
         // Check if we have Qt support enabled
         if self.qt_enabled {
