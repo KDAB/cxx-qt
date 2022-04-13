@@ -11,7 +11,7 @@ use std::collections::HashSet;
 use crate::extract::{Invokable, QObject, QtTypes};
 use crate::utils::type_to_namespace;
 
-/// The target type that we want, eg is this the QVariant (Cpp) or Variant (Rust)
+/// The target type that we want, eg is this the QVariantCpp (Cpp) or QVariant (Rust)
 enum TargetType {
     Cpp,
     Rust,
@@ -22,7 +22,7 @@ trait RustType {
     /// Whether this type is a reference
     fn is_ref(&self) -> bool;
     /// The name of the type when defined in the CXX bridge, eg the A in type A = B;
-    fn cxx_bridge_type_ident(&self, target_type: TargetType) -> Ident;
+    fn cxx_bridge_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
     fn cxx_qt_lib_type(&self, target_type: TargetType) -> TokenStream;
 }
@@ -51,8 +51,8 @@ impl RustType for QtTypes {
     /// The name of the type when defined in the CXX bridge
     ///
     /// eg the A in type A = B;
-    /// And then the A in  fn method(A) -> A;
-    fn cxx_bridge_type_ident(&self, target_type: TargetType) -> Ident {
+    /// And then the A in fn method(A) -> A;
+    fn cxx_bridge_type_ident(&self) -> Ident {
         match self {
             Self::Bool => format_ident!("bool"),
             Self::F32 => format_ident!("f32"),
@@ -60,38 +60,20 @@ impl RustType for QtTypes {
             Self::I8 => format_ident!("i8"),
             Self::I16 => format_ident!("i16"),
             Self::I32 => format_ident!("i32"),
-            Self::QColor => match target_type {
-                TargetType::Cpp => format_ident!("QColor"),
-                TargetType::Rust => format_ident!("QColor"),
-            },
+            Self::QColor => format_ident!("QColor"),
             Self::QDate => format_ident!("QDate"),
-            Self::QDateTime => match target_type {
-                TargetType::Cpp => format_ident!("QDateTime"),
-                TargetType::Rust => format_ident!("QDateTime"),
-            },
+            Self::QDateTime => format_ident!("QDateTime"),
             Self::QPoint => format_ident!("QPoint"),
             Self::QPointF => format_ident!("QPointF"),
             Self::QRect => format_ident!("QRect"),
             Self::QRectF => format_ident!("QRectF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
-            Self::Str => match target_type {
-                TargetType::Cpp => format_ident!("QString"),
-                TargetType::Rust => format_ident!("str"),
-            },
-            Self::String => match target_type {
-                TargetType::Cpp => format_ident!("QString"),
-                TargetType::Rust => format_ident!("QString"),
-            },
+            Self::Str => format_ident!("QString"),
+            Self::String => format_ident!("QString"),
             Self::QTime => format_ident!("QTime"),
-            Self::QUrl => match target_type {
-                TargetType::Cpp => format_ident!("QUrl"),
-                TargetType::Rust => format_ident!("QUrl"),
-            },
-            Self::QVariant => match target_type {
-                TargetType::Cpp => format_ident!("QVariant"),
-                TargetType::Rust => format_ident!("QVariant"),
-            },
+            Self::QUrl => format_ident!("QUrl"),
+            Self::QVariant => format_ident!("QVariant"),
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
             Self::U32 => format_ident!("u32"),
@@ -263,7 +245,7 @@ pub fn generate_qobject_cxx(
             // Determine if there is a return type
             if let Some(return_type) = &i.return_type {
                 // Cache and build the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident();
                 let type_ident = if return_type.qt_type.is_opaque() {
                     quote! { UniquePtr<#type_ident> }
                 } else if return_type.is_ref {
@@ -325,8 +307,7 @@ pub fn generate_qobject_cxx(
                         }
                     }
                     _others => {
-                        let type_ident =
-                            &p.type_ident.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+                        let type_ident = &p.type_ident.qt_type.cxx_bridge_type_ident();
                         let type_ident = if p.type_ident.is_ref {
                             quote! {&#type_ident}
                         } else {
@@ -342,7 +323,7 @@ pub fn generate_qobject_cxx(
             // Determine if there is a return type and if it's a reference
             if let Some(return_type) = &i.return_type {
                 // Cache and build the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+                let type_ident = &return_type.qt_type.cxx_bridge_type_ident();
                 let type_ident = if return_type.qt_type.is_opaque() {
                     quote! { UniquePtr<#type_ident> }
                 } else if return_type.is_ref {
@@ -419,7 +400,7 @@ pub fn generate_qobject_cxx(
             let setter_cpp = format_ident!("set{}", property_ident_pascal);
 
             let qt_type = &property.type_ident.qt_type;
-            let param_type = qt_type.cxx_bridge_type_ident(TargetType::Cpp);
+            let param_type = qt_type.cxx_bridge_type_ident();
             let param_type = if qt_type.is_ref() {
                 quote! {&#param_type}
             } else {
