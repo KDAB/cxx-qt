@@ -7,20 +7,20 @@ SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-# cxx-qt
+# CXX-Qt
 
-cxx-qt is a library that automatically generates code to transfer data between Rust and C++ through common interfaces
+CXX-Qt is a library that automatically generates code to transfer data between Rust and C++ through common interfaces
 such as QObjects that can be exposed directly into QML. It relies on the cxx crate internally to achieve this and thus
 it is recommended that any interactions with Qt that are not covered by the built-in code generators should be done
-directly in C++ and connected to relevant Rust logic by writing additional cxx code. The cxx-qt build system is based
+directly in C++ and connected to relevant Rust logic by writing additional cxx code. The CXX-Qt build system is based
 on CMake, but is compatible with cxx on its own as well.
 
-The examples folder contains an example application using the cxx-qt crate and will be used for development and testing
+The examples folder contains an example application using the CXX-Qt crate and will be used for development and testing
 purposes. The cxx-qt folder contains the source for the actual crate which contains a proc-macro. The cxx-qt-gen folder
 contains the source for a crate which extracts and generates C++ and Rust source code. The cxx-qt-build folder contains
 the source for a crate which provides helper functions to be used in a `build.rs` file.
 
-Initially the projects in the examples folder will also serve as a template for new projects should use cxx-qt.
+Initially the projects in the examples folder will also serve as a template for new projects should use CXX-Qt.
 In future we might improve upon this with a custom CMake module for instance.
 
 ## Getting Started
@@ -100,15 +100,15 @@ Ensure that you have the following installed
   * Linux 64-bit x86 - currently we only support Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future
 
 ### Compiling
-In a cxx-qt project, the build system is based on CMake, which uses Cargo under the hood.
-Therefore, unlike a typical Rust project, CMake must be used to build cxx-qt.
+In a CXX-Qt project, the build system is based on CMake, which uses Cargo under the hood.
+Therefore, unlike a typical Rust project, CMake must be used to build CXX-Qt.
 
-On Windows and macOS, cxx-qt defaults to installing Qt from vcpkg. Prebuilt packages are
+On Windows and macOS, CXX-Qt defaults to installing Qt from vcpkg. Prebuilt packages are
 automatically downloaded from GitHub Packages (this will take several minutes the first time
 you run CMake). If you already have Qt installed, you can disable this by adding
 `-D VCPKG=OFF` to the CMake configure step (the first call to `cmake`).
 
-cxx-qt defaults to building with Qt6. If you want to build with Qt5 when both are installed,
+CXX-Qt defaults to building with Qt6. If you want to build with Qt5 when both are installed,
 or you want to tell vcpkg to use Qt5, add `-D QT_DEFAULT_MAJOR_VERSION=5` to the CMake
 configure step.
 
@@ -142,7 +142,8 @@ ctest -j$(nproc)
 ```
 
 ## Licensing
-cxx-qt is Copyright (C) 2021, Klarälvdalens Datakonsult AB, and is available under
+
+CXX-Qt is Copyright (C) 2021, Klarälvdalens Datakonsult AB, and is available under
 the terms of the [MIT](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/MIT.txt)
 or the [Apache-2.0](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/Apache-2.0.txt)
 licenses.
@@ -150,7 +151,7 @@ licenses.
 Contact KDAB at <info@kdab.com> to inquire about additional features or
 services related to this project.
 
-cxx-qt includes these source files, also available under the terms of the MIT license:
+CXX-Qt includes these source files, also available under the terms of the MIT license:
 
 * [doctest.h](https://github.com/onqtam/doctest) - the lightest feature-rich C++ single-header testing framework for unit tests and TDD (C) 2016-2021 Viktor Kirilov <vik.kirilov@gmail.com>
 
@@ -159,7 +160,8 @@ The following CMake source files are available under the BSD-3-Clause
 * [cmake/CompilerCaching.cmake](./cmake/CompilerCaching.cmake) - a helper for using sccache
 
 # About KDAB
-cxx-qt is supported and maintained by Klarälvdalens Datakonsult AB (KDAB).
+
+CXX-Qt is supported and maintained by Klarälvdalens Datakonsult AB (KDAB).
 
 The KDAB Group is the global No.1 software consultancy for Qt, C++ and
 OpenGL applications across desktop, embedded and mobile platforms.
