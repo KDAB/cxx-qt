@@ -72,6 +72,14 @@ pub(crate) enum QtTypes {
 }
 
 impl QtTypes {
+    /// Whether this type is allowed to be a ref mut
+    fn ref_mut_is_valid(&self) -> bool {
+        match self {
+            Self::CppObj { .. } => true,
+            _others => false,
+        }
+    }
+
     /// Whether this type is opaque so will be a UniquePtr<T> when returned from Rust to C++
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
@@ -329,6 +337,11 @@ fn extract_type_ident(
     let idents = path_to_idents(&ty_path.path)?;
     // Extract the Qt type this is used in C++ and Rust generation
     let qt_type = extract_qt_type(&idents, ty, cpp_namespace_prefix, qt_ident)?;
+
+    // Check if this Qt type is allowed to be a ref mut
+    if is_mut && is_ref && !qt_type.ref_mut_is_valid() {
+        return Err(ExtractTypeIdentError::InvalidType(ty.span()));
+    }
 
     // Create and return a ParameterType
     Ok(ParameterType {
@@ -1042,7 +1055,7 @@ mod tests {
             invokable.ident.rust_ident.to_string(),
             "invokable_parameters"
         );
-        assert_eq!(invokable.parameters.len(), 2);
+        assert_eq!(invokable.parameters.len(), 3);
         assert!(invokable.return_type.is_none());
         assert!(!invokable.mutable);
         let parameter = &invokable.parameters[0];
@@ -1052,6 +1065,12 @@ mod tests {
         assert!(parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
         let parameter = &invokable.parameters[1];
+        assert_eq!(parameter.ident.to_string(), "trivial");
+        assert_eq!(parameter.type_ident.idents.len(), 1);
+        assert_eq!(parameter.type_ident.idents[0].to_string(), "QPoint");
+        assert!(parameter.type_ident.is_ref);
+        assert!(!parameter.type_ident.is_mut);
+        let parameter = &invokable.parameters[2];
         assert_eq!(parameter.ident.to_string(), "primitive");
         assert_eq!(parameter.type_ident.idents.len(), 1);
         assert_eq!(parameter.type_ident.idents[0].to_string(), "i32");

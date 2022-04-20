@@ -308,13 +308,18 @@ pub fn generate_qobject_cxx(
                     }
                     _others => {
                         let type_ident = &p.type_ident.qt_type.cxx_bridge_type_ident();
-                        let type_ident = if p.type_ident.is_ref {
-                            quote! {&#type_ident}
+                        let is_ref = if p.type_ident.is_ref {
+                            quote! {&}
                         } else {
-                            quote! {#type_ident}
+                            quote! {}
+                        };
+                        let is_mut = if p.type_ident.is_mut {
+                            quote! {mut}
+                        } else {
+                            quote! {}
                         };
                         parameters_quotes.push(quote! {
-                            #ident: #type_ident
+                            #ident: #is_ref #is_mut #type_ident
                         });
                     }
                 };
