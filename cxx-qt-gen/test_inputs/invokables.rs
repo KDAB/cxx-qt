@@ -31,8 +31,13 @@ mod my_object {
         }
 
         #[invokable]
-        fn invokable_parameters(&self, opaque: &QColor, primitive: i32) {
-            println!("Red: {} Number: {}", opaque.red(), primitive);
+        fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
+            println!(
+                "Red: {}, Point X: {}, Number: {}",
+                opaque.red(),
+                trivial.x(),
+                primitive,
+            );
         }
 
         #[invokable]

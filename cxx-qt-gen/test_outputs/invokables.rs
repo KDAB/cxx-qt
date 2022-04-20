@@ -58,7 +58,12 @@ mod my_object {
             #[cxx_name = "invokableNestedParameterWrapper"]
             fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
             #[cxx_name = "invokableParametersWrapper"]
-            fn invokable_parameters_wrapper(self: &RustObj, opaque: &QColor, primitive: i32);
+            fn invokable_parameters_wrapper(
+                self: &RustObj,
+                opaque: &QColor,
+                trivial: &QPoint,
+                primitive: i32,
+            );
             #[cxx_name = "invokableParametersCppObjWrapper"]
             fn invokable_parameters_cpp_obj_wrapper(
                 self: &RustObj,
@@ -104,9 +109,14 @@ mod my_object {
             self.invokable_nested_parameter(&mut nested);
         }
 
-        fn invokable_parameters_wrapper(&self, opaque: &cxx_qt_lib::QColorCpp, primitive: i32) {
+        fn invokable_parameters_wrapper(
+            &self,
+            opaque: &cxx_qt_lib::QColorCpp,
+            trivial: &cxx_qt_lib::QPoint,
+            primitive: i32,
+        ) {
             let opaque = opaque.to_rust();
-            self.invokable_parameters(&opaque, primitive);
+            self.invokable_parameters(&opaque, trivial, primitive);
         }
 
         fn invokable_parameters_cpp_obj_wrapper(
@@ -146,8 +156,13 @@ mod my_object {
             println!("nested!");
         }
 
-        fn invokable_parameters(&self, opaque: &QColor, primitive: i32) {
-            println!("Red: {} Number: {}", opaque.red(), primitive);
+        fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
+            println!(
+                "Red: {}, Point X: {}, Number: {}",
+                opaque.red(),
+                trivial.x(),
+                primitive,
+            );
         }
 
         fn invokable_parameters_cpp_obj(&self, primitive: i32, cpp: &mut CppObj) {
