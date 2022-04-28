@@ -147,9 +147,7 @@ mod energy_usage {
     struct RustObj {
         qt_rx: Receiver<Data>,
         qt_tx: SyncSender<Data>,
-        join_handle_network: Option<JoinHandle<()>>,
-        join_handle_timeout: Option<JoinHandle<()>>,
-        join_handle_update: Option<JoinHandle<()>>,
+        join_handles: Option<[JoinHandle<()>; 3]>,
     }
 
     impl Default for RustObj {
@@ -158,9 +156,7 @@ mod energy_usage {
             Self {
                 qt_rx,
                 qt_tx,
-                join_handle_network: None,
-                join_handle_timeout: None,
-                join_handle_update: None,
+                join_handles: None,
             }
         }
     }
@@ -216,11 +212,8 @@ mod energy_usage {
 
         #[invokable]
         fn start_server(&mut self, cpp: &mut CppObj) {
-            if self.join_handle_network.is_some()
-                || self.join_handle_timeout.is_some()
-                || self.join_handle_update.is_some()
-            {
-                println!("Already running a thread!");
+            if self.join_handles.is_some() {
+                println!("Already running a server!");
                 return;
             }
 
@@ -340,9 +333,11 @@ mod energy_usage {
             };
 
             // Start our threads
-            self.join_handle_timeout = Some(std::thread::spawn(move || block_on(run_timeout)));
-            self.join_handle_network = Some(std::thread::spawn(move || block_on(run_server)));
-            self.join_handle_update = Some(std::thread::spawn(move || block_on(run_update)));
+            self.join_handles = Some([
+                std::thread::spawn(move || block_on(run_timeout)),
+                std::thread::spawn(move || block_on(run_server)),
+                std::thread::spawn(move || block_on(run_update)),
+            ]);
         }
     }
 
