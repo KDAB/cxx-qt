@@ -5,7 +5,10 @@
 use cxx_qt::make_qobject;
 
 use serde::{Deserialize, Serialize};
-use std::{sync::mpsc::TrySendError, time::SystemTime};
+use std::{
+    sync::mpsc::TrySendError,
+    time::{Duration, SystemTime},
+};
 use uuid::Uuid;
 
 /// The size of the network thread to update thread queue
@@ -13,9 +16,9 @@ const CHANNEL_NETWORK_COUNT: usize = 1_024;
 /// The size of the update thread to Qt queue
 const CHANNEL_QT_COUNT: usize = 16;
 /// After how many milliseconds should a sensor be disconnected and considered missing
-const SENSOR_TIMEOUT_MILLIS: u128 = 10_000;
+const SENSOR_TIMEOUT: Duration = Duration::from_millis(10_000);
 /// How often should the timeout thread poll sensors
-const SENSOR_TIMEOUT_POLL_RATE_MILLIS: u64 = 256;
+const SENSOR_TIMEOUT_POLL_RATE: Duration = Duration::from_millis(256);
 /// The maximum number of sensors we will manage
 const SENSOR_MAXIMUM_COUNT: usize = 1000;
 /// The maximum power a sensor can report
@@ -203,10 +206,7 @@ mod energy_usage {
             let timeout_network_tx = network_tx.clone();
             let run_timeout = async move {
                 loop {
-                    Delay::new(Duration::from_millis(
-                        super::SENSOR_TIMEOUT_POLL_RATE_MILLIS,
-                    ))
-                    .await;
+                    Delay::new(super::SENSOR_TIMEOUT_POLL_RATE).await;
 
                     timeout_network_tx
                         .send(NetworkChannel::TimeoutUpdate)
@@ -218,7 +218,7 @@ mod energy_usage {
                             // Find sensors that have expired
                             .filter(|(_, sensor)| {
                                 if let Ok(duration) = sensor.last_seen.elapsed() {
-                                    duration.as_millis() > super::SENSOR_TIMEOUT_MILLIS
+                                    duration > super::SENSOR_TIMEOUT
                                 } else {
                                     true
                                 }
