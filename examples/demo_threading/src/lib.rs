@@ -42,8 +42,11 @@ struct Request {
 #[serde(rename_all = "snake_case")]
 enum Status {
     Ok,
+    ErrorFailedToRead,
+    ErrorFailedToParseAsUtf8,
+    ErrorFailedToParseJSONRequest,
+    ErrorInvalidReadSize,
     ErrorInvalidPower,
-    ErrorInvalidRequest,
     ErrorServerQueueFull,
     ErrorServerDisconnected,
 }
@@ -51,6 +54,18 @@ enum Status {
 #[derive(Deserialize, Serialize)]
 struct Response {
     status: Status,
+}
+
+impl From<serde_json::Error> for Status {
+    fn from(_: serde_json::Error) -> Self {
+        Status::ErrorFailedToParseJSONRequest
+    }
+}
+
+impl From<std::str::Utf8Error> for Status {
+    fn from(_: std::str::Utf8Error) -> Self {
+        Status::ErrorFailedToParseAsUtf8
+    }
 }
 
 impl From<Status> for Response {
@@ -109,7 +124,7 @@ mod energy_usage {
         collections::HashMap,
         sync::mpsc::{sync_channel, Receiver, SyncSender},
         thread::JoinHandle,
-        time::{Duration, SystemTime},
+        time::SystemTime,
     };
     use uuid::Uuid;
 
@@ -151,14 +166,24 @@ mod energy_usage {
     }
 
     impl RustObj {
-        async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
-            let mut buf = vec![0u8; 1024];
-            let _ = stream.read(&mut buf).await.unwrap();
-            let trimmed = std::str::from_utf8(&buf)
-                .unwrap()
-                .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
+        /// Read from a TCP stream and create a Request
+        async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
+            let mut buf = vec![0u8; 128];
+            if let Ok(size) = stream.read(&mut buf).await {
+                if size > buf.len() {
+                    Err(Status::ErrorInvalidReadSize)
+                } else {
+                    let trimmed = std::str::from_utf8(&buf)?
+                        .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
+                    serde_json::from_str::<Request>(trimmed).map_err(|e| e.into())
+                }
+            } else {
+                Err(Status::ErrorFailedToRead)
+            }
+        }
 
-            let response: Response = match serde_json::from_str::<Request>(trimmed) {
+        async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
+            let response: Response = match RustObj::build_request(&mut stream).await {
                 Ok(request) => {
                     match request.command {
                         RequestCommand::Power { value } => {
@@ -179,13 +204,13 @@ mod energy_usage {
                             .into(),
                     }
                 }
-                Err(_) => Status::ErrorInvalidRequest.into(),
+                Err(err) => err.into(),
             };
 
             stream
                 .write(serde_json::to_string(&response).unwrap().as_bytes())
                 .await
-                .unwrap();
+                .ok();
             stream.flush().await.unwrap();
         }
 
