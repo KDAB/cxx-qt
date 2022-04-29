@@ -8,13 +8,19 @@
 import json
 import socket
 import random
+import threading
 import time
 import uuid
 
+RUNNING = True
+KILLED = False
+
+
 class Client():
-    def __init__(self, target_host, target_port):
+    def __init__(self, target_host, target_port, uuid):
         self.target_host = target_host
         self.target_port = target_port
+        self.uuid = str(uuid)
 
     def send_json(self, obj):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,24 +28,31 @@ class Client():
         client.send(json.dumps(obj).encode("utf-8"))
         return json.loads(client.recv(4096).decode("utf-8"))
 
+    def send_power(self, value):
+        self.send_json({"command": {"power": {"value": value}},
+                        "uuid": self.uuid})
+
+
+def client_thread():
+    client = Client("127.0.0.1", 8080, uuid.uuid4())
+
+    while RUNNING:
+        client.send_power(random.randrange(1, 1000) / 10.0)
+
+        time.sleep(0.25)
+
+    if not KILLED:
+        client.send_json({"command": "disconnect", "uuid": client.uuid})
+
+
 if __name__ == "__main__":
-    client = Client("127.0.0.1", 8080)
-    uuids = []
+    t = threading.Thread(target=client_thread)
+    t.start()
 
-    # Create 100 sensors
-    for i in range(100):
-        uuids.append(str(uuid.uuid4()))
+    try:
+        input("Press Enter to disconnect")
+    except KeyboardInterrupt:
+        KILLED = True
 
-    # Load the sensors with initial random values
-    for id in uuids:
-        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
-
-    # Randomly change their values with a delay
-    for id in uuids:
-        client.send_json({"command": {"power": {"value": random.randrange(1, 1000) / 10.0}}, "uuid": id })
-        # 0.001 - 0.01, frametime is 0.016
-        time.sleep(random.randrange(1, 10) / 1000)
-
-    # Disconnect the sensors
-    for id in uuids:
-        client.send_json({"command": "disconnect", "uuid": id})
+    RUNNING = False
+    t.join()
