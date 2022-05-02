@@ -13,8 +13,6 @@ use uuid::Uuid;
 
 /// The size of the network thread to update thread queue
 const CHANNEL_NETWORK_COUNT: usize = 1_024;
-/// The size of the update thread to Qt queue
-const CHANNEL_QT_COUNT: usize = 16;
 /// After how many milliseconds should a sensor be disconnected and considered missing
 const SENSOR_TIMEOUT: Duration = Duration::from_millis(10_000);
 /// How often should the timeout thread poll sensors
@@ -122,7 +120,10 @@ mod energy_usage {
     use futures_timer::Delay;
     use std::{
         collections::HashMap,
-        sync::mpsc::{sync_channel, Receiver, SyncSender},
+        sync::{
+            mpsc::{sync_channel, SyncSender},
+            Arc, Mutex,
+        },
         thread::JoinHandle,
         time::SystemTime,
     };
@@ -145,17 +146,14 @@ mod energy_usage {
     }
 
     struct RustObj {
-        qt_rx: Receiver<Data>,
-        qt_tx: SyncSender<Data>,
+        qt_data: Arc<Mutex<Option<Data>>>,
         join_handles: Option<[JoinHandle<()>; 3]>,
     }
 
     impl Default for RustObj {
         fn default() -> Self {
-            let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
             Self {
-                qt_rx,
-                qt_tx,
+                qt_data: Arc::new(Mutex::new(None)),
                 join_handles: None,
             }
         }
@@ -255,7 +253,7 @@ mod energy_usage {
             // the commands into a hashmap.
             // When values change this then requests an update to Qt
             let update_requester = cpp.update_requester();
-            let qt_tx = self.qt_tx.clone();
+            let qt_data = self.qt_data.clone();
             let run_update = async move {
                 let mut sensors =
                     HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
@@ -305,15 +303,15 @@ mod energy_usage {
                                 0.0
                             };
 
-                            qt_tx
-                                .send(Data {
+                            if let Ok(mut data) = (*qt_data).lock() {
+                                *data = Some(Data {
                                     average_use,
                                     sensors,
                                     total_use,
-                                })
-                                .unwrap();
+                                });
 
-                            update_requester.request_update();
+                                update_requester.request_update();
+                            }
                         }
                     }
                 }
@@ -344,11 +342,16 @@ mod energy_usage {
     impl UpdateRequestHandler<CppObj<'_>> for RustObj {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             // Process the new data from the background thread
-            if let Some(data) = self.qt_rx.try_iter().last() {
-                // Here we have constructed a new Data struct so can consume it's values
-                // for other uses we could have passed an Enum across the channel
-                // and then process the required action here
-                cpp.grab_values_from_data(data);
+            //
+            // Try to lock the Qt Data
+            if let Ok(mut qt_data) = self.qt_data.lock() {
+                // Take any Data if it's available
+                if let Some(data) = (*qt_data).take() {
+                    // Here we have constructed a new Data struct so can consume it's values
+                    // for other uses we could have passed an Enum across the channel
+                    // and then process the required action here
+                    cpp.grab_values_from_data(data);
+                }
             }
         }
     }
