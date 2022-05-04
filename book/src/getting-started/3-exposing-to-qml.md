@@ -37,11 +37,7 @@ Where `my_object` is the name of the Rust module we defined earlier.
 
 As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file in the `src` folder as well:
 ```qrc,ignore
-<RCC version="1.0">
-    <qresource prefix="/">
-        <file>main.qml</file>
-    </qresource>
-</RCC>
+{{#include ../../../examples/qml_minimal/src/qml.qrc:book_rcc_block}}
 ```
 
 And that's it. We can now [use our cool new class from QML](./4-qml-gui.md).

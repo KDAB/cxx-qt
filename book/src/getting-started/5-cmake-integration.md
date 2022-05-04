@@ -18,7 +18,7 @@ Before we can get started on building Qt with CMake, we first need to make our C
 If you've generated your project with the `cargo new --lib` command, your `Cargo.toml` likely looks something like this:
 ```toml,ignore
 [package]
-name = "cxx-qt-getting-started"
+name = "qml-minimal"
 version = "0.1.0"
 edition = "2021"
 
@@ -30,31 +30,9 @@ We'll have to do multiple things:
 - Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies.
 - Add `clang-format` and `cxx-qt-build` as build-dependencies.
 
-In the end, your `Cargo.toml` should look like this:
+In the end, your `Cargo.toml` should look similar to this (note that `path` for the dependencies is not required):
 ```toml,ignore
-[package]
-name = "cxx-qt-getting-started"
-version = "0.1.0"
-edition = "2021"
-
-# This will instruct Cargo to create a static
-# lib named "rust" which CMake can link against
-[lib]
-name = "rust"
-crate-type = ["staticlib"]
-
-[dependencies]
-cxx = "1.0"
-cxx-qt = "0.2"
-cxx-qt-lib = "0.2"
-
-# cxx-qt needs to be able to generate C++ code at
-# compile time, which is what cxx-qt-build is needed for.
-# cxx-qt uses clang-format, if available, to format all
-# C++ code in a consistent manner.
-[build-dependencies]
-clang-format = "0.1"
-cxx-qt-build = "0.2"
+{{#include ../../../examples/qml_minimal/Cargo.toml:book_all}}
 ```
 
 We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
@@ -70,69 +48,15 @@ In our case, this is only the `src/lib.rs` file.
 Then we can write our `CMakeLists.txt` file:
 
 ```cmake,ignore
-cmake_minimum_required(VERSION 3.16)
-
-project(cxx_qt_getting_started)
-set(APP_NAME ${PROJECT_NAME})
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QuickTest Test REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QuickTest Test REQUIRED)
-
-# Include the CXX-Qt CMake code, which provides some easy functions
-# to generate the CXX-Qt code.
-include(CxxQt)
-
-# Generate C++ code from Rust using Cargo in the current folder
-cxx_qt_generate_cpp(GEN_SOURCES)
-
-# Define our sources
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-)
-
-set(
-    RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
-)
-
-# Define our executable with our C++ source, generated sources, and QML resource files
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
-
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
-
-# Link to Qt in the normal way
-target_link_libraries(${APP_NAME} PRIVATE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Qml
-    Qt${QT_VERSION_MAJOR}::QuickControls2
-)
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_full}}
 ```
 
 This looks like a lot, but it is actually just a fairly standard CMake file for building a Qt application.
 
 The difference here are these lines:
 ```cmake,ignore
-include(CxxQt)
-
-# Generate C++ code from Rust using Cargo in the current folder
-cxx_qt_generate_cpp(GEN_SOURCES)
-
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_diff_1}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_diff_2}}
 ```
 
 Which will do the code generation and include it into the C++ build.
@@ -153,7 +77,7 @@ If this fails for any reason, take a look at the [`examples/qml_minimal`](https:
 This should now configure and compile our project.
 If this was successful, you can now run our little project.
 ```shell
-$ ./cxx_qt_getting_started
+$ ./qml_minimal
 ```
 
 You should now see the two Labels that display the state of our `MyObject`, as well as the two buttons to call our two Rust functions.
