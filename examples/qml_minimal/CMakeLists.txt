@@ -4,29 +4,34 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+
 # TODO: figure out what the actual hard minimum is
+
+# TODO: Add a helper function to our CMake module which automatically
+# handles some of this boilerplate for a "typical" Qt application
+
+# ANCHOR: book_tutorial_cmake_full
 cmake_minimum_required(VERSION 3.16)
 
 project(example_qml_minimal)
 set(APP_NAME ${PROJECT_NAME})
 
-# TODO: Add a helper function to our CMake module which automatically
-# handles some of this boilerplate for a "typical" Qt application
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 
 # ANCHOR: book_cmake_generation
+# ANCHOR: book_tutorial_cmake_diff_1
 include(CxxQt)
 
 # Generate C++ code from Rust using Cargo in the current folder
 cxx_qt_generate_cpp(GEN_SOURCES)
+# ANCHOR_END: book_tutorial_cmake_diff_1
 
 # Define our sources
 set(
@@ -42,11 +47,13 @@ set(
 # Define our executable with our C++ source, generated sources, and QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 
+# ANCHOR: book_tutorial_cmake_diff_2
 # Include generated sources
 cxx_qt_include(${APP_NAME})
 
 # Link to generated rust library
 cxx_qt_link_rustlib(${APP_NAME})
+# ANCHOR_END: book_tutorial_cmake_diff_2
 
 # Link to Qt in the normal way
 target_link_libraries(${APP_NAME} PRIVATE
@@ -54,15 +61,17 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml
     Qt${QT_VERSION_MAJOR}::QuickControls2
-    Qt${QT_VERSION_MAJOR}::Test
 )
 qt_import_qml_plugins(${APP_NAME})
-
 # ANCHOR_END: book_cmake_generation
+# ANCHOR_END: book_tutorial_cmake_full
 
 #
 # Unit test
 #
+
+find_package(QT NAMES Qt6 Qt5 COMPONENTS QuickTest Test REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS QuickTest Test REQUIRED)
 
 function(add_qml_test TEST_NAME)
     # Copy QML unit test to build folder

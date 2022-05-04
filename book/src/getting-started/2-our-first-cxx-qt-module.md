@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 As with all things Rust, we'll first want to create a cargo project.
 ```bash
-cargo new --lib cxx-qt-getting-started
+cargo new --lib qml-minimal
 ```
 Note the `--lib` option here.
 It is important that we create a static library in Rust, rather than an executable.
