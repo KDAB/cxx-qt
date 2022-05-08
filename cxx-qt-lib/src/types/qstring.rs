@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::fmt::Display;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -60,5 +62,18 @@ impl crate::ToUniquePtr for &str {
 impl From<&QStringCpp> for String {
     fn from(qstring: &QStringCpp) -> Self {
         qstring.to_rust()
+    }
+}
+
+impl Display for QStringCpp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s: String = self.into();
+        write!(f, "{}", s)
+    }
+}
+
+impl std::fmt::Debug for QStringCpp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
     }
 }
