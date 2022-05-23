@@ -30,8 +30,9 @@ MyObject::setColor(const QColor& value)
   if (value != m_color) {
     m_color = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "colorChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "colorChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -52,8 +53,9 @@ MyObject::setDate(const QDate& value)
   if (value != m_date) {
     m_date = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "dateChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "dateChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -74,8 +76,9 @@ MyObject::setDateTime(const QDateTime& value)
   if (value != m_dateTime) {
     m_dateTime = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "dateTimeChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "dateTimeChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -96,8 +99,9 @@ MyObject::setPoint(const QPoint& value)
   if (value != m_point) {
     m_point = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "pointChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "pointChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -118,8 +122,9 @@ MyObject::setPointf(const QPointF& value)
   if (value != m_pointf) {
     m_pointf = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "pointfChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "pointfChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -140,8 +145,9 @@ MyObject::setRect(const QRect& value)
   if (value != m_rect) {
     m_rect = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "rectChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "rectChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -162,8 +168,9 @@ MyObject::setRectf(const QRectF& value)
   if (value != m_rectf) {
     m_rectf = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "rectfChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "rectfChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -184,8 +191,9 @@ MyObject::setSize(const QSize& value)
   if (value != m_size) {
     m_size = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "sizeChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "sizeChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -206,8 +214,9 @@ MyObject::setSizef(const QSizeF& value)
   if (value != m_sizef) {
     m_sizef = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "sizefChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "sizefChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -228,8 +237,9 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -250,8 +260,9 @@ MyObject::setTime(const QTime& value)
   if (value != m_time) {
     m_time = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "timeChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "timeChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -272,8 +283,9 @@ MyObject::setUrl(const QUrl& value)
   if (value != m_url) {
     m_url = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "urlChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "urlChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -294,8 +306,9 @@ MyObject::setVariant(const QVariant& value)
   if (value != m_variant) {
     m_variant = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 

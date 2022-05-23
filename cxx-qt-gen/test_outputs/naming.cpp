@@ -30,8 +30,9 @@ MyObject::setPropertyName(qint32 value)
   if (value != m_propertyName) {
     m_propertyName = value;
 
-    Q_ASSERT(QMetaObject::invokeMethod(
-      this, "propertyNameChanged", Qt::QueuedConnection));
+    const auto signalSuccess = QMetaObject::invokeMethod(
+      this, "propertyNameChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 

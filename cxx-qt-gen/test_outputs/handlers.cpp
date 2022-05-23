@@ -30,16 +30,18 @@ MyObject::setNumber(qint32 value)
   if (value != m_number) {
     m_number = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "numberChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "numberChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
 
-    Q_ASSERT(QMetaObject::invokeMethod(
+    const auto handlePropertySuccess = QMetaObject::invokeMethod(
       this,
       [&]() {
         const std::lock_guard<std::mutex> guard(m_rustObjMutex);
         m_rustObj->handlePropertyChange(*this, Property::Number);
       },
-      Qt::QueuedConnection));
+      Qt::QueuedConnection);
+    Q_ASSERT(handlePropertySuccess);
   }
 }
 
@@ -60,16 +62,18 @@ MyObject::setString(const QString& value)
   if (value != m_string) {
     m_string = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
 
-    Q_ASSERT(QMetaObject::invokeMethod(
+    const auto handlePropertySuccess = QMetaObject::invokeMethod(
       this,
       [&]() {
         const std::lock_guard<std::mutex> guard(m_rustObjMutex);
         m_rustObj->handlePropertyChange(*this, Property::String);
       },
-      Qt::QueuedConnection));
+      Qt::QueuedConnection);
+    Q_ASSERT(handlePropertySuccess);
   }
 }
 
