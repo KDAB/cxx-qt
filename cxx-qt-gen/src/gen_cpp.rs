@@ -504,10 +504,11 @@ fn generate_properties_cpp(
         let call_property_change_handler = if has_property_change_handler {
             formatdoc! {
                 r#"
-                Q_ASSERT(QMetaObject::invokeMethod(this, [&]() {{
+                const auto handlePropertySuccess = QMetaObject::invokeMethod(this, [&]() {{
                     const std::lock_guard<std::mutex> guard(m_rustObjMutex);
                     m_rustObj->handlePropertyChange(*this, Property::{ident});
-                }}, Qt::QueuedConnection));
+                }}, Qt::QueuedConnection);
+                Q_ASSERT(handlePropertySuccess);
                 "#,
                 ident = parameter_ident_pascal
             }
@@ -545,7 +546,8 @@ fn generate_properties_cpp(
 
                         {member_ident} = value;
 
-                        Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
+                        const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
+                        Q_ASSERT(signalSuccess);
 
                         {call_property_change_handler}
                     }}
@@ -610,7 +612,8 @@ fn generate_properties_cpp(
                   {member_owned_ident} = std::move(value);
                   {member_ident} = {member_owned_ident}.get();
 
-                  Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
+                  const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
+                  Q_ASSERT(signalSuccess);
 
                   {call_change_handler}
                 }}
@@ -644,7 +647,8 @@ fn generate_properties_cpp(
                     if (value != {member_ident}) {{
                         {member_ident} = value;
 
-                        Q_ASSERT(QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection));
+                        const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
+                        Q_ASSERT(signalSuccess);
 
                         {call_change_handler}
                     }}

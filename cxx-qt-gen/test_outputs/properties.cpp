@@ -30,8 +30,9 @@ MyObject::setPrimitive(qint32 value)
   if (value != m_primitive) {
     m_primitive = value;
 
-    Q_ASSERT(QMetaObject::invokeMethod(
-      this, "primitiveChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "primitiveChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -52,8 +53,9 @@ MyObject::setOpaque(const QColor& value)
   if (value != m_opaque) {
     m_opaque = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -73,8 +75,9 @@ MyObject::setNested(cxx_qt::nested_object::CppObj* value)
 
     m_nested = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -94,8 +97,9 @@ MyObject::giveNested(std::unique_ptr<cxx_qt::nested_object::CppObj> value)
   m_ownedNested = std::move(value);
   m_nested = m_ownedNested.get();
 
-  Q_ASSERT(
-    QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection));
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "nestedChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 std::unique_ptr<CppObj>

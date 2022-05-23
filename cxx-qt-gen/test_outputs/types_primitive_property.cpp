@@ -30,8 +30,9 @@ MyObject::setBoolean(bool value)
   if (value != m_boolean) {
     m_boolean = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "booleanChanged", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "booleanChanged", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -52,8 +53,9 @@ MyObject::setFloat32(float value)
   if (value != m_float32) {
     m_float32 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "float32Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "float32Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -74,8 +76,9 @@ MyObject::setFloat64(double value)
   if (value != m_float64) {
     m_float64 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "float64Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "float64Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -96,8 +99,9 @@ MyObject::setInt8(qint8 value)
   if (value != m_int8) {
     m_int8 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "int8Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "int8Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -118,8 +122,9 @@ MyObject::setInt16(qint16 value)
   if (value != m_int16) {
     m_int16 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "int16Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "int16Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -140,8 +145,9 @@ MyObject::setInt32(qint32 value)
   if (value != m_int32) {
     m_int32 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "int32Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "int32Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -162,8 +168,9 @@ MyObject::setUint8(quint8 value)
   if (value != m_uint8) {
     m_uint8 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "uint8Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "uint8Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -184,8 +191,9 @@ MyObject::setUint16(quint16 value)
   if (value != m_uint16) {
     m_uint16 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "uint16Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "uint16Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
@@ -206,8 +214,9 @@ MyObject::setUint32(quint32 value)
   if (value != m_uint32) {
     m_uint32 = value;
 
-    Q_ASSERT(
-      QMetaObject::invokeMethod(this, "uint32Changed", Qt::QueuedConnection));
+    const auto signalSuccess =
+      QMetaObject::invokeMethod(this, "uint32Changed", Qt::QueuedConnection);
+    Q_ASSERT(signalSuccess);
   }
 }
 
