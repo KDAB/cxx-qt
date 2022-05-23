@@ -195,7 +195,7 @@ jobs:
       run: >-
         cmake
         -D QT_DEFAULT_MAJOR_VERSION=${{ matrix.qt_version }}
-        -D CMAKE_BUILD_TYPE=Debug
+        -D CMAKE_BUILD_TYPE=Release
         -G Ninja
         -S . -B build
       working-directory: ${{ matrix.workspace }}
@@ -204,12 +204,12 @@ jobs:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
-      run: cmake --build build --config Debug --parallel 2
+      run: cmake --build build --config Release --parallel 2
       working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
     - name: "Test"
-      run: ctest ${{ matrix.ctest_args }} -C Debug -T test --output-on-failure --parallel 2
+      run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel 2
       working-directory: ${{ matrix.workspace }}/build
       env:
         RUSTC_WRAPPER: sccache
