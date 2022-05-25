@@ -1,152 +1,55 @@
-// SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2021, 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+// SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use serde::{Deserialize, Serialize};
-use std::{
-    sync::mpsc::TrySendError,
-    time::{Duration, SystemTime},
-};
-use uuid::Uuid;
 
-/// The size of the network thread to update thread queue
-const CHANNEL_NETWORK_COUNT: usize = 1_024;
-/// After how many milliseconds should a sensor be disconnected and considered missing
-const SENSOR_TIMEOUT: Duration = Duration::from_millis(10_000);
-/// How often should the timeout thread poll sensors
-const SENSOR_TIMEOUT_POLL_RATE: Duration = Duration::from_millis(256);
-/// How often should the update thread poll sensors
-const SENSOR_UPDATE_POLL_RATE: Duration = Duration::from_millis(128);
-/// The maximum number of sensors we will manage
-const SENSOR_MAXIMUM_COUNT: usize = 1000;
-/// The maximum power a sensor can report
-const SENSOR_MAXIMUM_POWER: f64 = 1000.0;
+mod constants;
+mod network;
+mod workers;
 
-// Network Serialisation definition
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum RequestCommand {
-    Disconnect,
-    Power { value: f64 },
-}
-
-#[derive(Deserialize, Serialize)]
-struct Request {
-    command: RequestCommand,
-    uuid: Uuid,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum Status {
-    Ok,
-    ErrorFailedToRead,
-    ErrorFailedToParseAsUtf8,
-    ErrorFailedToParseJSONRequest,
-    ErrorInvalidReadSize,
-    ErrorInvalidPower,
-    ErrorServerQueueFull,
-    ErrorServerDisconnected,
-}
-
-#[derive(Deserialize, Serialize)]
-struct Response {
-    status: Status,
-}
-
-impl From<serde_json::Error> for Status {
-    fn from(_: serde_json::Error) -> Self {
-        Status::ErrorFailedToParseJSONRequest
-    }
-}
-
-impl From<std::str::Utf8Error> for Status {
-    fn from(_: std::str::Utf8Error) -> Self {
-        Status::ErrorFailedToParseAsUtf8
-    }
-}
-
-impl From<Status> for Response {
-    fn from(status: Status) -> Self {
-        Response { status }
-    }
-}
-
-impl From<Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>> for Response {
-    fn from(result: Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>) -> Self {
-        match result {
-            Ok(_) => Response { status: Status::Ok },
-            Err(TrySendError::Full { .. }) => Response {
-                status: Status::ErrorServerQueueFull,
-            },
-            Err(TrySendError::Disconnected { .. }) => Response {
-                status: Status::ErrorServerDisconnected,
-            },
-        }
-    }
-}
-
-// Channel definition
-enum NetworkChannel {
-    Disconnect { uuid: Uuid },
-    Power { uuid: Uuid, value: f64 },
-    TimeoutUpdate,
-    Update,
-}
-
-#[derive(Clone)]
-struct SensorData {
-    power: f64,
-    last_seen: SystemTime,
-}
-
-impl Default for SensorData {
-    fn default() -> Self {
-        Self {
-            power: 0.0,
-            last_seen: SystemTime::now(),
-        }
-    }
-}
-
-struct QtData {
-    average_use: f64,
-    sensors: u32,
-    total_use: f64,
-}
-
+// This mod defines our QObject called EnergyUsage
 #[cxx_qt::bridge(cxx_file_stem = "energy_usage", namespace = "cxx_qt::energy_usage")]
 mod ffi {
-    use super::{NetworkChannel, QtData, Request, RequestCommand, Response, SensorData, Status};
-    use async_std::{
-        net::{TcpListener, TcpStream},
-        prelude::*,
-        task::spawn,
+    use super::{
+        constants::{CHANNEL_NETWORK_COUNT, SENSOR_MAXIMUM_COUNT},
+        network::NetworkServer,
+        workers::{AccumulatorWorker, SensorHashMap, SensorsWorker, TimeoutWorker},
     };
-    use futures::{executor::block_on, stream::StreamExt};
-    use futures_timer::Delay;
+    use futures::executor::block_on;
     use std::{
-        collections::HashMap,
-        sync::{
-            atomic::{AtomicBool, Ordering},
-            mpsc::{sync_channel, SyncSender},
-            Arc,
-        },
+        sync::{atomic::AtomicBool, mpsc::sync_channel, Arc, Mutex},
         thread::JoinHandle,
-        time::SystemTime,
     };
     use uuid::Uuid;
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     #[cxx_qt::qobject]
     pub struct EnergyUsage {
+        /// The average power usage of the connected sensors
         #[qproperty]
         average_use: f64,
+        /// The count of connected sensors
         #[qproperty]
         sensors: u32,
+        /// The total power usage of the connected sensors
         #[qproperty]
         total_use: f64,
 
+        /// The join handles of the running threads
         join_handles: Option<[JoinHandle<()>; 4]>,
+        /// A HashMap of the currently connected sensors
+        ///
+        /// This uses an Arc inside the Mutex as well as outside so that the HashMap is only
+        /// cloned when required. By using Arc::make_mut on the inner HashMap data is only cloned
+        /// when mutating if another thread is still holding onto reference to the data.
+        /// https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut
+        sensors_map: Arc<Mutex<Arc<SensorHashMap>>>,
     }
 
     impl Default for EnergyUsage {
@@ -157,217 +60,96 @@ mod ffi {
                 total_use: 0.0,
 
                 join_handles: None,
+                sensors_map: Arc::new(Mutex::new(Arc::new(SensorHashMap::with_capacity(
+                    SENSOR_MAXIMUM_COUNT,
+                )))),
             }
         }
     }
 
-    impl EnergyUsage {
-        /// Read from a TCP stream and create a Request
-        async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
-            let mut buf = vec![0u8; 128];
-            if let Ok(size) = stream.read(&mut buf).await {
-                if size > buf.len() {
-                    Err(Status::ErrorInvalidReadSize)
-                } else {
-                    let trimmed = std::str::from_utf8(&buf)?
-                        .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
-                    serde_json::from_str::<Request>(trimmed).map_err(|e| e.into())
-                }
-            } else {
-                Err(Status::ErrorFailedToRead)
-            }
-        }
-
-        async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
-            let response: Response = match EnergyUsage::build_request(&mut stream).await {
-                Ok(request) => {
-                    match request.command {
-                        RequestCommand::Power { value } => {
-                            // Validate that our power is within the expected range
-                            if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
-                                network_tx
-                                    .try_send(NetworkChannel::Power {
-                                        uuid: request.uuid,
-                                        value,
-                                    })
-                                    .into()
-                            } else {
-                                Status::ErrorInvalidPower.into()
-                            }
-                        }
-                        RequestCommand::Disconnect => network_tx
-                            .try_send(NetworkChannel::Disconnect { uuid: request.uuid })
-                            .into(),
-                    }
-                }
-                Err(err) => err.into(),
-            };
-
-            stream
-                .write(serde_json::to_string(&response).unwrap().as_bytes())
-                .await
-                .ok();
-            stream.flush().await.unwrap();
-        }
+    /// Define Q_SIGNALS that are created on the QObject
+    #[cxx_qt::qsignals(EnergyUsage)]
+    #[allow(clippy::enum_variant_names)]
+    pub enum EnergySignals {
+        /// A new sensor has been detected
+        SensorAdded { uuid: QString },
+        /// A value on an existing sensor has changed
+        SensorChanged { uuid: QString },
+        /// An existing sensor has been removed
+        SensorRemoved { uuid: QString },
     }
 
     impl qobject::EnergyUsage {
+        /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
-        pub fn start_server(self: Pin<&mut Self>) {
+        pub fn sensor_power(self: Pin<&mut Self>, uuid: &QString) -> f64 {
+            let sensors = SensorsWorker::read_sensors(self.sensors_map_mut());
+
+            if let Ok(uuid) = Uuid::parse_str(&uuid.to_string()) {
+                sensors.get(&uuid).map(|v| v.power).unwrap_or_default()
+            } else {
+                0.0
+            }
+        }
+
+        /// A Q_INVOKABLE which starts the TCP server
+        #[qinvokable]
+        pub fn start_server(mut self: Pin<&mut Self>) {
             if self.rust().join_handles.is_some() {
                 println!("Already running a server!");
                 return;
             }
 
-            let (network_tx, network_rx) = sync_channel(super::CHANNEL_NETWORK_COUNT);
-            let (timeout_tx, timeout_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
-            let (update_tx, update_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
+            // Create a channel which is used for passing valid network requests
+            // from the NetworkServer to the SensorsWorker
+            let (network_tx, network_rx) = sync_channel(CHANNEL_NETWORK_COUNT);
+            // Create an AtomicBool which the SensorsWorker uses to tell
+            // the AccumulatorWorker that the sensors have changed
             let sensors_changed = Arc::new(AtomicBool::new(false));
 
-            // Prepare our timeout thread, if a sensor is not seen for N seconds we remove it
+            // Make relevent clones so that we can pass them to the threads
+            let accumulator_sensors = Arc::clone(self.as_mut().sensors_map_mut());
+            let accumulator_sensors_changed = Arc::clone(&sensors_changed);
+            let accumulator_qt_thread = self.qt_thread();
+            let sensors = Arc::clone(self.as_mut().sensors_map_mut());
+            let sensors_qt_thread = self.qt_thread();
+            let timeout_sensors = Arc::clone(self.as_mut().sensors_map_mut());
             let timeout_network_tx = network_tx.clone();
-            let run_timeout = async move {
-                loop {
-                    Delay::new(super::SENSOR_TIMEOUT_POLL_RATE).await;
-
-                    timeout_network_tx
-                        .send(NetworkChannel::TimeoutUpdate)
-                        .unwrap();
-
-                    if let Ok(mut sensors) = timeout_rx.recv() {
-                        for uuid in sensors
-                            .drain()
-                            // Find sensors that have expired
-                            .filter(|(_, sensor)| {
-                                if let Ok(duration) = sensor.last_seen.elapsed() {
-                                    duration > super::SENSOR_TIMEOUT
-                                } else {
-                                    true
-                                }
-                            })
-                            .map(|(uuid, _)| uuid)
-                        {
-                            timeout_network_tx
-                                .send(NetworkChannel::Disconnect { uuid })
-                                .unwrap();
-                        }
-                    }
-                }
-            };
-
-            // Prepare our update thread
-            //
-            // When values change this then requests an update to Qt
-            let update_network_tx = network_tx.clone();
-            let qt_thread = self.qt_thread();
-            let update_sensors_changed = sensors_changed.clone();
-            let run_update = async move {
-                loop {
-                    Delay::new(super::SENSOR_UPDATE_POLL_RATE).await;
-
-                    if update_sensors_changed
-                        .compare_exchange_weak(true, false, Ordering::SeqCst, Ordering::SeqCst)
-                        .is_ok()
-                    {
-                        update_network_tx.send(NetworkChannel::Update).unwrap();
-
-                        // If there is new sensor info then build average, count, total and inform Qt
-                        if let Ok(sensors) = update_rx.recv() {
-                            let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                            let sensors = sensors.len() as u32;
-                            let average_use = if sensors > 0 {
-                                total_use / (sensors as f64)
-                            } else {
-                                0.0
-                            };
-
-                            let data = QtData {
-                                average_use,
-                                sensors,
-                                total_use,
-                            };
-
-                            qt_thread
-                                .queue(move |mut qobject_energy_usage| {
-                                    // Process the new data from the background thread
-                                    // Here we have constructed a new Data struct so can consume its values.
-                                    // For other uses, we could have passed an Enum across the channel
-                                    // and then process the required action here
-                                    qobject_energy_usage
-                                        .as_mut()
-                                        .set_average_use(data.average_use);
-                                    qobject_energy_usage.as_mut().set_sensors(data.sensors);
-                                    qobject_energy_usage.as_mut().set_total_use(data.total_use);
-                                })
-                                .unwrap();
-                        }
-                    }
-                }
-            };
-
-            // Prepare our sensors thread, which reads from the network channel and collates
-            // the commands into a hashmap.
-            //
-            // The timeout and update thread can request snapshots of the sensors data
-            let run_sensors = async move {
-                let mut sensors =
-                    HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
-
-                loop {
-                    if let Ok(command) = network_rx.recv() {
-                        match command {
-                            NetworkChannel::Disconnect { uuid } => {
-                                sensors.remove(&uuid);
-                                sensors_changed.store(true, Ordering::SeqCst);
-                            }
-                            NetworkChannel::Power { uuid, value } => {
-                                // Validate that we would still be below the sensors max count
-                                let sensors_len = sensors.len();
-                                let entry = sensors.entry(uuid);
-                                if sensors_len < super::SENSOR_MAXIMUM_COUNT
-                                    || matches!(
-                                        entry,
-                                        std::collections::hash_map::Entry::Occupied(..)
-                                    )
-                                {
-                                    let mut sensor = entry.or_default();
-                                    sensor.power = value;
-                                    sensor.last_seen = SystemTime::now();
-                                    sensors_changed.store(true, Ordering::SeqCst);
-                                } else {
-                                    println!("Maximum sensor count reached!");
-                                }
-                            }
-                            NetworkChannel::TimeoutUpdate => {
-                                timeout_tx.send(sensors.clone()).unwrap();
-                            }
-                            NetworkChannel::Update => {
-                                update_tx.send(sensors.clone()).unwrap();
-                            }
-                        }
-                    }
-                }
-            };
-
-            // Prepare our Tcp server which listens for sensors
-            let run_server = async move {
-                let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
-                listener
-                    .incoming()
-                    .map(|stream| (stream, network_tx.clone()))
-                    .for_each_concurrent(/* limit */ None, |(stream, network_tx)| async move {
-                        let stream = stream.unwrap();
-                        spawn(EnergyUsage::handle_connection(stream, network_tx));
-                    })
-                    .await;
-            };
 
             // Start our threads
             *self.join_handles_mut() = Some([
-                std::thread::spawn(move || block_on(run_timeout)),
-                std::thread::spawn(move || block_on(run_update)),
-                std::thread::spawn(move || block_on(run_sensors)),
-                std::thread::spawn(move || block_on(run_server)),
+                // Create a TimeoutWorker
+                // If a sensor is not seen for N seconds then a disconnect is requested
+                std::thread::spawn(move || {
+                    block_on(TimeoutWorker::run(timeout_network_tx, timeout_sensors))
+                }),
+                // Create a AccumulatorWorker
+                // When sensor values change this creates accumulations of the data
+                // (such as total, average etc) and then requests an update to Qt
+                std::thread::spawn(move || {
+                    block_on(AccumulatorWorker::run(
+                        accumulator_sensors,
+                        accumulator_sensors_changed,
+                        accumulator_qt_thread,
+                    ))
+                }),
+                // Create a SensorsWorker
+                // Reads network requests from the NetworkServer, collates the commands
+                // by mutating the sensors hashmap, and requests signal changes to Qt
+                std::thread::spawn(move || {
+                    block_on(SensorsWorker::run(
+                        network_rx,
+                        sensors,
+                        sensors_changed,
+                        sensors_qt_thread,
+                    ))
+                }),
+                // Create a NetworkServer
+                // Starts a TCP server which listens for requests and sends valid
+                // network requests to the SensorsWorker
+                std::thread::spawn(move || {
+                    block_on(NetworkServer::listen("127.0.0.1:8080", network_tx))
+                }),
             ]);
         }
     }
