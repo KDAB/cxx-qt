@@ -1,0 +1,54 @@
+// clang-format off
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// clang-format on
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+#pragma once
+
+#include <optional>
+
+#include <QObject>
+
+#include "energyusageproxymodel.h"
+
+class Sensor : public QObject
+{
+  Q_OBJECT
+
+  Q_PROPERTY(
+    EnergyUsageProxyModel* model READ model WRITE setModel NOTIFY modelChanged)
+  Q_PROPERTY(bool on READ isOn NOTIFY onChanged)
+  Q_PROPERTY(double power READ power NOTIFY powerChanged)
+  Q_PROPERTY(QString uuid READ uuid WRITE setUuid NOTIFY uuidChanged)
+
+public:
+  Sensor(QObject* parent = nullptr);
+
+  EnergyUsageProxyModel* model() const;
+  bool isOn() const;
+  double power() const;
+  QString uuid() const;
+
+public Q_SLOTS:
+  void setModel(EnergyUsageProxyModel* model);
+  void setUuid(const QString& uuid);
+
+private Q_SLOTS:
+  void findUuid();
+  void onModelDataChanged(const QModelIndex& topLeft,
+                          const QModelIndex& bottomRight,
+                          const QVector<int>& roles);
+
+Q_SIGNALS:
+  void modelChanged();
+  void onChanged();
+  void powerChanged();
+  void uuidChanged();
+
+private:
+  std::optional<int> m_index;
+  EnergyUsageProxyModel* m_model;
+  QString m_uuid;
+};
