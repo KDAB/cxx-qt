@@ -94,8 +94,6 @@ impl From<Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>> for Respons
 enum NetworkChannel {
     Disconnect { uuid: Uuid },
     Power { uuid: Uuid, value: f64 },
-    TimeoutUpdate,
-    Update,
 }
 
 #[derive(Clone)]
@@ -128,12 +126,19 @@ mod energy_usage {
         sync::{
             atomic::{AtomicBool, Ordering},
             mpsc::{sync_channel, Receiver, SyncSender},
-            Arc,
+            Arc, Mutex,
         },
         thread::JoinHandle,
         time::SystemTime,
     };
     use uuid::Uuid;
+
+    #[allow(clippy::enum_variant_names)]
+    pub enum Signal {
+        SensorAdded { uuid: String },
+        SensorChanged { uuid: String },
+        SensorRemoved { uuid: String },
+    }
 
     pub struct Data {
         average_use: f64,
@@ -151,10 +156,16 @@ mod energy_usage {
         }
     }
 
+    enum QtSync {
+        DataChange(Data),
+        SignalChange(Signal),
+    }
+
     struct RustObj {
-        qt_rx: Receiver<Data>,
-        qt_tx: SyncSender<Data>,
+        qt_rx: Receiver<QtSync>,
+        qt_tx: SyncSender<QtSync>,
         join_handles: Option<[JoinHandle<()>; 4]>,
+        sensors: Arc<Mutex<Arc<HashMap<Uuid, SensorData>>>>,
     }
 
     impl Default for RustObj {
@@ -164,6 +175,9 @@ mod energy_usage {
                 qt_rx,
                 qt_tx,
                 join_handles: None,
+                sensors: Arc::new(Mutex::new(Arc::new(
+                    HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT),
+                ))),
             }
         }
     }
@@ -217,6 +231,27 @@ mod energy_usage {
             stream.flush().await.unwrap();
         }
 
+        fn read_sensors(
+            sensors: &Arc<Mutex<Arc<HashMap<Uuid, SensorData>>>>,
+        ) -> Arc<HashMap<Uuid, SensorData>> {
+            let sensors_lock = sensors.lock().unwrap();
+            let sensors = Arc::clone(&*sensors_lock);
+            drop(sensors_lock);
+
+            sensors
+        }
+
+        #[invokable]
+        fn sensor_power(&self, uuid: &str) -> f64 {
+            let sensors = Self::read_sensors(&self.sensors);
+
+            if let Ok(uuid) = Uuid::parse_str(uuid) {
+                sensors.get(&uuid).map(|v| v.power).unwrap_or_default()
+            } else {
+                0.0
+            }
+        }
+
         #[invokable]
         fn start_server(&mut self, cpp: &mut CppObj) {
             if self.join_handles.is_some() {
@@ -225,37 +260,30 @@ mod energy_usage {
             }
 
             let (network_tx, network_rx) = sync_channel(super::CHANNEL_NETWORK_COUNT);
-            let (timeout_tx, timeout_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
-            let (update_tx, update_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
             let sensors_changed = Arc::new(AtomicBool::new(false));
 
             // Prepare our timeout thread, if a sensor is not seen for N seconds we remove it
             let timeout_network_tx = network_tx.clone();
+            let sensors = Arc::clone(&self.sensors);
             let run_timeout = async move {
                 loop {
                     Delay::new(super::SENSOR_TIMEOUT_POLL_RATE).await;
 
-                    timeout_network_tx
-                        .send(NetworkChannel::TimeoutUpdate)
-                        .unwrap();
-
-                    if let Ok(mut sensors) = timeout_rx.recv() {
-                        for uuid in sensors
-                            .drain()
-                            // Find sensors that have expired
-                            .filter(|(_, sensor)| {
-                                if let Ok(duration) = sensor.last_seen.elapsed() {
-                                    duration > super::SENSOR_TIMEOUT
-                                } else {
-                                    true
-                                }
-                            })
-                            .map(|(uuid, _)| uuid)
-                        {
-                            timeout_network_tx
-                                .send(NetworkChannel::Disconnect { uuid })
-                                .unwrap();
-                        }
+                    for uuid in Self::read_sensors(&sensors)
+                        .iter()
+                        // Find sensors that have expired
+                        .filter(|(_, sensor)| {
+                            if let Ok(duration) = sensor.last_seen.elapsed() {
+                                duration > super::SENSOR_TIMEOUT
+                            } else {
+                                true
+                            }
+                        })
+                        .map(|(uuid, _)| uuid)
+                    {
+                        timeout_network_tx
+                            .send(NetworkChannel::Disconnect { uuid: *uuid })
+                            .unwrap();
                     }
                 }
             };
@@ -263,10 +291,10 @@ mod energy_usage {
             // Prepare our update thread
             //
             // When values change this then requests an update to Qt
-            let qt_tx = self.qt_tx.clone();
-            let update_network_tx = network_tx.clone();
-            let update_requester = cpp.update_requester();
-            let update_sensors_changed = sensors_changed.clone();
+            let qt_tx_update = self.qt_tx.clone();
+            let update_requester_update = cpp.update_requester();
+            let update_sensors_changed = Arc::clone(&sensors_changed);
+            let sensors = Arc::clone(&self.sensors);
             let run_update = async move {
                 loop {
                     Delay::new(super::SENSOR_UPDATE_POLL_RATE).await;
@@ -275,28 +303,25 @@ mod energy_usage {
                         .compare_exchange_weak(true, false, Ordering::SeqCst, Ordering::SeqCst)
                         .is_ok()
                     {
-                        update_network_tx.send(NetworkChannel::Update).unwrap();
-
                         // If there is new sensor info then build average, count, total and inform Qt
-                        if let Ok(sensors) = update_rx.recv() {
-                            let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                            let sensors = sensors.len() as u32;
-                            let average_use = if sensors > 0 {
-                                total_use / (sensors as f64)
-                            } else {
-                                0.0
-                            };
+                        let sensors = Self::read_sensors(&sensors);
+                        let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
+                        let sensors = sensors.len() as u32;
+                        let average_use = if sensors > 0 {
+                            total_use / (sensors as f64)
+                        } else {
+                            0.0
+                        };
 
-                            qt_tx
-                                .send(Data {
-                                    average_use,
-                                    sensors,
-                                    total_use,
-                                })
-                                .unwrap();
+                        qt_tx_update
+                            .send(QtSync::DataChange(Data {
+                                average_use,
+                                sensors,
+                                total_use,
+                            }))
+                            .unwrap();
 
-                            update_requester.request_update();
-                        }
+                        update_requester_update.request_update();
                     }
                 }
             };
@@ -305,40 +330,63 @@ mod energy_usage {
             // the commands into a hashmap.
             //
             // The timeout and update thread can request snapshots of the sensors data
+            let qt_tx_sensors = self.qt_tx.clone();
+            let update_requester_sensors = cpp.update_requester();
+            let sensors = Arc::clone(&self.sensors);
             let run_sensors = async move {
-                let mut sensors =
-                    HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
-
                 loop {
                     if let Ok(command) = network_rx.recv() {
                         match command {
                             NetworkChannel::Disconnect { uuid } => {
-                                sensors.remove(&uuid);
+                                {
+                                    let mut sensors_lock = sensors.lock().unwrap();
+                                    let sensors = Arc::make_mut(&mut *sensors_lock);
+                                    sensors.remove(&uuid);
+                                }
                                 sensors_changed.store(true, Ordering::SeqCst);
+                                qt_tx_sensors
+                                    .send(QtSync::SignalChange(Signal::SensorRemoved {
+                                        uuid: uuid.to_string(),
+                                    }))
+                                    .unwrap();
+                                update_requester_sensors.request_update();
                             }
                             NetworkChannel::Power { uuid, value } => {
+                                let mut sensors_lock = sensors.lock().unwrap();
+                                let sensors = Arc::make_mut(&mut *sensors_lock);
                                 // Validate that we would still be below the sensors max count
                                 let sensors_len = sensors.len();
                                 let entry = sensors.entry(uuid);
-                                if sensors_len < super::SENSOR_MAXIMUM_COUNT
-                                    || matches!(
-                                        entry,
-                                        std::collections::hash_map::Entry::Occupied(..)
-                                    )
-                                {
+                                let is_occupied = matches!(
+                                    entry,
+                                    std::collections::hash_map::Entry::Occupied(..)
+                                );
+                                if sensors_len < super::SENSOR_MAXIMUM_COUNT || is_occupied {
                                     let mut sensor = entry.or_default();
                                     sensor.power = value;
                                     sensor.last_seen = SystemTime::now();
+                                    drop(sensors_lock);
+
                                     sensors_changed.store(true, Ordering::SeqCst);
+
+                                    if is_occupied {
+                                        qt_tx_sensors
+                                            .send(QtSync::SignalChange(Signal::SensorChanged {
+                                                uuid: uuid.to_string(),
+                                            }))
+                                            .unwrap();
+                                        update_requester_sensors.request_update();
+                                    } else {
+                                        qt_tx_sensors
+                                            .send(QtSync::SignalChange(Signal::SensorAdded {
+                                                uuid: uuid.to_string(),
+                                            }))
+                                            .unwrap();
+                                        update_requester_sensors.request_update();
+                                    }
                                 } else {
                                     println!("Maximum sensor count reached!");
                                 }
-                            }
-                            NetworkChannel::TimeoutUpdate => {
-                                timeout_tx.send(sensors.clone()).unwrap();
-                            }
-                            NetworkChannel::Update => {
-                                update_tx.send(sensors.clone()).unwrap();
                             }
                         }
                     }
@@ -371,11 +419,14 @@ mod energy_usage {
     impl UpdateRequestHandler<CppObj<'_>> for RustObj {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             // Process the new data from the background thread
-            if let Some(data) = self.qt_rx.try_iter().last() {
-                // Here we have constructed a new Data struct so can consume it's values
-                // for other uses we could have passed an Enum across the channel
-                // and then process the required action here
-                cpp.grab_values_from_data(data);
+            for packet in self.qt_rx.try_iter() {
+                match packet {
+                    // Here we have constructed a new Data struct so can consume it's values
+                    // for other uses we could have passed an Enum across the channel
+                    // and then process the required action here
+                    QtSync::DataChange(data) => cpp.grab_values_from_data(data),
+                    QtSync::SignalChange(signal) => cpp.emit_queued(signal),
+                }
             }
         }
     }

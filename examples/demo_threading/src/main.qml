@@ -19,6 +19,10 @@ Window {
     EnergyUsage {
         id: energyUsage
 
+        onSensorAdded: (uuid) => console.warn("Added", uuid, sensorPower(uuid))
+        onSensorChanged: (uuid) => console.warn("Changed", uuid, sensorPower(uuid))
+        onSensorRemoved: (uuid) => console.warn("Removed", uuid)
+
         // FIXME: have the ability to HandleInit so we can start the server
         // https://github.com/KDAB/cxx-qt/issues/13
         Component.onCompleted: startServer()
