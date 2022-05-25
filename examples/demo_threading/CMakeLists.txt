@@ -45,7 +45,12 @@ target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::QuickControls2
 )
 
-add_executable(${APP_NAME} src/main.cpp src/qml.qrc)
+add_executable(${APP_NAME}
+    src/energyusageproxymodel.h
+    src/energyusageproxymodel.cpp
+    src/main.cpp
+    src/qml.qrc
+)
 
 target_link_libraries(${APP_NAME} PRIVATE
     ${CRATE}
