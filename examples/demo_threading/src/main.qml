@@ -16,6 +16,11 @@ Window {
     visible: true
     width: 250
 
+    EnergyUsageProxyModel {
+        id: energyModel
+        sourceModel: energyUsage
+    }
+
     EnergyUsage {
         id: energyUsage
 
@@ -91,6 +96,13 @@ Window {
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Repeater {
+            model: energyModel
+            delegate: Label {
+                text: model.uuid + " " + model.power
+            }
         }
     }
 }
