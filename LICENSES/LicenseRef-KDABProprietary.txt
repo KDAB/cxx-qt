@@ -1,0 +1,1 @@
+Copyright Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>. All Rights Reserved.

@@ -55,6 +55,7 @@ add_executable(${APP_NAME}
     cpp/main.cpp
     cpp/sensor.h
     cpp/sensor.cpp
+    images/images.qrc
     qml/qml.qrc
 )
 
