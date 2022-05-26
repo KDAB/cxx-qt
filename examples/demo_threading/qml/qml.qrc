@@ -8,5 +8,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 <RCC version="1.0">
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>Senso.qml</file>
+        <file>Button.qml</file>
+        <file>SideText.qml</file>
+        <file>SensorUI.qml</file>
+        <file>Panel.qml</file>
     </qresource>
 </RCC>
