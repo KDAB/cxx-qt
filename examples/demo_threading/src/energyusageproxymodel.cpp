@@ -99,6 +99,17 @@ EnergyUsageProxyModel::index(int row,
   return createIndex(row, column);
 }
 
+std::optional<int>
+EnergyUsageProxyModel::indexOf(const QString& uuid) const
+{
+  const auto index = m_uuids.indexOf(uuid);
+  if (index < 0) {
+    return std::nullopt;
+  } else {
+    return index;
+  }
+}
+
 void
 EnergyUsageProxyModel::onSensorAdded(const QString& uuid)
 {

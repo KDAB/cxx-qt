@@ -7,6 +7,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <optional>
+
 #include <QAbstractListModel>
 #include <QVector>
 
@@ -38,6 +40,8 @@ public:
   QModelIndex index(int row,
                     int column = 0,
                     const QModelIndex& parent = QModelIndex()) const override;
+
+  std::optional<int> indexOf(const QString& uuid) const;
 
 public Q_SLOTS:
   void setSourceModel(cxx_qt::energy_usage::EnergyUsage* energyUsage);

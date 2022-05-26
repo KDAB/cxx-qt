@@ -49,6 +49,8 @@ add_executable(${APP_NAME}
     src/energyusageproxymodel.h
     src/energyusageproxymodel.cpp
     src/main.cpp
+    src/sensor.h
+    src/sensor.cpp
     src/qml.qrc
 )
 
