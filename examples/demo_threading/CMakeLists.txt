@@ -27,6 +27,8 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/energyusageproxymodel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/energyusageproxymodel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor.cpp
 )
 
 set(
