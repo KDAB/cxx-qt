@@ -11,10 +11,10 @@ import com.kdab.energy 1.0
 
 Window {
     id: root
-    height: 300
+    height: 1280
     title: qsTr("Energy Usage")
     visible: true
-    width: 250
+    width: 720
 
     EnergyUsageProxyModel {
         id: energyModel
@@ -97,11 +97,15 @@ Window {
         Item {
             Layout.fillHeight: true
         }
+        Senso {
+            id: senso
+        }
+
 
         Repeater {
             model: energyModel
             delegate: Label {
-                text: model.uuid + " " + model.power
+                text: model.uuid + " " + model.power + model.on
             }
         }
     }
