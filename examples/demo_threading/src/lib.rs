@@ -8,6 +8,7 @@ mod constants;
 mod network;
 mod workers;
 
+// This mod defines our QObject called EnergyUsage
 #[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
 pub mod ffi {
     use super::{
@@ -32,9 +33,13 @@ pub mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
+    /// Define the Q_PROPERTYs that are created on the QObject
     pub struct Data {
+        /// The average power usage of the connected sensors
         pub average_use: f64,
+        /// The count of connected sensors
         pub sensors: u32,
+        /// The total power usage of the connected sensors
         pub total_use: f64,
     }
 
@@ -50,11 +55,19 @@ pub mod ffi {
 
     #[cxx_qt::qobject]
     pub struct EnergyUsage {
+        /// The sender and receiver for syncing the Qt state from Rust background threads
         pub qt_data_rx: Receiver<Data>,
         qt_data_tx: SyncSender<Data>,
         pub qt_signals_rx: Receiver<SensorChanged>,
         qt_signals_tx: SyncSender<SensorChanged>,
+        /// The join handles of the running threads
         join_handles: Option<[JoinHandle<()>; 4]>,
+        /// A HashMap of the currently connected sensors
+        ///
+        /// This uses an Arc inside the Mutex as well as outside so that the HashMap is only
+        /// cloned when required. By using Arc::make_mut on the inner HashMap data is only cloned
+        /// when mutating if another thread is still holding onto reference to the data.
+        /// https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut
         sensors: Arc<Mutex<Arc<SensorHashMap>>>,
     }
 
@@ -75,15 +88,20 @@ pub mod ffi {
         }
     }
 
+    /// Define Q_SIGNALS that are created on the QObject
     #[cxx_qt::signals(EnergyUsage)]
     #[allow(clippy::enum_variant_names)]
     pub enum EnergySignals {
+        /// A new sensor has been detected
         SensorAdded { uuid: UniquePtr<QString> },
+        /// A value on an existing sensor has changed
         SensorChanged { uuid: UniquePtr<QString> },
+        /// An existing sensor has been removed
         SensorRemoved { uuid: UniquePtr<QString> },
     }
 
     impl cxx_qt::QObject<EnergyUsage> {
+        /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
         pub fn sensor_power(self: Pin<&mut Self>, uuid: &QString) -> f64 {
             // TODO: for now we use the unsafe rust_mut() API
@@ -99,6 +117,7 @@ pub mod ffi {
             }
         }
 
+        /// A Q_INVOKABLE which starts the TCP server
         #[qinvokable]
         pub fn start_server(mut self: Pin<&mut Self>) {
             if self.rust().join_handles.is_some() {
@@ -106,11 +125,17 @@ pub mod ffi {
                 return;
             }
 
+            // Create a channel which is used for passing valid network requests
+            // from the NetworkServer to the SensorsWorker
             let (network_tx, network_rx) = sync_channel(CHANNEL_NETWORK_COUNT);
+            // Create an AtomicBool which the SensorsWorker uses to tell
+            // the AccumulatorWorker that the sensors have changed
             let sensors_changed = Arc::new(AtomicBool::new(false));
 
             // TODO: for now we use the unsafe rust_mut() API
             // later there will be getters and setters for the properties
+            //
+            // Make relevent clones so that we can pass them to the threads
             let accumulator_sensors = Arc::clone(unsafe { &self.as_mut().rust_mut().sensors });
             let accumulator_sensors_changed = Arc::clone(&sensors_changed);
             let accumulator_qt_data_tx = unsafe { self.as_mut().rust_mut().qt_data_tx.clone() };
@@ -124,11 +149,14 @@ pub mod ffi {
             // Start our threads
             unsafe {
                 self.rust_mut().join_handles = Some([
-                    // If a sensor is not seen for N seconds we remove it
+                    // Create a TimeoutWorker
+                    // If a sensor is not seen for N seconds then a disconnect is requested
                     std::thread::spawn(move || {
                         block_on(TimeoutWorker::run(timeout_network_tx, timeout_sensors))
                     }),
-                    // When values change this then requests an update to Qt
+                    // Create a AccumulatorWorker
+                    // When sensor values change this creates accumulations of the data
+                    // (such as total, average etc) and then requests an update to Qt
                     std::thread::spawn(move || {
                         block_on(AccumulatorWorker::run(
                             accumulator_qt_data_tx,
@@ -137,8 +165,9 @@ pub mod ffi {
                             accumulator_qt_thread,
                         ))
                     }),
-                    // Prepare our sensors thread, which reads from the network channel
-                    // and collates the commands into a hashmap.
+                    // Create a SensorsWorker
+                    // Reads network requests from the NetworkServer, collates the commands
+                    // by mutating the sensors hashmap, and requests signal changes to Qt
                     std::thread::spawn(move || {
                         block_on(SensorsWorker::run(
                             network_rx,
@@ -148,8 +177,12 @@ pub mod ffi {
                             sensors_qt_thread,
                         ))
                     }),
-                    // Start a TCP server which listens for requests
-                    std::thread::spawn(move || block_on(NetworkServer::listen(network_tx))),
+                    // Create a NetworkServer
+                    // Starts a TCP server which listens for requests and sends valid
+                    // network requests to the SensorsWorker
+                    std::thread::spawn(move || {
+                        block_on(NetworkServer::listen("127.0.0.1:8080", network_tx))
+                    }),
                 ]);
             }
         }

@@ -13,9 +13,15 @@ use std::sync::{
     Arc, Mutex,
 };
 
+/// Define a worker which accumulates sensor values
 pub struct AccumulatorWorker;
 
 impl AccumulatorWorker {
+    /// Start our accumulator thread
+    ///
+    /// It polls for sensors changing via a given AtomicBool, then if values
+    /// have changed it accumulates the data (eg into total, average etc) and
+    /// then requests an update Qt via the channel
     pub async fn run(
         qt_data_tx: SyncSender<Data>,
         sensors: Arc<Mutex<Arc<SensorHashMap>>>,
@@ -23,13 +29,15 @@ impl AccumulatorWorker {
         qt_thread: cxx::UniquePtr<EnergyUsageCxxQtThread>,
     ) {
         loop {
+            // Wait at the given poll rate
             Delay::new(SENSOR_UPDATE_POLL_RATE).await;
 
+            // Check the sensors have changed and if we need to do any work
             if sensors_changed
                 .compare_exchange_weak(true, false, Ordering::SeqCst, Ordering::SeqCst)
                 .is_ok()
             {
-                // If there is new sensor info then build average, count, total and inform Qt
+                // If there is new sensor info then build average, count, and total
                 let sensors = SensorsWorker::read_sensors(&sensors);
                 let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
                 let sensors = sensors.len() as u32;
@@ -39,6 +47,7 @@ impl AccumulatorWorker {
                     0.0
                 };
 
+                // Send the new data into the Qt channel
                 qt_data_tx
                     .send(Data {
                         average_use,
@@ -47,6 +56,7 @@ impl AccumulatorWorker {
                     })
                     .unwrap();
 
+                // Send a request to Qt that it should update
                 qt_thread
                     .queue(|mut qobject_energy_usage| {
                         // TODO: for now we use the unsafe rust_mut() API
@@ -65,6 +75,11 @@ impl AccumulatorWorker {
                                 // Here we have constructed a new Data struct so can consume it's values
                                 // for other uses we could have passed an Enum across the channel
                                 // and then process the required action here
+                                //
+                                // The Q_PROPERTYs have changed, so load all the values from Data again
+                                //
+                                // Note that all the Q_PROPERTYs always change in this example, we could
+                                // also have an enum per Q_PROPERTY and use the individual setters
                                 qobject_energy_usage.as_mut().grab_values_from_data(data);
                             }
                         }
