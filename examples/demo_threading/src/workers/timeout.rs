@@ -12,17 +12,23 @@ use crate::{
 use futures_timer::Delay;
 use std::sync::{mpsc::SyncSender, Arc, Mutex};
 
+/// Define a worker which manages disconnecting sensors that have timed out
 pub struct TimeoutWorker;
 
 impl TimeoutWorker {
-    /// If a sensor is not seen for N seconds we remove it
+    /// Start our TimeoutWorker
+    ///
+    /// It polls for sensors that have a last seen value larger than sensor
+    /// timeout. Then it uses the network channel to create a disconnect request
     pub async fn run(
         network_tx: SyncSender<NetworkChannel>,
         sensors: Arc<Mutex<Arc<SensorHashMap>>>,
     ) {
         loop {
+            // Wait at the given poll rate
             Delay::new(SENSOR_TIMEOUT_POLL_RATE).await;
 
+            // Read through every sensor
             for uuid in SensorsWorker::read_sensors(&sensors)
                 .iter()
                 // Find sensors that have expired
@@ -35,6 +41,7 @@ impl TimeoutWorker {
                 })
                 .map(|(uuid, _)| uuid)
             {
+                // Create disconnect requests into the network channel
                 network_tx
                     .send(NetworkChannel::Disconnect { uuid: *uuid })
                     .unwrap();

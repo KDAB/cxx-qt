@@ -19,12 +19,15 @@ use super::{
 };
 use crate::constants::SENSOR_MAXIMUM_POWER;
 
-// Channel definition
+/// Definition of the network channel
 pub enum NetworkChannel {
+    /// The given sensor should be disconnected
     Disconnect { uuid: Uuid },
+    /// The given sensor has a new power value
     Power { uuid: Uuid, value: f64 },
 }
 
+/// Define converting from a channel error to a network reponse
 impl From<Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>> for Response {
     fn from(result: Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>) -> Self {
         match result {
@@ -36,10 +39,13 @@ impl From<Result<(), std::sync::mpsc::TrySendError<NetworkChannel>>> for Respons
     }
 }
 
+/// Define a network server for managing the TCP connections
 pub struct NetworkServer;
 
 impl NetworkServer {
     /// Read from a TCP stream and create a Request
+    ///
+    /// This deserialises the request into our Rust objects
     async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
         let mut buf = vec![0u8; 128];
         if let Ok(size) = stream.read(&mut buf).await {
@@ -55,9 +61,14 @@ impl NetworkServer {
         }
     }
 
+    /// Handle a network connection
+    ///
+    /// This reads the TCP streams, checks the request is valid, and then triggers
+    /// packets on the network channel
     async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
         let response: Response = match Self::build_request(&mut stream).await {
             Ok(request) => {
+                // The network request was deserialised successfully so process the request
                 match request.command {
                     RequestCommand::Power { value } => {
                         // Validate that our power is within the expected range
@@ -80,6 +91,7 @@ impl NetworkServer {
             Err(err) => err.into(),
         };
 
+        // Write our response to the TCP stream
         stream
             .write(serde_json::to_string(&response).unwrap().as_bytes())
             .await
@@ -87,8 +99,9 @@ impl NetworkServer {
         stream.flush().await.unwrap();
     }
 
-    pub async fn listen(network_tx: SyncSender<NetworkChannel>) {
-        let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+    /// Start a server which binds to the given address
+    pub async fn listen(address: &str, network_tx: SyncSender<NetworkChannel>) {
+        let listener = TcpListener::bind(address).await.unwrap();
         listener
             .incoming()
             .map(|stream| (stream, network_tx.clone()))
