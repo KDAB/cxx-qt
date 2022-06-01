@@ -10,8 +10,7 @@ Item {
     id: sensorUI
 
     readonly property real __value: value / max
-    // Keep in sync with Rust side for now, later this can be defined in the listmodel
-    readonly property int max: 3500
+    property int max: 3500
     property real value: 2500
     property bool online: true
 
@@ -62,7 +61,7 @@ Item {
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent" }
             GradientStop { position: (1 - (__value * 0.35)); color: "transparent" }
-            GradientStop { position: (1 - (__value * 0.3491)); color: "#87d9f6" }
+            GradientStop { position: (1 - (__value * 0.3491)); color: "white" }
             GradientStop { position: 1 ; color: "#4032abb5" }
         }
         visible: false
@@ -76,7 +75,7 @@ Item {
 
     Text {
         id: wh
-        text: (Math.ceil(value/10)*10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " " )+" <i>Wh</i>"
+        text: "%1 W".arg(value.toPrecision(4))
         font.family: "Open Sans"
         styleColor: "#003362"
         style: Text.Outline

@@ -16,8 +16,7 @@ Window {
     visible: true
     width: 1280
 
-    property int currentLevel: 3
-    property bool about: false
+    property int currentLevel: 1
 
     EnergyUsageProxyModel {
         id: energyModel
@@ -74,7 +73,7 @@ Window {
         SensorUI {
             x: 895
             y: 375
-            // max: s01.max
+            max: 200
             value: s01.power
             online: s01.online
         }
@@ -97,26 +96,26 @@ Window {
         opacity: (1 + (xi / 200)) * opi
 
         Behavior on opi { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
-        Behavior on xi { NumberAnimation { easing.overshoot: 1.06;duration: 900;easing.type: Easing.OutExpo } }
+        Behavior on xi { NumberAnimation { easing.overshoot: 1.06; duration: 900; easing.type: Easing.OutExpo } }
 
         SensorUI {
             x: 205
             y: 275
-            // max: s11.max
+            max: 2000
             value: s11.power
             online: s11.online
         }
         SensorUI {
             x: 620
             y: 265
-            // max: s12.max
+            max: 20
             value: s12.power
             online: s12.online
         }
         SensorUI {
             x: 310
             y: 165
-            // max: s13.max
+            max: 1500
             value: s13.power
             online: s13.online
         }
@@ -130,8 +129,8 @@ Window {
     }
     Image {
         id: level2
-        property int xi: currentLevel>1? 0: -200
-        property real opi: currentLevel>2? 0 : 1
+        property int xi: currentLevel > 1 ? 0 : -200
+        property real opi: currentLevel > 2 ? 0 : 1
         x: level0.x + 86 + xi
         source: "./images/level2.png"
         y: 79
@@ -143,28 +142,28 @@ Window {
         SensorUI {
             x: 85
             y: 320
-            // max: s21.max
+            max: 100
             value: s21.power
             online: s21.online
         }
         SensorUI {
             x: 520
             y: 320
-            // max: s22.max
+            max: 150
             value: s22.power
             online: s22.online
         }
         SensorUI {
             x: 270
             y: 110
-            // max: s23.max
+            max: 120
             value: s23.power
             online: s23.online
         }
         SensorUI {
             x: 450
             y: 185
-            // max: s24.max
+            max: 350
             value: s24.power
             online: s24.online
         }
@@ -192,7 +191,7 @@ Window {
             id: sensorUI
             x: 60
             y: 300
-            // max: s31.max
+            max: 200
             value: s31.power
             online: s31.online
         }
@@ -224,28 +223,23 @@ Window {
         spacing: 4
 
         SideText {
-            id: sideText
             text: "Beach access"
             scale: currentLevel === 0 ? 1.3 : 1
         }
+
         SideText  {
             text: "First floor"
             scale: currentLevel === 1 ? 1.3 : 1
-            color: "#a9deff"
-            font.weight: Font.Light
         }
+
         SideText  {
             text: "Second floor"
             scale: currentLevel === 2 ? 1.3 : 1
-            color: "#a9deff"
-            font.weight: Font.Light
         }
 
         SideText  {
             text: "Roof and Road"
             scale: currentLevel === 3 ? 1.3 : 1
-            color: "#a9deff"
-            font.weight: Font.Light
         }
     }
 
@@ -357,7 +351,7 @@ Window {
 
     SideText {
         id: powerusageT
-        text: "Total used Power: " + ("<i>%1 kW</i>").arg(energyUsage.totalUse)
+        text: "Total used Power: <i>%1 kW</i> Average: <i>%2 kW</i>".arg((energyUsage.totalUse / 1000.0).toPrecision(3)).arg((energyUsage.averageUse / 1000.0).toPrecision(3))
         color: "#a9deff"
         font.pixelSize: 16
         anchors.verticalCenter: wireless.verticalCenter
@@ -392,7 +386,7 @@ Window {
         x: Math.min (750, level0.x + 940)
         activeF: true
 
-        onClicked: about = !about
+        onClicked: panel.enabled = !panel.enabled
 
         Image {
             id: rLogo
@@ -403,29 +397,33 @@ Window {
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: "black"
-        opacity: about ? 0.5 : 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 800
-                easing.type: Easing.OutBack
-            }
-        }
-    }
-
     Panel {
         id: panel
-        x: about ? -100 : -1960
+        anchors.fill: parent
+    }
 
-        Behavior on x {
-            NumberAnimation {
-                easing.overshoot: 1.1
-                duration: 800
-                easing.type: Easing.OutBack
-            }
+    MouseArea {
+        anchors.fill: parent
+        propagateComposedEvents: true
+
+        onPressed: {
+            demoTimerDelay.restart();
+            mouse.accepted = false;
+        }
+
+        Timer {
+            id: demoTimerDelay
+            interval: 30000
+            running: true
+        }
+
+        Timer {
+            interval: 5000
+            repeat: true
+            running: !demoTimerDelay.running && !panel.enabled
+            triggeredOnStart: true
+
+            onTriggered: currentLevel = (currentLevel + 1) % 4
         }
     }
 }

@@ -11,7 +11,6 @@ Text {
     font.italic: true
     font.pixelSize: 12
     color: "#a9deff"
-    font.weight: Font.Light
     transformOrigin: Item.Left
     height: (scale * paintedHeight)
     opacity: (scale * scale) - 0.5
