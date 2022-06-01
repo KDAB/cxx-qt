@@ -122,15 +122,22 @@ EnergyUsageProxyModel::onSensorAdded(const QString& uuid)
 void
 EnergyUsageProxyModel::onSensorChanged(const QString& uuid)
 {
-  const auto row = index(m_uuids.indexOf(uuid));
+  const auto uuidIndex = indexOf(uuid);
+  if (!uuidIndex.has_value()) {
+    return;
+  }
+  const auto row = index(uuidIndex.value());
   Q_EMIT dataChanged(row, row, { EnergyRoles::Power });
 }
 
 void
 EnergyUsageProxyModel::onSensorRemoved(const QString& uuid)
 {
-  const auto index = m_uuids.indexOf(uuid);
-  beginRemoveRows(QModelIndex(), index, index);
-  m_uuids.removeAt(index);
+  const auto index = indexOf(uuid);
+  if (!index.has_value()) {
+    return;
+  }
+  beginRemoveRows(QModelIndex(), index.value(), index.value());
+  m_uuids.removeAt(index.value());
   endRemoveRows();
 }

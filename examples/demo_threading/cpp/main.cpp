@@ -8,8 +8,8 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/energy_usage.cxxqt.h"
-#include "energyusageproxymodel.h"
-#include "sensor.h"
+#include "helpers/energyusageproxymodel.h"
+#include "helpers/sensor.h"
 
 int
 main(int argc, char* argv[])
@@ -18,7 +18,7 @@ main(int argc, char* argv[])
 
   QQmlApplicationEngine engine;
 
-  const QUrl url(QStringLiteral("qrc:/main.qml"));
+  const QUrl url(QStringLiteral("qrc:/MainWindow.qml"));
   QObject::connect(
     &engine,
     &QQmlApplicationEngine::objectCreated,

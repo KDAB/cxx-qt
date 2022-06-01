@@ -1,22 +1,22 @@
-// SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2021, 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+// SPDX-FileContributor: Nuno Pinheiro <nuno@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import com.kdab.energy 1.0
-import QtGraphicalEffects 1.15
-
-
+import QtGraphicalEffects 1.10
 
 Window {
     id: root
     height: 720
-    title: qsTr("Rust Beach House Sensors")
+    title: qsTr("CXX-Qt - Beach House Demo")
+    visibility: Window.FullScreen
     visible: true
     width: 1280
-    property int currentLevel: 3
-    property bool about: false
+
+    property int currentLevel: 1
 
     EnergyUsageProxyModel {
         id: energyModel
@@ -26,14 +26,11 @@ Window {
     EnergyUsage {
         id: energyUsage
 
-        onSensorAdded: (uuid) => console.warn("Added", uuid, sensorPower(uuid))
-        onSensorChanged: (uuid) => console.warn("Changed", uuid, sensorPower(uuid))
-        onSensorRemoved: (uuid) => console.warn("Removed", uuid)
-
         // FIXME: have the ability to HandleInit so we can start the server
         // https://github.com/KDAB/cxx-qt/issues/13
         Component.onCompleted: startServer()
     }
+
     Image {
         id: background
         source: "./images/bg.png"
@@ -41,77 +38,84 @@ Window {
 
     Image {
         id: ocean
-        x: Math.max(1008-(slideHouse.contentX-600)/9.2, 1008 )
+        x: Math.max(1008 - ((slideHouse.contentX - 600) / 9.2), 1008)
         y: -1
         source: "./images/ocean.png"
-
     }
+
     Image {
         id: beach1
-        x: 955-(slideHouse.contentX-600)/7.9
+        x: 955 - ((slideHouse.contentX - 600) / 7.9)
         y: -1
         source: "./images/beach1.png"
-        width: sourceSize.width * ((slideHouse.contentX/6500)+0.9)
+        width: sourceSize.width * ((slideHouse.contentX / 6500) + 0.9)
         smooth: true
     }
+
     Image {
         id: beach2
-        x:  890-(slideHouse.contentX-600)/6.9
+        x:  890 - (slideHouse.contentX - 600) / 6.9
         y: -1
         source: "./images/beach2.png"
-        width: sourceSize.width * ((slideHouse.contentX/5000)+0.8)
+        width: sourceSize.width * ((slideHouse.contentX / 5000) + 0.8)
         smooth: true
     }
+
     Image {
         id: level0
-        x: Math.min(0,-168-(slideHouse.contentX-600)/5.9)
+        x: Math.min(0, -168 - (slideHouse.contentX - 600) / 5.9)
         y: -128
         source: "./images/level0.png"
         opacity: currentLevel=== 0 ? 1 : 0
-        Behavior on opacity {  NumberAnimation {duration: 900; easing.type: Easing.InOutQuad} }
+
+        Behavior on opacity { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
+
         SensorUI {
             x: 895
             y: 375
-            max: s01.max
+            max: 200
             value: s01.power
             online: s01.online
         }
     }
+
     Image {
         id: level0i
         x: level0.x
         y: 0
         source: "./images/level0i.png"
-        opacity: 1 - Math.pow(level0.opacity,2)
+        opacity: 1 - Math.pow(level0.opacity, 2)
     }
     Image {
         id: level1
-        property int xi: currentLevel>0? 0: -200
-        property real opi: currentLevel>1? 0: 1
-        Behavior on opi {  NumberAnimation {duration: 900; easing.type: Easing.InOutQuad} }
-        Behavior on xi {NumberAnimation { easing.overshoot: 1.06;duration: 900;easing.type: Easing.OutExpo}}
-        x: level0.x+86+xi
+        property int xi: currentLevel > 0 ? 0 : -200
+        property real opi: currentLevel > 1 ? 0 : 1
+        x: level0.x + 86 + xi
         source: "./images/level1.png"
         y: 79
-        opacity: (1+xi/200) * opi
+        opacity: (1 + (xi / 200)) * opi
+
+        Behavior on opi { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
+        Behavior on xi { NumberAnimation { easing.overshoot: 1.06; duration: 900; easing.type: Easing.OutExpo } }
+
         SensorUI {
             x: 205
             y: 275
-            max: s11.max
+            max: 2000
             value: s11.power
             online: s11.online
         }
         SensorUI {
             x: 620
             y: 265
-            max: s12.max
+            max: 20
             value: s12.power
             online: s12.online
         }
         SensorUI {
             x: 310
             y: 165
-            max: s13.max
+            max: 1500
             value: s13.power
             online: s13.online
         }
@@ -121,70 +125,73 @@ Window {
         x: level1.x
         source: "./images/level1i.png"
         y: 79
-        opacity: currentLevel===0? 0 : (1 - Math.pow(level1.opacity,2))
+        opacity: currentLevel === 0 ? 0 : (1 - Math.pow(level1.opacity, 2))
     }
     Image {
         id: level2
-        property int xi: currentLevel>1? 0: -200
-        property real opi: currentLevel>2? 0 : 1
-        Behavior on xi { NumberAnimation { easing.overshoot: 1.06;duration: 900;easing.type: Easing.OutExpo}}
-        Behavior on opi { NumberAnimation {duration: 900; easing.type: Easing.InOutQuad} }
-        x: level0.x+86+xi
+        property int xi: currentLevel > 1 ? 0 : -200
+        property real opi: currentLevel > 2 ? 0 : 1
+        x: level0.x + 86 + xi
         source: "./images/level2.png"
         y: 79
-        opacity: (1+xi/200) * opi
+        opacity: (1 + xi / 200) * opi
+
+        Behavior on xi { NumberAnimation { easing.overshoot: 1.06; duration: 900; easing.type: Easing.OutExpo } }
+        Behavior on opi { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
 
         SensorUI {
             x: 85
             y: 320
-            max: s21.max
+            max: 100
             value: s21.power
             online: s21.online
         }
         SensorUI {
             x: 520
             y: 320
-            max: s22.max
+            max: 150
             value: s22.power
             online: s22.online
         }
         SensorUI {
             x: 270
             y: 110
-            max: s23.max
+            max: 120
             value: s23.power
             online: s23.online
         }
         SensorUI {
             x: 450
             y: 185
-            max: s24.max
+            max: 350
             value: s24.power
             online: s24.online
         }
     }
+
     Image {
         id: level2i
         x: level1.x
         source: "./images/level2i.png"
         y: 79
-        opacity: currentLevel<2? 0 : (1 - Math.pow(level2.opacity,2))
+        opacity: currentLevel < 2 ? 0 : (1 - Math.pow(level2.opacity, 2))
     }
 
     Image {
         id: level3
-        property int xi: currentLevel>2? 0: -200
-        Behavior on xi {NumberAnimation { easing.overshoot: 1.06;duration: 900;easing.type: Easing.OutExpo}}
-        x: level0.x+86+xi
+        property int xi: currentLevel > 2 ? 0: -200
+        x: level0.x + 86 + xi
         source: "./images/level3.png"
         y: 79
-        opacity: (1+xi/200)
+        opacity: (1 + (xi / 200))
+
+        Behavior on xi { NumberAnimation { easing.overshoot: 1.06; duration: 900; easing.type: Easing.OutExpo } }
 
         SensorUI {
             id: sensorUI
             x: 60
             y: 300
-            max: s31.max
+            max: 200
             value: s31.power
             online: s31.online
         }
@@ -198,15 +205,15 @@ Window {
         id: slideHouse
         anchors.fill: parent
         contentHeight: height
-        contentWidth: width+600
+        contentWidth: width + 600
         //contentX: 100
         flickDeceleration: 7000
-
-
     }
+
     Column {
         x: 19
-        y: 635 - currentLevel*8
+        y: 635 - (currentLevel * 8)
+
         Behavior on y {
             NumberAnimation {
                 duration: 400
@@ -216,73 +223,72 @@ Window {
         spacing: 4
 
         SideText {
-            id: sideText
             text: "Beach access"
-            scale: currentLevel===0? 1.3: 1
+            scale: currentLevel === 0 ? 1.3 : 1
         }
+
         SideText  {
             text: "First floor"
-            scale: currentLevel===1? 1.3: 1
-            color: "#a9deff"
-            font.weight: Font.Light
+            scale: currentLevel === 1 ? 1.3 : 1
         }
+
         SideText  {
             text: "Second floor"
-            scale: currentLevel===2? 1.3: 1
-            color: "#a9deff"
-            font.weight: Font.Light
+            scale: currentLevel === 2 ? 1.3 : 1
         }
 
         SideText  {
             text: "Roof and Road"
-            scale: currentLevel===3? 1.3: 1
-            color: "#a9deff"
-            font.weight: Font.Light
+            scale: currentLevel === 3 ? 1.3 : 1
         }
     }
 
-    Senso {
-        id:s01
-        max:1300
-        min:1000
+    // For now these sensors are fixed from uuids, later this can be listmodel driven
+    // with location and floor as roles on the model
+    Sensor {
+        id: s01
+        model: energyModel
+        uuid: "45b0836f-ae80-46f4-a311-0044cdf26e3d"
     }
-    Senso {
+    Sensor {
         id:s11
-        max:800
-        min:400
+        model: energyModel
+        uuid: "acd42f5b-6056-4310-a746-7a8d9ebe7127"
     }
-    Senso {
+    Sensor {
         id:s12
-        max:1800
-        min:20
+        model: energyModel
+        uuid: "1f085cca-4008-4784-87c7-f6c21ac0369f"
     }
-    Senso {
+    Sensor {
         id:s13
-        max:2500
-        min:20
+        model: energyModel
+        uuid: "c48169e3-9b7f-4c51-8838-2e027c85ead3"
     }
-    Senso {
+    Sensor {
         id:s21
-        max:500
-        min:20
+        model: energyModel
+        uuid: "452ba07a-f798-4f82-b76e-0fb11b926cf4"
     }
-    Senso {
+    Sensor {
         id:s22
-        max:1500
-        min:20
+        model: energyModel
+        uuid: "5c293d20-870b-4f85-8e71-49eebb34bf3e"
     }
-    Senso {
+    Sensor {
         id:s23
-        max:600
-        min:320
+        model: energyModel
+        uuid: "ee1c3343-83ed-43b0-98d1-8d59cd7291ae"
     }
-    Senso {
+    Sensor {
         id:s24
+        model: energyModel
+        uuid: "fb7f706d-ee88-41a7-862b-4002fdeb9fc8"
     }
-    Senso {
+    Sensor {
         id:s31
-        max:300
-        min:50
+        model: energyModel
+        uuid: "3e3f1174-6aaf-4357-93ac-b3d9285d7af8"
     }
 
     Row {
@@ -293,35 +299,45 @@ Window {
 
         Button {
             id: button0
+            property int numberT: s01.online ? 1 : 0
+
             text: "0"
-            property int numberT: s01.online? 1 : 0
-            sidetext: numberT===0 ? "" : numberT
+            sidetext: numberT === 0 ? "" : numberT
             activeF: currentLevel === 0
+
             onClicked: currentLevel = 0
         }
+
         Button {
             id: button1
+            property int numberT: (s11.online ? 1 : 0) + (s12.online ? 1 : 0) + (s13.online ? 1 : 0)
+
             text: "1"
-            property int numberT: (s11.online? 1 : 0) + (s12.online? 1 : 0) + (s13.online? 1 : 0)
-            sidetext: numberT===0 ? "" : numberT
+            sidetext: numberT === 0 ? "" : numberT
             activeF: currentLevel === 1
+
             onClicked: currentLevel = 1
         }
+
         Button {
             id: button2
-            property int numberT: (s21.online? 1 : 0) + (s22.online? 1 : 0) + (s23.online? 1 : 0) + (s24.online? 1 : 0)
+            property int numberT: (s21.online ? 1 : 0) + (s22.online ? 1 : 0) + (s23.online ? 1 : 0) + (s24.online ? 1 : 0)
+
             sidetext: numberT===0 ? "" : numberT
             text: "2"
             activeF: currentLevel === 2
+
             onClicked: currentLevel = 2
         }
 
         Button {
             id: button3
+            property int numberT: s31.online ? 1 : 0
+
             text: "3"
-            property int numberT: s31.online? 1 : 0
-            sidetext: numberT===0 ? "" : numberT
+            sidetext: numberT === 0 ? "" : numberT
             activeF: currentLevel === 3
+
             onClicked: currentLevel = 3
         }
     }
@@ -331,11 +347,11 @@ Window {
         source: "./images/iconwirless.png"
         x: 19
         y: 22
-
     }
-    SideText  {
+
+    SideText {
         id: powerusageT
-        text: "Total used Power: " + ("<i>%1 kW</i>").arg(energyUsage.averageUse)
+        text: "Total used Power: <i>%1 kW</i> Average: <i>%2 kW</i>".arg((energyUsage.totalUse / 1000.0).toPrecision(3)).arg((energyUsage.averageUse / 1000.0).toPrecision(3))
         color: "#a9deff"
         font.pixelSize: 16
         anchors.verticalCenter: wireless.verticalCenter
@@ -351,8 +367,9 @@ Window {
         anchors.left: powerusageT.right
         anchors.leftMargin: 16
         y: 22
-        SideText  {
-            text: "nº Online Sensors: " + "<i><b>%1</i></b>".arg(button0.numberT+button1.numberT+button2.numberT+button3.numberT)  //please replace with somthing rusty
+
+        SideText {
+            text: "nº Online Sensors: " + "<i><b>%1</i></b>".arg(energyUsage.sensors)
             color: "#a9deff"
             font.pixelSize: 16
             anchors.verticalCenter: parent.verticalCenter
@@ -366,38 +383,47 @@ Window {
     Button {
         id: buttoninfo
         y: levelsUI.y
-        x: Math.min (750,level0.x+940)
+        x: Math.min (750, level0.x + 940)
         activeF: true
-        onClicked: about=!about
+
+        onClicked: panel.enabled = !panel.enabled
+
         Image {
             id: rLogo
             source: "./images/RLogo.png"
             anchors.centerIn: buttoninfo
-            opacity: buttoninfo.pressed? 1 : 0.7
+            opacity: buttoninfo.pressed ? 1 : 0.7
             scale: 0.9
         }
     }
-    Rectangle {
+
+    Panel {
+        id: panel
         anchors.fill: parent
-        color: "black"
-        opacity: about? 0.5 : 0
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 800
-                easing.type: Easing.OutBack
-            }
-        }
     }
 
-    Panel{
-        id: panel
-        x: about? -100: -1960
-        Behavior on x {
-            NumberAnimation {
-                easing.overshoot: 1.1
-                duration: 800
-                easing.type: Easing.OutBack
-            }
+    MouseArea {
+        anchors.fill: parent
+        propagateComposedEvents: true
+
+        onPressed: (mouse) => {
+            demoTimerDelay.restart();
+            mouse.accepted = false;
+        }
+
+        Timer {
+            id: demoTimerDelay
+            interval: 30000
+            running: true
+        }
+
+        Timer {
+            interval: 5000
+            repeat: true
+            running: !demoTimerDelay.running && !panel.enabled
+            triggeredOnStart: true
+
+            onTriggered: currentLevel = (currentLevel + 1) % 4
         }
     }
 }
