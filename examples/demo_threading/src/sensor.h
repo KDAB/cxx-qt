@@ -19,7 +19,7 @@ class Sensor : public QObject
 
   Q_PROPERTY(
     EnergyUsageProxyModel* model READ model WRITE setModel NOTIFY modelChanged)
-  Q_PROPERTY(bool on READ isOn NOTIFY onChanged)
+  Q_PROPERTY(bool online READ online NOTIFY onlineChanged)
   Q_PROPERTY(double power READ power NOTIFY powerChanged)
   Q_PROPERTY(QString uuid READ uuid WRITE setUuid NOTIFY uuidChanged)
 
@@ -27,7 +27,7 @@ public:
   Sensor(QObject* parent = nullptr);
 
   EnergyUsageProxyModel* model() const;
-  bool isOn() const;
+  bool online() const;
   double power() const;
   QString uuid() const;
 
@@ -43,7 +43,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
   void modelChanged();
-  void onChanged();
+  void onlineChanged();
   void powerChanged();
   void uuidChanged();
 
