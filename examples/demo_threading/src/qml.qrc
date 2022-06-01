@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>Senso.qml</file>
         <file>images/bg.png</file>
         <file>images/ocean.png</file>
         <file>images/beach2.png</file>
