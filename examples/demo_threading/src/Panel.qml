@@ -1,9 +1,9 @@
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Nuno Pinheiro <nuno@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
-import QtQuick.Window 2.12
-import com.kdab.energy 1.0
 import QtGraphicalEffects 1.15
-
-
 
 BorderImage {
     id: panel
@@ -14,6 +14,7 @@ BorderImage {
     anchors.verticalCenter: parent.verticalCenter
     border.left: 0; border.top: 25
     border.right: 25; border.bottom: 25
+
     Text {
         font.family: "Open Sans"
         font.italic: true
@@ -30,8 +31,8 @@ BorderImage {
         source: "./images/kdabLogo.png"
         x: -parent.x/1.5 + 60
         y: 120
-
     }
+
     Text {
         font.family: "Open Sans"
         horizontalAlignment: Text.AlignJustify
@@ -47,6 +48,7 @@ The KDAB Group is the leading software consulting, development and training prov
         anchors.leftMargin: 25
         y: kdabL.y - 10
     }
+
     Image {
         id: rust
         source: "./images/RLogolarge.png"
@@ -54,6 +56,7 @@ The KDAB Group is the leading software consulting, development and training prov
         anchors.top: kdabL.bottom
         anchors.topMargin: 130
     }
+
     Text {
         font.family: "Open Sans"
         width: 520
@@ -72,8 +75,10 @@ Rust has great documentation, a friendly compiler with useful error messages, an
         anchors.leftMargin: 25
         y: rust.y - 10
     }
+
     MouseArea {
         anchors.fill: parent
+
         onClicked: about = false
     }
 }
