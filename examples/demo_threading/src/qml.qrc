@@ -2,5 +2,33 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Senso.qml</file>
+        <file>images/bg.png</file>
+        <file>images/ocean.png</file>
+        <file>images/beach2.png</file>
+        <file>images/beach1.png</file>
+        <file>images/level0.png</file>
+        <file>images/sideshadow.png</file>
+        <file>images/activeInner.png</file>
+        <file>images/inactiveInner.png</file>
+        <file>images/activeOuter.png</file>
+        <file>images/inactiveOuter.png</file>
+        <file>Button.qml</file>
+        <file>images/level0i.png</file>
+        <file>images/level1.png</file>
+        <file>images/level2.png</file>
+        <file>images/level1i.png</file>
+        <file>images/level2i.png</file>
+        <file>images/level3.png</file>
+        <file>images/RLogo.png</file>
+        <file>SideText.qml</file>
+        <file>images/iconwirless.png</file>
+        <file>images/iconSensors.png</file>
+        <file>images/sensor.png</file>
+        <file>images/sensorefect.png</file>
+        <file>SensorUI.qml</file>
+        <file>images/panel.png</file>
+        <file>images/kdabLogo.png</file>
+        <file>images/RLogolarge.png</file>
+        <file>Panel.qml</file>
     </qresource>
 </RCC>
