@@ -46,12 +46,12 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 add_executable(${APP_NAME}
-    src/energyusageproxymodel.h
-    src/energyusageproxymodel.cpp
+    src/helpers/energyusageproxymodel.h
+    src/helpers/energyusageproxymodel.cpp
     src/main.cpp
-    src/sensor.h
-    src/sensor.cpp
-    src/qml.qrc
+    src/helpers/sensor.h
+    src/helpers/sensor.cpp
+    src/ui/qml.qrc
 )
 
 target_link_libraries(${APP_NAME} PRIVATE
