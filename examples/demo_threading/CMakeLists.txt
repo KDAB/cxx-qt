@@ -25,15 +25,15 @@ include(CxxQt)
 set(
     CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/energyusageproxymodel.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/energyusageproxymodel.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/energyusageproxymodel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/energyusageproxymodel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/sensor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/sensor.cpp
 )
 
 set(
     RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui/qml.qrc
 )
 
 # Generate the C++ code
