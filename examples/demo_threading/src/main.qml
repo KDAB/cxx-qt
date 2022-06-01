@@ -26,10 +26,6 @@ Window {
     EnergyUsage {
         id: energyUsage
 
-        onSensorAdded: (uuid) => console.warn("Added", uuid, sensorPower(uuid))
-        onSensorChanged: (uuid) => console.warn("Changed", uuid, sensorPower(uuid))
-        onSensorRemoved: (uuid) => console.warn("Removed", uuid)
-
         // FIXME: have the ability to HandleInit so we can start the server
         // https://github.com/KDAB/cxx-qt/issues/13
         Component.onCompleted: startServer()
@@ -335,7 +331,7 @@ Window {
     }
     SideText  {
         id: powerusageT
-        text: "Total used Power: " + ("<i>%1 kW</i>").arg(energyUsage.averageUse)
+        text: "Total used Power: " + ("<i>%1 kW</i>").arg(energyUsage.totalUse)
         color: "#a9deff"
         font.pixelSize: 16
         anchors.verticalCenter: wireless.verticalCenter
@@ -352,7 +348,7 @@ Window {
         anchors.leftMargin: 16
         y: 22
         SideText  {
-            text: "nº Online Sensors: " + "<i><b>%1</i></b>".arg(button0.numberT+button1.numberT+button2.numberT+button3.numberT)  //please replace with somthing rusty
+            text: "nº Online Sensors: " + "<i><b>%1</i></b>".arg(energyUsage.sensors)
             color: "#a9deff"
             font.pixelSize: 16
             anchors.verticalCenter: parent.verticalCenter
