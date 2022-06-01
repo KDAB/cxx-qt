@@ -1,14 +1,6 @@
-<!DOCTYPE RCC>
-<!--
-SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
-SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
-
-SPDX-License-Identifier: MIT OR Apache-2.0
--->
-<RCC version="1.0">
+<RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
-        <file>Senso.qml</file>
+        <file>MainWindow.qml</file>
         <file>Button.qml</file>
         <file>SideText.qml</file>
         <file>SensorUI.qml</file>

@@ -17,4 +17,4 @@ pub const SENSOR_UPDATE_POLL_RATE: Duration = Duration::from_millis(128);
 /// The maximum number of sensors we will manage
 pub const SENSOR_MAXIMUM_COUNT: usize = 1000;
 /// The maximum power a sensor can report
-pub const SENSOR_MAXIMUM_POWER: f64 = 1000.0;
+pub const SENSOR_MAXIMUM_POWER: f64 = 3500.0;

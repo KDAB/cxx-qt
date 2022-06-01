@@ -21,7 +21,7 @@ Sensor::findUuid()
     m_index = m_model->indexOf(m_uuid);
   }
 
-  Q_EMIT onChanged();
+  Q_EMIT onlineChanged();
   Q_EMIT powerChanged();
 }
 
@@ -32,7 +32,7 @@ Sensor::model() const
 }
 
 bool
-Sensor::isOn() const
+Sensor::online() const
 {
   return m_index.has_value();
 }

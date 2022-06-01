@@ -50,11 +50,11 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 add_executable(${APP_NAME}
-    cpp/energyusageproxymodel.h
-    cpp/energyusageproxymodel.cpp
+    cpp/helpers/energyusageproxymodel.h
+    cpp/helpers/energyusageproxymodel.cpp
     cpp/main.cpp
-    cpp/sensor.h
-    cpp/sensor.cpp
+    cpp/helpers/sensor.h
+    cpp/helpers/sensor.cpp
     images/images.qrc
     qml/qml.qrc
 )
