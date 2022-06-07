@@ -48,9 +48,9 @@ Item {
             font.pixelSize: 45
             color: "#a9deff"
             font.weight: Font.Light
-            text:"Rust Sensors KDAB beach house Demo"
+            text: "CXX-Qt - Beach House Demo"
             x: kdabL.x
-            y:20
+            y: 20
         }
 
         Image {
@@ -68,9 +68,9 @@ Item {
             font.pixelSize: 16
             font.weight: Font.Light
             color: "#a9deff"
-            text:"<b>The KDAB Group is the leading provider for Qt, C++ and 3D/OpenGL software expertise across desktop, embedded and mobile platforms.</b>
-    <p>
-    The KDAB Group is the leading software consulting, development and training provider for Qt, C++ and 3D/OpenGL. Since 1999, KDAB’s unique software expertise has helped thousands of customers to improve quality, productivity and time to market across desktop, embedded and mobile platforms. Our customers – several from the Fortune 500 list – are active within Automotive, Biotech, Medical, Industrial Embedded, Entertainment, Government, Consumer Software and other innovative sectors. We take great pride in delivering our projects successfully, on time and with high quality."
+            text: "<p><b>CXX-Qt - Safe Rust bindings for Qt</b></p>
+            <p>KDAB has been working on bridging between Rust and Qt. CXX-Qt allows you to define Qt objects from Rust, so that the business logic can be written in Rust while Qt handles the frontend.</p>
+            <p>In this beach house demo, Rust provides a threaded network server for sensors, accumulates data in a background thread, and safely exposes summary and sensor data to QML.</p>"
             anchors.left: kdabL.right
             anchors.leftMargin: 25
             y: kdabL.y - 10
@@ -81,7 +81,7 @@ Item {
             source: "./images/RLogolarge.png"
             anchors.horizontalCenter: kdabL.horizontalCenter
             anchors.top: kdabL.bottom
-            anchors.topMargin: 130
+            anchors.topMargin: 100
         }
 
         Text {
@@ -92,12 +92,10 @@ Item {
             font.pixelSize: 16
             font.weight: Font.Light
             color: "#a9deff"
-            text:"<b>Rust</b><p>
-    Blazingly fast and memory-efficient: with no runtime or garbage collector, it can power performance-critical services, run on embedded devices, and easily integrate with other languages.
-    <p>
-    Rust’s rich type system and ownership model guarantee memory-safety and thread-safety — enabling you to eliminate many classes of bugs at compile-time.
-    <p>
-    Rust has great documentation, a friendly compiler with useful error messages, and top-notch tooling — an integrated package manager and build tool, smart multi-editor support with auto-completion and type inspections, an auto-formatter, and more."
+            text:"<p><b>Rust</b></p>
+            <p>A programming language empowering everyone to build reliable and efficient software.</p>
+            <p>Blazingly fast and memory-efficient: with no runtime or garbage collector, it can power performance-critical services, run on embedded devices, and easily integrate with other languages.</p>
+            <p>Rust's rich type system and ownership model guarantee memory-safety and thread-safety - enabling you to eliminate many classes of bugs at compile-time.</p>"
             anchors.left: kdabL.right
             anchors.leftMargin: 25
             y: rust.y - 10
