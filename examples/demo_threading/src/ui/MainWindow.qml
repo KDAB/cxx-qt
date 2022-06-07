@@ -11,7 +11,7 @@ import QtGraphicalEffects 1.10
 Window {
     id: root
     height: 720
-    title: qsTr("Rust Beach House Sensors")
+    title: qsTr("CXX-Qt - Beach House Demo")
     visibility: Window.FullScreen
     visible: true
     width: 1280
