@@ -65,8 +65,9 @@ Item {
             horizontalAlignment: Text.AlignJustify
             width: 520
             wrapMode: Text.Wrap
-            font.pixelSize: 16
+            font.pixelSize: 18
             font.weight: Font.Light
+            lineHeight: 0.9
             color: "#a9deff"
             text: "<p><b>CXX-Qt - Safe Rust bindings for Qt</b></p>
             <p>KDAB has been working on bridging between Rust and Qt. CXX-Qt allows you to define Qt objects from Rust, so that the business logic can be written in Rust while Qt handles the frontend.</p>
@@ -89,8 +90,9 @@ Item {
             width: 520
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignJustify
-            font.pixelSize: 16
+            font.pixelSize: 18
             font.weight: Font.Light
+            lineHeight: 0.9
             color: "#a9deff"
             text:"<p><b>Rust</b></p>
             <p>A programming language empowering everyone to build reliable and efficient software.</p>
