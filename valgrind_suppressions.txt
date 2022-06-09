@@ -54,8 +54,7 @@
    match-leak-kinds: definite
    fun:*
    obj:*/plugins/platforms/libqoffscreen.so
-   obj:*/plugins/platforms/libqoffscreen.so
-   fun:*QPlatformIntegrationFactory*create*QString*QStringList*
+   ...
    fun:*QGuiApplicationPrivate*createPlatformIntegration*
    fun:*QGuiApplicationPrivate*createEventDispatcher*
    fun:*QCoreApplicationPrivate*init*
@@ -95,6 +94,5 @@
    fun:*QQmlDataBlob*tryDone*
    fun:*QQmlTypeLoader*setCachedUnit*QQmlDataBlob*QQmlPrivate*CachedQmlUnit*
    fun:*QQmlTypeLoader*Load*CachedLoader*QQmlDataBlob*Mode*
-   fun:*QQmlTypeLoader*loadWithCachedUnit*QQmlDataBlob*QQmlPrivate*CachedQmlUnit*Mode*
    ...
 }
