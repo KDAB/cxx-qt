@@ -65,11 +65,6 @@ jobs:
             qt_version: 6
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            #
-            # FIXME: clang-format-14 causes formatting differences if it is selected by brew
-            # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
-            # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
-            # https://github.com/KDAB/cxx-qt/issues/121
             ctest_args: --exclude-regex '^(example_qml_extension_plugin_test|reuse_lint|cpp_clang_format|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
