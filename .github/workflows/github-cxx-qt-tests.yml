@@ -12,15 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 20.04 (gcc) Qt5
-            os: ubuntu-20.04
+          - name: Ubuntu 22.04 (gcc) Qt5
+            os: ubuntu-22.04
             qt_version: 5
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
             cargo_dir: ~/.cargo
-            # TODO: Remove PPA for Qt 5.15 when Ubuntu 22.04 is available
-            # https://github.com/KDAB/cxx-qt/issues/121
-            ppa: ppa:savoury1/qt-5-15
             packages-extra: >-
                 qtbase5-dev
                 qtdeclarative5-dev
@@ -29,15 +26,12 @@ jobs:
                 qml-module-qtquick-controls2
                 qml-module-qttest
             workspace: /home/runner/cxx-qt
-          - name: Ubuntu 20.04 (gcc) Qt6
-            os: ubuntu-20.04
+          - name: Ubuntu 22.04 (gcc) Qt6
+            os: ubuntu-22.04
             qt_version: 6
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
             cargo_dir: ~/.cargo
-            # TODO: Remove PPA for Qt 6 when Ubuntu 22.04 is available
-            # https://github.com/KDAB/cxx-qt/issues/121
-            ppa: ppa:daschuer/qt6-backports
             packages-extra: >-
                 qt6-base-dev
                 qt6-declarative-dev
@@ -154,7 +148,6 @@ jobs:
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
       run: >-
-        sudo add-apt-repository ${{ matrix.ppa }} &&
         sudo apt-get update &&
         sudo apt-get install -y
         ninja-build
@@ -164,6 +157,12 @@ jobs:
         python3-pip
         valgrind
         ${{ matrix.packages-extra }}
+
+    # hack around https://bugs.launchpad.net/ubuntu/+source/qtchooser/+bug/1964763
+    - name: "[Ubuntu] Add Qt6 tools to PATH"
+      if: runner.os == 'Linux' && matrix.qt_version == 6
+      run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
+
     - name: "[Ubuntu] Install reuse"
       if: runner.os == 'Linux'
       run: pip3 install reuse
