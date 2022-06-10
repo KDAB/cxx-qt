@@ -135,7 +135,10 @@ Item {
 
     MouseArea {
         id: mArea
-        anchors.fill: parent
+        anchors.centerIn: parent
+        height: 100
+        width: 100
+
         onClicked: {
             button.clicked();
             efectAnim.restart();
