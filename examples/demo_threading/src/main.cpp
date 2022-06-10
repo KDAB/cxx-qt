@@ -8,6 +8,8 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/include/energy_usage.h"
+#include "helpers/energyusageproxymodel.h"
+#include "helpers/sensor.h"
 
 int
 main(int argc, char* argv[])
@@ -16,7 +18,7 @@ main(int argc, char* argv[])
 
   QQmlApplicationEngine engine;
 
-  const QUrl url(QStringLiteral("qrc:/main.qml"));
+  const QUrl url(QStringLiteral("qrc:/MainWindow.qml"));
   QObject::connect(
     &engine,
     &QQmlApplicationEngine::objectCreated,
@@ -29,6 +31,9 @@ main(int argc, char* argv[])
 
   qmlRegisterType<cxx_qt::energy_usage::EnergyUsage>(
     "com.kdab.energy", 1, 0, "EnergyUsage");
+  qmlRegisterType<EnergyUsageProxyModel>(
+    "com.kdab.energy", 1, 0, "EnergyUsageProxyModel");
+  qmlRegisterType<Sensor>("com.kdab.energy", 1, 0, "Sensor");
 
   engine.load(url);
 
