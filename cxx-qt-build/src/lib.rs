@@ -108,6 +108,16 @@ fn manifest_dir() -> String {
     manifest_dir
 }
 
+fn out_dir() -> String {
+    let mut out_dir = env::var("OUT_DIR").expect("Could not get out dir");
+    if cfg!(windows) {
+        out_dir = out_dir.replace('\\', "/");
+    }
+    out_dir += "/../../../..";
+    println!("cargo:rerun-if-env-changed=OUT_DIR");
+    out_dir
+}
+
 /// Extract the cxx or cxx_qt module from a Rust file
 fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
     let file = syn::parse_file(file_content).unwrap();
@@ -158,13 +168,10 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
 
 /// Write the generated cpp and h files for a qobject out to files
 fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
-    let manifest_dir = manifest_dir();
+    let out_dir = out_dir();
 
-    let h_path = format!(
-        "{}/target/cxx-qt-gen/include/{}.h",
-        manifest_dir, snake_name
-    );
-    let cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", manifest_dir, snake_name);
+    let h_path = format!("{}/cxx-qt-gen/include/{}.h", out_dir, snake_name);
+    let cpp_path = format!("{}/cxx-qt-gen/src/{}.cpp", out_dir, snake_name);
 
     let mut file = File::create(&h_path).expect("Could not create .h file");
     write!(file, "{}", obj.header).expect("Failed to write .h file");
@@ -182,6 +189,7 @@ fn gen_cxx_for_file(
     cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
     let manifest_dir = manifest_dir();
+    let out_dir = out_dir();
     let mut generated_cpp_paths = Vec::new();
 
     // TODO: in the future use the module path as the file path
@@ -218,14 +226,8 @@ fn gen_cxx_for_file(
                         panic!("No file name found in rust source path: {}", rs_path)
                     }
                 };
-                h_path = format!(
-                    "{}/target/cxx-qt-gen/include/{}.h",
-                    manifest_dir, rs_file_name
-                );
-                cpp_path = format!(
-                    "{}/target/cxx-qt-gen/src/{}.cpp",
-                    manifest_dir, rs_file_name
-                );
+                h_path = format!("{}/cxx-qt-gen/include/{}.h", out_dir, rs_file_name);
+                cpp_path = format!("{}/cxx-qt-gen/src/{}.cpp", out_dir, rs_file_name);
 
                 m.into_token_stream()
             }
@@ -239,11 +241,8 @@ fn gen_cxx_for_file(
                     ext_plugin.push_type(&qobject);
                 }
 
-                h_path = format!("{}/target/cxx-qt-gen/src/{}.rs.h", manifest_dir, snake_name);
-                cpp_path = format!(
-                    "{}/target/cxx-qt-gen/src/{}.rs.cpp",
-                    manifest_dir, snake_name
-                );
+                h_path = format!("{}/cxx-qt-gen/src/{}.rs.h", out_dir, snake_name);
+                cpp_path = format!("{}/cxx-qt-gen/src/{}.rs.cpp", out_dir, snake_name);
 
                 generated_cpp_paths.append(&mut write_qobject_cpp_files(cpp_object, &snake_name));
                 generate_qobject_cxx(&qobject, cpp_namespace_prefix).unwrap()
@@ -280,12 +279,11 @@ fn gen_cxx_for_files(
     ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
     cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
-    let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen/include", manifest_dir);
+    let out_dir = out_dir();
+    let path = format!("{}/cxx-qt-gen/include", out_dir);
     std::fs::create_dir_all(path).expect("Could not create cxx-qt include dir");
 
-    let path = format!("{}/target/cxx-qt-gen/src", manifest_dir);
+    let path = format!("{}/cxx-qt-gen/src", out_dir);
     std::fs::create_dir_all(path).expect("Could not create cxx-qt src dir");
 
     let mut cpp_files = Vec::new();
@@ -302,12 +300,11 @@ fn gen_cxx_for_files(
 }
 
 fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
-    let manifest_dir = manifest_dir();
+    let out_dir = out_dir();
 
-    let path = format!(
-        "{}/target/cxx-qt-gen/cpp_namespace_prefix.txt",
-        manifest_dir
-    );
+    std::fs::create_dir_all(format!("{}/cxx-qt-gen", out_dir)).expect("Could not create target dir");
+
+    let path = format!("{}/cxx-qt-gen/cpp_namespace_prefix.txt", out_dir);
     let mut file = File::create(&path).expect("Could not create cpp_namespace_prefix file");
     write!(file, "{}", cpp_namespace_prefix.join("::"))
         .expect("Could not write cpp_namespace_prefix file");
@@ -315,12 +312,12 @@ fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
 
 /// Write the list of C++ paths to the file
 fn write_cpp_sources_list(paths: &[String]) {
-    let manifest_dir = manifest_dir();
+    let out_dir = out_dir();
 
-    let path = format!("{}/target/cxx-qt-gen", manifest_dir);
+    let path = format!("{}/cxx-qt-gen", out_dir);
     std::fs::create_dir_all(path).expect("Could not create target dir");
 
-    let path = format!("{}/target/cxx-qt-gen/cpp_sources.txt", manifest_dir);
+    let path = format!("{}/cxx-qt-gen/cpp_sources.txt", out_dir);
     let mut file = File::create(&path).expect("Could not create cpp_sources file");
 
     for path in paths {
@@ -333,11 +330,11 @@ fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec
     let mut paths = vec![];
 
     if let Some(ext_plugin) = ext_plugin {
-        let manifest_dir = manifest_dir();
+        let out_dir = out_dir();
 
         // Ensure that a plugin folder exists
         // We put qqmlextensionplugin data in it's own folder so we can assume filenames
-        let path = format!("{}/target/cxx-qt-gen/plugin", manifest_dir);
+        let path = format!("{}/cxx-qt-gen/plugin", out_dir);
         std::fs::create_dir_all(path).expect("Could not create cxx-qt plugin dir");
 
         // Generate the qqmlextensionplugin and qmldir
@@ -345,12 +342,12 @@ fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec
         let qmldir_source = ext_plugin.gen_qmldir();
 
         // We can assume plugin.cpp here because we are writing to our own directory
-        let cpp_path = format!("{}/target/cxx-qt-gen/plugin/plugin.cpp", manifest_dir);
+        let cpp_path = format!("{}/cxx-qt-gen/plugin/plugin.cpp", out_dir);
         let mut plugin = File::create(&cpp_path).expect("Could not create cpp file");
         write!(plugin, "{}", plugin_source).expect("Could not write cpp file");
         paths.push(cpp_path);
 
-        let qmldir_path = format!("{}/target/cxx-qt-gen/plugin/qmldir", manifest_dir);
+        let qmldir_path = format!("{}/cxx-qt-gen/plugin/qmldir", out_dir);
         let mut qmldir = File::create(&qmldir_path).expect("Could not create qmldir file");
         write!(qmldir, "{}", qmldir_source).expect("Could not write qmldir file");
     }
@@ -384,7 +381,7 @@ fn write_cxx_qt_lib_set(
 
 /// Find all the cxx-qt-lib sources and write them to the target directory
 fn write_cxx_qt_lib_sources() -> Vec<String> {
-    let cxx_qt_lib_target_dir = format!("{}/target/cxx-qt-lib", manifest_dir());
+    let cxx_qt_lib_target_dir = format!("{}/cxx-qt-lib", out_dir());
     let cxx_qt_lib_include_dir = format!("{}/include", cxx_qt_lib_target_dir);
     let cxx_qt_lib_src_dir = format!("{}/src", cxx_qt_lib_target_dir);
     std::fs::create_dir_all(&cxx_qt_lib_include_dir).unwrap();
@@ -415,9 +412,10 @@ fn write_cxx_qt_lib_sources() -> Vec<String> {
 
 /// Write out the static header file for both the cxx
 fn write_cxx_static_header() {
-    let manifest_dir = manifest_dir();
+    // let manifest_dir = manifest_dir();
+    let out_dir = out_dir();
 
-    let path = format!("{}/target/cxx-qt-gen/statics/rust", manifest_dir);
+    let path = format!("{}/cxx-qt-gen/statics/rust", out_dir);
     std::fs::create_dir_all(&path).expect("Could not create static header dir");
 
     let h_path = format!("{}/cxx.h", path);
@@ -484,7 +482,7 @@ impl CxxQtBuilder {
 
     /// Specify rust file paths to parse through the cxx-qt marco
     ///
-    /// Currently the path should be relative to CARGO_MANIFEST_DIR
+    /// Currently the path should be relative to OUT_DIR
     pub fn file(mut self, rust_source: &'static str) -> Self {
         self.rust_sources.push(rust_source);
         self
