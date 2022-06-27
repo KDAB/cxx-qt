@@ -12,7 +12,7 @@ use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 fn read_cpp_namespace_prefix() -> Vec<String> {
     let dir_target = std::env::var("OUT_DIR")
         .map(|s| s + "/../../../..")
-        .or(std::env::var("CARGO_MANIFEST_DIR").map(|s| s + "/target"))
+        .or_else(|_| std::env::var("CARGO_MANIFEST_DIR").map(|s| s + "/target"))
         .expect("Could not get target dir");
     let path = format!("{}/cxx-qt-gen/cpp_namespace_prefix.txt", dir_target);
     let contents = std::fs::read_to_string(path).expect("Could not read cpp namespace prefix");
