@@ -39,10 +39,6 @@ pub const QT_TYPES_HEADER: &str =
 /// The source for qt_types
 pub const QT_TYPES_SOURCE: &str = include_str!("qt_types.cpp");
 
-pub trait PropertyChangeHandler<C, P> {
-    fn handle_property_change(&mut self, cpp: &mut C, property: P);
-}
-
 pub trait UpdateRequestHandler<C> {
     fn handle_update_request(&mut self, cpp: &mut C);
 }

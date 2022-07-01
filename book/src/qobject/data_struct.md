@@ -19,10 +19,6 @@ Note that you can also use serde on the Data struct and derive `Deserialize` and
 
 If you want to provide default values for your QObject, then instead of deriving implement the `Default` trait for the struct `Data`.
 
-## Property enum
-
-An enum called `Property` is automatically generated from the names of the fields in the `Data` struct, this can then be used in the [`PropertyChangeHandler`](./handlers.md).
-
 ## Deserialisation or Serialisation
 
 Using [Serde](https://serde.rs/) the Data struct can be (de)seralised, by adding the dervive attributes as normal.

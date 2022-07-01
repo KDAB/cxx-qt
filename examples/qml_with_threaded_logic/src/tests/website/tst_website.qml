@@ -15,7 +15,8 @@ TestCase {
         id: componentWebsite
 
         Website {
-
+            onTitleChanged: newTitleValue()
+            onUrlChanged: newUrlValue()
         }
     }
 

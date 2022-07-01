@@ -212,12 +212,11 @@
       </text>
     </g>
     <g>
-      <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="957,631 1240.2,631 1252.2,643 1252.2,697 957,697 "/>
+      <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="957,631 1240.2,631 1252.2,643 1252.2,681 957,681 "/>
       <polyline style="fill: none; stroke-opacity: 1; stroke-width: 1; stroke: #000000" points="1240.2,631 1240.2,643 1252.2,643 "/>
       <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="964" y="655.881">
         <tspan x="964" y="655.881">"Process queues" calls rust handlers</tspan>
-        <tspan x="964" y="671.881">- handle_property_change</tspan>
-        <tspan x="964" y="687.881">- handle_update_request</tspan>
+        <tspan x="964" y="671.881">- handle_update_request</tspan>
       </text>
     </g>
     <g>

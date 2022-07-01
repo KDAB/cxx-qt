@@ -6,7 +6,6 @@
 
 mod data_struct_properties;
 mod empty;
-mod handler_property_change;
 mod mock_qt_types;
 mod nested;
 mod rust_obj_invokables;

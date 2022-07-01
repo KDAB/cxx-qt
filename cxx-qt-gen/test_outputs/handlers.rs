@@ -1,15 +1,9 @@
 mod my_object {
-    use cxx_qt_lib::PropertyChangeHandler;
     use cxx_qt_lib::ToUniquePtr;
     use cxx_qt_lib::UpdateRequestHandler;
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
-        enum Property {
-            Number,
-            String,
-        }
-
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -74,18 +68,10 @@ mod my_object {
 
             #[cxx_name = "handleUpdateRequest"]
             fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObject>);
-
-            #[cxx_name = "handlePropertyChange"]
-            fn call_handle_property_change(
-                self: &mut RustObj,
-                cpp: Pin<&mut MyObject>,
-                property: Property,
-            );
         }
     }
 
     pub type FFICppObj = ffi::MyObject;
-    pub type Property = ffi::Property;
 
     #[derive(Default)]
     struct RustObj;
@@ -94,15 +80,6 @@ mod my_object {
         fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.handle_update_request(&mut cpp);
-        }
-
-        fn call_handle_property_change(
-            &mut self,
-            cpp: std::pin::Pin<&mut FFICppObj>,
-            property: Property,
-        ) {
-            let mut cpp = CppObj::new(cpp);
-            self.handle_property_change(&mut cpp, property);
         }
     }
 
@@ -165,12 +142,6 @@ mod my_object {
     impl UpdateRequestHandler<CppObj> for RustObj {
         fn handle_update_request(&mut self, _cpp: &mut CppObj) {
             println!("update")
-        }
-    }
-
-    impl PropertyChangeHandler<CppObj, Property> for RustObj {
-        fn handle_property_change(&mut self, _cpp: &mut CppObj, _property: Property) {
-            println!("change")
         }
     }
 

@@ -3,18 +3,6 @@ mod my_object {
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
-        enum Property {
-            Boolean,
-            Float32,
-            Float64,
-            Int8,
-            Int16,
-            Int32,
-            Uint8,
-            Uint16,
-            Uint32,
-        }
-
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -109,7 +97,6 @@ mod my_object {
     }
 
     pub type FFICppObj = ffi::MyObject;
-    pub type Property = ffi::Property;
 
     #[derive(Default)]
     struct RustObj;

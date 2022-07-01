@@ -510,21 +510,8 @@ pub fn generate_qobject_cxx(
         quote! {}
     };
 
-    // Define a function to handle property changes if we have one
-    let handle_property_change = if obj.handle_property_change_impl.is_some() {
-        quote! {
-            #[cxx_name = "handlePropertyChange"]
-            fn call_handle_property_change(self: &mut #rust_class_name, cpp: Pin<&mut #class_name>, property: Property);
-        }
-    } else {
-        quote! {}
-    };
-
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
-
-    // Generate an enum representing all the properties that the object has
-    let property_enum = generate_property_enum(obj);
 
     // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QStringCpp;"
     // if we actually generate some code that uses QString.
@@ -532,21 +519,10 @@ pub fn generate_qobject_cxx(
     // Build the namespace string, rust::module
     let namespace = obj.namespace.join("::");
 
-    // Build the properties FFI
-    let property_ffi = if !obj.properties.is_empty() {
-        quote! {
-            pub type Property = ffi::Property;
-        }
-    } else {
-        quote! {}
-    };
-
     // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
         mod ffi {
-            #property_enum
-
             unsafe extern "C++" {
                 include!(#import_path);
 
@@ -601,12 +577,10 @@ pub fn generate_qobject_cxx(
                 fn initialise_cpp(cpp: Pin<&mut #class_name>);
 
                 #handle_update_request
-                #handle_property_change
             }
         }
 
         pub type FFICppObj = ffi::#class_name;
-        #property_ffi
     };
 
     Ok(output.into_token_stream())
@@ -625,25 +599,6 @@ fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
     };
 
     output.into_token_stream()
-}
-
-/// Generate an enum representing all the properties that a QObject has
-fn generate_property_enum(obj: &QObject) -> TokenStream {
-    let properties = obj.properties.iter().map(|property| {
-        let ident_str = &property.ident.rust_ident.to_string();
-        let ident = format_ident!("{}", ident_str.to_case(Case::Pascal));
-        quote! { #ident }
-    });
-
-    if properties.len() > 0 {
-        quote! {
-            enum Property {
-                #(#properties),*
-            }
-        }
-    } else {
-        quote! {}
-    }
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
@@ -1090,18 +1045,6 @@ pub fn generate_qobject_rs(
         quote! {}
     };
 
-    // Define a function to handle property changes if we have one
-    let handle_property_change = if obj.handle_property_change_impl.is_some() {
-        quote! {
-            fn call_handle_property_change(&mut self, cpp: std::pin::Pin<&mut FFICppObj>, property: Property) {
-                let mut cpp = CppObj::new(cpp);
-                self.handle_property_change(&mut cpp, property);
-            }
-        }
-    } else {
-        quote! {}
-    };
-
     let rust_struct_impl = quote! {
         impl #rust_class_name {
             #(#invokable_method_wrappers)*
@@ -1109,7 +1052,6 @@ pub fn generate_qobject_rs(
             #(#normal_methods)*
 
             #handle_update_request
-            #handle_property_change
         }
     };
 
@@ -1176,14 +1118,10 @@ pub fn generate_qobject_rs(
     if obj.handle_updates_impl.is_some() {
         use_traits.push(quote! { use cxx_qt_lib::UpdateRequestHandler; });
     }
-    if obj.handle_property_change_impl.is_some() {
-        use_traits.push(quote! { use cxx_qt_lib::PropertyChangeHandler; });
-    }
     // TODO: only push if we have an opaque param or return type?
     use_traits.push(quote! { use cxx_qt_lib::ToUniquePtr; });
 
     let handle_updates_impl = &obj.handle_updates_impl;
-    let handle_property_change_impl = &obj.handle_property_change_impl;
 
     // Build our rewritten module that replaces the input from the macro
     let output = quote! {
@@ -1212,8 +1150,6 @@ pub fn generate_qobject_rs(
             #(#original_trait_impls)*
 
             #handle_updates_impl
-
-            #handle_property_change_impl
 
             fn create_rs() -> std::boxed::Box<RustObj> {
                 std::default::Default::default()

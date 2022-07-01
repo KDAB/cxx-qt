@@ -4,12 +4,6 @@ mod my_object {
 
     #[cxx::bridge(namespace = "cxx_qt::my_object")]
     mod ffi {
-        enum Property {
-            Primitive,
-            Opaque,
-            Nested,
-        }
-
         unsafe extern "C++" {
             include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -77,7 +71,6 @@ mod my_object {
     }
 
     pub type FFICppObj = ffi::MyObject;
-    pub type Property = ffi::Property;
 
     #[derive(Default)]
     struct RustObj;
