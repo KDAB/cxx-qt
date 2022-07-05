@@ -8,7 +8,9 @@ import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Window 2.12
 
+// ANCHOR: book_qml_import
 import com.kdab.cxx_qt.demo 1.0
+// ANCHOR_END: book_qml_import
 
 Window {
     height: 300

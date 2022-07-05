@@ -27,7 +27,7 @@ Note in the future there may be a helper to call which could register all the ty
 
 ## Using QQmlExtensionPlugin
 
-If you are using a QQmlExtensionPlugin then ensure the generated library is in the import path.
+If you are using a [QQmlExtensionPlugin](./qqmlextensionplugin.md) then ensure the generated library is in the import path.
 
 ```cpp,ignore
 {{#include ../../../examples/qml_extension_plugin/main.cpp:book_extension_plugin_register}}

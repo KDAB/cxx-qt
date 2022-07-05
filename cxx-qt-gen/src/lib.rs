@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 mod extract;
 mod gen_cpp;
-mod gen_qqmlextensionplugin;
 mod gen_rs;
 mod utils;
 
 pub use extract::{extract_qobject, QObject};
 pub use gen_cpp::{generate_format, generate_qobject_cpp, CppObject};
-pub use gen_qqmlextensionplugin::QQmlExtensionPluginData;
 pub use gen_rs::{generate_qobject_cxx, generate_qobject_rs};
 
 #[cfg(test)]

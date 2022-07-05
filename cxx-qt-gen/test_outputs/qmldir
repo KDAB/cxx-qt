@@ -1,3 +1,0 @@
-module MODULE_IDENT
-plugin CPP_PLUGIN_NAME
-class_name CppPluginNamePlugin

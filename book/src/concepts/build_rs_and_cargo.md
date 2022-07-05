@@ -12,7 +12,6 @@ We need to specify a build.rs so that we can parse the macros and generate relev
 The following options are available
 
   * Indicating which files should be parsed to look for macros
-  * Enable building as a [QQmlExtensionPlugin](./qqmlextensionplugin.md)
   * Deciding the clang-format style of the generated C++ code
   * Specifiying a custom C++ namespace for the generated Rust types
 
@@ -20,12 +19,6 @@ A build.rs script could look like the following
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_minimal/build.rs:book_build_rs}}
-```
-
-If you are registering as a plugin it could like the following
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_extension_plugin/core/build.rs:book_build_rs}}
 ```
 
 A non-default C++ namespace could be like the following

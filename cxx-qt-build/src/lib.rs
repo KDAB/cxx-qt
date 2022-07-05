@@ -14,27 +14,7 @@ use syn::*;
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
     extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
-    QQmlExtensionPluginData,
 };
-
-/// The type of build to perform on the sources
-#[derive(PartialEq)]
-enum BuildMode {
-    /// Generate a normal build
-    Plain,
-    /// Generate qmldir and QQmlExtensionPlugin with the parameters
-    QQmlExtensionPlugin {
-        module_ident: &'static str,
-        cpp_plugin_name: &'static str,
-    },
-}
-
-impl Default for BuildMode {
-    fn default() -> Self {
-        // Default to a normal build, users need to opt-in for a QQmlExtensionPlugin build
-        BuildMode::Plain
-    }
-}
 
 /// Representation of a generated CXX header, source, and name
 #[derive(Serialize, Deserialize)]
@@ -176,11 +156,7 @@ fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
 }
 
 /// Generate C++ files from a given Rust file, returning the generated paths
-fn gen_cxx_for_file(
-    rs_path: &str,
-    ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
-    cpp_namespace_prefix: &[&'static str],
-) -> Vec<String> {
+fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec<String> {
     let manifest_dir = manifest_dir();
     let mut generated_cpp_paths = Vec::new();
 
@@ -234,11 +210,6 @@ fn gen_cxx_for_file(
                 let cpp_object = generate_qobject_cpp(&qobject).unwrap();
                 let snake_name = qobject.ident.to_string().to_case(Case::Snake);
 
-                // If there is a QQmlExtensionPlugin then add our QObject type to it
-                if let Some(ext_plugin) = ext_plugin {
-                    ext_plugin.push_type(&qobject);
-                }
-
                 h_path = format!("{}/target/cxx-qt-gen/src/{}.rs.h", manifest_dir, snake_name);
                 cpp_path = format!(
                     "{}/target/cxx-qt-gen/src/{}.rs.cpp",
@@ -277,7 +248,6 @@ fn gen_cxx_for_file(
 /// Generate C++ files from a given list of Rust files, returning the generated paths
 fn gen_cxx_for_files(
     rs_source: &[&'static str],
-    ext_plugin: &mut Option<&mut QQmlExtensionPluginData>,
     cpp_namespace_prefix: &[&'static str],
 ) -> Vec<String> {
     let manifest_dir = manifest_dir();
@@ -291,11 +261,7 @@ fn gen_cxx_for_files(
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(
-            rs_path,
-            ext_plugin,
-            cpp_namespace_prefix,
-        ));
+        cpp_files.append(&mut gen_cxx_for_file(rs_path, cpp_namespace_prefix));
     }
 
     cpp_files
@@ -326,36 +292,6 @@ fn write_cpp_sources_list(paths: &[String]) {
     for path in paths {
         writeln!(file, "{}", path).unwrap();
     }
-}
-
-/// Write out the qmldir and plugin.cpp for a QQmlExtensionPlugin with the given data
-fn write_qqmlextensionplugin(ext_plugin: Option<QQmlExtensionPluginData>) -> Vec<String> {
-    let mut paths = vec![];
-
-    if let Some(ext_plugin) = ext_plugin {
-        let manifest_dir = manifest_dir();
-
-        // Ensure that a plugin folder exists
-        // We put qqmlextensionplugin data in it's own folder so we can assume filenames
-        let path = format!("{}/target/cxx-qt-gen/plugin", manifest_dir);
-        std::fs::create_dir_all(path).expect("Could not create cxx-qt plugin dir");
-
-        // Generate the qqmlextensionplugin and qmldir
-        let plugin_source = ext_plugin.gen_qqmlextensionplugin();
-        let qmldir_source = ext_plugin.gen_qmldir();
-
-        // We can assume plugin.cpp here because we are writing to our own directory
-        let cpp_path = format!("{}/target/cxx-qt-gen/plugin/plugin.cpp", manifest_dir);
-        let mut plugin = File::create(&cpp_path).expect("Could not create cpp file");
-        write!(plugin, "{}", plugin_source).expect("Could not write cpp file");
-        paths.push(cpp_path);
-
-        let qmldir_path = format!("{}/target/cxx-qt-gen/plugin/qmldir", manifest_dir);
-        let mut qmldir = File::create(&qmldir_path).expect("Could not create qmldir file");
-        write!(qmldir, "{}", qmldir_source).expect("Could not write qmldir file");
-    }
-
-    paths
 }
 
 /// Write our a given cxx-qt-lib header and source set to the given folder
@@ -428,7 +364,6 @@ fn write_cxx_static_header() {
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
 #[derive(Default)]
 pub struct CxxQtBuilder {
-    build_mode: BuildMode,
     cpp_format: Option<ClangFormatStyle>,
     cpp_namespace_prefix: Vec<&'static str>,
     rust_sources: Vec<&'static str>,
@@ -439,25 +374,11 @@ impl CxxQtBuilder {
     /// Create a new builder
     pub fn new() -> Self {
         Self {
-            build_mode: BuildMode::Plain,
             cpp_format: None,
             cpp_namespace_prefix: vec!["cxx_qt"],
             rust_sources: vec![],
             qt_enabled: true,
         }
-    }
-
-    /// Create a new builder as a QQmlExtensionPlugin
-    pub fn qqmlextensionplugin(
-        mut self,
-        module_ident: &'static str,
-        cpp_plugin_name: &'static str,
-    ) -> Self {
-        self.build_mode = BuildMode::QQmlExtensionPlugin {
-            module_ident,
-            cpp_plugin_name,
-        };
-        self
     }
 
     /// Choose the ClangFormatStyle to use for generated C++ files
@@ -476,7 +397,7 @@ impl CxxQtBuilder {
 
     /// Choose to disable Qt support
     ///
-    /// This will disable including cxx-qt-lib headers and prevent qqmlextensionplugin from being built.
+    /// This will disable including cxx-qt-lib headers.
     pub fn disable_qt(mut self) -> Self {
         self.qt_enabled = false;
         self
@@ -507,21 +428,8 @@ impl CxxQtBuilder {
         // TODO: somewhere check that we don't have duplicate class names
         // TODO: later use the module::object to turn into module/object.h and namespace
 
-        // Prepare a QQmlExtensionPlugin if the build mode is set
-        let mut ext_plugin = match self.build_mode {
-            BuildMode::QQmlExtensionPlugin {
-                module_ident,
-                cpp_plugin_name,
-            } => Some(QQmlExtensionPluginData::new(module_ident, cpp_plugin_name)),
-            _others => None,
-        };
-
         // Generate files
-        let mut cpp_paths = gen_cxx_for_files(
-            &self.rust_sources,
-            &mut ext_plugin.as_mut(),
-            &self.cpp_namespace_prefix,
-        );
+        let mut cpp_paths = gen_cxx_for_files(&self.rust_sources, &self.cpp_namespace_prefix);
 
         // TODO: in large projects where where CXX-Qt is used in multiple individual
         // components that end up being linked together, having these same static
@@ -530,9 +438,6 @@ impl CxxQtBuilder {
 
         // Check if we have Qt support enabled
         if self.qt_enabled {
-            // Write any qqmlextensionplugin if there is one and read any C++ files it creates
-            cpp_paths.append(&mut write_qqmlextensionplugin(ext_plugin));
-
             // Write the cxx-qt-lib sources into the folder
             cpp_paths.append(&mut write_cxx_qt_lib_sources());
         }
