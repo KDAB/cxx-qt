@@ -23,21 +23,13 @@ src/
    - CMakeLists.txt
    - src/
      - lib.rs
+   - plugin.cpp
+   - qmldir
  - ui/
    - main.qml
    - qml.qrc
  CMakeLists.txt
  main.cpp
-```
-
-## Rust build.rs changes
-
-In your `build.rs` specify that you want to use a QQmlExtensionPlugin by invoking the method `qqmlextensionplugin` as seen in the following example.
-
-Here you specify the import name for QML and the name you are using for the resultant plugin target.
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_extension_plugin/core/build.rs:book_build_rs}}
 ```
 
 ## CMake changes
@@ -52,8 +44,26 @@ Note that the folder structure must match the QML import name, eg `import foo.ba
 
 ## Qt C++ changes
 
+Define a QQmlExtensionPlugin `plugin.cpp` as normal, here you specify the QML names for the Rust types.
+
+```cpp,ignore
+{{#include ../../../examples/qml_extension_plugin/core/plugin.cpp:book_qml_plugin}}
+```
+
+Then create a `qmldir` file which matches your C++ library name.
+
+```txt,ignore
+{{#include ../../../examples/qml_extension_plugin/core/qmldir}}
+```
+
 To load the plugin at runtime add the directory containing the plugin to the QML import path.
 
 ```cpp,ignore
 {{#include ../../../examples/qml_extension_plugin/main.cpp:book_extension_plugin_register}}
+```
+
+Then use the plugin from the import uri and version specified in the plugin and qmldir.
+
+```qml,ignore
+{{#include ../../../examples/qml_extension_plugin/ui/main.qml:book_qml_import}}
 ```

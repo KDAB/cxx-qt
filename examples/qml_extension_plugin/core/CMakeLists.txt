@@ -10,14 +10,18 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../cmake")
 include(CxxQt)
 
 set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/../qml)
-# TODO: generate this path and name from the build.rs then our cmake helpers can read this from .txt
 set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
 
 # Generate C++ code from Rust using Cargo in the current folder
 cxx_qt_generate_cpp(GEN_SOURCES)
 
+# Specify the C++ sources
+set(CPP_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/plugin.cpp
+)
+
 # Define our QML plugin library
-add_library(core_qmlplugin SHARED "${GEN_SOURCES}")
+add_library(core_qmlplugin SHARED ${CPP_SOURCES} "${GEN_SOURCES}")
 # Set directory for our library
 set_target_properties(core_qmlplugin PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUTPUT_DIR}
@@ -36,5 +40,5 @@ target_link_libraries(core_qmlplugin PRIVATE
 )
 
 # Install the qmldir file into the plugin folder
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/plugin/qmldir ${PLUGIN_OUTPUT_DIR}/qmldir COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/qmldir ${PLUGIN_OUTPUT_DIR}/qmldir COPYONLY)
 # ANCHOR_END: book_cmake_generation

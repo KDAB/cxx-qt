@@ -17,6 +17,6 @@ Then we have multiple other examples availabe inside the projects
   * [Using threaded logic](./qml_with_threaded_logic/src/lib.rs)
   * [Using Qt types such as QVariant](./qml_features/src/types.rs)
   * [Nesting Rust objects as properties and invokables](./qml_features/src/nested.rs)
-  * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/core/build.rs)
+  * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/core/)
 
 For documentation on how to use these features please visit our Book [https://kdab.github.io/cxx-qt/book/](https://kdab.github.io/cxx-qt/book/).

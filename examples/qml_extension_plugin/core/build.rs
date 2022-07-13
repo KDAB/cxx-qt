@@ -4,18 +4,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// ANCHOR: book_build_rs
 use clang_format::ClangFormatStyle;
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        .qqmlextensionplugin(
-            "com.kdab.cxx_qt.demo", // QML import name
-            "core_qmlplugin",       // C++ library target name
-        )
         .cpp_format(ClangFormatStyle::Mozilla)
         .file("src/lib.rs")
         .build();
 }
-// ANCHOR_END: book_build_rs

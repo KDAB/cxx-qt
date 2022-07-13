@@ -30,8 +30,7 @@ Next cargo triggers the `build.rs` of the main project, which executes `cxx-qt-b
 Firstly `cxx-qt-build` uses CXX to generate C++ sources for the project's Rust source files into a
 well known location for CMake (`target/cxx-qt-gen/`).
 
-Then `cxx-qt-build` writes any static headers (such as CXX headers) and `QQmlExtensionPlugin`
-generated code to the same folder.
+Then `cxx-qt-build` writes any static headers (such as CXX headers) to the same folder.
 
 Next it uses the strings `QT_TYPES_HEADER`, `QT_TYPES_SOURCE`, and `QT_TYPES_CXX_JSON` (which
 represents multiple files) from `cxx-qt-lib` to write the C++ source files into a well known
