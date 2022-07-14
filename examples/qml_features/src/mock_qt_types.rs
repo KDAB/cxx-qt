@@ -4,9 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt::make_qobject;
-
-#[make_qobject]
+#[cxx_qt::bridge]
 mod mock_qt_types {
     use cxx_qt_lib::{
         QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl,

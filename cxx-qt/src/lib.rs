@@ -21,7 +21,7 @@ fn read_cpp_namespace_prefix() -> Vec<String> {
 /// # Example
 ///
 /// ```ignore
-/// #[make_qobject]
+/// #[cxx_qt::bridge]
 /// mod my_object {
 ///     #[derive(Default)]
 ///     struct MyObject {
@@ -36,7 +36,7 @@ fn read_cpp_namespace_prefix() -> Vec<String> {
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn make_qobject(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the TokenStream of a macro
     // this triggers a compile failure if the tokens fail to parse.
     let module = parse_macro_input!(input as ItemMod);

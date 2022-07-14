@@ -1,5 +1,5 @@
 #[attrA]
-#[make_qobject]
+#[cxx_qt::bridge]
 #[attrB]
 pub mod my_object {
     // ItemConst

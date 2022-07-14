@@ -3,10 +3,9 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx_qt::make_qobject;
 
 // ANCHOR: book_macro_code
-#[make_qobject]
+#[cxx_qt::bridge]
 mod serialisation {
     use serde::{Deserialize, Serialize};
 

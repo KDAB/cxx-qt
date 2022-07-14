@@ -51,15 +51,19 @@ fn is_cxx_attr(attr: &Attribute) -> bool {
     true
 }
 
-/// Tests if an attributes matched what is expected for #[make_qobject]
+/// Tests if an attributes matched what is expected for #[cxx_qt::bridge]
 fn is_cxx_qt_attr(attr: &Attribute) -> bool {
     let segments = &attr.path.segments;
 
-    if segments.len() != 1 {
+    if segments.len() != 2 {
         return false;
     }
 
-    if segments[0].ident != "make_qobject" {
+    if segments[0].ident != "cxx_qt" {
+        return false;
+    }
+
+    if segments[1].ident != "bridge" {
         return false;
     }
 
@@ -124,6 +128,9 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
                 _others => panic!("Multiple module attributes are currently not supported."),
             }
 
+            // TODO: what if the name is bridge instead of cxx::bridge?
+            // can we instead use the macro itself rather than scanning the syn tree for them?
+            // and see what CXX does here
             let attr = &attrs[0];
             if is_cxx_attr(attr) {
                 push_module(m, false);
@@ -161,7 +168,7 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
     let mut generated_cpp_paths = Vec::new();
 
     // TODO: in the future use the module path as the file path
-    // so that src/moda/lib.rs with mod modb { make_qobject(MyObject) } becomes src/moda/modb/my_object
+    // so that src/moda/lib.rs with mod modb { cxx_qt::bridge(MyObject) } becomes src/moda/modb/my_object
     // this then avoids collisions later.
     //
     // This will require detecting nested modules in a file
@@ -422,7 +429,7 @@ impl CxxQtBuilder {
 
         // Set the cpp namespace prefix to a file
         //
-        // This is so that the make_qobject macro can read this back later
+        // This is so that the cxx_qt::bridge macro can read this back later
         write_cpp_namespace_prefix(&self.cpp_namespace_prefix);
 
         // TODO: somewhere check that we don't have duplicate class names

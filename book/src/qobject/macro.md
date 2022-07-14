@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Macro
 
-We define a module (which becomes our Qt object name) and then add `make_qobject` as a macro.
+We define a module (which becomes our Qt object name) and then add `cxx_qt::bridge` as a macro.
 
 The example below would export the contents of the module as `DataStructProperties` to Qt / QML.
 

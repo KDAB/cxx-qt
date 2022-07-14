@@ -3,9 +3,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx_qt::make_qobject;
 
-#[make_qobject]
+#[cxx_qt::bridge]
 pub mod sub_object {
     #[derive(Default)]
     pub struct Data {
