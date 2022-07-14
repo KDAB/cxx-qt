@@ -4,9 +4,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, ItemMod};
+use syn::parse_macro_input;
 
-use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
+use cxx_qt_gen::{extract_extern_qt, generate_qobject_rs, CxxQtItemMod};
 
 /// Read the C++ namespace prefix that cxx-qt-build has set for us
 fn read_cpp_namespace_prefix() -> Vec<String> {
@@ -23,14 +23,16 @@ fn read_cpp_namespace_prefix() -> Vec<String> {
 /// ```ignore
 /// #[cxx_qt::bridge]
 /// mod my_object {
-///     #[derive(Default)]
-///     struct MyObject {
-///         property: i32,
-///     }
+///         extern "Qt" {
+///         #[derive(Default)]
+///         struct MyObject {
+///             property: i32,
+///         }
 ///
-///     impl MyObject {
-///         fn invokable(&self, a: i32, b: i32) -> i32 {
-///             a + b
+///         impl MyObject {
+///             fn invokable(&self, a: i32, b: i32) -> i32 {
+///                 a + b
+///             }
 ///         }
 ///     }
 /// }
@@ -39,7 +41,7 @@ fn read_cpp_namespace_prefix() -> Vec<String> {
 pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the TokenStream of a macro
     // this triggers a compile failure if the tokens fail to parse.
-    let module = parse_macro_input!(input as ItemMod);
+    let module = parse_macro_input!(input as CxxQtItemMod);
 
     // Read the C++ namespace prefix set by cxx-qt-build
     let cpp_namespace_prefix = read_cpp_namespace_prefix();
@@ -52,12 +54,15 @@ pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
 //
 // Note that wee need a separate function here, as we need to annotate the lifetimes to allow
 // for cpp_namespace_prefix to outlive cpp_namespace_prefix_ref
-fn extract_and_generate<'s>(module: ItemMod, cpp_namespace_prefix: &'s [String]) -> TokenStream {
+fn extract_and_generate<'s>(
+    module: CxxQtItemMod,
+    cpp_namespace_prefix: &'s [String],
+) -> TokenStream {
     let cpp_namespace_prefix_ref: Vec<&'s str> =
         cpp_namespace_prefix.iter().map(AsRef::as_ref).collect();
 
     // Attempt to extract information about a QObject inside the module
-    let qobject = match extract_qobject(module, &cpp_namespace_prefix_ref) {
+    let qobject = match extract_extern_qt(module, &cpp_namespace_prefix_ref) {
         Ok(o) => o,
         Err(e) => return e.into(),
     };
@@ -66,7 +71,11 @@ fn extract_and_generate<'s>(module: ItemMod, cpp_namespace_prefix: &'s [String])
     // for the given QObject.
     let gen_result = generate_qobject_rs(&qobject, &cpp_namespace_prefix_ref);
     match gen_result {
-        Ok(tokens) => tokens.into(),
+        Ok(tokens) => {
+            let stream: TokenStream = tokens.clone().into();
+            println!("result: {}", stream.to_string());
+            tokens.into()
+        }
         Err(tokens) => tokens.into(),
     }
 }

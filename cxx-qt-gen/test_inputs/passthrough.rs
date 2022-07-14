@@ -2,90 +2,94 @@
 #[cxx_qt::bridge]
 #[attrB]
 pub mod my_object {
-    // ItemConst
-    const MAX: u16 = 65535;
+    // TODO: later test extern "Rust" / "C++" and others are passed through here
 
-    // ItemEnum
-    enum Event {
-        MyEvent,
-    }
+    extern "Qt" {
+        // ItemConst
+        const MAX: u16 = 65535;
 
-    // ItemExternCrate
-    extern crate serde;
+        // ItemEnum
+        enum Event {
+            MyEvent,
+        }
 
-    // ItemFn
-    fn do_something() {
-        println!("I am a free function");
-    }
+        // ItemExternCrate
+        extern crate serde;
 
-    // ItemForeignMod
-    extern "C" {}
+        // ItemFn
+        fn do_something() {
+            println!("I am a free function");
+        }
 
-    // ItemMacro
-    macro_rules! macro1 {
-        () => {
+        // ItemForeignMod
+        extern "C" {}
+
+        // ItemMacro
+        macro_rules! macro1 {
+            () => {
+                0
+            };
+        }
+
+        // ItemMacro2
+        macro macro2() {
             0
-        };
-    }
-
-    // ItemMacro2
-    macro macro2() {
-        0
-    }
-
-    // ItemMod
-    mod m {}
-
-    // ItemStatic
-    static BIKE: Event = Event::MyEvent;
-
-    // ItemTrait
-    pub trait CustomTrait {
-        fn method();
-    }
-
-    // ItemTraitAlias
-    pub trait SharableIterator = CustomTrait + Sync;
-
-    // ItemType
-    type Result<T> = std::result::Result<T, Event>;
-
-    // ItemUnion
-    union Foo<A, B> {
-        x: A,
-        y: B,
-    }
-
-    // ItemUse
-    use super::MyTrait;
-
-    #[derive(Default)]
-    struct Data {
-        number: i32,
-    }
-
-    impl MyTrait for Data {
-        fn my_func() -> String {
-            "Hello".to_owned()
-        }
-    }
-
-    #[derive(Default)]
-    struct RustObj;
-
-    impl RustObj {
-        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
-            optional
         }
 
-        fn test_unknown(&self, unknown: MyType) -> MyType {
-            unknown
-        }
-    }
+        // ItemMod
+        mod m {}
 
-    impl MyTrait for RustObj {
-        fn my_func() -> String {
-            "Hello".to_owned()
+        // ItemStatic
+        static BIKE: Event = Event::MyEvent;
+
+        // ItemTrait
+        pub trait CustomTrait {
+            fn method();
+        }
+
+        // ItemTraitAlias
+        pub trait SharableIterator = CustomTrait + Sync;
+
+        // ItemType
+        type Result<T> = std::result::Result<T, Event>;
+
+        // ItemUnion
+        union Foo<A, B> {
+            x: A,
+            y: B,
+        }
+
+        // ItemUse
+        use super::MyTrait;
+
+        #[derive(Default)]
+        struct Data {
+            number: i32,
+        }
+
+        impl MyTrait for Data {
+            fn my_func() -> String {
+                "Hello".to_owned()
+            }
+        }
+
+        #[derive(Default)]
+        struct RustObj;
+
+        impl RustObj {
+            fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
+                optional
+            }
+
+            fn test_unknown(&self, unknown: MyType) -> MyType {
+                unknown
+            }
+        }
+
+        impl MyTrait for RustObj {
+            fn my_func() -> String {
+                "Hello".to_owned()
+            }
         }
     }
 }

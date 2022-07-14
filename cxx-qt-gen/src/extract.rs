@@ -3,6 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::syntax::{CxxQtItem, CxxQtItemForeignQtMod, CxxQtItemMod};
 use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
@@ -176,7 +177,7 @@ pub struct QObject {
     /// The namespace to use for C++
     pub(crate) namespace: Vec<String>,
     /// The original Rust mod for the struct
-    pub(crate) original_mod: ItemMod,
+    pub(crate) original_mod: CxxQtItemMod,
     /// The original Data struct that the object was generated from
     pub(crate) original_data_struct: ItemStruct,
     /// The original Rust struct that the object was generated from
@@ -771,17 +772,14 @@ fn extract_signals(
     Ok(signals)
 }
 
-/// Parses a module in order to extract a QObject description from it
-pub fn extract_qobject(
-    module: ItemMod,
+/// Parses a extern "Qt" block in order to extract a QObject description from it
+fn extract_qobject(
+    mut foreign_module: CxxQtItemForeignQtMod,
+    original_mod: CxxQtItemMod,
     cpp_namespace_prefix: &[&str],
 ) -> Result<QObject, TokenStream> {
     // Find the items from the module
-    let original_mod = module.to_owned();
-    let items = &mut module
-        .content
-        .expect("Incorrect module format encountered.")
-        .1;
+    let items = &mut foreign_module.items;
 
     // Prepare variables to store struct, invokables, and other data
     //
@@ -790,6 +788,8 @@ pub fn extract_qobject(
     // The original RustObj Item::Struct if one is found
     let mut original_rust_struct = None;
     // The name of the Qt object we are creating
+    //
+    // TODO: this will move into the extern "Qt" block as "struct MyObject"
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 
     // A list of the invokables for the struct
@@ -1028,6 +1028,39 @@ pub fn extract_qobject(
     })
 }
 
+/// Parses a module from cxx_qt::bridge and searches for extern "Qt"
+//
+// TODO: respond with a list of QObject's that have been found
+//
+// TODO: we'll also need to respond with any passthrough here too ? (eg extern "C++" / "Rust")
+pub fn extract_extern_qt(
+    module: CxxQtItemMod,
+    cpp_namespace_prefix: &[&str],
+) -> Result<QObject, TokenStream> {
+    let original_mod = module.clone();
+
+    if let Some(items) = module.content {
+        for item in items.1 {
+            match item {
+                CxxQtItem::ForeignQtMod(foreign_mod) => {
+                    return extract_qobject(foreign_mod, original_mod, cpp_namespace_prefix);
+                }
+                // TODO: in the future we'll allow for mixing in normal extern "C++" or extern "Rust" etc
+                CxxQtItem::Item(_) | CxxQtItem::ItemQtMod(_) => {
+                    return Err(Error::new(
+                        original_mod.span(),
+                        "Non extern \"Qt\" blocks are unsupported for now",
+                    )
+                    .to_compile_error());
+                }
+            }
+        }
+    }
+
+    // TODO: don't return an error but empty list of QObject's?
+    Err(Error::new(original_mod.span(), "No extern \"Qt\" block found").to_compile_error())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1037,9 +1070,9 @@ mod tests {
     #[test]
     fn parses_custom_default() {
         let source = include_str!("../test_inputs/custom_default.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
         assert_eq!(qobject.invokables.len(), 0);
@@ -1069,9 +1102,9 @@ mod tests {
     #[test]
     fn parses_invokables() {
         let source = include_str!("../test_inputs/invokables.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1278,9 +1311,9 @@ mod tests {
     #[test]
     fn parsing_naming() {
         let source = include_str!("../test_inputs/naming.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 1);
@@ -1324,9 +1357,9 @@ mod tests {
     #[test]
     fn parses_passthrough() {
         let source = include_str!("../test_inputs/passthrough.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1345,9 +1378,9 @@ mod tests {
     #[test]
     fn parses_properties() {
         let source = include_str!("../test_inputs/properties.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 3);
@@ -1431,9 +1464,9 @@ mod tests {
     #[test]
     fn parses_signals() {
         let source = include_str!("../test_inputs/signals.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         assert_eq!(qobject.properties.len(), 0);
         assert_eq!(qobject.invokables.len(), 1);
@@ -1496,9 +1529,9 @@ mod tests {
     #[test]
     fn parses_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);

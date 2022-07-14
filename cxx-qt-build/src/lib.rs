@@ -13,7 +13,8 @@ use syn::*;
 
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
-    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
+    extract_extern_qt, generate_format, generate_qobject_cpp, generate_qobject_cxx, parse_qt_file,
+    CppObject, CxxQtItem, CxxQtItemMod,
 };
 
 /// Representation of a generated CXX header, source, and name
@@ -73,8 +74,8 @@ fn is_cxx_qt_attr(attr: &Attribute) -> bool {
 /// Represents the cxx or cxx_qt module that could be extracted from a file
 #[derive(PartialEq)]
 enum ExtractedModule {
-    Cxx(ItemMod),
-    CxxQt(ItemMod),
+    Cxx(CxxQtItemMod),
+    CxxQt(CxxQtItemMod),
     None,
 }
 
@@ -94,13 +95,13 @@ fn manifest_dir() -> String {
 
 /// Extract the cxx or cxx_qt module from a Rust file
 fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
-    let file = syn::parse_file(file_content).unwrap();
+    let file = parse_qt_file(file_content).unwrap();
 
     // Define a helper function that will ensure that we can extract at most one
     // module for code gen from the items in the file. This function also
     // ensures that the extracted item is wrapped in the correct enum.
     let mut extracted = ExtractedModule::None;
-    let mut push_module = |i: ItemMod, qt: bool| {
+    let mut push_module = |i: CxxQtItemMod, qt: bool| {
         if extracted != ExtractedModule::None {
             panic!(
                 "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
@@ -120,7 +121,7 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
     // if the users placed multiple such modules in a single file and give them a
     // warning.
     for i in file.items {
-        if let Item::Mod(m) = i {
+        if let CxxQtItem::ItemQtMod(m) = i {
             let attrs = &m.attrs;
             match attrs.len() {
                 0 => continue,
@@ -213,7 +214,7 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
                 m.into_token_stream()
             }
             ExtractedModule::CxxQt(m) => {
-                let qobject = extract_qobject(m, cpp_namespace_prefix).unwrap();
+                let qobject = extract_extern_qt(m, cpp_namespace_prefix).unwrap();
                 let cpp_object = generate_qobject_cpp(&qobject).unwrap();
                 let snake_name = qobject.ident.to_string().to_case(Case::Snake);
 

@@ -6,12 +6,14 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 mod data_struct_properties {
-    #[derive(Default)]
-    pub struct Data {
-        number: i32,
-    }
+    extern "Qt" {
+        #[derive(Default)]
+        pub struct Data {
+            number: i32,
+        }
 
-    #[derive(Default)]
-    struct RustObj;
+        #[derive(Default)]
+        struct RustObj;
+    }
 }
 // ANCHOR_END: book_macro_code

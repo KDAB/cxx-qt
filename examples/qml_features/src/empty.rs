@@ -5,9 +5,11 @@
 
 #[cxx_qt::bridge]
 mod empty {
-    #[derive(Default)]
-    pub struct Data;
+    extern "Qt" {
+        #[derive(Default)]
+        pub struct Data;
 
-    #[derive(Default)]
-    struct RustObj;
+        #[derive(Default)]
+        struct RustObj;
+    }
 }

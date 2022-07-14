@@ -6,31 +6,33 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 mod handler_property_change {
-    #[derive(Default)]
-    pub struct Data {
-        number: i32,
-    }
-
-    #[derive(Default)]
-    struct RustObj {
-        count: u32,
-    }
-
-    impl RustObj {
-        #[invokable]
-        fn get_count(&self) -> u32 {
-            self.count
+    extern "Qt" {
+        #[derive(Default)]
+        pub struct Data {
+            number: i32,
         }
-    }
 
-    impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
-        fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
-            match property {
-                Property::Number => {
-                    println!("New Number: {}", cpp.number());
-                    self.count += 1;
+        #[derive(Default)]
+        struct RustObj {
+            count: u32,
+        }
+
+        impl RustObj {
+            #[invokable]
+            fn get_count(&self) -> u32 {
+                self.count
+            }
+        }
+
+        impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
+            fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
+                match property {
+                    Property::Number => {
+                        println!("New Number: {}", cpp.number());
+                        self.count += 1;
+                    }
+                    _others => {}
                 }
-                _others => {}
             }
         }
     }

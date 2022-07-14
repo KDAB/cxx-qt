@@ -1229,14 +1229,14 @@ pub fn generate_qobject_rs(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::extract_qobject;
+    use crate::extract_extern_qt;
+    use crate::syntax::CxxQtItemMod;
 
     use pretty_assertions::assert_eq;
     use std::{
         io::Write,
         process::{Command, Stdio},
     };
-    use syn::ItemMod;
 
     fn format_rs_source(rs_code: &str) -> String {
         // NOTE: this error handling is pretty rough so should only used for tests
@@ -1265,9 +1265,9 @@ mod tests {
     #[test]
     fn generates_custom_default() {
         let source = include_str!("../test_inputs/custom_default.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/custom_default.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1283,9 +1283,9 @@ mod tests {
     #[test]
     fn generates_handlers() {
         let source = include_str!("../test_inputs/handlers.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/handlers.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1301,9 +1301,9 @@ mod tests {
     #[test]
     fn generates_invokables() {
         let source = include_str!("../test_inputs/invokables.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/invokables.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1319,9 +1319,9 @@ mod tests {
     #[test]
     fn generates_naming() {
         let source = include_str!("../test_inputs/naming.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/naming.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1337,9 +1337,9 @@ mod tests {
     #[test]
     fn generates_passthrough() {
         let source = include_str!("../test_inputs/passthrough.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/passthrough.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1355,9 +1355,9 @@ mod tests {
     #[test]
     fn generates_properties() {
         let source = include_str!("../test_inputs/properties.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/properties.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1373,9 +1373,9 @@ mod tests {
     #[test]
     fn generates_signals() {
         let source = include_str!("../test_inputs/signals.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/signals.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1391,9 +1391,9 @@ mod tests {
     #[test]
     fn generates_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_primitive_property.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1409,9 +1409,9 @@ mod tests {
     #[test]
     fn generates_types_qt_property() {
         let source = include_str!("../test_inputs/types_qt_property.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_qt_property.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1427,9 +1427,9 @@ mod tests {
     #[test]
     fn generates_types_qt_invokable() {
         let source = include_str!("../test_inputs/types_qt_invokable.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
+        let module: CxxQtItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_extern_qt(module, &cpp_namespace_prefix).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_qt_invokable.rs");
         let expected_output = format_rs_source(expected_output);

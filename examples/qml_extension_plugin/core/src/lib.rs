@@ -8,48 +8,50 @@
 
 #[cxx_qt::bridge]
 mod my_object {
-    use serde::{Deserialize, Serialize};
+    extern "Qt" {
+        use serde::{Deserialize, Serialize};
 
-    const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
+        const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
-    #[derive(Deserialize, Serialize)]
-    pub struct Data {
-        number: i32,
-        string: String,
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            serde_json::from_str(DEFAULT_STR).unwrap()
-        }
-    }
-
-    #[derive(Default)]
-    struct RustObj;
-
-    impl RustObj {
-        #[invokable]
-        fn increment(&self, cpp: &mut CppObj) {
-            cpp.set_number(cpp.number() + 1);
+        #[derive(Deserialize, Serialize)]
+        pub struct Data {
+            number: i32,
+            string: String,
         }
 
-        #[invokable]
-        fn reset(&self, cpp: &mut CppObj) {
-            let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
-            cpp.grab_values_from_data(data);
+        impl Default for Data {
+            fn default() -> Self {
+                serde_json::from_str(DEFAULT_STR).unwrap()
+            }
         }
 
-        #[invokable]
-        fn serialize(&self, cpp: &mut CppObj) -> String {
-            let data = Data::from(cpp);
-            serde_json::to_string(&data).unwrap()
-        }
+        #[derive(Default)]
+        struct RustObj;
 
-        #[invokable]
-        fn grab_values(&self, cpp: &mut CppObj) {
-            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data: Data = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(data);
+        impl RustObj {
+            #[invokable]
+            fn increment(&self, cpp: &mut CppObj) {
+                cpp.set_number(cpp.number() + 1);
+            }
+
+            #[invokable]
+            fn reset(&self, cpp: &mut CppObj) {
+                let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
+                cpp.grab_values_from_data(data);
+            }
+
+            #[invokable]
+            fn serialize(&self, cpp: &mut CppObj) -> String {
+                let data = Data::from(cpp);
+                serde_json::to_string(&data).unwrap()
+            }
+
+            #[invokable]
+            fn grab_values(&self, cpp: &mut CppObj) {
+                let string = r#"{"number": 2, "string": "Goodbye!"}"#;
+                let data: Data = serde_json::from_str(string).unwrap();
+                cpp.grab_values_from_data(data);
+            }
         }
     }
 }

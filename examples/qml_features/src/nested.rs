@@ -6,41 +6,43 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 mod nested {
-    #[derive(Default)]
-    pub struct Data {
-        nested: crate::rust_obj_invokables::rust_obj_invokables::CppObj,
-    }
-
-    #[derive(Default)]
-    struct RustObj;
-
-    impl RustObj {
-        #[invokable]
-        fn nested_parameter(
-            &self,
-            nested: &mut crate::rust_obj_invokables::rust_obj_invokables::CppObj,
-        ) {
-            println!("Number: {}", nested.number());
-            // TODO: we can't reach the nested object's RustObj yet
-            // for this we will need `nested.borrow_rust_obj()` later
-            // https://github.com/KDAB/cxx-qt/issues/30
+    extern "Qt" {
+        #[derive(Default)]
+        pub struct Data {
+            nested: crate::rust_obj_invokables::rust_obj_invokables::CppObj,
         }
 
-        #[invokable]
-        fn nested_take_give(&self, cpp: &mut CppObj) {
-            // We now own the nested object and QML would be null
-            //
-            // TODO: should this return a OwnedCppObj which derefs to the CppObj ?
-            // (so that we don't need to do the CppObj::new(obj))
-            // and holds the UniquePtr internally so that OwnedCppObj can be moved back in the give ?
-            // https://github.com/KDAB/cxx-qt/issues/30
-            let mut nested = cpp.take_nested();
+        #[derive(Default)]
+        struct RustObj;
 
-            crate::rust_obj_invokables::rust_obj_invokables::CppObj::new(nested.pin_mut())
-                .set_number(10);
+        impl RustObj {
+            #[invokable]
+            fn nested_parameter(
+                &self,
+                nested: &mut crate::rust_obj_invokables::rust_obj_invokables::CppObj,
+            ) {
+                println!("Number: {}", nested.number());
+                // TODO: we can't reach the nested object's RustObj yet
+                // for this we will need `nested.borrow_rust_obj()` later
+                // https://github.com/KDAB/cxx-qt/issues/30
+            }
 
-            // The nested object is now back in QML
-            cpp.give_nested(nested);
+            #[invokable]
+            fn nested_take_give(&self, cpp: &mut CppObj) {
+                // We now own the nested object and QML would be null
+                //
+                // TODO: should this return a OwnedCppObj which derefs to the CppObj ?
+                // (so that we don't need to do the CppObj::new(obj))
+                // and holds the UniquePtr internally so that OwnedCppObj can be moved back in the give ?
+                // https://github.com/KDAB/cxx-qt/issues/30
+                let mut nested = cpp.take_nested();
+
+                crate::rust_obj_invokables::rust_obj_invokables::CppObj::new(nested.pin_mut())
+                    .set_number(10);
+
+                // The nested object is now back in QML
+                cpp.give_nested(nested);
+            }
         }
     }
 }

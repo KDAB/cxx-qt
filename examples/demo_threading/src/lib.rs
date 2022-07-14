@@ -113,267 +113,269 @@ impl Default for SensorData {
 
 #[cxx_qt::bridge]
 mod energy_usage {
-    use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
-    use async_std::{
-        net::{TcpListener, TcpStream},
-        prelude::*,
-        task::spawn,
-    };
-    use futures::{executor::block_on, stream::StreamExt};
-    use futures_timer::Delay;
-    use std::{
-        collections::HashMap,
-        sync::{
-            atomic::{AtomicBool, Ordering},
-            mpsc::{sync_channel, Receiver, SyncSender},
-            Arc,
-        },
-        thread::JoinHandle,
-        time::SystemTime,
-    };
-    use uuid::Uuid;
+    extern "Qt" {
+        use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
+        use async_std::{
+            net::{TcpListener, TcpStream},
+            prelude::*,
+            task::spawn,
+        };
+        use futures::{executor::block_on, stream::StreamExt};
+        use futures_timer::Delay;
+        use std::{
+            collections::HashMap,
+            sync::{
+                atomic::{AtomicBool, Ordering},
+                mpsc::{sync_channel, Receiver, SyncSender},
+                Arc,
+            },
+            thread::JoinHandle,
+            time::SystemTime,
+        };
+        use uuid::Uuid;
 
-    pub struct Data {
-        average_use: f64,
-        sensors: u32,
-        total_use: f64,
-    }
+        pub struct Data {
+            average_use: f64,
+            sensors: u32,
+            total_use: f64,
+        }
 
-    impl Default for Data {
-        fn default() -> Self {
-            Self {
-                average_use: 0.0,
-                sensors: 0,
-                total_use: 0.0,
+        impl Default for Data {
+            fn default() -> Self {
+                Self {
+                    average_use: 0.0,
+                    sensors: 0,
+                    total_use: 0.0,
+                }
             }
         }
-    }
 
-    struct RustObj {
-        qt_rx: Receiver<Data>,
-        qt_tx: SyncSender<Data>,
-        join_handles: Option<[JoinHandle<()>; 4]>,
-    }
+        struct RustObj {
+            qt_rx: Receiver<Data>,
+            qt_tx: SyncSender<Data>,
+            join_handles: Option<[JoinHandle<()>; 4]>,
+        }
 
-    impl Default for RustObj {
-        fn default() -> Self {
-            let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
-            Self {
-                qt_rx,
-                qt_tx,
-                join_handles: None,
+        impl Default for RustObj {
+            fn default() -> Self {
+                let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
+                Self {
+                    qt_rx,
+                    qt_tx,
+                    join_handles: None,
+                }
             }
         }
-    }
 
-    impl RustObj {
-        /// Read from a TCP stream and create a Request
-        async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
-            let mut buf = vec![0u8; 128];
-            if let Ok(size) = stream.read(&mut buf).await {
-                if size > buf.len() {
-                    Err(Status::ErrorInvalidReadSize)
+        impl RustObj {
+            /// Read from a TCP stream and create a Request
+            async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
+                let mut buf = vec![0u8; 128];
+                if let Ok(size) = stream.read(&mut buf).await {
+                    if size > buf.len() {
+                        Err(Status::ErrorInvalidReadSize)
+                    } else {
+                        let trimmed = std::str::from_utf8(&buf)?
+                            .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
+                        serde_json::from_str::<Request>(trimmed).map_err(|e| e.into())
+                    }
                 } else {
-                    let trimmed = std::str::from_utf8(&buf)?
-                        .trim_matches(|c| c == ' ' || c == '\n' || c == '\r' || c == '\0');
-                    serde_json::from_str::<Request>(trimmed).map_err(|e| e.into())
+                    Err(Status::ErrorFailedToRead)
                 }
-            } else {
-                Err(Status::ErrorFailedToRead)
-            }
-        }
-
-        async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
-            let response: Response = match RustObj::build_request(&mut stream).await {
-                Ok(request) => {
-                    match request.command {
-                        RequestCommand::Power { value } => {
-                            // Validate that our power is within the expected range
-                            if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
-                                network_tx
-                                    .try_send(NetworkChannel::Power {
-                                        uuid: request.uuid,
-                                        value,
-                                    })
-                                    .into()
-                            } else {
-                                Status::ErrorInvalidPower.into()
-                            }
-                        }
-                        RequestCommand::Disconnect => network_tx
-                            .try_send(NetworkChannel::Disconnect { uuid: request.uuid })
-                            .into(),
-                    }
-                }
-                Err(err) => err.into(),
-            };
-
-            stream
-                .write(serde_json::to_string(&response).unwrap().as_bytes())
-                .await
-                .ok();
-            stream.flush().await.unwrap();
-        }
-
-        #[invokable]
-        fn start_server(&mut self, cpp: &mut CppObj) {
-            if self.join_handles.is_some() {
-                println!("Already running a server!");
-                return;
             }
 
-            let (network_tx, network_rx) = sync_channel(super::CHANNEL_NETWORK_COUNT);
-            let (timeout_tx, timeout_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
-            let (update_tx, update_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
-            let sensors_changed = Arc::new(AtomicBool::new(false));
-
-            // Prepare our timeout thread, if a sensor is not seen for N seconds we remove it
-            let timeout_network_tx = network_tx.clone();
-            let run_timeout = async move {
-                loop {
-                    Delay::new(super::SENSOR_TIMEOUT_POLL_RATE).await;
-
-                    timeout_network_tx
-                        .send(NetworkChannel::TimeoutUpdate)
-                        .unwrap();
-
-                    if let Ok(mut sensors) = timeout_rx.recv() {
-                        for uuid in sensors
-                            .drain()
-                            // Find sensors that have expired
-                            .filter(|(_, sensor)| {
-                                if let Ok(duration) = sensor.last_seen.elapsed() {
-                                    duration > super::SENSOR_TIMEOUT
+            async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
+                let response: Response = match RustObj::build_request(&mut stream).await {
+                    Ok(request) => {
+                        match request.command {
+                            RequestCommand::Power { value } => {
+                                // Validate that our power is within the expected range
+                                if (0.0..=super::SENSOR_MAXIMUM_POWER).contains(&value) {
+                                    network_tx
+                                        .try_send(NetworkChannel::Power {
+                                            uuid: request.uuid,
+                                            value,
+                                        })
+                                        .into()
                                 } else {
-                                    true
+                                    Status::ErrorInvalidPower.into()
                                 }
-                            })
-                            .map(|(uuid, _)| uuid)
-                        {
-                            timeout_network_tx
-                                .send(NetworkChannel::Disconnect { uuid })
-                                .unwrap();
+                            }
+                            RequestCommand::Disconnect => network_tx
+                                .try_send(NetworkChannel::Disconnect { uuid: request.uuid })
+                                .into(),
                         }
                     }
+                    Err(err) => err.into(),
+                };
+
+                stream
+                    .write(serde_json::to_string(&response).unwrap().as_bytes())
+                    .await
+                    .ok();
+                stream.flush().await.unwrap();
+            }
+
+            #[invokable]
+            fn start_server(&mut self, cpp: &mut CppObj) {
+                if self.join_handles.is_some() {
+                    println!("Already running a server!");
+                    return;
                 }
-            };
 
-            // Prepare our update thread
-            //
-            // When values change this then requests an update to Qt
-            let qt_tx = self.qt_tx.clone();
-            let update_network_tx = network_tx.clone();
-            let update_requester = cpp.update_requester();
-            let update_sensors_changed = sensors_changed.clone();
-            let run_update = async move {
-                loop {
-                    Delay::new(super::SENSOR_UPDATE_POLL_RATE).await;
+                let (network_tx, network_rx) = sync_channel(super::CHANNEL_NETWORK_COUNT);
+                let (timeout_tx, timeout_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
+                let (update_tx, update_rx) = sync_channel::<HashMap<Uuid, SensorData>>(0);
+                let sensors_changed = Arc::new(AtomicBool::new(false));
 
-                    if update_sensors_changed
-                        .compare_exchange_weak(true, false, Ordering::SeqCst, Ordering::SeqCst)
-                        .is_ok()
-                    {
-                        update_network_tx.send(NetworkChannel::Update).unwrap();
+                // Prepare our timeout thread, if a sensor is not seen for N seconds we remove it
+                let timeout_network_tx = network_tx.clone();
+                let run_timeout = async move {
+                    loop {
+                        Delay::new(super::SENSOR_TIMEOUT_POLL_RATE).await;
 
-                        // If there is new sensor info then build average, count, total and inform Qt
-                        if let Ok(sensors) = update_rx.recv() {
-                            let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
-                            let sensors = sensors.len() as u32;
-                            let average_use = if sensors > 0 {
-                                total_use / (sensors as f64)
-                            } else {
-                                0.0
-                            };
+                        timeout_network_tx
+                            .send(NetworkChannel::TimeoutUpdate)
+                            .unwrap();
 
-                            qt_tx
-                                .send(Data {
-                                    average_use,
-                                    sensors,
-                                    total_use,
+                        if let Ok(mut sensors) = timeout_rx.recv() {
+                            for uuid in sensors
+                                .drain()
+                                // Find sensors that have expired
+                                .filter(|(_, sensor)| {
+                                    if let Ok(duration) = sensor.last_seen.elapsed() {
+                                        duration > super::SENSOR_TIMEOUT
+                                    } else {
+                                        true
+                                    }
                                 })
-                                .unwrap();
-
-                            update_requester.request_update();
+                                .map(|(uuid, _)| uuid)
+                            {
+                                timeout_network_tx
+                                    .send(NetworkChannel::Disconnect { uuid })
+                                    .unwrap();
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            // Prepare our sensors thread, which reads from the network channel and collates
-            // the commands into a hashmap.
-            //
-            // The timeout and update thread can request snapshots of the sensors data
-            let run_sensors = async move {
-                let mut sensors =
-                    HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
+                // Prepare our update thread
+                //
+                // When values change this then requests an update to Qt
+                let qt_tx = self.qt_tx.clone();
+                let update_network_tx = network_tx.clone();
+                let update_requester = cpp.update_requester();
+                let update_sensors_changed = sensors_changed.clone();
+                let run_update = async move {
+                    loop {
+                        Delay::new(super::SENSOR_UPDATE_POLL_RATE).await;
 
-                loop {
-                    if let Ok(command) = network_rx.recv() {
-                        match command {
-                            NetworkChannel::Disconnect { uuid } => {
-                                sensors.remove(&uuid);
-                                sensors_changed.store(true, Ordering::SeqCst);
-                            }
-                            NetworkChannel::Power { uuid, value } => {
-                                // Validate that we would still be below the sensors max count
-                                let sensors_len = sensors.len();
-                                let entry = sensors.entry(uuid);
-                                if sensors_len < super::SENSOR_MAXIMUM_COUNT
-                                    || matches!(
-                                        entry,
-                                        std::collections::hash_map::Entry::Occupied(..)
-                                    )
-                                {
-                                    let mut sensor = entry.or_default();
-                                    sensor.power = value;
-                                    sensor.last_seen = SystemTime::now();
-                                    sensors_changed.store(true, Ordering::SeqCst);
+                        if update_sensors_changed
+                            .compare_exchange_weak(true, false, Ordering::SeqCst, Ordering::SeqCst)
+                            .is_ok()
+                        {
+                            update_network_tx.send(NetworkChannel::Update).unwrap();
+
+                            // If there is new sensor info then build average, count, total and inform Qt
+                            if let Ok(sensors) = update_rx.recv() {
+                                let total_use = sensors.values().fold(0.0, |acc, x| acc + x.power);
+                                let sensors = sensors.len() as u32;
+                                let average_use = if sensors > 0 {
+                                    total_use / (sensors as f64)
                                 } else {
-                                    println!("Maximum sensor count reached!");
+                                    0.0
+                                };
+
+                                qt_tx
+                                    .send(Data {
+                                        average_use,
+                                        sensors,
+                                        total_use,
+                                    })
+                                    .unwrap();
+
+                                update_requester.request_update();
+                            }
+                        }
+                    }
+                };
+
+                // Prepare our sensors thread, which reads from the network channel and collates
+                // the commands into a hashmap.
+                //
+                // The timeout and update thread can request snapshots of the sensors data
+                let run_sensors = async move {
+                    let mut sensors =
+                        HashMap::<Uuid, SensorData>::with_capacity(super::SENSOR_MAXIMUM_COUNT);
+
+                    loop {
+                        if let Ok(command) = network_rx.recv() {
+                            match command {
+                                NetworkChannel::Disconnect { uuid } => {
+                                    sensors.remove(&uuid);
+                                    sensors_changed.store(true, Ordering::SeqCst);
+                                }
+                                NetworkChannel::Power { uuid, value } => {
+                                    // Validate that we would still be below the sensors max count
+                                    let sensors_len = sensors.len();
+                                    let entry = sensors.entry(uuid);
+                                    if sensors_len < super::SENSOR_MAXIMUM_COUNT
+                                        || matches!(
+                                            entry,
+                                            std::collections::hash_map::Entry::Occupied(..)
+                                        )
+                                    {
+                                        let mut sensor = entry.or_default();
+                                        sensor.power = value;
+                                        sensor.last_seen = SystemTime::now();
+                                        sensors_changed.store(true, Ordering::SeqCst);
+                                    } else {
+                                        println!("Maximum sensor count reached!");
+                                    }
+                                }
+                                NetworkChannel::TimeoutUpdate => {
+                                    timeout_tx.send(sensors.clone()).unwrap();
+                                }
+                                NetworkChannel::Update => {
+                                    update_tx.send(sensors.clone()).unwrap();
                                 }
                             }
-                            NetworkChannel::TimeoutUpdate => {
-                                timeout_tx.send(sensors.clone()).unwrap();
-                            }
-                            NetworkChannel::Update => {
-                                update_tx.send(sensors.clone()).unwrap();
-                            }
                         }
                     }
-                }
-            };
+                };
 
-            // Prepare our Tcp server which listens for sensors
-            let run_server = async move {
-                let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
-                listener
-                    .incoming()
-                    .map(|stream| (stream, network_tx.clone()))
-                    .for_each_concurrent(/* limit */ None, |(stream, network_tx)| async move {
-                        let stream = stream.unwrap();
-                        spawn(RustObj::handle_connection(stream, network_tx));
-                    })
-                    .await;
-            };
+                // Prepare our Tcp server which listens for sensors
+                let run_server = async move {
+                    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+                    listener
+                        .incoming()
+                        .map(|stream| (stream, network_tx.clone()))
+                        .for_each_concurrent(/* limit */ None, |(stream, network_tx)| async move {
+                            let stream = stream.unwrap();
+                            spawn(RustObj::handle_connection(stream, network_tx));
+                        })
+                        .await;
+                };
 
-            // Start our threads
-            self.join_handles = Some([
-                std::thread::spawn(move || block_on(run_timeout)),
-                std::thread::spawn(move || block_on(run_update)),
-                std::thread::spawn(move || block_on(run_sensors)),
-                std::thread::spawn(move || block_on(run_server)),
-            ]);
+                // Start our threads
+                self.join_handles = Some([
+                    std::thread::spawn(move || block_on(run_timeout)),
+                    std::thread::spawn(move || block_on(run_update)),
+                    std::thread::spawn(move || block_on(run_sensors)),
+                    std::thread::spawn(move || block_on(run_server)),
+                ]);
+            }
         }
-    }
 
-    impl UpdateRequestHandler<CppObj<'_>> for RustObj {
-        fn handle_update_request(&mut self, cpp: &mut CppObj) {
-            // Process the new data from the background thread
-            if let Some(data) = self.qt_rx.try_iter().last() {
-                // Here we have constructed a new Data struct so can consume it's values
-                // for other uses we could have passed an Enum across the channel
-                // and then process the required action here
-                cpp.grab_values_from_data(data);
+        impl UpdateRequestHandler<CppObj<'_>> for RustObj {
+            fn handle_update_request(&mut self, cpp: &mut CppObj) {
+                // Process the new data from the background thread
+                if let Some(data) = self.qt_rx.try_iter().last() {
+                    // Here we have constructed a new Data struct so can consume it's values
+                    // for other uses we could have passed an Enum across the channel
+                    // and then process the required action here
+                    cpp.grab_values_from_data(data);
+                }
             }
         }
     }
