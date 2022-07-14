@@ -163,7 +163,7 @@ fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
 }
 
 /// Generate C++ files from a given Rust file, returning the generated paths
-fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec<String> {
+fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
     let manifest_dir = manifest_dir();
     let mut generated_cpp_paths = Vec::new();
 
@@ -180,6 +180,9 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
 
     let h_path;
     let cpp_path;
+
+    // TODO: for now we use a fixed namespace, later this will come from the macro definition
+    let cpp_namespace_prefix: Vec<&'static str> = vec!["cxx_qt"];
 
     let tokens = {
         match extracted {
@@ -213,7 +216,7 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
                 m.into_token_stream()
             }
             ExtractedModule::CxxQt(m) => {
-                let qobject = extract_qobject(m, cpp_namespace_prefix).unwrap();
+                let qobject = extract_qobject(m, &cpp_namespace_prefix).unwrap();
                 let cpp_object = generate_qobject_cpp(&qobject).unwrap();
                 let snake_name = qobject.ident.to_string().to_case(Case::Snake);
 
@@ -224,7 +227,7 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
                 );
 
                 generated_cpp_paths.append(&mut write_qobject_cpp_files(cpp_object, &snake_name));
-                generate_qobject_cxx(&qobject, cpp_namespace_prefix).unwrap()
+                generate_qobject_cxx(&qobject, &cpp_namespace_prefix).unwrap()
             }
             _others => panic!(
                 "No module to generate cxx code from could be found in {}",
@@ -253,10 +256,7 @@ fn gen_cxx_for_file(rs_path: &str, cpp_namespace_prefix: &[&'static str]) -> Vec
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
-fn gen_cxx_for_files(
-    rs_source: &[&'static str],
-    cpp_namespace_prefix: &[&'static str],
-) -> Vec<String> {
+fn gen_cxx_for_files(rs_source: &[&'static str]) -> Vec<String> {
     let manifest_dir = manifest_dir();
 
     let path = format!("{}/target/cxx-qt-gen/include", manifest_dir);
@@ -268,22 +268,10 @@ fn gen_cxx_for_files(
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(rs_path, cpp_namespace_prefix));
+        cpp_files.append(&mut gen_cxx_for_file(rs_path));
     }
 
     cpp_files
-}
-
-fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
-    let manifest_dir = manifest_dir();
-
-    let path = format!(
-        "{}/target/cxx-qt-gen/cpp_namespace_prefix.txt",
-        manifest_dir
-    );
-    let mut file = File::create(&path).expect("Could not create cpp_namespace_prefix file");
-    write!(file, "{}", cpp_namespace_prefix.join("::"))
-        .expect("Could not write cpp_namespace_prefix file");
 }
 
 /// Write the list of C++ paths to the file
@@ -372,7 +360,6 @@ fn write_cxx_static_header() {
 #[derive(Default)]
 pub struct CxxQtBuilder {
     cpp_format: Option<ClangFormatStyle>,
-    cpp_namespace_prefix: Vec<&'static str>,
     rust_sources: Vec<&'static str>,
     qt_enabled: bool,
 }
@@ -382,7 +369,6 @@ impl CxxQtBuilder {
     pub fn new() -> Self {
         Self {
             cpp_format: None,
-            cpp_namespace_prefix: vec!["cxx_qt"],
             rust_sources: vec![],
             qt_enabled: true,
         }
@@ -391,14 +377,6 @@ impl CxxQtBuilder {
     /// Choose the ClangFormatStyle to use for generated C++ files
     pub fn cpp_format(mut self, format: ClangFormatStyle) -> Self {
         self.cpp_format = Some(format);
-        self
-    }
-
-    /// Choose the C++ namespace prefix that generated objects should be created inside
-    ///
-    /// Defaults to `cxx_qt`.
-    pub fn cpp_namespace_prefix(mut self, namespace: Vec<&'static str>) -> Self {
-        self.cpp_namespace_prefix = namespace;
         self
     }
 
@@ -427,16 +405,11 @@ impl CxxQtBuilder {
             panic!("Failed to set clang-format.");
         }
 
-        // Set the cpp namespace prefix to a file
-        //
-        // This is so that the cxx_qt::bridge macro can read this back later
-        write_cpp_namespace_prefix(&self.cpp_namespace_prefix);
-
         // TODO: somewhere check that we don't have duplicate class names
-        // TODO: later use the module::object to turn into module/object.h and namespace
+        // TODO: later use the module::object to turn into module/object.h
 
         // Generate files
-        let mut cpp_paths = gen_cxx_for_files(&self.rust_sources, &self.cpp_namespace_prefix);
+        let mut cpp_paths = gen_cxx_for_files(&self.rust_sources);
 
         // TODO: in large projects where where CXX-Qt is used in multiple individual
         // components that end up being linked together, having these same static

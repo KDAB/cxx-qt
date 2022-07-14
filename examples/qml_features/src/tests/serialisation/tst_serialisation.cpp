@@ -18,7 +18,7 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<custom_namespace::serialisation::Serialisation>(
+    qmlRegisterType<cxx_qt::serialisation::Serialisation>(
       "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
   }
 };

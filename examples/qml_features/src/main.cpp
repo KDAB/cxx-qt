@@ -33,20 +33,17 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
-  qmlRegisterType<
-    custom_namespace::data_struct_properties::DataStructProperties>(
+  qmlRegisterType<cxx_qt::data_struct_properties::DataStructProperties>(
     "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
-  qmlRegisterType<
-    custom_namespace::handler_property_change::HandlerPropertyChange>(
+  qmlRegisterType<cxx_qt::handler_property_change::HandlerPropertyChange>(
     "com.kdab.cxx_qt.demo", 1, 0, "HandlerPropertyChange");
-  qmlRegisterType<custom_namespace::my_object::MyObject>(
+  qmlRegisterType<cxx_qt::my_object::MyObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-  qmlRegisterType<custom_namespace::serialisation::Serialisation>(
+  qmlRegisterType<cxx_qt::serialisation::Serialisation>(
     "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
-  qmlRegisterType<custom_namespace::sub_object::SubObject>(
+  qmlRegisterType<cxx_qt::sub_object::SubObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "SubObject");
-  qmlRegisterType<custom_namespace::types::Types>(
-    "com.kdab.cxx_qt.demo", 1, 0, "Types");
+  qmlRegisterType<cxx_qt::types::Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
 
   engine.load(url);
 

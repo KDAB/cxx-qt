@@ -8,14 +8,6 @@ use syn::{parse_macro_input, ItemMod};
 
 use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 
-/// Read the C++ namespace prefix that cxx-qt-build has set for us
-fn read_cpp_namespace_prefix() -> Vec<String> {
-    let dir_target = std::env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
-    let path = format!("{}/target/cxx-qt-gen/cpp_namespace_prefix.txt", dir_target);
-    let contents = std::fs::read_to_string(path).expect("Could not read cpp namespace prefix");
-    contents.split("::").map(|s| s.to_string()).collect()
-}
-
 /// A procedural macro which generates a QObject for a struct inside a module.
 ///
 /// # Example
@@ -41,8 +33,8 @@ pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // this triggers a compile failure if the tokens fail to parse.
     let module = parse_macro_input!(input as ItemMod);
 
-    // Read the C++ namespace prefix set by cxx-qt-build
-    let cpp_namespace_prefix = read_cpp_namespace_prefix();
+    // TODO: for now we use a fixed namespace, later this will come from the macro definition
+    let cpp_namespace_prefix: Vec<String> = vec!["cxx_qt".to_owned()];
 
     // Extract and generate the rust code
     extract_and_generate(module, &cpp_namespace_prefix)

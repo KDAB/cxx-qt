@@ -11,7 +11,6 @@ use cxx_qt_build::CxxQtBuilder;
 fn main() {
     CxxQtBuilder::new()
         .cpp_format(ClangFormatStyle::Mozilla)
-        .cpp_namespace_prefix(vec!["custom_namespace"])
         .file("src/data_struct_properties.rs")
         .file("src/empty.rs")
         .file("src/handler_property_change.rs")

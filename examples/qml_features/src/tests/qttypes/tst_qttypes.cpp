@@ -18,7 +18,7 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<custom_namespace::mock_qt_types::MockQtTypes>(
+    qmlRegisterType<cxx_qt::mock_qt_types::MockQtTypes>(
       "com.kdab.cxx_qt.demo", 1, 0, "MockQtTypes");
   }
 };
