@@ -2,10 +2,9 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx_qt::make_qobject;
 
 // ANCHOR: book_macro_code
-#[make_qobject]
+#[cxx_qt::bridge]
 mod handler_property_change {
     #[derive(Default)]
     pub struct Data {

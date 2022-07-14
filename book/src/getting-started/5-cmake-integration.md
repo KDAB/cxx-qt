@@ -42,7 +42,7 @@ We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
 This is what generates the C++ code for our `MyObject` class at compile-time.
 It will output the `cxx-qt-gen/include/my_object.h` file we included earlier in `main.cpp`.
 
-Note that all Rust source files that uses the `#[make_qobject]` macro need to be included in this script!
+Note that all Rust source files that uses the `#[cxx_qt::bridge]` macro need to be included in this script!
 In our case, this is only the `src/lib.rs` file.
 
 Then we can write our `CMakeLists.txt` file:

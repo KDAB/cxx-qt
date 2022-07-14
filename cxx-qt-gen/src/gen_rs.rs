@@ -939,26 +939,28 @@ pub fn generate_qobject_rs(
     obj: &QObject,
     cpp_namespace_prefix: &[&str],
 ) -> Result<TokenStream, TokenStream> {
-    // Load macro attributes that were on the module, excluding #[make_qobject]
+    // Load macro attributes that were on the module, excluding #[cxx_qt::bridge]
     let mod_attrs = obj
         .original_mod
         .attrs
         .iter()
         .filter_map(|attr| {
-            // Filter out any attributes that are #[make_qobject] as that is ourselves
+            // Filter out any attributes that are #[cxx_qt::bridge] as that is ourselves
             //
             // TODO: what happens if there are multiple macros to start from?
-            // Will generate_qobject_rs only ever come from make_qobject?
+            // Will generate_qobject_rs only ever come from cxx_qt::bridge?
             // Otherwise we might need to pass the originating macro from the
             // calling proc_macro_attribute method.
-            if let Some(first_segment) = attr.path.segments.first() {
-                if first_segment.ident.to_string().as_str() != "make_qobject" {
-                    Some(attr.to_owned())
-                } else {
+            if attr.path.segments.len() == 2 {
+                if attr.path.segments[0].ident == "cxx_qt"
+                    && attr.path.segments[1].ident == "bridge"
+                {
                     None
+                } else {
+                    Some(attr.to_owned())
                 }
             } else {
-                None
+                Some(attr.to_owned())
             }
         })
         .collect::<Vec<syn::Attribute>>();

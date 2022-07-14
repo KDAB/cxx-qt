@@ -34,9 +34,7 @@ For more complex examples navigate to the [examples folder](./examples) where th
 Below is an example of Rust code that exposes a QObject with two properties and four invokable methods to Qt.
 
 ```rust
-use cxx_qt::make_qobject;
-
-#[make_qobject]
+#[cxx_qt::bridge]
 mod my_object {
     use serde::{Deserialize, Serialize};
 

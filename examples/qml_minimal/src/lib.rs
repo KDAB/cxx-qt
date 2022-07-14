@@ -5,12 +5,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_cxx_qt_module
-// ANCHOR: book_make_qobject_macro
-use cxx_qt::make_qobject;
+// ANCHOR: book_bridge_macro
 
-#[make_qobject]
+#[cxx_qt::bridge]
 mod my_object {
-    // ANCHOR_END: book_make_qobject_macro
+    // ANCHOR_END: book_bridge_macro
 
     // ANCHOR: book_data_struct
     #[derive(Default)]

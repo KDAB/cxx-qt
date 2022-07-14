@@ -2,8 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx_qt::make_qobject;
-
 use serde::{Deserialize, Serialize};
 use std::{
     sync::mpsc::TrySendError,
@@ -113,7 +111,7 @@ impl Default for SensorData {
     }
 }
 
-#[make_qobject]
+#[cxx_qt::bridge]
 mod energy_usage {
     use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
