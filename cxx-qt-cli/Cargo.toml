@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Be Wilson <be.wilson@kdab.com>
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "cxx-qt-cli"
+authors = ["Be Wilson <be.wilson@kdab.com>"]
+version = "0.3.0"
+edition = "2021"
+description = "Command line tool for cxx-qt's C++ code generation step for integration into C++ build systems"
+repository = "https://github.com/KDAB/cxx-qt/"
+
+[[bin]]
+name = "cxxqtbridge"
+path = "src/main.rs"
+
+[dependencies]
+cxx-qt-build = { path = "../cxx-qt-build" }
+clap = { version = "^3.2.12", features = [ "derive" ] }
