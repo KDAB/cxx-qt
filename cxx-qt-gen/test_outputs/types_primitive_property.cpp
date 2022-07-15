@@ -1,5 +1,5 @@
 #include "cxx-qt-gen/include/my_object.h"
-#include "cxx-qt-gen/src/my_object.rs.h"
+#include "cxx-qt-gen/include/my_object.cxx.h"
 
 namespace cxx_qt::my_object {
 

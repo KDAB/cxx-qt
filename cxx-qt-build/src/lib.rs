@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 use syn::*;
 
 use clang_format::ClangFormatStyle;
@@ -93,7 +94,7 @@ fn manifest_dir() -> String {
 }
 
 /// Extract the cxx or cxx_qt module from a Rust file
-fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
+fn extract_modules(file_content: &str, rs_path: &impl AsRef<std::path::Path>) -> ExtractedModule {
     let file = syn::parse_file(file_content).unwrap();
 
     // Define a helper function that will ensure that we can extract at most one
@@ -105,7 +106,7 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
             panic!(
                 "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                 The file {} has more than one of these.",
-                rs_path);
+                rs_path.as_ref().display());
         }
 
         if qt {
@@ -143,139 +144,146 @@ fn extract_modules(file_content: &str, rs_path: &str) -> ExtractedModule {
     extracted
 }
 
-/// Write the generated cpp and h files for a qobject out to files
-fn write_qobject_cpp_files(obj: CppObject, snake_name: &str) -> Vec<String> {
-    let manifest_dir = manifest_dir();
-
-    let h_path = format!(
-        "{}/target/cxx-qt-gen/include/{}.h",
-        manifest_dir, snake_name
-    );
-    let cpp_path = format!("{}/target/cxx-qt-gen/src/{}.cpp", manifest_dir, snake_name);
-
-    let mut file = File::create(&h_path).expect("Could not create .h file");
-    write!(file, "{}", obj.header).expect("Failed to write .h file");
-
-    let mut file = File::create(&cpp_path).expect("Could not create .cpp file");
-    write!(file, "{}", obj.source).expect("Failed to write .cpp file");
-
-    vec![h_path, cpp_path]
+pub struct GeneratedCpp {
+    cxx_qt: Option<CppObject>,
+    cxx: cxx_gen::GeneratedCode,
+    module_ident: String,
 }
 
-/// Generate C++ files from a given Rust file, returning the generated paths
-fn gen_cxx_for_file(rs_path: &str) -> Vec<String> {
-    let manifest_dir = manifest_dir();
-    let mut generated_cpp_paths = Vec::new();
+impl GeneratedCpp {
+    /// Generate QObject and cxx header/source C++ file contents
+    pub fn new(rust_file_path: &impl AsRef<std::path::Path>) -> Self {
+        let content = std::fs::read_to_string(rust_file_path).expect("Could not read Rust file");
+        let extracted = extract_modules(&content, rust_file_path);
 
-    // TODO: in the future use the module path as the file path
-    // so that src/moda/lib.rs with mod modb { cxx_qt::bridge(MyObject) } becomes src/moda/modb/my_object
-    // this then avoids collisions later.
-    //
-    // This will require detecting nested modules in a file
+        // TODO: for now we use a fixed namespace, later this will come from the macro definition
+        let cpp_namespace_prefix: Vec<&'static str> = vec!["cxx_qt"];
 
-    let path = format!("{}/{}", manifest_dir, rs_path);
-    println!("cargo:rerun-if-changed={}", path);
-    let content = std::fs::read_to_string(path).expect("Could not read Rust file");
-    let extracted = extract_modules(&content, rs_path);
+        let cxx_qt;
+        let module_ident;
+        let tokens = {
+            match extracted {
+                ExtractedModule::Cxx(m) => {
+                    module_ident = m.ident.to_string().to_case(Case::Snake);
+                    cxx_qt = None;
+                    m.into_token_stream()
+                }
+                ExtractedModule::CxxQt(m) => {
+                    module_ident = m.ident.to_string().to_case(Case::Snake);
 
-    let h_path;
-    let cpp_path;
+                    let qobject = extract_qobject(m, &cpp_namespace_prefix).unwrap();
+                    cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());
 
-    // TODO: for now we use a fixed namespace, later this will come from the macro definition
-    let cpp_namespace_prefix: Vec<&'static str> = vec!["cxx_qt"];
-
-    let tokens = {
-        match extracted {
-            ExtractedModule::Cxx(m) => {
-                // Extract just the file name of the rs_path as we don't want to include sub folders
-                //
-                // TODO: later this won't be required when we are tracking the module path
-                let rs_file_name = {
-                    if let Some(os_file_name) = std::path::Path::new(rs_path).file_name() {
-                        if let Some(file_name) = os_file_name.to_str() {
-                            file_name
-                        } else {
-                            panic!(
-                                "Could not convert OsStr to str for rust source path: {}",
-                                rs_path
-                            );
-                        }
-                    } else {
-                        panic!("No file name found in rust source path: {}", rs_path)
-                    }
-                };
-                h_path = format!(
-                    "{}/target/cxx-qt-gen/include/{}.h",
-                    manifest_dir, rs_file_name
-                );
-                cpp_path = format!(
-                    "{}/target/cxx-qt-gen/src/{}.cpp",
-                    manifest_dir, rs_file_name
-                );
-
-                m.into_token_stream()
+                    generate_qobject_cxx(&qobject, &cpp_namespace_prefix).unwrap()
+                }
+                _others => panic!(
+                    "No module to generate cxx code from could be found in {}",
+                    rust_file_path.as_ref().display()
+                ),
             }
-            ExtractedModule::CxxQt(m) => {
-                let qobject = extract_qobject(m, &cpp_namespace_prefix).unwrap();
-                let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-                let snake_name = qobject.ident.to_string().to_case(Case::Snake);
+        };
 
-                h_path = format!("{}/target/cxx-qt-gen/src/{}.rs.h", manifest_dir, snake_name);
-                cpp_path = format!(
-                    "{}/target/cxx-qt-gen/src/{}.rs.cpp",
-                    manifest_dir, snake_name
-                );
+        let opt = cxx_gen::Opt::default();
+        let cxx = cxx_gen::generate_header_and_cc(tokens, &opt)
+            .expect("Could not generate C++ from Rust file");
 
-                generated_cpp_paths.append(&mut write_qobject_cpp_files(cpp_object, &snake_name));
-                generate_qobject_cxx(&qobject, &cpp_namespace_prefix).unwrap()
-            }
-            _others => panic!(
-                "No module to generate cxx code from could be found in {}",
-                rs_path
-            ),
+        GeneratedCpp {
+            cxx_qt,
+            cxx,
+            module_ident,
         }
-    };
+    }
 
-    let opt = cxx_gen::Opt::default();
-    let gen_result = cxx_gen::generate_header_and_cc(tokens, &opt)
-        .expect("Could not generate C++ from Rust file");
+    /// Write generated code to files in a directory. Returns the absolute paths of all files written.
+    pub fn write_to_directory(&self, directory: &impl AsRef<std::path::Path>) -> Vec<PathBuf> {
+        let directory = directory.as_ref();
+        if !directory.is_dir() {
+            panic!(
+                "Output directory {} is not a directory",
+                directory.display()
+            );
+        }
 
-    let mut header = File::create(&h_path).expect("Could not create header file");
-    header
-        .write_all(&gen_result.header)
-        .expect("Could not write header file");
+        let include_directory_path = PathBuf::from(format!("{}/include", &directory.display()));
+        std::fs::create_dir_all(&include_directory_path)
+            .expect("Could not create cxx-qt include dir");
 
-    let mut cpp = File::create(&cpp_path).expect("Could not create cpp file");
-    cpp.write_all(&gen_result.implementation)
-        .expect("Could not write cpp file");
+        let source_directory_path = PathBuf::from(format!("{}/src", &directory.display()));
+        std::fs::create_dir_all(&source_directory_path)
+            .expect("Could not create cxx-qt source dir");
 
-    // TODO: find a "nice" way to write this
-    generated_cpp_paths.push(h_path);
-    generated_cpp_paths.push(cpp_path);
-    generated_cpp_paths
+        let mut written_files = Vec::with_capacity(4);
+
+        if let Some(cxx_qt_generated) = &self.cxx_qt {
+            let header_path = PathBuf::from(format!(
+                "{}/{}.h",
+                include_directory_path.display(),
+                self.module_ident
+            ));
+            let mut header =
+                File::create(&header_path).expect("Could not create cxx-qt header file");
+            header
+                .write_all(cxx_qt_generated.header.as_bytes())
+                .expect("Could not write cxx-qt header file");
+            written_files.push(header_path);
+
+            let cpp_path = PathBuf::from(format!(
+                "{}/{}.cpp",
+                source_directory_path.display(),
+                &self.module_ident
+            ));
+            let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
+            cpp.write_all(cxx_qt_generated.source.as_bytes())
+                .expect("Could not write cxx-qt source file");
+            written_files.push(cpp_path);
+        }
+
+        let header_path = PathBuf::from(format!(
+            "{}/{}.cxx.h",
+            include_directory_path.display(),
+            self.module_ident
+        ));
+        let mut header = File::create(&header_path).expect("Could not create cxx header file");
+        header
+            .write_all(&self.cxx.header)
+            .expect("Could not write cxx header file");
+        written_files.push(header_path);
+
+        let cpp_path = PathBuf::from(format!(
+            "{}/{}.cxx.cpp",
+            source_directory_path.display(),
+            self.module_ident
+        ));
+        let mut cpp = File::create(&cpp_path).expect("Could not create cxx source file");
+        cpp.write_all(&self.cxx.implementation)
+            .expect("Could not write cxx source file");
+        written_files.push(cpp_path);
+
+        written_files
+    }
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
-fn gen_cxx_for_files(rs_source: &[&'static str]) -> Vec<String> {
+fn write_cxx_generated_files_for_cargo(rs_source: &[&'static str]) -> Vec<PathBuf> {
     let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen/include", manifest_dir);
-    std::fs::create_dir_all(path).expect("Could not create cxx-qt include dir");
-
-    let path = format!("{}/target/cxx-qt-gen/src", manifest_dir);
-    std::fs::create_dir_all(path).expect("Could not create cxx-qt src dir");
+    let directory = format!("{}/target/cxx-qt-gen", manifest_dir);
+    std::fs::create_dir_all(&directory).expect("Could not create cxx-qt code generation directory");
 
     let mut cpp_files = Vec::new();
 
     for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(rs_path));
+        let path = format!("{}/{}", manifest_dir, rs_path);
+        println!("cargo:rerun-if-changed={}", path);
+
+        let generated_code = GeneratedCpp::new(&path);
+        cpp_files.append(&mut generated_code.write_to_directory(&directory));
     }
 
     cpp_files
 }
 
 /// Write the list of C++ paths to the file
-fn write_cpp_sources_list(paths: &[String]) {
+fn write_cpp_sources_list(paths: &[PathBuf]) {
     let manifest_dir = manifest_dir();
 
     let path = format!("{}/target/cxx-qt-gen", manifest_dir);
@@ -285,7 +293,7 @@ fn write_cpp_sources_list(paths: &[String]) {
     let mut file = File::create(&path).expect("Could not create cpp_sources file");
 
     for path in paths {
-        writeln!(file, "{}", path).unwrap();
+        writeln!(file, "{}", path.display()).unwrap();
     }
 }
 
@@ -295,10 +303,10 @@ fn write_cxx_qt_lib_set(
     target_dir: &str,
     header: &str,
     source: &str,
-) -> Vec<String> {
+) -> Vec<PathBuf> {
     let mut paths = vec![];
-    let path_h = format!("{}/include/{}.h", target_dir, file_name);
-    let path_cpp = format!("{}/src/{}.cpp", target_dir, file_name);
+    let path_h = PathBuf::from(format!("{}/include/{}.h", target_dir, file_name));
+    let path_cpp = PathBuf::from(format!("{}/src/{}.cpp", target_dir, file_name));
 
     let mut file = std::fs::File::create(&path_h).expect("Could not create header file");
     file.write_all(header.as_bytes())
@@ -314,7 +322,7 @@ fn write_cxx_qt_lib_set(
 }
 
 /// Find all the cxx-qt-lib sources and write them to the target directory
-fn write_cxx_qt_lib_sources() -> Vec<String> {
+fn write_cxx_qt_lib_sources() -> Vec<PathBuf> {
     let cxx_qt_lib_target_dir = format!("{}/target/cxx-qt-lib", manifest_dir());
     let cxx_qt_lib_include_dir = format!("{}/include", cxx_qt_lib_target_dir);
     let cxx_qt_lib_src_dir = format!("{}/src", cxx_qt_lib_target_dir);
@@ -409,7 +417,7 @@ impl CxxQtBuilder {
         // TODO: later use the module::object to turn into module/object.h
 
         // Generate files
-        let mut cpp_paths = gen_cxx_for_files(&self.rust_sources);
+        let mut cpp_paths = write_cxx_generated_files_for_cargo(&self.rust_sources);
 
         // TODO: in large projects where where CXX-Qt is used in multiple individual
         // components that end up being linked together, having these same static

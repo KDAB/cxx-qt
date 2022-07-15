@@ -1039,7 +1039,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     // Generate C++ source part
     let source = formatdoc! {r#"
         #include "cxx-qt-gen/include/{ident_snake}.h"
-        #include "cxx-qt-gen/src/{ident_snake}.rs.h"
+        #include "cxx-qt-gen/include/{ident_snake}.cxx.h"
 
         namespace {namespace} {{
 
