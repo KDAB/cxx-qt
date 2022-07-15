@@ -13,20 +13,11 @@ The following options are available
 
   * Indicating which files should be parsed to look for macros
   * Deciding the clang-format style of the generated C++ code
-  * Specifiying a custom C++ namespace for the generated Rust types
 
 A build.rs script could look like the following
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_minimal/build.rs:book_build_rs}}
-```
-
-A non-default C++ namespace could be like the following
-
-Note that the namespace is a list, so `vec!["a", "b", "c"]` would become `a::b::c`
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/build.rs:book_build_rs}}
 ```
 
 # Cargo.toml
