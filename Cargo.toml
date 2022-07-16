@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[workspace]
+members = [
+    "cxx-qt",
+    "cxx-qt-build",
+    "cxx-qt-gen",
+    "cxx-qt-lib",
+]
+
+# TODO: currently these clash and confuse cmake
+# as the target folder is shared and in the root folder
+#
+# Can we improve this to share the target folders of these packages?
+exclude = [
+    "examples/qml_features",
+    "examples/qml_extension_plugin",
+    "examples/qml_minimal",
+    "examples/qml_with_threaded_logic",
+    "tests/basic_cxx_only",
+    "tests/basic_cxx_qt",
+    "tests/qt_types_standalone",
+    "tests/update_requester_standalone",
+]
