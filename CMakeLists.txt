@@ -152,14 +152,14 @@ add_subdirectory(examples)
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --all-features --manifest-path ${MANIFEST_PATH})
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --manifest-path ${MANIFEST_PATH})
     # Check if we should enable doc tests
     if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
         # Add cargo docs as a test
         add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --doc --manifest-path ${MANIFEST_PATH})
     endif()
     # Add clippy as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --all-features --manifest-path ${MANIFEST_PATH} -- -D warnings)
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
     # Add rustfmt as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
 endfunction()
