@@ -258,6 +258,20 @@ fn extract_qt_type(
         && idents.first().unwrap().to_string().as_str() == "crate"
         && idents.last().unwrap().to_string().as_str() == "CppObj"
     {
+        // If the ident starts with cxx_qt_ for now this means we should remove it
+        // as we are trying to access the CppObj
+        //
+        // TODO: this hack will be removed in the future when we move to UniquePtr
+        let cpp_rewritten_idents = idents
+            .iter()
+            .map(|ident| {
+                if ident.to_string().starts_with("cxx_qt_") {
+                    quote::format_ident!("{}", ident.to_string()[7..])
+                } else {
+                    ident.to_owned()
+                }
+            })
+            .collect::<Vec<Ident>>();
         let cpp_type_idents = cpp_namespace_prefix
             .to_vec()
             .iter()
@@ -265,7 +279,12 @@ fn extract_qt_type(
             // TODO: once we generate sub folders for nested modules, this will need to use all
             // type idents other than first and last. as the namespace will then reflect sub dirs
             // https://github.com/KDAB/cxx-qt/issues/19
-            .chain(idents.iter().skip(idents.len() - 2).cloned())
+            .chain(
+                cpp_rewritten_idents
+                    .iter()
+                    .skip(cpp_rewritten_idents.len() - 2)
+                    .cloned(),
+            )
             .collect::<Vec<Ident>>();
         Ok(QtTypes::CppObj {
             external: true,
@@ -280,7 +299,9 @@ fn extract_qt_type(
             // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
             combined_name: quote::format_ident!(
                 "{}",
-                idents[idents.len() - 2].to_string().to_case(Case::Pascal)
+                cpp_rewritten_idents[cpp_rewritten_idents.len() - 2]
+                    .to_string()
+                    .to_case(Case::Pascal)
             ),
         })
     // This is an unknown type that did not start with crate and has multiple parts
@@ -1149,7 +1170,10 @@ mod tests {
         assert_eq!(parameter.ident.to_string(), "nested");
         assert_eq!(parameter.type_ident.idents.len(), 3);
         assert_eq!(parameter.type_ident.idents[0].to_string(), "crate");
-        assert_eq!(parameter.type_ident.idents[1].to_string(), "nested_object");
+        assert_eq!(
+            parameter.type_ident.idents[1].to_string(),
+            "cxx_qt_nested_object"
+        );
         assert_eq!(parameter.type_ident.idents[2].to_string(), "CppObj");
         if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
             assert_eq!(external, &true);
@@ -1398,7 +1422,10 @@ mod tests {
         assert_eq!(prop_third.ident.rust_ident.to_string(), "nested");
         assert_eq!(prop_third.type_ident.idents.len(), 3);
         assert_eq!(prop_third.type_ident.idents[0].to_string(), "crate");
-        assert_eq!(prop_third.type_ident.idents[1].to_string(), "nested_object");
+        assert_eq!(
+            prop_third.type_ident.idents[1].to_string(),
+            "cxx_qt_nested_object"
+        );
         assert_eq!(prop_third.type_ident.idents[2].to_string(), "CppObj");
         assert!(!prop_third.type_ident.is_ref);
 
