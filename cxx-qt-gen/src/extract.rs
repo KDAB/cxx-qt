@@ -189,8 +189,6 @@ pub struct QObject {
     pub(crate) original_passthrough_decls: Vec<Item>,
     /// The Rust impl that has optionally been provided to handle updates
     pub(crate) handle_updates_impl: Option<ItemImpl>,
-    /// The Rust impl that has optionally been provided to handle property changes
-    pub(crate) handle_property_change_impl: Option<ItemImpl>,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -806,9 +804,6 @@ pub fn extract_qobject(
     // Determines if (and how) this object can respond to update requests
     let mut handle_updates_impl = None;
 
-    // Determines if (and how) this object can respond to property changes
-    let mut handle_property_change_impl = None;
-
     // Process each of the items in the mod
     for item in items.drain(..) {
         match item {
@@ -935,9 +930,6 @@ pub fn extract_qobject(
                                     "UpdateRequestHandler" => {
                                         handle_updates_impl = Some(original_impl.to_owned())
                                     }
-                                    "PropertyChangeHandler" => {
-                                        handle_property_change_impl = Some(original_impl.to_owned())
-                                    }
                                     _others => original_trait_impls.push(original_impl.to_owned()),
                                 }
                             } else {
@@ -1024,7 +1016,6 @@ pub fn extract_qobject(
         original_trait_impls,
         original_passthrough_decls,
         handle_updates_impl,
-        handle_property_change_impl,
     })
 }
 

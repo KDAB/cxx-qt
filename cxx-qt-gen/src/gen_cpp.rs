@@ -442,7 +442,6 @@ fn generate_invokables_cpp(
 fn generate_properties_cpp(
     struct_ident: &Ident,
     properties: &[Property],
-    has_property_change_handler: bool,
 ) -> Result<Vec<CppProperty>, TokenStream> {
     let mut items: Vec<CppProperty> = vec![];
 
@@ -513,24 +512,6 @@ fn generate_properties_cpp(
         // this is used for the owned member and extra pointer specific methods
         let parameter_ident_pascal = parameter.ident.to_case(Case::Pascal);
 
-        let call_property_change_handler = if has_property_change_handler {
-            formatdoc! {
-                r#"
-                const auto handlePropertySuccess = QMetaObject::invokeMethod(this, [&]() {{
-                    const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-                    m_rustObj->handlePropertyChange(*this, Property::{ident});
-                }}, Qt::QueuedConnection);
-                Q_ASSERT(handlePropertySuccess);
-                "#,
-                ident = parameter_ident_pascal
-            }
-        } else {
-            "".to_owned()
-        };
-
-        // TODO: we eventually want to also support handling property changes inside subobjects
-        // by wiring up the relevant changed signals to m_rustObj->handlePropertyChange.
-
         // If we are a pointer type then add specific methods
         if parameter.type_ident.is_ptr() {
             // Pointers are stored in the C++ object, so build a member and owned ident
@@ -560,8 +541,6 @@ fn generate_properties_cpp(
 
                         const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
                         Q_ASSERT(signalSuccess);
-
-                        {call_property_change_handler}
                     }}
                 }}
                 "#,
@@ -575,7 +554,6 @@ fn generate_properties_cpp(
                 member_owned_ident = member_owned_ident,
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
-                call_property_change_handler = call_property_change_handler,
             });
 
             // Add members to the reference and own it
@@ -626,8 +604,6 @@ fn generate_properties_cpp(
 
                   const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
                   Q_ASSERT(signalSuccess);
-
-                  {call_change_handler}
                 }}
                 "#,
                 ident_changed = ident_changed,
@@ -637,7 +613,6 @@ fn generate_properties_cpp(
                 member_owned_ident = member_owned_ident,
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
-                call_change_handler = call_property_change_handler,
             ));
         } else {
             cpp_property.source.push(formatdoc! {
@@ -661,8 +636,6 @@ fn generate_properties_cpp(
 
                         const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
                         Q_ASSERT(signalSuccess);
-
-                        {call_change_handler}
                     }}
                 }}
                 "#,
@@ -675,7 +648,6 @@ fn generate_properties_cpp(
                 struct_ident = struct_ident.to_string(),
                 type_ident = type_ident,
                 member_ident = format!("m_{}", parameter.ident),
-                call_change_handler = call_property_change_handler,
             });
 
             // Own the member on the C++ side
@@ -824,33 +796,29 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     }
 
     // Build CppProperty's for the object, then drain them into our CppPropertyHelper
-    let properties = generate_properties_cpp(
-        &obj.ident,
-        &obj.properties,
-        obj.handle_property_change_impl.is_some(),
-    )?
-    .drain(..)
-    .fold(
-        CppPropertyHelper {
-            headers_includes: vec![],
-            headers_members: vec![],
-            headers_meta: vec![],
-            headers_public: vec![],
-            headers_signals: vec![],
-            headers_slots: vec![],
-            sources: vec![],
-        },
-        |mut acc, mut property| {
-            acc.headers_includes.append(&mut property.header_includes);
-            acc.headers_meta.append(&mut property.header_meta);
-            acc.headers_members.append(&mut property.header_members);
-            acc.headers_public.append(&mut property.header_public);
-            acc.headers_signals.append(&mut property.header_signals);
-            acc.headers_slots.append(&mut property.header_slots);
-            acc.sources.append(&mut property.source);
-            acc
-        },
-    );
+    let properties = generate_properties_cpp(&obj.ident, &obj.properties)?
+        .drain(..)
+        .fold(
+            CppPropertyHelper {
+                headers_includes: vec![],
+                headers_members: vec![],
+                headers_meta: vec![],
+                headers_public: vec![],
+                headers_signals: vec![],
+                headers_slots: vec![],
+                sources: vec![],
+            },
+            |mut acc, mut property| {
+                acc.headers_includes.append(&mut property.header_includes);
+                acc.headers_meta.append(&mut property.header_meta);
+                acc.headers_members.append(&mut property.header_members);
+                acc.headers_public.append(&mut property.header_public);
+                acc.headers_signals.append(&mut property.header_signals);
+                acc.headers_slots.append(&mut property.header_slots);
+                acc.sources.append(&mut property.source);
+                acc
+            },
+        );
 
     // A helper which allows us to flatten data from vec of invokables
     struct CppInvokableHelper {

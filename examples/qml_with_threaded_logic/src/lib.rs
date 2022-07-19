@@ -112,6 +112,16 @@ mod website {
                 }
             }
         }
+
+        #[invokable]
+        fn new_title_value(&mut self) {
+            println!("title changed");
+        }
+
+        #[invokable]
+        fn new_url_value(&mut self, cpp: &mut CppObj) {
+            self.refresh_title(cpp);
+        }
     }
 
     // ANCHOR: book_update_request_handler
@@ -125,15 +135,5 @@ mod website {
         }
     }
     // ANCHOR_END: book_update_request_handler
-
-    impl PropertyChangeHandler<CppObj<'_>, Property> for RustObj {
-        fn handle_property_change(&mut self, cpp: &mut CppObj, property: Property) {
-            match property {
-                Property::Url => self.refresh_title(cpp),
-                Property::Title => println!("title changed"),
-                _ => unreachable!(),
-            }
-        }
-    }
 }
 // ANCHOR_END: book_macro_code

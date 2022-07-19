@@ -9,7 +9,6 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
-#include "cxx-qt-gen/include/handler_property_change.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/serialisation.cxxqt.h"
 #include "cxx-qt-gen/include/sub_object.cxxqt.h"
@@ -35,8 +34,6 @@ main(int argc, char* argv[])
 
   qmlRegisterType<cxx_qt::data_struct_properties::DataStructProperties>(
     "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
-  qmlRegisterType<cxx_qt::handler_property_change::HandlerPropertyChange>(
-    "com.kdab.cxx_qt.demo", 1, 0, "HandlerPropertyChange");
   qmlRegisterType<cxx_qt::my_object::MyObject>(
     "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   qmlRegisterType<cxx_qt::serialisation::Serialisation>(

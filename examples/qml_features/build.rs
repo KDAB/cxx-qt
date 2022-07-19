@@ -13,7 +13,6 @@ fn main() {
         .cpp_format(ClangFormatStyle::Mozilla)
         .file("src/data_struct_properties.rs")
         .file("src/empty.rs")
-        .file("src/handler_property_change.rs")
         .file("src/lib.rs")
         .file("src/mock_qt_types.rs")
         .file("src/nested.rs")

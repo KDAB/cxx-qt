@@ -17,6 +17,9 @@ Window {
 
     Website {
         id: manager
+
+        onTitleChanged: newTitleValue()
+        onUrlChanged: newUrlValue()
     }
 
     Column{

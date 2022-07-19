@@ -15,8 +15,6 @@ This means that Rust code, such as invokables and handlers, which are directly c
 
 We provide a solution to prevent entering deadlocks from signal connections, eg if a property change signal was connected to an invokable on the C++/QML side this wouldn't be able to acquire a lock if the property change was triggered from a Rust invokable. The solution is to post events to a queue which could cause deadlocks, eg signal emisson, these are then executed once the next event loop occurs, and crucially, after the lock from the Rust invokable is released.
 
-If Rust code needs to listen to property changes, handlers can be implemented (eg PropertyChangeHandler) in the [RustObj Handlers](../qobject/handlers.md). These are called directly in the event loop from the Qt thread.
-
 <div style="background-color: white; padding: 1rem; text-align: center;">
 
 ![Threading Abstract](../images/threading_abstract.svg)
