@@ -11,7 +11,7 @@ pub mod rust_obj_invokables {
         number: i32,
     }
 
-    struct RustObj {
+    pub struct RustObj {
         rust_only_field: i32,
     }
 
@@ -24,18 +24,18 @@ pub mod rust_obj_invokables {
     impl RustObj {
         // ANCHOR: book_cpp_obj
         #[invokable]
-        fn invokable_mutate_cpp(&self, cpp: &mut CppObj) {
+        pub fn invokable_mutate_cpp(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() * 2);
         }
         // ANCHOR_END: book_cpp_obj
 
         #[invokable]
-        fn invokable_return(&self) -> i32 {
+        pub fn invokable_return(&self) -> i32 {
             self.rust_only_field
         }
 
         #[invokable]
-        fn invokable_multiply(&mut self, factor: i32) -> i32 {
+        pub fn invokable_multiply(&mut self, factor: i32) -> i32 {
             self.rust_only_method(factor);
             self.rust_only_field
         }

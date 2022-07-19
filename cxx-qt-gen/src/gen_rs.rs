@@ -592,7 +592,7 @@ fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
 
     // We assume that all Data classes implement default
     let output = quote! {
-        fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut wrapper = CppObj::new(cpp);
             wrapper.grab_values_from_data(#data_class_name::default());
         }
@@ -874,14 +874,14 @@ fn invokable_generate_wrapper(
         };
 
         Ok(quote! {
-            fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> #return_type_ident {
+            pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> #return_type_ident {
                 #(#wrappers)*
                 return self.#ident(#(#output_parameters),*)#to_unique_ptr;
             }
         })
     } else {
         Ok(quote! {
-            fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) {
+            pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) {
                 #(#wrappers)*
                 self.#ident(#(#output_parameters),*);
             }
@@ -1036,7 +1036,7 @@ pub fn generate_qobject_rs(
     // Define a function to handle update requests if we have one
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
-            fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+            pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
                 let mut cpp = CppObj::new(cpp);
                 self.handle_update_request(&mut cpp);
             }
@@ -1151,7 +1151,7 @@ pub fn generate_qobject_rs(
 
             #handle_updates_impl
 
-            fn create_rs() -> std::boxed::Box<RustObj> {
+            pub fn create_rs() -> std::boxed::Box<RustObj> {
                 std::default::Default::default()
             }
 

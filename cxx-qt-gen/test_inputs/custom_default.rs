@@ -1,5 +1,5 @@
 mod my_object {
-    struct Data {
+    pub struct Data {
         public: i32,
     }
 
@@ -9,7 +9,7 @@ mod my_object {
         }
     }
 
-    struct RustObj {
+    pub struct RustObj {
         private: i32,
     }
 

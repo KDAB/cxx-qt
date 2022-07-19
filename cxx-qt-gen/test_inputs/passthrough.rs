@@ -60,7 +60,7 @@ pub mod my_object {
     use super::MyTrait;
 
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         number: i32,
     }
 
@@ -71,7 +71,7 @@ pub mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         fn test_angled(&self, optional: Option<bool>) -> Option<bool> {

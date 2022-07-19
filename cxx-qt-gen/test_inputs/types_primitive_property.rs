@@ -1,6 +1,6 @@
 mod my_object {
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         boolean: bool,
         float_32: f32,
         float_64: f64,
@@ -13,5 +13,5 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 }

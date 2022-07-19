@@ -53,28 +53,28 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn increment(&self, cpp: &mut CppObj) {
+        pub fn increment(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
         }
 
         #[invokable]
-        fn reset(&self, cpp: &mut CppObj) {
+        pub fn reset(&self, cpp: &mut CppObj) {
             let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
             cpp.grab_values_from_data(data);
         }
 
         #[invokable]
-        fn serialize(&self, cpp: &mut CppObj) -> String {
+        pub fn serialize(&self, cpp: &mut CppObj) -> String {
             let data = Data::from(cpp);
             serde_json::to_string(&data).unwrap()
         }
 
         #[invokable]
-        fn grab_values(&self, cpp: &mut CppObj) {
+        pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: Data = serde_json::from_str(string).unwrap();
             cpp.grab_values_from_data(data);

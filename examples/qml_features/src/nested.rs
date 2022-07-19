@@ -12,11 +12,11 @@ mod nested {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn nested_parameter(
+        pub fn nested_parameter(
             &self,
             nested: &mut crate::rust_obj_invokables::rust_obj_invokables::CppObj,
         ) {
@@ -27,7 +27,7 @@ mod nested {
         }
 
         #[invokable]
-        fn nested_take_give(&self, cpp: &mut CppObj) {
+        pub fn nested_take_give(&self, cpp: &mut CppObj) {
             // We now own the nested object and QML would be null
             //
             // TODO: should this return a OwnedCppObj which derefs to the CppObj ?

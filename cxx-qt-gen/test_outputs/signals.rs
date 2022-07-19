@@ -81,15 +81,15 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
-        fn invokable_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn invokable_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.invokable(&mut cpp);
         }
 
-        fn invokable(&self, cpp: &mut CppObj) {
+        pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
             }
@@ -143,7 +143,7 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct Data;
+    pub struct Data;
 
     impl<'a> From<&CppObj<'a>> for Data {
         fn from(_value: &CppObj<'a>) -> Self {
@@ -157,11 +157,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

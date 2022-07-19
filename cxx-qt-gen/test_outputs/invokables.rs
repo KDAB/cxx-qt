@@ -88,20 +88,20 @@ mod my_object {
     pub type FFICppObj = ffi::MyObject;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
-        fn invokable_cpp_obj_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn invokable_cpp_obj_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.invokable_cpp_obj(&mut cpp);
         }
 
-        fn invokable_mutable_cpp_obj_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn invokable_mutable_cpp_obj_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.invokable_mutable_cpp_obj(&mut cpp);
         }
 
-        fn invokable_nested_parameter_wrapper(
+        pub fn invokable_nested_parameter_wrapper(
             &self,
             nested: std::pin::Pin<&mut crate::nested_object::FFICppObj>,
         ) {
@@ -109,7 +109,7 @@ mod my_object {
             self.invokable_nested_parameter(&mut nested);
         }
 
-        fn invokable_parameters_wrapper(
+        pub fn invokable_parameters_wrapper(
             &self,
             opaque: &cxx_qt_lib::QColorCpp,
             trivial: &cxx_qt_lib::QPoint,
@@ -119,7 +119,7 @@ mod my_object {
             self.invokable_parameters(&opaque, trivial, primitive);
         }
 
-        fn invokable_parameters_cpp_obj_wrapper(
+        pub fn invokable_parameters_cpp_obj_wrapper(
             &self,
             primitive: i32,
             cpp: std::pin::Pin<&mut FFICppObj>,
@@ -128,35 +128,37 @@ mod my_object {
             self.invokable_parameters_cpp_obj(primitive, &mut cpp);
         }
 
-        fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
+        pub fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
             return self.invokable_return_opaque().to_unique_ptr();
         }
 
-        fn invokable_return_static_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
+        pub fn invokable_return_static_wrapper(
+            &mut self,
+        ) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
             return self.invokable_return_static().to_unique_ptr();
         }
 
-        fn invokable(&self) {
+        pub fn invokable(&self) {
             println!("invokable");
         }
 
-        fn invokable_cpp_obj(&self, cpp: &mut CppObj) {
+        pub fn invokable_cpp_obj(&self, cpp: &mut CppObj) {
             println!("cppobj");
         }
 
-        fn invokable_mutable(&mut self) {
+        pub fn invokable_mutable(&mut self) {
             println!("This method is mutable!");
         }
 
-        fn invokable_mutable_cpp_obj(&mut self, cpp: &mut CppObj) {
+        pub fn invokable_mutable_cpp_obj(&mut self, cpp: &mut CppObj) {
             println!("This method is mutable!");
         }
 
-        fn invokable_nested_parameter(&self, nested: &mut crate::nested_object::CppObj) {
+        pub fn invokable_nested_parameter(&self, nested: &mut crate::nested_object::CppObj) {
             println!("nested!");
         }
 
-        fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
+        pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
             println!(
                 "Red: {}, Point X: {}, Number: {}",
                 opaque.red(),
@@ -165,23 +167,23 @@ mod my_object {
             );
         }
 
-        fn invokable_parameters_cpp_obj(&self, primitive: i32, cpp: &mut CppObj) {
+        pub fn invokable_parameters_cpp_obj(&self, primitive: i32, cpp: &mut CppObj) {
             println!("{}", primitive);
         }
 
-        fn invokable_return_opaque(&mut self) -> QColor {
+        pub fn invokable_return_opaque(&mut self) -> QColor {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
-        fn invokable_return_primitive(&mut self) -> i32 {
+        pub fn invokable_return_primitive(&mut self) -> i32 {
             2
         }
 
-        fn invokable_return_static(&mut self) -> &str {
+        pub fn invokable_return_static(&mut self) -> &str {
             "static"
         }
 
-        fn rust_only_method(&self) {
+        pub fn rust_only_method(&self) {
             println!("QML can't call this :)");
         }
     }
@@ -198,7 +200,7 @@ mod my_object {
         pub fn grab_values_from_data(&mut self, mut data: Data) {}
     }
 
-    struct Data;
+    pub struct Data;
 
     impl<'a> From<&CppObj<'a>> for Data {
         fn from(_value: &CppObj<'a>) -> Self {
@@ -212,11 +214,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

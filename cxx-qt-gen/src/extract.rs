@@ -1009,10 +1009,10 @@ pub fn extract_qobject(
         namespace,
         original_mod,
         original_data_struct: original_data_struct
-            .unwrap_or_else(|| syn::parse_str("struct Data;").unwrap()),
+            .unwrap_or_else(|| syn::parse_str("pub struct Data;").unwrap()),
         original_signal_enum,
         original_rust_struct: original_rust_struct
-            .unwrap_or_else(|| syn::parse_str("struct RustObj;").unwrap()),
+            .unwrap_or_else(|| syn::parse_str("pub struct RustObj;").unwrap()),
         original_trait_impls,
         original_passthrough_decls,
         handle_updates_impl,

@@ -149,7 +149,7 @@ mod energy_usage {
         }
     }
 
-    struct RustObj {
+    pub struct RustObj {
         qt_rx: Receiver<Data>,
         qt_tx: SyncSender<Data>,
         join_handles: Option<[JoinHandle<()>; 4]>,
@@ -216,7 +216,7 @@ mod energy_usage {
         }
 
         #[invokable]
-        fn start_server(&mut self, cpp: &mut CppObj) {
+        pub fn start_server(&mut self, cpp: &mut CppObj) {
             if self.join_handles.is_some() {
                 println!("Already running a server!");
                 return;

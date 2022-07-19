@@ -11,14 +11,14 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct Data;
+    pub struct Data;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn invokable(&self, cpp: &mut CppObj) {
+        pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
             }

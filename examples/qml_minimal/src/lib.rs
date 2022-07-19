@@ -21,18 +21,18 @@ mod my_object {
 
     // ANCHOR: book_rustobj_struct
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
     // ANCHOR_END: book_rustobj_struct
 
     // ANCHOR: book_rustobj_impl
     impl RustObj {
         #[invokable]
-        fn increment_number(&self, cpp: &mut CppObj) {
+        pub fn increment_number(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
         }
 
         #[invokable]
-        fn say_hi(&self, string: &str, number: i32) {
+        pub fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is '{}' and number is {}",
                 string, number

@@ -18,30 +18,30 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj {
+    pub struct RustObj {
         update_call_count: i32,
     }
 
     impl RustObj {
         #[invokable]
-        fn double_number_self(&self, cpp: &mut CppObj) {
+        pub fn double_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() * 2;
             cpp.set_number(value);
         }
 
         #[invokable]
-        fn double_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
+        pub fn double_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
             let value = sub.number() * 2;
             sub.set_number(value);
         }
 
         #[invokable]
-        fn double_number(&self, number: i32) -> i32 {
+        pub fn double_number(&self, number: i32) -> i32 {
             number * 2
         }
 
         #[invokable]
-        fn say_hi(&self, string: &str, number: i32) {
+        pub fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number
@@ -49,13 +49,13 @@ mod my_object {
         }
 
         #[invokable]
-        fn request_update_test(&self, cpp: &mut CppObj) {
+        pub fn request_update_test(&self, cpp: &mut CppObj) {
             let update_requester = cpp.update_requester();
             update_requester.request_update();
         }
 
         #[invokable]
-        fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
+        pub fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
             static N_THREADS: usize = 100;
             static N_REQUESTS: std::sync::atomic::AtomicUsize =
                 std::sync::atomic::AtomicUsize::new(0);
@@ -81,7 +81,7 @@ mod my_object {
         }
 
         #[invokable]
-        fn update_call_count(&self) -> i32 {
+        pub fn update_call_count(&self) -> i32 {
             self.update_call_count
         }
     }
