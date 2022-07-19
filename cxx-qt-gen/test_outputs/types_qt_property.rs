@@ -1,122 +1,125 @@
+#[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
-    use cxx_qt_lib::ToUniquePtr;
+    unsafe extern "C++" {
+        include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-    #[cxx::bridge(namespace = "cxx_qt::my_object")]
-    mod ffi {
-        unsafe extern "C++" {
-            include!("cxx-qt-gen/include/my_object.cxxqt.h");
+        type MyObject;
 
-            type MyObject;
+        include!("cxx-qt-lib/include/qt_types.h");
+        #[namespace = ""]
+        type QColor = cxx_qt_lib::QColorCpp;
+        #[namespace = ""]
+        type QDate = cxx_qt_lib::QDate;
+        #[namespace = ""]
+        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        #[namespace = ""]
+        type QPoint = cxx_qt_lib::QPoint;
+        #[namespace = ""]
+        type QPointF = cxx_qt_lib::QPointF;
+        #[namespace = ""]
+        type QRect = cxx_qt_lib::QRect;
+        #[namespace = ""]
+        type QRectF = cxx_qt_lib::QRectF;
+        #[namespace = ""]
+        type QSize = cxx_qt_lib::QSize;
+        #[namespace = ""]
+        type QSizeF = cxx_qt_lib::QSizeF;
+        #[namespace = ""]
+        type QString = cxx_qt_lib::QStringCpp;
+        #[namespace = ""]
+        type QTime = cxx_qt_lib::QTime;
+        #[namespace = ""]
+        type QUrl = cxx_qt_lib::QUrlCpp;
+        #[namespace = ""]
+        type QVariant = cxx_qt_lib::QVariantCpp;
 
-            include!("cxx-qt-lib/include/qt_types.h");
-            #[namespace = ""]
-            type QColor = cxx_qt_lib::QColorCpp;
-            #[namespace = ""]
-            type QDate = cxx_qt_lib::QDate;
-            #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTimeCpp;
-            #[namespace = ""]
-            type QPoint = cxx_qt_lib::QPoint;
-            #[namespace = ""]
-            type QPointF = cxx_qt_lib::QPointF;
-            #[namespace = ""]
-            type QRect = cxx_qt_lib::QRect;
-            #[namespace = ""]
-            type QRectF = cxx_qt_lib::QRectF;
-            #[namespace = ""]
-            type QSize = cxx_qt_lib::QSize;
-            #[namespace = ""]
-            type QSizeF = cxx_qt_lib::QSizeF;
-            #[namespace = ""]
-            type QString = cxx_qt_lib::QStringCpp;
-            #[namespace = ""]
-            type QTime = cxx_qt_lib::QTime;
-            #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrlCpp;
-            #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariantCpp;
+        #[rust_name = "color"]
+        fn getColor(self: &MyObject) -> &QColor;
+        #[rust_name = "set_color"]
+        fn setColor(self: Pin<&mut MyObject>, value: &QColor);
 
-            #[rust_name = "color"]
-            fn getColor(self: &MyObject) -> &QColor;
-            #[rust_name = "set_color"]
-            fn setColor(self: Pin<&mut MyObject>, value: &QColor);
+        #[rust_name = "date"]
+        fn getDate(self: &MyObject) -> &QDate;
+        #[rust_name = "set_date"]
+        fn setDate(self: Pin<&mut MyObject>, value: &QDate);
 
-            #[rust_name = "date"]
-            fn getDate(self: &MyObject) -> &QDate;
-            #[rust_name = "set_date"]
-            fn setDate(self: Pin<&mut MyObject>, value: &QDate);
+        #[rust_name = "date_time"]
+        fn getDateTime(self: &MyObject) -> &QDateTime;
+        #[rust_name = "set_date_time"]
+        fn setDateTime(self: Pin<&mut MyObject>, value: &QDateTime);
 
-            #[rust_name = "date_time"]
-            fn getDateTime(self: &MyObject) -> &QDateTime;
-            #[rust_name = "set_date_time"]
-            fn setDateTime(self: Pin<&mut MyObject>, value: &QDateTime);
+        #[rust_name = "point"]
+        fn getPoint(self: &MyObject) -> &QPoint;
+        #[rust_name = "set_point"]
+        fn setPoint(self: Pin<&mut MyObject>, value: &QPoint);
 
-            #[rust_name = "point"]
-            fn getPoint(self: &MyObject) -> &QPoint;
-            #[rust_name = "set_point"]
-            fn setPoint(self: Pin<&mut MyObject>, value: &QPoint);
+        #[rust_name = "pointf"]
+        fn getPointf(self: &MyObject) -> &QPointF;
+        #[rust_name = "set_pointf"]
+        fn setPointf(self: Pin<&mut MyObject>, value: &QPointF);
 
-            #[rust_name = "pointf"]
-            fn getPointf(self: &MyObject) -> &QPointF;
-            #[rust_name = "set_pointf"]
-            fn setPointf(self: Pin<&mut MyObject>, value: &QPointF);
+        #[rust_name = "rect"]
+        fn getRect(self: &MyObject) -> &QRect;
+        #[rust_name = "set_rect"]
+        fn setRect(self: Pin<&mut MyObject>, value: &QRect);
 
-            #[rust_name = "rect"]
-            fn getRect(self: &MyObject) -> &QRect;
-            #[rust_name = "set_rect"]
-            fn setRect(self: Pin<&mut MyObject>, value: &QRect);
+        #[rust_name = "rectf"]
+        fn getRectf(self: &MyObject) -> &QRectF;
+        #[rust_name = "set_rectf"]
+        fn setRectf(self: Pin<&mut MyObject>, value: &QRectF);
 
-            #[rust_name = "rectf"]
-            fn getRectf(self: &MyObject) -> &QRectF;
-            #[rust_name = "set_rectf"]
-            fn setRectf(self: Pin<&mut MyObject>, value: &QRectF);
+        #[rust_name = "size"]
+        fn getSize(self: &MyObject) -> &QSize;
+        #[rust_name = "set_size"]
+        fn setSize(self: Pin<&mut MyObject>, value: &QSize);
 
-            #[rust_name = "size"]
-            fn getSize(self: &MyObject) -> &QSize;
-            #[rust_name = "set_size"]
-            fn setSize(self: Pin<&mut MyObject>, value: &QSize);
+        #[rust_name = "sizef"]
+        fn getSizef(self: &MyObject) -> &QSizeF;
+        #[rust_name = "set_sizef"]
+        fn setSizef(self: Pin<&mut MyObject>, value: &QSizeF);
 
-            #[rust_name = "sizef"]
-            fn getSizef(self: &MyObject) -> &QSizeF;
-            #[rust_name = "set_sizef"]
-            fn setSizef(self: Pin<&mut MyObject>, value: &QSizeF);
+        #[rust_name = "string"]
+        fn getString(self: &MyObject) -> &QString;
+        #[rust_name = "set_string"]
+        fn setString(self: Pin<&mut MyObject>, value: &QString);
 
-            #[rust_name = "string"]
-            fn getString(self: &MyObject) -> &QString;
-            #[rust_name = "set_string"]
-            fn setString(self: Pin<&mut MyObject>, value: &QString);
+        #[rust_name = "time"]
+        fn getTime(self: &MyObject) -> &QTime;
+        #[rust_name = "set_time"]
+        fn setTime(self: Pin<&mut MyObject>, value: &QTime);
 
-            #[rust_name = "time"]
-            fn getTime(self: &MyObject) -> &QTime;
-            #[rust_name = "set_time"]
-            fn setTime(self: Pin<&mut MyObject>, value: &QTime);
+        #[rust_name = "url"]
+        fn getUrl(self: &MyObject) -> &QUrl;
+        #[rust_name = "set_url"]
+        fn setUrl(self: Pin<&mut MyObject>, value: &QUrl);
 
-            #[rust_name = "url"]
-            fn getUrl(self: &MyObject) -> &QUrl;
-            #[rust_name = "set_url"]
-            fn setUrl(self: Pin<&mut MyObject>, value: &QUrl);
+        #[rust_name = "variant"]
+        fn getVariant(self: &MyObject) -> &QVariant;
+        #[rust_name = "set_variant"]
+        fn setVariant(self: Pin<&mut MyObject>, value: &QVariant);
 
-            #[rust_name = "variant"]
-            fn getVariant(self: &MyObject) -> &QVariant;
-            #[rust_name = "set_variant"]
-            fn setVariant(self: Pin<&mut MyObject>, value: &QVariant);
-
-            #[rust_name = "new_cpp_object"]
-            fn newCppObject() -> UniquePtr<MyObject>;
-        }
-
-        extern "Rust" {
-            type RustObj;
-
-            #[cxx_name = "createRs"]
-            fn create_rs() -> Box<RustObj>;
-
-            #[cxx_name = "initialiseCpp"]
-            fn initialise_cpp(cpp: Pin<&mut MyObject>);
-        }
+        #[rust_name = "new_cpp_object"]
+        fn newCppObject() -> UniquePtr<MyObject>;
     }
 
-    pub type FFICppObj = ffi::MyObject;
+    extern "Rust" {
+        type RustObj;
+
+        #[cxx_name = "createRs"]
+        fn create_rs() -> Box<RustObj>;
+
+        #[cxx_name = "initialiseCpp"]
+        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+    }
+}
+
+pub use self::cxx_qt_my_object::*;
+mod cxx_qt_my_object {
+    use super::my_object::*;
+
+    use cxx_qt_lib::ToUniquePtr;
+
+    pub type FFICppObj = super::my_object::MyObject;
 
     #[derive(Default)]
     pub struct RustObj;

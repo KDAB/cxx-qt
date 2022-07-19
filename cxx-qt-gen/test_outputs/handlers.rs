@@ -1,77 +1,80 @@
+#[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
+    unsafe extern "C++" {
+        include!("cxx-qt-gen/include/my_object.cxxqt.h");
+
+        type MyObject;
+
+        include!("cxx-qt-lib/include/qt_types.h");
+        #[namespace = ""]
+        type QColor = cxx_qt_lib::QColorCpp;
+        #[namespace = ""]
+        type QDate = cxx_qt_lib::QDate;
+        #[namespace = ""]
+        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        #[namespace = ""]
+        type QPoint = cxx_qt_lib::QPoint;
+        #[namespace = ""]
+        type QPointF = cxx_qt_lib::QPointF;
+        #[namespace = ""]
+        type QRect = cxx_qt_lib::QRect;
+        #[namespace = ""]
+        type QRectF = cxx_qt_lib::QRectF;
+        #[namespace = ""]
+        type QSize = cxx_qt_lib::QSize;
+        #[namespace = ""]
+        type QSizeF = cxx_qt_lib::QSizeF;
+        #[namespace = ""]
+        type QString = cxx_qt_lib::QStringCpp;
+        #[namespace = ""]
+        type QTime = cxx_qt_lib::QTime;
+        #[namespace = ""]
+        type QUrl = cxx_qt_lib::QUrlCpp;
+        #[namespace = ""]
+        type QVariant = cxx_qt_lib::QVariantCpp;
+
+        #[namespace = "rust::cxxqtlib1"]
+        type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
+
+        #[rust_name = "number"]
+        fn getNumber(self: &MyObject) -> i32;
+        #[rust_name = "set_number"]
+        fn setNumber(self: Pin<&mut MyObject>, value: i32);
+
+        #[rust_name = "string"]
+        fn getString(self: &MyObject) -> &QString;
+        #[rust_name = "set_string"]
+        fn setString(self: Pin<&mut MyObject>, value: &QString);
+
+        #[rust_name = "new_cpp_object"]
+        fn newCppObject() -> UniquePtr<MyObject>;
+
+        #[rust_name = "update_requester"]
+        fn updateRequester(self: Pin<&mut MyObject>) -> UniquePtr<UpdateRequester>;
+    }
+
+    extern "Rust" {
+        type RustObj;
+
+        #[cxx_name = "createRs"]
+        fn create_rs() -> Box<RustObj>;
+
+        #[cxx_name = "initialiseCpp"]
+        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+
+        #[cxx_name = "handleUpdateRequest"]
+        fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObject>);
+    }
+}
+
+pub use self::cxx_qt_my_object::*;
+mod cxx_qt_my_object {
+    use super::my_object::*;
+
     use cxx_qt_lib::ToUniquePtr;
     use cxx_qt_lib::UpdateRequestHandler;
 
-    #[cxx::bridge(namespace = "cxx_qt::my_object")]
-    mod ffi {
-        unsafe extern "C++" {
-            include!("cxx-qt-gen/include/my_object.cxxqt.h");
-
-            type MyObject;
-
-            include!("cxx-qt-lib/include/qt_types.h");
-            #[namespace = ""]
-            type QColor = cxx_qt_lib::QColorCpp;
-            #[namespace = ""]
-            type QDate = cxx_qt_lib::QDate;
-            #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTimeCpp;
-            #[namespace = ""]
-            type QPoint = cxx_qt_lib::QPoint;
-            #[namespace = ""]
-            type QPointF = cxx_qt_lib::QPointF;
-            #[namespace = ""]
-            type QRect = cxx_qt_lib::QRect;
-            #[namespace = ""]
-            type QRectF = cxx_qt_lib::QRectF;
-            #[namespace = ""]
-            type QSize = cxx_qt_lib::QSize;
-            #[namespace = ""]
-            type QSizeF = cxx_qt_lib::QSizeF;
-            #[namespace = ""]
-            type QString = cxx_qt_lib::QStringCpp;
-            #[namespace = ""]
-            type QTime = cxx_qt_lib::QTime;
-            #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrlCpp;
-            #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariantCpp;
-
-            #[namespace = "rust::cxxqtlib1"]
-            type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
-
-            #[rust_name = "number"]
-            fn getNumber(self: &MyObject) -> i32;
-            #[rust_name = "set_number"]
-            fn setNumber(self: Pin<&mut MyObject>, value: i32);
-
-            #[rust_name = "string"]
-            fn getString(self: &MyObject) -> &QString;
-            #[rust_name = "set_string"]
-            fn setString(self: Pin<&mut MyObject>, value: &QString);
-
-            #[rust_name = "new_cpp_object"]
-            fn newCppObject() -> UniquePtr<MyObject>;
-
-            #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut MyObject>) -> UniquePtr<UpdateRequester>;
-        }
-
-        extern "Rust" {
-            type RustObj;
-
-            #[cxx_name = "createRs"]
-            fn create_rs() -> Box<RustObj>;
-
-            #[cxx_name = "initialiseCpp"]
-            fn initialise_cpp(cpp: Pin<&mut MyObject>);
-
-            #[cxx_name = "handleUpdateRequest"]
-            fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObject>);
-        }
-    }
-
-    pub type FFICppObj = ffi::MyObject;
+    pub type FFICppObj = super::my_object::MyObject;
 
     #[derive(Default)]
     pub struct RustObj;

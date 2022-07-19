@@ -8,7 +8,7 @@
 mod nested {
     #[derive(Default)]
     pub struct Data {
-        nested: crate::rust_obj_invokables::rust_obj_invokables::CppObj,
+        nested: crate::rust_obj_invokables::cxx_qt_rust_obj_invokables::CppObj,
     }
 
     #[derive(Default)]
@@ -18,7 +18,7 @@ mod nested {
         #[invokable]
         pub fn nested_parameter(
             &self,
-            nested: &mut crate::rust_obj_invokables::rust_obj_invokables::CppObj,
+            nested: &mut crate::rust_obj_invokables::cxx_qt_rust_obj_invokables::CppObj,
         ) {
             println!("Number: {}", nested.number());
             // TODO: we can't reach the nested object's RustObj yet
@@ -36,7 +36,7 @@ mod nested {
             // https://github.com/KDAB/cxx-qt/issues/30
             let mut nested = cpp.take_nested();
 
-            crate::rust_obj_invokables::rust_obj_invokables::CppObj::new(nested.pin_mut())
+            crate::rust_obj_invokables::cxx_qt_rust_obj_invokables::CppObj::new(nested.pin_mut())
                 .set_number(10);
 
             // The nested object is now back in QML

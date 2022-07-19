@@ -89,7 +89,7 @@ impl RustType for QtTypes {
                 external,
                 combined_name,
                 ..
-            } if external == &true => quote! {cxx::UniquePtr<ffi::#combined_name>},
+            } if external == &true => quote! {cxx::UniquePtr<#combined_name>},
             Self::F32 => quote! {f32},
             Self::F64 => quote! {f64},
             Self::I8 => quote! {i8},
@@ -181,6 +181,19 @@ pub fn generate_qobject_cxx(
                     )
                     .to_compile_error()
                 })?
+                .iter()
+                // If the ident starts with cxx_qt_ for now this means we should remove it
+                // as we are trying to access the CppObj
+                //
+                // TODO: this hack will be removed in the future when we move to UniquePtr
+                .map(|ident| {
+                    if ident.starts_with("cxx_qt_") {
+                        ident.get(7..).unwrap().to_string()
+                    } else {
+                        ident.to_owned()
+                    }
+                })
+                .collect::<Vec<String>>()
                 .join("::");
             // Add the type definition to the C++ part of the cxx bridge
             cpp_functions.push(quote! {
@@ -519,10 +532,14 @@ pub fn generate_qobject_cxx(
     // Build the namespace string, rust::module
     let namespace = obj.namespace.join("::");
 
+    // Build the module ident
+    let mod_ident = &obj.original_mod.ident;
+    let mod_vis = &obj.original_mod.vis;
+
     // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
-        mod ffi {
+        #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
 
@@ -579,8 +596,6 @@ pub fn generate_qobject_cxx(
                 #handle_update_request
             }
         }
-
-        pub type FFICppObj = ffi::#class_name;
     };
 
     Ok(output.into_token_stream())
@@ -922,7 +937,9 @@ pub fn generate_qobject_rs(
 
     // Cache the original module ident and visibility
     let mod_ident = &obj.original_mod.ident;
+    let cxx_qt_mod_ident = format_ident!("cxx_qt_{}", mod_ident);
     let mod_vis = &obj.original_mod.vis;
+    let class_name = &obj.ident;
 
     // Cache the rust class name
     let rust_class_name = format_ident!("RustObj");
@@ -1124,14 +1141,21 @@ pub fn generate_qobject_rs(
     let handle_updates_impl = &obj.handle_updates_impl;
 
     // Build our rewritten module that replaces the input from the macro
+    //
+    // TODO: where do the mod_attrs go ?
     let output = quote! {
+        #cxx_block
+
+        pub use self::#cxx_qt_mod_ident::*;
         #(#mod_attrs)*
-        #mod_vis mod #mod_ident {
+        #mod_vis mod #cxx_qt_mod_ident {
+            use super::#mod_ident::*;
+
             #(#use_traits)*
 
-            #(#original_passthrough_decls)*
+            pub type FFICppObj = super::#mod_ident::#class_name;
 
-            #cxx_block
+            #(#original_passthrough_decls)*
 
             #signal_enum
 

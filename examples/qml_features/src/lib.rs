@@ -20,7 +20,7 @@ mod my_object {
     pub struct Data {
         number: i32,
         string: String,
-        sub: crate::sub::sub_object::CppObj,
+        sub: crate::sub::cxx_qt_sub_object::CppObj,
     }
 
     #[derive(Default)]
@@ -34,7 +34,7 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn increment_number_sub(&self, sub: &mut crate::sub::sub_object::CppObj) {
+        pub fn increment_number_sub(&self, sub: &mut crate::sub::cxx_qt_sub_object::CppObj) {
             let value = sub.number() + 1;
             sub.set_number(value);
         }

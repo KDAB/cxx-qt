@@ -1,102 +1,105 @@
+#[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
-    use cxx_qt_lib::ToUniquePtr;
+    unsafe extern "C++" {
+        include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-    #[cxx::bridge(namespace = "cxx_qt::my_object")]
-    mod ffi {
-        unsafe extern "C++" {
-            include!("cxx-qt-gen/include/my_object.cxxqt.h");
+        type MyObject;
 
-            type MyObject;
+        include!("cxx-qt-lib/include/qt_types.h");
+        #[namespace = ""]
+        type QColor = cxx_qt_lib::QColorCpp;
+        #[namespace = ""]
+        type QDate = cxx_qt_lib::QDate;
+        #[namespace = ""]
+        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        #[namespace = ""]
+        type QPoint = cxx_qt_lib::QPoint;
+        #[namespace = ""]
+        type QPointF = cxx_qt_lib::QPointF;
+        #[namespace = ""]
+        type QRect = cxx_qt_lib::QRect;
+        #[namespace = ""]
+        type QRectF = cxx_qt_lib::QRectF;
+        #[namespace = ""]
+        type QSize = cxx_qt_lib::QSize;
+        #[namespace = ""]
+        type QSizeF = cxx_qt_lib::QSizeF;
+        #[namespace = ""]
+        type QString = cxx_qt_lib::QStringCpp;
+        #[namespace = ""]
+        type QTime = cxx_qt_lib::QTime;
+        #[namespace = ""]
+        type QUrl = cxx_qt_lib::QUrlCpp;
+        #[namespace = ""]
+        type QVariant = cxx_qt_lib::QVariantCpp;
 
-            include!("cxx-qt-lib/include/qt_types.h");
-            #[namespace = ""]
-            type QColor = cxx_qt_lib::QColorCpp;
-            #[namespace = ""]
-            type QDate = cxx_qt_lib::QDate;
-            #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTimeCpp;
-            #[namespace = ""]
-            type QPoint = cxx_qt_lib::QPoint;
-            #[namespace = ""]
-            type QPointF = cxx_qt_lib::QPointF;
-            #[namespace = ""]
-            type QRect = cxx_qt_lib::QRect;
-            #[namespace = ""]
-            type QRectF = cxx_qt_lib::QRectF;
-            #[namespace = ""]
-            type QSize = cxx_qt_lib::QSize;
-            #[namespace = ""]
-            type QSizeF = cxx_qt_lib::QSizeF;
-            #[namespace = ""]
-            type QString = cxx_qt_lib::QStringCpp;
-            #[namespace = ""]
-            type QTime = cxx_qt_lib::QTime;
-            #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrlCpp;
-            #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariantCpp;
+        #[rust_name = "boolean"]
+        fn getBoolean(self: &MyObject) -> bool;
+        #[rust_name = "set_boolean"]
+        fn setBoolean(self: Pin<&mut MyObject>, value: bool);
 
-            #[rust_name = "boolean"]
-            fn getBoolean(self: &MyObject) -> bool;
-            #[rust_name = "set_boolean"]
-            fn setBoolean(self: Pin<&mut MyObject>, value: bool);
+        #[rust_name = "float_32"]
+        fn getFloat32(self: &MyObject) -> f32;
+        #[rust_name = "set_float_32"]
+        fn setFloat32(self: Pin<&mut MyObject>, value: f32);
 
-            #[rust_name = "float_32"]
-            fn getFloat32(self: &MyObject) -> f32;
-            #[rust_name = "set_float_32"]
-            fn setFloat32(self: Pin<&mut MyObject>, value: f32);
+        #[rust_name = "float_64"]
+        fn getFloat64(self: &MyObject) -> f64;
+        #[rust_name = "set_float_64"]
+        fn setFloat64(self: Pin<&mut MyObject>, value: f64);
 
-            #[rust_name = "float_64"]
-            fn getFloat64(self: &MyObject) -> f64;
-            #[rust_name = "set_float_64"]
-            fn setFloat64(self: Pin<&mut MyObject>, value: f64);
+        #[rust_name = "int_8"]
+        fn getInt8(self: &MyObject) -> i8;
+        #[rust_name = "set_int_8"]
+        fn setInt8(self: Pin<&mut MyObject>, value: i8);
 
-            #[rust_name = "int_8"]
-            fn getInt8(self: &MyObject) -> i8;
-            #[rust_name = "set_int_8"]
-            fn setInt8(self: Pin<&mut MyObject>, value: i8);
+        #[rust_name = "int_16"]
+        fn getInt16(self: &MyObject) -> i16;
+        #[rust_name = "set_int_16"]
+        fn setInt16(self: Pin<&mut MyObject>, value: i16);
 
-            #[rust_name = "int_16"]
-            fn getInt16(self: &MyObject) -> i16;
-            #[rust_name = "set_int_16"]
-            fn setInt16(self: Pin<&mut MyObject>, value: i16);
+        #[rust_name = "int_32"]
+        fn getInt32(self: &MyObject) -> i32;
+        #[rust_name = "set_int_32"]
+        fn setInt32(self: Pin<&mut MyObject>, value: i32);
 
-            #[rust_name = "int_32"]
-            fn getInt32(self: &MyObject) -> i32;
-            #[rust_name = "set_int_32"]
-            fn setInt32(self: Pin<&mut MyObject>, value: i32);
+        #[rust_name = "uint_8"]
+        fn getUint8(self: &MyObject) -> u8;
+        #[rust_name = "set_uint_8"]
+        fn setUint8(self: Pin<&mut MyObject>, value: u8);
 
-            #[rust_name = "uint_8"]
-            fn getUint8(self: &MyObject) -> u8;
-            #[rust_name = "set_uint_8"]
-            fn setUint8(self: Pin<&mut MyObject>, value: u8);
+        #[rust_name = "uint_16"]
+        fn getUint16(self: &MyObject) -> u16;
+        #[rust_name = "set_uint_16"]
+        fn setUint16(self: Pin<&mut MyObject>, value: u16);
 
-            #[rust_name = "uint_16"]
-            fn getUint16(self: &MyObject) -> u16;
-            #[rust_name = "set_uint_16"]
-            fn setUint16(self: Pin<&mut MyObject>, value: u16);
+        #[rust_name = "uint_32"]
+        fn getUint32(self: &MyObject) -> u32;
+        #[rust_name = "set_uint_32"]
+        fn setUint32(self: Pin<&mut MyObject>, value: u32);
 
-            #[rust_name = "uint_32"]
-            fn getUint32(self: &MyObject) -> u32;
-            #[rust_name = "set_uint_32"]
-            fn setUint32(self: Pin<&mut MyObject>, value: u32);
-
-            #[rust_name = "new_cpp_object"]
-            fn newCppObject() -> UniquePtr<MyObject>;
-        }
-
-        extern "Rust" {
-            type RustObj;
-
-            #[cxx_name = "createRs"]
-            fn create_rs() -> Box<RustObj>;
-
-            #[cxx_name = "initialiseCpp"]
-            fn initialise_cpp(cpp: Pin<&mut MyObject>);
-        }
+        #[rust_name = "new_cpp_object"]
+        fn newCppObject() -> UniquePtr<MyObject>;
     }
 
-    pub type FFICppObj = ffi::MyObject;
+    extern "Rust" {
+        type RustObj;
+
+        #[cxx_name = "createRs"]
+        fn create_rs() -> Box<RustObj>;
+
+        #[cxx_name = "initialiseCpp"]
+        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+    }
+}
+
+pub use self::cxx_qt_my_object::*;
+mod cxx_qt_my_object {
+    use super::my_object::*;
+
+    use cxx_qt_lib::ToUniquePtr;
+
+    pub type FFICppObj = super::my_object::MyObject;
 
     #[derive(Default)]
     pub struct RustObj;

@@ -1,91 +1,95 @@
+#[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
-    use cxx_qt_lib::QColor;
-    use cxx_qt_lib::ToUniquePtr;
+    unsafe extern "C++" {
+        include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-    #[cxx::bridge(namespace = "cxx_qt::my_object")]
-    mod ffi {
-        unsafe extern "C++" {
-            include!("cxx-qt-gen/include/my_object.cxxqt.h");
+        type MyObject;
 
-            type MyObject;
+        include!("cxx-qt-lib/include/qt_types.h");
+        #[namespace = ""]
+        type QColor = cxx_qt_lib::QColorCpp;
+        #[namespace = ""]
+        type QDate = cxx_qt_lib::QDate;
+        #[namespace = ""]
+        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        #[namespace = ""]
+        type QPoint = cxx_qt_lib::QPoint;
+        #[namespace = ""]
+        type QPointF = cxx_qt_lib::QPointF;
+        #[namespace = ""]
+        type QRect = cxx_qt_lib::QRect;
+        #[namespace = ""]
+        type QRectF = cxx_qt_lib::QRectF;
+        #[namespace = ""]
+        type QSize = cxx_qt_lib::QSize;
+        #[namespace = ""]
+        type QSizeF = cxx_qt_lib::QSizeF;
+        #[namespace = ""]
+        type QString = cxx_qt_lib::QStringCpp;
+        #[namespace = ""]
+        type QTime = cxx_qt_lib::QTime;
+        #[namespace = ""]
+        type QUrl = cxx_qt_lib::QUrlCpp;
+        #[namespace = ""]
+        type QVariant = cxx_qt_lib::QVariantCpp;
 
-            include!("cxx-qt-lib/include/qt_types.h");
-            #[namespace = ""]
-            type QColor = cxx_qt_lib::QColorCpp;
-            #[namespace = ""]
-            type QDate = cxx_qt_lib::QDate;
-            #[namespace = ""]
-            type QDateTime = cxx_qt_lib::QDateTimeCpp;
-            #[namespace = ""]
-            type QPoint = cxx_qt_lib::QPoint;
-            #[namespace = ""]
-            type QPointF = cxx_qt_lib::QPointF;
-            #[namespace = ""]
-            type QRect = cxx_qt_lib::QRect;
-            #[namespace = ""]
-            type QRectF = cxx_qt_lib::QRectF;
-            #[namespace = ""]
-            type QSize = cxx_qt_lib::QSize;
-            #[namespace = ""]
-            type QSizeF = cxx_qt_lib::QSizeF;
-            #[namespace = ""]
-            type QString = cxx_qt_lib::QStringCpp;
-            #[namespace = ""]
-            type QTime = cxx_qt_lib::QTime;
-            #[namespace = ""]
-            type QUrl = cxx_qt_lib::QUrlCpp;
-            #[namespace = ""]
-            type QVariant = cxx_qt_lib::QVariantCpp;
+        #[namespace = "cxx_qt::nested_object"]
+        type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
 
-            #[namespace = "cxx_qt::nested_object"]
-            type NestedObject = crate::nested_object::FFICppObj;
-
-            #[rust_name = "new_cpp_object"]
-            fn newCppObject() -> UniquePtr<MyObject>;
-        }
-
-        extern "Rust" {
-            type RustObj;
-
-            #[cxx_name = "invokable"]
-            fn invokable(self: &RustObj);
-            #[cxx_name = "invokableCppObjWrapper"]
-            fn invokable_cpp_obj_wrapper(self: &RustObj, cpp: Pin<&mut MyObject>);
-            #[cxx_name = "invokableMutable"]
-            fn invokable_mutable(self: &mut RustObj);
-            #[cxx_name = "invokableMutableCppObjWrapper"]
-            fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObject>);
-            #[cxx_name = "invokableNestedParameterWrapper"]
-            fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
-            #[cxx_name = "invokableParametersWrapper"]
-            fn invokable_parameters_wrapper(
-                self: &RustObj,
-                opaque: &QColor,
-                trivial: &QPoint,
-                primitive: i32,
-            );
-            #[cxx_name = "invokableParametersCppObjWrapper"]
-            fn invokable_parameters_cpp_obj_wrapper(
-                self: &RustObj,
-                primitive: i32,
-                cpp: Pin<&mut MyObject>,
-            );
-            #[cxx_name = "invokableReturnOpaqueWrapper"]
-            fn invokable_return_opaque_wrapper(self: &mut RustObj) -> UniquePtr<QColor>;
-            #[cxx_name = "invokableReturnPrimitive"]
-            fn invokable_return_primitive(self: &mut RustObj) -> i32;
-            #[cxx_name = "invokableReturnStaticWrapper"]
-            fn invokable_return_static_wrapper(self: &mut RustObj) -> UniquePtr<QString>;
-
-            #[cxx_name = "createRs"]
-            fn create_rs() -> Box<RustObj>;
-
-            #[cxx_name = "initialiseCpp"]
-            fn initialise_cpp(cpp: Pin<&mut MyObject>);
-        }
+        #[rust_name = "new_cpp_object"]
+        fn newCppObject() -> UniquePtr<MyObject>;
     }
 
-    pub type FFICppObj = ffi::MyObject;
+    extern "Rust" {
+        type RustObj;
+
+        #[cxx_name = "invokable"]
+        fn invokable(self: &RustObj);
+        #[cxx_name = "invokableCppObjWrapper"]
+        fn invokable_cpp_obj_wrapper(self: &RustObj, cpp: Pin<&mut MyObject>);
+        #[cxx_name = "invokableMutable"]
+        fn invokable_mutable(self: &mut RustObj);
+        #[cxx_name = "invokableMutableCppObjWrapper"]
+        fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObject>);
+        #[cxx_name = "invokableNestedParameterWrapper"]
+        fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
+        #[cxx_name = "invokableParametersWrapper"]
+        fn invokable_parameters_wrapper(
+            self: &RustObj,
+            opaque: &QColor,
+            trivial: &QPoint,
+            primitive: i32,
+        );
+        #[cxx_name = "invokableParametersCppObjWrapper"]
+        fn invokable_parameters_cpp_obj_wrapper(
+            self: &RustObj,
+            primitive: i32,
+            cpp: Pin<&mut MyObject>,
+        );
+        #[cxx_name = "invokableReturnOpaqueWrapper"]
+        fn invokable_return_opaque_wrapper(self: &mut RustObj) -> UniquePtr<QColor>;
+        #[cxx_name = "invokableReturnPrimitive"]
+        fn invokable_return_primitive(self: &mut RustObj) -> i32;
+        #[cxx_name = "invokableReturnStaticWrapper"]
+        fn invokable_return_static_wrapper(self: &mut RustObj) -> UniquePtr<QString>;
+
+        #[cxx_name = "createRs"]
+        fn create_rs() -> Box<RustObj>;
+
+        #[cxx_name = "initialiseCpp"]
+        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+    }
+}
+
+pub use self::cxx_qt_my_object::*;
+mod cxx_qt_my_object {
+    use super::my_object::*;
+
+    use cxx_qt_lib::ToUniquePtr;
+
+    pub type FFICppObj = super::my_object::MyObject;
+
+    use cxx_qt_lib::QColor;
 
     #[derive(Default)]
     pub struct RustObj;
@@ -103,9 +107,9 @@ mod my_object {
 
         pub fn invokable_nested_parameter_wrapper(
             &self,
-            nested: std::pin::Pin<&mut crate::nested_object::FFICppObj>,
+            nested: std::pin::Pin<&mut crate::cxx_qt_nested_object::FFICppObj>,
         ) {
-            let mut nested = crate::nested_object::CppObj::new(nested);
+            let mut nested = crate::cxx_qt_nested_object::CppObj::new(nested);
             self.invokable_nested_parameter(&mut nested);
         }
 
@@ -154,7 +158,7 @@ mod my_object {
             println!("This method is mutable!");
         }
 
-        pub fn invokable_nested_parameter(&self, nested: &mut crate::nested_object::CppObj) {
+        pub fn invokable_nested_parameter(&self, nested: &mut crate::cxx_qt_nested_object::CppObj) {
             println!("nested!");
         }
 
