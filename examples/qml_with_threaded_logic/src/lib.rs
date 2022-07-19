@@ -37,7 +37,7 @@ mod website {
         }
     }
 
-    struct RustObj {
+    pub struct RustObj {
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,
         loading: AtomicBool,
@@ -57,14 +57,14 @@ mod website {
 
     impl RustObj {
         #[invokable]
-        fn change_url(&self, cpp: &mut CppObj) {
+        pub fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url();
             let new_url = if url == "known" { "unknown" } else { "known" };
             cpp.set_url(new_url);
         }
 
         #[invokable]
-        fn refresh_title(&self, cpp: &mut CppObj) {
+        pub fn refresh_title(&self, cpp: &mut CppObj) {
             // TODO: SeqCst is probably not the most efficient solution
             let new_load =
                 self.loading
@@ -114,12 +114,12 @@ mod website {
         }
 
         #[invokable]
-        fn new_title_value(&mut self) {
+        pub fn new_title_value(&mut self) {
             println!("title changed");
         }
 
         #[invokable]
-        fn new_url_value(&mut self, cpp: &mut CppObj) {
+        pub fn new_url_value(&mut self, cpp: &mut CppObj) {
             self.refresh_title(cpp);
         }
     }

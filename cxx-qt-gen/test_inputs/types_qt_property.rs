@@ -1,6 +1,6 @@
 mod my_object {
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         color: QColor,
         date: QDate,
         date_time: QDateTime,
@@ -17,5 +17,5 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 }

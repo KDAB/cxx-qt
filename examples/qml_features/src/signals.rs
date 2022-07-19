@@ -25,12 +25,12 @@ pub mod signals {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     // ANCHOR: book_rust_obj_impl
     impl RustObj {
         #[invokable]
-        fn invokable(&self, cpp: &mut CppObj) {
+        pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
             }

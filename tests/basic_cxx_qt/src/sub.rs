@@ -17,18 +17,18 @@ pub mod sub_object {
 
     impl RustObj {
         #[invokable]
-        fn increment_number_self(&self, cpp: &mut CppObj) {
+        pub fn increment_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number();
             cpp.set_number(value + 1);
         }
 
         #[invokable]
-        fn increment_number(&self, number: i32) -> i32 {
+        pub fn increment_number(&self, number: i32) -> i32 {
             number + 1
         }
 
         #[invokable]
-        fn say_hi(&self, string: &str, number: i32) {
+        pub fn say_hi(&self, string: &str, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
                 string, number

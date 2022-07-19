@@ -20,5 +20,5 @@ mod my_types {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 }

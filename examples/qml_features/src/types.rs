@@ -21,11 +21,11 @@ mod types {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn test_variant_property(&self, cpp: &mut CppObj) {
+        pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 QVariantValue::Bool(b) => {
                     cpp.set_variant(QVariant::from(!b));
@@ -38,7 +38,7 @@ mod types {
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::I32(i) => QVariant::from(i * 2),

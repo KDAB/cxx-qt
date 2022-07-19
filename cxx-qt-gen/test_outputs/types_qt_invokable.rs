@@ -129,10 +129,10 @@ mod my_object {
     pub type FFICppObj = ffi::MyObject;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
-        fn test_color_wrapper(
+        pub fn test_color_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             color: &cxx_qt_lib::QColorCpp,
@@ -142,7 +142,7 @@ mod my_object {
             return self.test_color(&mut _cpp, &color).to_unique_ptr();
         }
 
-        fn test_date_wrapper(
+        pub fn test_date_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             date: &cxx_qt_lib::QDate,
@@ -151,7 +151,7 @@ mod my_object {
             return self.test_date(&mut _cpp, date);
         }
 
-        fn test_date_time_wrapper(
+        pub fn test_date_time_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             dateTime: &cxx_qt_lib::QDateTimeCpp,
@@ -161,7 +161,7 @@ mod my_object {
             return self.test_date_time(&mut _cpp, &dateTime).to_unique_ptr();
         }
 
-        fn test_point_wrapper(
+        pub fn test_point_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             point: &cxx_qt_lib::QPoint,
@@ -170,7 +170,7 @@ mod my_object {
             return self.test_point(&mut _cpp, point);
         }
 
-        fn test_pointf_wrapper(
+        pub fn test_pointf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             pointf: &cxx_qt_lib::QPointF,
@@ -179,7 +179,7 @@ mod my_object {
             return self.test_pointf(&mut _cpp, pointf);
         }
 
-        fn test_rect_wrapper(
+        pub fn test_rect_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             rect: &cxx_qt_lib::QRect,
@@ -188,7 +188,7 @@ mod my_object {
             return self.test_rect(&mut _cpp, rect);
         }
 
-        fn test_rectf_wrapper(
+        pub fn test_rectf_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             rectf: &cxx_qt_lib::QRectF,
@@ -197,7 +197,7 @@ mod my_object {
             return self.test_rectf(&mut _cpp, rectf);
         }
 
-        fn test_size_wrapper(
+        pub fn test_size_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             size: &cxx_qt_lib::QSize,
@@ -206,7 +206,7 @@ mod my_object {
             return self.test_size(&mut _cpp, size);
         }
 
-        fn test_sizef_wrapper(
+        pub fn test_sizef_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             sizef: &cxx_qt_lib::QSizeF,
@@ -215,7 +215,7 @@ mod my_object {
             return self.test_sizef(&mut _cpp, sizef);
         }
 
-        fn test_string_wrapper(
+        pub fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             string: &cxx_qt_lib::QStringCpp,
@@ -225,7 +225,7 @@ mod my_object {
             return self.test_string(&mut _cpp, &string).to_unique_ptr();
         }
 
-        fn test_time_wrapper(
+        pub fn test_time_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             time: &cxx_qt_lib::QTime,
@@ -234,7 +234,7 @@ mod my_object {
             return self.test_time(&mut _cpp, time);
         }
 
-        fn test_url_wrapper(
+        pub fn test_url_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             url: &cxx_qt_lib::QUrlCpp,
@@ -244,7 +244,7 @@ mod my_object {
             return self.test_url(&mut _cpp, &url).to_unique_ptr();
         }
 
-        fn test_variant_wrapper(
+        pub fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
             variant: &cxx_qt_lib::QVariantCpp,
@@ -254,55 +254,55 @@ mod my_object {
             return self.test_variant(&mut _cpp, &variant).to_unique_ptr();
         }
 
-        fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
+        pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
             color
         }
 
-        fn test_date(&self, _cpp: &mut CppObj, date: &QDate) -> QDate {
+        pub fn test_date(&self, _cpp: &mut CppObj, date: &QDate) -> QDate {
             date
         }
 
-        fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
+        pub fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
             dateTime
         }
 
-        fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
+        pub fn test_point(&self, _cpp: &mut CppObj, point: &QPoint) -> QPoint {
             point
         }
 
-        fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {
+        pub fn test_pointf(&self, _cpp: &mut CppObj, pointf: &QPointF) -> QPointF {
             pointf
         }
 
-        fn test_rect(&self, _cpp: &mut CppObj, rect: &QRect) -> QRect {
+        pub fn test_rect(&self, _cpp: &mut CppObj, rect: &QRect) -> QRect {
             rect
         }
 
-        fn test_rectf(&self, _cpp: &mut CppObj, rectf: &QRectF) -> QRectF {
+        pub fn test_rectf(&self, _cpp: &mut CppObj, rectf: &QRectF) -> QRectF {
             rectf
         }
 
-        fn test_size(&self, _cpp: &mut CppObj, size: &QSize) -> QSize {
+        pub fn test_size(&self, _cpp: &mut CppObj, size: &QSize) -> QSize {
             size
         }
 
-        fn test_sizef(&self, _cpp: &mut CppObj, sizef: &QSizeF) -> QSizeF {
+        pub fn test_sizef(&self, _cpp: &mut CppObj, sizef: &QSizeF) -> QSizeF {
             sizef
         }
 
-        fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+        pub fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
             string.to_owned()
         }
 
-        fn test_time(&self, _cpp: &mut CppObj, time: &QTime) -> QTime {
+        pub fn test_time(&self, _cpp: &mut CppObj, time: &QTime) -> QTime {
             time
         }
 
-        fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
+        pub fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
             url
         }
 
-        fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
+        pub fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
             variant
         }
     }
@@ -320,7 +320,7 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct Data;
+    pub struct Data;
 
     impl<'a> From<&CppObj<'a>> for Data {
         fn from(_value: &CppObj<'a>) -> Self {
@@ -334,11 +334,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

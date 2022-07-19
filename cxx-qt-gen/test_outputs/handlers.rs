@@ -74,10 +74,10 @@ mod my_object {
     pub type FFICppObj = ffi::MyObject;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
-        fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.handle_update_request(&mut cpp);
         }
@@ -119,7 +119,7 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         number: i32,
         string: String,
     }
@@ -145,11 +145,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

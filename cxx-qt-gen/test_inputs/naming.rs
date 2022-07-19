@@ -1,15 +1,15 @@
 mod my_object {
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         property_name: i32,
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn invokable_name(&self) {
+        pub fn invokable_name(&self) {
             println!("Bye from Rust!");
         }
     }

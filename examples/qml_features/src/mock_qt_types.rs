@@ -55,11 +55,11 @@ mod mock_qt_types {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn test_signal(&self, cpp: &mut CppObj) {
+        pub fn test_signal(&self, cpp: &mut CppObj) {
             cpp.emit_queued(Signal::Ready);
             cpp.emit_queued(Signal::DataChanged {
                 variant: QVariant::from(true),
@@ -67,7 +67,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_unsafe_signal(&self, cpp: &mut CppObj) {
+        pub fn test_unsafe_signal(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
                 cpp.emit_immediate(Signal::DataChanged {
@@ -77,31 +77,31 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_color_property(&self, cpp: &mut CppObj) {
+        pub fn test_color_property(&self, cpp: &mut CppObj) {
             cpp.set_color(QColor::from_rgba(0, 0, 255, 255));
         }
 
         #[invokable]
-        fn test_color_invokable(&self, _color: &QColor) -> QColor {
+        pub fn test_color_invokable(&self, _color: &QColor) -> QColor {
             QColor::from_rgba(0, 255, 0, 255)
         }
 
         #[invokable]
-        fn test_date_property(&self, cpp: &mut CppObj) {
+        pub fn test_date_property(&self, cpp: &mut CppObj) {
             let mut date = *cpp.date();
             date.set_date(2021, 12, 31);
             cpp.set_date(&date);
         }
 
         #[invokable]
-        fn test_date_invokable(&self, date: &QDate) -> QDate {
+        pub fn test_date_invokable(&self, date: &QDate) -> QDate {
             let mut date = *date;
             date.set_date(2021, 12, 31);
             date
         }
 
         #[invokable]
-        fn test_date_time_property(&self, cpp: &mut CppObj) {
+        pub fn test_date_time_property(&self, cpp: &mut CppObj) {
             let date_time = cpp.date_time();
             let new_date_time = QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
@@ -116,7 +116,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_date_time_invokable(&self, date_time: &QDateTime) -> QDateTime {
+        pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> QDateTime {
             QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -129,7 +129,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_point_property(&self, cpp: &mut CppObj) {
+        pub fn test_point_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.point();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
@@ -137,7 +137,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_point_invokable(&self, point: &QPoint) -> QPoint {
+        pub fn test_point_invokable(&self, point: &QPoint) -> QPoint {
             let mut point = *point;
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
@@ -145,7 +145,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_pointf_property(&self, cpp: &mut CppObj) {
+        pub fn test_pointf_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.pointf();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
@@ -153,7 +153,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
+        pub fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
             let mut point = *point;
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
@@ -161,7 +161,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_rect_property(&self, cpp: &mut CppObj) {
+        pub fn test_rect_property(&self, cpp: &mut CppObj) {
             let mut rect = *cpp.rect();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
@@ -173,7 +173,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_rect_invokable(&self, rect: &QRect) -> QRect {
+        pub fn test_rect_invokable(&self, rect: &QRect) -> QRect {
             let mut rect = *rect;
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
@@ -185,7 +185,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_rectf_property(&self, cpp: &mut CppObj) {
+        pub fn test_rectf_property(&self, cpp: &mut CppObj) {
             let mut rect = *cpp.rectf();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
@@ -197,7 +197,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
+        pub fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
             let mut rect = *rect;
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
@@ -209,7 +209,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_size_property(&self, cpp: &mut CppObj) {
+        pub fn test_size_property(&self, cpp: &mut CppObj) {
             let mut size = *cpp.size();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
@@ -217,7 +217,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_size_invokable(&self, size: &QSize) -> QSize {
+        pub fn test_size_invokable(&self, size: &QSize) -> QSize {
             let mut size = *size;
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
@@ -225,7 +225,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_sizef_property(&self, cpp: &mut CppObj) {
+        pub fn test_sizef_property(&self, cpp: &mut CppObj) {
             let mut size = *cpp.sizef();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
@@ -233,7 +233,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_sizef_invokable(&self, size: &QSizeF) -> QSizeF {
+        pub fn test_sizef_invokable(&self, size: &QSizeF) -> QSizeF {
             let mut size = *size;
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
@@ -241,7 +241,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_time_property(&self, cpp: &mut CppObj) {
+        pub fn test_time_property(&self, cpp: &mut CppObj) {
             let mut time = *cpp.time();
             time.set_hms(
                 time.hour() * 2,
@@ -253,7 +253,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_time_invokable(&self, time: &QTime) -> QTime {
+        pub fn test_time_invokable(&self, time: &QTime) -> QTime {
             let mut time = *time;
             time.set_hms(
                 time.hour() * 2,
@@ -265,18 +265,18 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_url_property(&self, cpp: &mut CppObj) {
+        pub fn test_url_property(&self, cpp: &mut CppObj) {
             let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt")).unwrap();
             cpp.set_url(url);
         }
 
         #[invokable]
-        fn test_url_invokable(&self, url: &QUrl) -> QUrl {
+        pub fn test_url_invokable(&self, url: &QUrl) -> QUrl {
             QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap()
         }
 
         #[invokable]
-        fn test_variant_property(&self, cpp: &mut CppObj) {
+        pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 QVariantValue::Bool(b) => cpp.set_variant(QVariant::from(!b)),
                 QVariantValue::F32(f) => cpp.set_variant(QVariant::from(f * 2.0)),
@@ -363,7 +363,7 @@ mod mock_qt_types {
         }
 
         #[invokable]
-        fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::F32(f) => QVariant::from(f * 2.0),

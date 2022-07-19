@@ -23,17 +23,17 @@ mod my_data {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
         #[invokable]
-        fn as_json_str(&self, cpp: &mut CppObj) -> String {
+        pub fn as_json_str(&self, cpp: &mut CppObj) -> String {
             let data = Data::from(cpp);
             serde_json::to_string(&data).unwrap()
         }
 
         #[invokable]
-        fn grab_values(&self, cpp: &mut CppObj) {
+        pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: Data = serde_json::from_str(string).unwrap();
             cpp.grab_values_from_data(data);

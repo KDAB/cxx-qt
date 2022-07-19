@@ -58,7 +58,7 @@ mod my_object {
 
     pub type FFICppObj = ffi::MyObject;
 
-    struct RustObj {
+    pub struct RustObj {
         private: i32,
     }
 
@@ -86,7 +86,7 @@ mod my_object {
         }
     }
 
-    struct Data {
+    pub struct Data {
         public: i32,
     }
 
@@ -116,11 +116,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

@@ -9,5 +9,5 @@ mod empty {
     pub struct Data;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 }

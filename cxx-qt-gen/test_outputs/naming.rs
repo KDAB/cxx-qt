@@ -62,10 +62,10 @@ mod my_object {
     pub type FFICppObj = ffi::MyObject;
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 
     impl RustObj {
-        fn invokable_name(&self) {
+        pub fn invokable_name(&self) {
             println!("Bye from Rust!");
         }
     }
@@ -93,7 +93,7 @@ mod my_object {
     }
 
     #[derive(Default)]
-    struct Data {
+    pub struct Data {
         property_name: i32,
     }
 
@@ -111,11 +111,11 @@ mod my_object {
         }
     }
 
-    fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<RustObj> {
         std::default::Default::default()
     }
 
-    fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
         let mut wrapper = CppObj::new(cpp);
         wrapper.grab_values_from_data(Data::default());
     }

@@ -12,6 +12,6 @@ mod data_struct_properties {
     }
 
     #[derive(Default)]
-    struct RustObj;
+    pub struct RustObj;
 }
 // ANCHOR_END: book_macro_code
