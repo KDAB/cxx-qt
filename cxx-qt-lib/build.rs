@@ -5,6 +5,7 @@
 
 use quote::ToTokens;
 use serde::{Deserialize, Serialize};
+use std::{fs::File, io::Write, path::PathBuf};
 
 /// Representation of a generated CXX header, source, and name
 #[derive(Serialize, Deserialize)]
@@ -35,9 +36,17 @@ fn gen_cxx_sources(folder: &str, file_stem: &str) -> GeneratedType {
 }
 
 /// Write generates types to a given file as JSON
-fn write_cxx_sources(gen: Vec<GeneratedType>, path: &str) {
+fn write_cxx_sources(gen: &Vec<GeneratedType>, path: &str) {
     let file = std::fs::File::create(path).expect("Could not create generated file");
     serde_json::to_writer(file, &gen).unwrap();
+}
+
+fn create_and_write_file(path: &impl AsRef<std::path::Path>, file_contents: &str) {
+    let path = path.as_ref();
+    File::create(&path)
+        .unwrap_or_else(|_| panic!("Could not create file {}", path.display()))
+        .write_all(file_contents.as_bytes())
+        .unwrap_or_else(|_| panic!("Could not write file {}", path.display()));
 }
 
 fn main() {
@@ -80,5 +89,52 @@ fn main() {
     }
 
     // Write the generated sources to a qt_types_cxx.json file
-    write_cxx_sources(generated, &format!("{}/qt_types_cxx.json", path));
+    write_cxx_sources(&generated, &format!("{}/qt_types_cxx.json", path));
+
+    // Write the generated sources to CXX_QT_LIB_OUT_DIR if set
+    println!("cargo:rerun-if-env-changed=CXX_QT_LIB_OUT_DIR");
+    if let Ok(env_var) = std::env::var("CXX_QT_LIB_OUT_DIR") {
+        let directory = PathBuf::from(env_var);
+        if !directory.is_dir() {
+            panic!(
+                "CXX_QT_LIB_OUT_DIR {} is not a directory",
+                directory.display()
+            );
+        }
+
+        let include_directory_path = PathBuf::from(format!("{}/include", &directory.display()));
+        std::fs::create_dir_all(&include_directory_path)
+            .expect("Could not create CXX_QT_LIB_OUT_DIR include dir");
+        let source_directory_path = PathBuf::from(format!("{}/src", &directory.display()));
+        std::fs::create_dir_all(&source_directory_path)
+            .expect("Could not create CXX_QT_LIB_OUT_DIR source dir");
+
+        std::fs::copy(
+            format!("{}/include/qt_types.h", dir_manifest),
+            format!("{}/qt_types.h", include_directory_path.display()),
+        )
+        .expect("Could not copy qt_types.h to CXX_QT_LIB_OUT_DIR");
+        std::fs::copy(
+            format!("{}/src/qt_types.cpp", dir_manifest),
+            format!("{}/qt_types.cpp", source_directory_path.display()),
+        )
+        .expect("Could not copy qt_types.cpp to CXX_QT_LIB_OUT_DIR");
+
+        create_and_write_file(
+            &format!("{}/cxx.h", include_directory_path.display()),
+            cxx_gen::HEADER,
+        );
+
+        for class in generated {
+            create_and_write_file(
+                &format!("{}/{}.h", include_directory_path.display(), class.name),
+                &class.header,
+            );
+
+            create_and_write_file(
+                &format!("{}/{}.cpp", source_directory_path.display(), class.name),
+                &class.source,
+            );
+        }
+    }
 }
