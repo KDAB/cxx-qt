@@ -521,7 +521,7 @@ pub fn generate_qobject_cxx(
     };
 
     // Build the import path for the C++ header
-    let import_path = format!("cxx-qt-gen/include/{}.h", ident_snake);
+    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
 
     // Generate an enum representing all the properties that the object has
     let property_enum = generate_property_enum(obj);

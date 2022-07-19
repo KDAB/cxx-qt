@@ -216,7 +216,7 @@ impl GeneratedCpp {
 
         if let Some(cxx_qt_generated) = &self.cxx_qt {
             let header_path = PathBuf::from(format!(
-                "{}/{}.h",
+                "{}/{}.cxxqt.h",
                 include_directory_path.display(),
                 self.module_ident
             ));
@@ -228,7 +228,7 @@ impl GeneratedCpp {
             written_files.push(header_path);
 
             let cpp_path = PathBuf::from(format!(
-                "{}/{}.cpp",
+                "{}/{}.cxxqt.cpp",
                 source_directory_path.display(),
                 &self.module_ident
             ));

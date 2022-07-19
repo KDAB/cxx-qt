@@ -9,7 +9,7 @@
 #include <QQmlEngine>
 #include <QQmlExtensionPlugin>
 
-#include "cxx-qt-gen/include/my_object.h"
+#include "cxx-qt-gen/include/my_object.cxxqt.h"
 
 class CoreQmlpluginPlugin : public QQmlExtensionPlugin
 {

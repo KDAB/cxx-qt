@@ -78,7 +78,7 @@ impl CppType for QtTypes {
                 cpp_type_idents,
                 ..
             } if external == &true && cpp_type_idents.len() > 2 => vec![format!(
-                "#include \"cxx-qt-gen/include/{}.h\"",
+                "#include \"cxx-qt-gen/include/{}.cxxqt.h\"",
                 cpp_type_idents[cpp_type_idents.len() - 2]
             )],
             Self::QColor => vec!["#include <QtGui/QColor>".to_owned()],
@@ -1038,8 +1038,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // Generate C++ source part
     let source = formatdoc! {r#"
-        #include "cxx-qt-gen/include/{ident_snake}.h"
         #include "cxx-qt-gen/include/{ident_snake}.cxx.h"
+        #include "cxx-qt-gen/include/{ident_snake}.cxxqt.h"
 
         namespace {namespace} {{
 

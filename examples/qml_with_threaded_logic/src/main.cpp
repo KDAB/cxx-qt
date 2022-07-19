@@ -8,7 +8,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/website.h"
+#include "cxx-qt-gen/include/website.cxxqt.h"
 
 int
 main(int argc, char* argv[])

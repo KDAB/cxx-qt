@@ -8,12 +8,12 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/data_struct_properties.h"
-#include "cxx-qt-gen/include/handler_property_change.h"
-#include "cxx-qt-gen/include/my_object.h"
-#include "cxx-qt-gen/include/serialisation.h"
-#include "cxx-qt-gen/include/sub_object.h"
-#include "cxx-qt-gen/include/types.h"
+#include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
+#include "cxx-qt-gen/include/handler_property_change.cxxqt.h"
+#include "cxx-qt-gen/include/my_object.cxxqt.h"
+#include "cxx-qt-gen/include/serialisation.cxxqt.h"
+#include "cxx-qt-gen/include/sub_object.cxxqt.h"
+#include "cxx-qt-gen/include/types.cxxqt.h"
 
 int
 main(int argc, char* argv[])

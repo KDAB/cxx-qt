@@ -4,7 +4,7 @@
 
 #include "cxx-qt-lib/include/qt_types.h"
 
-#include "cxx-qt-gen/include/nested_object.h"
+#include "cxx-qt-gen/include/nested_object.cxxqt.h"
 #include <QtCore/QPoint>
 #include <QtGui/QColor>
 
