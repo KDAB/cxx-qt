@@ -53,7 +53,7 @@ pub mod my_object {
         }
 
         unsafe extern "C++" {
-            include!("cxx-qt-gen/include/my_object.h");
+            include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
             type MyObject;
 
