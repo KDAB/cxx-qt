@@ -162,12 +162,12 @@ qsizefInit(qreal width, qreal height)
   return QSizeF(width, height);
 }
 
-std::unique_ptr<QString>
-qstringInitFromRustString(rust::Str string)
+rust::String
+qstringToRustString(const QString& string)
 {
-  // Note that rust::Str here is borrowed
-  // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QString>(qstringFromRustString(string));
+  // Note that this changes UTF-16 to UTF-8
+  const auto byteArray = string.toUtf8();
+  return rust::String(byteArray.constData(), byteArray.size());
 }
 
 QString
@@ -178,12 +178,18 @@ qstringFromRustString(rust::Str string)
   return QString::fromUtf8(string.data(), string.size());
 }
 
-rust::String
-qstringToRustString(const QString& string)
+std::unique_ptr<QString>
+qstringInitFromRustString(rust::Str string)
 {
-  // Note that this changes UTF-16 to UTF-8
-  const auto byteArray = string.toUtf8();
-  return rust::String(byteArray.constData(), byteArray.size());
+  // Note that rust::Str here is borrowed
+  // and we convert back from UTF-8 to UTF-16
+  return std::make_unique<QString>(qstringFromRustString(string));
+}
+
+std::unique_ptr<QString>
+qstringInitFromQString(const QString& string)
+{
+  return std::make_unique<QString>(string);
 }
 
 QTime

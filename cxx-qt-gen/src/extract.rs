@@ -62,12 +62,16 @@ pub(crate) enum QtTypes {
     QSizeF,
     String,
     Str,
+    QString,
     QTime,
     QUrl,
     QVariant,
     U8,
     U16,
     U32,
+    UniquePtr {
+        inner: Box<QtTypes>,
+    },
     Unknown,
 }
 
@@ -84,11 +88,7 @@ impl QtTypes {
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
             Self::CppObj { .. } => true,
-            Self::QColor => true,
-            Self::QDateTime => true,
-            Self::String | Self::Str => true,
-            Self::QUrl => true,
-            Self::QVariant => true,
+            Self::UniquePtr { .. } => true,
             _others => false,
         }
     }
@@ -254,6 +254,7 @@ fn extract_qt_type(
             "QSizeF" => Ok(QtTypes::QSizeF),
             "str" => Ok(QtTypes::Str),
             "String" => Ok(QtTypes::String),
+            "QString" => Ok(QtTypes::QString),
             "QTime" => Ok(QtTypes::QTime),
             "QUrl" => Ok(QtTypes::QUrl),
             "QVariant" => Ok(QtTypes::QVariant),
@@ -314,6 +315,16 @@ fn extract_qt_type(
                     .to_case(Case::Pascal)
             ),
         })
+    // This is a UniquePtr<T> field
+    } else if idents.len() > 1 && idents.first().unwrap().to_string().as_str() == "UniquePtr" {
+        Ok(QtTypes::UniquePtr {
+            inner: Box::new(extract_qt_type(
+                &idents[1..],
+                original_ty,
+                cpp_namespace_prefix,
+                qt_ident,
+            )?),
+        })
     // This is an unknown type that did not start with crate and has multiple parts
     } else {
         // We can assume that idents has an entry at index zero, because it is not empty
@@ -323,6 +334,20 @@ fn extract_qt_type(
 
 /// Converts a given path to a vector of idents
 fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError> {
+    // We do support UniquePtr<T> for now
+    if let Some(segment) = path.segments.first() {
+        if segment.ident == "UniquePtr" {
+            if let PathArguments::AngleBracketed(angled) = &segment.arguments {
+                if let Some(GenericArgument::Type(Type::Path(type_path))) = angled.args.first() {
+                    return path_to_idents(&type_path.path).map(|mut idents| {
+                        idents.insert(0, quote::format_ident!("UniquePtr"));
+                        idents
+                    });
+                }
+            }
+        }
+    }
+
     path.segments
         .iter()
         .map(|segment| {
@@ -331,10 +356,10 @@ fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError>
             // eg we do not support AngleBracketed - the <'a, T> in std::slice::iter<'a, T>
             // eg we do not support Parenthesized - the (A, B) -> C in Fn(A, B) -> C
             if segment.arguments == PathArguments::None {
-                Ok(segment.ident.to_owned())
-            } else {
-                Err(ExtractTypeIdentError::InvalidArguments(segment.span()))
+                return Ok(segment.ident.to_owned());
             }
+
+            Err(ExtractTypeIdentError::InvalidArguments(segment.span()))
         })
         .collect::<Result<Vec<Ident>, ExtractTypeIdentError>>()
 }
@@ -1485,8 +1510,9 @@ mod tests {
         let prop_second = &qobject.properties[1];
         assert_eq!(prop_second.ident.cpp_ident.to_string(), "opaque");
         assert_eq!(prop_second.ident.rust_ident.to_string(), "opaque");
-        assert_eq!(prop_second.type_ident.idents.len(), 1);
-        assert_eq!(prop_second.type_ident.idents[0].to_string(), "QColor");
+        assert_eq!(prop_second.type_ident.idents.len(), 2);
+        assert_eq!(prop_second.type_ident.idents[0].to_string(), "UniquePtr");
+        assert_eq!(prop_second.type_ident.idents[1].to_string(), "QColor");
         assert!(!prop_second.type_ident.is_ref);
 
         assert!(prop_second.getter.is_some());
@@ -1583,6 +1609,10 @@ mod tests {
         assert_eq!(qobject.signals[1].parameters[1].ident.to_string(), "second");
         assert_eq!(
             qobject.signals[1].parameters[1].type_ident.idents[0].to_string(),
+            "UniquePtr"
+        );
+        assert_eq!(
+            qobject.signals[1].parameters[1].type_ident.idents[1].to_string(),
             "QVariant"
         );
         assert_eq!(qobject.signals[1].parameters[2].ident.to_string(), "third");

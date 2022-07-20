@@ -10,11 +10,3 @@ pub use types::*;
 pub trait UpdateRequestHandler<C> {
     fn handle_update_request(&mut self, cpp: &mut C);
 }
-
-pub trait ToUniquePtr {
-    type CppType;
-
-    fn to_unique_ptr(self) -> cxx::UniquePtr<Self::CppType>
-    where
-        Self::CppType: cxx::memory::UniquePtrTarget;
-}

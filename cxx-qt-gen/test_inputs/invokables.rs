@@ -46,7 +46,7 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn invokable_return_opaque(&mut self) -> QColor {
+        pub fn invokable_return_opaque(&mut self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
@@ -56,8 +56,8 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn invokable_return_static(&mut self) -> &str {
-            "static"
+        pub fn invokable_return_static(&mut self) -> UniquePtr<QString> {
+            QString::from_str("static")
         }
 
         pub fn rust_only_method(&self) {

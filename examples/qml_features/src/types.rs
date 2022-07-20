@@ -9,7 +9,7 @@ mod types {
     use cxx_qt_lib::{QVariant, QVariantValue};
 
     pub struct Data {
-        variant: QVariant,
+        variant: UniquePtr<QVariant>,
     }
 
     impl Default for Data {
@@ -28,17 +28,17 @@ mod types {
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 QVariantValue::Bool(b) => {
-                    cpp.set_variant(QVariant::from(!b));
+                    cpp.set_variant(QVariant::from(!b).as_ref().unwrap());
                 }
                 QVariantValue::I32(i) => {
-                    cpp.set_variant(QVariant::from(i * 2));
+                    cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap());
                 }
                 _ => panic!("Incorrect variant type!"),
             }
         }
 
         #[invokable]
-        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::I32(i) => QVariant::from(i * 2),

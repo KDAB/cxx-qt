@@ -8,11 +8,11 @@ pub mod my_object {
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         #[namespace = ""]
         type QDate = cxx_qt_lib::QDate;
         #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
         #[namespace = ""]
         type QPoint = cxx_qt_lib::QPoint;
         #[namespace = ""]
@@ -26,13 +26,13 @@ pub mod my_object {
         #[namespace = ""]
         type QSizeF = cxx_qt_lib::QSizeF;
         #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
+        type QString = cxx_qt_lib::QString;
         #[namespace = ""]
         type QTime = cxx_qt_lib::QTime;
         #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
+        type QUrl = cxx_qt_lib::QUrl;
         #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QVariant = cxx_qt_lib::QVariant;
 
         #[rust_name = "number"]
         fn getNumber(self: &MyObjectQt) -> i32;
@@ -79,9 +79,8 @@ pub use self::cxx_qt_my_object::*;
 pub mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     const MAX: u16 = 65535;
 

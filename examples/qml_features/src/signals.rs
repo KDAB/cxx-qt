@@ -14,15 +14,24 @@ pub mod signals {
         Ready,
         RustDataChanged { data: i32 },
         TrivialDataChanged { trivial: QPoint },
-        OpaqueDataChanged { opaque: QVariant },
+        OpaqueDataChanged { opaque: UniquePtr<QVariant> },
     }
     // ANCHOR_END: book_signals_enum
 
-    #[derive(Default)]
     pub struct Data {
         data: i32,
         trivial: QPoint,
-        opaque: QVariant,
+        opaque: UniquePtr<QVariant>,
+    }
+
+    impl Default for Data {
+        fn default() -> Self {
+            Self {
+                data: 0,
+                trivial: QPoint::default(),
+                opaque: QVariant::null(),
+            }
+        }
     }
 
     #[derive(Default)]
@@ -41,7 +50,7 @@ pub mod signals {
                 trivial: *cpp.trivial(),
             });
             cpp.emit_queued(Signal::OpaqueDataChanged {
-                opaque: cpp.opaque(),
+                opaque: QVariant::from_ref(cpp.opaque()),
             });
         }
     }

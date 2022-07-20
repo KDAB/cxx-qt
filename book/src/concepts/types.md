@@ -55,17 +55,15 @@ Note that when they are used as a parameter type in invokables they should be pa
 
 ### Custom Opaque Types
 
-Custom opaque types wrap a unique pointer to the C++ type, they are used in the same way as custom trivial types but CXX-Qt automatically writes wrappers to convert to and from a C++ unique pointer of the type to a Rust wrapper of the type.
+Custom [opaque types](https://en.wikipedia.org/wiki/Opaque_data_type) represent an opaque C++ type, they can be used for properties, parameters or return types in invokables, and parameters in signals. However when the object is being passed from Rust to C++ (eg properties, return types, or signals) they must be `UniquePtr<T>`, and for other use cases they must be by reference (either `&T` or `Pin<&mut T>`).
 
-On the rust side they appear as the cxx_qt_lib helper type.
-
-Note that when they are used as a parameter type in invokables they should be passed as a reference, eg `color: &QColor`, and when they are a property or return type they should be a value, eg `QColor`. Also for strings `&str` should be used when passed as a reference and `String` when passed as a value.
+Note that when they are used as a parameter type in invokables they should be passed as a reference, eg `color: &QColor`, and when they are a property, return type, or signal they should be a `UniquePtr`, eg `UniquePtr<QColor>`.
 
 | Rust Type | C++ Type |
 |-----------|----------|
 | cxx_qt_lib::QColor | QColor |
 | cxx_qt_lib::QDateTime | QDateTime |
-| String or &str | QString |
+| cxx_qt_lib::QString | QString |
 | cxx_qt_lib::QUrl | QUrl |
 | cxx_qt_lib::QVariant | QVariant |
 
