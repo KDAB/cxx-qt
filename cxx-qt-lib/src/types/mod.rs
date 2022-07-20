@@ -4,13 +4,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qcolor;
-pub use qcolor::{QColor, QColorCpp};
+pub use qcolor::QColor;
 
 mod qdate;
 pub use qdate::QDate;
 
 mod qdatetime;
-pub use qdatetime::{QDateTime, QDateTimeCpp};
+pub use qdatetime::QDateTime;
 
 mod qrect;
 pub use qrect::QRect;
@@ -25,7 +25,7 @@ mod qsizef;
 pub use qsizef::QSizeF;
 
 mod qstring;
-pub use qstring::QStringCpp;
+pub use qstring::QString;
 
 mod qtime;
 pub use qtime::QTime;
@@ -37,10 +37,10 @@ mod qpointf;
 pub use qpointf::QPointF;
 
 mod qurl;
-pub use qurl::{QUrl, QUrlCpp};
+pub use qurl::QUrl;
 
 mod qvariant;
-pub use qvariant::{QVariant, QVariantCpp, QVariantValue};
+pub use qvariant::{QVariant, QVariantValue};
 
 mod update_requester;
 pub use update_requester::{UpdateRequester, UpdateRequesterCpp};

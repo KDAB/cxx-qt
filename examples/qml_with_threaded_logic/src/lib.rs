@@ -24,15 +24,15 @@ mod website {
     }
 
     pub struct Data {
-        url: String,
-        title: String,
+        url: UniquePtr<QString>,
+        title: UniquePtr<QString>,
     }
 
     impl Default for Data {
         fn default() -> Self {
             Self {
-                url: "known".to_owned(),
-                title: "Press refresh to get a title...".to_owned(),
+                url: QString::from_str("known"),
+                title: QString::from_str("Press refresh to get a title..."),
             }
         }
     }
@@ -58,9 +58,9 @@ mod website {
     impl RustObj {
         #[invokable]
         pub fn change_url(&self, cpp: &mut CppObj) {
-            let url = cpp.url();
+            let url = cpp.url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
-            cpp.set_url(new_url);
+            cpp.set_url(QString::from_str(new_url).as_ref().unwrap());
         }
 
         #[invokable]
@@ -74,9 +74,9 @@ mod website {
                 return;
             }
 
-            cpp.set_title("Loading...");
+            cpp.set_title(QString::from_str("Loading...").as_ref().unwrap());
 
-            let url = cpp.url();
+            let url = cpp.url().to_string();
             // ANCHOR: book_cpp_update_requester
             // Retrieve the update requester from the CppObj
             let update_requester = cpp.update_requester();
@@ -107,7 +107,7 @@ mod website {
         fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
             match event {
                 Event::TitleArrived(title) => {
-                    cpp.set_title(title);
+                    cpp.set_title(QString::from_str(title).as_ref().unwrap());
                     self.loading.store(false, Ordering::Relaxed);
                 }
             }

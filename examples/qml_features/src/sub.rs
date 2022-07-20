@@ -6,10 +6,18 @@
 
 #[cxx_qt::bridge]
 pub mod sub_object {
-    #[derive(Default)]
     pub struct Data {
         number: i32,
-        string: String,
+        string: UniquePtr<QString>,
+    }
+
+    impl Default for Data {
+        fn default() -> Self {
+            Self {
+                number: 0,
+                string: QString::from_str(""),
+            }
+        }
     }
 
     #[derive(Default)]
@@ -28,8 +36,8 @@ pub mod sub_object {
         }
 
         #[invokable]
-        pub fn say_hi(&self, string: &str, number: i32) {
-            let s: String = string.into();
+        pub fn say_hi(&self, string: &QString, number: i32) {
+            let s: String = string.to_string();
             println!("Hi from Rust! String is {} and number is {}", s, number);
         }
     }
