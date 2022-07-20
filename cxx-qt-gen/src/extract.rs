@@ -6,7 +6,7 @@
 use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{Span, TokenStream, TokenTree};
 use std::result::Result;
 use syn::{spanned::Spanned, *};
 
@@ -175,6 +175,8 @@ pub struct QObject {
     pub(crate) signals: Vec<Signal>,
     /// The namespace to use for C++
     pub(crate) namespace: Vec<String>,
+    /// Items we just pass through to the CXX bridge
+    pub(crate) cxx_items: Vec<Item>,
     /// The original Rust mod for the struct
     pub(crate) original_mod: ItemMod,
     /// The original Data struct that the object was generated from
@@ -821,6 +823,10 @@ pub fn extract_qobject(
     let mut original_passthrough_decls = vec![];
     // The original signal enum if one is found
     let mut original_signal_enum = None;
+    // A list of items we will pass through to the CXX bridge
+    //
+    // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
+    let mut cxx_items = vec![];
 
     // Determines if (and how) this object can respond to update requests
     let mut handle_updates_impl = None;
@@ -980,9 +986,31 @@ pub fn extract_qobject(
                     .to_compile_error());
                 }
             }
+            // Items we will pass through to the CXX bridge
+            //
+            // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
+            //
+            // Note we also need to search in Verbatim for "unsafe extern" blocks
+            Item::ForeignMod(_) => cxx_items.push(item),
+            Item::Verbatim(ref tokens) => {
+                let is_ident = |value: Option<TokenTree>, sym: &str| -> bool {
+                    if let Some(TokenTree::Ident(ident)) = value {
+                        return ident == quote::format_ident!("{}", sym);
+                    }
+
+                    false
+                };
+
+                let mut iter = tokens.clone().into_iter();
+                if is_ident(iter.next(), "unsafe") && is_ident(iter.next(), "extern") {
+                    cxx_items.push(item);
+                } else {
+                    original_passthrough_decls.push(item);
+                }
+            }
             // We are an insignificant item that will be directly passed through
             other => {
-                original_passthrough_decls.push(other.to_owned());
+                original_passthrough_decls.push(other);
             }
         }
     }
@@ -1028,6 +1056,7 @@ pub fn extract_qobject(
         properties: object_properties,
         signals: object_signals,
         namespace,
+        cxx_items,
         original_mod,
         original_data_struct: original_data_struct
             .unwrap_or_else(|| syn::parse_str("pub struct Data;").unwrap()),
@@ -1354,7 +1383,10 @@ mod tests {
         assert_eq!(qobject.normal_methods.len(), 2);
 
         // Check that there is a use, enum and fn declaration
-        assert_eq!(qobject.original_passthrough_decls.len(), 14);
+        assert_eq!(qobject.original_passthrough_decls.len(), 13);
+
+        // Check that we have a CXX passthrough item
+        assert_eq!(qobject.cxx_items.len(), 2);
     }
 
     #[test]
