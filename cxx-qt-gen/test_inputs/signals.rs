@@ -5,7 +5,7 @@ mod my_object {
         Ready,
         DataChanged {
             first: i32,
-            second: QVariant,
+            second: UniquePtr<QVariant>,
             third: QPoint,
         },
     }

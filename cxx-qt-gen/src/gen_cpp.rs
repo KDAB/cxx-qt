@@ -90,10 +90,13 @@ impl CppType for QtTypes {
             Self::QRectF => vec!["#include <QtCore/QRectF>".to_owned()],
             Self::QSize => vec!["#include <QtCore/QSize>".to_owned()],
             Self::QSizeF => vec!["#include <QtCore/QSizeF>".to_owned()],
-            Self::String | Self::Str => vec!["#include <QtCore/QString>".to_owned()],
+            Self::String | Self::Str | Self::QString => {
+                vec!["#include <QtCore/QString>".to_owned()]
+            }
             Self::QTime => vec!["#include <QtCore/QTime>".to_owned()],
             Self::QUrl => vec!["#include <QtCore/QUrl>".to_owned()],
             Self::QVariant => vec!["#include <QtCore/QVariant>".to_owned()],
+            Self::UniquePtr { inner } => inner.include_paths(),
             _others => vec![],
         }
     }
@@ -117,11 +120,12 @@ impl CppType for QtTypes {
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str | Self::String => true,
+            Self::Str | Self::String | Self::QString => true,
             Self::QTime => true,
             Self::QUrl => true,
             Self::QVariant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
+            Self::UniquePtr { .. } => true,
             _other => unreachable!(),
         }
     }
@@ -166,11 +170,12 @@ impl CppType for QtTypes {
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str | Self::String => true,
+            Self::Str | Self::String | Self::QString => true,
             Self::QTime => true,
             Self::QUrl => true,
             Self::QVariant => true,
             Self::U8 | Self::U16 | Self::U32 => false,
+            Self::UniquePtr { .. } => true,
             _other => unreachable!(),
         }
     }
@@ -206,13 +211,19 @@ impl CppType for QtTypes {
             Self::QRectF => "QRectF",
             Self::QSize => "QSize",
             Self::QSizeF => "QSizeF",
-            Self::Str | Self::String => "QString",
+            Self::Str | Self::String | Self::QString => "QString",
             Self::QTime => "QTime",
             Self::QUrl => "QUrl",
             Self::QVariant => "QVariant",
             Self::U8 => "quint8",
             Self::U16 => "quint16",
             Self::U32 => "quint32",
+            // TODO: for now always automatically convert UniquePtr<T> to T
+            // in C++, later this will require a macro attribute to do this
+            // eg for properties, invokable returns, signals
+            //
+            // But this may be changed once the generation pattern matching has been removed
+            Self::UniquePtr { inner } => inner.type_ident(),
             _other => unreachable!(),
         }
     }
