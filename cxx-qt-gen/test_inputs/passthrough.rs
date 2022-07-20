@@ -21,6 +21,8 @@ pub mod my_object {
     // ItemForeignMod
     extern "C" {}
 
+    unsafe extern "C++" {}
+
     // ItemMacro
     macro_rules! macro1 {
         () => {

@@ -51,6 +51,10 @@ pub mod my_object {
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObject>);
     }
+
+    extern "C" {}
+
+    unsafe extern "C++" {}
 }
 
 pub use self::cxx_qt_my_object::*;
@@ -74,8 +78,6 @@ pub mod cxx_qt_my_object {
     fn do_something() {
         println!("I am a free function");
     }
-
-    extern "C" {}
 
     macro_rules! macro1 {
         () => {

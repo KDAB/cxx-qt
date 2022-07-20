@@ -536,6 +536,9 @@ pub fn generate_qobject_cxx(
     let mod_ident = &obj.original_mod.ident;
     let mod_vis = &obj.original_mod.vis;
 
+    // Retrieve the passthrough items to CXX
+    let cxx_items = &obj.cxx_items;
+
     // Build the CXX bridge
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
@@ -595,6 +598,8 @@ pub fn generate_qobject_cxx(
 
                 #handle_update_request
             }
+
+            #(#cxx_items)*
         }
     };
 
