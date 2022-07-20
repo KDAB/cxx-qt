@@ -8,11 +8,11 @@ mod my_object {
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         #[namespace = ""]
         type QDate = cxx_qt_lib::QDate;
         #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
         #[namespace = ""]
         type QPoint = cxx_qt_lib::QPoint;
         #[namespace = ""]
@@ -26,13 +26,13 @@ mod my_object {
         #[namespace = ""]
         type QSizeF = cxx_qt_lib::QSizeF;
         #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
+        type QString = cxx_qt_lib::QString;
         #[namespace = ""]
         type QTime = cxx_qt_lib::QTime;
         #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
+        type QUrl = cxx_qt_lib::QUrl;
         #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QVariant = cxx_qt_lib::QVariant;
 
         #[rust_name = "color"]
         fn getColor(self: &MyObjectQt) -> &QColor;
@@ -119,9 +119,8 @@ pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct RustObj;
@@ -137,12 +136,12 @@ mod cxx_qt_my_object {
             Self { cpp }
         }
 
-        pub fn color(&self) -> cxx_qt_lib::QColor {
-            self.cpp.color().to_rust()
+        pub fn color(&self) -> &cxx_qt_lib::QColor {
+            self.cpp.color()
         }
 
-        pub fn set_color(&mut self, value: cxx_qt_lib::QColor) {
-            self.cpp.as_mut().set_color(&value.to_unique_ptr());
+        pub fn set_color(&mut self, value: &cxx_qt_lib::QColor) {
+            self.cpp.as_mut().set_color(value);
         }
 
         pub fn date(&self) -> &cxx_qt_lib::QDate {
@@ -153,12 +152,12 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_date(value);
         }
 
-        pub fn date_time(&self) -> cxx_qt_lib::QDateTime {
-            self.cpp.date_time().to_rust()
+        pub fn date_time(&self) -> &cxx_qt_lib::QDateTime {
+            self.cpp.date_time()
         }
 
-        pub fn set_date_time(&mut self, value: cxx_qt_lib::QDateTime) {
-            self.cpp.as_mut().set_date_time(&value.to_unique_ptr());
+        pub fn set_date_time(&mut self, value: &cxx_qt_lib::QDateTime) {
+            self.cpp.as_mut().set_date_time(value);
         }
 
         pub fn point(&self) -> &cxx_qt_lib::QPoint {
@@ -209,12 +208,12 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_sizef(value);
         }
 
-        pub fn string(&self) -> String {
-            self.cpp.string().to_rust()
+        pub fn string(&self) -> &cxx_qt_lib::QString {
+            self.cpp.string()
         }
 
-        pub fn set_string(&mut self, value: &str) {
-            self.cpp.as_mut().set_string(&value.to_unique_ptr());
+        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
+            self.cpp.as_mut().set_string(value);
         }
 
         pub fn time(&self) -> &cxx_qt_lib::QTime {
@@ -225,54 +224,54 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_time(value);
         }
 
-        pub fn url(&self) -> cxx_qt_lib::QUrl {
-            self.cpp.url().to_rust()
+        pub fn url(&self) -> &cxx_qt_lib::QUrl {
+            self.cpp.url()
         }
 
-        pub fn set_url(&mut self, value: cxx_qt_lib::QUrl) {
-            self.cpp.as_mut().set_url(&value.to_unique_ptr());
+        pub fn set_url(&mut self, value: &cxx_qt_lib::QUrl) {
+            self.cpp.as_mut().set_url(value);
         }
 
-        pub fn variant(&self) -> cxx_qt_lib::QVariant {
-            self.cpp.variant().to_rust()
+        pub fn variant(&self) -> &cxx_qt_lib::QVariant {
+            self.cpp.variant()
         }
 
-        pub fn set_variant(&mut self, value: cxx_qt_lib::QVariant) {
-            self.cpp.as_mut().set_variant(&value.to_unique_ptr());
+        pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
+            self.cpp.as_mut().set_variant(value);
         }
 
         pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_color(std::mem::take(&mut data.color));
+            self.set_color(data.color.as_ref().unwrap());
             self.set_date(&data.date);
-            self.set_date_time(std::mem::take(&mut data.date_time));
+            self.set_date_time(data.date_time.as_ref().unwrap());
             self.set_point(&data.point);
             self.set_pointf(&data.pointf);
             self.set_rect(&data.rect);
             self.set_rectf(&data.rectf);
             self.set_size(&data.size);
             self.set_sizef(&data.sizef);
-            self.set_string(&data.string);
+            self.set_string(data.string.as_ref().unwrap());
             self.set_time(&data.time);
-            self.set_url(std::mem::take(&mut data.url));
-            self.set_variant(std::mem::take(&mut data.variant));
+            self.set_url(data.url.as_ref().unwrap());
+            self.set_variant(data.variant.as_ref().unwrap());
         }
     }
 
     #[derive(Default)]
     pub struct Data {
-        color: QColor,
+        color: UniquePtr<QColor>,
         date: QDate,
-        date_time: QDateTime,
+        date_time: UniquePtr<QDateTime>,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
-        string: String,
+        string: UniquePtr<QString>,
         time: QTime,
-        url: QUrl,
-        variant: QVariant,
+        url: UniquePtr<QUrl>,
+        variant: UniquePtr<QVariant>,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

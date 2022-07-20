@@ -8,11 +8,11 @@ mod my_object {
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         #[namespace = ""]
         type QDate = cxx_qt_lib::QDate;
         #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
         #[namespace = ""]
         type QPoint = cxx_qt_lib::QPoint;
         #[namespace = ""]
@@ -26,13 +26,13 @@ mod my_object {
         #[namespace = ""]
         type QSizeF = cxx_qt_lib::QSizeF;
         #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
+        type QString = cxx_qt_lib::QString;
         #[namespace = ""]
         type QTime = cxx_qt_lib::QTime;
         #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
+        type QUrl = cxx_qt_lib::QUrl;
         #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QVariant = cxx_qt_lib::QVariant;
 
         #[namespace = "rust::cxxqtlib1"]
         type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
@@ -73,10 +73,10 @@ pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
     use cxx_qt_lib::UpdateRequestHandler;
 
     pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct RustObj;
@@ -105,12 +105,12 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_number(value);
         }
 
-        pub fn string(&self) -> String {
-            self.cpp.string().to_rust()
+        pub fn string(&self) -> &cxx_qt_lib::QString {
+            self.cpp.string()
         }
 
-        pub fn set_string(&mut self, value: &str) {
-            self.cpp.as_mut().set_string(&value.to_unique_ptr());
+        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
+            self.cpp.as_mut().set_string(value);
         }
 
         pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
@@ -126,7 +126,7 @@ mod cxx_qt_my_object {
     #[derive(Default)]
     pub struct Data {
         number: i32,
-        string: String,
+        string: QString,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

@@ -6,10 +6,9 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl, QVariant,
-    QVariantValue, ToUniquePtr,
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+    QVariant, QVariantValue,
 };
-use std::str::FromStr;
 
 #[cxx::bridge]
 mod ffi {
@@ -48,12 +47,12 @@ mod ffi {
         include!("cxx-qt-lib/include/qt_types.h");
         include!("bridge.h");
 
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         type QDate = cxx_qt_lib::QDate;
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
-        type QString = cxx_qt_lib::QStringCpp;
-        type QUrl = cxx_qt_lib::QUrlCpp;
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
+        type QString = cxx_qt_lib::QString;
+        type QUrl = cxx_qt_lib::QUrl;
+        type QVariant = cxx_qt_lib::QVariant;
         type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
         type QPoint = cxx_qt_lib::QPoint;
@@ -141,38 +140,38 @@ use ffi::VariantTest;
 
 fn can_construct_qstring(slice: bool) -> bool {
     if slice {
-        ffi::test_constructed_qstring(&"String constructed by Rust".to_unique_ptr())
+        ffi::test_constructed_qstring(&QString::from_str("String constructed by Rust"))
     } else {
         let rs_string = "String constructed by Rust".to_owned();
-        ffi::test_constructed_qstring(&rs_string.to_unique_ptr())
+        ffi::test_constructed_qstring(&QString::from_str(&rs_string))
     }
 }
 
-fn can_read_qstring(s: &cxx_qt_lib::QStringCpp) -> bool {
-    let rs = s.to_rust();
+fn can_read_qstring(s: &cxx_qt_lib::QString) -> bool {
+    let rs = s.to_string();
     rs == "String constructed by C++"
 }
 
-fn modify_qstring(s: Pin<&mut cxx_qt_lib::QStringCpp>) {
-    ffi::assign_to_qstring(s, &"Updated string value".to_unique_ptr());
+fn modify_qstring(s: Pin<&mut cxx_qt_lib::QString>) {
+    ffi::assign_to_qstring(s, &QString::from_str("Updated string value"));
 }
 
 fn can_handle_qstring_change() -> bool {
     let long_s = "Very very long string that is hopefully long enough to allocate and get Valgrind's attention :)";
-    let long_s_ptr = long_s.to_unique_ptr();
+    let long_s_ptr = QString::from_str(long_s);
 
-    let mut short_s_ptr = "Short string".to_unique_ptr();
+    let mut short_s_ptr = QString::from_str("Short string");
     ffi::assign_to_qstring(short_s_ptr.pin_mut(), &long_s_ptr);
 
-    short_s_ptr.to_rust() == long_s
+    short_s_ptr.to_string() == long_s
 }
 
-fn make_color(test: ColorTest) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
+fn make_color(test: ColorTest) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
     match test {
-        ColorTest::Rgb_Red => QColor::from_rgba(255, 0, 0, 255).to_unique_ptr(),
-        ColorTest::Rgb_Green => QColor::from_rgba(0, 255, 0, 255).to_unique_ptr(),
-        ColorTest::Rgb_Blue => QColor::from_rgba(0, 0, 255, 255).to_unique_ptr(),
-        ColorTest::Rgb_Transparent => QColor::from_rgba(0, 0, 0, 0).to_unique_ptr(),
+        ColorTest::Rgb_Red => QColor::from_rgba(255, 0, 0, 255),
+        ColorTest::Rgb_Green => QColor::from_rgba(0, 255, 0, 255),
+        ColorTest::Rgb_Blue => QColor::from_rgba(0, 0, 255, 255),
+        ColorTest::Rgb_Transparent => QColor::from_rgba(0, 0, 0, 0),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
@@ -182,8 +181,7 @@ fn can_construct_qcolor(test: ColorTest) -> bool {
     ffi::test_constructed_qcolor(&color, test)
 }
 
-fn can_read_qcolor(c: &cxx_qt_lib::QColorCpp, test: ColorTest) -> bool {
-    let color = c.to_rust();
+fn can_read_qcolor(color: &cxx_qt_lib::QColor, test: ColorTest) -> bool {
     match test {
         ColorTest::Rgb_Red => {
             color.alpha() == 255 && color.red() == 255 && color.green() == 0 && color.blue() == 0
@@ -202,12 +200,11 @@ fn can_read_qcolor(c: &cxx_qt_lib::QColorCpp, test: ColorTest) -> bool {
 }
 
 fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
-    let dt = QDateTime::from_date_and_time(date, time).to_unique_ptr();
+    let dt = QDateTime::from_date_and_time(date, time);
     ffi::test_constructed_qdatetime(&dt, date, time)
 }
 
-fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTimeCpp, date: &QDate, time: &QTime) -> bool {
-    let dt = dt.to_rust();
+fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) -> bool {
     dt.date().year() == date.year()
         && dt.date().month() == date.month()
         && dt.date().day() == date.day()
@@ -217,45 +214,45 @@ fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTimeCpp, date: &QDate, time: &QTime)
         && dt.time().msec() == time.msec()
 }
 
-fn can_construct_qurl(test: &cxx_qt_lib::QStringCpp) -> bool {
-    let url = QUrl::from_str(&test.to_rust()).unwrap().to_unique_ptr();
+fn can_construct_qurl(test: &cxx_qt_lib::QString) -> bool {
+    let url = QUrl::from_str(&test.to_string());
 
-    ffi::test_constructed_qurl(&url, test)
+    ffi::test_constructed_qurl(url.as_ref().unwrap(), test)
 }
 
-fn can_read_qurl(u: &cxx_qt_lib::QUrlCpp, test: &cxx_qt_lib::QStringCpp) -> bool {
-    u.to_rust().string() == test.to_rust()
+fn can_read_qurl(u: &cxx_qt_lib::QUrl, test: &cxx_qt_lib::QString) -> bool {
+    u.string() == test.to_string()
 }
 
-fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
+fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
     match test {
-        VariantTest::Bool => QVariant::from(true).to_unique_ptr(),
-        VariantTest::F32 => QVariant::from(1.23_f32).to_unique_ptr(),
-        VariantTest::F64 => QVariant::from(1.23_f64).to_unique_ptr(),
-        VariantTest::I8 => QVariant::from(12_i8).to_unique_ptr(),
-        VariantTest::I16 => QVariant::from(123_i16).to_unique_ptr(),
-        VariantTest::I32 => QVariant::from(123_i32).to_unique_ptr(),
-        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)).to_unique_ptr(),
-        VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)).to_unique_ptr(),
-        VariantTest::QDateTime => QVariant::from(QDateTime::from_date_and_time(
-            &QDate::new(2022, 1, 1),
-            &QTime::new(1, 2, 3, 4),
-        ))
-        .to_unique_ptr(),
-        VariantTest::QPoint => QVariant::from(QPoint::new(1, 3)).to_unique_ptr(),
-        VariantTest::QPointF => QVariant::from(QPointF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QRect => QVariant::from(QRect::new(123, 456, 246, 912)).to_unique_ptr(),
-        VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)).to_unique_ptr(),
-        VariantTest::QSize => QVariant::from(QSize::new(1, 3)).to_unique_ptr(),
-        VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)).to_unique_ptr(),
-        VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)).to_unique_ptr(),
+        VariantTest::Bool => QVariant::from(true),
+        VariantTest::F32 => QVariant::from(1.23_f32),
+        VariantTest::F64 => QVariant::from(1.23_f64),
+        VariantTest::I8 => QVariant::from(12_i8),
+        VariantTest::I16 => QVariant::from(123_i16),
+        VariantTest::I32 => QVariant::from(123_i32),
+        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255).as_ref().unwrap()),
+        VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)),
+        VariantTest::QDateTime => QVariant::from(
+            QDateTime::from_date_and_time(&QDate::new(2022, 1, 1), &QTime::new(1, 2, 3, 4))
+                .as_ref()
+                .unwrap(),
+        ),
+        VariantTest::QPoint => QVariant::from(QPoint::new(1, 3)),
+        VariantTest::QPointF => QVariant::from(QPointF::new(1.0, 3.0)),
+        VariantTest::QRect => QVariant::from(QRect::new(123, 456, 246, 912)),
+        VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)),
+        VariantTest::QSize => QVariant::from(QSize::new(1, 3)),
+        VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)),
+        VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)),
         VariantTest::QUrl => {
-            QVariant::from(QUrl::from_str("https://github.com/KDAB").unwrap()).to_unique_ptr()
+            QVariant::from(QUrl::from_str("https://github.com/KDAB").as_ref().unwrap())
         }
-        VariantTest::String => QVariant::from("Rust string".to_owned()).to_unique_ptr(),
-        VariantTest::U8 => QVariant::from(12_u8).to_unique_ptr(),
-        VariantTest::U16 => QVariant::from(123_u16).to_unique_ptr(),
-        VariantTest::U32 => QVariant::from(123_u32).to_unique_ptr(),
+        VariantTest::String => QVariant::from("Rust string".to_owned()),
+        VariantTest::U8 => QVariant::from(12_u8),
+        VariantTest::U16 => QVariant::from(123_u16),
+        VariantTest::U32 => QVariant::from(123_u32),
         _others => panic!("Unsupported test: {}", test.repr),
     }
 }
@@ -265,8 +262,8 @@ fn can_construct_qvariant(test: VariantTest) -> bool {
     ffi::test_constructed_qvariant(&variant, test)
 }
 
-fn can_read_qvariant(v: &cxx_qt_lib::QVariantCpp, test: VariantTest) -> bool {
-    let variant = v.to_rust().value();
+fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
+    let variant = v.value();
     match test {
         VariantTest::Bool => match variant {
             QVariantValue::Bool(b) => !b,
@@ -357,7 +354,9 @@ fn can_read_qvariant(v: &cxx_qt_lib::QVariantCpp, test: VariantTest) -> bool {
             _others => false,
         },
         VariantTest::QUrl => match variant {
-            QVariantValue::QUrl(url) => url.string() == "https://github.com/KDAB/cxx-qt",
+            QVariantValue::QUrl(url) => {
+                url.as_ref().unwrap().string() == "https://github.com/KDAB/cxx-qt"
+            }
             _others => false,
         },
         VariantTest::String => match variant {

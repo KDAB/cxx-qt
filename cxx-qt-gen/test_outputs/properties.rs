@@ -8,11 +8,11 @@ mod my_object {
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         #[namespace = ""]
         type QDate = cxx_qt_lib::QDate;
         #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
         #[namespace = ""]
         type QPoint = cxx_qt_lib::QPoint;
         #[namespace = ""]
@@ -26,13 +26,13 @@ mod my_object {
         #[namespace = ""]
         type QSizeF = cxx_qt_lib::QSizeF;
         #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
+        type QString = cxx_qt_lib::QString;
         #[namespace = ""]
         type QTime = cxx_qt_lib::QTime;
         #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
+        type QUrl = cxx_qt_lib::QUrl;
         #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QVariant = cxx_qt_lib::QVariant;
 
         #[rust_name = "primitive"]
         fn getPrimitive(self: &MyObjectQt) -> i32;
@@ -72,9 +72,8 @@ pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     use cxx_qt_lib::QColor;
 
@@ -100,12 +99,12 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_primitive(value);
         }
 
-        pub fn opaque(&self) -> cxx_qt_lib::QColor {
-            self.cpp.opaque().to_rust()
+        pub fn opaque(&self) -> &cxx_qt_lib::QColor {
+            self.cpp.opaque()
         }
 
-        pub fn set_opaque(&mut self, value: cxx_qt_lib::QColor) {
-            self.cpp.as_mut().set_opaque(&value.to_unique_ptr());
+        pub fn set_opaque(&mut self, value: &cxx_qt_lib::QColor) {
+            self.cpp.as_mut().set_opaque(value);
         }
 
         pub fn take_nested(&mut self) -> cxx::UniquePtr<NestedObject> {
@@ -118,14 +117,14 @@ mod cxx_qt_my_object {
 
         pub fn grab_values_from_data(&mut self, mut data: Data) {
             self.set_primitive(data.primitive);
-            self.set_opaque(std::mem::take(&mut data.opaque));
+            self.set_opaque(data.opaque.as_ref().unwrap());
         }
     }
 
     #[derive(Default)]
     pub struct Data {
         primitive: i32,
-        opaque: QColor,
+        opaque: UniquePtr<QColor>,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

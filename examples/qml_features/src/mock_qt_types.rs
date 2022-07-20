@@ -10,18 +10,17 @@ mod mock_qt_types {
         QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl,
         QVariant, QVariantValue,
     };
-    use std::str::FromStr;
 
     #[cxx_qt::signals(MyObject)]
     pub enum Signal {
         Ready,
-        DataChanged { variant: QVariant },
+        DataChanged { variant: UniquePtr<QVariant> },
     }
 
     pub struct Data {
-        color: QColor,
+        color: UniquePtr<QColor>,
         date: QDate,
-        date_time: QDateTime,
+        date_time: UniquePtr<QDateTime>,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
@@ -29,8 +28,8 @@ mod mock_qt_types {
         size: QSize,
         sizef: QSizeF,
         time: QTime,
-        url: QUrl,
-        variant: QVariant,
+        url: UniquePtr<QUrl>,
+        variant: UniquePtr<QVariant>,
     }
 
     impl Default for Data {
@@ -49,7 +48,7 @@ mod mock_qt_types {
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
                 time: QTime::new(1, 2, 3, 4),
-                url: QUrl::from_str("https://github.com/KDAB").unwrap(),
+                url: QUrl::from_str("https://github.com/KDAB"),
                 variant: QVariant::from(1_i32),
             }
         }
@@ -79,11 +78,11 @@ mod mock_qt_types {
 
         #[invokable]
         pub fn test_color_property(&self, cpp: &mut CppObj) {
-            cpp.set_color(QColor::from_rgba(0, 0, 255, 255));
+            cpp.set_color(QColor::from_rgba(0, 0, 255, 255).as_ref().unwrap());
         }
 
         #[invokable]
-        pub fn test_color_invokable(&self, _color: &QColor) -> QColor {
+        pub fn test_color_invokable(&self, _color: &QColor) -> UniquePtr<QColor> {
             QColor::from_rgba(0, 255, 0, 255)
         }
 
@@ -113,11 +112,11 @@ mod mock_qt_types {
                     date_time.time().msec() * 5,
                 ),
             );
-            cpp.set_date_time(new_date_time);
+            cpp.set_date_time(new_date_time.as_ref().unwrap());
         }
 
         #[invokable]
-        pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> QDateTime {
+        pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> UniquePtr<QDateTime> {
             QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -267,81 +266,105 @@ mod mock_qt_types {
 
         #[invokable]
         pub fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt")).unwrap();
-            cpp.set_url(url);
+            let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt"));
+            cpp.set_url(url.as_ref().unwrap());
         }
 
         #[invokable]
-        pub fn test_url_invokable(&self, url: &QUrl) -> QUrl {
-            QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap()
+        pub fn test_url_invokable(&self, url: &QUrl) -> UniquePtr<QUrl> {
+            QUrl::from_str(&(url.string() + "/cxx-qt"))
         }
 
         #[invokable]
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
-                QVariantValue::Bool(b) => cpp.set_variant(QVariant::from(!b)),
-                QVariantValue::F32(f) => cpp.set_variant(QVariant::from(f * 2.0)),
-                QVariantValue::F64(d) => cpp.set_variant(QVariant::from(d * 2.0)),
-                QVariantValue::I8(i) => cpp.set_variant(QVariant::from(i * 2)),
-                QVariantValue::I16(i) => cpp.set_variant(QVariant::from(i * 2)),
-                QVariantValue::I32(i) => cpp.set_variant(QVariant::from(i * 2)),
+                QVariantValue::Bool(b) => cpp.set_variant(QVariant::from(!b).as_ref().unwrap()),
+                QVariantValue::F32(f) => cpp.set_variant(QVariant::from(f * 2.0).as_ref().unwrap()),
+                QVariantValue::F64(d) => cpp.set_variant(QVariant::from(d * 2.0).as_ref().unwrap()),
+                QVariantValue::I8(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::I16(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::I32(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
                 QVariantValue::QColor(mut color) => {
-                    color.set_red(0);
-                    color.set_green(0);
-                    color.set_blue(255);
-                    color.set_alpha(255);
-                    cpp.set_variant(QVariant::from(color));
+                    if let Some(mut color) = color.as_mut() {
+                        color.as_mut().set_red(0);
+                        color.as_mut().set_green(0);
+                        color.as_mut().set_blue(255);
+                        color.as_mut().set_alpha(255);
+                    }
+                    cpp.set_variant(QVariant::from(color.as_ref().unwrap()).as_ref().unwrap());
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
-                    cpp.set_variant(QVariant::from(date));
+                    cpp.set_variant(QVariant::from(date).as_ref().unwrap());
                 }
                 QVariantValue::QDateTime(mut date_time) => {
-                    date_time.set_date(QDate::new(2021, 12, 31));
-                    date_time.set_time(QTime::new(
-                        date_time.time().hour() * 2,
-                        date_time.time().minute() * 3,
-                        date_time.time().second() * 4,
-                        date_time.time().msec() * 5,
-                    ));
-                    cpp.set_variant(QVariant::from(date_time));
+                    if let Some(mut date_time) = date_time.as_mut() {
+                        date_time.as_mut().set_date(QDate::new(2021, 12, 31));
+                        let new_time = QTime::new(
+                            date_time.time().hour() * 2,
+                            date_time.time().minute() * 3,
+                            date_time.time().second() * 4,
+                            date_time.time().msec() * 5,
+                        );
+                        date_time.as_mut().set_time(new_time);
+                    }
+                    cpp.set_variant(
+                        QVariant::from(date_time.as_ref().unwrap())
+                            .as_ref()
+                            .unwrap(),
+                    );
                 }
                 QVariantValue::QPoint(point) => {
-                    cpp.set_variant(QVariant::from(QPoint::new(point.x() * 2, point.y() * 2)));
+                    cpp.set_variant(
+                        QVariant::from(QPoint::new(point.x() * 2, point.y() * 2))
+                            .as_ref()
+                            .unwrap(),
+                    );
                 }
                 QVariantValue::QPointF(pointf) => {
-                    cpp.set_variant(QVariant::from(QPointF::new(
-                        pointf.x() * 2.0,
-                        pointf.y() * 2.0,
-                    )));
+                    cpp.set_variant(
+                        QVariant::from(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
+                            .as_ref()
+                            .unwrap(),
+                    );
                 }
                 QVariantValue::QRect(rect) => {
-                    cpp.set_variant(QVariant::from(QRect::new(
-                        rect.x() * 2,
-                        rect.y() * 3,
-                        rect.width() * 4,
-                        rect.height() * 5,
-                    )));
+                    cpp.set_variant(
+                        QVariant::from(QRect::new(
+                            rect.x() * 2,
+                            rect.y() * 3,
+                            rect.width() * 4,
+                            rect.height() * 5,
+                        ))
+                        .as_ref()
+                        .unwrap(),
+                    );
                 }
                 QVariantValue::QRectF(rectf) => {
-                    cpp.set_variant(QVariant::from(QRectF::new(
-                        rectf.x() * 2.0,
-                        rectf.y() * 3.0,
-                        rectf.width() * 4.0,
-                        rectf.height() * 5.0,
-                    )));
+                    cpp.set_variant(
+                        QVariant::from(QRectF::new(
+                            rectf.x() * 2.0,
+                            rectf.y() * 3.0,
+                            rectf.width() * 4.0,
+                            rectf.height() * 5.0,
+                        ))
+                        .as_ref()
+                        .unwrap(),
+                    );
                 }
                 QVariantValue::QSize(size) => {
-                    cpp.set_variant(QVariant::from(QSize::new(
-                        size.width() * 2,
-                        size.height() * 2,
-                    )));
+                    cpp.set_variant(
+                        QVariant::from(QSize::new(size.width() * 2, size.height() * 2))
+                            .as_ref()
+                            .unwrap(),
+                    );
                 }
                 QVariantValue::QSizeF(sizef) => {
-                    cpp.set_variant(QVariant::from(QSizeF::new(
-                        sizef.width() * 2.0,
-                        sizef.height() * 2.0,
-                    )));
+                    cpp.set_variant(
+                        QVariant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
+                            .as_ref()
+                            .unwrap(),
+                    );
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -350,21 +373,21 @@ mod mock_qt_types {
                         time.second() * 4,
                         time.msec() * 5,
                     );
-                    cpp.set_variant(QVariant::from(time));
+                    cpp.set_variant(QVariant::from(time).as_ref().unwrap());
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap();
-                    cpp.set_variant(QVariant::from(url));
+                    let url = QUrl::from_str(&(url.string() + "/cxx-qt"));
+                    cpp.set_variant(QVariant::from(url.as_ref().unwrap()).as_ref().unwrap());
                 }
-                QVariantValue::U8(i) => cpp.set_variant(QVariant::from(i * 2)),
-                QVariantValue::U16(i) => cpp.set_variant(QVariant::from(i * 2)),
-                QVariantValue::U32(i) => cpp.set_variant(QVariant::from(i * 2)),
+                QVariantValue::U8(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::U16(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::U32(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
                 _ => panic!("Incorrect variant type!"),
             }
         }
 
         #[invokable]
-        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::F32(f) => QVariant::from(f * 2.0),
@@ -373,25 +396,30 @@ mod mock_qt_types {
                 QVariantValue::I16(i) => QVariant::from(i * 2),
                 QVariantValue::I32(i) => QVariant::from(i * 2),
                 QVariantValue::QColor(mut color) => {
-                    color.set_red(0);
-                    color.set_green(255);
-                    color.set_blue(0);
-                    color.set_alpha(255);
-                    QVariant::from(color)
+                    if let Some(mut color) = color.as_mut() {
+                        color.as_mut().set_red(0);
+                        color.as_mut().set_green(255);
+                        color.as_mut().set_blue(0);
+                        color.as_mut().set_alpha(255);
+                    }
+                    QVariant::from(color.as_ref().unwrap())
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
                     QVariant::from(date)
                 }
                 QVariantValue::QDateTime(mut date_time) => {
-                    date_time.set_date(QDate::new(2021, 12, 31));
-                    date_time.set_time(QTime::new(
-                        date_time.time().hour() * 2,
-                        date_time.time().minute() * 3,
-                        date_time.time().second() * 4,
-                        date_time.time().msec() * 5,
-                    ));
-                    QVariant::from(date_time)
+                    if let Some(mut date_time) = date_time.as_mut() {
+                        date_time.as_mut().set_date(QDate::new(2021, 12, 31));
+                        let new_time = QTime::new(
+                            date_time.time().hour() * 2,
+                            date_time.time().minute() * 3,
+                            date_time.time().second() * 4,
+                            date_time.time().msec() * 5,
+                        );
+                        date_time.as_mut().set_time(new_time);
+                    }
+                    QVariant::from(date_time.as_ref().unwrap())
                 }
                 QVariantValue::QPoint(point) => {
                     QVariant::from(QPoint::new(point.x() * 2, point.y() * 2))
@@ -427,8 +455,8 @@ mod mock_qt_types {
                     QVariant::from(time)
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = QUrl::from_str(&(url.string() + "/cxx-qt")).unwrap();
-                    QVariant::from(url)
+                    let url = QUrl::from_str(&(url.string() + "/cxx-qt"));
+                    QVariant::from(url.as_ref().unwrap())
                 }
                 QVariantValue::U8(i) => QVariant::from(i * 2),
                 QVariantValue::U16(i) => QVariant::from(i * 2),

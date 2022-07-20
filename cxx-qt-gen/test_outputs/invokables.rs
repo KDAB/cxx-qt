@@ -8,11 +8,11 @@ mod my_object {
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
+        type QColor = cxx_qt_lib::QColor;
         #[namespace = ""]
         type QDate = cxx_qt_lib::QDate;
         #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
+        type QDateTime = cxx_qt_lib::QDateTime;
         #[namespace = ""]
         type QPoint = cxx_qt_lib::QPoint;
         #[namespace = ""]
@@ -26,13 +26,13 @@ mod my_object {
         #[namespace = ""]
         type QSizeF = cxx_qt_lib::QSizeF;
         #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
+        type QString = cxx_qt_lib::QString;
         #[namespace = ""]
         type QTime = cxx_qt_lib::QTime;
         #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
+        type QUrl = cxx_qt_lib::QUrl;
         #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
+        type QVariant = cxx_qt_lib::QVariant;
 
         #[namespace = "cxx_qt::nested_object"]
         type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
@@ -55,13 +55,8 @@ mod my_object {
         fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
         #[cxx_name = "invokableNestedParameterWrapper"]
         fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
-        #[cxx_name = "invokableParametersWrapper"]
-        fn invokable_parameters_wrapper(
-            self: &RustObj,
-            opaque: &QColor,
-            trivial: &QPoint,
-            primitive: i32,
-        );
+        #[cxx_name = "invokableParameters"]
+        fn invokable_parameters(self: &RustObj, opaque: &QColor, trivial: &QPoint, primitive: i32);
         #[cxx_name = "invokableParametersCppObjWrapper"]
         fn invokable_parameters_cpp_obj_wrapper(
             self: &RustObj,
@@ -87,9 +82,8 @@ pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     use cxx_qt_lib::QColor;
 
@@ -115,16 +109,6 @@ mod cxx_qt_my_object {
             self.invokable_nested_parameter(&mut nested);
         }
 
-        pub fn invokable_parameters_wrapper(
-            &self,
-            opaque: &cxx_qt_lib::QColorCpp,
-            trivial: &cxx_qt_lib::QPoint,
-            primitive: i32,
-        ) {
-            let opaque = opaque.to_rust();
-            self.invokable_parameters(&opaque, trivial, primitive);
-        }
-
         pub fn invokable_parameters_cpp_obj_wrapper(
             &self,
             primitive: i32,
@@ -134,14 +118,12 @@ mod cxx_qt_my_object {
             self.invokable_parameters_cpp_obj(primitive, &mut cpp);
         }
 
-        pub fn invokable_return_opaque_wrapper(&mut self) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
-            return self.invokable_return_opaque().to_unique_ptr();
+        pub fn invokable_return_opaque_wrapper(&mut self) -> UniquePtr<cxx_qt_lib::QColor> {
+            return self.invokable_return_opaque();
         }
 
-        pub fn invokable_return_static_wrapper(
-            &mut self,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
-            return self.invokable_return_static().to_unique_ptr();
+        pub fn invokable_return_static_wrapper(&mut self) -> UniquePtr<cxx_qt_lib::QString> {
+            return self.invokable_return_static();
         }
 
         pub fn invokable(&self) {
@@ -177,7 +159,7 @@ mod cxx_qt_my_object {
             println!("{}", primitive);
         }
 
-        pub fn invokable_return_opaque(&mut self) -> QColor {
+        pub fn invokable_return_opaque(&mut self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
@@ -185,8 +167,8 @@ mod cxx_qt_my_object {
             2
         }
 
-        pub fn invokable_return_static(&mut self) -> &str {
-            "static"
+        pub fn invokable_return_static(&mut self) -> UniquePtr<QString> {
+            QString::from_str("static")
         }
 
         pub fn rust_only_method(&self) {

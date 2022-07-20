@@ -1,19 +1,19 @@
 mod my_object {
     #[derive(Default)]
     pub struct Data {
-        color: QColor,
+        color: UniquePtr<QColor>,
         date: QDate,
-        date_time: QDateTime,
+        date_time: UniquePtr<QDateTime>,
         point: QPoint,
         pointf: QPointF,
         rect: QRect,
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
-        string: String,
+        string: UniquePtr<QString>,
         time: QTime,
-        url: QUrl,
-        variant: QVariant,
+        url: UniquePtr<QUrl>,
+        variant: UniquePtr<QVariant>,
     }
 
     #[derive(Default)]

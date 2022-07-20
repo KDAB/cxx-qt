@@ -4,7 +4,7 @@ mod my_object {
     #[derive(Default)]
     pub struct Data {
         primitive: i32,
-        opaque: QColor,
+        opaque: UniquePtr<QColor>,
         nested: crate::cxx_qt_nested_object::CppObj,
     }
 

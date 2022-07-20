@@ -41,9 +41,10 @@ impl RustType for QtTypes {
             Self::QSize => true,
             Self::QSizeF => true,
             Self::QTime => true,
-            Self::String | Self::Str => true,
+            Self::String | Self::Str | Self::QString => true,
             Self::QUrl => true,
             Self::QVariant => true,
+            Self::UniquePtr { .. } => true,
             _others => false,
         }
     }
@@ -71,12 +72,14 @@ impl RustType for QtTypes {
             Self::QSizeF => format_ident!("QSizeF"),
             Self::Str => format_ident!("QString"),
             Self::String => format_ident!("QString"),
+            Self::QString => format_ident!("QString"),
             Self::QTime => format_ident!("QTime"),
             Self::QUrl => format_ident!("QUrl"),
             Self::QVariant => format_ident!("QVariant"),
             Self::U8 => format_ident!("u8"),
             Self::U16 => format_ident!("u16"),
             Self::U32 => format_ident!("u32"),
+            Self::UniquePtr { inner } => format_ident!("{}", inner.cxx_bridge_type_ident()),
             _others => unreachable!(),
         }
     }
@@ -96,12 +99,12 @@ impl RustType for QtTypes {
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
             Self::QColor => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QColorCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QColor},
                 TargetType::Rust => quote! {cxx_qt_lib::QColor},
             },
             Self::QDate => quote! {cxx_qt_lib::QDate},
             Self::QDateTime => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QDateTimeCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QDateTime},
                 TargetType::Rust => quote! {cxx_qt_lib::QDateTime},
             },
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
@@ -111,25 +114,33 @@ impl RustType for QtTypes {
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
             Self::Str => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QStringCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QString},
                 TargetType::Rust => quote! {str},
             },
             Self::String => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QStringCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QString},
                 TargetType::Rust => quote! {String},
+            },
+            Self::QString => match target_type {
+                TargetType::Cpp => quote! {cxx_qt_lib::QString},
+                TargetType::Rust => quote! {cxx_qt_lib::QString},
             },
             Self::QTime => quote! {cxx_qt_lib::QTime},
             Self::QUrl => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QUrlCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QUrl},
                 TargetType::Rust => quote! {cxx_qt_lib::QUrl},
             },
             Self::QVariant => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QVariantCpp},
+                TargetType::Cpp => quote! {cxx_qt_lib::QVariant},
                 TargetType::Rust => quote! {cxx_qt_lib::QVariant},
             },
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
             Self::U32 => quote! {u32},
+            Self::UniquePtr { inner } => {
+                let inner = inner.cxx_qt_lib_type(target_type);
+                quote! {UniquePtr<#inner> }
+            }
             _other => unreachable!(),
         }
     }
@@ -528,7 +539,7 @@ pub fn generate_qobject_cxx(
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
 
-    // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QStringCpp;"
+    // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QString;"
     // if we actually generate some code that uses QString.
 
     // Build the namespace string, rust::module
@@ -555,11 +566,11 @@ pub fn generate_qobject_cxx(
 
                 include!("cxx-qt-lib/include/qt_types.h");
                 #[namespace = ""]
-                type QColor = cxx_qt_lib::QColorCpp;
+                type QColor = cxx_qt_lib::QColor;
                 #[namespace = ""]
                 type QDate = cxx_qt_lib::QDate;
                 #[namespace = ""]
-                type QDateTime = cxx_qt_lib::QDateTimeCpp;
+                type QDateTime = cxx_qt_lib::QDateTime;
                 #[namespace = ""]
                 type QPoint = cxx_qt_lib::QPoint;
                 #[namespace = ""]
@@ -573,13 +584,13 @@ pub fn generate_qobject_cxx(
                 #[namespace = ""]
                 type QSizeF = cxx_qt_lib::QSizeF;
                 #[namespace = ""]
-                type QString = cxx_qt_lib::QStringCpp;
+                type QString = cxx_qt_lib::QString;
                 #[namespace = ""]
                 type QTime = cxx_qt_lib::QTime;
                 #[namespace = ""]
-                type QUrl = cxx_qt_lib::QUrlCpp;
+                type QUrl = cxx_qt_lib::QUrl;
                 #[namespace = ""]
-                type QVariant = cxx_qt_lib::QVariantCpp;
+                type QVariant = cxx_qt_lib::QVariant;
                 #update_requester_type
 
                 #(#cpp_functions)*
@@ -632,7 +643,11 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
     let mut property_methods = Vec::new();
 
     for property in &obj.properties {
-        let qt_type = &property.type_ident.qt_type;
+        let qt_type = if let QtTypes::UniquePtr { inner } = &property.type_ident.qt_type {
+            &**inner
+        } else {
+            &property.type_ident.qt_type
+        };
         let rust_param_type = qt_type.cxx_qt_lib_type(TargetType::Rust);
         // When the output type is opaque we pass by value rather than ref
         // even though it's a non trivial type
@@ -665,16 +680,10 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
             if let Some(getter) = &property.getter {
                 // Generate a getter using the rust ident
                 let getter_ident = &getter.rust_ident;
-                // If the type is opaque then we need to convert to the Rust form
-                let opaque_converter = if qt_type.is_opaque() {
-                    quote! {.to_rust()}
-                } else {
-                    quote! {}
-                };
 
                 property_methods.push(quote! {
                     pub fn #getter_ident(&self) -> #rust_param_type {
-                        self.cpp.#cpp_getter_ident()#opaque_converter
+                        self.cpp.#cpp_getter_ident()
                     }
                 });
             }
@@ -694,7 +703,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
 
                     property_methods.push(quote! {
                         pub fn #setter_ident(&mut self, value: #rust_param_type) {
-                            self.cpp.as_mut().#cpp_setter_ident(&value.to_unique_ptr());
+                            self.cpp.as_mut().#cpp_setter_ident(&value);
                         }
                     });
                 } else {
@@ -730,9 +739,8 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
             .iter()
             .map(|parameter| {
                 let ident = &parameter.ident;
-                if parameter.type_ident.qt_type.is_opaque() {
-                    quote! { &#ident.to_unique_ptr() }
-                } else if parameter.type_ident.qt_type.is_ref() {
+                if parameter.type_ident.qt_type.is_opaque() || parameter.type_ident.qt_type.is_ref()
+                {
                     quote! { &#ident }
                 } else {
                     ident.into_token_stream()
@@ -745,7 +753,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
             .map(|parameter| {
                 let ident = &parameter.ident;
                 if parameter.type_ident.qt_type.is_opaque() {
-                    quote! { #ident.to_unique_ptr() }
+                    quote! { #ident }
                 } else {
                     ident.into_token_stream()
                 }
@@ -891,19 +899,11 @@ fn invokable_generate_wrapper(
     // If we are an opaque return type then we need to convert into the C++ type
     if let Some(return_type) = &invokable.return_type {
         let return_type_ident = return_type.qt_type.cxx_qt_lib_type(TargetType::Cpp);
-        let (return_type_ident, to_unique_ptr) = if return_type.qt_type.is_opaque() {
-            (
-                quote! {cxx::UniquePtr<#return_type_ident>},
-                quote! { .to_unique_ptr() },
-            )
-        } else {
-            (return_type_ident, quote! {})
-        };
 
         Ok(quote! {
             pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> #return_type_ident {
                 #(#wrappers)*
-                return self.#ident(#(#output_parameters),*)#to_unique_ptr;
+                return self.#ident(#(#output_parameters),*);
             }
         })
     } else {
@@ -1100,7 +1100,7 @@ pub fn generate_qobject_rs(
 
             if qt_type.is_opaque() && !matches!(qt_type, QtTypes::String | QtTypes::Str) {
                 grab_values.push(quote! {
-                    self.#setter_name(std::mem::take(&mut data.#field_name));
+                    self.#setter_name(data.#field_name.as_ref().unwrap());
                 });
             } else {
                 let is_ref = if qt_type.is_ref() {
@@ -1147,8 +1147,6 @@ pub fn generate_qobject_rs(
     if obj.handle_updates_impl.is_some() {
         use_traits.push(quote! { use cxx_qt_lib::UpdateRequestHandler; });
     }
-    // TODO: only push if we have an opaque param or return type?
-    use_traits.push(quote! { use cxx_qt_lib::ToUniquePtr; });
 
     let handle_updates_impl = &obj.handle_updates_impl;
 
@@ -1167,6 +1165,7 @@ pub fn generate_qobject_rs(
             #(#use_traits)*
 
             pub type FFICppObj = super::#mod_ident::#class_name_cpp;
+            type UniquePtr<T> = cxx::UniquePtr<T>;
 
             #(#original_passthrough_decls)*
 
