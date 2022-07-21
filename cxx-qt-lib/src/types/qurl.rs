@@ -31,42 +31,21 @@ mod ffi {
 /// The QUrlCpp class provides a convenient interface for working with URLs.
 ///
 /// Note that this is the C++ representation and QUrl should be used in Rust.
-pub type QUrlCpp = ffi::QUrl;
-
-impl QUrlCpp {
-    /// Create a new Rust QUrl from this QUrlCpp.
-    /// This is a copy operation so any changes will not propagate to the original QUrlCpp.
-    pub fn to_rust(&self) -> QUrl {
-        QUrl::from_qurl(self)
-    }
-}
-
-/// The Rust representation of Qt's QUrl
-///
-/// Internally this holds a UniquePtr to a QUrlCpp which has been constructed on the C++ side.
-pub struct QUrl {
-    inner: cxx::UniquePtr<QUrlCpp>,
-}
-
-impl Default for QUrl {
-    fn default() -> Self {
-        QUrl::from_unique_ptr(ffi::qurl_init())
-    }
-}
+pub type QUrl = ffi::QUrl;
 
 impl QUrl {
-    /// Construct a Rust QUrl from an existing UniquePtr<QUrlCpp> this is a move operation
-    ///
-    /// This is used in QVariant::value so that we don't need to perform another copy
-    pub(crate) fn from_unique_ptr(ptr: cxx::UniquePtr<QUrlCpp>) -> Self {
-        Self { inner: ptr }
+    /// Constrct a default null QUrl
+    pub fn null() -> cxx::UniquePtr<Self> {
+        ffi::qurl_init()
     }
 
     /// Construct a Rust QUrl from an existing QUrlCpp, this is a copy operation.
-    pub fn from_qurl(qurl: &QUrlCpp) -> Self {
-        Self {
-            inner: ffi::qurl_init_from_qurl(qurl),
-        }
+    pub fn from_ref(qurl: &QUrl) -> cxx::UniquePtr<Self> {
+        ffi::qurl_init_from_qurl(qurl)
+    }
+
+    pub fn from_str(str: &str) -> cxx::UniquePtr<Self> {
+        ffi::qurl_init_from_string(str)
     }
 
     // TODO: other QUrl methods
@@ -82,37 +61,12 @@ impl QUrl {
 
     /// Returns a string representation of the URL.
     pub fn string(&self) -> String {
-        if let Some(inner) = self.inner.as_ref() {
-            ffi::qurl_to_rust_string(inner)
-        } else {
-            "".to_owned()
-        }
+        ffi::qurl_to_rust_string(self)
     }
 }
 
-impl std::str::FromStr for QUrl {
-    type Err = std::convert::Infallible;
-
-    /// Constructs a URL by parsing the given string.
-    fn from_str(string: &str) -> Result<Self, std::convert::Infallible> {
-        Ok(Self {
-            inner: ffi::qurl_init_from_string(string),
-        })
-    }
-}
-
-impl crate::ToUniquePtr for QUrl {
-    type CppType = QUrlCpp;
-
-    /// Retrieve the UniquePtr to the Qt QUrlCpp of this Rust QUrl
-    /// so that this object can be passed back to C++.
-    fn to_unique_ptr(self) -> cxx::UniquePtr<QUrlCpp> {
-        self.inner
-    }
-}
-
-impl From<&QUrlCpp> for QUrl {
-    fn from(qurl: &QUrlCpp) -> Self {
-        qurl.to_rust()
+impl From<&QUrl> for cxx::UniquePtr<QUrl> {
+    fn from(value: &QUrl) -> cxx::UniquePtr<QUrl> {
+        QUrl::from_ref(value)
     }
 }

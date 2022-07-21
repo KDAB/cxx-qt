@@ -5,34 +5,6 @@ mod my_object {
 
         type MyObject;
 
-        include!("cxx-qt-lib/include/qt_types.h");
-        #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
-        #[namespace = ""]
-        type QDate = cxx_qt_lib::QDate;
-        #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
-        #[namespace = ""]
-        type QPoint = cxx_qt_lib::QPoint;
-        #[namespace = ""]
-        type QPointF = cxx_qt_lib::QPointF;
-        #[namespace = ""]
-        type QRect = cxx_qt_lib::QRect;
-        #[namespace = ""]
-        type QRectF = cxx_qt_lib::QRectF;
-        #[namespace = ""]
-        type QSize = cxx_qt_lib::QSize;
-        #[namespace = ""]
-        type QSizeF = cxx_qt_lib::QSizeF;
-        #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
-        #[namespace = ""]
-        type QTime = cxx_qt_lib::QTime;
-        #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
-        #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
-
         #[namespace = "rust::cxxqtlib1"]
         type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
 
@@ -65,16 +37,22 @@ mod my_object {
         #[cxx_name = "handleUpdateRequest"]
         fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObject>);
     }
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
 }
 
 pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
     use cxx_qt_lib::UpdateRequestHandler;
 
     pub type FFICppObj = super::my_object::MyObject;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct RustObj;
@@ -103,12 +81,12 @@ mod cxx_qt_my_object {
             self.cpp.as_mut().set_number(value);
         }
 
-        pub fn string(&self) -> String {
-            self.cpp.string().to_rust()
+        pub fn string(&self) -> &cxx_qt_lib::QString {
+            self.cpp.string()
         }
 
-        pub fn set_string(&mut self, value: &str) {
-            self.cpp.as_mut().set_string(&value.to_unique_ptr());
+        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
+            self.cpp.as_mut().set_string(value);
         }
 
         pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
@@ -124,7 +102,7 @@ mod cxx_qt_my_object {
     #[derive(Default)]
     pub struct Data {
         number: i32,
-        string: String,
+        string: QString,
     }
 
     impl<'a> From<&CppObj<'a>> for Data {

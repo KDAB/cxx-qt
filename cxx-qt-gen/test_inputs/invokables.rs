@@ -1,5 +1,11 @@
 mod my_object {
-    use cxx_qt_lib::QColor;
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+        type QPoint = cxx_qt_lib::QPoint;
+        type QString = cxx_qt_lib::QString;
+    }
 
     #[derive(Default)]
     pub struct RustObj;
@@ -46,7 +52,7 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn invokable_return_opaque(&mut self) -> QColor {
+        pub fn invokable_return_opaque(&mut self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
@@ -56,8 +62,8 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn invokable_return_static(&mut self) -> &str {
-            "static"
+        pub fn invokable_return_static(&mut self) -> UniquePtr<QString> {
+            QString::from_str("static")
         }
 
         pub fn rust_only_method(&self) {

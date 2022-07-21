@@ -1,11 +1,16 @@
 mod my_object {
-    use cxx_qt_lib::QVariant;
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QPoint = cxx_qt_lib::QPoint;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
 
     enum Signal {
         Ready,
         DataChanged {
             first: i32,
-            second: QVariant,
+            second: UniquePtr<QVariant>,
             third: QPoint,
         },
     }

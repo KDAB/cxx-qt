@@ -4,33 +4,6 @@ mod my_object {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
         type MyObject;
-        include!("cxx-qt-lib/include/qt_types.h");
-        #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
-        #[namespace = ""]
-        type QDate = cxx_qt_lib::QDate;
-        #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
-        #[namespace = ""]
-        type QPoint = cxx_qt_lib::QPoint;
-        #[namespace = ""]
-        type QPointF = cxx_qt_lib::QPointF;
-        #[namespace = ""]
-        type QRect = cxx_qt_lib::QRect;
-        #[namespace = ""]
-        type QRectF = cxx_qt_lib::QRectF;
-        #[namespace = ""]
-        type QSize = cxx_qt_lib::QSize;
-        #[namespace = ""]
-        type QSizeF = cxx_qt_lib::QSizeF;
-        #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
-        #[namespace = ""]
-        type QTime = cxx_qt_lib::QTime;
-        #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
-        #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
 
         #[rust_name = "ready"]
         fn ready(self: Pin<&mut MyObject>);
@@ -63,23 +36,27 @@ mod my_object {
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObject>);
     }
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QPoint = cxx_qt_lib::QPoint;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
 }
 
 pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObject;
-
-    use cxx_qt_lib::QVariant;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     enum Signal {
         Ready,
         DataChanged {
             first: i32,
-            second: QVariant,
+            second: UniquePtr<QVariant>,
             third: QPoint,
         },
     }
@@ -122,10 +99,7 @@ mod cxx_qt_my_object {
                     first,
                     second,
                     third,
-                } => self
-                    .cpp
-                    .as_mut()
-                    .emit_data_changed(first, second.to_unique_ptr(), third),
+                } => self.cpp.as_mut().emit_data_changed(first, second, third),
             }
         }
 
@@ -136,10 +110,7 @@ mod cxx_qt_my_object {
                     first,
                     second,
                     third,
-                } => self
-                    .cpp
-                    .as_mut()
-                    .data_changed(first, &second.to_unique_ptr(), &third),
+                } => self.cpp.as_mut().data_changed(first, &second, &third),
             }
         }
 

@@ -11,12 +11,27 @@
 mod my_object {
     // ANCHOR_END: book_bridge_macro
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     // ANCHOR: book_data_struct
-    #[derive(Default)]
     pub struct Data {
         number: i32,
-        string: String,
+        string: UniquePtr<QString>,
     }
+
+    impl Default for Data {
+        fn default() -> Self {
+            Self {
+                number: 0,
+                string: QString::from_str(""),
+            }
+        }
+    }
+
     // ANCHOR_END: book_data_struct
 
     // ANCHOR: book_rustobj_struct
@@ -32,7 +47,7 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn say_hi(&self, string: &str, number: i32) {
+        pub fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is '{}' and number is {}",
                 string, number

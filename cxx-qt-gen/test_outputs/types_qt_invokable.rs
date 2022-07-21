@@ -5,34 +5,6 @@ mod my_object {
 
         type MyObject;
 
-        include!("cxx-qt-lib/include/qt_types.h");
-        #[namespace = ""]
-        type QColor = cxx_qt_lib::QColorCpp;
-        #[namespace = ""]
-        type QDate = cxx_qt_lib::QDate;
-        #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTimeCpp;
-        #[namespace = ""]
-        type QPoint = cxx_qt_lib::QPoint;
-        #[namespace = ""]
-        type QPointF = cxx_qt_lib::QPointF;
-        #[namespace = ""]
-        type QRect = cxx_qt_lib::QRect;
-        #[namespace = ""]
-        type QRectF = cxx_qt_lib::QRectF;
-        #[namespace = ""]
-        type QSize = cxx_qt_lib::QSize;
-        #[namespace = ""]
-        type QSizeF = cxx_qt_lib::QSizeF;
-        #[namespace = ""]
-        type QString = cxx_qt_lib::QStringCpp;
-        #[namespace = ""]
-        type QTime = cxx_qt_lib::QTime;
-        #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrlCpp;
-        #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariantCpp;
-
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObject>;
     }
@@ -109,15 +81,32 @@ mod my_object {
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObject>);
     }
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+        type QDate = cxx_qt_lib::QDate;
+        type QDateTime = cxx_qt_lib::QDateTime;
+        type QPoint = cxx_qt_lib::QPoint;
+        type QPointF = cxx_qt_lib::QPointF;
+        type QRect = cxx_qt_lib::QRect;
+        type QRectF = cxx_qt_lib::QRectF;
+        type QSize = cxx_qt_lib::QSize;
+        type QSizeF = cxx_qt_lib::QSizeF;
+        type QString = cxx_qt_lib::QString;
+        type QTime = cxx_qt_lib::QTime;
+        type QUrl = cxx_qt_lib::QUrl;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
 }
 
 pub use self::cxx_qt_my_object::*;
 mod cxx_qt_my_object {
     use super::my_object::*;
 
-    use cxx_qt_lib::ToUniquePtr;
-
     pub type FFICppObj = super::my_object::MyObject;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct RustObj;
@@ -126,11 +115,10 @@ mod cxx_qt_my_object {
         pub fn test_color_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            color: &cxx_qt_lib::QColorCpp,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QColorCpp> {
+            color: &cxx_qt_lib::QColor,
+        ) -> UniquePtr<cxx_qt_lib::QColor> {
             let mut _cpp = CppObj::new(_cpp);
-            let color = color.to_rust();
-            return self.test_color(&mut _cpp, &color).to_unique_ptr();
+            return self.test_color(&mut _cpp, color);
         }
 
         pub fn test_date_wrapper(
@@ -145,11 +133,10 @@ mod cxx_qt_my_object {
         pub fn test_date_time_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            dateTime: &cxx_qt_lib::QDateTimeCpp,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QDateTimeCpp> {
+            dateTime: &cxx_qt_lib::QDateTime,
+        ) -> UniquePtr<cxx_qt_lib::QDateTime> {
             let mut _cpp = CppObj::new(_cpp);
-            let dateTime = dateTime.to_rust();
-            return self.test_date_time(&mut _cpp, &dateTime).to_unique_ptr();
+            return self.test_date_time(&mut _cpp, dateTime);
         }
 
         pub fn test_point_wrapper(
@@ -209,11 +196,10 @@ mod cxx_qt_my_object {
         pub fn test_string_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            string: &cxx_qt_lib::QStringCpp,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QStringCpp> {
+            string: &cxx_qt_lib::QString,
+        ) -> UniquePtr<cxx_qt_lib::QString> {
             let mut _cpp = CppObj::new(_cpp);
-            let string = string.to_rust();
-            return self.test_string(&mut _cpp, &string).to_unique_ptr();
+            return self.test_string(&mut _cpp, string);
         }
 
         pub fn test_time_wrapper(
@@ -228,24 +214,22 @@ mod cxx_qt_my_object {
         pub fn test_url_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            url: &cxx_qt_lib::QUrlCpp,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QUrlCpp> {
+            url: &cxx_qt_lib::QUrl,
+        ) -> UniquePtr<cxx_qt_lib::QUrl> {
             let mut _cpp = CppObj::new(_cpp);
-            let url = url.to_rust();
-            return self.test_url(&mut _cpp, &url).to_unique_ptr();
+            return self.test_url(&mut _cpp, url);
         }
 
         pub fn test_variant_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
-            variant: &cxx_qt_lib::QVariantCpp,
-        ) -> cxx::UniquePtr<cxx_qt_lib::QVariantCpp> {
+            variant: &cxx_qt_lib::QVariant,
+        ) -> UniquePtr<cxx_qt_lib::QVariant> {
             let mut _cpp = CppObj::new(_cpp);
-            let variant = variant.to_rust();
-            return self.test_variant(&mut _cpp, &variant).to_unique_ptr();
+            return self.test_variant(&mut _cpp, variant);
         }
 
-        pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
+        pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> UniquePtr<QColor> {
             color
         }
 
@@ -253,7 +237,11 @@ mod cxx_qt_my_object {
             date
         }
 
-        pub fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
+        pub fn test_date_time(
+            &self,
+            _cpp: &mut CppObj,
+            dateTime: &QDateTime,
+        ) -> UniquePtr<QDateTime> {
             dateTime
         }
 
@@ -281,7 +269,7 @@ mod cxx_qt_my_object {
             sizef
         }
 
-        pub fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+        pub fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> UniquePtr<QString> {
             string.to_owned()
         }
 
@@ -289,11 +277,11 @@ mod cxx_qt_my_object {
             time
         }
 
-        pub fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
+        pub fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> UniquePtr<QUrl> {
             url
         }
 
-        pub fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
+        pub fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> UniquePtr<QVariant> {
             variant
         }
     }
