@@ -1,5 +1,11 @@
 mod my_object {
-    use cxx_qt_lib::QColor;
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+        type QPoint = cxx_qt_lib::QPoint;
+        type QString = cxx_qt_lib::QString;
+    }
 
     #[derive(Default)]
     pub struct RustObj;

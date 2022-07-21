@@ -10,6 +10,12 @@ mod types;
 
 #[cxx_qt::bridge]
 mod my_object {
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     pub struct Data {
         number: i32,
         string: UniquePtr<QString>,

@@ -6,7 +6,12 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 pub mod signals {
-    use cxx_qt_lib::{QPoint, QVariant};
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QPoint = cxx_qt_lib::QPoint;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
 
     // ANCHOR: book_signals_enum
     #[cxx_qt::signals(MyObject)]

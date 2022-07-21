@@ -30,6 +30,12 @@ mod my_object {
 
     const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     pub struct Data {
         pub number: i32,
         pub string: UniquePtr<QString>,
