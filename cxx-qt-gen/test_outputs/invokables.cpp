@@ -68,21 +68,24 @@ QColor
 MyObject::invokableReturnOpaque()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return std::move(*m_rustObj->invokableReturnOpaqueWrapper());
+  return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+    m_rustObj->invokableReturnOpaqueWrapper());
 }
 
 qint32
 MyObject::invokableReturnPrimitive()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return m_rustObj->invokableReturnPrimitive();
+  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+    m_rustObj->invokableReturnPrimitive());
 }
 
 QString
 MyObject::invokableReturnStatic()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  return std::move(*m_rustObj->invokableReturnStaticWrapper());
+  return rust::cxxqtlib1::cxx_qt_convert<QString, std::unique_ptr<QString>>{}(
+    m_rustObj->invokableReturnStaticWrapper());
 }
 
 std::unique_ptr<CppObj>
