@@ -54,6 +54,20 @@ pub mod my_object {
 
     extern "C" {}
 
+    #[namespace = "namespace"]
+    extern "C" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
+    extern "C" {}
+
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
 }
 
