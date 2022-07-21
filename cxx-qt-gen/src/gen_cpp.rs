@@ -9,7 +9,7 @@ use indoc::formatdoc;
 use proc_macro2::TokenStream;
 use syn::Ident;
 
-use crate::extract::{Invokable, Parameter, Property, QObject, QtTypes, Signal};
+use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject, QtTypes, Signal};
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
@@ -418,12 +418,16 @@ fn generate_invokables_cpp(
                 }}
                 "#,
                 // Decide if the body needs a return or converter
-                body = if let Some(return_type) = &return_type {
-                    if return_type.is_opaque() {
-                        format!("return std::move(*{body})", body = body)
-                    } else {
-                        format!("return {body}", body = body)
-                    }
+                body = if let Some(return_type) = return_type {
+                    format!("return rust::cxxqtlib1::cxx_qt_convert<{output_type}, {input_type}>{{}}({body})",
+                        body = body,
+                        output_type = return_ident,
+                        input_type = if return_type.is_opaque() {
+                            format!("std::unique_ptr<{}>", return_ident)
+                        } else {
+                            return_ident.to_owned()
+                        }
+                    )
                 } else {
                     body
                 },
@@ -681,6 +685,27 @@ fn generate_signals_cpp(
         let queued_ident_cpp = signal.emit_ident.cpp_ident.to_string();
         let signal_ident_cpp = signal.signal_ident.cpp_ident.to_string();
 
+        let type_ident_to_immediate = |type_ident: &ParameterType| -> String {
+            format!(
+                "{is_const} {type_ident}{is_ref}{is_ptr}",
+                is_const = type_ident.qt_type.as_const_str(),
+                is_ref = type_ident.qt_type.as_ref_str(),
+                is_ptr = type_ident.qt_type.as_ptr_str(),
+                type_ident = type_ident.qt_type.type_ident(),
+            )
+        };
+        let type_ident_to_queued = |type_ident: &ParameterType| -> String {
+            format!(
+                "{type_ident}{is_ptr}",
+                is_ptr = type_ident.qt_type.as_ptr_str(),
+                type_ident = if type_ident.qt_type.is_opaque() {
+                    format!("std::unique_ptr<{}>", type_ident.qt_type.type_ident())
+                } else {
+                    type_ident.qt_type.type_ident().to_owned()
+                },
+            )
+        };
+
         let parameters_with_type = signal
             .parameters
             .iter()
@@ -688,12 +713,9 @@ fn generate_signals_cpp(
                 header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
 
                 format!(
-                    "{is_const} {type_ident}{is_ref}{is_ptr} {ident}",
+                    "{type_ident} {ident}",
                     ident = parameter.ident,
-                    is_const = parameter.type_ident.qt_type.as_const_str(),
-                    is_ref = parameter.type_ident.qt_type.as_ref_str(),
-                    is_ptr = parameter.type_ident.qt_type.as_ptr_str(),
-                    type_ident = parameter.type_ident.qt_type.type_ident(),
+                    type_ident = type_ident_to_immediate(&parameter.type_ident),
                 )
             })
             .collect::<Vec<String>>()
@@ -706,17 +728,9 @@ fn generate_signals_cpp(
                 header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
 
                 format!(
-                    "{type_ident}{is_ptr} {ident}",
+                    "{type_ident} {ident}",
                     ident = parameter.ident,
-                    is_ptr = parameter.type_ident.qt_type.as_ptr_str(),
-                    type_ident = if parameter.type_ident.qt_type.is_opaque() {
-                        format!(
-                            "std::unique_ptr<{}>",
-                            parameter.type_ident.qt_type.type_ident()
-                        )
-                    } else {
-                        parameter.type_ident.qt_type.type_ident().to_owned()
-                    },
+                    type_ident = type_ident_to_queued(&parameter.type_ident),
                 )
             })
             .collect::<Vec<String>>()
@@ -740,13 +754,10 @@ fn generate_signals_cpp(
             let parameter_str = parameter.ident.to_string();
             captures.push(format!("{} = std::move({})", parameter_str, parameter_str));
             parameter_values.push(format!(
-                "{is_opaque}{ident}",
+                "rust::cxxqtlib1::cxx_qt_convert<{output_type}, {input_type}>{{}}({ident})",
                 ident = parameter_str,
-                is_opaque = if parameter.type_ident.qt_type.is_opaque() {
-                    "*"
-                } else {
-                    ""
-                },
+                output_type = type_ident_to_immediate(&parameter.type_ident),
+                input_type = type_ident_to_queued(&parameter.type_ident),
             ));
         }
 

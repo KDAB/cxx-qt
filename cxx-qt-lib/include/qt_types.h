@@ -27,6 +27,30 @@
 namespace rust {
 namespace cxxqtlib1 {
 
+template<typename R, typename T>
+struct cxx_qt_convert
+{
+  R operator()(T val) { return val; }
+};
+
+template<typename R, typename T>
+struct cxx_qt_convert<R&, T>
+{
+  R operator()(T val) { return val; }
+};
+
+template<typename R, typename T>
+struct cxx_qt_convert<R, std::unique_ptr<T>>
+{
+  R operator()(std::unique_ptr<T> ptr) { return std::move(*ptr); }
+};
+
+template<typename R, typename T>
+struct cxx_qt_convert<R&, std::unique_ptr<T>>
+{
+  R operator()(const std::unique_ptr<T>& ptr) { return *ptr; }
+};
+
 class UpdateRequester
 {
 public:

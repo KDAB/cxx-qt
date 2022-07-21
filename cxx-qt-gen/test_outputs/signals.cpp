@@ -38,7 +38,13 @@ MyObject::emitDataChanged(qint32 first,
     [this,
      first = std::move(first),
      second = std::move(second),
-     third = std::move(third)]() { Q_EMIT dataChanged(first, *second, third); },
+     third = std::move(third)]() {
+      Q_EMIT dataChanged(
+        rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(first),
+        rust::cxxqtlib1::cxx_qt_convert<const QVariant&,
+                                        std::unique_ptr<QVariant>>{}(second),
+        rust::cxxqtlib1::cxx_qt_convert<const QPoint&, QPoint>{}(third));
+    },
     Qt::QueuedConnection);
   Q_ASSERT(signalSuccess);
 }
