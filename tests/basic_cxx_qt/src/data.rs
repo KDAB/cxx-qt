@@ -26,6 +26,12 @@ impl From<Data> for DataSerde {
 mod my_data {
     use super::DataSerde;
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     pub struct Data {
         pub number: i32,
         pub string: UniquePtr<QString>,

@@ -6,34 +6,6 @@ mod my_object {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        include!("cxx-qt-lib/include/qt_types.h");
-        #[namespace = ""]
-        type QColor = cxx_qt_lib::QColor;
-        #[namespace = ""]
-        type QDate = cxx_qt_lib::QDate;
-        #[namespace = ""]
-        type QDateTime = cxx_qt_lib::QDateTime;
-        #[namespace = ""]
-        type QPoint = cxx_qt_lib::QPoint;
-        #[namespace = ""]
-        type QPointF = cxx_qt_lib::QPointF;
-        #[namespace = ""]
-        type QRect = cxx_qt_lib::QRect;
-        #[namespace = ""]
-        type QRectF = cxx_qt_lib::QRectF;
-        #[namespace = ""]
-        type QSize = cxx_qt_lib::QSize;
-        #[namespace = ""]
-        type QSizeF = cxx_qt_lib::QSizeF;
-        #[namespace = ""]
-        type QString = cxx_qt_lib::QString;
-        #[namespace = ""]
-        type QTime = cxx_qt_lib::QTime;
-        #[namespace = ""]
-        type QUrl = cxx_qt_lib::QUrl;
-        #[namespace = ""]
-        type QVariant = cxx_qt_lib::QVariant;
-
         #[rust_name = "primitive"]
         fn getPrimitive(self: &MyObjectQt) -> i32;
         #[rust_name = "set_primitive"]
@@ -66,6 +38,12 @@ mod my_object {
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+    }
 }
 
 pub use self::cxx_qt_my_object::*;
@@ -74,8 +52,6 @@ mod cxx_qt_my_object {
 
     pub type FFICppObj = super::my_object::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
-    use cxx_qt_lib::QColor;
 
     #[derive(Default)]
     pub struct RustObj;
