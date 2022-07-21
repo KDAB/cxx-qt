@@ -993,16 +993,42 @@ pub fn extract_qobject(
             // Note we also need to search in Verbatim for "unsafe extern" blocks
             Item::ForeignMod(_) => cxx_items.push(item),
             Item::Verbatim(ref tokens) => {
-                let is_ident = |value: Option<TokenTree>, sym: &str| -> bool {
-                    if let Some(TokenTree::Ident(ident)) = value {
-                        return ident == quote::format_ident!("{}", sym);
+                let is_group = |value: &Option<TokenTree>| -> bool {
+                    if let Some(TokenTree::Group(_)) = value {
+                        return true;
                     }
 
                     false
                 };
+                let is_ident = |value: &Option<TokenTree>, sym: &str| -> bool {
+                    if let Some(TokenTree::Ident(ident)) = value {
+                        return *ident == quote::format_ident!("{}", sym);
+                    }
 
-                let mut iter = tokens.clone().into_iter();
-                if is_ident(iter.next(), "unsafe") && is_ident(iter.next(), "extern") {
+                    false
+                };
+                let is_punct = |value: &Option<TokenTree>, char: char| -> bool {
+                    if let Some(TokenTree::Punct(punct)) = value {
+                        return punct.as_char() == char;
+                    }
+
+                    false
+                };
+                let tokens = tokens.clone();
+                let mut iter = tokens.into_iter();
+
+                // Skip over any attributes
+                //
+                // which appears as a punct # and then a group []
+                let mut first = iter.next();
+                while is_punct(&first, '#') {
+                    first = iter.next();
+                    if is_group(&first) {
+                        first = iter.next();
+                    }
+                }
+
+                if is_ident(&first, "unsafe") && is_ident(&iter.next(), "extern") {
                     cxx_items.push(item);
                 } else {
                     original_passthrough_decls.push(item);
@@ -1386,7 +1412,7 @@ mod tests {
         assert_eq!(qobject.original_passthrough_decls.len(), 13);
 
         // Check that we have a CXX passthrough item
-        assert_eq!(qobject.cxx_items.len(), 2);
+        assert_eq!(qobject.cxx_items.len(), 6);
     }
 
     #[test]
