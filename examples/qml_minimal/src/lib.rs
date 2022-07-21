@@ -11,6 +11,12 @@
 mod my_object {
     // ANCHOR_END: book_bridge_macro
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     // ANCHOR: book_data_struct
     pub struct Data {
         number: i32,

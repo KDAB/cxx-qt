@@ -19,6 +19,12 @@ mod website {
         time::Duration,
     };
 
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     enum Event {
         TitleArrived(String),
     }

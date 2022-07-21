@@ -6,7 +6,13 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 mod types {
-    use cxx_qt_lib::{QVariant, QVariantValue};
+    use cxx_qt_lib::QVariantValue;
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QVariant = cxx_qt_lib::QVariant;
+    }
 
     pub struct Data {
         variant: UniquePtr<QVariant>,

@@ -1,4 +1,10 @@
 mod my_object {
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QString = cxx_qt_lib::QString;
+    }
+
     #[derive(Default)]
     pub struct Data {
         number: i32,
