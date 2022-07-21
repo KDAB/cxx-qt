@@ -41,7 +41,7 @@ impl RustType for QtTypes {
             Self::QSize => true,
             Self::QSizeF => true,
             Self::QTime => true,
-            Self::String | Self::Str | Self::QString => true,
+            Self::QString => true,
             Self::QUrl => true,
             Self::QVariant => true,
             Self::UniquePtr { .. } => true,
@@ -70,8 +70,6 @@ impl RustType for QtTypes {
             Self::QRectF => format_ident!("QRectF"),
             Self::QSize => format_ident!("QSize"),
             Self::QSizeF => format_ident!("QSizeF"),
-            Self::Str => format_ident!("QString"),
-            Self::String => format_ident!("QString"),
             Self::QString => format_ident!("QString"),
             Self::QTime => format_ident!("QTime"),
             Self::QUrl => format_ident!("QUrl"),
@@ -113,14 +111,6 @@ impl RustType for QtTypes {
             Self::QRectF => quote! {cxx_qt_lib::QRectF},
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
-            Self::Str => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QString},
-                TargetType::Rust => quote! {str},
-            },
-            Self::String => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QString},
-                TargetType::Rust => quote! {String},
-            },
             Self::QString => match target_type {
                 TargetType::Cpp => quote! {cxx_qt_lib::QString},
                 TargetType::Rust => quote! {cxx_qt_lib::QString},
@@ -692,15 +682,6 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
                 // Generate a setter using the rust ident
                 let setter_ident = &setter.rust_ident;
                 if qt_type.is_opaque() {
-                    // Special case where instead of generating &String
-                    // we use &str as the input for setter methods.
-                    //
-                    // FIXME: can we make this generic in the RustType trait somewhere?
-                    let rust_param_type = match qt_type {
-                        QtTypes::String => quote! {&str},
-                        _others => rust_param_type,
-                    };
-
                     property_methods.push(quote! {
                         pub fn #setter_ident(&mut self, value: #rust_param_type) {
                             self.cpp.as_mut().#cpp_setter_ident(&value);
@@ -1098,7 +1079,7 @@ pub fn generate_qobject_rs(
             let field_name = field_ident.clone();
             let setter_name = format_ident!("set_{}", field_name);
 
-            if qt_type.is_opaque() && !matches!(qt_type, QtTypes::String | QtTypes::Str) {
+            if qt_type.is_opaque() {
                 grab_values.push(quote! {
                     self.#setter_name(data.#field_name.as_ref().unwrap());
                 });
