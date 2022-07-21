@@ -90,9 +90,7 @@ impl CppType for QtTypes {
             Self::QRectF => vec!["#include <QtCore/QRectF>".to_owned()],
             Self::QSize => vec!["#include <QtCore/QSize>".to_owned()],
             Self::QSizeF => vec!["#include <QtCore/QSizeF>".to_owned()],
-            Self::String | Self::Str | Self::QString => {
-                vec!["#include <QtCore/QString>".to_owned()]
-            }
+            Self::QString => vec!["#include <QtCore/QString>".to_owned()],
             Self::QTime => vec!["#include <QtCore/QTime>".to_owned()],
             Self::QUrl => vec!["#include <QtCore/QUrl>".to_owned()],
             Self::QVariant => vec!["#include <QtCore/QVariant>".to_owned()],
@@ -120,7 +118,7 @@ impl CppType for QtTypes {
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str | Self::String | Self::QString => true,
+            Self::QString => true,
             Self::QTime => true,
             Self::QUrl => true,
             Self::QVariant => true,
@@ -170,7 +168,7 @@ impl CppType for QtTypes {
             Self::QRectF => true,
             Self::QSize => true,
             Self::QSizeF => true,
-            Self::Str | Self::String | Self::QString => true,
+            Self::QString => true,
             Self::QTime => true,
             Self::QUrl => true,
             Self::QVariant => true,
@@ -211,7 +209,7 @@ impl CppType for QtTypes {
             Self::QRectF => "QRectF",
             Self::QSize => "QSize",
             Self::QSizeF => "QSizeF",
-            Self::Str | Self::String | Self::QString => "QString",
+            Self::QString => "QString",
             Self::QTime => "QTime",
             Self::QUrl => "QUrl",
             Self::QVariant => "QVariant",
