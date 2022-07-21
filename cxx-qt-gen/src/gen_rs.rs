@@ -11,12 +11,6 @@ use std::collections::HashSet;
 use crate::extract::{Invokable, QObject, QtTypes};
 use crate::utils::type_to_namespace;
 
-/// The target type that we want, eg is this the QVariantCpp (Cpp) or QVariant (Rust)
-enum TargetType {
-    Cpp,
-    Rust,
-}
-
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
     /// Whether this type is a reference
@@ -24,7 +18,7 @@ trait RustType {
     /// The name of the type when defined in the CXX bridge, eg the A in type A = B;
     fn cxx_bridge_type_ident(&self) -> Ident;
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn cxx_qt_lib_type(&self, target_type: TargetType) -> TokenStream;
+    fn cxx_qt_lib_type(&self) -> TokenStream;
 }
 
 impl RustType for QtTypes {
@@ -83,7 +77,7 @@ impl RustType for QtTypes {
     }
 
     /// The full type for the parameter. Can be used Rust code outside cxx::bridge.
-    fn cxx_qt_lib_type(&self, target_type: TargetType) -> TokenStream {
+    fn cxx_qt_lib_type(&self) -> TokenStream {
         match self {
             Self::Bool => quote! {bool},
             Self::CppObj {
@@ -96,40 +90,25 @@ impl RustType for QtTypes {
             Self::I8 => quote! {i8},
             Self::I16 => quote! {i16},
             Self::I32 => quote! {i32},
-            Self::QColor => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QColor},
-                TargetType::Rust => quote! {cxx_qt_lib::QColor},
-            },
+            Self::QColor => quote! {cxx_qt_lib::QColor},
             Self::QDate => quote! {cxx_qt_lib::QDate},
-            Self::QDateTime => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QDateTime},
-                TargetType::Rust => quote! {cxx_qt_lib::QDateTime},
-            },
+            Self::QDateTime => quote! {cxx_qt_lib::QDateTime},
             Self::QPoint => quote! {cxx_qt_lib::QPoint},
             Self::QPointF => quote! {cxx_qt_lib::QPointF},
             Self::QRect => quote! {cxx_qt_lib::QRect},
             Self::QRectF => quote! {cxx_qt_lib::QRectF},
             Self::QSize => quote! {cxx_qt_lib::QSize},
             Self::QSizeF => quote! {cxx_qt_lib::QSizeF},
-            Self::QString => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QString},
-                TargetType::Rust => quote! {cxx_qt_lib::QString},
-            },
+            Self::QString => quote! {cxx_qt_lib::QString},
             Self::QTime => quote! {cxx_qt_lib::QTime},
-            Self::QUrl => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QUrl},
-                TargetType::Rust => quote! {cxx_qt_lib::QUrl},
-            },
-            Self::QVariant => match target_type {
-                TargetType::Cpp => quote! {cxx_qt_lib::QVariant},
-                TargetType::Rust => quote! {cxx_qt_lib::QVariant},
-            },
+            Self::QUrl => quote! {cxx_qt_lib::QUrl},
+            Self::QVariant => quote! {cxx_qt_lib::QVariant},
             Self::U8 => quote! {u8},
             Self::U16 => quote! {u16},
             Self::U32 => quote! {u32},
             Self::UniquePtr { inner } => {
-                let inner = inner.cxx_qt_lib_type(target_type);
-                quote! {UniquePtr<#inner> }
+                let inner = inner.cxx_qt_lib_type();
+                quote! {UniquePtr<#inner>}
             }
             _other => unreachable!(),
         }
@@ -638,7 +617,7 @@ fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, Token
         } else {
             &property.type_ident.qt_type
         };
-        let rust_param_type = qt_type.cxx_qt_lib_type(TargetType::Rust);
+        let rust_param_type = qt_type.cxx_qt_lib_type();
         // When the output type is opaque we pass by value rather than ref
         // even though it's a non trivial type
         let rust_param_type = if !qt_type.is_opaque() && qt_type.is_ref() {
@@ -872,14 +851,14 @@ fn invokable_generate_wrapper(
                 output_parameters.push(quote! { #param_ident });
             }
 
-            let param_type = param.type_ident.qt_type.cxx_qt_lib_type(TargetType::Cpp);
+            let param_type = param.type_ident.qt_type.cxx_qt_lib_type();
             input_parameters.push(quote! { #param_ident: #is_ref #is_mut #param_type });
         }
     }
 
     // If we are an opaque return type then we need to convert into the C++ type
     if let Some(return_type) = &invokable.return_type {
-        let return_type_ident = return_type.qt_type.cxx_qt_lib_type(TargetType::Cpp);
+        let return_type_ident = return_type.qt_type.cxx_qt_lib_type();
 
         Ok(quote! {
             pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> #return_type_ident {
