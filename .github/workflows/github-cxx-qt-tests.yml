@@ -82,8 +82,8 @@ jobs:
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
 
-          - name: Windows 2022 (MSVC) Qt5
-            os: windows-2022
+          - name: Windows 2019 (MSVC) Qt5
+            os: windows-2019
             qt_version: 5
             # FIXME: many tests fail to link
             # https://github.com/KDAB/cxx-qt/issues/111
@@ -96,8 +96,8 @@ jobs:
             cxx: cl
             # The D drive runs out of space when building dependencies with vcpkg.
             workspace: C:\cxx-qt
-          - name: Windows 2022 (MSVC) Qt6
-            os: windows-2022
+          - name: Windows 2019 (MSVC) Qt6
+            os: windows-2019
             qt_version: 6
             # FIXME: many tests fail to link
             # https://github.com/KDAB/cxx-qt/issues/111

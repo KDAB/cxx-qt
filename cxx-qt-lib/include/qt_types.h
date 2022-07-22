@@ -166,12 +166,14 @@ qsizefInitDefault();
 QSizeF
 qsizefInit(qreal width, qreal height);
 
-std::unique_ptr<QString>
-qstringInitFromRustString(rust::Str string);
 QString
 qstringFromRustString(rust::Str string);
 rust::String
 qstringToRustString(const QString& string);
+std::unique_ptr<QString>
+qstringInitFromRustString(rust::Str string);
+std::unique_ptr<QString>
+qstringInitFromQString(const QString& string);
 
 QTime
 qtimeInitDefault();

@@ -5,20 +5,46 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
+pub struct DataSerde {
+    number: i32,
+    string: String,
+}
+
+impl From<Data> for DataSerde {
+    fn from(value: Data) -> DataSerde {
+        DataSerde {
+            number: value.number,
+            string: value.string.to_string(),
+        }
+    }
+}
+
 #[cxx_qt::bridge]
 mod my_data {
-    use serde::{Deserialize, Serialize};
+    use super::DataSerde;
 
-    #[derive(Deserialize, Serialize)]
     pub struct Data {
-        number: i32,
-        string: String,
+        pub number: i32,
+        pub string: UniquePtr<QString>,
     }
 
     impl Default for Data {
         fn default() -> Self {
             let string = r#"{"number": 4, "string": "Hello World!"}"#;
-            serde_json::from_str(string).unwrap()
+            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
+            data_serde.into()
+        }
+    }
+
+    impl From<DataSerde> for Data {
+        fn from(value: DataSerde) -> Data {
+            Data {
+                number: value.number,
+                string: QString::from_str(&value.string),
+            }
         }
     }
 
@@ -27,16 +53,18 @@ mod my_data {
 
     impl RustObj {
         #[invokable]
-        pub fn as_json_str(&self, cpp: &mut CppObj) -> String {
+        pub fn as_json_str(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);
-            serde_json::to_string(&data).unwrap()
+            let data_serde = DataSerde::from(data);
+            let data_string = serde_json::to_string(&data_serde).unwrap();
+            QString::from_str(&data_string)
         }
 
         #[invokable]
         pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data: Data = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(data);
+            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
+            cpp.grab_values_from_data(data_serde.into());
         }
     }
 }

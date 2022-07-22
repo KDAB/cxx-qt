@@ -7,7 +7,7 @@ mod my_object {
 
     impl RustObj {
         #[invokable]
-        pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> QColor {
+        pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> UniquePtr<QColor> {
             color
         }
 
@@ -17,7 +17,11 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn test_date_time(&self, _cpp: &mut CppObj, dateTime: &QDateTime) -> QDateTime {
+        pub fn test_date_time(
+            &self,
+            _cpp: &mut CppObj,
+            dateTime: &QDateTime,
+        ) -> UniquePtr<QDateTime> {
             dateTime
         }
 
@@ -52,7 +56,7 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn test_string(&self, _cpp: &mut CppObj, string: &str) -> String {
+        pub fn test_string(&self, _cpp: &mut CppObj, string: &QString) -> UniquePtr<QString> {
             string.to_owned()
         }
 
@@ -62,12 +66,12 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> QUrl {
+        pub fn test_url(&self, _cpp: &mut CppObj, url: &QUrl) -> UniquePtr<QUrl> {
             url
         }
 
         #[invokable]
-        pub fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> QVariant {
+        pub fn test_variant(&self, _cpp: &mut CppObj, variant: &QVariant) -> UniquePtr<QVariant> {
             variant
         }
     }

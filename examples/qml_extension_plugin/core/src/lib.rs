@@ -6,21 +6,48 @@
 
 // Note: keep any changes here in sync with the main README.md
 
+use serde::{Deserialize, Serialize};
+
+// Represent the Data struct below with serde friendly types, so we can (de)serialize it
+#[derive(Deserialize, Serialize)]
+pub struct DataSerde {
+    number: i32,
+    string: String,
+}
+
+impl From<Data> for DataSerde {
+    fn from(value: Data) -> DataSerde {
+        DataSerde {
+            number: value.number,
+            string: value.string.to_string(),
+        }
+    }
+}
+
 #[cxx_qt::bridge]
 mod my_object {
-    use serde::{Deserialize, Serialize};
+    use super::DataSerde;
 
     const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
-    #[derive(Deserialize, Serialize)]
     pub struct Data {
-        number: i32,
-        string: String,
+        pub number: i32,
+        pub string: UniquePtr<QString>,
     }
 
     impl Default for Data {
         fn default() -> Self {
-            serde_json::from_str(DEFAULT_STR).unwrap()
+            let data_serde: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
+            data_serde.into()
+        }
+    }
+
+    impl From<DataSerde> for Data {
+        fn from(value: DataSerde) -> Data {
+            Data {
+                number: value.number,
+                string: QString::from_str(&value.string),
+            }
         }
     }
 
@@ -35,21 +62,23 @@ mod my_object {
 
         #[invokable]
         pub fn reset(&self, cpp: &mut CppObj) {
-            let data: Data = serde_json::from_str(DEFAULT_STR).unwrap();
-            cpp.grab_values_from_data(data);
+            let data: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
+            cpp.grab_values_from_data(data.into());
         }
 
         #[invokable]
-        pub fn serialize(&self, cpp: &mut CppObj) -> String {
+        pub fn serialize(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);
-            serde_json::to_string(&data).unwrap()
+            let data_serde = DataSerde::from(data);
+            let data_string = serde_json::to_string(&data_serde).unwrap();
+            QString::from_str(&data_string)
         }
 
         #[invokable]
         pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data: Data = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(data);
+            let data: DataSerde = serde_json::from_str(string).unwrap();
+            cpp.grab_values_from_data(data.into());
         }
     }
 }

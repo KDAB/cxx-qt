@@ -2,7 +2,7 @@ mod my_object {
     #[derive(Default)]
     pub struct Data {
         number: i32,
-        string: String,
+        string: QString,
     }
 
     #[derive(Default)]
