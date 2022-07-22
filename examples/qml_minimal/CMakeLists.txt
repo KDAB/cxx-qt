@@ -87,9 +87,15 @@ function(add_qml_test TEST_NAME)
     )
     qt_import_qml_plugins(${APP_NAME}_${TEST_NAME}_test)
 
-    add_test(NAME ${APP_NAME}_${TEST_NAME}_test COMMAND ${APP_NAME}_${TEST_NAME}_test WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+    if(WIN32)
+        set(EXE_SUFFIX ".exe")
+    else()
+        set(EXE_SUFFIX "")
+    endif()
 
-    add_valgrind_test(${APP_NAME}_${TEST_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+    add_test(NAME ${APP_NAME}_${TEST_NAME}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+
+    add_valgrind_test(${APP_NAME}_${TEST_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
 
     set_target_properties(${APP_NAME}_${TEST_NAME}_test PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
