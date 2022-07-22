@@ -166,15 +166,23 @@ qstringInitFromRustString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QString>(
-    QString::fromStdString(static_cast<std::string>(string)));
+  return std::make_unique<QString>(qstringFromRustString(string));
+}
+
+QString
+qstringFromRustString(rust::Str string)
+{
+  // Note that rust::Str here is borrowed
+  // and we convert back from UTF-8 to UTF-16
+  return QString::fromUtf8(string.data(), string.size());
 }
 
 rust::String
 qstringToRustString(const QString& string)
 {
   // Note that this changes UTF-16 to UTF-8
-  return rust::String(string.toStdString());
+  const auto byteArray = string.toUtf8();
+  return rust::String(byteArray.constData(), byteArray.size());
 }
 
 QTime
@@ -200,8 +208,7 @@ qurlInitFromString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QUrl>(
-    QString::fromStdString(static_cast<std::string>(string)));
+  return std::make_unique<QUrl>(qstringFromRustString(string));
 }
 
 std::unique_ptr<QUrl>
@@ -214,7 +221,7 @@ rust::String
 qurlToRustString(const QUrl& url)
 {
   // Note that this changes UTF-16 to UTF-8
-  return rust::String(url.toString().toStdString());
+  return qstringToRustString(url.toString());
 }
 
 std::unique_ptr<QVariant>
@@ -257,8 +264,9 @@ CXX_QT_VARIANT_INIT_REF(QUrl, QUrl)
 std::unique_ptr<QVariant>
 qvariantInitFromRustString(rust::Str string)
 {
-  return std::make_unique<QVariant>(
-    QString::fromStdString(static_cast<std::string>(string)));
+  // Note that rust::Str here is borrowed
+  // and we convert back from UTF-8 to UTF-16
+  return std::make_unique<QVariant>(qstringFromRustString(string));
 }
 
 CXX_QT_VARIANT_INIT(quint8, U8)
