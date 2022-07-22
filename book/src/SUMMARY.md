@@ -28,6 +28,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Bridge](./concepts/bridge.md)
     - [Qt](./concepts/qt.md)
     - [Types](./concepts/types.md)
+    - [Type Conversions](./concepts/type-conversions.md)
     - [Build.rs and Cargo.toml](./concepts/build_rs_and_cargo.md)
     - [CMake Integration](./concepts/cmake.md)
     - [Register Types](./concepts/register_types.md)
