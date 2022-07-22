@@ -15,10 +15,16 @@ function(add_acceptance_tests TEST_NAME)
     add_test_cargo(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}/Cargo.toml" DOCTESTS_OFF)
 
     # The executable itself is a test that needs to be run
-    add_test(NAME ${NAME_WITH_PREFIX}_cpp_tests COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tests_${TEST_NAME}")
+    if(WIN32)
+        set(EXE_SUFFIX ".exe")
+    else()
+        set(EXE_SUFFIX "")
+    endif()
+
+    add_test(NAME ${NAME_WITH_PREFIX}_cpp_tests COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tests_${TEST_NAME}${EXE_SUFFIX}")
 
     # Add valgrind test
-    add_valgrind_test(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tests_${TEST_NAME}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}")
+    add_valgrind_test(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tests_${TEST_NAME}${EXE_SUFFIX}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}")
 endfunction()
 
 # Add tests for all the acceptance tests

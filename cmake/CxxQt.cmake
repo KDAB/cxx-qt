@@ -83,7 +83,7 @@ function(cxx_qt_link_rustlib APP_NAME)
         set(TARGET_DIR "debug")
         # Hack around Rust standard library linked with Release version of C runtime
         # Refer to https://github.com/robmikh/linkerissuerepro for explanation
-        if(WIN32)
+        if(MSVC)
             set_property(TARGET "${APP_NAME}" PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
         endif()
     else ()
@@ -93,7 +93,9 @@ function(cxx_qt_link_rustlib APP_NAME)
 
     # We also list the static library produced by cargo as a dependency so that cargo gets a
     # chance to rebuild it every time that a cmake build is run.
-    if(WIN32)
+    #
+    # Note that MinGW produces .a files here so we only want MSVC for .lib
+    if(MSVC)
         set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/rust.lib")
     else()
         set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/librust.a")
