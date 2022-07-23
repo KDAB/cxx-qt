@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use convert_case::{Case, Casing};
 use quote::ToTokens;
-use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -16,14 +15,6 @@ use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
     extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
 };
-
-/// Representation of a generated CXX header, source, and name
-#[derive(Serialize, Deserialize)]
-struct GeneratedType {
-    header: String,
-    name: String,
-    source: String,
-}
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name

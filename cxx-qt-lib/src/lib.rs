@@ -25,14 +25,6 @@ macro_rules! sep {
     };
 }
 
-/// JSON representation of the generated CXX sources for qt_types
-pub const QT_TYPES_CXX_JSON: &str = include_str!(concat!(
-    env!("OUT_DIR"),
-    sep!(),
-    "cxx-qt-lib",
-    sep!(),
-    "qt_types_cxx.json"
-));
 /// The header for qt_types
 pub const QT_TYPES_HEADER: &str =
     include_str!(concat!("..", sep!(), "include", sep!(), "qt_types.h"));

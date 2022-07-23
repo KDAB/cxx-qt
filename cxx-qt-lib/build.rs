@@ -4,11 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use quote::ToTokens;
-use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Write, path::PathBuf};
 
 /// Representation of a generated CXX header, source, and name
-#[derive(Serialize, Deserialize)]
 struct GeneratedType {
     header: String,
     name: String,
@@ -33,12 +31,6 @@ fn gen_cxx_sources(folder: &str, file_stem: &str) -> GeneratedType {
         name: format!("{}_cxx", file_stem),
         source: String::from_utf8(generated.implementation).unwrap(),
     }
-}
-
-/// Write generates types to a given file as JSON
-fn write_cxx_sources(gen: &Vec<GeneratedType>, path: &str) {
-    let file = std::fs::File::create(path).expect("Could not create generated file");
-    serde_json::to_writer(file, &gen).unwrap();
 }
 
 fn create_and_write_file(path: &impl AsRef<std::path::Path>, file_contents: &str) {
@@ -87,9 +79,6 @@ fn main() {
             generated.push(gen_cxx_sources(&types_dir, file_stem));
         }
     }
-
-    // Write the generated sources to a qt_types_cxx.json file
-    write_cxx_sources(&generated, &format!("{}/qt_types_cxx.json", path));
 
     // Write the generated sources to CXX_QT_LIB_OUT_DIR if set
     println!("cargo:rerun-if-env-changed=CXX_QT_LIB_OUT_DIR");
