@@ -16,10 +16,9 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 # This will instruct Cargo to create a static
-# lib named "rust" which CMake can link against
+# lib for CMake to link to
 # ANCHOR: book_static_lib
 [lib]
-name = "rust"
 crate-type = ["staticlib"]
 # ANCHOR_END: book_static_lib
 
@@ -29,15 +28,5 @@ cxx = "1.0"
 cxx-qt = { path = "../../cxx-qt" }
 cxx-qt-lib = { path = "../../cxx-qt-lib" }
 # ANCHOR_END: book_dependencies
-
-# cxx-qt needs to be able to generate C++ code at
-# compile time, which is what cxx-qt-build is needed for.
-# cxx-qt uses clang-format, if available, to format all
-# C++ code in a consistent manner.
-# ANCHOR: book_build_dependencies
-[build-dependencies]
-clang-format = "0.1"
-cxx-qt-build = { path = "../../cxx-qt-build" }
-# ANCHOR_END: book_build_dependencies
 
 # ANCHOR_END: book_all

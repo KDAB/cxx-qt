@@ -7,7 +7,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/energy_usage.cxxqt.h"
+#include "energy_usage.cxxqt.h"
 
 int
 main(int argc, char* argv[])

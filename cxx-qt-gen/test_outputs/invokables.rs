@@ -1,7 +1,7 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
     unsafe extern "C++" {
-        include!("cxx-qt-gen/include/my_object.cxxqt.h");
+        include!("my_object.cxxqt.h");
 
         type MyObject;
 

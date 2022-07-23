@@ -12,10 +12,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
-#include "cxx-qt-gen/include/my_data.cxxqt.h"
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
-#include "cxx-qt-gen/include/my_types.cxxqt.h"
-#include "cxx-qt-gen/include/sub_object.cxxqt.h"
+#include "my_data.cxxqt.h"
+#include "my_object.cxxqt.h"
+#include "my_types.cxxqt.h"
+#include "sub_object.cxxqt.h"
 
 int
 main(int argc, char** argv)

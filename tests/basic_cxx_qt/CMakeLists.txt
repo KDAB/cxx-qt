@@ -19,18 +19,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
-
-set(
-    CPP_SOURCES
-    src/main.cpp
+cxx_qt_create_target(
+    TARGET ${APP_NAME}_cxxqt
+    BRIDGE_MODULE_FILES
+        src/data.rs
+        src/lib.rs
+        src/sub.rs
+        src/types.rs
+    MANIFEST_PATH Cargo.toml
+    CRATES basic-cxx-qt
 )
 
-cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
+add_executable(${APP_NAME} src/main.cpp)
+
 target_link_libraries(${APP_NAME} PRIVATE
     doctest
-    CxxQt${QT_VERSION_MAJOR}::cxxqt
+    ${APP_NAME}_cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Test

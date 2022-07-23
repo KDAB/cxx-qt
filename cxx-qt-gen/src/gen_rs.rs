@@ -524,7 +524,7 @@ pub fn generate_qobject_cxx(
     };
 
     // Build the import path for the C++ header
-    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
+    let import_path = format!("{}.cxxqt.h", ident_snake);
 
     // TODO: ideally we only want to add the "type QString = cxx_qt_lib::QStringCpp;"
     // if we actually generate some code that uses QString.

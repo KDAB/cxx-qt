@@ -119,6 +119,7 @@ write_basic_package_version_file(
 )
 install(
     FILES
+        CxxQt.cmake
         "${CMAKE_CURRENT_BINARY_DIR}/packaging/CxxQt${QT_VERSION_MAJOR}Config.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/packaging/CxxQt${QT_VERSION_MAJOR}ConfigVersion.cmake"
     DESTINATION "${PROJECT_INSTALL_CMAKEDIR}"

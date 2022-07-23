@@ -8,11 +8,11 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
-#include "cxx-qt-gen/include/serialisation.cxxqt.h"
-#include "cxx-qt-gen/include/sub_object.cxxqt.h"
-#include "cxx-qt-gen/include/types.cxxqt.h"
+#include "data_struct_properties.cxxqt.h"
+#include "my_object.cxxqt.h"
+#include "serialisation.cxxqt.h"
+#include "sub_object.cxxqt.h"
+#include "types.cxxqt.h"
 
 int
 main(int argc, char* argv[])

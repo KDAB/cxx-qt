@@ -124,6 +124,7 @@ fn main() {
             "include/qt_types.h",
             "src/qt_types.cpp",
             "CMakeLists.txt",
+            "CxxQt.cmake",
             "packaging/cxx-qt.pc.in",
             "packaging/CxxQtConfig.cmake.in",
         ];

@@ -10,14 +10,8 @@ authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
-# Don't touch this, the CMake file expects a static lib with a specific name
 [lib]
-name = "rust"
 crate-type = ["staticlib"]
 
 [dependencies]
 cxx = "1.0"
-
-[build-dependencies]
-clang-format = "0.1"
-cxx-qt-build = { path = "../../cxx-qt-build" }

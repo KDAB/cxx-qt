@@ -10,19 +10,37 @@ cmake_minimum_required(VERSION 3.16)
 project(tests_basic_cxx_only)
 set(APP_NAME ${PROJECT_NAME})
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
-
 # TODO: at some point we want to transform cxx-qt-build into cxx-cmake-build
 # to clarify that qt support is optional. At this point it would make more
 # sense to never generate files with Qt code rather than to #ifdef it out using
 # this flag as we currently do for cases where the application doesn't link to Qt.
 add_compile_definitions(NO_QT)
 
-set(
-    CPP_SOURCES
+set(CXXQTBRIDGE_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxx-qt-generated")
+execute_process(
+    COMMAND ${CXXQTBRIDGE_EXECUTABLE}
+            --input src/lib.rs
+            --output ${CXXQTBRIDGE_OUTPUT_DIR}
+    OUTPUT_VARIABLE OUTPUT_FILES
+    RESULT_VARIABLE CXXQTBRIDGE_RESULT
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+if(NOT CXXQTBRIDGE_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate C++ files with cxxqtbridge from ${INPUT_FILE}")
+endif()
+separate_arguments(GENERATED_SOURCES NATIVE_COMMAND "${OUTPUT_FILES}")
+
+add_executable(${APP_NAME}
     src/main.cpp
+    ${GENERATED_SOURCES}
+)
+target_include_directories(${APP_NAME} PRIVATE
+    include
+    "${CXXQTBRIDGE_OUTPUT_DIR}/include"
 )
 
-cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
+corrosion_import_crate(MANIFEST_PATH Cargo.toml)
+target_link_libraries(${APP_NAME} PRIVATE basic-cxx-only)
+
+target_include_directories(${APP_NAME} PRIVATE include)
 target_link_libraries(${APP_NAME} PRIVATE doctest)

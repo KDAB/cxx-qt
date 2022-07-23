@@ -4,12 +4,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-
 # TODO: figure out what the actual hard minimum is
-
-# TODO: Add a helper function to our CMake module which automatically
-# handles some of this boilerplate for a "typical" Qt application
 
 # ANCHOR: book_tutorial_cmake_full
 cmake_minimum_required(VERSION 3.16)
@@ -26,39 +21,27 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportSc
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 find_package(CxxQt${QT_VERSION_MAJOR} QUIET)
 
+cxx_qt_create_target(
+    TARGET ${APP_NAME}_cxxqt
+    BRIDGE_MODULE_FILES src/lib.rs
+    MANIFEST_PATH Cargo.toml
+    CRATES qml-minimal
+)
+
 # ANCHOR: book_cmake_generation
 # ANCHOR: book_tutorial_cmake_diff_1
-include(CxxQt)
 
-# Generate C++ code from Rust using Cargo in the current folder
-cxx_qt_generate_cpp(GEN_SOURCES)
 # ANCHOR_END: book_tutorial_cmake_diff_1
 
-# Define our sources
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-)
-
-set(
-    RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
-)
-
 # Define our executable with our C++ source, generated sources, and QML resource files
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
-
-# ANCHOR: book_tutorial_cmake_diff_2
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
-# ANCHOR_END: book_tutorial_cmake_diff_2
+add_executable(${APP_NAME}
+    src/main.cpp
+    src/qml.qrc
+)
 
 # Link to Qt in the normal way
 target_link_libraries(${APP_NAME} PRIVATE
-    CxxQt${QT_VERSION_MAJOR}::cxxqt
+    ${APP_NAME}_cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml
@@ -80,9 +63,10 @@ function(add_qml_test TEST_NAME)
     # this is so that our tst_${TEST_NAME} executable can find the QML files
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
-    cxx_qt_cmake(${APP_NAME}_${TEST_NAME}_test "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    set(TARGET ${APP_NAME}_${TEST_NAME}_test)
+    add_executable(${TARGET} "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
-        CxxQt${QT_VERSION_MAJOR}::cxxqt
+        ${APP_NAME}_cxxqt
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Gui
         Qt${QT_VERSION_MAJOR}::Qml

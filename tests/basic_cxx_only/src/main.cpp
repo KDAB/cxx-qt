@@ -8,7 +8,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include "cxx-qt-gen/include/ffi.cxx.h"
+#include "ffi.cxx.h"
 #include "main.h"
 
 int hidden_num = 100;

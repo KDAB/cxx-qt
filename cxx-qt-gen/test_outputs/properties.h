@@ -4,7 +4,7 @@
 
 #include "qt_types.h"
 
-#include "cxx-qt-gen/include/nested_object.cxxqt.h"
+#include "nested_object.cxxqt.h"
 #include <QtGui/QColor>
 
 namespace cxx_qt::my_object {

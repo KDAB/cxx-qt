@@ -36,7 +36,6 @@ set(
 
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${RESOURCES}")
 target_link_libraries(${APP_NAME} PRIVATE
-    CxxQt${QT_VERSION_MAJOR}::cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml

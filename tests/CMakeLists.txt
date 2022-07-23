@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-add_subdirectory(basic_cxx_qt)
 add_subdirectory(basic_cxx_only)
+add_subdirectory(basic_cxx_qt)
 add_subdirectory(qt_types_standalone)
 
 # Create helper method which adds relevent tests for the given acceptance test

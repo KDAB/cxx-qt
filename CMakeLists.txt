@@ -22,6 +22,10 @@ else()
     option(VCPKG "Use vcpkg for dependencies" OFF)
 endif()
 
+if(WIN32)
+    set(EXE_SUFFIX ".exe")
+endif()
+
 if(VCPKG)
     # Explicitly setting QT_DEFAULT_MAJOR_VERSION can fail on systems that have both Qt6
     # and Qt5 installed, so only set it automatically when using vcpkg.
@@ -40,12 +44,10 @@ if(VCPKG)
     if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
         if(WIN32)
             set(COMMAND_PREIFX "")
-            set(EXE_SUFFIX ".exe")
             set(SCRIPT_SUFFIX ".bat")
             set(DOTNET_RUNTIME "")
         else()
             set(COMMAND_PREFIX "./")
-            set(EXE_SUFFIX "")
             set(SCRIPT_SUFFIX ".sh")
             set(DOTNET_RUNTIME "mono")
         endif()
@@ -101,24 +103,52 @@ project(cxx_qt)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 include(CompilerCaching)
+
+set(CORROSION_VERSION 0.2.1)
+find_package(Corrosion ${CORROSION_VERSION} QUIET)
+if(NOT Corrosion_FOUND)
+    message(STATUS "Corrosion not found, downloading...")
+    include(FetchContent)
+    FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v${CORROSION_VERSION}
+    )
+    FetchContent_MakeAvailable(Corrosion)
+endif()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-lib")
+include(CxxQt)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui REQUIRED)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CARGO_BUILD_TYPE "--release")
+    set(CARGO_TARGET_DIR "target/release")
+else()
+    set(CARGO_TARGET_DIR "target/debug")
 endif()
 
-message(STATUS "Generating cxxqt C++ library")
-# Regenerate C++ library whenever any files in cxx-qt-lib change
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-lib)
 # FIXME: cxx's build.rs fails without this.
 # https://github.com/dtolnay/cxx/issues/1020
 if(APPLE)
     set(ENV{SDKROOT} ${CMAKE_OSX_SYSROOT})
 endif()
+
+message(STATUS "Building C++ code generator")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-cli)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-gen)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-build)
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E env "SDKROOT=${CMAKE_OSX_SYSROOT}" cargo build ${CARGO_BUILD_TYPE}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-cli"
+)
+set(CXXQTBRIDGE_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-cli/${CARGO_TARGET_DIR}/cxxqtbridge${EXE_SUFFIX}")
+
+message(STATUS "Generating cxxqt C++ library")
+# Regenerate C++ library whenever any files in cxx-qt-lib change
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-lib)
 set(CXXQT_CPP_LIB_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxx-qt-cpplib")
 execute_process(
     COMMAND ${CMAKE_COMMAND} -E env "CXX_QT_LIB_OUT_DIR=${CXXQT_CPP_LIB_GENERATED_DIR}" cargo build ${CARGO_BUILD_TYPE}

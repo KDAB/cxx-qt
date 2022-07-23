@@ -21,7 +21,7 @@
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
 
-#include "cxx-qt-gen/include/ffi.cxx.h"
+#include "ffi.cxx.h"
 
 bool
 test_constructed_qstring(const QString& s);

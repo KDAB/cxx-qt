@@ -12,7 +12,7 @@
 #include "doctest.h"
 
 #include "bridge.h"
-#include "cxx-qt-gen/include/ffi.cxx.h"
+#include "ffi.cxx.h"
 
 TEST_CASE("Can construct a QString on the Rust side")
 {

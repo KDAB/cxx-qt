@@ -9,8 +9,8 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
-#include "cxx-qt-gen/include/sub_object.cxxqt.h"
+#include "my_object.cxxqt.h"
+#include "sub_object.cxxqt.h"
 
 class Setup : public QObject
 {

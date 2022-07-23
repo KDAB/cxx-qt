@@ -20,32 +20,20 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportSc
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
 find_package(CxxQt${QT_VERSION_MAJOR} QUIET)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
-
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+cxx_qt_create_target(
+    TARGET ${APP_NAME}_cxxqt
+    BRIDGE_MODULE_FILES src/lib.rs
+    MANIFEST_PATH Cargo.toml
+    CRATES demo-threading
 )
 
-set(
-    RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
+add_executable(${APP_NAME}
+    src/main.cpp
+    src/qml.qrc
 )
 
-# Generate the C++ code
-cxx_qt_generate_cpp(GEN_SOURCES)
-
-# Define our executable with our QML resource files
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
-
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
 target_link_libraries(${APP_NAME} PRIVATE
-    CxxQt${QT_VERSION_MAJOR}::cxxqt
+    ${APP_NAME}_cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml
