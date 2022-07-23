@@ -14,7 +14,8 @@ namespace cxxqtlib1 {
 UpdateRequester::UpdateRequester(QPointer<QObject> obj, const char* method)
   : m_obj(obj)
   , m_method(method)
-{}
+{
+}
 
 bool
 UpdateRequester::requestUpdate() const
