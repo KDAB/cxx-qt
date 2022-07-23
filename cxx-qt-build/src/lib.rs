@@ -95,7 +95,7 @@ fn manifest_dir() -> String {
 
 /// Extract the cxx or cxx_qt module from a Rust file
 fn extract_modules(file_content: &str, rs_path: &impl AsRef<std::path::Path>) -> ExtractedModule {
-    let file = syn::parse_file(file_content).unwrap();
+    let file = syn::parse_file(file_content).expect("Syntax error parsing Rust file");
 
     // Define a helper function that will ensure that we can extract at most one
     // module for code gen from the items in the file. This function also
