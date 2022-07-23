@@ -14,7 +14,6 @@ repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
 cxx-gen = "0.7"
-cxx-qt-lib = { path = "../cxx-qt-lib", version = "0.3" }
 cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.3" }
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full", "parsing"] }
