@@ -21,6 +21,8 @@ jobs:
             # TODO: Remove PPA for Qt 5.15 when Ubuntu 22.04 is available
             # https://github.com/KDAB/cxx-qt/issues/121
             ppa: ppa:savoury1/qt-5-15
+            # FIXME: linking fails with GNU ld
+            ldflags: '-fuse-ld=lld'
             packages-extra: >-
                 qtbase5-dev
                 qtdeclarative5-dev
@@ -38,6 +40,8 @@ jobs:
             # TODO: Remove PPA for Qt 6 when Ubuntu 22.04 is available
             # https://github.com/KDAB/cxx-qt/issues/121
             ppa: ppa:daschuer/qt6-backports
+            # FIXME: linking fails with GNU ld
+            ldflags: '-fuse-ld=lld'
             packages-extra: >-
                 qt6-base-dev
                 qt6-declarative-dev
@@ -158,6 +162,7 @@ jobs:
         sudo apt-get update &&
         sudo apt-get install -y
         ninja-build
+        lld
         clang-format-12
         libssl-dev
         pkg-config
@@ -203,6 +208,7 @@ jobs:
         RUSTC_WRAPPER: sccache
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+        LDFLAGS: ${{ matrix.ldflags }}
     - name: "Build"
       run: cmake --build build --config Release --parallel 2
       working-directory: ${{ matrix.workspace }}
