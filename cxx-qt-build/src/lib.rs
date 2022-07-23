@@ -197,11 +197,15 @@ impl GeneratedCpp {
     /// Write generated code to files in a directory. Returns the absolute paths of all files written.
     pub fn write_to_directory(&self, directory: &impl AsRef<std::path::Path>) -> Vec<PathBuf> {
         let directory = directory.as_ref();
-        if !directory.is_dir() {
+        if directory.exists() && !directory.is_dir() {
             panic!(
                 "Output directory {} is not a directory",
                 directory.display()
             );
+        } else if !directory.exists() {
+            std::fs::create_dir_all(&directory).unwrap_or_else(|_| {
+                panic!("Could not create output directory {}", directory.display())
+            });
         }
 
         let include_directory_path = PathBuf::from(format!("{}/include", &directory.display()));
