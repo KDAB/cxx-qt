@@ -125,9 +125,9 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui REQUIRED)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CARGO_BUILD_TYPE "--release")
-    set(CARGO_TARGET_DIR "target/release")
+    set(CARGO_BUILD_TYPE_DIR "release")
 else()
-    set(CARGO_TARGET_DIR "target/debug")
+    set(CARGO_BUILD_TYPE_DIR "debug")
 endif()
 
 # FIXME: cxx's build.rs fails without this.
@@ -136,24 +136,25 @@ if(APPLE)
     set(ENV{SDKROOT} ${CMAKE_OSX_SYSROOT})
 endif()
 
-message(STATUS "Building C++ code generator")
+message(STATUS "Building C++ code generator and generating C++ library")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-lib)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-cli)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-gen)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-build)
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env "SDKROOT=${CMAKE_OSX_SYSROOT}" cargo build ${CARGO_BUILD_TYPE}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-cli"
-)
-set(CXXQTBRIDGE_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-cli/${CARGO_TARGET_DIR}/cxxqtbridge${EXE_SUFFIX}")
-
-message(STATUS "Generating cxxqt C++ library")
-# Regenerate C++ library whenever any files in cxx-qt-lib change
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cxx-qt-lib)
+set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/cargo")
 set(CXXQT_CPP_LIB_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxx-qt-cpplib")
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env "CXX_QT_LIB_OUT_DIR=${CXXQT_CPP_LIB_GENERATED_DIR}" cargo build ${CARGO_BUILD_TYPE}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cxx-qt-lib"
+    COMMAND ${CMAKE_COMMAND} -E env
+        "CARGO_TARGET_DIR=${CARGO_TARGET_DIR}"
+        "SDKROOT=${CMAKE_OSX_SYSROOT}"
+        "CXX_QT_LIB_OUT_DIR=${CXXQT_CPP_LIB_GENERATED_DIR}"
+        cargo build ${CARGO_BUILD_TYPE}
+        --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml"
+        --package cxx-qt-cli
+        --package cxx-qt-lib
 )
+set(CXXQTBRIDGE_EXECUTABLE "${CARGO_TARGET_DIR}/${CARGO_BUILD_TYPE_DIR}/cxxqtbridge${EXE_SUFFIX}")
+
 add_subdirectory(${CXXQT_CPP_LIB_GENERATED_DIR})
 
 # This is extremely hacky, but such is CMake. The find_package calls

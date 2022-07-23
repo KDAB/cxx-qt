@@ -39,7 +39,6 @@ target_include_directories(${APP_NAME} PRIVATE
     "${CXXQTBRIDGE_OUTPUT_DIR}/include"
 )
 
-corrosion_import_crate(MANIFEST_PATH Cargo.toml)
 target_link_libraries(${APP_NAME} PRIVATE basic-cxx-only)
 
 target_include_directories(${APP_NAME} PRIVATE include)

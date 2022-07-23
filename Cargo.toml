@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Be Wilson <be.wilson@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[workspace]
+members = [
+    "cxx-qt",
+    "cxx-qt-build",
+    "cxx-qt-cli",
+    "cxx-qt-gen",
+
+    "examples/demo_threading",
+    "examples/qml_extension_plugin/core",
+    "examples/qml_features",
+    "examples/qml_minimal",
+    "examples/qml_with_threaded_logic",
+
+    "tests/basic_cxx_only",
+    "tests/basic_cxx_qt",
+    "tests/qt_types_standalone",
+]

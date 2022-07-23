@@ -50,6 +50,12 @@ function(cxx_qt_create_target)
     if(APPLE)
         set(ENV{SDKROOT} ${CMAKE_OSX_SYSROOT})
     endif()
-    corrosion_import_crate(MANIFEST_PATH ${CXXQT_MANIFEST_PATH})
+
+    # corrosion_import_crate cannot be called multiple times within
+    # one project.
+    list(GET CXXQT_CRATES 0 CORROSION_TARGET)
+    if(NOT TARGET ${CORROSION_TARGET})
+        corrosion_import_crate(MANIFEST_PATH ${CXXQT_MANIFEST_PATH})
+    endif()
     target_link_libraries(${CXXQT_TARGET} INTERFACE ${CXXQT_CRATES})
 endfunction()
