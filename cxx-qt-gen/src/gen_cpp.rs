@@ -949,7 +949,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         #include <mutex>
 
-        #include "cxx-qt-lib/include/qt_types.h"
+        #include "qt_types.h"
 
         {includes}
 

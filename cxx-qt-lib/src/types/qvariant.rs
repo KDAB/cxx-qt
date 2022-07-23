@@ -39,7 +39,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("qt_types.h");
 
         type QColor = crate::QColorCpp;
         type QDate = crate::QDate;
@@ -60,7 +60,7 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("qt_types.h");
 
         #[rust_name = "qvariant_get_type"]
         fn qvariantType(qvariant: &QVariant) -> QVariantType;

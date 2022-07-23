@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=@PKGCONFIG_INCLUDEDIR@
+libdir=@PKGCONFIG_LIBDIR@
+
+Name: cxx-qt@QT_VERSION_MAJOR@
+Description: cxx-qt library for safe Rust bindings to common Qt types
+Version: @CMAKE_PROJECT_VERSION@
+URL: https://github.com/KDAB/cxx-qt
+Libs: -L${libdir} -lcxx-qt-lib@QT_VERSION_MAJOR@
+Requires: Qt@QT_VERSION_MAJOR@ Qt@QT_VERSION_MAJOR@Core Qt@QT_VERSION_MAJOR@Gui
+Cflags: -I${includedir}

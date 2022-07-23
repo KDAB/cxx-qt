@@ -5,7 +5,7 @@ mod my_object {
 
         type MyObject;
 
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("qt_types.h");
         #[namespace = ""]
         type QColor = cxx_qt_lib::QColorCpp;
         #[namespace = ""]

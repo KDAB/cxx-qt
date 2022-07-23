@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Be Wilson <be.wilson@kdab.com>
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/CxxQt@QT_VERSION_MAJOR@Targets.cmake")
+
+include(CMakeFindDependencyMacro)
+find_dependency(Qt@QT_VERSION_MAJOR@Core)
+find_dependency(Qt@QT_VERSION_MAJOR@Gui)
+
+check_required_components(CxxQt@QT_VERSION_MAJOR@)

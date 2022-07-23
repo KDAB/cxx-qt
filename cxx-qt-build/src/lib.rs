@@ -297,73 +297,6 @@ fn write_cpp_sources_list(paths: &[PathBuf]) {
     }
 }
 
-/// Write our a given cxx-qt-lib header and source set to the given folder
-fn write_cxx_qt_lib_set(
-    file_name: &str,
-    target_dir: &str,
-    header: &str,
-    source: &str,
-) -> Vec<PathBuf> {
-    let mut paths = vec![];
-    let path_h = PathBuf::from(format!("{}/include/{}.h", target_dir, file_name));
-    let path_cpp = PathBuf::from(format!("{}/src/{}.cpp", target_dir, file_name));
-
-    let mut file = std::fs::File::create(&path_h).expect("Could not create header file");
-    file.write_all(header.as_bytes())
-        .expect("Could not write header file");
-    paths.push(path_h);
-
-    let mut file = std::fs::File::create(&path_cpp).expect("Could not create source file");
-    file.write_all(source.as_bytes())
-        .expect("Could not write source file");
-    paths.push(path_cpp);
-
-    paths
-}
-
-/// Find all the cxx-qt-lib sources and write them to the target directory
-fn write_cxx_qt_lib_sources() -> Vec<PathBuf> {
-    let cxx_qt_lib_target_dir = format!("{}/target/cxx-qt-lib", manifest_dir());
-    let cxx_qt_lib_include_dir = format!("{}/include", cxx_qt_lib_target_dir);
-    let cxx_qt_lib_src_dir = format!("{}/src", cxx_qt_lib_target_dir);
-    std::fs::create_dir_all(&cxx_qt_lib_include_dir).unwrap();
-    std::fs::create_dir_all(&cxx_qt_lib_src_dir).unwrap();
-
-    let mut paths = vec![];
-    // Add the hand written qt_types file
-    paths.append(&mut write_cxx_qt_lib_set(
-        "qt_types",
-        &cxx_qt_lib_target_dir,
-        cxx_qt_lib::QT_TYPES_HEADER,
-        cxx_qt_lib::QT_TYPES_SOURCE,
-    ));
-    // Add the generated CXX files
-    let generated: Vec<GeneratedType> =
-        serde_json::from_str(cxx_qt_lib::QT_TYPES_CXX_JSON).unwrap();
-    for gen in generated {
-        paths.append(&mut write_cxx_qt_lib_set(
-            &gen.name,
-            &cxx_qt_lib_target_dir,
-            &gen.header,
-            &gen.source,
-        ));
-    }
-
-    paths
-}
-
-/// Write out the static header file for both the cxx
-fn write_cxx_static_header() {
-    let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen/statics/rust", manifest_dir);
-    std::fs::create_dir_all(&path).expect("Could not create static header dir");
-
-    let h_path = format!("{}/cxx.h", path);
-    let mut header = File::create(&h_path).expect("Could not create cxx.h");
-    write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
-}
-
 /// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
 #[derive(Default)]
 pub struct CxxQtBuilder {
@@ -417,18 +350,7 @@ impl CxxQtBuilder {
         // TODO: later use the module::object to turn into module/object.h
 
         // Generate files
-        let mut cpp_paths = write_cxx_generated_files_for_cargo(&self.rust_sources);
-
-        // TODO: in large projects where where CXX-Qt is used in multiple individual
-        // components that end up being linked together, having these same static
-        // files in each one could cause issues.
-        write_cxx_static_header();
-
-        // Check if we have Qt support enabled
-        if self.qt_enabled {
-            // Write the cxx-qt-lib sources into the folder
-            cpp_paths.append(&mut write_cxx_qt_lib_sources());
-        }
+        let cpp_paths = write_cxx_generated_files_for_cargo(&self.rust_sources);
 
         // TODO: find a way to only do this when cargo is called during the config stage of CMake
         write_cpp_sources_list(&cpp_paths);

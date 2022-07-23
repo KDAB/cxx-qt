@@ -33,6 +33,7 @@ cxx_qt_include(core_qmlplugin)
 cxx_qt_link_rustlib(core_qmlplugin)
 # Link to Qt libraries
 target_link_libraries(core_qmlplugin PRIVATE
+    CxxQt${QT_VERSION_MAJOR}::cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml

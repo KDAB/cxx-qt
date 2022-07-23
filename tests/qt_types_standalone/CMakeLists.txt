@@ -38,6 +38,7 @@ cxx_qt_include(${APP_NAME})
 cxx_qt_link_rustlib(${APP_NAME})
 target_link_libraries(${APP_NAME} PRIVATE
     doctest
+    CxxQt${QT_VERSION_MAJOR}::cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Test

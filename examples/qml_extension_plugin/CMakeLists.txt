@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
+find_package(CxxQt${QT_VERSION_MAJOR} QUIET)
 
 add_subdirectory(core)
 add_subdirectory(tests)
@@ -35,6 +36,7 @@ set(
 
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${RESOURCES}")
 target_link_libraries(${APP_NAME} PRIVATE
+    CxxQt${QT_VERSION_MAJOR}::cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml

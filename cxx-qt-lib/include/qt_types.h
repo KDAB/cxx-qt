@@ -22,7 +22,7 @@
 #include <QUrl>
 #include <QVariant>
 
-#include "rust/cxx.h"
+#include "cxx.h"
 
 namespace rust {
 namespace cxxqtlib1 {

@@ -30,6 +30,7 @@ set(
 cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
 target_link_libraries(${APP_NAME} PRIVATE
     doctest
+    CxxQt${QT_VERSION_MAJOR}::cxxqt
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Test

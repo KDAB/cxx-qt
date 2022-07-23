@@ -2,7 +2,7 @@
 
 #include <mutex>
 
-#include "cxx-qt-lib/include/qt_types.h"
+#include "qt_types.h"
 
 namespace cxx_qt::my_object {
 
