@@ -5,16 +5,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use convert_case::{Case, Casing};
 use quote::ToTokens;
-use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use syn::*;
 
-use clang_format::ClangFormatStyle;
-use cxx_qt_gen::{
-    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
-};
+use cxx_qt_gen::{extract_qobject, generate_qobject_cpp, generate_qobject_cxx, CppObject};
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name
@@ -68,20 +64,6 @@ enum ExtractedModule {
     Cxx(ItemMod),
     CxxQt(ItemMod),
     None,
-}
-
-fn manifest_dir() -> String {
-    let mut manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
-    // CARGO_MANIFEST_DIR uses \ path separators on Windows, but the format! macros that
-    // use the return value of this function use / separators. CMake's `file(STRINGS)` command
-    // which is used to load list of generated file paths fails if \ and / path separators
-    // are mixed. CMake also fails when using all \ separators because it treats them as escaping
-    // the character after the \
-    if cfg!(windows) {
-        manifest_dir = manifest_dir.replace('\\', "/");
-    }
-    println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
-    manifest_dir
 }
 
 /// Extract the cxx or cxx_qt module from a Rust file
@@ -255,99 +237,5 @@ impl GeneratedCpp {
         written_files.push(cpp_path);
 
         written_files
-    }
-}
-
-/// Generate C++ files from a given list of Rust files, returning the generated paths
-fn write_cxx_generated_files_for_cargo(rs_source: &[&'static str]) -> Vec<PathBuf> {
-    let manifest_dir = manifest_dir();
-    let directory = format!("{}/target/cxx-qt-gen", manifest_dir);
-    std::fs::create_dir_all(&directory).expect("Could not create cxx-qt code generation directory");
-
-    let mut cpp_files = Vec::new();
-
-    for rs_path in rs_source {
-        let path = format!("{}/{}", manifest_dir, rs_path);
-        println!("cargo:rerun-if-changed={}", path);
-
-        let generated_code = GeneratedCpp::new(&path);
-        cpp_files.append(&mut generated_code.write_to_directory(&directory));
-    }
-
-    cpp_files
-}
-
-/// Write the list of C++ paths to the file
-fn write_cpp_sources_list(paths: &[PathBuf]) {
-    let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen", manifest_dir);
-    std::fs::create_dir_all(path).expect("Could not create target dir");
-
-    let path = format!("{}/target/cxx-qt-gen/cpp_sources.txt", manifest_dir);
-    let mut file = File::create(&path).expect("Could not create cpp_sources file");
-
-    for path in paths {
-        writeln!(file, "{}", path.display()).unwrap();
-    }
-}
-
-/// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
-#[derive(Default)]
-pub struct CxxQtBuilder {
-    cpp_format: Option<ClangFormatStyle>,
-    rust_sources: Vec<&'static str>,
-    qt_enabled: bool,
-}
-
-impl CxxQtBuilder {
-    /// Create a new builder
-    pub fn new() -> Self {
-        Self {
-            cpp_format: None,
-            rust_sources: vec![],
-            qt_enabled: true,
-        }
-    }
-
-    /// Choose the ClangFormatStyle to use for generated C++ files
-    pub fn cpp_format(mut self, format: ClangFormatStyle) -> Self {
-        self.cpp_format = Some(format);
-        self
-    }
-
-    /// Choose to disable Qt support
-    ///
-    /// This will disable including cxx-qt-lib headers.
-    pub fn disable_qt(mut self) -> Self {
-        self.qt_enabled = false;
-        self
-    }
-
-    /// Specify rust file paths to parse through the cxx-qt marco
-    ///
-    /// Currently the path should be relative to CARGO_MANIFEST_DIR
-    pub fn file(mut self, rust_source: &'static str) -> Self {
-        self.rust_sources.push(rust_source);
-        self
-    }
-
-    // TODO: support globs with files("src/**/*.rs")
-
-    /// Perform the build task, for example parsing and generating sources
-    pub fn build(self) {
-        // Set clang-format format
-        if generate_format(self.cpp_format).is_err() {
-            panic!("Failed to set clang-format.");
-        }
-
-        // TODO: somewhere check that we don't have duplicate class names
-        // TODO: later use the module::object to turn into module/object.h
-
-        // Generate files
-        let cpp_paths = write_cxx_generated_files_for_cargo(&self.rust_sources);
-
-        // TODO: find a way to only do this when cargo is called during the config stage of CMake
-        write_cpp_sources_list(&cpp_paths);
     }
 }

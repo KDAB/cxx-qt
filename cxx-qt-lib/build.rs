@@ -41,23 +41,38 @@ fn create_and_write_file(path: &impl AsRef<std::path::Path>, file_contents: &str
         .unwrap_or_else(|_| panic!("Could not write file {}", path.display()));
 }
 
+// Write generated C++ code into directory specified by CXX_QT_LIB_OUT_DIR
+// environment variable and copy CMakeLists.txt and helper files to make
+// it buildable as a static library.
 fn main() {
+    println!("cargo:rerun-if-env-changed=CXX_QT_LIB_OUT_DIR");
+    let env_var = match std::env::var("CXX_QT_LIB_OUT_DIR") {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
+    // Write the generated sources to CXX_QT_LIB_OUT_DIR if set
+    let directory = PathBuf::from(env_var);
+    if directory.exists() && !directory.is_dir() {
+        panic!(
+            "CXX_QT_LIB_OUT_DIR {} is not a directory",
+            directory.display()
+        );
+    } else if !directory.exists() {
+        std::fs::create_dir_all(&directory).unwrap_or_else(|_| {
+            panic!(
+                "Could not create CXX_QT_LIB_OUT_DIR directory {}",
+                directory.display()
+            )
+        });
+    }
+
     // Read the cargo folder and out folder
     let mut dir_manifest = std::env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     if cfg!(windows) {
         dir_manifest = dir_manifest.replace('\\', "/");
     }
     println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
-
-    let mut dir_out = std::env::var("OUT_DIR").expect("Could not get out dir");
-    if cfg!(windows) {
-        dir_out = dir_out.replace('\\', "/");
-    }
-    println!("cargo:rerun-if-env-changed=OUT_DIR");
-
-    // Prepare cxx-qt-lib dir we'll write to
-    let path = format!("{}/cxx-qt-lib", dir_out);
-    std::fs::create_dir_all(&path).expect("Could not create cxx-qt-lib dir");
 
     // Read the types directory for CXX objects
     let types_dir = format!("{}/src/types/", dir_manifest);
@@ -80,67 +95,48 @@ fn main() {
         }
     }
 
-    // Write the generated sources to CXX_QT_LIB_OUT_DIR if set
-    println!("cargo:rerun-if-env-changed=CXX_QT_LIB_OUT_DIR");
-    if let Ok(env_var) = std::env::var("CXX_QT_LIB_OUT_DIR") {
-        let directory = PathBuf::from(env_var);
-        if directory.exists() && !directory.is_dir() {
-            panic!(
-                "CXX_QT_LIB_OUT_DIR {} is not a directory",
-                directory.display()
-            );
-        } else if !directory.exists() {
-            std::fs::create_dir_all(&directory).unwrap_or_else(|_| {
+    let subdirectories_to_create = ["include", "src", "packaging"];
+    for subdirectory_path in subdirectories_to_create {
+        std::fs::create_dir_all(format!("{}/{}", &directory.display(), subdirectory_path))
+            .unwrap_or_else(|_| {
                 panic!(
-                    "Could not create CXX_QT_LIB_OUT_DIR directory {}",
-                    directory.display()
+                    "Could not create {} subdirectory in CXX_QT_LIB_OUT_DIR",
+                    &directory.display()
                 )
             });
-        }
+    }
 
-        let subdirectories_to_create = ["include", "src", "packaging"];
-        for subdirectory_path in subdirectories_to_create {
-            std::fs::create_dir_all(format!("{}/{}", &directory.display(), subdirectory_path))
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "Could not create {} subdirectory in CXX_QT_LIB_OUT_DIR",
-                        &directory.display()
-                    )
-                });
-        }
+    let files_to_copy = [
+        "include/qt_types.h",
+        "src/qt_types.cpp",
+        "CMakeLists.txt",
+        "CxxQt.cmake",
+        "packaging/cxx-qt.pc.in",
+        "packaging/CxxQtConfig.cmake.in",
+    ];
+    for file_path in files_to_copy {
+        std::fs::copy(
+            format!("{}/{}", dir_manifest, file_path),
+            format!("{}/{}", directory.display(), file_path),
+        )
+        .unwrap_or_else(|_| panic!("Could not copy {} to CXX_QT_LIB_OUT_DIR", file_path));
+        print!("cargo:rerun-if-changed={}", file_path);
+    }
 
-        let files_to_copy = [
-            "include/qt_types.h",
-            "src/qt_types.cpp",
-            "CMakeLists.txt",
-            "CxxQt.cmake",
-            "packaging/cxx-qt.pc.in",
-            "packaging/CxxQtConfig.cmake.in",
-        ];
-        for file_path in files_to_copy {
-            std::fs::copy(
-                format!("{}/{}", dir_manifest, file_path),
-                format!("{}/{}", directory.display(), file_path),
-            )
-            .unwrap_or_else(|_| panic!("Could not copy {} to CXX_QT_LIB_OUT_DIR", file_path));
-            print!("cargo:rerun-if-changed={}", file_path);
-        }
+    create_and_write_file(
+        &format!("{}/include/cxx.h", directory.display()),
+        cxx_gen::HEADER,
+    );
 
+    for class in generated {
         create_and_write_file(
-            &format!("{}/include/cxx.h", directory.display()),
-            cxx_gen::HEADER,
+            &format!("{}/include/{}.h", directory.display(), class.name),
+            &class.header,
         );
 
-        for class in generated {
-            create_and_write_file(
-                &format!("{}/include/{}.h", directory.display(), class.name),
-                &class.header,
-            );
-
-            create_and_write_file(
-                &format!("{}/src/{}.cpp", directory.display(), class.name),
-                &class.source,
-            );
-        }
+        create_and_write_file(
+            &format!("{}/src/{}.cpp", directory.display(), class.name),
+            &class.source,
+        );
     }
 }
