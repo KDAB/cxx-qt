@@ -7,38 +7,6 @@
 mod types;
 pub use types::*;
 
-// Provide a separate depending on the platform
-// this is because include_str requires th correct and non-mixed path separators
-//
-// https://github.com/rust-lang/rust/issues/75075
-#[cfg(not(windows))]
-macro_rules! sep {
-    () => {
-        "/"
-    };
-}
-
-#[cfg(windows)]
-macro_rules! sep {
-    () => {
-        "\\"
-    };
-}
-
-/// JSON representation of the generated CXX sources for qt_types
-pub const QT_TYPES_CXX_JSON: &str = include_str!(concat!(
-    env!("OUT_DIR"),
-    sep!(),
-    "cxx-qt-lib",
-    sep!(),
-    "qt_types_cxx.json"
-));
-/// The header for qt_types
-pub const QT_TYPES_HEADER: &str =
-    include_str!(concat!("..", sep!(), "include", sep!(), "qt_types.h"));
-/// The source for qt_types
-pub const QT_TYPES_SOURCE: &str = include_str!("qt_types.cpp");
-
 pub trait UpdateRequestHandler<C> {
     fn handle_update_request(&mut self, cpp: &mut C);
 }

@@ -149,19 +149,32 @@ endfunction()
 add_subdirectory(book)
 add_subdirectory(examples)
 
+# CARGO_TARGET_DIR is needed so the generated headers can be added to the
+# include paths.
+# QMAKE environment variable is needed by qt-build to ensure that Cargo
+# uses the same installation of Qt as CMake does.
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
+get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+set(CARGO_ENV "QMAKE=${QMAKE};CARGO_TARGET_DIR=${CMAKE_CURRENT_SOURCE_DIR}/target")
+
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --manifest-path ${MANIFEST_PATH})
+    set_property(TEST ${TEST_NAME_PREFIX}_cargo_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
     # Check if we should enable doc tests
     if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
         # Add cargo docs as a test
         add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --doc --manifest-path ${MANIFEST_PATH})
+        set_property(TEST ${TEST_NAME_PREFIX}_cargo_doc_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
     endif()
     # Add clippy as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
+    set_property(TEST ${TEST_NAME_PREFIX}_cargo_clippy PROPERTY ENVIRONMENT ${CARGO_ENV})
     # Add rustfmt as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
+    set_property(TEST ${TEST_NAME_PREFIX}_cargo_fmt PROPERTY ENVIRONMENT ${CARGO_ENV})
 endfunction()
 
 # Add cargo tests for all our manifests

@@ -41,9 +41,18 @@ function(cxx_qt_generate_cpp GEN_SOURCES)
 
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen")
 
+    get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+
     # Run cargo during config to ensure the cpp source file list is created
+    # CARGO_TARGET_DIR is needed so the generated headers can be added to the
+    # include paths.
+    # QMAKE environment variable is needed by qt-build to ensure that Cargo
+    # uses the same installation of Qt as CMake does.
     execute_process(
-        COMMAND ${CARGO_CMD}
+        COMMAND cmake -E env
+            "CARGO_TARGET_DIR=${CMAKE_CURRENT_SOURCE_DIR}/target"
+            "QMAKE=${QMAKE}"
+            ${CARGO_CMD}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
@@ -62,6 +71,7 @@ function(cxx_qt_include APP_NAME)
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
     # Include the target folder so that cxx-qt-gen and cxx-qt-lib can be included
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target")
+    target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target/cxxbridge")
     # Our cxx_qt and cxx headers are in this folder and need to be included
     target_include_directories(${APP_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/statics")
 endfunction()
@@ -100,9 +110,19 @@ function(cxx_qt_link_rustlib APP_NAME)
     else()
         set(RUST_PART_LIB "${CMAKE_CURRENT_SOURCE_DIR}/target/${TARGET_DIR}/librust.a")
     endif()
+
+    get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+
+    # CARGO_TARGET_DIR is needed so the generated headers can be added to the
+    # include paths.
+    # QMAKE environment variable is needed by qt-build to ensure that Cargo
+    # uses the same installation of Qt as CMake does.
     add_custom_target(
         "${APP_NAME}_rustlib"
-        COMMAND ${CARGO_CMD}
+        COMMAND cmake -E env
+            "CARGO_TARGET_DIR=${CMAKE_CURRENT_SOURCE_DIR}/target"
+            "QMAKE=${QMAKE}"
+            ${CARGO_CMD}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_dependencies(${APP_NAME} "${APP_NAME}_rustlib")

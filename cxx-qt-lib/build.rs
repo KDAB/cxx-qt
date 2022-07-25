@@ -3,138 +3,69 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use quote::ToTokens;
-use serde::{Deserialize, Serialize};
-use std::{fs::File, io::Write, path::PathBuf};
-
-/// Representation of a generated CXX header, source, and name
-#[derive(Serialize, Deserialize)]
-struct GeneratedType {
-    header: String,
-    name: String,
-    source: String,
-}
-
-/// Generate a CXX header, source, name for a given Rust file
-fn gen_cxx_sources(folder: &str, file_stem: &str) -> GeneratedType {
-    // Read the rust source files
-    let path = format!("{}/{}.rs", folder, file_stem);
-    println!("cargo:rerun-if-changed={}", path);
-    let content = std::fs::read_to_string(path).expect("Could not read Rust file");
-    let file = syn::parse_file(&content).unwrap();
-
-    // Generate the CXX header and cc for the file
-    let opt = cxx_gen::Opt::default();
-    let generated = cxx_gen::generate_header_and_cc(file.into_token_stream(), &opt)
-        .expect("Could not generate C++ from Rust file");
-
-    GeneratedType {
-        header: String::from_utf8(generated.header).unwrap(),
-        name: format!("{}_cxx", file_stem),
-        source: String::from_utf8(generated.implementation).unwrap(),
-    }
-}
-
-/// Write generates types to a given file as JSON
-fn write_cxx_sources(gen: &Vec<GeneratedType>, path: &str) {
-    let file = std::fs::File::create(path).expect("Could not create generated file");
-    serde_json::to_writer(file, &gen).unwrap();
-}
-
-fn create_and_write_file(path: &impl AsRef<std::path::Path>, file_contents: &str) {
-    let path = path.as_ref();
-    File::create(&path)
-        .unwrap_or_else(|_| panic!("Could not create file {}", path.display()))
-        .write_all(file_contents.as_bytes())
-        .unwrap_or_else(|_| panic!("Could not write file {}", path.display()));
-}
+use std::env;
 
 fn main() {
-    // Read the cargo folder and out folder
-    let mut dir_manifest = std::env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
-    if cfg!(windows) {
-        dir_manifest = dir_manifest.replace('\\', "/");
-    }
-    println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
+    let qt_modules = vec!["Core", "Gui"]
+        .iter()
+        .map(|m| String::from(*m))
+        .collect();
+    let qtbuild = qt_build::QtBuild::new(qt_modules).expect("Could not find Qt installation");
+    qtbuild.cargo_link_libraries();
 
-    let mut dir_out = std::env::var("OUT_DIR").expect("Could not get out dir");
-    if cfg!(windows) {
-        dir_out = dir_out.replace('\\', "/");
-    }
-    println!("cargo:rerun-if-env-changed=OUT_DIR");
-
-    // Prepare cxx-qt-lib dir we'll write to
-    let path = format!("{}/cxx-qt-lib", dir_out);
-    std::fs::create_dir_all(&path).expect("Could not create cxx-qt-lib dir");
-
-    // Read the types directory for CXX objects
-    let types_dir = format!("{}/src/types/", dir_manifest);
-    // If any of the files in this directory change, then we need to re-run
-    println!("cargo:rerun-if-changed={}", types_dir);
-
-    let mut generated = vec![];
-
-    for entry in std::fs::read_dir(&types_dir).expect("Could not open types folder") {
-        let path = entry.expect("Could not open file").path();
-        let file_stem = path
-            .file_stem()
-            .expect("Could not find file name")
-            .to_str()
-            .expect("Could not convert to unicode");
-
-        // Check we are a file and not the mod.rs
-        if path.is_file() && file_stem != "mod" {
-            generated.push(gen_cxx_sources(&types_dir, file_stem));
-        }
-    }
-
-    // Write the generated sources to a qt_types_cxx.json file
-    write_cxx_sources(&generated, &format!("{}/qt_types_cxx.json", path));
-
-    // Write the generated sources to CXX_QT_LIB_OUT_DIR if set
-    println!("cargo:rerun-if-env-changed=CXX_QT_LIB_OUT_DIR");
-    if let Ok(env_var) = std::env::var("CXX_QT_LIB_OUT_DIR") {
-        let directory = PathBuf::from(env_var);
-        if !directory.is_dir() {
-            panic!(
-                "CXX_QT_LIB_OUT_DIR {} is not a directory",
-                directory.display()
-            );
-        }
-
-        let include_directory_path = PathBuf::from(format!("{}/include", &directory.display()));
-        std::fs::create_dir_all(&include_directory_path)
-            .expect("Could not create CXX_QT_LIB_OUT_DIR include dir");
-        let source_directory_path = PathBuf::from(format!("{}/src", &directory.display()));
-        std::fs::create_dir_all(&source_directory_path)
-            .expect("Could not create CXX_QT_LIB_OUT_DIR source dir");
-
+    // Copy qt_types.h so C++ build systems can #include it.
+    // By design, CARGO_TARGET_DIR is not set by cargo when running build scripts.
+    // Copying the header is only needed for making the header available to a C++
+    // build system, in which case CARGO_TARGET_DIR will be set by
+    // the C++ build system.
+    println!("cargo:rerun-if-changed=include/qt_types.h");
+    println!("cargo:rerun-if-env-changed=CARGO_TARGET_DIR");
+    if let Ok(target_dir) = env::var("CARGO_TARGET_DIR") {
+        let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+        std::fs::create_dir_all(&format!("{}/cxxbridge/cxx-qt-lib/include", target_dir)).unwrap();
         std::fs::copy(
-            format!("{}/include/qt_types.h", dir_manifest),
-            format!("{}/qt_types.h", include_directory_path.display()),
+            &format!("{}/include/qt_types.h", manifest_dir),
+            &format!("{}/cxxbridge/cxx-qt-lib/include/qt_types.h", target_dir),
         )
-        .expect("Could not copy qt_types.h to CXX_QT_LIB_OUT_DIR");
-        std::fs::copy(
-            format!("{}/src/qt_types.cpp", dir_manifest),
-            format!("{}/qt_types.cpp", source_directory_path.display()),
-        )
-        .expect("Could not copy qt_types.cpp to CXX_QT_LIB_OUT_DIR");
-
-        create_and_write_file(
-            &format!("{}/cxx.h", include_directory_path.display()),
-            cxx_gen::HEADER,
-        );
-
-        for class in generated {
-            create_and_write_file(
-                &format!("{}/{}.h", include_directory_path.display(), class.name),
-                &class.header,
-            );
-
-            create_and_write_file(
-                &format!("{}/{}.cpp", source_directory_path.display(), class.name),
-                &class.source,
-            );
-        }
+        .unwrap();
     }
+
+    let bridge_files = [
+        "src/types/qcolor.rs",
+        "src/types/qdate.rs",
+        "src/types/qdatetime.rs",
+        "src/types/qpoint.rs",
+        "src/types/qpointf.rs",
+        "src/types/qrect.rs",
+        "src/types/qrectf.rs",
+        "src/types/qsize.rs",
+        "src/types/qsizef.rs",
+        "src/types/qstring.rs",
+        "src/types/qtime.rs",
+        "src/types/qurl.rs",
+        "src/types/qvariant.rs",
+        "src/types/update_requester.rs",
+    ];
+    for bridge_file in bridge_files {
+        println!("cargo:rerun-if-changed={}", bridge_file);
+    }
+
+    for include_path in qtbuild.include_paths() {
+        cxx_build::CFG
+            .exported_header_dirs
+            .push(include_path.as_path());
+    }
+
+    let mut builder = cxx_build::bridges(&bridge_files);
+    for cpp_file in ["src/qt_types.cpp"] {
+        builder.file(cpp_file);
+        println!("cargo:rerun-if-changed={}", cpp_file);
+    }
+    // MSVC
+    builder.flag_if_supported("/std:c++17");
+    builder.flag_if_supported("/Zc:__cplusplus");
+    builder.flag_if_supported("/permissive-");
+    // GCC + Clang
+    builder.flag_if_supported("-std=c++17");
+    builder.compile("cxx-qt-lib");
 }
