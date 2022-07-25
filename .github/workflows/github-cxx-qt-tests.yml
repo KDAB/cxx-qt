@@ -175,7 +175,7 @@ jobs:
       # https://github.com/KDAB/cxx-qt/issues/121
       #
       # automake is needed for building libicu which is a dependency of Qt
-      run: brew install automake ninja clang-format
+      run: brew install automake autoconf-archive ninja clang-format
 
     - name: "Authenticate to GitHub Packages"
       if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
