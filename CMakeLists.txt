@@ -81,7 +81,7 @@ if(VCPKG)
         # GitHub will deactivate a personal access token that gets committed to the repository.
         # Hack around this by splitting up the PAT.
         # This is safe because this PAT only has read:packages permission.
-        set(GITHUB_PAT_READ_PACKAGES_SUFFIX U2OpRinygfPcWI110P7CJOKLpomyGh2VeZ60)
+        set(GITHUB_PAT_READ_PACKAGES_SUFFIX HvVJ7NF8sArqcyBnF45RXOgAT0Q1uL42CZkO)
         execute_process(
             COMMAND ${DOTNET_RUNTIME} ${NUGET_EXECUTABLE} sources add
             -name cxx-qt-github-packages
