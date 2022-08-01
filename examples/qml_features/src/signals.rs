@@ -9,6 +9,7 @@ pub mod signals {
     use cxx_qt_lib::{QPoint, QVariant};
 
     // ANCHOR: book_signals_enum
+    #[cxx_qt::signals(MyObject)]
     pub enum Signal {
         Ready,
         RustDataChanged { data: i32 },

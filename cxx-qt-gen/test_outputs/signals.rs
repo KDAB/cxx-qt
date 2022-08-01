@@ -77,7 +77,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::QVariant;
 
-    enum Signal {
+    enum MySignals {
         Ready,
         DataChanged {
             first: i32,
@@ -97,10 +97,10 @@ mod cxx_qt_my_object {
 
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
-                cpp.emit_immediate(Signal::Ready);
+                cpp.emit_immediate(MySignals::Ready);
             }
 
-            cpp.emit_queued(Signal::DataChanged {
+            cpp.emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),
                 third: QPoint::new(1, 2),
@@ -117,10 +117,10 @@ mod cxx_qt_my_object {
             Self { cpp }
         }
 
-        pub fn emit_queued(&mut self, signal: Signal) {
+        pub fn emit_queued(&mut self, signal: MySignals) {
             match signal {
-                Signal::Ready {} => self.cpp.as_mut().emit_ready(),
-                Signal::DataChanged {
+                MySignals::Ready {} => self.cpp.as_mut().emit_ready(),
+                MySignals::DataChanged {
                     first,
                     second,
                     third,
@@ -131,10 +131,10 @@ mod cxx_qt_my_object {
             }
         }
 
-        pub unsafe fn emit_immediate(&mut self, signal: Signal) {
+        pub unsafe fn emit_immediate(&mut self, signal: MySignals) {
             match signal {
-                Signal::Ready {} => self.cpp.as_mut().ready(),
-                Signal::DataChanged {
+                MySignals::Ready {} => self.cpp.as_mut().ready(),
+                MySignals::DataChanged {
                     first,
                     second,
                     third,

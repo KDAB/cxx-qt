@@ -154,9 +154,15 @@ pub(crate) struct Property {
 /// Describes a signal that can be used from QML
 #[derive(Debug)]
 pub(crate) struct Signal {
+    /// The C++ and Rust names of the method to emit the signal as queued
+    /// eg emitDataChanged and emit_data_changed
     pub(crate) emit_ident: CppRustIdent,
+    /// The Rust name of the enum entry, eg DataChanged
     pub(crate) enum_ident: Ident,
+    /// The parameters of the Signal
     pub(crate) parameters: Vec<Parameter>,
+    /// The C++ and Rust names of the method to emit the signal as immediate
+    /// eg dataChanged and data_changed
     pub(crate) signal_ident: CppRustIdent,
 }
 
@@ -173,6 +179,8 @@ pub struct QObject {
     pub(crate) properties: Vec<Property>,
     /// All the signals that can be emitted/connected from QML
     pub(crate) signals: Vec<Signal>,
+    /// The name of the signals enum that is used
+    pub(crate) signal_ident: Option<Ident>,
     /// The namespace to use for C++
     pub(crate) namespace: Vec<String>,
     /// Items we just pass through to the CXX bridge
@@ -837,22 +845,40 @@ pub fn extract_qobject(
         match item {
             // We are an Enum
             Item::Enum(ref item_enum) => {
-                match item_enum.ident.to_string().as_str() {
-                    // We are a Signal definition
-                    "Signal" => {
-                        // Check that we are the first Signal enum
-                        if original_signal_enum.is_none() {
-                            original_signal_enum = Some(item_enum.clone());
-                        } else {
-                            return Err(Error::new(
-                                item_enum.span(),
-                                "Only one Signal enum is supported per mod.",
-                            )
-                            .to_compile_error());
+                let index_of_signals_attr = |attrs: &Vec<Attribute>| {
+                    for (i, attr) in attrs.iter().enumerate() {
+                        if attr.path.segments.len() == 2
+                            && attr.path.segments[0].ident == "cxx_qt"
+                            && attr.path.segments[1].ident == "signals"
+                        {
+                            // TODO: later we need to read the inner args
+                            // to find which QObject these signals are for
+                            // eg the MyObject in cxx_qt::signals(MyObject)
+                            return Some(i);
                         }
                     }
+
+                    None
+                };
+
+                // Determine if we are a signals enum
+                if let Some(index) = index_of_signals_attr(&item_enum.attrs) {
+                    // Check that we are the first Signal enum
+                    if original_signal_enum.is_none() {
+                        // Clone the signal enum and remove the attribute
+                        let mut item_enum = item_enum.clone();
+                        item_enum.attrs.remove(index);
+                        original_signal_enum = Some(item_enum);
+                    } else {
+                        return Err(Error::new(
+                            item_enum.span(),
+                            "Only one Signal enum is supported per mod.",
+                        )
+                        .to_compile_error());
+                    }
+                } else {
                     // Passthrough unknown enums
-                    _others => original_passthrough_decls.push(item.to_owned()),
+                    original_passthrough_decls.push(item.to_owned());
                 }
             }
             // We are a struct
@@ -1055,6 +1081,9 @@ pub fn extract_qobject(
     } else {
         vec![]
     };
+    let signal_ident = original_signal_enum
+        .as_ref()
+        .map(|original_enum| original_enum.ident.clone());
 
     // Build the namespace for this QObject
     //
@@ -1082,6 +1111,7 @@ pub fn extract_qobject(
         normal_methods: object_normal_methods,
         properties: object_properties,
         signals: object_signals,
+        signal_ident,
         namespace,
         cxx_items,
         original_mod,

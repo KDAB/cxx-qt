@@ -12,6 +12,7 @@ mod mock_qt_types {
     };
     use std::str::FromStr;
 
+    #[cxx_qt::signals(MyObject)]
     pub enum Signal {
         Ready,
         DataChanged { variant: QVariant },

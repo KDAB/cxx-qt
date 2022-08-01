@@ -715,6 +715,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
     let mut signal_methods = Vec::new();
     let mut queued_cases = Vec::new();
     let mut immediate_cases = Vec::new();
+    let ident = &obj.signal_ident;
 
     for signal in &obj.signals {
         let emit_ident = &signal.emit_ident.rust_ident;
@@ -753,17 +754,17 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
         let signal_ident = &signal.signal_ident.rust_ident;
 
         queued_cases.push(quote! {
-            Signal::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#emit_ident(#(#parameters_to_value_queued),*),
+            #ident::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#emit_ident(#(#parameters_to_value_queued),*),
         });
 
         immediate_cases.push(quote! {
-            Signal::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#signal_ident(#(#parameters_to_value_immediate),*),
+            #ident::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#signal_ident(#(#parameters_to_value_immediate),*),
         });
     }
 
     if !queued_cases.is_empty() {
         signal_methods.push(quote! {
-            pub fn emit_queued(&mut self, signal: Signal) {
+            pub fn emit_queued(&mut self, signal: #ident) {
                 match signal {
                     #(#queued_cases)*
                 }
@@ -773,7 +774,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
 
     if !immediate_cases.is_empty() {
         signal_methods.push(quote! {
-            pub unsafe fn emit_immediate(&mut self, signal: Signal) {
+            pub unsafe fn emit_immediate(&mut self, signal: #ident) {
                 match signal {
                     #(#immediate_cases)*
                 }
