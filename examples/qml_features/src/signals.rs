@@ -43,7 +43,7 @@ pub mod signals {
     pub struct RustObj;
 
     // ANCHOR: book_rust_obj_impl
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {

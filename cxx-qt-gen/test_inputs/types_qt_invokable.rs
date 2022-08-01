@@ -23,7 +23,7 @@ mod my_object {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn test_color(&self, _cpp: &mut CppObj, color: &QColor) -> UniquePtr<QColor> {
             color

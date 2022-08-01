@@ -61,7 +61,7 @@ mod website {
         }
     }
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url().to_string();
@@ -110,15 +110,6 @@ mod website {
             thread::spawn(move || block_on(fetch_title));
         }
 
-        fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
-            match event {
-                Event::TitleArrived(title) => {
-                    cpp.set_title(QString::from_str(title).as_ref().unwrap());
-                    self.loading.store(false, Ordering::Relaxed);
-                }
-            }
-        }
-
         #[invokable]
         pub fn new_title_value(&mut self) {
             println!("title changed");
@@ -127,6 +118,15 @@ mod website {
         #[invokable]
         pub fn new_url_value(&mut self, cpp: &mut CppObj) {
             self.refresh_title(cpp);
+        }
+
+        fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
+            match event {
+                Event::TitleArrived(title) => {
+                    cpp.set_title(QString::from_str(title).as_ref().unwrap());
+                    self.loading.store(false, Ordering::Relaxed);
+                }
+            }
         }
     }
 

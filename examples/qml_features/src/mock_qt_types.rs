@@ -74,7 +74,7 @@ mod mock_qt_types {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn test_signal(&self, cpp: &mut CppObj) {
             cpp.emit_queued(Signal::Ready);

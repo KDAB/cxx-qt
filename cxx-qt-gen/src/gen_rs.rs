@@ -979,14 +979,14 @@ pub fn generate_qobject_rs(
                 .map(|ident_wrapper| invokable_generate_wrapper(i, &ident_wrapper.rust_ident))
         })
         .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
-
     let invokable_methods = obj
         .invokables
         .iter()
         .map(|m| m.original_method.clone())
         .collect::<Vec<syn::ImplItemMethod>>();
-    let normal_methods = &obj.normal_methods;
 
+    let normal_methods = &obj.normal_methods;
+    let rust_methods = &obj.rust_methods;
     let original_trait_impls = &obj.original_trait_impls;
     let original_passthrough_decls = &obj.original_passthrough_decls;
 
@@ -1019,6 +1019,7 @@ pub fn generate_qobject_rs(
             #(#invokable_method_wrappers)*
             #(#invokable_methods)*
             #(#normal_methods)*
+            #(#rust_methods)*
 
             #handle_update_request
         }

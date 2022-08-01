@@ -58,7 +58,7 @@ mod serialisation {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn as_json_str(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);

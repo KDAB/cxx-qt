@@ -29,7 +29,7 @@ mod types {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {

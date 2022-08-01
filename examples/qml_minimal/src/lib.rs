@@ -40,7 +40,7 @@ mod my_object {
     // ANCHOR_END: book_rustobj_struct
 
     // ANCHOR: book_rustobj_impl
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn increment_number(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);

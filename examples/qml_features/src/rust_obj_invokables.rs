@@ -21,7 +21,7 @@ pub mod rust_obj_invokables {
         }
     }
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         // ANCHOR: book_cpp_obj
         #[invokable]
         pub fn invokable_mutate_cpp(&self, cpp: &mut CppObj) {
@@ -39,7 +39,9 @@ pub mod rust_obj_invokables {
             self.rust_only_method(factor);
             self.rust_only_field
         }
+    }
 
+    impl RustObj {
         fn rust_only_method(&mut self, factor: i32) {
             self.rust_only_field *= factor;
         }

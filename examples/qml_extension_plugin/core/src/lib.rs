@@ -60,7 +60,7 @@ mod my_object {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn increment(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
