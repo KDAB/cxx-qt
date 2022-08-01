@@ -10,11 +10,12 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use syn::*;
 
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
-    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_cxx, CppObject,
+    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_rs,
+    syntax::{parse_qt_file, CxxQtItem},
+    CppObject,
 };
 
 /// Representation of a generated CXX header, source, and name
@@ -33,52 +34,6 @@ struct GeneratedType {
 // QObject macros and at most one "raw CXX" macro per file already. For now this remains a TODO
 // as to keep things simpler. We also want to able to warn users about duplicate names eventually.
 
-/// Tests if an attributes matched what is expected for #[cxx::bridge]
-fn is_cxx_attr(attr: &Attribute) -> bool {
-    let segments = &attr.path.segments;
-
-    if segments.len() != 2 {
-        return false;
-    }
-
-    if segments[0].ident != "cxx" {
-        return false;
-    }
-
-    if segments[1].ident != "bridge" {
-        return false;
-    }
-
-    true
-}
-
-/// Tests if an attributes matched what is expected for #[cxx_qt::bridge]
-fn is_cxx_qt_attr(attr: &Attribute) -> bool {
-    let segments = &attr.path.segments;
-
-    if segments.len() != 2 {
-        return false;
-    }
-
-    if segments[0].ident != "cxx_qt" {
-        return false;
-    }
-
-    if segments[1].ident != "bridge" {
-        return false;
-    }
-
-    true
-}
-
-/// Represents the cxx or cxx_qt module that could be extracted from a file
-#[derive(PartialEq)]
-enum ExtractedModule {
-    Cxx(ItemMod),
-    CxxQt(ItemMod),
-    None,
-}
-
 fn manifest_dir() -> String {
     let mut manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
     // CARGO_MANIFEST_DIR uses \ path separators on Windows, but the format! macros that
@@ -93,57 +48,6 @@ fn manifest_dir() -> String {
     manifest_dir
 }
 
-/// Extract the cxx or cxx_qt module from a Rust file
-fn extract_modules(file_content: &str, rs_path: &impl AsRef<std::path::Path>) -> ExtractedModule {
-    let file = syn::parse_file(file_content).unwrap();
-
-    // Define a helper function that will ensure that we can extract at most one
-    // module for code gen from the items in the file. This function also
-    // ensures that the extracted item is wrapped in the correct enum.
-    let mut extracted = ExtractedModule::None;
-    let mut push_module = |i: ItemMod, qt: bool| {
-        if extracted != ExtractedModule::None {
-            panic!(
-                "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
-                The file {} has more than one of these.",
-                rs_path.as_ref().display());
-        }
-
-        if qt {
-            extracted = ExtractedModule::CxxQt(i);
-        } else {
-            extracted = ExtractedModule::Cxx(i);
-        }
-    };
-
-    // We loop through all the items in the module searching for any that we can
-    // generate code from. We do not break out of the loop so that we can detect
-    // if the users placed multiple such modules in a single file and give them a
-    // warning.
-    for i in file.items {
-        if let Item::Mod(m) = i {
-            let attrs = &m.attrs;
-            match attrs.len() {
-                0 => continue,
-                1 => {}
-                _others => panic!("Multiple module attributes are currently not supported."),
-            }
-
-            // TODO: what if the name is bridge instead of cxx::bridge?
-            // can we instead use the macro itself rather than scanning the syn tree for them?
-            // and see what CXX does here
-            let attr = &attrs[0];
-            if is_cxx_attr(attr) {
-                push_module(m, false);
-            } else if is_cxx_qt_attr(attr) {
-                push_module(m, true);
-            }
-        }
-    }
-
-    extracted
-}
-
 pub struct GeneratedCpp {
     cxx_qt: Option<CppObject>,
     cxx: cxx_gen::GeneratedCode,
@@ -153,35 +57,67 @@ pub struct GeneratedCpp {
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
     pub fn new(rust_file_path: &impl AsRef<std::path::Path>) -> Self {
-        let content = std::fs::read_to_string(rust_file_path).expect("Could not read Rust file");
-        let extracted = extract_modules(&content, rust_file_path);
-
         // TODO: for now we use a fixed namespace, later this will come from the macro definition
         let cpp_namespace_prefix: Vec<&'static str> = vec!["cxx_qt"];
 
-        let cxx_qt;
-        let module_ident;
-        let tokens = {
-            match extracted {
-                ExtractedModule::Cxx(m) => {
+        let file = parse_qt_file(rust_file_path).unwrap();
+
+        let mut cxx_qt = None;
+        // TODO: later change how the resultant filename is chosen, can we match the input file like
+        // CXX does?
+        let mut module_ident: String = "".to_owned();
+        let mut tokens = proc_macro2::TokenStream::new();
+
+        // Add any attributes in the file into the tokenstream
+        for attr in &file.attrs {
+            tokens.extend(attr.into_token_stream());
+        }
+
+        // Loop through the items looking for any CXX or CXX-Qt blocks
+        for item in &file.items {
+            match item {
+                CxxQtItem::Cxx(m) => {
+                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
+                    if !module_ident.is_empty() {
+                        panic!(
+                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
+                            The file {} has more than one of these.",
+                            rust_file_path.as_ref().display());
+                    }
+
                     module_ident = m.ident.to_string().to_case(Case::Snake);
-                    cxx_qt = None;
-                    m.into_token_stream()
+                    tokens.extend(m.into_token_stream());
                 }
-                ExtractedModule::CxxQt(m) => {
+                CxxQtItem::CxxQt(m) => {
+                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
+                    if !module_ident.is_empty() {
+                        panic!(
+                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
+                            The file {} has more than one of these.",
+                            rust_file_path.as_ref().display());
+                    }
+
                     module_ident = m.ident.to_string().to_case(Case::Snake);
 
+                    // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
+                    // which will take a CxxQtItemMod and respond with a C++ header and source
                     let qobject = extract_qobject(m, &cpp_namespace_prefix).unwrap();
+                    // TODO: we'll have to extend the C++ data here rather than overwriting
+                    // assuming we share the same file
                     cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());
 
-                    generate_qobject_cxx(&qobject, &cpp_namespace_prefix).unwrap()
+                    // TODO: later we will likely have cxx_qt_gen::generate_rust
+                    // which will take a CxxQtItemMod and respond with the Rust code
+                    //
+                    // We need to do this and can't rely on the macro, as we need to generate the
+                    // CXX bridge Rust code that is then fed into the cxx_gen generation.
+                    tokens.extend(generate_qobject_rs(&qobject, &cpp_namespace_prefix).unwrap());
                 }
-                _others => panic!(
-                    "No module to generate cxx code from could be found in {}",
-                    rust_file_path.as_ref().display()
-                ),
+                CxxQtItem::Item(item) => {
+                    tokens.extend(item.into_token_stream());
+                }
             }
-        };
+        }
 
         let opt = cxx_gen::Opt::default();
         let cxx = cxx_gen::generate_header_and_cc(tokens, &opt)

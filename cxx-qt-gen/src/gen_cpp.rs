@@ -1083,7 +1083,7 @@ mod tests {
         let source = include_str!("../test_inputs/handlers.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!("../test_outputs/handlers.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/handlers.cpp")).unwrap();
@@ -1097,7 +1097,7 @@ mod tests {
         let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!("../test_outputs/invokables.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/invokables.cpp")).unwrap();
@@ -1111,7 +1111,7 @@ mod tests {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!("../test_outputs/naming.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/naming.cpp")).unwrap();
@@ -1125,7 +1125,7 @@ mod tests {
         let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!("../test_outputs/properties.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/properties.cpp")).unwrap();
@@ -1139,7 +1139,7 @@ mod tests {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header = clang_format(include_str!("../test_outputs/signals.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/signals.cpp")).unwrap();
@@ -1153,7 +1153,7 @@ mod tests {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/types_primitive_property.h")).unwrap();
@@ -1169,7 +1169,7 @@ mod tests {
         let source = include_str!("../test_inputs/types_qt_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/types_qt_property.h")).unwrap();
@@ -1185,7 +1185,7 @@ mod tests {
         let source = include_str!("../test_inputs/types_qt_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         let expected_header =
             clang_format(include_str!("../test_outputs/types_qt_invokable.h")).unwrap();
