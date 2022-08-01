@@ -227,7 +227,7 @@ fn extract_qt_type(
                 external: false,
                 cpp_type_idents: vec![qt_ident.clone()],
                 cpp_type_idents_string: qt_ident.to_string(),
-                rust_type_idents: vec![qt_ident.clone()],
+                rust_type_idents: vec![quote::format_ident!("{}Qt", qt_ident)],
                 combined_name: qt_ident.clone(),
             }),
             "f32" => Ok(QtTypes::F32),

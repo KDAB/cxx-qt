@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
@@ -34,82 +35,83 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariantCpp;
 
         #[rust_name = "color"]
-        fn getColor(self: &MyObject) -> &QColor;
+        fn getColor(self: &MyObjectQt) -> &QColor;
         #[rust_name = "set_color"]
-        fn setColor(self: Pin<&mut MyObject>, value: &QColor);
+        fn setColor(self: Pin<&mut MyObjectQt>, value: &QColor);
 
         #[rust_name = "date"]
-        fn getDate(self: &MyObject) -> &QDate;
+        fn getDate(self: &MyObjectQt) -> &QDate;
         #[rust_name = "set_date"]
-        fn setDate(self: Pin<&mut MyObject>, value: &QDate);
+        fn setDate(self: Pin<&mut MyObjectQt>, value: &QDate);
 
         #[rust_name = "date_time"]
-        fn getDateTime(self: &MyObject) -> &QDateTime;
+        fn getDateTime(self: &MyObjectQt) -> &QDateTime;
         #[rust_name = "set_date_time"]
-        fn setDateTime(self: Pin<&mut MyObject>, value: &QDateTime);
+        fn setDateTime(self: Pin<&mut MyObjectQt>, value: &QDateTime);
 
         #[rust_name = "point"]
-        fn getPoint(self: &MyObject) -> &QPoint;
+        fn getPoint(self: &MyObjectQt) -> &QPoint;
         #[rust_name = "set_point"]
-        fn setPoint(self: Pin<&mut MyObject>, value: &QPoint);
+        fn setPoint(self: Pin<&mut MyObjectQt>, value: &QPoint);
 
         #[rust_name = "pointf"]
-        fn getPointf(self: &MyObject) -> &QPointF;
+        fn getPointf(self: &MyObjectQt) -> &QPointF;
         #[rust_name = "set_pointf"]
-        fn setPointf(self: Pin<&mut MyObject>, value: &QPointF);
+        fn setPointf(self: Pin<&mut MyObjectQt>, value: &QPointF);
 
         #[rust_name = "rect"]
-        fn getRect(self: &MyObject) -> &QRect;
+        fn getRect(self: &MyObjectQt) -> &QRect;
         #[rust_name = "set_rect"]
-        fn setRect(self: Pin<&mut MyObject>, value: &QRect);
+        fn setRect(self: Pin<&mut MyObjectQt>, value: &QRect);
 
         #[rust_name = "rectf"]
-        fn getRectf(self: &MyObject) -> &QRectF;
+        fn getRectf(self: &MyObjectQt) -> &QRectF;
         #[rust_name = "set_rectf"]
-        fn setRectf(self: Pin<&mut MyObject>, value: &QRectF);
+        fn setRectf(self: Pin<&mut MyObjectQt>, value: &QRectF);
 
         #[rust_name = "size"]
-        fn getSize(self: &MyObject) -> &QSize;
+        fn getSize(self: &MyObjectQt) -> &QSize;
         #[rust_name = "set_size"]
-        fn setSize(self: Pin<&mut MyObject>, value: &QSize);
+        fn setSize(self: Pin<&mut MyObjectQt>, value: &QSize);
 
         #[rust_name = "sizef"]
-        fn getSizef(self: &MyObject) -> &QSizeF;
+        fn getSizef(self: &MyObjectQt) -> &QSizeF;
         #[rust_name = "set_sizef"]
-        fn setSizef(self: Pin<&mut MyObject>, value: &QSizeF);
+        fn setSizef(self: Pin<&mut MyObjectQt>, value: &QSizeF);
 
         #[rust_name = "string"]
-        fn getString(self: &MyObject) -> &QString;
+        fn getString(self: &MyObjectQt) -> &QString;
         #[rust_name = "set_string"]
-        fn setString(self: Pin<&mut MyObject>, value: &QString);
+        fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
         #[rust_name = "time"]
-        fn getTime(self: &MyObject) -> &QTime;
+        fn getTime(self: &MyObjectQt) -> &QTime;
         #[rust_name = "set_time"]
-        fn setTime(self: Pin<&mut MyObject>, value: &QTime);
+        fn setTime(self: Pin<&mut MyObjectQt>, value: &QTime);
 
         #[rust_name = "url"]
-        fn getUrl(self: &MyObject) -> &QUrl;
+        fn getUrl(self: &MyObjectQt) -> &QUrl;
         #[rust_name = "set_url"]
-        fn setUrl(self: Pin<&mut MyObject>, value: &QUrl);
+        fn setUrl(self: Pin<&mut MyObjectQt>, value: &QUrl);
 
         #[rust_name = "variant"]
-        fn getVariant(self: &MyObject) -> &QVariant;
+        fn getVariant(self: &MyObjectQt) -> &QVariant;
         #[rust_name = "set_variant"]
-        fn setVariant(self: Pin<&mut MyObject>, value: &QVariant);
+        fn setVariant(self: Pin<&mut MyObjectQt>, value: &QVariant);
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "createRs"]
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -119,7 +121,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::ToUniquePtr;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     #[derive(Default)]
     pub struct RustObj;

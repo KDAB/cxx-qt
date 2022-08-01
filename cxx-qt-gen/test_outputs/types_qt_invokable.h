@@ -20,7 +20,7 @@
 
 namespace cxx_qt::my_object {
 
-class RustObj;
+class MyObjectRust;
 
 class MyObject : public QObject
 {
@@ -45,7 +45,7 @@ public:
   Q_INVOKABLE QVariant testVariant(const QVariant& variant);
 
 private:
-  rust::Box<RustObj> m_rustObj;
+  rust::Box<MyObjectRust> m_rustObj;
   std::mutex m_rustObjMutex;
   bool m_initialised = false;
 };

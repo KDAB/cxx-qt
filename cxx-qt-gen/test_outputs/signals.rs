@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
         type QColor = cxx_qt_lib::QColorCpp;
@@ -33,35 +34,36 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariantCpp;
 
         #[rust_name = "ready"]
-        fn ready(self: Pin<&mut MyObject>);
+        fn ready(self: Pin<&mut MyObjectQt>);
         #[rust_name = "emit_ready"]
-        fn emitReady(self: Pin<&mut MyObject>);
+        fn emitReady(self: Pin<&mut MyObjectQt>);
 
         #[rust_name = "data_changed"]
-        fn dataChanged(self: Pin<&mut MyObject>, first: i32, second: &QVariant, third: &QPoint);
+        fn dataChanged(self: Pin<&mut MyObjectQt>, first: i32, second: &QVariant, third: &QPoint);
         #[rust_name = "emit_data_changed"]
         fn emitDataChanged(
-            self: Pin<&mut MyObject>,
+            self: Pin<&mut MyObjectQt>,
             first: i32,
             second: UniquePtr<QVariant>,
             third: QPoint,
         );
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &RustObj, cpp: Pin<&mut MyObject>);
+        fn invokable_wrapper(self: &RustObj, cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "createRs"]
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -71,7 +73,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::ToUniquePtr;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     use cxx_qt_lib::QVariant;
 
