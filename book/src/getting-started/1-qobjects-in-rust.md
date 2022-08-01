@@ -48,7 +48,9 @@ These CXX-Qt modules consist of multiple parts:
 - The `impl` of the `RustObj` struct (optional):
     - Contains any Rust code.
     - Functions marked with `#[invokable]` will be callable from QML and C++.
-<!-- TODO: Add Signals enum, once #67 lands -->
+- The `Signal` enum
+    - A normal Rust enum.
+    - Defines signals that are added to the QObject class
 
 CXX-Qt will then expand this Rust module into two separate parts:
 - A C++ subclass of QObject with the same name as the module

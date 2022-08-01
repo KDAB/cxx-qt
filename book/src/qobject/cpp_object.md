@@ -24,14 +24,7 @@ If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued
 Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the `RustObj` which is already locked.
 
 ```rust,ignore,noplayground
-impl RustObj {
-    #[invokable]
-    fn invokable(&self, cpp: &mut CppObj) {
-        unsafe { cpp.emit_immediate(Signal::Ready); }
-
-        cpp.emit_queued(Signal::DataChanged { data: 1 });
-    }
-}
+{{#include ../../../examples/qml_features/src/signals.rs:book_rust_obj_impl}}
 ```
 
 ## Threading
