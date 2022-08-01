@@ -36,7 +36,7 @@ mod my_object {
         update_call_count: i32,
     }
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn double_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() * 2;

@@ -171,8 +171,10 @@ pub struct QObject {
     pub ident: Ident,
     /// All the methods that can also be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
-    /// All the methods that cannot be invoked from QML
+    /// All the methods that cannot be invoked from QML (but are on the C++ object)
     pub(crate) normal_methods: Vec<ImplItemMethod>,
+    /// All the rust only methods
+    pub(crate) rust_methods: Vec<ImplItem>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
     /// All the signals that can be emitted/connected from QML
@@ -466,7 +468,7 @@ fn extract_invokables(
             .cloned()
             .collect();
 
-        // Skip non-invokable members
+        // Non invokable methods we just pass through as normal methods
         if filtered_attrs.len() == method.attrs.len() {
             normal_methods.push(method);
             continue;
@@ -847,6 +849,8 @@ pub fn extract_qobject(
     let mut object_invokables = vec![];
     // A list of the normal methods (i.e. not invokables) for the struct
     let mut object_normal_methods = vec![];
+    // A list of the rust only methods for the struct
+    let mut object_rust_methods = vec![];
     // A list of original trait impls for the struct (eg `impl Default for Struct`)
     let mut original_trait_impls = vec![];
     // A list of insignificant declarations for the mod that will be directly passed through (eg `use crate::thing`)
@@ -943,7 +947,7 @@ pub fn extract_qobject(
                 // Extract the path from the type (this leads to the struct name)
                 if let Type::Path(TypePath { path, .. }) = &mut *original_impl.self_ty {
                     // Check that the path contains segments
-                    if path.segments.len() != 1 {
+                    if path.segments.is_empty() {
                         return Err(Error::new(
                             original_impl.span(),
                             "Invalid path on impl block.",
@@ -1008,15 +1012,23 @@ pub fn extract_qobject(
                                     _others => original_trait_impls.push(original_impl.to_owned()),
                                 }
                             } else {
-                                let mut extracted = extract_invokables(
-                                    &original_impl.items,
-                                    cpp_namespace_prefix,
-                                    &qt_ident,
-                                )?;
-
-                                object_invokables.append(&mut extracted.invokables);
-                                object_normal_methods.append(&mut extracted.normal_methods);
+                                // Rust only methods are on the impl T block
+                                object_rust_methods.append(&mut original_impl.items);
                             }
+                        }
+                        // Invokables are defined in the impl cxx_qt::QObject<T> block
+                        "cxx_qt"
+                            if path.segments.len() > 1
+                                && path.segments[1].ident.to_string().as_str() == "QObject" =>
+                        {
+                            let mut extracted = extract_invokables(
+                                &original_impl.items,
+                                cpp_namespace_prefix,
+                                &qt_ident,
+                            )?;
+
+                            object_invokables.append(&mut extracted.invokables);
+                            object_normal_methods.append(&mut extracted.normal_methods);
                         }
                         _others => {
                             return Err(Error::new(
@@ -1130,6 +1142,7 @@ pub fn extract_qobject(
         ident: qt_ident,
         invokables: object_invokables,
         normal_methods: object_normal_methods,
+        rust_methods: object_rust_methods,
         properties: object_properties,
         signals: object_signals,
         signal_ident,
@@ -1394,7 +1407,8 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check that the normal method was also detected
-        assert_eq!(qobject.normal_methods.len(), 1);
+        assert_eq!(qobject.normal_methods.len(), 4);
+        assert_eq!(qobject.rust_methods.len(), 1);
     }
 
     #[test]
@@ -1458,7 +1472,8 @@ mod tests {
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
-        assert_eq!(qobject.normal_methods.len(), 2);
+        assert_eq!(qobject.normal_methods.len(), 0);
+        assert_eq!(qobject.rust_methods.len(), 2);
 
         // Check that there is a use, enum and fn declaration
         assert_eq!(qobject.original_passthrough_decls.len(), 13);

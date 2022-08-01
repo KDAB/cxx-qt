@@ -22,7 +22,7 @@ mod my_object {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {

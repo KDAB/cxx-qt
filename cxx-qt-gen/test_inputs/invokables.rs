@@ -10,7 +10,7 @@ mod my_object {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn invokable(&self) {
             println!("invokable");
@@ -66,8 +66,26 @@ mod my_object {
             QString::from_str("static")
         }
 
+        pub fn cpp_context_method(&self) {
+            println!("C++ context method");
+        }
+
+        pub fn cpp_context_method_mutable(&mut self) {
+            println!("mutable method");
+        }
+
+        pub fn cpp_context_method_cpp_obj(&mut self, cpp: &mut CppObj) {
+            println!("cppobj");
+        }
+
+        pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {
+            cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
+        }
+    }
+
+    impl RustObj {
         pub fn rust_only_method(&self) {
-            println!("QML can't call this :)");
+            println!("QML or C++ can't call this :)");
         }
     }
 }

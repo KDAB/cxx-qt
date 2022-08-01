@@ -7,7 +7,7 @@ mod my_object {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn invokable_name(&self) {
             println!("Bye from Rust!");

@@ -14,7 +14,7 @@ mod nested {
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn nested_parameter(
             &self,

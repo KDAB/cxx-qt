@@ -214,7 +214,9 @@ mod energy_usage {
                 .ok();
             stream.flush().await.unwrap();
         }
+    }
 
+    impl cxx_qt::QObject<RustObj> {
         #[invokable]
         pub fn start_server(&mut self, cpp: &mut CppObj) {
             if self.join_handles.is_some() {
