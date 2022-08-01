@@ -1,7 +1,8 @@
 mod my_object {
     use cxx_qt_lib::QVariant;
 
-    enum Signal {
+    #[cxx_qt::signals(MyObject)]
+    enum MySignals {
         Ready,
         DataChanged {
             first: i32,
@@ -20,10 +21,10 @@ mod my_object {
         #[invokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
-                cpp.emit_immediate(Signal::Ready);
+                cpp.emit_immediate(MySignals::Ready);
             }
 
-            cpp.emit_queued(Signal::DataChanged {
+            cpp.emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),
                 third: QPoint::new(1, 2),
