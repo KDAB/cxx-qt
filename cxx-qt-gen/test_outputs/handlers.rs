@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
@@ -37,33 +38,34 @@ mod my_object {
         type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
 
         #[rust_name = "number"]
-        fn getNumber(self: &MyObject) -> i32;
+        fn getNumber(self: &MyObjectQt) -> i32;
         #[rust_name = "set_number"]
-        fn setNumber(self: Pin<&mut MyObject>, value: i32);
+        fn setNumber(self: Pin<&mut MyObjectQt>, value: i32);
 
         #[rust_name = "string"]
-        fn getString(self: &MyObject) -> &QString;
+        fn getString(self: &MyObjectQt) -> &QString;
         #[rust_name = "set_string"]
-        fn setString(self: Pin<&mut MyObject>, value: &QString);
+        fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
 
         #[rust_name = "update_requester"]
-        fn updateRequester(self: Pin<&mut MyObject>) -> UniquePtr<UpdateRequester>;
+        fn updateRequester(self: Pin<&mut MyObjectQt>) -> UniquePtr<UpdateRequester>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "createRs"]
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "handleUpdateRequest"]
-        fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObject>);
+        fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -74,7 +76,7 @@ mod cxx_qt_my_object {
     use cxx_qt_lib::ToUniquePtr;
     use cxx_qt_lib::UpdateRequestHandler;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     #[derive(Default)]
     pub struct RustObj;

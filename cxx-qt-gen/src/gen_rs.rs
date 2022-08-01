@@ -142,6 +142,8 @@ pub fn generate_qobject_cxx(
 ) -> Result<TokenStream, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
+    let rust_class_name_cpp = format_ident!("{}Qt", class_name);
+    let cxx_class_name_rust = format_ident!("{}Rust", class_name);
     let rust_class_name = format_ident!("RustObj");
 
     // Build a snake version of the class name, this is used for rust method names
@@ -405,9 +407,9 @@ pub fn generate_qobject_cxx(
             // Add the getter and setter to C++ bridge
             cpp_functions.push(quote! {
                 #[rust_name = #getter_str]
-                fn #getter_cpp(self: Pin<&mut #class_name>) -> UniquePtr<#combined_name>;
+                fn #getter_cpp(self: Pin<&mut #rust_class_name_cpp>) -> UniquePtr<#combined_name>;
                 #[rust_name = #setter_str]
-                fn #setter_cpp(self: Pin<&mut #class_name>, value: UniquePtr<#combined_name>);
+                fn #setter_cpp(self: Pin<&mut #rust_class_name_cpp>, value: UniquePtr<#combined_name>);
             });
         // This is a normal primitive type so add Rust getters and setters
         } else {
@@ -428,9 +430,9 @@ pub fn generate_qobject_cxx(
             // Add the getter and setter to C++ bridge
             cpp_functions.push(quote! {
                 #[rust_name = #getter_str]
-                fn #getter_cpp(self: &#class_name) -> #param_type;
+                fn #getter_cpp(self: &#rust_class_name_cpp) -> #param_type;
                 #[rust_name = #setter_str]
-                fn #setter_cpp(self: Pin<&mut #class_name>, value: #param_type);
+                fn #setter_cpp(self: Pin<&mut #rust_class_name_cpp>, value: #param_type);
             });
         }
     }
@@ -446,9 +448,9 @@ pub fn generate_qobject_cxx(
         if signal.parameters.is_empty() {
             cpp_functions.push(quote! {
                 #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #class_name>);
+                fn #signal_ident_cpp(self: Pin<&mut #rust_class_name_cpp>);
                 #[rust_name = #queued_ident_rust_str]
-                fn #queued_ident_cpp(self: Pin<&mut #class_name>);
+                fn #queued_ident_cpp(self: Pin<&mut #rust_class_name_cpp>);
             });
         } else {
             // For immediate parameters we want by-ref or primitive by-value
@@ -489,9 +491,9 @@ pub fn generate_qobject_cxx(
                 .collect::<Vec<TokenStream>>();
             cpp_functions.push(quote! {
                 #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #class_name>, #(#parameters),*);
+                fn #signal_ident_cpp(self: Pin<&mut #rust_class_name_cpp>, #(#parameters),*);
                 #[rust_name = #queued_ident_rust_str]
-                fn #queued_ident_cpp(self: Pin<&mut #class_name>, #(#parameters_queued),*);
+                fn #queued_ident_cpp(self: Pin<&mut #rust_class_name_cpp>, #(#parameters_queued),*);
             });
         }
     }
@@ -500,7 +502,7 @@ pub fn generate_qobject_cxx(
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
             #[cxx_name = "handleUpdateRequest"]
-            fn call_handle_update_request(self: &mut #rust_class_name, cpp: Pin<&mut #class_name>);
+            fn call_handle_update_request(self: &mut #rust_class_name, cpp: Pin<&mut #rust_class_name_cpp>);
         }
     } else {
         quote! {}
@@ -517,7 +519,7 @@ pub fn generate_qobject_cxx(
     let request_updater_method = if obj.handle_updates_impl.is_some() {
         quote! {
             #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut #class_name>) -> UniquePtr<UpdateRequester>;
+            fn updateRequester(self: Pin<&mut #rust_class_name_cpp>) -> UniquePtr<UpdateRequester>;
         }
     } else {
         quote! {}
@@ -540,13 +542,16 @@ pub fn generate_qobject_cxx(
     let cxx_items = &obj.cxx_items;
 
     // Build the CXX bridge
+    let class_name_str = class_name.to_string();
+    let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
 
-                type #class_name;
+                #[cxx_name = #class_name_str]
+                type #rust_class_name_cpp;
 
                 include!("cxx-qt-lib/include/qt_types.h");
                 #[namespace = ""]
@@ -580,12 +585,13 @@ pub fn generate_qobject_cxx(
                 #(#cpp_functions)*
 
                 #[rust_name = "new_cpp_object"]
-                fn newCppObject() -> UniquePtr<#class_name>;
+                fn newCppObject() -> UniquePtr<#rust_class_name_cpp>;
 
                 #request_updater_method
             }
 
             extern "Rust" {
+                #[cxx_name = #cxx_class_name_rust_str]
                 type #rust_class_name;
 
                 #(#rs_functions)*
@@ -594,7 +600,7 @@ pub fn generate_qobject_cxx(
                 fn create_rs() -> Box<#rust_class_name>;
 
                 #[cxx_name = "initialiseCpp"]
-                fn initialise_cpp(cpp: Pin<&mut #class_name>);
+                fn initialise_cpp(cpp: Pin<&mut #rust_class_name_cpp>);
 
                 #handle_update_request
             }
@@ -1148,6 +1154,7 @@ pub fn generate_qobject_rs(
     // Build our rewritten module that replaces the input from the macro
     //
     // TODO: where do the mod_attrs go ?
+    let class_name_cpp = format_ident!("{}Qt", class_name);
     let output = quote! {
         #cxx_block
 
@@ -1158,7 +1165,7 @@ pub fn generate_qobject_rs(
 
             #(#use_traits)*
 
-            pub type FFICppObj = super::#mod_ident::#class_name;
+            pub type FFICppObj = super::#mod_ident::#class_name_cpp;
 
             #(#original_passthrough_decls)*
 

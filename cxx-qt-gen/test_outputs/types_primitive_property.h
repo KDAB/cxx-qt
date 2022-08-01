@@ -6,7 +6,7 @@
 
 namespace cxx_qt::my_object {
 
-class RustObj;
+class MyObjectRust;
 
 class MyObject : public QObject
 {
@@ -61,7 +61,7 @@ Q_SIGNALS:
   void uint32Changed();
 
 private:
-  rust::Box<RustObj> m_rustObj;
+  rust::Box<MyObjectRust> m_rustObj;
   std::mutex m_rustObjMutex;
   bool m_initialised = false;
 

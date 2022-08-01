@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
@@ -34,62 +35,63 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariantCpp;
 
         #[rust_name = "boolean"]
-        fn getBoolean(self: &MyObject) -> bool;
+        fn getBoolean(self: &MyObjectQt) -> bool;
         #[rust_name = "set_boolean"]
-        fn setBoolean(self: Pin<&mut MyObject>, value: bool);
+        fn setBoolean(self: Pin<&mut MyObjectQt>, value: bool);
 
         #[rust_name = "float_32"]
-        fn getFloat32(self: &MyObject) -> f32;
+        fn getFloat32(self: &MyObjectQt) -> f32;
         #[rust_name = "set_float_32"]
-        fn setFloat32(self: Pin<&mut MyObject>, value: f32);
+        fn setFloat32(self: Pin<&mut MyObjectQt>, value: f32);
 
         #[rust_name = "float_64"]
-        fn getFloat64(self: &MyObject) -> f64;
+        fn getFloat64(self: &MyObjectQt) -> f64;
         #[rust_name = "set_float_64"]
-        fn setFloat64(self: Pin<&mut MyObject>, value: f64);
+        fn setFloat64(self: Pin<&mut MyObjectQt>, value: f64);
 
         #[rust_name = "int_8"]
-        fn getInt8(self: &MyObject) -> i8;
+        fn getInt8(self: &MyObjectQt) -> i8;
         #[rust_name = "set_int_8"]
-        fn setInt8(self: Pin<&mut MyObject>, value: i8);
+        fn setInt8(self: Pin<&mut MyObjectQt>, value: i8);
 
         #[rust_name = "int_16"]
-        fn getInt16(self: &MyObject) -> i16;
+        fn getInt16(self: &MyObjectQt) -> i16;
         #[rust_name = "set_int_16"]
-        fn setInt16(self: Pin<&mut MyObject>, value: i16);
+        fn setInt16(self: Pin<&mut MyObjectQt>, value: i16);
 
         #[rust_name = "int_32"]
-        fn getInt32(self: &MyObject) -> i32;
+        fn getInt32(self: &MyObjectQt) -> i32;
         #[rust_name = "set_int_32"]
-        fn setInt32(self: Pin<&mut MyObject>, value: i32);
+        fn setInt32(self: Pin<&mut MyObjectQt>, value: i32);
 
         #[rust_name = "uint_8"]
-        fn getUint8(self: &MyObject) -> u8;
+        fn getUint8(self: &MyObjectQt) -> u8;
         #[rust_name = "set_uint_8"]
-        fn setUint8(self: Pin<&mut MyObject>, value: u8);
+        fn setUint8(self: Pin<&mut MyObjectQt>, value: u8);
 
         #[rust_name = "uint_16"]
-        fn getUint16(self: &MyObject) -> u16;
+        fn getUint16(self: &MyObjectQt) -> u16;
         #[rust_name = "set_uint_16"]
-        fn setUint16(self: Pin<&mut MyObject>, value: u16);
+        fn setUint16(self: Pin<&mut MyObjectQt>, value: u16);
 
         #[rust_name = "uint_32"]
-        fn getUint32(self: &MyObject) -> u32;
+        fn getUint32(self: &MyObjectQt) -> u32;
         #[rust_name = "set_uint_32"]
-        fn setUint32(self: Pin<&mut MyObject>, value: u32);
+        fn setUint32(self: Pin<&mut MyObjectQt>, value: u32);
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "createRs"]
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -99,7 +101,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::ToUniquePtr;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     #[derive(Default)]
     pub struct RustObj;

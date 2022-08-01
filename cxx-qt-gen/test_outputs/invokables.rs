@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
@@ -37,20 +38,21 @@ mod my_object {
         type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "invokable"]
         fn invokable(self: &RustObj);
         #[cxx_name = "invokableCppObjWrapper"]
-        fn invokable_cpp_obj_wrapper(self: &RustObj, cpp: Pin<&mut MyObject>);
+        fn invokable_cpp_obj_wrapper(self: &RustObj, cpp: Pin<&mut MyObjectQt>);
         #[cxx_name = "invokableMutable"]
         fn invokable_mutable(self: &mut RustObj);
         #[cxx_name = "invokableMutableCppObjWrapper"]
-        fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObject>);
+        fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
         #[cxx_name = "invokableNestedParameterWrapper"]
         fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
         #[cxx_name = "invokableParametersWrapper"]
@@ -64,7 +66,7 @@ mod my_object {
         fn invokable_parameters_cpp_obj_wrapper(
             self: &RustObj,
             primitive: i32,
-            cpp: Pin<&mut MyObject>,
+            cpp: Pin<&mut MyObjectQt>,
         );
         #[cxx_name = "invokableReturnOpaqueWrapper"]
         fn invokable_return_opaque_wrapper(self: &mut RustObj) -> UniquePtr<QColor>;
@@ -77,7 +79,7 @@ mod my_object {
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -87,7 +89,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::ToUniquePtr;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     use cxx_qt_lib::QColor;
 

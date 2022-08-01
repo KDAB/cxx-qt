@@ -3,7 +3,8 @@ mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
-        type MyObject;
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
 
         include!("cxx-qt-lib/include/qt_types.h");
         #[namespace = ""]
@@ -34,35 +35,36 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariantCpp;
 
         #[rust_name = "primitive"]
-        fn getPrimitive(self: &MyObject) -> i32;
+        fn getPrimitive(self: &MyObjectQt) -> i32;
         #[rust_name = "set_primitive"]
-        fn setPrimitive(self: Pin<&mut MyObject>, value: i32);
+        fn setPrimitive(self: Pin<&mut MyObjectQt>, value: i32);
 
         #[rust_name = "opaque"]
-        fn getOpaque(self: &MyObject) -> &QColor;
+        fn getOpaque(self: &MyObjectQt) -> &QColor;
         #[rust_name = "set_opaque"]
-        fn setOpaque(self: Pin<&mut MyObject>, value: &QColor);
+        fn setOpaque(self: Pin<&mut MyObjectQt>, value: &QColor);
 
         #[namespace = "cxx_qt::nested_object"]
         type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
 
         #[rust_name = "take_nested"]
-        fn takeNested(self: Pin<&mut MyObject>) -> UniquePtr<NestedObject>;
+        fn takeNested(self: Pin<&mut MyObjectQt>) -> UniquePtr<NestedObject>;
         #[rust_name = "give_nested"]
-        fn giveNested(self: Pin<&mut MyObject>, value: UniquePtr<NestedObject>);
+        fn giveNested(self: Pin<&mut MyObjectQt>, value: UniquePtr<NestedObject>);
 
         #[rust_name = "new_cpp_object"]
-        fn newCppObject() -> UniquePtr<MyObject>;
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
         type RustObj;
 
         #[cxx_name = "createRs"]
         fn create_rs() -> Box<RustObj>;
 
         #[cxx_name = "initialiseCpp"]
-        fn initialise_cpp(cpp: Pin<&mut MyObject>);
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -72,7 +74,7 @@ mod cxx_qt_my_object {
 
     use cxx_qt_lib::ToUniquePtr;
 
-    pub type FFICppObj = super::my_object::MyObject;
+    pub type FFICppObj = super::my_object::MyObjectQt;
 
     use cxx_qt_lib::QColor;
 
