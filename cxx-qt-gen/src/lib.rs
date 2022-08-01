@@ -6,6 +6,7 @@
 mod extract;
 mod gen_cpp;
 mod gen_rs;
+pub mod syntax;
 mod utils;
 
 pub use extract::{extract_qobject, QObject};

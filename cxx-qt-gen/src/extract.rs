@@ -794,12 +794,13 @@ fn extract_signals(
 
 /// Parses a module in order to extract a QObject description from it
 pub fn extract_qobject(
-    module: ItemMod,
+    module: &ItemMod,
     cpp_namespace_prefix: &[&str],
 ) -> Result<QObject, TokenStream> {
     // Find the items from the module
     let original_mod = module.to_owned();
     let items = &mut module
+        .to_owned()
         .content
         .expect("Incorrect module format encountered.")
         .1;
@@ -1106,7 +1107,7 @@ mod tests {
         let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the invokables and properties
         assert_eq!(qobject.invokables.len(), 0);
@@ -1138,7 +1139,7 @@ mod tests {
         let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1350,7 +1351,7 @@ mod tests {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 1);
@@ -1396,7 +1397,7 @@ mod tests {
         let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1420,7 +1421,7 @@ mod tests {
         let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 3);
@@ -1509,7 +1510,7 @@ mod tests {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         assert_eq!(qobject.properties.len(), 0);
         assert_eq!(qobject.invokables.len(), 1);
@@ -1574,7 +1575,7 @@ mod tests {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
         let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);

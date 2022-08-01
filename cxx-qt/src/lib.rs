@@ -49,7 +49,7 @@ fn extract_and_generate<'s>(module: ItemMod, cpp_namespace_prefix: &'s [String])
         cpp_namespace_prefix.iter().map(AsRef::as_ref).collect();
 
     // Attempt to extract information about a QObject inside the module
-    let qobject = match extract_qobject(module, &cpp_namespace_prefix_ref) {
+    let qobject = match extract_qobject(&module, &cpp_namespace_prefix_ref) {
         Ok(o) => o,
         Err(e) => return e.into(),
     };
