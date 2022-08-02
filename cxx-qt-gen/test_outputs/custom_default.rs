@@ -11,8 +11,15 @@ mod my_object {
         #[rust_name = "set_public"]
         fn setPublic(self: Pin<&mut MyObjectQt>, value: i32);
 
+        #[cxx_name = "unsafe_rust"]
+        fn rust(self: &MyObjectQt) -> &RustObj;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
+    }
+
+    extern "C++" {
+        #[cxx_name = "unsafe_rust_mut"]
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
     }
 
     extern "Rust" {

@@ -973,6 +973,8 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         public:
             explicit {ident}(QObject *parent = nullptr);
             ~{ident}();
+            const {rust_struct_ident}& unsafe_rust() const;
+            {rust_struct_ident}& unsafe_rust_mut();
 
         {properties_public}
 
@@ -1041,6 +1043,18 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
         {ident}::~{ident}() = default;
 
+        const {rust_struct_ident}&
+        {ident}::unsafe_rust() const
+        {{
+          return *m_rustObj;
+        }}
+
+        {rust_struct_ident}&
+        {ident}::unsafe_rust_mut()
+        {{
+          return *m_rustObj;
+        }}
+
         {properties}
 
         {invokables}
@@ -1062,6 +1076,7 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         namespace = namespace,
         properties = properties.sources.join("\n"),
         public_method_sources = public_method_sources.join("\n"),
+        rust_struct_ident = rust_struct_ident,
         signals = signals.sources.join("\n"),
     };
 

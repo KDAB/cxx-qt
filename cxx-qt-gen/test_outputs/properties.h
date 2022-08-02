@@ -23,6 +23,8 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
+  const MyObjectRust& unsafe_rust() const;
+  MyObjectRust& unsafe_rust_mut();
 
   qint32 getPrimitive() const;
   const QColor& getOpaque() const;

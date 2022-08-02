@@ -13,6 +13,18 @@ MyObject::MyObject(QObject* parent)
 
 MyObject::~MyObject() = default;
 
+const MyObjectRust&
+MyObject::unsafe_rust() const
+{
+  return *m_rustObj;
+}
+
+MyObjectRust&
+MyObject::unsafe_rust_mut()
+{
+  return *m_rustObj;
+}
+
 qint32
 MyObject::getNumber() const
 {
