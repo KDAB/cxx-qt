@@ -380,6 +380,10 @@ mod mock_qt_types {
                             .unwrap(),
                     );
                 }
+                QVariantValue::QString(string) => {
+                    let string = QString::from_str(&(string.to_string() + "/cxx-qt"));
+                    cpp.set_variant(QVariant::from(string.as_ref().unwrap()).as_ref().unwrap());
+                }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
                         time.hour() * 2,
@@ -458,6 +462,10 @@ mod mock_qt_types {
                 }
                 QVariantValue::QSizeF(sizef) => {
                     QVariant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
+                }
+                QVariantValue::QString(string) => {
+                    let string = QString::from_str(&(string.to_string() + "/cxx-qt"));
+                    QVariant::from(string.as_ref().unwrap())
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(

@@ -604,6 +604,9 @@ TestCase {
         result = mock.testVariantInvokable(Qt.size(1.0, 3.0));
         compare(result, Qt.size(2.0, 6.0));
 
+        result = mock.testVariantInvokable("KDAB");
+        compare(result, "KDAB/cxx-qt");
+
         const urlComponent = createTemporaryObject(componentQtObjectUrl, null, {
             value: "https://github.com/KDAB",
         });
