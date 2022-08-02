@@ -19,20 +19,25 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum QtBuildError {
+    /// `QMAKE` environment variable was set but Qt was not detected
     #[error("QMAKE environment variable specified as {qmake_env_var} but could not detect Qt: {error:?}")]
     QMakeSetQtMissing {
         qmake_env_var: String,
         error: Box<QtBuildError>,
     },
+    /// Qt was not found
     #[error("Could not find Qt")]
     QtMissing,
+    /// Executing `qmake -query` failed
     #[error("Executing `qmake -query` failed: {0:?}")]
     QmakeFailed(#[from] std::io::Error),
+    /// `QT_VERSION_MAJOR` environment variable was specified but could not be parsed as an integer
     #[error("QT_VERSION_MAJOR environment variable specified as {qt_version_major_env_var} but could not parse as integer: {source:?}")]
     QtVersionMajorInvalid {
         qt_version_major_env_var: String,
         source: std::num::ParseIntError,
     },
+    /// `QT_VERSION_MAJOR` environment variable was specified but the Qt version specified by `qmake -query QT_VERSION` did not match
     #[error("qmake version ({qmake_version}) does not match version specified by QT_VERISON_MAJOR ({qt_version_major})")]
     QtVersionMajorDoesNotMatch {
         qmake_version: u32,
