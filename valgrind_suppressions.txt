@@ -1,4 +1,40 @@
 {
+   glibc_dlopen_implementation
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:_dl_find_object_update
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+}
+{
+   dl_open_worker_strncmp
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   ...
+   fun:decompose_rpath
+   fun:cache_rpath
+   ...
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+}
+{
    nvidia_gl_leak_calloc
    Memcheck:Leak
    match-leak-kinds: definite
