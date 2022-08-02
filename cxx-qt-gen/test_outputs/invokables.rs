@@ -9,8 +9,15 @@ mod my_object {
         #[namespace = "cxx_qt::nested_object"]
         type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
 
+        #[cxx_name = "unsafe_rust"]
+        fn rust(self: &MyObjectQt) -> &RustObj;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
+    }
+
+    extern "C++" {
+        #[cxx_name = "unsafe_rust_mut"]
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
     }
 
     extern "Rust" {

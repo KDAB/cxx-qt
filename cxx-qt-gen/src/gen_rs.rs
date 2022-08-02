@@ -537,10 +537,17 @@ pub fn generate_qobject_cxx(
 
                 #(#cpp_functions)*
 
+                #[cxx_name = "unsafe_rust"]
+                fn rust(self: &#rust_class_name_cpp) -> &#rust_class_name;
                 #[rust_name = "new_cpp_object"]
                 fn newCppObject() -> UniquePtr<#rust_class_name_cpp>;
 
                 #request_updater_method
+            }
+
+            extern "C++" {
+                #[cxx_name = "unsafe_rust_mut"]
+                unsafe fn rust_mut(self: Pin<&mut #rust_class_name_cpp>) -> Pin<&mut #rust_class_name>;
             }
 
             extern "Rust" {

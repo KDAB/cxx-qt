@@ -19,11 +19,18 @@ mod my_object {
         #[rust_name = "set_string"]
         fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
+        #[cxx_name = "unsafe_rust"]
+        fn rust(self: &MyObjectQt) -> &RustObj;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
 
         #[rust_name = "update_requester"]
         fn updateRequester(self: Pin<&mut MyObjectQt>) -> UniquePtr<UpdateRequester>;
+    }
+
+    extern "C++" {
+        #[cxx_name = "unsafe_rust_mut"]
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
     }
 
     extern "Rust" {

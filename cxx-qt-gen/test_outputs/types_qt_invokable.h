@@ -29,6 +29,8 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
+  const MyObjectRust& unsafe_rust() const;
+  MyObjectRust& unsafe_rust_mut();
 
   Q_INVOKABLE QColor testColor(const QColor& color);
   Q_INVOKABLE QDate testDate(const QDate& date);

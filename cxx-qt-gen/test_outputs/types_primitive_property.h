@@ -27,6 +27,8 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
+  const MyObjectRust& unsafe_rust() const;
+  MyObjectRust& unsafe_rust_mut();
 
   bool getBoolean() const;
   float getFloat32() const;
