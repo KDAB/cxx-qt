@@ -466,6 +466,46 @@ TestCase {
     }
 
 
+    // QString
+
+    // Check that we can adjust the property for the type and it has non default value
+    function test_qstring_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "stringChanged",
+            target: mock,
+        });
+        compare(mock.string, "KDAB");
+
+        compare(spy.count, 0);
+        mock.string = "KDAB/cxx-qt";
+        tryCompare(spy, "count", 1);
+        compare(mock.string, "KDAB/cxx-qt");
+    }
+
+    // Check that we can pass the type as a parameter and return it back
+    function test_qstring_invokable() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const result = mock.testStringInvokable("KDAB");
+        compare(result, "KDAB/cxx-qt");
+    }
+
+    // Check that an invokable can adjust (read and write) a property for the type
+    function test_qstring_invokable_property() {
+        const mock = createTemporaryObject(componentMockQtTypes, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "stringChanged",
+            target: mock,
+        });
+
+        compare(spy.count, 0);
+        compare(mock.string, "KDAB");
+        mock.testStringProperty();
+        compare(mock.string, "KDAB/cxx-qt");
+        tryCompare(spy, "count", 1);
+    }
+
+
     // QTime
 
     // Check that we can adjust the property for the type and it has non default value
