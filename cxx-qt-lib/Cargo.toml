@@ -11,9 +11,6 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Qt types for integrating `cxx-qt` crate with `cxx`"
 repository = "https://github.com/KDAB/cxx-qt/"
-# Fake linking so that we expose cargo data as env vars for downstream crates
-# https://github.com/rust-lang/cargo/issues/3544
-links = "cxx-qt-lib"
 
 [dependencies]
 cxx = "1.0"
