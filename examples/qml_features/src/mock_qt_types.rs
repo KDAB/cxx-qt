@@ -20,6 +20,7 @@ mod mock_qt_types {
         type QRectF = cxx_qt_lib::QRectF;
         type QSize = cxx_qt_lib::QSize;
         type QSizeF = cxx_qt_lib::QSizeF;
+        type QString = cxx_qt_lib::QString;
         type QTime = cxx_qt_lib::QTime;
         type QUrl = cxx_qt_lib::QUrl;
         type QVariant = cxx_qt_lib::QVariant;
@@ -41,6 +42,7 @@ mod mock_qt_types {
         rectf: QRectF,
         size: QSize,
         sizef: QSizeF,
+        string: UniquePtr<QString>,
         time: QTime,
         url: UniquePtr<QUrl>,
         variant: UniquePtr<QVariant>,
@@ -61,6 +63,7 @@ mod mock_qt_types {
                 rectf: QRectF::new(1.0, 2.0, 3.0, 4.0),
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
+                string: QString::from_str("KDAB"),
                 time: QTime::new(1, 2, 3, 4),
                 url: QUrl::from_str("https://github.com/KDAB"),
                 variant: QVariant::from(1_i32),
@@ -252,6 +255,17 @@ mod mock_qt_types {
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             size
+        }
+
+        #[invokable]
+        pub fn test_string_property(&self, cpp: &mut CppObj) {
+            let string = QString::from_str(&(cpp.string().to_string() + "/cxx-qt"));
+            cpp.set_string(string.as_ref().unwrap());
+        }
+
+        #[invokable]
+        pub fn test_string_invokable(&self, string: &QString) -> UniquePtr<QString> {
+            QString::from_str(&(string.to_string() + "/cxx-qt"))
         }
 
         #[invokable]
