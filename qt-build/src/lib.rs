@@ -276,6 +276,7 @@ impl QtBuild {
         paths.iter().map(PathBuf::from).collect()
     }
 
+    /// Version of the detected Qt installation
     pub fn version(&self) -> &SemVer {
         &self.version
     }
