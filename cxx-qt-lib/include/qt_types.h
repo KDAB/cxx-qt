@@ -100,7 +100,7 @@ enum class QVariantType : uint8_t
   QRectF = 13,
   QSize = 14,
   QSizeF = 15,
-  String = 16,
+  QString = 16,
   QTime = 17,
   QUrl = 18,
   U8 = 19,
@@ -228,7 +228,7 @@ qvariantInitFromQTime(const QTime& time);
 std::unique_ptr<QVariant>
 qvariantInitFromQUrl(const QUrl& url);
 std::unique_ptr<QVariant>
-qvariantInitFromRustString(rust::Str string);
+qvariantInitFromQString(const QString& string);
 std::unique_ptr<QVariant>
 qvariantInitFromU8(quint8 u8);
 std::unique_ptr<QVariant>
@@ -271,8 +271,8 @@ QTime
 qvariantToQTime(const QVariant& variant);
 std::unique_ptr<QUrl>
 qvariantToQUrl(const QVariant& variant);
-rust::String
-qvariantToRustString(const QVariant& variant);
+std::unique_ptr<QString>
+qvariantToQString(const QVariant& variant);
 quint8
 qvariantToU8(const QVariant& variant);
 quint16

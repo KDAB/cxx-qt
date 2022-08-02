@@ -37,7 +37,7 @@ mod ffi {
         QSizeF,
         QTime,
         QUrl,
-        String,
+        QString,
         U8,
         U16,
         U32,
@@ -245,11 +245,11 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)),
         VariantTest::QSize => QVariant::from(QSize::new(1, 3)),
         VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)),
+        VariantTest::QString => QVariant::from(QString::from_str("Rust string").as_ref().unwrap()),
         VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)),
         VariantTest::QUrl => {
             QVariant::from(QUrl::from_str("https://github.com/KDAB").as_ref().unwrap())
         }
-        VariantTest::String => QVariant::from("Rust string".to_owned()),
         VariantTest::U8 => QVariant::from(12_u8),
         VariantTest::U16 => QVariant::from(123_u16),
         VariantTest::U32 => QVariant::from(123_u32),
@@ -347,6 +347,10 @@ fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             QVariantValue::QSizeF(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
             _others => false,
         },
+        VariantTest::QString => match variant {
+            QVariantValue::QString(s) => s.to_string() == "C++ string",
+            _others => false,
+        },
         VariantTest::QTime => match variant {
             QVariantValue::QTime(time) => {
                 time.hour() == 4 && time.minute() == 3 && time.second() == 2 && time.msec() == 1
@@ -357,10 +361,6 @@ fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             QVariantValue::QUrl(url) => {
                 url.as_ref().unwrap().string() == "https://github.com/KDAB/cxx-qt"
             }
-            _others => false,
-        },
-        VariantTest::String => match variant {
-            QVariantValue::String(s) => s == "C++ string",
             _others => false,
         },
         VariantTest::U8 => match variant {

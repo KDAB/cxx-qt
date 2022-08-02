@@ -265,17 +265,9 @@ CXX_QT_VARIANT_INIT_REF(QRect, QRect)
 CXX_QT_VARIANT_INIT_REF(QRectF, QRectF)
 CXX_QT_VARIANT_INIT_REF(QSize, QSize)
 CXX_QT_VARIANT_INIT_REF(QSizeF, QSizeF)
+CXX_QT_VARIANT_INIT_REF(QString, QString)
 CXX_QT_VARIANT_INIT_REF(QTime, QTime)
 CXX_QT_VARIANT_INIT_REF(QUrl, QUrl)
-
-std::unique_ptr<QVariant>
-qvariantInitFromRustString(rust::Str string)
-{
-  // Note that rust::Str here is borrowed
-  // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QVariant>(qstringFromRustString(string));
-}
-
 CXX_QT_VARIANT_INIT(quint8, U8)
 CXX_QT_VARIANT_INIT(quint16, U16)
 CXX_QT_VARIANT_INIT(quint32, U32)
@@ -321,7 +313,7 @@ qvariantType(const QVariant& variant)
     case QMetaType::QSizeF:
       return types::QVariantType::QSizeF;
     case QMetaType::QString:
-      return types::QVariantType::String;
+      return types::QVariantType::QString;
     case QMetaType::QTime:
       return types::QVariantType::QTime;
     case QMetaType::QUrl:
@@ -367,15 +359,9 @@ CXX_QT_VARIANT_TRIVIAL_VALUE(QRect, QRect)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QRectF, QRectF)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QSize, QSize)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QSizeF, QSizeF)
+CXX_QT_VARIANT_OPAQUE_VALUE(QString, QString)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QTime, QTime)
 CXX_QT_VARIANT_OPAQUE_VALUE(QUrl, QUrl)
-
-rust::String
-qvariantToRustString(const QVariant& variant)
-{
-  return qstringToRustString(variant.toString());
-}
-
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint8, U8)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint16, U16)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint32, U32)

@@ -4,7 +4,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QTime, QUrl};
+use crate::{
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+};
 
 #[cxx::bridge]
 mod ffi {
@@ -27,7 +29,7 @@ mod ffi {
         QRectF = 13,
         QSize = 14,
         QSizeF = 15,
-        String = 16,
+        QString = 16,
         QTime = 17,
         QUrl = 18,
         U8 = 19,
@@ -47,6 +49,7 @@ mod ffi {
         type QRectF = crate::QRectF;
         type QSize = crate::QSize;
         type QSizeF = crate::QSizeF;
+        type QString = crate::QString;
         type QTime = crate::QTime;
         type QUrl = crate::QUrl;
         type QVariant;
@@ -100,8 +103,8 @@ mod ffi {
         fn qvariantInitFromQTime(time: &QTime) -> UniquePtr<QVariant>;
         #[rust_name = "qvariant_init_from_qurl"]
         fn qvariantInitFromQUrl(url: &QUrl) -> UniquePtr<QVariant>;
-        #[rust_name = "qvariant_init_from_rust_string"]
-        fn qvariantInitFromRustString(string: &str) -> UniquePtr<QVariant>;
+        #[rust_name = "qvariant_init_from_qstring"]
+        fn qvariantInitFromQString(string: &QString) -> UniquePtr<QVariant>;
         #[rust_name = "qvariant_init_from_u8"]
         fn qvariantInitFromU8(u: u8) -> UniquePtr<QVariant>;
         #[rust_name = "qvariant_init_from_u16"]
@@ -143,8 +146,8 @@ mod ffi {
         fn qvariantToQTime(qvariant: &QVariant) -> QTime;
         #[rust_name = "qvariant_to_qurl"]
         fn qvariantToQUrl(qvariant: &QVariant) -> UniquePtr<QUrl>;
-        #[rust_name = "qvariant_to_rust_string"]
-        fn qvariantToRustString(qvariant: &QVariant) -> String;
+        #[rust_name = "qvariant_to_qstring"]
+        fn qvariantToQString(qvariant: &QVariant) -> UniquePtr<QString>;
         #[rust_name = "qvariant_to_u8"]
         fn qvariantToU8(qvariant: &QVariant) -> u8;
         #[rust_name = "qvariant_to_u16"]
@@ -179,10 +182,9 @@ pub enum QVariantValue {
     QRectF(QRectF),
     QSize(QSize),
     QSizeF(QSizeF),
+    QString(cxx::UniquePtr<QString>),
     QTime(QTime),
     QUrl(cxx::UniquePtr<QUrl>),
-    // TODO: should we go to QString so the developer has to invoke the UTF translation?
-    String(String),
     U8(u8),
     U16(u16),
     U32(u32),
@@ -241,8 +243,7 @@ into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
 into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
 into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
 into_qvariant_opaque_ref!(QUrl, ffi::qvariant_init_from_qurl);
-into_qvariant_ref!(String, ffi::qvariant_init_from_rust_string);
-// into_qvariant_opaque_ref!(QString, ffi::qvariant_init_from_rust_string);
+into_qvariant_opaque_ref!(QString, ffi::qvariant_init_from_qstring);
 into_qvariant!(u8, ffi::qvariant_init_from_u8);
 into_qvariant!(u16, ffi::qvariant_init_from_u16);
 into_qvariant!(u32, ffi::qvariant_init_from_u32);
@@ -287,9 +288,9 @@ impl QVariant {
             ffi::QVariantType::QRectF => QVariantValue::QRectF(ffi::qvariant_to_qrectf(self)),
             ffi::QVariantType::QSize => QVariantValue::QSize(ffi::qvariant_to_qsize(self)),
             ffi::QVariantType::QSizeF => QVariantValue::QSizeF(ffi::qvariant_to_qsizef(self)),
+            ffi::QVariantType::QString => QVariantValue::QString(ffi::qvariant_to_qstring(self)),
             ffi::QVariantType::QTime => QVariantValue::QTime(ffi::qvariant_to_qtime(self)),
             ffi::QVariantType::QUrl => QVariantValue::QUrl(ffi::qvariant_to_qurl(self)),
-            ffi::QVariantType::String => QVariantValue::String(ffi::qvariant_to_rust_string(self)),
             ffi::QVariantType::U8 => QVariantValue::U8(ffi::qvariant_to_u8(self)),
             ffi::QVariantType::U16 => QVariantValue::U16(ffi::qvariant_to_u16(self)),
             ffi::QVariantType::U32 => QVariantValue::U32(ffi::qvariant_to_u32(self)),
