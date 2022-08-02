@@ -171,10 +171,6 @@ mod cxx_qt_my_object {
         pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
-
-        pub fn rust_only_method(&self) {
-            println!("QML or C++ can't call this :)");
-        }
     }
 
     pub struct CppObj<'a> {
@@ -200,6 +196,12 @@ mod cxx_qt_my_object {
     impl<'a> From<&mut CppObj<'a>> for Data {
         fn from(_value: &mut CppObj<'a>) -> Self {
             Self::from(&*_value)
+        }
+    }
+
+    impl RustObj {
+        pub fn rust_only_method(&self) {
+            println!("QML or C++ can't call this :)");
         }
     }
 

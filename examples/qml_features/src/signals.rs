@@ -14,7 +14,7 @@ pub mod signals {
     }
 
     // ANCHOR: book_signals_enum
-    #[cxx_qt::signals(MyObject)]
+    #[cxx_qt::signals(RustObj)]
     pub enum Signal {
         Ready,
         RustDataChanged { data: i32 },

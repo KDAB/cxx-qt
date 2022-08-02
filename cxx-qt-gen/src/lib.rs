@@ -6,6 +6,7 @@
 mod extract;
 mod gen_cpp;
 mod gen_rs;
+pub mod parser;
 pub mod syntax;
 mod utils;
 
@@ -14,15 +15,21 @@ pub use gen_cpp::{generate_format, generate_qobject_cpp, CppObject};
 pub use gen_rs::{generate_qobject_cxx, generate_qobject_rs};
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     use clang_format::ClangFormatStyle;
+    use quote::ToTokens;
 
     #[ctor::ctor]
     fn init_tests() {
         // Set the ClangFormatStyle to be Mozilla for our tests
         // so that when they fail the format in the assertions is the same as the files.
         assert!(generate_format(Some(ClangFormatStyle::Mozilla)).is_ok());
+    }
+
+    /// Helper to parse a quote TokenStream into a given syn item
+    pub fn tokens_to_syn<T: syn::parse::Parse>(tokens: proc_macro2::TokenStream) -> T {
+        syn::parse2(tokens.into_token_stream()).unwrap()
     }
 }
