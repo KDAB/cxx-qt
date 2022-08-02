@@ -23,11 +23,22 @@ fn main() {
     if let Ok(target_dir) = env::var("CARGO_TARGET_DIR") {
         let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
         std::fs::create_dir_all(&format!("{}/cxxbridge/cxx-qt-lib/include", target_dir)).unwrap();
-        std::fs::copy(
-            &format!("{}/include/qt_types.h", manifest_dir),
-            &format!("{}/cxxbridge/cxx-qt-lib/include/qt_types.h", target_dir),
-        )
-        .unwrap();
+        // FIXME: Horrible hack around this sometimes failing because
+        // Windows doesn't allow multiple processes to access a file by default.
+        loop {
+            match std::fs::copy(
+                &format!("{}/include/qt_types.h", manifest_dir),
+                &format!("{}/cxxbridge/cxx-qt-lib/include/qt_types.h", target_dir),
+            ) {
+                Ok(_) => break,
+                #[cfg(windows)]
+                Err(e) if e.raw_os_error() == Some(32) => {
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                    continue;
+                }
+                Err(e) => panic!("Error copying qt_types.h: {:?}", e),
+            }
+        }
     }
 
     let bridge_files = [
