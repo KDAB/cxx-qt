@@ -5,8 +5,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
+enum Event {
+    TitleArrived(String),
+}
+
 #[cxx_qt::bridge]
 mod website {
+    use super::Event;
     use futures::{
         channel::mpsc::{UnboundedReceiver, UnboundedSender},
         executor::block_on,
@@ -23,10 +28,6 @@ mod website {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QString = cxx_qt_lib::QString;
-    }
-
-    enum Event {
-        TitleArrived(String),
     }
 
     pub struct Data {

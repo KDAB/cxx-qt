@@ -33,34 +33,6 @@ pub mod my_object {
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 
-    extern "C" {}
-
-    #[namespace = "namespace"]
-    extern "C" {}
-
-    #[namespace = "namespace"]
-    #[custom_attr = "test"]
-    extern "C" {}
-
-    unsafe extern "C++" {}
-
-    #[namespace = "namespace"]
-    unsafe extern "C++" {}
-
-    #[namespace = "namespace"]
-    #[custom_attr = "test"]
-    unsafe extern "C++" {}
-}
-
-pub use self::cxx_qt_my_object::*;
-#[attrA]
-#[attrB]
-pub mod cxx_qt_my_object {
-    use super::my_object::*;
-
-    pub type FFICppObj = super::my_object::MyObjectQt;
-    type UniquePtr<T> = cxx::UniquePtr<T>;
-
     const MAX: u16 = 65535;
 
     enum Event {
@@ -72,6 +44,24 @@ pub mod cxx_qt_my_object {
     fn do_something() {
         println!("I am a free function");
     }
+
+    extern "C" {}
+
+    #[namespace = "namespace"]
+    extern "C" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
+    extern "C" {}
+
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
+    unsafe extern "C++" {}
 
     macro_rules! macro1 {
         () => {
@@ -99,21 +89,21 @@ pub mod cxx_qt_my_object {
         x: A,
         y: B,
     }
+}
 
-    use super::MyTrait;
+pub use self::cxx_qt_my_object::*;
+#[attrA]
+#[attrB]
+pub mod cxx_qt_my_object {
+    use super::my_object::*;
+
+    pub type FFICppObj = super::my_object::MyObjectQt;
+    type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct RustObj;
 
-    impl RustObj {
-        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
-            optional
-        }
-
-        fn test_unknown(&self, unknown: MyType) -> MyType {
-            unknown
-        }
-    }
+    impl RustObj {}
 
     pub struct CppObj<'a> {
         cpp: std::pin::Pin<&'a mut FFICppObj>,
@@ -156,9 +146,21 @@ pub mod cxx_qt_my_object {
         }
     }
 
+    use super::MyTrait;
+
     impl MyTrait for Data {
         fn my_func() -> String {
             "Hello".to_owned()
+        }
+    }
+
+    impl RustObj {
+        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
+            optional
+        }
+
+        fn test_unknown(&self, unknown: MyType) -> MyType {
+            unknown
         }
     }
 

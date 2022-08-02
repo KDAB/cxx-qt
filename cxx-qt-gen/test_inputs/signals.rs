@@ -6,7 +6,7 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[cxx_qt::signals(MyObject)]
+    #[cxx_qt::signals(RustObj)]
     enum MySignals {
         Ready,
         DataChanged {

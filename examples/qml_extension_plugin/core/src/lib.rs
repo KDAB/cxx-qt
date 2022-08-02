@@ -24,11 +24,11 @@ impl From<Data> for DataSerde {
     }
 }
 
+const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
+
 #[cxx_qt::bridge]
 mod my_object {
-    use super::DataSerde;
-
-    const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
+    use super::{DataSerde, DEFAULT_STR};
 
     #[namespace = ""]
     unsafe extern "C++" {

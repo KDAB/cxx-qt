@@ -3,12 +3,13 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::Parser;
 use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
-use proc_macro2::{Span, TokenStream, TokenTree};
+use proc_macro2::{Span, TokenStream};
 use std::result::Result;
-use syn::{spanned::Spanned, *};
+use syn::{spanned::Spanned, token::Brace, *};
 
 /// Describes an ident which has a different name in C++ and Rust
 #[derive(Debug, PartialEq)]
@@ -171,10 +172,8 @@ pub struct QObject {
     pub ident: Ident,
     /// All the methods that can also be invoked from QML
     pub(crate) invokables: Vec<Invokable>,
-    /// All the methods that cannot be invoked from QML (but are on the C++ object)
-    pub(crate) normal_methods: Vec<ImplItemMethod>,
-    /// All the rust only methods
-    pub(crate) rust_methods: Vec<ImplItem>,
+    /// All the methods that cannot be invoked from QML or C++, but are in the context of C++
+    pub(crate) methods: Vec<ImplItemMethod>,
     /// All the properties that can be used from QML
     pub(crate) properties: Vec<Property>,
     /// All the signals that can be emitted/connected from QML
@@ -193,8 +192,6 @@ pub struct QObject {
     pub(crate) original_rust_struct: ItemStruct,
     /// The original Signal enum that the signals were generated from
     pub(crate) original_signal_enum: Option<ItemEnum>,
-    /// The original Rust trait impls for the struct
-    pub(crate) original_trait_impls: Vec<ItemImpl>,
     /// The original Rust declarations from the mod that will be directly passed through
     pub(crate) original_passthrough_decls: Vec<Item>,
     /// The Rust impl that has optionally been provided to handle updates
@@ -425,7 +422,7 @@ struct ExtractedInvokables {
     /// Impl methods that will also be exposed as invokables to Qt
     invokables: Vec<Invokable>,
     /// Impl methods that will only be visible on the Rust side
-    normal_methods: Vec<ImplItemMethod>,
+    methods: Vec<ImplItemMethod>,
 }
 
 /// Extracts all the member functions from a module and generates invokables from them
@@ -435,7 +432,7 @@ fn extract_invokables(
     qt_ident: &Ident,
 ) -> Result<ExtractedInvokables, TokenStream> {
     let mut invokables = Vec::new();
-    let mut normal_methods = Vec::new();
+    let mut methods = Vec::new();
 
     // TODO: we need to set up an exclude list of invokable names and give
     // the user an error if they use one of those names.
@@ -470,7 +467,7 @@ fn extract_invokables(
 
         // Non invokable methods we just pass through as normal methods
         if filtered_attrs.len() == method.attrs.len() {
-            normal_methods.push(method);
+            methods.push(method);
             continue;
         }
 
@@ -484,7 +481,7 @@ fn extract_invokables(
 
     Ok(ExtractedInvokables {
         invokables,
-        normal_methods,
+        methods,
     })
 }
 
@@ -828,278 +825,63 @@ pub fn extract_qobject(
     module: &ItemMod,
     cpp_namespace_prefix: &[&str],
 ) -> Result<QObject, TokenStream> {
+    // Build a parser for the given ItemMod
+    //
+    // TODO: in the future steps from this extract.rs file will be moved into module parts
+    // of Parser
+    let mut parser = Parser::from(module.to_owned()).map_err(|err| err.to_compile_error())?;
+
+    // TODO: for now we only support one QObject per ItemMod block
+    // so extract the first qobject we find
+    if parser.cxx_qt_data.qobjects.len() != 1 {
+        return Err(Error::new(
+            module.span(),
+            "Only one QObject is currently supported in the ItemMod.",
+        )
+        .to_compile_error());
+    }
+    let (_, qobject) = parser.cxx_qt_data.qobjects.drain().take(1).next().unwrap();
+
     // Find the items from the module
     let original_mod = module.to_owned();
-    let items = &mut module
-        .to_owned()
-        .content
-        .expect("Incorrect module format encountered.")
-        .1;
 
     // Prepare variables to store struct, invokables, and other data
     //
     // The original Data Item::Struct if one is found
-    let mut original_data_struct = None;
+    let original_data_struct = qobject.data_struct;
     // The original RustObj Item::Struct if one is found
-    let mut original_rust_struct = None;
+    let original_rust_struct = qobject.rust_struct;
     // The name of the Qt object we are creating
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 
+    // Extract the normal and invokables from the Parser methods
+    let extracted = extract_invokables(&qobject.methods, cpp_namespace_prefix, &qt_ident)?;
+
     // A list of the invokables for the struct
-    let mut object_invokables = vec![];
+    let object_invokables = extracted.invokables;
     // A list of the normal methods (i.e. not invokables) for the struct
-    let mut object_normal_methods = vec![];
-    // A list of the rust only methods for the struct
-    let mut object_rust_methods = vec![];
-    // A list of original trait impls for the struct (eg `impl Default for Struct`)
-    let mut original_trait_impls = vec![];
+    let object_methods = extracted.methods;
     // A list of insignificant declarations for the mod that will be directly passed through (eg `use crate::thing`)
-    let mut original_passthrough_decls = vec![];
+    let original_passthrough_decls = parser
+        .cxx_qt_data
+        .uses
+        .iter()
+        .chain(qobject.others.iter())
+        .cloned()
+        .collect::<Vec<Item>>();
     // The original signal enum if one is found
-    let mut original_signal_enum = None;
+    let original_signal_enum = qobject.signal_enum;
     // A list of items we will pass through to the CXX bridge
     //
     // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
-    let mut cxx_items = vec![];
+    let cxx_items = parser
+        .passthrough_module
+        .content
+        .unwrap_or((Brace::default(), vec![]))
+        .1;
 
     // Determines if (and how) this object can respond to update requests
-    let mut handle_updates_impl = None;
-
-    // Process each of the items in the mod
-    for item in items.drain(..) {
-        match item {
-            // We are an Enum
-            Item::Enum(ref item_enum) => {
-                let index_of_signals_attr = |attrs: &Vec<Attribute>| {
-                    for (i, attr) in attrs.iter().enumerate() {
-                        if attr.path.segments.len() == 2
-                            && attr.path.segments[0].ident == "cxx_qt"
-                            && attr.path.segments[1].ident == "signals"
-                        {
-                            // TODO: later we need to read the inner args
-                            // to find which QObject these signals are for
-                            // eg the MyObject in cxx_qt::signals(MyObject)
-                            return Some(i);
-                        }
-                    }
-
-                    None
-                };
-
-                // Determine if we are a signals enum
-                if let Some(index) = index_of_signals_attr(&item_enum.attrs) {
-                    // Check that we are the first Signal enum
-                    if original_signal_enum.is_none() {
-                        // Clone the signal enum and remove the attribute
-                        let mut item_enum = item_enum.clone();
-                        item_enum.attrs.remove(index);
-                        original_signal_enum = Some(item_enum);
-                    } else {
-                        return Err(Error::new(
-                            item_enum.span(),
-                            "Only one Signal enum is supported per mod.",
-                        )
-                        .to_compile_error());
-                    }
-                } else {
-                    // Passthrough unknown enums
-                    original_passthrough_decls.push(item.to_owned());
-                }
-            }
-            // We are a struct
-            Item::Struct(s) => {
-                match s.ident.to_string().as_str() {
-                    // This is the Data struct
-                    "Data" => {
-                        // Check that we are the first Data struct
-                        if original_data_struct.is_none() {
-                            original_data_struct = Some(s);
-                        } else {
-                            return Err(Error::new(
-                                s.span(),
-                                "Only one Data struct is supported per mod.",
-                            )
-                            .to_compile_error());
-                        }
-                    }
-                    "RustObj" => {
-                        // Check that we are the first other struct
-                        if original_rust_struct.is_none() {
-                            // Move the original struct
-                            original_rust_struct = Some(s);
-                        } else {
-                            return Err(Error::new(
-                                s.span(),
-                                "Only one RustObj struct is supported per mod.",
-                            )
-                            .to_compile_error());
-                        }
-                    }
-                    _others => {
-                        return Err(
-                            Error::new(s.span(), "Unknown struct for QObject.").to_compile_error()
-                        );
-                    }
-                }
-            }
-            // We are an impl
-            Item::Impl(mut original_impl) => {
-                // Extract the path from the type (this leads to the struct name)
-                if let Type::Path(TypePath { path, .. }) = &mut *original_impl.self_ty {
-                    // Check that the path contains segments
-                    if path.segments.is_empty() {
-                        return Err(Error::new(
-                            original_impl.span(),
-                            "Invalid path on impl block.",
-                        )
-                        .to_compile_error());
-                    }
-
-                    // Read the name of the struct that the impl is for
-                    //
-                    // We can assume that segments[0] works as we have checked length to be 1
-                    match path.segments[0].ident.to_string().as_str() {
-                        "Data" => {
-                            // Can have a trait, eg impl Default for Data
-                            if original_impl.trait_.is_some() {
-                                // Push the original trait impl
-                                //
-                                // TODO: have original_data_trait_impls so that we can keep
-                                // impl Data close to struct Data
-                                original_trait_impls.push(original_impl.to_owned());
-                            } else {
-                                // Cannot have methods
-                                //
-                                // TODO: later should we pass through any Data impl methods?
-                                return Err(Error::new(
-                                    original_impl.span(),
-                                    "Data struct cannot have impl methods.",
-                                )
-                                .to_compile_error());
-                            }
-                        }
-                        "RustObj" => {
-                            // Ensure that the struct block has already happened
-                            if original_rust_struct.is_none() {
-                                return Err(Error::new(
-                                    original_impl.span(),
-                                    "Impl can only be declared after a RustObj struct.",
-                                )
-                                .to_compile_error());
-                            }
-
-                            // Needs to match the original struct name, later this check won't be needed
-                            //
-                            // We can assume that original_rust_struct exists as we checked it above
-                            if path.segments[0].ident
-                                != original_rust_struct.as_ref().unwrap().ident
-                            {
-                                return Err(Error::new(
-                                    path.span(),
-                                    "The impl block needs to match the RustObj struct.",
-                                )
-                                .to_compile_error());
-                            }
-
-                            // Can have custom traits, these are on the RustObj
-                            if let Some(trait_) = &original_impl.trait_ {
-                                // We should always have at least one segments as something is unlikely
-                                // to have been parsed as a "trait" in the first place otherwise
-                                match trait_.1.segments[0].ident.to_string().as_str() {
-                                    "UpdateRequestHandler" => {
-                                        handle_updates_impl = Some(original_impl.to_owned())
-                                    }
-                                    _others => original_trait_impls.push(original_impl.to_owned()),
-                                }
-                            } else {
-                                // Rust only methods are on the impl T block
-                                object_rust_methods.append(&mut original_impl.items);
-                            }
-                        }
-                        // Invokables are defined in the impl cxx_qt::QObject<T> block
-                        "cxx_qt"
-                            if path.segments.len() > 1
-                                && path.segments[1].ident.to_string().as_str() == "QObject" =>
-                        {
-                            let mut extracted = extract_invokables(
-                                &original_impl.items,
-                                cpp_namespace_prefix,
-                                &qt_ident,
-                            )?;
-
-                            object_invokables.append(&mut extracted.invokables);
-                            object_normal_methods.append(&mut extracted.normal_methods);
-                        }
-                        _others => {
-                            return Err(Error::new(
-                                path.span(),
-                                "Unknown struct for impl block for QObject.",
-                            )
-                            .to_compile_error());
-                        }
-                    }
-                } else {
-                    return Err(Error::new(
-                        original_impl.span(),
-                        "Expected a TypePath impl to parse.",
-                    )
-                    .to_compile_error());
-                }
-            }
-            // Items we will pass through to the CXX bridge
-            //
-            // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
-            //
-            // Note we also need to search in Verbatim for "unsafe extern" blocks
-            Item::ForeignMod(_) => cxx_items.push(item),
-            Item::Verbatim(ref tokens) => {
-                let is_group = |value: &Option<TokenTree>| -> bool {
-                    if let Some(TokenTree::Group(_)) = value {
-                        return true;
-                    }
-
-                    false
-                };
-                let is_ident = |value: &Option<TokenTree>, sym: &str| -> bool {
-                    if let Some(TokenTree::Ident(ident)) = value {
-                        return *ident == quote::format_ident!("{}", sym);
-                    }
-
-                    false
-                };
-                let is_punct = |value: &Option<TokenTree>, char: char| -> bool {
-                    if let Some(TokenTree::Punct(punct)) = value {
-                        return punct.as_char() == char;
-                    }
-
-                    false
-                };
-                let tokens = tokens.clone();
-                let mut iter = tokens.into_iter();
-
-                // Skip over any attributes
-                //
-                // which appears as a punct # and then a group []
-                let mut first = iter.next();
-                while is_punct(&first, '#') {
-                    first = iter.next();
-                    if is_group(&first) {
-                        first = iter.next();
-                    }
-                }
-
-                if is_ident(&first, "unsafe") && is_ident(&iter.next(), "extern") {
-                    cxx_items.push(item);
-                } else {
-                    original_passthrough_decls.push(item);
-                }
-            }
-            // We are an insignificant item that will be directly passed through
-            other => {
-                original_passthrough_decls.push(other);
-            }
-        }
-    }
+    let handle_updates_impl = qobject.update_requester_handler;
 
     // Read properties from the Data struct
     let object_properties = if let Some(ref original_struct) = original_data_struct {
@@ -1141,8 +923,7 @@ pub fn extract_qobject(
     Ok(QObject {
         ident: qt_ident,
         invokables: object_invokables,
-        normal_methods: object_normal_methods,
-        rust_methods: object_rust_methods,
+        methods: object_methods,
         properties: object_properties,
         signals: object_signals,
         signal_ident,
@@ -1154,7 +935,6 @@ pub fn extract_qobject(
         original_signal_enum,
         original_rust_struct: original_rust_struct
             .unwrap_or_else(|| syn::parse_str("pub struct RustObj;").unwrap()),
-        original_trait_impls,
         original_passthrough_decls,
         handle_updates_impl,
     })
@@ -1177,24 +957,30 @@ mod tests {
         assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
 
-        assert_eq!(qobject.original_trait_impls.len(), 2);
+        assert_eq!(qobject.original_passthrough_decls.len(), 2);
 
         // Check that impl Default was found for Data
-        let trait_impl = &qobject.original_trait_impls[0];
-        if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
-            assert_eq!(path.segments.len(), 1);
-            assert_eq!(path.segments[0].ident.to_string(), "Data");
+        if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[0] {
+            if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
+                assert_eq!(path.segments.len(), 1);
+                assert_eq!(path.segments[0].ident.to_string(), "Data");
+            } else {
+                panic!("Trait impl was not a TypePath");
+            }
         } else {
-            panic!("Trait impl was not a TypePath");
+            panic!("Expected an impl block");
         }
 
         // Check that impl Default was found for RustObj
-        let trait_impl = &qobject.original_trait_impls[1];
-        if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
-            assert_eq!(path.segments.len(), 1);
-            assert_eq!(path.segments[0].ident.to_string(), "RustObj");
+        if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[1] {
+            if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
+                assert_eq!(path.segments.len(), 1);
+                assert_eq!(path.segments[0].ident.to_string(), "RustObj");
+            } else {
+                panic!("Trait impl was not a TypePath");
+            }
         } else {
-            panic!("Trait impl was not a TypePath");
+            panic!("Expected an impl block");
         }
     }
 
@@ -1407,8 +1193,8 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check that the normal method was also detected
-        assert_eq!(qobject.normal_methods.len(), 4);
-        assert_eq!(qobject.rust_methods.len(), 1);
+        assert_eq!(qobject.methods.len(), 4);
+        assert_eq!(qobject.original_passthrough_decls.len(), 1);
     }
 
     #[test]
@@ -1472,14 +1258,13 @@ mod tests {
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
-        assert_eq!(qobject.normal_methods.len(), 0);
-        assert_eq!(qobject.rust_methods.len(), 2);
+        assert_eq!(qobject.methods.len(), 0);
 
         // Check that there is a use, enum and fn declaration
-        assert_eq!(qobject.original_passthrough_decls.len(), 13);
+        assert_eq!(qobject.original_passthrough_decls.len(), 4);
 
         // Check that we have a CXX passthrough item
-        assert_eq!(qobject.cxx_items.len(), 6);
+        assert_eq!(qobject.cxx_items.len(), 18);
     }
 
     #[test]

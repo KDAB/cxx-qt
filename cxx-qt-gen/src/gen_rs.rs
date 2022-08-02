@@ -9,6 +9,7 @@ use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
 
 use crate::extract::{Invokable, QObject, QtTypes};
+use crate::parser::path::path_compare_str;
 use crate::utils::type_to_namespace;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -873,14 +874,8 @@ pub fn generate_qobject_rs(
             // Will generate_qobject_rs only ever come from cxx_qt::bridge?
             // Otherwise we might need to pass the originating macro from the
             // calling proc_macro_attribute method.
-            if attr.path.segments.len() == 2 {
-                if attr.path.segments[0].ident == "cxx_qt"
-                    && attr.path.segments[1].ident == "bridge"
-                {
-                    None
-                } else {
-                    Some(attr.to_owned())
-                }
+            if path_compare_str(&attr.path, &["cxx_qt", "bridge"]) {
+                None
             } else {
                 Some(attr.to_owned())
             }
@@ -967,7 +962,21 @@ pub fn generate_qobject_rs(
     // Generate property methods from the object
     let property_methods = generate_property_methods_rs(obj)?;
     let signal_methods = generate_signal_methods_rs(obj)?;
-    let signal_enum = &obj.original_signal_enum;
+    let signal_enum = obj.original_signal_enum.clone().map(|mut signal_enum| {
+        signal_enum.attrs = signal_enum
+            .attrs
+            .iter()
+            .filter_map(|attr| {
+                // Filter out any attributes that are #[cxx_qt::signals] as that is ourselves
+                if path_compare_str(&attr.path, &["cxx_qt", "signals"]) {
+                    None
+                } else {
+                    Some(attr.to_owned())
+                }
+            })
+            .collect::<Vec<syn::Attribute>>();
+        Some(signal_enum)
+    });
 
     // Capture methods, trait impls, use decls so they can used by quote
     let invokable_method_wrappers = obj
@@ -985,9 +994,7 @@ pub fn generate_qobject_rs(
         .map(|m| m.original_method.clone())
         .collect::<Vec<syn::ImplItemMethod>>();
 
-    let normal_methods = &obj.normal_methods;
-    let rust_methods = &obj.rust_methods;
-    let original_trait_impls = &obj.original_trait_impls;
+    let methods = &obj.methods;
     let original_passthrough_decls = &obj.original_passthrough_decls;
 
     // Generate the cpp initialiser function
@@ -1018,8 +1025,7 @@ pub fn generate_qobject_rs(
         impl #rust_class_name {
             #(#invokable_method_wrappers)*
             #(#invokable_methods)*
-            #(#normal_methods)*
-            #(#rust_methods)*
+            #(#methods)*
 
             #handle_update_request
         }
@@ -1108,8 +1114,6 @@ pub fn generate_qobject_rs(
             pub type FFICppObj = super::#mod_ident::#class_name_cpp;
             type UniquePtr<T> = cxx::UniquePtr<T>;
 
-            #(#original_passthrough_decls)*
-
             #signal_enum
 
             #rust_struct
@@ -1124,9 +1128,9 @@ pub fn generate_qobject_rs(
 
             #data_struct_impl
 
-            #(#original_trait_impls)*
-
             #handle_updates_impl
+
+            #(#original_passthrough_decls)*
 
             pub fn create_rs() -> std::boxed::Box<RustObj> {
                 std::default::Default::default()
