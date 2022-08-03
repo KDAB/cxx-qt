@@ -40,7 +40,7 @@ pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
     extract_and_generate(module, &cpp_namespace_prefix)
 }
 
-/// A macro which describes that an enum the definition of signals for a QObject
+/// A macro which describes that an enum defines the signals for a QObject.
 ///
 /// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
 ///
@@ -54,6 +54,7 @@ pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
 ///         Ready,
 ///     }
 /// }
+/// ```
 #[proc_macro_attribute]
 pub fn signals(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("cxx_qt::signals should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
