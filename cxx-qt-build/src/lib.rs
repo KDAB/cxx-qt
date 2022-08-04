@@ -13,9 +13,8 @@ use std::path::PathBuf;
 
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
-    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_rs,
-    syntax::{parse_qt_file, CxxQtItem},
-    CppObject,
+    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_rs, parse_qt_file,
+    CppObject, CxxQtItem,
 };
 
 /// Representation of a generated CXX header, source, and name
