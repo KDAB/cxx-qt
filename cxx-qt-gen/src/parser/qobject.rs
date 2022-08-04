@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::signals::ParsedSignalsEnum;
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::{path_angled_args_to_type_path, path_compare_str, path_to_single_ident},
@@ -26,8 +27,8 @@ pub struct ParsedQObject {
     pub data_struct: Option<ItemStruct>,
     /// This is the RustObj struct that stores the invokables for the QObject
     pub rust_struct: Option<ItemStruct>,
-    /// This is the Signals enum that defines the Q_SIGNALS for the QObject
-    pub signal_enum: Option<ItemEnum>,
+    /// This is a representation of the Signals enum that defines the Q_SIGNALS for the QObject
+    pub signals: Option<ParsedSignalsEnum>,
     /// This is the list of methods that need to be implemented on the C++ object in Rust
     ///
     /// TODO: in the future we will have a ParsedMethod this will have a field to say whether the
@@ -85,128 +86,143 @@ impl ParsedCxxQtData {
     /// If it is then add the [syn::Item] into qobjects HashMap
     /// Otherwise return the [syn::Item] to pass through to CXX
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
-        Ok(match &item {
-            Item::Enum(item_enum) => {
-                // Check if the enum has cxx_qt::signals(T)
-                if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
-                    let qobject = attribute_tokens_to_ident(&item_enum.attrs[index])?;
-                    // Find the matching QObject for the enum
-                    if let Some(entry) = self.qobjects.get_mut(&qobject) {
-                        entry.signal_enum = Some(item_enum.clone());
-                        return Ok(None);
-                    } else {
-                        return Err(Error::new(
-                            item_enum.span(),
-                            "No matching QObject found for the given cxx_qt::signals<T> enum.",
-                        ));
-                    }
-                }
-
-                // Passthrough this unknown enum
-                Some(item)
-            }
-            Item::Struct(s) => {
-                // TODO: instead check for the cxx_qt::qobject macro
-                //
-                // // If the attribute is cxx_qt::qobject<T> then this the struct defining a qobject
-                // if let Some(attr) = attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]) {
-                //     if let Some(qobject) = attribute_tokens_to_ident(attr)? {
-                //         self
-                //             .qobjects
-                //             .entry(qobject)
-                //             .and_modify(|value| value.rust_struct = Some(s.clone()));
-                //         return Ok(None);
-                //     }
-                // }
-                match s.ident.to_string().as_str() {
-                    // TODO: for now we assume that Data is related to the only struct
-                    // which is called "RustObj"
-                    "Data" => {
-                        self.qobjects
-                            .entry(format_ident!("RustObj"))
-                            .and_modify(|value| value.data_struct = Some(s.clone()));
-                        None
-                    }
-                    // TODO: for now we assume that Data is related to the only struct
-                    // which is called "RustObj"
-                    "RustObj" => {
-                        self.qobjects
-                            .entry(s.ident.clone())
-                            .and_modify(|value| value.rust_struct = Some(s.clone()));
-                        None
-                    }
-                    _others => Some(item),
-                }
-            }
-            Item::Impl(imp) => {
-                // If the implementation has a cxx_qt::QObject
-                // then this is the block of methods to be implemented on the C++ object
-                if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-                    if path_compare_str(path, &["cxx_qt", "QObject"]) {
-                        // Read the T from cxx_qt::QObject<T> and error if it's missing
-                        let qobject_path = path_angled_args_to_type_path(path)?;
-                        if let Some(value) = self
-                            .qobjects
-                            // Convert the path to a single ident, and error if it isn't
-                            //
-                            // TODO: we need to error if the ident isn't found?
-                            .get_mut(&path_to_single_ident(&qobject_path)?)
-                        {
-                            // Extract the ImplItem's from each Impl block
-                            // and add to the methods list
-                            value.methods.extend(imp.items.iter().cloned());
-                        } else {
-                            return Err(Error::new(imp.span(), "No matching QObject found for the given cxx_qt::QObject<T> impl block."));
-                        }
-                        return Ok(None);
-                    } else {
-                        // TODO: once Data, RustObj, and impl UpdateRequestHandler are removed (?)
-                        // other items can be ignored and just returned, so this block of code below
-                        // can be removed in the future.
-                        //
-                        // For now we need to find the Data, RustObj, and impl UpdateRequestHandler
-                        if path_compare_str(path, &["Data"]) {
-                            // TODO: for now we assume that Data is related to the only struct
-                            // which is called "RustObj"
-                            self.qobjects
-                                .entry(format_ident!("RustObj"))
-                                .and_modify(|value| value.others.push(item));
-                            return Ok(None);
-                        } else if path_compare_str(path, &["RustObj"]) {
-                            // If we are the UpdateRequestHandler, then we need to store in list
-                            if let Some(trait_) = &imp.trait_ {
-                                if let Some(first) = trait_.1.segments.first() {
-                                    if first.ident == "UpdateRequestHandler" {
-                                        self.qobjects
-                                            .entry(format_ident!("RustObj"))
-                                            // We assume that there is only one impl block from the compiler
-                                            //
-                                            // TODO: later this might be removed/changed anyway
-                                            .and_modify(|value| {
-                                                value.update_requester_handler = Some(imp.clone())
-                                            });
-                                        return Ok(None);
-                                    }
-                                }
-                            }
-
-                            self.qobjects
-                                .entry(format_ident!("RustObj"))
-                                .and_modify(|value| value.others.push(item));
-                            return Ok(None);
-                        }
-                    }
-                }
-
-                Some(item)
-            }
+        match item {
+            Item::Enum(item_enum) => self.parse_enum(item_enum),
+            Item::Struct(item_struct) => self.parse_struct(item_struct),
+            Item::Impl(imp) => self.parse_impl(imp),
             Item::Use(_) => {
                 // Any use statements go into the CXX-Qt generated block
                 self.uses.push(item);
-                None
+                Ok(None)
             }
-            _others => Some(item),
-        })
+            _ => Ok(Some(item)),
+        }
+    }
+
+    /// Parse a [syn::ItemEnum] into the qobjects if it's a CXX-Qt signal
+    /// otherwise return as a [syn::Item] to pass through.
+    fn parse_enum(&mut self, item_enum: ItemEnum) -> Result<Option<Item>> {
+        // Check if the enum has cxx_qt::signals(T)
+        if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
+            let qobject = attribute_tokens_to_ident(&item_enum.attrs[index])?;
+            // Find the matching QObject for the enum
+            if let Some(entry) = self.qobjects.get_mut(&qobject) {
+                entry.signals = Some(ParsedSignalsEnum::from(&item_enum, index)?);
+                return Ok(None);
+            } else {
+                return Err(Error::new(
+                    item_enum.span(),
+                    "No matching QObject found for the given cxx_qt::signals<T> enum.",
+                ));
+            }
+        }
+
+        // Passthrough this unknown enum
+        Ok(Some(Item::Enum(item_enum)))
+    }
+
+    /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
+    /// otherwise return as a [syn::Item] to pass through.
+    fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
+        // If the implementation has a cxx_qt::QObject
+        // then this is the block of methods to be implemented on the C++ object
+        if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
+            if path_compare_str(path, &["cxx_qt", "QObject"]) {
+                // Read the T from cxx_qt::QObject<T> and error if it's missing
+                let qobject_path = path_angled_args_to_type_path(path)?;
+                if let Some(value) = self
+                    .qobjects
+                    // Convert the path to a single ident, and error if it isn't
+                    //
+                    // TODO: we need to error if the ident isn't found?
+                    .get_mut(&path_to_single_ident(&qobject_path)?)
+                {
+                    // Extract the ImplItem's from each Impl block
+                    // and add to the methods list
+                    value.methods.extend(imp.items.iter().cloned());
+                } else {
+                    return Err(Error::new(
+                        imp.span(),
+                        "No matching QObject found for the given cxx_qt::QObject<T> impl block.",
+                    ));
+                }
+                return Ok(None);
+            } else {
+                // TODO: once Data, RustObj, and impl UpdateRequestHandler are removed (?)
+                // other items can be ignored and just returned, so this block of code below
+                // can be removed in the future.
+                //
+                // For now we need to find the Data, RustObj, and impl UpdateRequestHandler
+                if path_compare_str(path, &["Data"]) {
+                    // TODO: for now we assume that Data is related to the only struct
+                    // which is called "RustObj"
+                    self.qobjects
+                        .entry(format_ident!("RustObj"))
+                        .and_modify(|value| value.others.push(Item::Impl(imp)));
+                    return Ok(None);
+                } else if path_compare_str(path, &["RustObj"]) {
+                    // If we are the UpdateRequestHandler, then we need to store in list
+                    if let Some(trait_) = &imp.trait_ {
+                        if let Some(first) = trait_.1.segments.first() {
+                            if first.ident == "UpdateRequestHandler" {
+                                self.qobjects
+                                    .entry(format_ident!("RustObj"))
+                                    // We assume that there is only one impl block from the compiler
+                                    //
+                                    // TODO: later this might be removed/changed anyway
+                                    .and_modify(|value| {
+                                        value.update_requester_handler = Some(imp.clone())
+                                    });
+                                return Ok(None);
+                            }
+                        }
+                    }
+
+                    self.qobjects
+                        .entry(format_ident!("RustObj"))
+                        .and_modify(|value| value.others.push(Item::Impl(imp)));
+                    return Ok(None);
+                }
+            }
+        }
+
+        Ok(Some(Item::Impl(imp)))
+    }
+
+    /// Parse a [syn::ItemStruct] into the qobjects if it's a CXX-Qt struct
+    /// otherwise return as a [syn::Item] to pass through.
+    fn parse_struct(&mut self, s: ItemStruct) -> Result<Option<Item>> {
+        // TODO: instead check for the cxx_qt::qobject macro
+        //
+        // // If the attribute is cxx_qt::qobject<T> then this the struct defining a qobject
+        // if let Some(attr) = attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]) {
+        //     if let Some(qobject) = attribute_tokens_to_ident(attr)? {
+        //         self
+        //             .qobjects
+        //             .entry(qobject)
+        //             .and_modify(|value| value.rust_struct = Some(s.clone()));
+        //         return Ok(None);
+        //     }
+        // }
+        match s.ident.to_string().as_str() {
+            // TODO: for now we assume that Data is related to the only struct
+            // which is called "RustObj"
+            "Data" => {
+                self.qobjects
+                    .entry(format_ident!("RustObj"))
+                    .and_modify(|value| value.data_struct = Some(s.clone()));
+                Ok(None)
+            }
+            // TODO: for now we assume that Data is related to the only struct
+            // which is called "RustObj"
+            "RustObj" => {
+                self.qobjects
+                    .entry(s.ident.clone())
+                    .and_modify(|value| value.rust_struct = Some(s.clone()));
+                Ok(None)
+            }
+            _others => Ok(Some(Item::Struct(s))),
+        }
     }
 }
 
@@ -275,7 +291,7 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_ok());
         assert!(result.unwrap().is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].signal_enum.is_some());
+        assert!(cxx_qt_data.qobjects[&qobject_ident()].signals.is_some());
     }
 
     #[test]

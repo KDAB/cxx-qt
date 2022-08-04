@@ -3,7 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::Parser;
+use crate::parser::{signals::ParsedSignalsEnum, Parser};
 use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
@@ -689,33 +689,27 @@ fn extract_properties(
 }
 
 /// Extracts all the fields from an enum and generates signals from them
+//
+// TODO: for now we still extract the ParsedSignals into a Signal blocks
+// later when we have the generate phase this will be removed
 fn extract_signals(
-    e: &syn::ItemEnum,
+    signals: &ParsedSignalsEnum,
     cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<Vec<Signal>, TokenStream> {
-    let mut signals = Vec::new();
-
-    for variant in &e.variants {
-        let ident_str = variant.ident.to_string();
-        let parameters = if let Fields::Named(FieldsNamed { named, .. }) = &variant.fields {
-            let mut parameters = vec![];
-
-            for name in named {
-                // Extract only fields with an ident (should be all as these are named fields).
-                if let Field {
-                    // TODO: later we'll need to read the attributes (eg qt_property) here
-                    // attrs,
-                    ident: Some(ident),
-                    ty,
-                    ..
-                } = name
-                {
-                    // Extract the type of the field
-                    let type_ident;
-
-                    match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
-                        Ok(result) => type_ident = result,
+    signals.signals.iter().map(|signal| {
+        let ident_str = signal.ident.to_string();
+        Ok(Signal {
+            emit_ident: CppRustIdent {
+                cpp_ident: quote::format_ident!("emit{}", ident_str.to_case(Case::Pascal)),
+                rust_ident: quote::format_ident!("emit_{}", ident_str.to_case(Case::Snake)),
+            },
+            enum_ident: signal.ident.clone(),
+            parameters: signal.parameters.iter().map(|parameter| {
+                Ok(Parameter {
+                    ident: parameter.ident.clone(),
+                    type_ident: match extract_type_ident(&parameter.ty, cpp_namespace_prefix, qt_ident) {
+                        Ok(result) => result,
                         Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                             return Err(Error::new(
                                 span,
@@ -734,35 +728,15 @@ fn extract_signals(
                         Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
                             return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
                         }
-                    }
-
-                    parameters.push(Parameter {
-                        ident: ident.clone(),
-                        type_ident,
-                    });
-                }
-            }
-
-            parameters
-        } else {
-            vec![]
-        };
-
-        signals.push(Signal {
-            emit_ident: CppRustIdent {
-                cpp_ident: quote::format_ident!("emit{}", ident_str.to_case(Case::Pascal)),
-                rust_ident: quote::format_ident!("emit_{}", ident_str.to_case(Case::Snake)),
-            },
-            enum_ident: variant.ident.clone(),
-            parameters,
+                    },
+                })
+            }).collect::<Result<Vec<Parameter>, TokenStream>>()?,
             signal_ident: CppRustIdent {
                 cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
                 rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
             },
-        });
-    }
-
-    Ok(signals)
+        })
+    }).collect()
 }
 
 /// Parses a module in order to extract a QObject description from it
@@ -814,8 +788,6 @@ pub fn extract_qobject(
         .chain(qobject.others.iter())
         .cloned()
         .collect::<Vec<Item>>();
-    // The original signal enum if one is found
-    let original_signal_enum = qobject.signal_enum;
     // A list of items we will pass through to the CXX bridge
     //
     // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
@@ -835,15 +807,20 @@ pub fn extract_qobject(
         vec![]
     };
 
-    // Read signals  from the Signal enum
-    let object_signals = if let Some(ref original_enum) = original_signal_enum {
-        extract_signals(original_enum, cpp_namespace_prefix, &qt_ident)?
+    // Read signals from the Signal enum
+    //
+    // TODO: for now we still extract the ParsedSignals into a Signal blocks
+    // later when we have the generate phase this will be removed
+    let object_signals = if let Some(signals) = &qobject.signals {
+        extract_signals(signals, cpp_namespace_prefix, &qt_ident)?
     } else {
         vec![]
     };
-    let signal_ident = original_signal_enum
+    let signal_ident = qobject
+        .signals
         .as_ref()
-        .map(|original_enum| original_enum.ident.clone());
+        .map(|signals| signals.ident.clone());
+    let original_signal_enum = qobject.signals.map(|signals| signals.item);
 
     // Build the namespace for this QObject
     //
