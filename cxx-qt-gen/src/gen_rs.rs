@@ -9,7 +9,7 @@ use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
 
 use crate::extract::{Invokable, QObject, QtTypes};
-use crate::parser::path::path_compare_str;
+use crate::syntax::path::path_compare_str;
 use crate::utils::type_to_namespace;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
+use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::{path_angled_args_to_type_path, path_compare_str, path_to_single_ident},
 };
