@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::path::path_compare_str;
+use crate::syntax::path::path_compare_str;
 use std::iter::FromIterator;
 use syn::{
     ext::IdentExt,
