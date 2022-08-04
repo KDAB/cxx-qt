@@ -9,7 +9,6 @@ use quote::{format_ident, quote, ToTokens};
 use std::collections::HashSet;
 
 use crate::extract::{Invokable, QObject, QtTypes};
-use crate::syntax::path::path_compare_str;
 use crate::utils::type_to_namespace;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -914,21 +913,7 @@ pub fn generate_qobject_rs(
     // Generate property methods from the object
     let property_methods = generate_property_methods_rs(obj)?;
     let signal_methods = generate_signal_methods_rs(obj)?;
-    let signal_enum = obj.original_signal_enum.clone().map(|mut signal_enum| {
-        signal_enum.attrs = signal_enum
-            .attrs
-            .iter()
-            .filter_map(|attr| {
-                // Filter out any attributes that are #[cxx_qt::signals] as that is ourselves
-                if path_compare_str(&attr.path, &["cxx_qt", "signals"]) {
-                    None
-                } else {
-                    Some(attr.to_owned())
-                }
-            })
-            .collect::<Vec<syn::Attribute>>();
-        Some(signal_enum)
-    });
+    let signal_enum = obj.original_signal_enum.as_ref();
 
     // Capture methods, trait impls, use decls so they can used by quote
     let invokable_method_wrappers = obj

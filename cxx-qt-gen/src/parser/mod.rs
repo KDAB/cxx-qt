@@ -3,7 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+pub mod parameter;
 pub mod qobject;
+pub mod signals;
 
 use crate::syntax::attribute::attribute_find_path;
 use qobject::ParsedCxxQtData;
