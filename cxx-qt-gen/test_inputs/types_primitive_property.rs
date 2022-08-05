@@ -1,3 +1,4 @@
+#[cxx_qt::bridge]
 mod my_object {
     #[derive(Default)]
     pub struct Data {

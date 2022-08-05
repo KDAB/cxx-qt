@@ -1,3 +1,4 @@
+#[cxx_qt::bridge]
 mod my_object {
     #[namespace = ""]
     unsafe extern "C++" {

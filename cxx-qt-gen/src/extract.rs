@@ -788,7 +788,7 @@ pub fn extract_qobject(
     let (_, qobject) = parser.cxx_qt_data.qobjects.drain().take(1).next().unwrap();
 
     // Find the items from the module
-    let original_mod = module.to_owned();
+    let original_mod = parser.passthrough_module.clone();
 
     // Prepare variables to store struct, invokables, and other data
     //

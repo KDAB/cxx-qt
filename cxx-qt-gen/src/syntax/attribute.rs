@@ -31,11 +31,11 @@ impl Parse for AttributeList {
     }
 }
 
-/// Returns the first [syn::Attribute] that matches a given path
-pub fn attribute_find_path<'a>(attrs: &'a [Attribute], path: &[&str]) -> Option<&'a Attribute> {
-    for attr in attrs {
+/// Returns the index of the first [syn::Attribute] that matches a given path
+pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> {
+    for (i, attr) in attrs.iter().enumerate() {
         if path_compare_str(&attr.path, path) {
-            return Some(attr);
+            return Some(i);
         }
     }
 

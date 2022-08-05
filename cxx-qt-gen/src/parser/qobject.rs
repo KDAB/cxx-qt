@@ -88,8 +88,8 @@ impl ParsedCxxQtData {
         Ok(match &item {
             Item::Enum(item_enum) => {
                 // Check if the enum has cxx_qt::signals(T)
-                if let Some(attr) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
-                    let qobject = attribute_tokens_to_ident(attr)?;
+                if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
+                    let qobject = attribute_tokens_to_ident(&item_enum.attrs[index])?;
                     // Find the matching QObject for the enum
                     if let Some(entry) = self.qobjects.get_mut(&qobject) {
                         entry.signal_enum = Some(item_enum.clone());
