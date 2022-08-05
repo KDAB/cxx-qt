@@ -97,14 +97,13 @@ mod tests {
         assert!(path_to_single_ident(&path).is_err());
 
         let path: Path = tokens_to_syn(quote! { a });
-        assert!(path_to_single_ident(&path).is_ok());
-        assert_eq!(path_to_single_ident(&path).unwrap(), "a");
+        let ident = path_to_single_ident(&path).unwrap();
+        assert_eq!(ident, "a");
     }
 
     #[test]
     fn test_path_angled_args_to_type_path() {
         let path: Path = tokens_to_syn(quote! { std::collections::HashSet<a::b::c> });
-        assert!(path_angled_args_to_type_path(&path).is_ok());
         let path = path_angled_args_to_type_path(&path).unwrap();
         assert!(path_compare_str(&path, &["a", "b", "c"]));
 

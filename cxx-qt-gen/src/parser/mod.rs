@@ -128,9 +128,7 @@ mod tests {
                 }
             }
         });
-        let parser = Parser::from(module.clone());
-        assert!(parser.is_ok());
-        let parser = parser.unwrap();
+        let parser = Parser::from(module.clone()).unwrap();
 
         assert_ne!(parser.passthrough_module, module);
 
@@ -157,9 +155,7 @@ mod tests {
                 }
             }
         });
-        let parser = Parser::from(module.clone());
-        assert!(parser.is_ok());
-        let parser = parser.unwrap();
+        let parser = Parser::from(module.clone()).unwrap();
 
         assert_ne!(parser.passthrough_module, module);
 
