@@ -22,7 +22,7 @@ impl From<Data> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_data")]
 mod my_data {
     use super::DataSerde;
 

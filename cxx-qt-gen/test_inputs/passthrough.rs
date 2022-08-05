@@ -1,5 +1,5 @@
 #[attrA]
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 #[attrB]
 pub mod my_object {
     // ItemConst

@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::mock_qt_types")]
 mod mock_qt_types {
     use cxx_qt_lib::QVariantValue;
 

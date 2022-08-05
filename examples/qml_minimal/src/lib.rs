@@ -7,7 +7,7 @@
 // ANCHOR: book_cxx_qt_module
 // ANCHOR: book_bridge_macro
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
     // ANCHOR_END: book_bridge_macro
 

@@ -56,9 +56,6 @@ pub struct GeneratedCpp {
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
     pub fn new(rust_file_path: &impl AsRef<std::path::Path>) -> Self {
-        // TODO: for now we use a fixed namespace, later this will come from the macro definition
-        let cpp_namespace_prefix: Vec<&'static str> = vec!["cxx_qt"];
-
         let file = parse_qt_file(rust_file_path).unwrap();
 
         let mut cxx_qt = None;
@@ -100,7 +97,7 @@ impl GeneratedCpp {
 
                     // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
                     // which will take a CxxQtItemMod and respond with a C++ header and source
-                    let qobject = extract_qobject(m, &cpp_namespace_prefix).unwrap();
+                    let qobject = extract_qobject(m).unwrap();
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());
@@ -110,7 +107,7 @@ impl GeneratedCpp {
                     //
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
-                    tokens.extend(generate_qobject_rs(&qobject, &cpp_namespace_prefix).unwrap());
+                    tokens.extend(generate_qobject_rs(&qobject).unwrap());
                 }
                 CxxQtItem::Item(item) => {
                     tokens.extend(item.into_token_stream());

@@ -1,4 +1,4 @@
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
     pub struct Data {
         public: i32,

@@ -29,11 +29,11 @@ Starting with the module definition:
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_bridge_macro}}
 ```
 
-Because we add the `#[cxx_qt::bridge]` macro to the module definition, CXX-Qt will create a new QObject subclass from this module.
+Because we add the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to the module definition, CXX-Qt will create a new QObject subclass from this module.
 The new QObject subclass in our case will be named `MyObject`, as CXX-Qt automatically converts Rusts snake_case to the Qt default PascalCase.
 CXX-Qt is all about idiomatic code in both Rust and C++, so it will do its best to keep styling consistent for C++ and Rust as well.
 
-For the `#[cxx_qt::bridge]` macro to work, we first need to define the data that will live in the new C++ object.
+For the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to work, we first need to define the data that will live in the new C++ object.
 This is done with the `Data` struct:
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_data_struct}}

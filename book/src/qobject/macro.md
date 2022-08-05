@@ -7,7 +7,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Macro
 
-We define a module (which becomes our Qt object name) and then add `cxx_qt::bridge` as a macro.
+We define a module (which becomes our Qt object name) and then add `cxx_qt::bridge(namespace = "cxx_qt::my_object)` as a macro.
+
+The namespace specified is used in C++ to allow segmenting generated code from your application.
+
+Note that currently each QObject needs to be in its own namespace otherwise there will be collisions from generated free functions.
 
 The example below would export the contents of the module as `DataStructProperties` to Qt / QML.
 

@@ -23,7 +23,7 @@ impl From<Data> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::serialisation")]
 mod serialisation {
     use super::DataSerde;
 
