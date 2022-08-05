@@ -288,9 +288,8 @@ mod tests {
                 Ready,
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()].signals.is_some());
     }
 
@@ -318,9 +317,8 @@ mod tests {
                 Ready,
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_some());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_some());
     }
 
     #[test]
@@ -344,9 +342,8 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             struct Data;
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()].data_struct.is_some());
     }
 
@@ -357,9 +354,8 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             struct RustObj;
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()].rust_struct.is_some());
     }
 
@@ -370,9 +366,8 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             struct Unknown;
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_some());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_some());
     }
 
     #[test]
@@ -385,9 +380,8 @@ mod tests {
                 fn invokable() {}
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 1);
     }
 
@@ -428,9 +422,8 @@ mod tests {
                 fn method() {}
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
     }
 
@@ -443,9 +436,8 @@ mod tests {
                 fn method() {}
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
     }
 
@@ -458,9 +450,8 @@ mod tests {
                 fn method() {}
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()]
             .update_requester_handler
             .is_some(),);
@@ -473,9 +464,8 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             use std::collections::HashMap;
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_none());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
         assert_eq!(cxx_qt_data.uses.len(), 1);
     }
 
@@ -488,8 +478,7 @@ mod tests {
                 fn test();
             }
         });
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_ok());
-        assert!(result.unwrap().is_some());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_some());
     }
 }

@@ -50,9 +50,7 @@ mod tests {
         let v: Variant = tokens_to_syn(quote! {
             PointChanged { x: f64, y: f64 }
         });
-        let result = fields_named_to_ident_type(&v.fields);
-        assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = fields_named_to_ident_type(&v.fields).unwrap();
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].0, "x");
         assert_eq!(result[0].1, f64_type());
@@ -74,9 +72,7 @@ mod tests {
         let v: Variant = tokens_to_syn(quote! {
             PointChanged
         });
-        let result = fields_named_to_ident_type(&v.fields);
-        assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = fields_named_to_ident_type(&v.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 
@@ -88,9 +84,7 @@ mod tests {
                 y: f64
             }
         });
-        let result = fields_named_to_ident_type(&s.fields);
-        assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = fields_named_to_ident_type(&s.fields).unwrap();
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].0, "x");
         assert_eq!(result[0].1, f64_type());
@@ -112,9 +106,7 @@ mod tests {
         let s: ItemStruct = tokens_to_syn(quote! {
             struct Point;
         });
-        let result = fields_named_to_ident_type(&s.fields);
-        assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = fields_named_to_ident_type(&s.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 }
