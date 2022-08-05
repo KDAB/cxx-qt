@@ -6,6 +6,10 @@
 
 name: cxx-qt tests
 on: [push, pull_request]
+# Cancel any previous runs for the same pull request
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 jobs:
   build:
     strategy:
