@@ -13,7 +13,7 @@ use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 /// # Example
 ///
 /// ```ignore
-/// #[cxx_qt::bridge]
+/// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod my_object {
 ///     #[derive(Default)]
 ///     struct Data {
@@ -49,11 +49,8 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
     module.attrs = attrs.into_iter().chain(module.attrs.into_iter()).collect();
 
-    // TODO: for now we use a fixed namespace, later this will come from the macro definition
-    let cpp_namespace_prefix: Vec<String> = vec!["cxx_qt".to_owned()];
-
     // Extract and generate the rust code
-    extract_and_generate(module, &cpp_namespace_prefix)
+    extract_and_generate(module)
 }
 
 /// A macro which describes that an enum defines the signals for a QObject.
@@ -63,7 +60,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # Example
 ///
 /// ```ignore
-/// #[cxx_qt::bridge]
+/// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod my_object {
 ///     #[cxx_qt::signals(MyObject)]
 ///     enum MySignals {
@@ -109,22 +106,16 @@ pub fn QObject(_input: TokenStream) -> TokenStream {
 }
 
 // Take the module and C++ namespace and generate the rust code
-//
-// Note that wee need a separate function here, as we need to annotate the lifetimes to allow
-// for cpp_namespace_prefix to outlive cpp_namespace_prefix_ref
-fn extract_and_generate<'s>(module: ItemMod, cpp_namespace_prefix: &'s [String]) -> TokenStream {
-    let cpp_namespace_prefix_ref: Vec<&'s str> =
-        cpp_namespace_prefix.iter().map(AsRef::as_ref).collect();
-
+fn extract_and_generate(module: ItemMod) -> TokenStream {
     // Attempt to extract information about a QObject inside the module
-    let qobject = match extract_qobject(&module, &cpp_namespace_prefix_ref) {
+    let qobject = match extract_qobject(&module) {
         Ok(o) => o,
         Err(e) => return e.into(),
     };
 
     // From the extracted QObject, generate the rust code that replaces the original code
     // for the given QObject.
-    let gen_result = generate_qobject_rs(&qobject, &cpp_namespace_prefix_ref);
+    let gen_result = generate_qobject_rs(&qobject);
     match gen_result {
         Ok(tokens) => tokens.into(),
         Err(tokens) => tokens.into(),

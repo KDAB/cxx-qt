@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::{signals::ParsedSignalsEnum, Parser};
-use crate::utils::type_to_namespace;
 use convert_case::{Case, Casing};
 use derivative::*;
 use proc_macro2::{Span, TokenStream};
@@ -94,8 +93,6 @@ impl QtTypes {
 /// Describes a type
 #[derive(Debug)]
 pub(crate) struct ParameterType {
-    /// The type of the parameter
-    pub(crate) idents: Vec<Ident>,
     /// If this parameter is mutable
     pub(crate) is_mut: bool,
     /// If this parameter is a reference
@@ -179,7 +176,7 @@ pub struct QObject {
     /// The name of the signals enum that is used
     pub(crate) signal_ident: Option<Ident>,
     /// The namespace to use for C++
-    pub(crate) namespace: Vec<String>,
+    pub(crate) namespace: String,
     /// Items we just pass through to the CXX bridge
     pub(crate) cxx_items: Vec<Item>,
     /// The original Rust mod for the struct
@@ -345,9 +342,6 @@ fn extract_type_ident(
 
     // Create and return a ParameterType
     Ok(ParameterType {
-        // Read each of the path segment to turn a &syn::TypePath of std::slice::Iter
-        // into an owned Vec<Ident>
-        idents,
         is_mut,
         is_ref,
         qt_type,
@@ -722,10 +716,7 @@ fn extract_signals(
 }
 
 /// Parses a module in order to extract a QObject description from it
-pub fn extract_qobject(
-    module: &ItemMod,
-    cpp_namespace_prefix: &[&str],
-) -> Result<QObject, TokenStream> {
+pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     // Build a parser for the given ItemMod
     //
     // TODO: in the future steps from this extract.rs file will be moved into module parts
@@ -804,26 +795,6 @@ pub fn extract_qobject(
         .map(|signals| signals.ident.clone());
     let original_signal_enum = qobject.signals.map(|signals| signals.item);
 
-    // Build the namespace for this QObject
-    //
-    // We build a fake valid type here, crate::module::Object
-    // so that we can use our namespace helper to retieve cxx_qt::module etc.
-    let namespace = type_to_namespace(
-        cpp_namespace_prefix,
-        &[
-            quote::format_ident!("crate"),
-            original_mod.ident.clone(),
-            qt_ident.clone(),
-        ],
-    )
-    .map_err(|msg| {
-        Error::new(
-            original_mod.ident.span(),
-            format!("Could not generate namespace with module name: {}", msg),
-        )
-        .to_compile_error()
-    })?;
-
     Ok(QObject {
         ident: qt_ident,
         invokables: object_invokables,
@@ -831,7 +802,7 @@ pub fn extract_qobject(
         properties: object_properties,
         signals: object_signals,
         signal_ident,
-        namespace,
+        namespace: parser.cxx_qt_data.namespace,
         cxx_items,
         original_mod,
         original_data_struct: original_data_struct
@@ -854,8 +825,7 @@ mod tests {
     fn parses_custom_default() {
         let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the invokables and properties
         assert_eq!(qobject.invokables.len(), 0);
@@ -892,8 +862,7 @@ mod tests {
     fn parses_invokables() {
         let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -921,8 +890,6 @@ mod tests {
         assert!(!invokable.mutable);
         let parameter = &invokable.parameters[0];
         assert_eq!(parameter.ident.to_string(), "cpp");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
         assert!(std::matches!(
             &parameter.type_ident.qt_type,
             QtTypes::CppObj { .. }
@@ -953,8 +920,6 @@ mod tests {
         assert!(invokable.mutable);
         let parameter = &invokable.parameters[0];
         assert_eq!(parameter.ident.to_string(), "cpp");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
         assert!(std::matches!(
             &parameter.type_ident.qt_type,
             QtTypes::CppObj { .. }
@@ -974,20 +939,14 @@ mod tests {
         assert!(!invokable.mutable);
         let parameter = &invokable.parameters[0];
         assert_eq!(parameter.ident.to_string(), "opaque");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "QColor");
         assert!(parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
         let parameter = &invokable.parameters[1];
         assert_eq!(parameter.ident.to_string(), "trivial");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "QPoint");
         assert!(parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
         let parameter = &invokable.parameters[2];
         assert_eq!(parameter.ident.to_string(), "primitive");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "i32");
         assert!(!parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
 
@@ -1006,14 +965,10 @@ mod tests {
         assert!(!invokable.mutable);
         let parameter = &invokable.parameters[0];
         assert_eq!(parameter.ident.to_string(), "primitive");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "i32");
         assert!(!parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
         let parameter = &invokable.parameters[1];
         assert_eq!(parameter.ident.to_string(), "cpp");
-        assert_eq!(parameter.type_ident.idents.len(), 1);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
         assert!(std::matches!(
             &parameter.type_ident.qt_type,
             QtTypes::CppObj { .. }
@@ -1072,8 +1027,7 @@ mod tests {
     fn parsing_naming() {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 1);
@@ -1082,8 +1036,6 @@ mod tests {
         let prop_first = &qobject.properties[0];
         assert_eq!(prop_first.ident.cpp_ident.to_string(), "propertyName");
         assert_eq!(prop_first.ident.rust_ident.to_string(), "property_name");
-        assert_eq!(prop_first.type_ident.idents.len(), 1);
-        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
         assert!(!prop_first.type_ident.is_ref);
 
         assert!(prop_first.getter.is_some());
@@ -1118,8 +1070,7 @@ mod tests {
     fn parses_passthrough() {
         let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1142,8 +1093,7 @@ mod tests {
     fn parses_properties() {
         let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 2);
@@ -1153,8 +1103,6 @@ mod tests {
         let prop_first = &qobject.properties[0];
         assert_eq!(prop_first.ident.cpp_ident.to_string(), "primitive");
         assert_eq!(prop_first.ident.rust_ident.to_string(), "primitive");
-        assert_eq!(prop_first.type_ident.idents.len(), 1);
-        assert_eq!(prop_first.type_ident.idents[0].to_string(), "i32");
         assert!(!prop_first.type_ident.is_ref);
 
         assert!(prop_first.getter.is_some());
@@ -1177,9 +1125,6 @@ mod tests {
         let prop_second = &qobject.properties[1];
         assert_eq!(prop_second.ident.cpp_ident.to_string(), "opaque");
         assert_eq!(prop_second.ident.rust_ident.to_string(), "opaque");
-        assert_eq!(prop_second.type_ident.idents.len(), 2);
-        assert_eq!(prop_second.type_ident.idents[0].to_string(), "UniquePtr");
-        assert_eq!(prop_second.type_ident.idents[1].to_string(), "QColor");
         assert!(!prop_second.type_ident.is_ref);
 
         assert!(prop_second.getter.is_some());
@@ -1203,8 +1148,7 @@ mod tests {
     fn parses_signals() {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         assert_eq!(qobject.properties.len(), 0);
         assert_eq!(qobject.invokables.len(), 1);
@@ -1240,24 +1184,8 @@ mod tests {
         assert_eq!(qobject.signals[1].enum_ident.to_string(), "DataChanged");
         assert_eq!(qobject.signals[1].parameters.len(), 3);
         assert_eq!(qobject.signals[1].parameters[0].ident.to_string(), "first");
-        assert_eq!(
-            qobject.signals[1].parameters[0].type_ident.idents[0].to_string(),
-            "i32"
-        );
         assert_eq!(qobject.signals[1].parameters[1].ident.to_string(), "second");
-        assert_eq!(
-            qobject.signals[1].parameters[1].type_ident.idents[0].to_string(),
-            "UniquePtr"
-        );
-        assert_eq!(
-            qobject.signals[1].parameters[1].type_ident.idents[1].to_string(),
-            "QVariant"
-        );
         assert_eq!(qobject.signals[1].parameters[2].ident.to_string(), "third");
-        assert_eq!(
-            qobject.signals[1].parameters[2].type_ident.idents[0].to_string(),
-            "QPoint"
-        );
         assert_eq!(
             qobject.signals[1].signal_ident.cpp_ident.to_string(),
             "dataChanged"
@@ -1272,8 +1200,7 @@ mod tests {
     fn parses_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let cpp_namespace_prefix = vec!["cxx_qt"];
-        let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
+        let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);

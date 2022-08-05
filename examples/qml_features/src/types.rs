@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::types")]
 mod types {
     use cxx_qt_lib::QVariantValue;
 

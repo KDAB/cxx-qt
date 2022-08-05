@@ -52,7 +52,7 @@ impl From<Data> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod my_object {
     use super::DataSerde;
 

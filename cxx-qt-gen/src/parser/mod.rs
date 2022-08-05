@@ -7,9 +7,9 @@ pub mod parameter;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::attribute::attribute_find_path;
+use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map};
 use qobject::ParsedCxxQtData;
-use syn::{spanned::Spanned, token::Brace, Error, ItemMod, Result};
+use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
@@ -30,7 +30,15 @@ impl Parser {
 
         // Remove the cxx_qt::bridge attribute
         if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
-            // TODO: parse any namespace and store into the ParsedCxxQtData
+            // Parse any namespace in the cxx_qt::bridge macro
+            cxx_qt_data.namespace = if let Some(lit_str) =
+                attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[index])?
+                    .get(&quote::format_ident!("namespace"))
+            {
+                lit_str.value()
+            } else {
+                "".to_owned()
+            };
             module.attrs.remove(index);
         } else {
             return Err(Error::new(
@@ -90,6 +98,7 @@ mod tests {
             mod ffi {}
         });
         assert_eq!(parser.passthrough_module, expected_module);
+        assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
@@ -112,13 +121,14 @@ mod tests {
             }
         });
         assert_eq!(parser.passthrough_module, expected_module);
+        assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
     #[test]
     fn test_parser_from_cxx_qt_items() {
         let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge]
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 struct RustObj;
 
@@ -135,6 +145,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
+        assert_eq!(parser.cxx_qt_data.namespace, "cxx_qt");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
     }
 
@@ -162,6 +173,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 1);
+        assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
     }
 

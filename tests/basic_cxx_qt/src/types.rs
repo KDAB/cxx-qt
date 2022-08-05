@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_types")]
 mod my_types {
     #[derive(Default)]
     pub struct Data {

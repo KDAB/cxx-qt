@@ -9,7 +9,7 @@ enum Event {
     TitleArrived(String),
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::website")]
 mod website {
     use super::Event;
     use futures::{

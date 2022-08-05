@@ -48,6 +48,8 @@ pub struct ParsedQObject {
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
     pub qobjects: HashMap<Ident, ParsedQObject>,
+    /// The namespace of the CXX-Qt module
+    pub namespace: String,
     /// Any `use` statements end up in the CXX-Qt generated module
     pub uses: Vec<Item>,
 }

@@ -111,7 +111,7 @@ impl Default for SensorData {
     }
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
 mod energy_usage {
     use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
