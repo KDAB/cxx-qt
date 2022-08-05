@@ -1099,7 +1099,7 @@ mod tests {
 
     use crate::extract_qobject;
 
-    use pretty_assertions::assert_eq;
+    use pretty_assertions::assert_str_eq;
     use syn::ItemMod;
 
     #[test]
@@ -1112,8 +1112,8 @@ mod tests {
         let expected_header = clang_format(include_str!("../test_outputs/handlers.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/handlers.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1126,8 +1126,8 @@ mod tests {
         let expected_header = clang_format(include_str!("../test_outputs/invokables.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/invokables.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1140,8 +1140,8 @@ mod tests {
         let expected_header = clang_format(include_str!("../test_outputs/naming.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/naming.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1154,8 +1154,8 @@ mod tests {
         let expected_header = clang_format(include_str!("../test_outputs/properties.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/properties.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1168,8 +1168,8 @@ mod tests {
         let expected_header = clang_format(include_str!("../test_outputs/signals.h")).unwrap();
         let expected_source = clang_format(include_str!("../test_outputs/signals.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1184,8 +1184,8 @@ mod tests {
         let expected_source =
             clang_format(include_str!("../test_outputs/types_primitive_property.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1200,8 +1200,8 @@ mod tests {
         let expected_source =
             clang_format(include_str!("../test_outputs/types_qt_property.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 
     #[test]
@@ -1216,7 +1216,7 @@ mod tests {
         let expected_source =
             clang_format(include_str!("../test_outputs/types_qt_invokable.cpp")).unwrap();
         let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_eq!(cpp_object.header, expected_header);
-        assert_eq!(cpp_object.source, expected_source);
+        assert_str_eq!(cpp_object.header, expected_header);
+        assert_str_eq!(cpp_object.source, expected_source);
     }
 }

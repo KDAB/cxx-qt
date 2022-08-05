@@ -23,4 +23,4 @@ quote = "1.0"
 
 [dev-dependencies]
 ctor = "0.1"
-pretty_assertions = "0.7"
+pretty_assertions = "1.2"

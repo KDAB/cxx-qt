@@ -1144,7 +1144,7 @@ mod tests {
     use super::*;
     use crate::extract_qobject;
 
-    use pretty_assertions::assert_eq;
+    use pretty_assertions::assert_str_eq;
     use std::{
         io::Write,
         process::{Command, Stdio},
@@ -1190,7 +1190,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1208,7 +1208,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1226,7 +1226,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1244,7 +1244,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1262,7 +1262,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1280,7 +1280,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1298,7 +1298,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1316,7 +1316,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1334,7 +1334,7 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 
     #[test]
@@ -1352,6 +1352,6 @@ mod tests {
             .to_string();
         let generated_rs = format_rs_source(&generated_rs);
 
-        assert_eq!(generated_rs, expected_output);
+        assert_str_eq!(generated_rs, expected_output);
     }
 }
