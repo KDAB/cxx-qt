@@ -11,8 +11,8 @@ use crate::syntax::{
 use quote::format_ident;
 use std::collections::HashMap;
 use syn::{
-    spanned::Spanned, Error, Ident, ImplItem, Item, ItemEnum, ItemImpl, ItemStruct, Result, Type,
-    TypePath,
+    spanned::Spanned, Error, Ident, ImplItem, ImplItemMethod, Item, ItemEnum, ItemImpl, ItemStruct,
+    Result, Type, TypePath,
 };
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
@@ -21,27 +21,55 @@ use syn::{
 /// then mutate these [syn::Item]'s for generation purposes.
 #[derive(Default)]
 pub struct ParsedQObject {
-    /// This is the Data struct that currently stores the properties for the QObject
+    /// Data struct that currently stores the properties for the QObject
     ///
     /// In the future this will be removed
     pub data_struct: Option<ItemStruct>,
-    /// This is the RustObj struct that stores the invokables for the QObject
+    /// RustObj struct that stores the invokables for the QObject
     pub rust_struct: Option<ItemStruct>,
-    /// This is a representation of the Signals enum that defines the Q_SIGNALS for the QObject
+    /// Representation of the Signals enum that defines the Q_SIGNALS for the QObject
     pub signals: Option<ParsedSignalsEnum>,
-    /// This is the list of methods that need to be implemented on the C++ object in Rust
+    /// List of invokables that need to be implemented on the C++ object in Rust
     ///
-    /// TODO: in the future we will have a ParsedMethod this will have a field to say whether the
-    /// method is invokable or not.
-    /// Ones marked as invokable will need to be exposed to C++ as Q_INVOKABLE
-    pub methods: Vec<ImplItem>,
-    /// This is update request handler for the QObject
+    /// These will also be exposed as Q_INVOKABLE on the C++ object
+    pub invokables: Vec<ImplItemMethod>,
+    /// List of methods that need to be implemented on the C++ object in Rust
+    ///
+    /// Note that they will only be visible on the Rust side
+    pub methods: Vec<ImplItemMethod>,
+    /// Update request handler for the QObject
     ///
     /// In the future this may be removed
     pub update_requester_handler: Option<ItemImpl>,
     /// Items that we don't need to generate anything for CXX or C++
     /// eg impls on the Rust object or Default implementations
     pub others: Vec<Item>,
+}
+
+impl ParsedQObject {
+    /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
+    ///
+    /// These will have come from a impl cxx_qt::QObject<T> block
+    fn parse_impl_items(&mut self, items: &[ImplItem]) -> Result<()> {
+        for item in items {
+            // Check if this item is a method
+            if let ImplItem::Method(method) = item {
+                // Determine if this method is an invokable
+                if let Some(index) = attribute_find_path(&method.attrs, &["invokable"]) {
+                    // Remove the invokable attribute
+                    let mut invokable = method.clone();
+                    invokable.attrs.remove(index);
+                    self.invokables.push(invokable);
+                } else {
+                    self.methods.push(method.clone());
+                }
+            } else {
+                return Err(Error::new(item.span(), "Only methods are supported."));
+            };
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Default)]
@@ -106,10 +134,10 @@ impl ParsedCxxQtData {
     fn parse_enum(&mut self, item_enum: ItemEnum) -> Result<Option<Item>> {
         // Check if the enum has cxx_qt::signals(T)
         if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
-            let qobject = attribute_tokens_to_ident(&item_enum.attrs[index])?;
+            let ident = attribute_tokens_to_ident(&item_enum.attrs[index])?;
             // Find the matching QObject for the enum
-            if let Some(entry) = self.qobjects.get_mut(&qobject) {
-                entry.signals = Some(ParsedSignalsEnum::from(&item_enum, index)?);
+            if let Some(qobject) = self.qobjects.get_mut(&ident) {
+                qobject.signals = Some(ParsedSignalsEnum::from(&item_enum, index)?);
                 return Ok(None);
             } else {
                 return Err(Error::new(
@@ -132,16 +160,13 @@ impl ParsedCxxQtData {
             if path_compare_str(path, &["cxx_qt", "QObject"]) {
                 // Read the T from cxx_qt::QObject<T> and error if it's missing
                 let qobject_path = path_angled_args_to_type_path(path)?;
-                if let Some(value) = self
+                if let Some(qobject) = self
                     .qobjects
                     // Convert the path to a single ident, and error if it isn't
-                    //
-                    // TODO: we need to error if the ident isn't found?
                     .get_mut(&path_to_single_ident(&qobject_path)?)
                 {
                     // Extract the ImplItem's from each Impl block
-                    // and add to the methods list
-                    value.methods.extend(imp.items.iter().cloned());
+                    qobject.parse_impl_items(&imp.items)?;
                 } else {
                     return Err(Error::new(
                         imp.span(),
@@ -160,7 +185,7 @@ impl ParsedCxxQtData {
                     // which is called "RustObj"
                     self.qobjects
                         .entry(format_ident!("RustObj"))
-                        .and_modify(|value| value.others.push(Item::Impl(imp)));
+                        .and_modify(|qobject| qobject.others.push(Item::Impl(imp)));
                     return Ok(None);
                 } else if path_compare_str(path, &["RustObj"]) {
                     // If we are the UpdateRequestHandler, then we need to store in list
@@ -172,8 +197,8 @@ impl ParsedCxxQtData {
                                     // We assume that there is only one impl block from the compiler
                                     //
                                     // TODO: later this might be removed/changed anyway
-                                    .and_modify(|value| {
-                                        value.update_requester_handler = Some(imp.clone())
+                                    .and_modify(|qobject| {
+                                        qobject.update_requester_handler = Some(imp.clone())
                                     });
                                 return Ok(None);
                             }
@@ -182,7 +207,7 @@ impl ParsedCxxQtData {
 
                     self.qobjects
                         .entry(format_ident!("RustObj"))
-                        .and_modify(|value| value.others.push(Item::Impl(imp)));
+                        .and_modify(|qobject| qobject.others.push(Item::Impl(imp)));
                     return Ok(None);
                 }
             }
@@ -202,7 +227,7 @@ impl ParsedCxxQtData {
         //         self
         //             .qobjects
         //             .entry(qobject)
-        //             .and_modify(|value| value.rust_struct = Some(s.clone()));
+        //             .and_modify(|qobject| qobject.rust_struct = Some(s.clone()));
         //         return Ok(None);
         //     }
         // }
@@ -212,7 +237,7 @@ impl ParsedCxxQtData {
             "Data" => {
                 self.qobjects
                     .entry(format_ident!("RustObj"))
-                    .and_modify(|value| value.data_struct = Some(s.clone()));
+                    .and_modify(|qobject| qobject.data_struct = Some(s.clone()));
                 Ok(None)
             }
             // TODO: for now we assume that Data is related to the only struct
@@ -220,7 +245,7 @@ impl ParsedCxxQtData {
             "RustObj" => {
                 self.qobjects
                     .entry(s.ident.clone())
-                    .and_modify(|value| value.rust_struct = Some(s.clone()));
+                    .and_modify(|qobject| qobject.rust_struct = Some(s.clone()));
                 Ok(None)
             }
             _others => Ok(Some(Item::Struct(s))),
@@ -380,10 +405,13 @@ mod tests {
             impl cxx_qt::QObject<RustObj> {
                 #[invokable]
                 fn invokable() {}
+
+                fn cpp_context() {}
             }
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 1);
     }
 

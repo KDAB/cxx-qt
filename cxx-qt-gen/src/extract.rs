@@ -348,74 +348,6 @@ fn extract_type_ident(
     })
 }
 
-/// The result of extracting invokables from an impl block.
-/// Only intended for internal use for now.
-struct ExtractedInvokables {
-    /// Impl methods that will also be exposed as invokables to Qt
-    invokables: Vec<Invokable>,
-    /// Impl methods that will only be visible on the Rust side
-    methods: Vec<ImplItemMethod>,
-}
-
-/// Extracts all the member functions from a module and generates invokables from them
-fn extract_invokables(
-    items: &[ImplItem],
-    qt_ident: &Ident,
-) -> Result<ExtractedInvokables, TokenStream> {
-    let mut invokables = Vec::new();
-    let mut methods = Vec::new();
-
-    // TODO: we need to set up an exclude list of invokable names and give
-    // the user an error if they use one of those names.
-    // This is to avoid name collisions with QObject standard functions.
-
-    // Process each impl item and turn into an Invokable or error
-    for item in items {
-        // Check if this item is a method
-        //
-        // TODO: later should we pass through unknown items
-        // or should they have an attribute to ignore
-        let mut method = if let ImplItem::Method(m) = item {
-            m.clone()
-        } else {
-            return Err(Error::new(item.span(), "Only methods are supported.").to_compile_error());
-        };
-
-        let filtered_attrs: Vec<syn::Attribute> = method
-            .attrs
-            .iter()
-            .filter(|a| {
-                let segments = &a.path.segments;
-
-                if segments.len() != 1 {
-                    return true;
-                }
-
-                segments[0].ident != "invokable"
-            })
-            .cloned()
-            .collect();
-
-        // Non invokable methods we just pass through as normal methods
-        if filtered_attrs.len() == method.attrs.len() {
-            methods.push(method);
-            continue;
-        }
-
-        // Remove the #[invokable tag for the output]
-        method.attrs = filtered_attrs;
-
-        // Extract the ident, parameters, return type of the method
-        let invokable = extract_invokable(&method, qt_ident)?;
-        invokables.push(invokable);
-    }
-
-    Ok(ExtractedInvokables {
-        invokables,
-        methods,
-    })
-}
-
 /// Extract the parameters for a given ImplItemMethod
 pub(crate) fn extract_method_params(
     method: &ImplItemMethod,
@@ -746,13 +678,14 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     // The name of the Qt object we are creating
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 
-    // Extract the normal and invokables from the Parser methods
-    let extracted = extract_invokables(&qobject.methods, &qt_ident)?;
-
     // A list of the invokables for the struct
-    let object_invokables = extracted.invokables;
+    let object_invokables = qobject
+        .invokables
+        .iter()
+        .map(|invokable| extract_invokable(invokable, &qt_ident))
+        .collect::<Result<Vec<Invokable>, TokenStream>>()?;
     // A list of the normal methods (i.e. not invokables) for the struct
-    let object_methods = extracted.methods;
+    let object_methods = qobject.methods.to_vec();
     // A list of insignificant declarations for the mod that will be directly passed through (eg `use crate::thing`)
     let original_passthrough_decls = parser
         .cxx_qt_data
