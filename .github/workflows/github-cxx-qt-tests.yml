@@ -104,6 +104,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
+    env:
+        # 5 GB limit / 6 conditions = 833 MB
+        # Leave some headroom for Rust tools caches which take ~10-15 MB per OS
+        SCCACHE_CACHE_SIZE: 800M
 
     steps:
     # On Windows, the D drive that the workspace is on by default runs out of space when
