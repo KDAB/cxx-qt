@@ -212,7 +212,6 @@ enum ExtractTypeIdentError {
 fn extract_qt_type(
     idents: &[Ident],
     original_ty: &syn::Type,
-    cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<QtTypes, ExtractTypeIdentError> {
     // TODO: can we support generic Qt types as well eg like QObject or QAbstractListModel?
@@ -258,12 +257,7 @@ fn extract_qt_type(
     // This is a UniquePtr<T> field
     } else if idents.len() > 1 && idents.first().unwrap().to_string().as_str() == "UniquePtr" {
         Ok(QtTypes::UniquePtr {
-            inner: Box::new(extract_qt_type(
-                &idents[1..],
-                original_ty,
-                cpp_namespace_prefix,
-                qt_ident,
-            )?),
+            inner: Box::new(extract_qt_type(&idents[1..], original_ty, qt_ident)?),
         })
     // This is an unknown type that did not start with crate and has multiple parts
     } else {
@@ -307,7 +301,6 @@ fn path_to_idents(path: &syn::Path) -> Result<Vec<Ident>, ExtractTypeIdentError>
 /// Extract the type ident from a given syn::Type
 fn extract_type_ident(
     ty: &syn::Type,
-    cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<ParameterType, ExtractTypeIdentError> {
     // Temporary storage of the current syn::TypePath if one is found
@@ -343,7 +336,7 @@ fn extract_type_ident(
 
     let idents = path_to_idents(&ty_path.path)?;
     // Extract the Qt type this is used in C++ and Rust generation
-    let qt_type = extract_qt_type(&idents, ty, cpp_namespace_prefix, qt_ident)?;
+    let qt_type = extract_qt_type(&idents, ty, qt_ident)?;
 
     // Check if this Qt type is allowed to be a ref mut
     if is_mut && is_ref && !qt_type.ref_mut_is_valid() {
@@ -373,7 +366,6 @@ struct ExtractedInvokables {
 /// Extracts all the member functions from a module and generates invokables from them
 fn extract_invokables(
     items: &[ImplItem],
-    cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<ExtractedInvokables, TokenStream> {
     let mut invokables = Vec::new();
@@ -420,7 +412,7 @@ fn extract_invokables(
         method.attrs = filtered_attrs;
 
         // Extract the ident, parameters, return type of the method
-        let invokable = extract_invokable(&method, cpp_namespace_prefix, qt_ident)?;
+        let invokable = extract_invokable(&method, qt_ident)?;
         invokables.push(invokable);
     }
 
@@ -433,7 +425,6 @@ fn extract_invokables(
 /// Extract the parameters for a given ImplItemMethod
 pub(crate) fn extract_method_params(
     method: &ImplItemMethod,
-    cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<Vec<Parameter>, TokenStream> {
     method.sig.inputs
@@ -461,7 +452,7 @@ pub(crate) fn extract_method_params(
                 };
 
                 // Try to extract the type of the parameter
-                match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
+                match extract_type_ident(ty, qt_ident) {
                     Ok(result) => type_ident = result,
                     Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
@@ -514,20 +505,16 @@ fn is_method_mutable(method: &ImplItemMethod) -> bool {
     false
 }
 
-fn extract_invokable(
-    method: &ImplItemMethod,
-    cpp_namespace_prefix: &[&str],
-    qt_ident: &Ident,
-) -> Result<Invokable, TokenStream> {
+fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invokable, TokenStream> {
     let method_ident = &method.sig.ident;
     let output = &method.sig.output;
 
     let mutable = is_method_mutable(method);
-    let parameters = extract_method_params(method, cpp_namespace_prefix, qt_ident)?;
+    let parameters = extract_method_params(method, qt_ident)?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {
         // This output has a return type, so extract the type
-        match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
+        match extract_type_ident(ty, qt_ident) {
             Ok(result) => Some(result),
             Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                 return Err(Error::new(
@@ -590,11 +577,7 @@ fn extract_invokable(
 }
 
 /// Extracts all the attributes from a struct and generates properties from them
-fn extract_properties(
-    s: &ItemStruct,
-    cpp_namespace_prefix: &[&str],
-    qt_ident: &Ident,
-) -> Result<Vec<Property>, TokenStream> {
+fn extract_properties(s: &ItemStruct, qt_ident: &Ident) -> Result<Vec<Property>, TokenStream> {
     let mut properties = Vec::new();
 
     // TODO: we need to set up an exclude list of properties names and give
@@ -624,7 +607,7 @@ fn extract_properties(
                 // Extract the type of the field
                 let type_ident;
 
-                match extract_type_ident(ty, cpp_namespace_prefix, qt_ident) {
+                match extract_type_ident(ty, qt_ident) {
                     Ok(result) => type_ident = result,
                     Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                         return Err(Error::new(
@@ -694,7 +677,6 @@ fn extract_properties(
 // later when we have the generate phase this will be removed
 fn extract_signals(
     signals: &ParsedSignalsEnum,
-    cpp_namespace_prefix: &[&str],
     qt_ident: &Ident,
 ) -> Result<Vec<Signal>, TokenStream> {
     signals.signals.iter().map(|signal| {
@@ -708,7 +690,7 @@ fn extract_signals(
             parameters: signal.parameters.iter().map(|parameter| {
                 Ok(Parameter {
                     ident: parameter.ident.clone(),
-                    type_ident: match extract_type_ident(&parameter.ty, cpp_namespace_prefix, qt_ident) {
+                    type_ident: match extract_type_ident(&parameter.ty, qt_ident) {
                         Ok(result) => result,
                         Err(ExtractTypeIdentError::InvalidArguments(span)) => {
                             return Err(Error::new(
@@ -774,7 +756,7 @@ pub fn extract_qobject(
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 
     // Extract the normal and invokables from the Parser methods
-    let extracted = extract_invokables(&qobject.methods, cpp_namespace_prefix, &qt_ident)?;
+    let extracted = extract_invokables(&qobject.methods, &qt_ident)?;
 
     // A list of the invokables for the struct
     let object_invokables = extracted.invokables;
@@ -802,7 +784,7 @@ pub fn extract_qobject(
 
     // Read properties from the Data struct
     let object_properties = if let Some(ref original_struct) = original_data_struct {
-        extract_properties(original_struct, cpp_namespace_prefix, &qt_ident)?
+        extract_properties(original_struct, &qt_ident)?
     } else {
         vec![]
     };
@@ -812,7 +794,7 @@ pub fn extract_qobject(
     // TODO: for now we still extract the ParsedSignals into a Signal blocks
     // later when we have the generate phase this will be removed
     let object_signals = if let Some(signals) = &qobject.signals {
-        extract_signals(signals, cpp_namespace_prefix, &qt_ident)?
+        extract_signals(signals, &qt_ident)?
     } else {
         vec![]
     };
