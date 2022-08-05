@@ -16,14 +16,6 @@ mod my_object {
         #[rust_name = "set_opaque"]
         fn setOpaque(self: Pin<&mut MyObjectQt>, value: &QColor);
 
-        #[namespace = "cxx_qt::nested_object"]
-        type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
-
-        #[rust_name = "take_nested"]
-        fn takeNested(self: Pin<&mut MyObjectQt>) -> UniquePtr<NestedObject>;
-        #[rust_name = "give_nested"]
-        fn giveNested(self: Pin<&mut MyObjectQt>, value: UniquePtr<NestedObject>);
-
         #[cxx_name = "unsafe_rust"]
         fn rust(self: &MyObjectQt) -> &RustObj;
         #[rust_name = "new_cpp_object"]
@@ -88,14 +80,6 @@ mod cxx_qt_my_object {
 
         pub fn set_opaque(&mut self, value: &cxx_qt_lib::QColor) {
             self.cpp.as_mut().set_opaque(value);
-        }
-
-        pub fn take_nested(&mut self) -> cxx::UniquePtr<NestedObject> {
-            self.cpp.as_mut().take_nested()
-        }
-
-        pub fn give_nested(&mut self, value: cxx::UniquePtr<NestedObject>) {
-            self.cpp.as_mut().give_nested(value);
         }
 
         pub fn grab_values_from_data(&mut self, mut data: Data) {

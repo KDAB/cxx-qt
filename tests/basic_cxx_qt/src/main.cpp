@@ -15,7 +15,6 @@
 #include "cxx-qt-gen/include/my_data.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/my_types.cxxqt.h"
-#include "cxx-qt-gen/include/sub_object.cxxqt.h"
 
 int
 main(int argc, char** argv)
@@ -38,18 +37,14 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
 
   obj.sayHi(QStringLiteral("Hello World!"), 32);
 
-  cxx_qt::sub_object::SubObject sub;
-
   // Check that an invokable can be called and the return value is correct
   const auto value = obj.doubleNumber(32);
   qInfo() << "Double of 32 is:" << value;
   CHECK(value == 64);
 
-  // Track the signal count of numberChanged, stringChanged, and subChanged
+  // Track the signal count of numberChanged, stringChanged
   QSignalSpy numberSpy(&obj, &cxx_qt::my_object::MyObject::numberChanged);
   QSignalSpy stringSpy(&obj, &cxx_qt::my_object::MyObject::stringChanged);
-  QSignalSpy subSpy(&obj, &cxx_qt::my_object::MyObject::subChanged);
-  QSignalSpy subNumberSpy(&sub, &cxx_qt::sub_object::SubObject::numberChanged);
 
   // Check the number property
   CHECK(obj.getNumber() == 0);
@@ -78,36 +73,6 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
   QCoreApplication::processEvents();
   CHECK(numberSpy.count() == 2);
 
-  // Check the sub property
-  CHECK(obj.getSub() == nullptr);
-  CHECK(subSpy.count() == 0);
-  obj.setSub(&sub);
-  CHECK(subSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(subSpy.count() == 1);
-  CHECK(obj.getSub() == &sub);
-
-  // Check the sub increment number self
-  sub.setNumber(1);
-  CHECK(sub.getNumber() == 1);
-  CHECK(subNumberSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(subNumberSpy.count() == 1);
-  sub.incrementNumberSelf();
-  CHECK(sub.getNumber() == 2);
-  CHECK(subNumberSpy.count() == 1);
-  QCoreApplication::processEvents();
-  CHECK(subNumberSpy.count() == 2);
-
-  // Check the double number sub
-  CHECK(sub.getNumber() == 2);
-  CHECK(subNumberSpy.count() == 2);
-  obj.doubleNumberSub(&sub);
-  CHECK(sub.getNumber() == 4);
-  CHECK(subNumberSpy.count() == 2);
-  QCoreApplication::processEvents();
-  CHECK(subNumberSpy.count() == 3);
-
   qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
 }
 
@@ -116,7 +81,7 @@ TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
 {
   cxx_qt::my_data::MyData data;
 
-  // Track the signal count of numberChanged, stringChanged, and subChanged
+  // Track the signal count of numberChanged, stringChanged
   QSignalSpy numberSpy(&data, &cxx_qt::my_data::MyData::numberChanged);
   QSignalSpy stringSpy(&data, &cxx_qt::my_data::MyData::stringChanged);
 

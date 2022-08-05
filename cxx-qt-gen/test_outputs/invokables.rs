@@ -6,9 +6,6 @@ mod my_object {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[namespace = "cxx_qt::nested_object"]
-        type NestedObject = crate::cxx_qt_nested_object::FFICppObj;
-
         #[cxx_name = "unsafe_rust"]
         fn rust(self: &MyObjectQt) -> &RustObj;
         #[rust_name = "new_cpp_object"]
@@ -32,8 +29,6 @@ mod my_object {
         fn invokable_mutable(self: &mut RustObj);
         #[cxx_name = "invokableMutableCppObjWrapper"]
         fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
-        #[cxx_name = "invokableNestedParameterWrapper"]
-        fn invokable_nested_parameter_wrapper(self: &RustObj, nested: Pin<&mut NestedObject>);
         #[cxx_name = "invokableParameters"]
         fn invokable_parameters(self: &RustObj, opaque: &QColor, trivial: &QPoint, primitive: i32);
         #[cxx_name = "invokableParametersCppObjWrapper"]
@@ -86,14 +81,6 @@ mod cxx_qt_my_object {
             self.invokable_mutable_cpp_obj(&mut cpp);
         }
 
-        pub fn invokable_nested_parameter_wrapper(
-            &self,
-            nested: std::pin::Pin<&mut crate::cxx_qt_nested_object::FFICppObj>,
-        ) {
-            let mut nested = crate::cxx_qt_nested_object::CppObj::new(nested);
-            self.invokable_nested_parameter(&mut nested);
-        }
-
         pub fn invokable_parameters_cpp_obj_wrapper(
             &self,
             primitive: i32,
@@ -125,10 +112,6 @@ mod cxx_qt_my_object {
 
         pub fn invokable_mutable_cpp_obj(&mut self, cpp: &mut CppObj) {
             println!("This method is mutable!");
-        }
-
-        pub fn invokable_nested_parameter(&self, nested: &mut crate::cxx_qt_nested_object::CppObj) {
-            println!("nested!");
         }
 
         pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {

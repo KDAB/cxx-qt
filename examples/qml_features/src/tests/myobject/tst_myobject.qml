@@ -20,14 +20,6 @@ TestCase {
     }
 
     Component {
-        id: componentSubObject
-
-        SubObject {
-
-        }
-    }
-
-    Component {
         id: componentSpy
 
         SignalSpy {
@@ -46,15 +38,6 @@ TestCase {
         });
         myObject.incrementNumberSelf();
         compare(myObject.number, 2);
-    }
-
-    function test_increment_sub() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            number: 1,
-        });
-        myObject.incrementNumberSub(subObject);
-        compare(subObject.number, 2);
     }
 
     function test_number() {
@@ -93,38 +76,5 @@ TestCase {
 
         compare(myObject.string, "world");
         tryCompare(spy, "count", 2);
-    }
-
-    function test_sub_object() {
-        const myObject = createTemporaryObject(componentMyObject, null, {
-            string: "hello",
-        });
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            string: "world",
-        });
-        const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "subChanged",
-            target: myObject,
-        });
-        compare(myObject.string, "hello");
-        compare(myObject.sub, null);
-        compare(subObject.string, "world");
-        compare(spy.count, 0);
-
-        myObject.sub = subObject;
-
-        compare(myObject.sub, subObject);
-        compare(myObject.sub.string, "world");
-        tryCompare(spy, "count", 1);
-    }
-
-    function test_subobject_increment_self() {
-        const myObject = createTemporaryObject(componentMyObject, null, {});
-        const subObject = createTemporaryObject(componentSubObject, null, {
-            number: 1,
-        });
-        myObject.sub = subObject;
-        myObject.sub.incrementNumberSelf();
-        compare(myObject.sub.number, 2);
     }
 }

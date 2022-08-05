@@ -7,11 +7,9 @@
 mod data_struct_properties;
 mod empty;
 mod mock_qt_types;
-mod nested;
 mod rust_obj_invokables;
 mod serialisation;
 mod signals;
-pub mod sub;
 mod types;
 
 #[cxx_qt::bridge]
@@ -25,7 +23,6 @@ mod my_object {
     pub struct Data {
         number: i32,
         string: UniquePtr<QString>,
-        sub: crate::sub::cxx_qt_sub_object::CppObj,
     }
 
     impl Default for Data {
@@ -45,12 +42,6 @@ mod my_object {
         pub fn increment_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() + 1;
             cpp.set_number(value);
-        }
-
-        #[invokable]
-        pub fn increment_number_sub(&self, sub: &mut crate::sub::cxx_qt_sub_object::CppObj) {
-            let value = sub.number() + 1;
-            sub.set_number(value);
         }
 
         #[invokable]

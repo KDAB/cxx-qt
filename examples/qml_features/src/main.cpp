@@ -11,7 +11,6 @@
 #include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/serialisation.cxxqt.h"
-#include "cxx-qt-gen/include/sub_object.cxxqt.h"
 #include "cxx-qt-gen/include/types.cxxqt.h"
 
 int
@@ -38,8 +37,6 @@ main(int argc, char* argv[])
     "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   qmlRegisterType<cxx_qt::serialisation::Serialisation>(
     "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
-  qmlRegisterType<cxx_qt::sub_object::SubObject>(
-    "com.kdab.cxx_qt.demo", 1, 0, "SubObject");
   qmlRegisterType<cxx_qt::types::Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
 
   engine.load(url);

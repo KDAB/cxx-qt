@@ -68,19 +68,6 @@ impl CppType for QtTypes {
     /// for example so that when Object uses SubObject it includes sub_object.h
     fn include_paths(&self) -> Vec<String> {
         match self {
-            // If we are an external CppObj then we need to build an include path
-            //
-            // TODO: once we generate sub folders for nested modules, this will need to use all
-            // type idents other than first and last.
-            // https://github.com/KDAB/cxx-qt/issues/19
-            Self::CppObj {
-                external,
-                cpp_type_idents,
-                ..
-            } if external == &true && cpp_type_idents.len() > 2 => vec![format!(
-                "#include \"cxx-qt-gen/include/{}.cxxqt.h\"",
-                cpp_type_idents[cpp_type_idents.len() - 2]
-            )],
             Self::QColor => vec!["#include <QtGui/QColor>".to_owned()],
             Self::QDate => vec!["#include <QtCore/QDate>".to_owned()],
             Self::QDateTime => vec!["#include <QtCore/QDateTime>".to_owned()],
@@ -182,7 +169,7 @@ impl CppType for QtTypes {
     /// definitions and if the parameter should be skipped in method declarations
     fn is_this(&self) -> bool {
         match self {
-            Self::CppObj { external, .. } => external == &false,
+            Self::CppObj { .. } => true,
             _others => false,
         }
     }

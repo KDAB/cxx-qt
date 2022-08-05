@@ -32,11 +32,6 @@ mod my_object {
         }
 
         #[invokable]
-        pub fn invokable_nested_parameter(&self, nested: &mut crate::cxx_qt_nested_object::CppObj) {
-            println!("nested!");
-        }
-
-        #[invokable]
         pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
             println!(
                 "Red: {}, Point X: {}, Number: {}",
