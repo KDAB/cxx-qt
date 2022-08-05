@@ -17,16 +17,15 @@ use syn::{
 
 /// Representation of a list of idents in an attribute, eg attribute(A, B, C)
 pub struct AttributeList {
-    pub paren: Paren,
     pub items: Punctuated<Ident, Comma>,
 }
 
 impl Parse for AttributeList {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
-        let paren = parenthesized!(content in input);
+        parenthesized!(content in input);
         let items = content.parse_terminated(Ident::parse_any)?;
-        Ok(AttributeList { paren, items })
+        Ok(AttributeList { items })
     }
 }
 
