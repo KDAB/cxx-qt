@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::syntax::path::path_compare_str;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse::{Parse, ParseStream};
@@ -52,15 +53,10 @@ impl Parse for CxxQtItem {
 
         if ahead.peek(Token![mod]) {
             for attribute in &attributes {
-                let path = &attribute.path.segments;
-                if path.len() == 2 {
-                    if path[0].ident == "cxx" && path[1].ident == "bridge" {
-                        // TODO: parse namespace here too
-                        return input.parse().map(CxxQtItem::Cxx);
-                    } else if path[0].ident == "cxx_qt" && path[1].ident == "bridge" {
-                        // TODO: parse namespace here too
-                        return input.parse().map(CxxQtItem::CxxQt);
-                    }
+                if path_compare_str(&attribute.path, &["cxx", "bridge"]) {
+                    return input.parse().map(CxxQtItem::Cxx);
+                } else if path_compare_str(&attribute.path, &["cxx_qt", "bridge"]) {
+                    return input.parse().map(CxxQtItem::CxxQt);
                 }
             }
         }

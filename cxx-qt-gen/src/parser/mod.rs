@@ -5,8 +5,9 @@
 
 pub mod qobject;
 
+use crate::syntax::attribute::attribute_find_path;
 use qobject::ParsedCxxQtData;
-use syn::{token::Brace, ItemMod, Result};
+use syn::{spanned::Spanned, token::Brace, Error, ItemMod, Result};
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
@@ -24,6 +25,17 @@ impl Parser {
     pub fn from(mut module: ItemMod) -> Result<Self> {
         let mut cxx_qt_data = ParsedCxxQtData::default();
         let mut others = vec![];
+
+        // Remove the cxx_qt::bridge attribute
+        if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
+            // TODO: parse any namespace and store into the ParsedCxxQtData
+            module.attrs.remove(index);
+        } else {
+            return Err(Error::new(
+                module.span(),
+                "Tried to parse a module which doesn't have a cxx_qt::bridge attribute",
+            ));
+        }
 
         // Check that there are items in the module
         if let Some(mut items) = module.content {
@@ -71,10 +83,11 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {}
         });
-        let parser = Parser::from(module.clone());
-        assert!(parser.is_ok());
-        let parser = parser.unwrap();
-        assert_eq!(parser.passthrough_module, module);
+        let parser = Parser::from(module).unwrap();
+        let expected_module: ItemMod = tokens_to_syn(quote! {
+            mod ffi {}
+        });
+        assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
@@ -88,10 +101,15 @@ mod tests {
                 }
             }
         });
-        let parser = Parser::from(module.clone());
-        assert!(parser.is_ok());
-        let parser = parser.unwrap();
-        assert_eq!(parser.passthrough_module, module);
+        let parser = Parser::from(module).unwrap();
+        let expected_module: ItemMod = tokens_to_syn(quote! {
+            mod ffi {
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        });
+        assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
@@ -114,7 +132,7 @@ mod tests {
 
         assert_ne!(parser.passthrough_module, module);
 
-        assert_eq!(parser.passthrough_module.attrs.len(), 1);
+        assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
@@ -143,7 +161,7 @@ mod tests {
 
         assert_ne!(parser.passthrough_module, module);
 
-        assert_eq!(parser.passthrough_module.attrs.len(), 1);
+        assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 1);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
@@ -159,6 +177,19 @@ mod tests {
                 #[cxx_qt::signals(UnknownObj)]
                 enum MySignals {
                     Ready,
+                }
+            }
+        });
+        let parser = Parser::from(module);
+        assert!(parser.is_err());
+    }
+
+    #[test]
+    fn test_parser_from_error_no_attribute() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            mod ffi {
+                extern "Rust" {
+                    fn test();
                 }
             }
         });

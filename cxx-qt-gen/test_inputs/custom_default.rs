@@ -1,3 +1,4 @@
+#[cxx_qt::bridge]
 mod my_object {
     pub struct Data {
         public: i32,

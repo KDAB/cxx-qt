@@ -32,10 +32,22 @@ use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn bridge(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the TokenStream of a macro
     // this triggers a compile failure if the tokens fail to parse.
-    let module = parse_macro_input!(input as ItemMod);
+    let mut module = parse_macro_input!(input as ItemMod);
+
+    // Macros do not typically need to do anything with their own attribute name,
+    // so rustc does not include that in the `args` or `input` TokenStreams.
+    //
+    // However, other code paths that use the parser do not enter from a macro invocation,
+    // so they rely on parsing the `cxx_qt::bridge` attribute to identify where to start parsing.
+    //
+    // To keep the inputs to the parser consistent for all code paths,
+    // add the attribute to the module before giving it to the parser.
+    let args_input = format!("#[cxx_qt::bridge({})] mod dummy;", args);
+    let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
+    module.attrs = attrs.into_iter().chain(module.attrs.into_iter()).collect();
 
     // TODO: for now we use a fixed namespace, later this will come from the macro definition
     let cpp_namespace_prefix: Vec<String> = vec!["cxx_qt".to_owned()];
