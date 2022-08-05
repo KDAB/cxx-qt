@@ -25,13 +25,6 @@ Window {
         id: myObject
         number: 1
         string: "My String " + myObject.number
-        sub: subObject
-    }
-
-    SubObject {
-        id: subObject
-        number: 2
-        string: "substr"
     }
 
     Column {
@@ -40,11 +33,11 @@ Window {
         spacing: 10
 
         Label {
-            text: "Number: " + myObject.number + " SubNumber: " + myObject.sub.number
+            text: "Number: " + myObject.number
         }
 
         Label {
-            text: "String: " + myObject.string + " SubString: " + myObject.sub.string
+            text: "String: " + myObject.string
         }
 
         Button {
@@ -57,18 +50,6 @@ Window {
             text: "Increment Number (self)"
 
             onClicked: myObject.incrementNumberSelf()
-        }
-
-        Button {
-            text: "Increment Number (sub) from myObject"
-
-            onClicked: myObject.incrementNumberSub(myObject.sub)
-        }
-
-        Button {
-            text: "Increment Number (sub) from sub"
-
-            onClicked: myObject.sub.incrementNumberSelf()
         }
 
         Button {

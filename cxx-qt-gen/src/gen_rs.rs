@@ -81,11 +81,6 @@ impl RustType for QtTypes {
     fn cxx_qt_lib_type(&self) -> TokenStream {
         match self {
             Self::Bool => quote! {bool},
-            Self::CppObj {
-                external,
-                combined_name,
-                ..
-            } if external == &true => quote! {cxx::UniquePtr<#combined_name>},
             Self::F32 => quote! {f32},
             Self::F64 => quote! {f64},
             Self::I8 => quote! {i8},
@@ -270,37 +265,11 @@ pub fn generate_qobject_cxx(
                 // If the type is Pin<T> then we need to change extract differently
                 match &p.type_ident.qt_type {
                     QtTypes::CppObj {
-                        external,
-                        rust_type_idents,
-                        combined_name,
-                        ..
+                        rust_type_idents, ..
                     } => {
-                        if *external {
-                            // TODO: these two will likely replace type_idents_to_ptr_class_name_and_ffi_type
-                            // once we remove Ptr as a type
-                            let rust_type_idents = rust_type_idents
-                                .iter()
-                                .take(rust_type_idents.len() - 1)
-                                .cloned()
-                                .chain(vec![format_ident!("FFICppObj")])
-                                .collect::<Vec<Ident>>();
-
-                            parameters_quotes.push(quote! {
-                                #ident: Pin<&mut #combined_name>
-                            });
-
-                            // Add the type of the external object to the C++ bridge
-                            cpp_types_push_unique(
-                                &mut cpp_functions,
-                                &mut cpp_types,
-                                combined_name,
-                                rust_type_idents,
-                            )?;
-                        } else {
-                            parameters_quotes.push(quote! {
-                                #ident: Pin<&mut #(#rust_type_idents)::*>
-                            });
-                        }
+                        parameters_quotes.push(quote! {
+                            #ident: Pin<&mut #(#rust_type_idents)::*>
+                        });
                     }
                     _others => {
                         let type_ident = &p.type_ident.qt_type.cxx_bridge_type_ident();

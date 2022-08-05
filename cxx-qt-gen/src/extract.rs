@@ -26,8 +26,6 @@ pub(crate) enum QtTypes {
     Bool,
     /// A CppObj which is being passed as a parameter in a method
     CppObj {
-        /// Whether this CppObj is from the current module or another module
-        external: bool,
         /// The ident of the type for C++, eg the MyObject or CppObj from:
         /// C++ - MyObject or cxx_qt::sub_object::CppObj
         cpp_type_idents: Vec<Ident>,
@@ -229,7 +227,6 @@ fn extract_qt_type(
         match idents[0].to_string().as_str() {
             "bool" => Ok(QtTypes::Bool),
             "CppObj" => Ok(QtTypes::CppObj {
-                external: false,
                 cpp_type_idents: vec![qt_ident.clone()],
                 cpp_type_idents_string: qt_ident.to_string(),
                 rust_type_idents: vec![quote::format_ident!("{}Qt", qt_ident)],
@@ -258,58 +255,6 @@ fn extract_qt_type(
             "u32" => Ok(QtTypes::U32),
             _other => Ok(QtTypes::Unknown),
         }
-    // If the first ident is crate, the last is CppObj, and we have more than two parts
-    // then we are an external CppObj
-    } else if idents.len() > 2
-        && idents.first().unwrap().to_string().as_str() == "crate"
-        && idents.last().unwrap().to_string().as_str() == "CppObj"
-    {
-        // If the ident starts with cxx_qt_ for now this means we should remove it
-        // as we are trying to access the CppObj
-        //
-        // TODO: this hack will be removed in the future when we move to UniquePtr
-        let cpp_rewritten_idents = idents
-            .iter()
-            .map(|ident| {
-                if ident.to_string().starts_with("cxx_qt_") {
-                    quote::format_ident!("{}", ident.to_string()[7..])
-                } else {
-                    ident.to_owned()
-                }
-            })
-            .collect::<Vec<Ident>>();
-        let cpp_type_idents = cpp_namespace_prefix
-            .to_vec()
-            .iter()
-            .map(|s| quote::format_ident!("{}", s))
-            // TODO: once we generate sub folders for nested modules, this will need to use all
-            // type idents other than first and last. as the namespace will then reflect sub dirs
-            // https://github.com/KDAB/cxx-qt/issues/19
-            .chain(
-                cpp_rewritten_idents
-                    .iter()
-                    .skip(cpp_rewritten_idents.len() - 2)
-                    .cloned(),
-            )
-            .collect::<Vec<Ident>>();
-        Ok(QtTypes::CppObj {
-            external: true,
-            cpp_type_idents_string: cpp_type_idents
-                .iter()
-                .map(|ident| ident.to_string())
-                .collect::<Vec<String>>()
-                .join("::"),
-            cpp_type_idents,
-            rust_type_idents: idents.to_vec(),
-            // TODO: later can we use the fully qualified path
-            // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
-            combined_name: quote::format_ident!(
-                "{}",
-                cpp_rewritten_idents[cpp_rewritten_idents.len() - 2]
-                    .to_string()
-                    .to_case(Case::Pascal)
-            ),
-        })
     // This is a UniquePtr<T> field
     } else if idents.len() > 1 && idents.first().unwrap().to_string().as_str() == "UniquePtr" {
         Ok(QtTypes::UniquePtr {
@@ -997,10 +942,11 @@ mod tests {
         assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
 
         // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 10);
+        assert_eq!(qobject.invokables.len(), 9);
 
+        let mut invokables = qobject.invokables.into_iter();
         // Check empty invokable ident
-        let invokable = &qobject.invokables[0];
+        let invokable = invokables.next().unwrap();
         assert_eq!(invokable.ident.cpp_ident.to_string(), "invokable");
         assert_eq!(invokable.ident.rust_ident.to_string(), "invokable");
         assert_eq!(invokable.parameters.len(), 0);
@@ -1008,7 +954,7 @@ mod tests {
         assert!(!invokable.mutable);
 
         // Check CppObj invokable
-        let invokable = &qobject.invokables[1];
+        let invokable = invokables.next().unwrap();
         assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableCppObj");
         assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_cpp_obj");
         assert_eq!(invokable.parameters.len(), 1);
@@ -1018,16 +964,15 @@ mod tests {
         assert_eq!(parameter.ident.to_string(), "cpp");
         assert_eq!(parameter.type_ident.idents.len(), 1);
         assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
-        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
-            assert_eq!(external, &false);
-        } else {
-            panic!();
-        }
+        assert!(std::matches!(
+            &parameter.type_ident.qt_type,
+            QtTypes::CppObj { .. }
+        ));
         assert!(parameter.type_ident.is_ref);
         assert!(parameter.type_ident.is_mut);
 
         // Check the mutable invokable
-        let invokable = &qobject.invokables[2];
+        let invokable = invokables.next().unwrap();
         assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableMutable");
         assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_mutable");
         assert_eq!(invokable.parameters.len(), 0);
@@ -1035,7 +980,7 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check the mutable CppObj invokable
-        let invokable = &qobject.invokables[3];
+        let invokable = invokables.next().unwrap();
         assert_eq!(
             invokable.ident.cpp_ident.to_string(),
             "invokableMutableCppObj"
@@ -1051,47 +996,15 @@ mod tests {
         assert_eq!(parameter.ident.to_string(), "cpp");
         assert_eq!(parameter.type_ident.idents.len(), 1);
         assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
-        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
-            assert_eq!(external, &false);
-        } else {
-            panic!();
-        }
+        assert!(std::matches!(
+            &parameter.type_ident.qt_type,
+            QtTypes::CppObj { .. }
+        ));
         assert!(parameter.type_ident.is_ref);
         assert!(parameter.type_ident.is_mut);
-
-        // Check nested parameter invokable
-        let invokable = &qobject.invokables[4];
-        assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableNestedParameter"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_nested_parameter"
-        );
-        assert_eq!(invokable.parameters.len(), 1);
-        assert!(invokable.return_type.is_none());
-        assert!(!invokable.mutable);
-        let parameter = &invokable.parameters[0];
-        assert_eq!(parameter.ident.to_string(), "nested");
-        assert_eq!(parameter.type_ident.idents.len(), 3);
-        assert_eq!(parameter.type_ident.idents[0].to_string(), "crate");
-        assert_eq!(
-            parameter.type_ident.idents[1].to_string(),
-            "cxx_qt_nested_object"
-        );
-        assert_eq!(parameter.type_ident.idents[2].to_string(), "CppObj");
-        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
-            assert_eq!(external, &true);
-        } else {
-            panic!();
-        }
-        assert!(parameter.type_ident.is_ref);
-        assert!(parameter.type_ident.is_mut);
-        assert!(parameter.type_ident.qt_type.is_opaque());
 
         // Check Parameters invokable
-        let invokable = &qobject.invokables[5];
+        let invokable = invokables.next().unwrap();
         assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableParameters");
         assert_eq!(
             invokable.ident.rust_ident.to_string(),
@@ -1120,7 +1033,7 @@ mod tests {
         assert!(!parameter.type_ident.is_mut);
 
         // Check Parameters CppObj invokable
-        let invokable = &qobject.invokables[6];
+        let invokable = invokables.next().unwrap();
         assert_eq!(
             invokable.ident.cpp_ident.to_string(),
             "invokableParametersCppObj"
@@ -1142,16 +1055,15 @@ mod tests {
         assert_eq!(parameter.ident.to_string(), "cpp");
         assert_eq!(parameter.type_ident.idents.len(), 1);
         assert_eq!(parameter.type_ident.idents[0].to_string(), "CppObj");
-        if let QtTypes::CppObj { external, .. } = &parameter.type_ident.qt_type {
-            assert_eq!(external, &false);
-        } else {
-            panic!();
-        }
+        assert!(std::matches!(
+            &parameter.type_ident.qt_type,
+            QtTypes::CppObj { .. }
+        ));
         assert!(parameter.type_ident.is_ref);
         assert!(parameter.type_ident.is_mut);
 
         // Check return opaque invokable
-        let invokable = &qobject.invokables[7];
+        let invokable = invokables.next().unwrap();
         assert_eq!(
             invokable.ident.cpp_ident.to_string(),
             "invokableReturnOpaque"
@@ -1165,7 +1077,7 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check return primitive invokable
-        let invokable = &qobject.invokables[8];
+        let invokable = invokables.next().unwrap();
         assert_eq!(
             invokable.ident.cpp_ident.to_string(),
             "invokableReturnPrimitive"
@@ -1179,7 +1091,7 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check return static invokable
-        let invokable = &qobject.invokables[9];
+        let invokable = invokables.next().unwrap();
         assert_eq!(
             invokable.ident.cpp_ident.to_string(),
             "invokableReturnStatic"
@@ -1275,7 +1187,7 @@ mod tests {
         let qobject = extract_qobject(&module, &cpp_namespace_prefix).unwrap();
 
         // Check that it got the properties and that the idents are correct
-        assert_eq!(qobject.properties.len(), 3);
+        assert_eq!(qobject.properties.len(), 2);
         assert_eq!(qobject.original_data_struct.ident.to_string(), "Data");
 
         // Check first property
@@ -1326,35 +1238,6 @@ mod tests {
         assert_eq!(notify.cpp_ident.to_string(), "opaqueChanged");
         // TODO: does rust need a notify ident?
         assert_eq!(notify.rust_ident.to_string(), "opaque");
-
-        // Check third property
-        let prop_third = &qobject.properties[2];
-        assert_eq!(prop_third.ident.cpp_ident.to_string(), "nested");
-        assert_eq!(prop_third.ident.rust_ident.to_string(), "nested");
-        assert_eq!(prop_third.type_ident.idents.len(), 3);
-        assert_eq!(prop_third.type_ident.idents[0].to_string(), "crate");
-        assert_eq!(
-            prop_third.type_ident.idents[1].to_string(),
-            "cxx_qt_nested_object"
-        );
-        assert_eq!(prop_third.type_ident.idents[2].to_string(), "CppObj");
-        assert!(!prop_third.type_ident.is_ref);
-
-        assert!(prop_third.getter.is_some());
-        let getter = prop_third.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getNested");
-        assert_eq!(getter.rust_ident.to_string(), "nested");
-
-        assert!(prop_third.setter.is_some());
-        let setter = prop_third.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setNested");
-        assert_eq!(setter.rust_ident.to_string(), "set_nested");
-
-        assert!(prop_third.notify.is_some());
-        let notify = prop_third.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "nestedChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "nested");
     }
 
     #[test]

@@ -54,13 +54,6 @@ MyObject::invokableMutableCppObj()
 }
 
 void
-MyObject::invokableNestedParameter(cxx_qt::nested_object::CppObj* nested)
-{
-  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableNestedParameterWrapper(*nested);
-}
-
-void
 MyObject::invokableParameters(const QColor& opaque,
                               const QPoint& trivial,
                               qint32 primitive)

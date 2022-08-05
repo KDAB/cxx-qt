@@ -4,7 +4,6 @@
 
 #include "cxx-qt-lib/include/qt_types.h"
 
-#include "cxx-qt-gen/include/nested_object.cxxqt.h"
 #include <QtCore/QPoint>
 #include <QtGui/QColor>
 
@@ -26,8 +25,6 @@ public:
   Q_INVOKABLE void invokableCppObj();
   Q_INVOKABLE void invokableMutable();
   Q_INVOKABLE void invokableMutableCppObj();
-  Q_INVOKABLE void invokableNestedParameter(
-    cxx_qt::nested_object::CppObj* nested);
   Q_INVOKABLE void invokableParameters(const QColor& opaque,
                                        const QPoint& trivial,
                                        qint32 primitive);

@@ -7,6 +7,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Nested Objects
 
+During the transition to CXX-Qt 0.4, Nested object support is temporarily removed.
+
+We are currently reworking the way nested objects work.
+They will be back, and better than ever 😃.
+
+<!--
 Rust Qt objects can be nested as properties or parameters of each other.
 
 A nested object is referred to by it's path relative to `crate`, the second last segment needs `cxx_qt_` as the start of the module name, and then `CppObj` as the last segment. Eg `crate::mymod::cxx_qt_secondary_object::CppObj` refers a `mymod.rs` which contains a module `secondary_object` with [CXX-Qt macros](../qobject/macro.md).
@@ -32,3 +38,4 @@ Note that nested objects cannot be used in signals ( [https://github.com/KDAB/cx
 Note that we may allow for `super::` to be used in the future ( [https://github.com/KDAB/cxx-qt/issues/44](https://github.com/KDAB/cxx-qt/issues/44) ).
 
 TODO: once we have borrow_rust_obj() explain it's purpose of reaching the other objects RustObj [https://github.com/KDAB/cxx-qt/issues/30](https://github.com/KDAB/cxx-qt/issues/30) ).
+-->
