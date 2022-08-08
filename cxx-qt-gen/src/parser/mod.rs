@@ -3,12 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+pub mod cxxqtdata;
 pub mod parameter;
 pub mod qobject;
 pub mod signals;
 
 use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map};
-use qobject::ParsedCxxQtData;
+use cxxqtdata::ParsedCxxQtData;
 use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
