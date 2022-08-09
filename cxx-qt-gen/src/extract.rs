@@ -7,7 +7,7 @@ use crate::parser::{signals::ParsedSignalsEnum, Parser};
 use convert_case::{Case, Casing};
 use derivative::*;
 use proc_macro2::{Span, TokenStream};
-use std::result::Result;
+use std::{path::PathBuf, result::Result};
 use syn::{spanned::Spanned, token::Brace, *};
 
 /// Describes an ident which has a different name in C++ and Rust
@@ -191,6 +191,8 @@ pub struct QObject {
     pub(crate) original_passthrough_decls: Vec<Item>,
     /// The Rust impl that has optionally been provided to handle updates
     pub(crate) handle_updates_impl: Option<ItemImpl>,
+    /// The source path that the QObject was defined in
+    pub(crate) source_path: PathBuf,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -648,7 +650,7 @@ fn extract_signals(
 }
 
 /// Parses a module in order to extract a QObject description from it
-pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
+pub fn extract_qobject(module: &ItemMod, source_path: PathBuf) -> Result<QObject, TokenStream> {
     // Build a parser for the given ItemMod
     //
     // TODO: in the future steps from this extract.rs file will be moved into module parts
@@ -743,6 +745,7 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
             .unwrap_or_else(|| syn::parse_str("pub struct RustObj;").unwrap()),
         original_passthrough_decls,
         handle_updates_impl,
+        source_path,
     })
 }
 
@@ -756,7 +759,7 @@ mod tests {
     fn parses_custom_default() {
         let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the invokables and properties
         assert_eq!(qobject.invokables.len(), 0);
@@ -793,7 +796,7 @@ mod tests {
     fn parses_invokables() {
         let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -958,7 +961,7 @@ mod tests {
     fn parsing_naming() {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 1);
@@ -1001,7 +1004,7 @@ mod tests {
     fn parses_passthrough() {
         let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
@@ -1024,7 +1027,7 @@ mod tests {
     fn parses_properties() {
         let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the properties and that the idents are correct
         assert_eq!(qobject.properties.len(), 2);
@@ -1079,7 +1082,7 @@ mod tests {
     fn parses_signals() {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         assert_eq!(qobject.properties.len(), 0);
         assert_eq!(qobject.invokables.len(), 1);
@@ -1131,7 +1134,7 @@ mod tests {
     fn parses_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);

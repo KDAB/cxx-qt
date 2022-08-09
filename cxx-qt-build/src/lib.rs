@@ -3,7 +3,6 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use convert_case::{Case, Casing};
 use quote::ToTokens;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -59,12 +58,16 @@ impl GeneratedCpp {
         let file = parse_qt_file(rust_file_path).unwrap();
 
         let mut cxx_qt = None;
-        // TODO: later change how the resultant filename is chosen, can we match the input file like
-        // CXX does?
+        // Use the Rust filename as the resultant CXX/CXX-Qt names
         //
-        // For CXX-Qt generating one header per QObject likely makes sense, but what happens with CXX data?
-        // for now this uses the module ident
-        let mut file_ident: String = "".to_owned();
+        // TODO: we should consider sub directories so you can have a/b/c and a/d/c and not collide
+        let file_ident: String = rust_file_path
+            .as_ref()
+            .file_stem()
+            .unwrap()
+            .to_os_string()
+            .into_string()
+            .unwrap();
         let mut tokens = proc_macro2::TokenStream::new();
 
         // Add any attributes in the file into the tokenstream
@@ -75,32 +78,19 @@ impl GeneratedCpp {
         // Loop through the items looking for any CXX or CXX-Qt blocks
         for item in &file.items {
             match item {
-                CxxQtItem::Cxx(m) => {
-                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
-                        panic!(
-                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
-                            The file {} has more than one of these.",
-                            rust_file_path.as_ref().display());
-                    }
-
-                    file_ident = m.ident.to_string().to_case(Case::Snake);
-                    tokens.extend(m.into_token_stream());
-                }
+                CxxQtItem::Cxx(m) => tokens.extend(m.into_token_stream()),
                 CxxQtItem::CxxQt(m) => {
-                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
+                    // TODO: later we will allow for multiple CXX-Qt blocks in one file
+                    if cxx_qt.is_some() {
                         panic!(
-                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
+                            "Unfortunately only files with either a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.as_ref().display());
                     }
 
                     // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
                     // which will take a CxxQtItemMod and respond with a C++ header and source
-                    let qobject = extract_qobject(m).unwrap();
-                    // Use the qobject ident as the output file name?
-                    file_ident = qobject.ident.to_string().to_case(Case::Snake);
+                    let qobject = extract_qobject(m, rust_file_path.as_ref().to_path_buf()).unwrap();
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());

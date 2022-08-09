@@ -3,8 +3,11 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![feature(proc_macro_span)]
+
+use std::path::PathBuf;
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, ItemMod};
+use syn::{spanned::Spanned, parse_macro_input, ItemMod};
 
 use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 
@@ -49,8 +52,11 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
     module.attrs = attrs.into_iter().chain(module.attrs.into_iter()).collect();
 
+    // Extract the source file of the module via nightly API
+    let source = module.span().unwrap().source_file();
+
     // Extract and generate the rust code
-    extract_and_generate(module)
+    extract_and_generate(module, source.path())
 }
 
 /// A macro which describes that an enum defines the signals for a QObject.
@@ -124,9 +130,9 @@ pub fn QObject(_input: TokenStream) -> TokenStream {
 }
 
 // Take the module and C++ namespace and generate the rust code
-fn extract_and_generate(module: ItemMod) -> TokenStream {
+fn extract_and_generate(module: ItemMod, path: PathBuf) -> TokenStream {
     // Attempt to extract information about a QObject inside the module
-    let qobject = match extract_qobject(&module) {
+    let qobject = match extract_qobject(&module, path) {
         Ok(o) => o,
         Err(e) => return e.into(),
     };

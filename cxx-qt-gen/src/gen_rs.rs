@@ -116,11 +116,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let cxx_class_name_rust = format_ident!("{}Rust", class_name);
     let rust_class_name = &obj.original_rust_struct.ident;
 
-    // Build a snake version of the class name, this is used for rust method names
-    //
-    // TODO: Abstract this calculation to make it common to gen_rs and gen_cpp
-    let ident_snake = class_name.to_string().to_case(Case::Snake);
-
     // Lists of functions we generate for the CXX bridge
     let mut cpp_functions = Vec::new();
     let mut rs_functions = Vec::new();
@@ -356,7 +351,10 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     };
 
     // Build the import path for the C++ header
-    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
+    let import_path = format!(
+        "cxx-qt-gen/include/{}.cxxqt.h",
+        obj.source_path.file_stem().unwrap().to_str().unwrap()
+    );
 
     let namespace = &obj.namespace;
 
@@ -962,6 +960,7 @@ mod tests {
     use pretty_assertions::assert_str_eq;
     use std::{
         io::Write,
+        path::PathBuf,
         process::{Command, Stdio},
     };
     use syn::ItemMod;
@@ -994,7 +993,7 @@ mod tests {
     fn generates_custom_default() {
         let source = include_str!("../test_inputs/custom_default.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/custom_default.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1009,7 +1008,7 @@ mod tests {
     fn generates_handlers() {
         let source = include_str!("../test_inputs/handlers.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/handlers.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1024,7 +1023,7 @@ mod tests {
     fn generates_invokables() {
         let source = include_str!("../test_inputs/invokables.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/invokables.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1039,7 +1038,7 @@ mod tests {
     fn generates_naming() {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/naming.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1054,7 +1053,7 @@ mod tests {
     fn generates_passthrough() {
         let source = include_str!("../test_inputs/passthrough.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/passthrough.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1069,7 +1068,7 @@ mod tests {
     fn generates_properties() {
         let source = include_str!("../test_inputs/properties.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/properties.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1084,7 +1083,7 @@ mod tests {
     fn generates_signals() {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/signals.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1099,7 +1098,7 @@ mod tests {
     fn generates_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_primitive_property.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1114,7 +1113,7 @@ mod tests {
     fn generates_types_qt_property() {
         let source = include_str!("../test_inputs/types_qt_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_qt_property.rs");
         let expected_output = format_rs_source(expected_output);
@@ -1129,7 +1128,7 @@ mod tests {
     fn generates_types_qt_invokable() {
         let source = include_str!("../test_inputs/types_qt_invokable.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
+        let qobject = extract_qobject(&module, PathBuf::from("my_object.rs")).unwrap();
 
         let expected_output = include_str!("../test_outputs/types_qt_invokable.rs");
         let expected_output = format_rs_source(expected_output);
