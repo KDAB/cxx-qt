@@ -673,8 +673,8 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     //
     // The original Data Item::Struct if one is found
     let original_data_struct = qobject.data_struct;
-    // The original RustObj Item::Struct if one is found
-    let original_rust_struct = qobject.rust_struct;
+    // The original #[cxx_qt::qobject] marked struct Item::Struct if one is found
+    let original_rust_struct = qobject.qobject_struct;
     // The name of the Qt object we are creating
     let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 

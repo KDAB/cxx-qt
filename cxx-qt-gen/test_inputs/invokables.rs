@@ -8,6 +8,7 @@ mod my_object {
         type QString = cxx_qt_lib::QString;
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

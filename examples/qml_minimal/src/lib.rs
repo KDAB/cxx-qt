@@ -35,6 +35,7 @@ mod my_object {
     // ANCHOR_END: book_data_struct
 
     // ANCHOR: book_rustobj_struct
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
     // ANCHOR_END: book_rustobj_struct

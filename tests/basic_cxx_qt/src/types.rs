@@ -19,6 +19,7 @@ mod my_types {
         uint_32: u32,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 }

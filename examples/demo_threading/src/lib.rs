@@ -149,6 +149,7 @@ mod energy_usage {
         }
     }
 
+    #[cxx_qt::qobject]
     pub struct RustObj {
         qt_rx: Receiver<Data>,
         qt_tx: SyncSender<Data>,

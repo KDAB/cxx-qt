@@ -54,6 +54,7 @@ mod my_data {
         }
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 
