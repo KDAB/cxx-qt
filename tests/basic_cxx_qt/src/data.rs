@@ -23,7 +23,7 @@ impl From<Data> for DataSerde {
 }
 
 #[cxx_qt::bridge(namespace = "cxx_qt::my_data")]
-mod my_data {
+mod ffi {
     use super::DataSerde;
 
     #[namespace = ""]
@@ -56,9 +56,9 @@ mod my_data {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyData;
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MyData> {
         #[invokable]
         pub fn as_json_str(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);

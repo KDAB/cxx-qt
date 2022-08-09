@@ -1,5 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
         include!("cxx-qt-lib/include/convert.h");
@@ -9,45 +9,45 @@ mod my_object {
         type MyObjectQt;
 
         #[cxx_name = "unsafe_rust"]
-        fn rust(self: &MyObjectQt) -> &RustObj;
+        fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "C++" {
         #[cxx_name = "unsafe_rust_mut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
-        type RustObj;
+        type MyObject;
 
         #[cxx_name = "invokable"]
-        fn invokable(self: &RustObj);
+        fn invokable(self: &MyObject);
         #[cxx_name = "invokableCppObjWrapper"]
-        fn invokable_cpp_obj_wrapper(self: &RustObj, cpp: Pin<&mut MyObjectQt>);
+        fn invokable_cpp_obj_wrapper(self: &MyObject, cpp: Pin<&mut MyObjectQt>);
         #[cxx_name = "invokableMutable"]
-        fn invokable_mutable(self: &mut RustObj);
+        fn invokable_mutable(self: &mut MyObject);
         #[cxx_name = "invokableMutableCppObjWrapper"]
-        fn invokable_mutable_cpp_obj_wrapper(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
+        fn invokable_mutable_cpp_obj_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
         #[cxx_name = "invokableParameters"]
-        fn invokable_parameters(self: &RustObj, opaque: &QColor, trivial: &QPoint, primitive: i32);
+        fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
         #[cxx_name = "invokableParametersCppObjWrapper"]
         fn invokable_parameters_cpp_obj_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             primitive: i32,
             cpp: Pin<&mut MyObjectQt>,
         );
         #[cxx_name = "invokableReturnOpaqueWrapper"]
-        fn invokable_return_opaque_wrapper(self: &mut RustObj) -> UniquePtr<QColor>;
+        fn invokable_return_opaque_wrapper(self: &mut MyObject) -> UniquePtr<QColor>;
         #[cxx_name = "invokableReturnPrimitive"]
-        fn invokable_return_primitive(self: &mut RustObj) -> i32;
+        fn invokable_return_primitive(self: &mut MyObject) -> i32;
         #[cxx_name = "invokableReturnStaticWrapper"]
-        fn invokable_return_static_wrapper(self: &mut RustObj) -> UniquePtr<QString>;
+        fn invokable_return_static_wrapper(self: &mut MyObject) -> UniquePtr<QString>;
 
         #[cxx_name = "createRs"]
-        fn create_rs() -> Box<RustObj>;
+        fn create_rs() -> Box<MyObject>;
 
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
@@ -62,17 +62,17 @@ mod my_object {
     }
 }
 
-pub use self::cxx_qt_my_object::*;
-mod cxx_qt_my_object {
-    use super::my_object::*;
+pub use self::cxx_qt_ffi::*;
+mod cxx_qt_ffi {
+    use super::ffi::*;
 
-    pub type FFICppObj = super::my_object::MyObjectQt;
+    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl RustObj {
+    impl MyObject {
         pub fn invokable_cpp_obj_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.invokable_cpp_obj(&mut cpp);
@@ -184,13 +184,13 @@ mod cxx_qt_my_object {
         }
     }
 
-    impl RustObj {
+    impl MyObject {
         pub fn rust_only_method(&self) {
             println!("QML or C++ can't call this :)");
         }
     }
 
-    pub fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 

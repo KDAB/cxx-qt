@@ -1,5 +1,5 @@
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
@@ -7,7 +7,7 @@ mod my_object {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[cxx_qt::signals(RustObj)]
+    #[cxx_qt::signals(MyObject)]
     enum MySignals {
         Ready,
         DataChanged {
@@ -22,9 +22,9 @@ mod my_object {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MyObject> {
         #[invokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {

@@ -8,7 +8,7 @@ mod data;
 mod types;
 
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
@@ -31,11 +31,11 @@ mod my_object {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj {
+    pub struct MyObject {
         update_call_count: i32,
     }
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MyObject> {
         #[invokable]
         pub fn double_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() * 2;
@@ -93,7 +93,7 @@ mod my_object {
         }
     }
 
-    impl UpdateRequestHandler<CppObj<'_>> for RustObj {
+    impl UpdateRequestHandler<CppObj<'_>> for MyObject {
         fn handle_update_request(&mut self, _cpp: &mut CppObj) {
             self.update_call_count += 1;
         }
