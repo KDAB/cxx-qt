@@ -57,13 +57,13 @@ Now that we've defined the data that will live on the C++ side of things, let's 
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_struct}}
 ```
 In our case, this is just an empty struct.
-However, the `RustObj` could contain any data we want.
+However, the `#[cxx_qt::qobject]` marked struct could contain any data we want.
 It is not converted into a C++ class, so it isn't limited to the Qt-compatible types that the `Data` struct is.
 
-An important point to note here is that the `RustObj`, like the `Data` struct must implement the `Default` trait.
-Every instance of the `MyObject` class will automatically create a corresponding `RustObj` instance by using the `Default` trait.
+An important point to note here is that the `#[cxx_qt::qobject]` marked struct, like the `Data` struct must implement the `Default` trait.
+Every instance of the `MyObject` class will automatically create a corresponding `#[cxx_qt::qobject]` marked struct instance by using the `Default` trait.
 
-Just because the `RustObj` struct doesn't contain any data, that still doesn't mean its not an important part of our `MyObject` class.
+Just because the `#[cxx_qt::qobject]` marked struct struct doesn't contain any data, that still doesn't mean its not an important part of our `MyObject` class.
 That is because it actually defines the behavior of our class through its `impl`:
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_impl}}
@@ -80,7 +80,7 @@ In our case, we define two new functions:
 
 Both functions are marked with the `#[invokable]` macro, which means the functions will be added to the C++ code of `MyObject` and will be callable from QML as well.
 
-Apart from functions marked with the `#[invokable]` macro, the `RustObj` impl is just a normal Rust struct impl and can contain normal Rust functions, which the invokable functions can call as usual.
+Apart from functions marked with the `#[invokable]` macro, the `#[cxx_qt::qobject]` marked struct impl is just a normal Rust struct impl and can contain normal Rust functions, which the invokable functions can call as usual.
 
 And that's it. We've defined our first QObject subclass in Rust. That wasn't so hard, was it?
 

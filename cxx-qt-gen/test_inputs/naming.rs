@@ -5,6 +5,7 @@ mod my_object {
         property_name: i32,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

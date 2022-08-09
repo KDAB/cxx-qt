@@ -44,6 +44,7 @@ mod website {
         }
     }
 
+    #[cxx_qt::qobject]
     pub struct RustObj {
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,

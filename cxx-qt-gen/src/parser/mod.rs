@@ -131,9 +131,10 @@ mod tests {
         let module: ItemMod = tokens_to_syn(quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                struct RustObj;
+                #[cxx_qt::qobject]
+                struct MyObject;
 
-                #[cxx_qt::signals(RustObj)]
+                #[cxx_qt::signals(MyObject)]
                 enum MySignals {
                     Ready,
                 }
@@ -155,9 +156,10 @@ mod tests {
         let module: ItemMod = tokens_to_syn(quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                struct RustObj;
+                #[cxx_qt::qobject]
+                struct MyObject;
 
-                #[cxx_qt::signals(RustObj)]
+                #[cxx_qt::signals(MyObject)]
                 enum MySignals {
                     Ready,
                 }
@@ -183,7 +185,8 @@ mod tests {
         let module: ItemMod = tokens_to_syn(quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                struct RustObj;
+                #[cxx_qt::qobject]
+                struct MyObject;
 
                 #[cxx_qt::signals(UnknownObj)]
                 enum MySignals {

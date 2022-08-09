@@ -26,6 +26,7 @@ mod types {
         }
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

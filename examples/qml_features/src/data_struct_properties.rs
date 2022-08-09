@@ -11,6 +11,7 @@ mod data_struct_properties {
         number: i32,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 }

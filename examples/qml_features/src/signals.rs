@@ -39,6 +39,7 @@ pub mod signals {
         }
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

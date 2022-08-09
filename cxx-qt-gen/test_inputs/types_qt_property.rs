@@ -35,6 +35,7 @@ mod my_object {
         variant: UniquePtr<QVariant>,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 }
