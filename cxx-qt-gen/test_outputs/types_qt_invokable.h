@@ -1,26 +1,15 @@
 #pragma once
 
+#include <memory>
 #include <mutex>
 
-#include "cxx-qt-lib/include/qt_types.h"
+namespace cxx_qt::my_object {
+class MyObject;
+} // namespace cxx_qt::my_object
 
-#include <QtCore/QDate>
-#include <QtCore/QDateTime>
-#include <QtCore/QPoint>
-#include <QtCore/QPointF>
-#include <QtCore/QRect>
-#include <QtCore/QRectF>
-#include <QtCore/QSize>
-#include <QtCore/QSizeF>
-#include <QtCore/QString>
-#include <QtCore/QTime>
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-#include <QtGui/QColor>
+#include "cxx-qt-gen/include/my_object.cxx.h"
 
 namespace cxx_qt::my_object {
-
-class MyObjectRust;
 
 class MyObject : public QObject
 {

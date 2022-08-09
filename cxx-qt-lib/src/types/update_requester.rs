@@ -7,7 +7,7 @@
 mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/update_requester.h");
 
         type UpdateRequester;
 
