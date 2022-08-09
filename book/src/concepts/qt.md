@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 ## Invokables
 
-Invokables can be defined using the [RustObj Struct](../qobject/rustobj_struct.md), these will be exposed as methods on the C++ class with `Q_INVOKABLE` so that they are accessible for QML too.
+Invokables can be defined using the [QObject Struct](../qobject/qobject_struct.md), these will be exposed as methods on the C++ class with `Q_INVOKABLE` so that they are accessible for QML too.
 
 ## Properties
 
@@ -18,7 +18,3 @@ Properties can be defined using the [Data struct](../qobject/data_struct.md), th
 ## Signals
 
 Signals can be defined using the [Signals enum](../qobject/signals_enum.md), these will be exposed as `Q_SIGNALS` on the C++ class and therefore to QML as well.
-
-## Change events
-
-You can listen to property changes via the [handlers](../qobject/handlers.md) available in the RustObj Struct. These handlers are called from the Qt event loop thread to remain [thread safe](./threading.md).

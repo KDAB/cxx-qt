@@ -1,5 +1,5 @@
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     pub struct Data {
         public: i32,
     }
@@ -10,11 +10,12 @@ mod my_object {
         }
     }
 
-    pub struct RustObj {
+    #[cxx_qt::qobject]
+    pub struct MyObject {
         private: i32,
     }
 
-    impl Default for RustObj {
+    impl Default for MyObject {
         fn default() -> Self {
             Self { private: 64 }
         }

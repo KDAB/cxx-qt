@@ -3,7 +3,6 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use convert_case::{Case, Casing};
 use quote::ToTokens;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -50,7 +49,7 @@ fn manifest_dir() -> String {
 pub struct GeneratedCpp {
     cxx_qt: Option<CppObject>,
     cxx: cxx_gen::GeneratedCode,
-    module_ident: String,
+    file_ident: String,
 }
 
 impl GeneratedCpp {
@@ -59,9 +58,16 @@ impl GeneratedCpp {
         let file = parse_qt_file(rust_file_path).unwrap();
 
         let mut cxx_qt = None;
-        // TODO: later change how the resultant filename is chosen, can we match the input file like
-        // CXX does?
-        let mut module_ident: String = "".to_owned();
+        // Use the Rust filename as the resultant CXX/CXX-Qt names
+        //
+        // TODO: we should consider sub directories so you can have a/b/c and a/d/c and not collide
+        let file_ident: String = rust_file_path
+            .as_ref()
+            .file_stem()
+            .unwrap()
+            .to_os_string()
+            .into_string()
+            .unwrap();
         let mut tokens = proc_macro2::TokenStream::new();
 
         // Add any attributes in the file into the tokenstream
@@ -72,32 +78,19 @@ impl GeneratedCpp {
         // Loop through the items looking for any CXX or CXX-Qt blocks
         for item in &file.items {
             match item {
-                CxxQtItem::Cxx(m) => {
-                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !module_ident.is_empty() {
-                        panic!(
-                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
-                            The file {} has more than one of these.",
-                            rust_file_path.as_ref().display());
-                    }
-
-                    module_ident = m.ident.to_string().to_case(Case::Snake);
-                    tokens.extend(m.into_token_stream());
-                }
+                CxxQtItem::Cxx(m) => tokens.extend(m.into_token_stream()),
                 CxxQtItem::CxxQt(m) => {
-                    // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !module_ident.is_empty() {
+                    // TODO: later we will allow for multiple CXX-Qt blocks in one file
+                    if cxx_qt.is_some() {
                         panic!(
-                            "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
+                            "Unfortunately only files with either a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.as_ref().display());
                     }
-
-                    module_ident = m.ident.to_string().to_case(Case::Snake);
 
                     // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
                     // which will take a CxxQtItemMod and respond with a C++ header and source
-                    let qobject = extract_qobject(m).unwrap();
+                    let qobject = extract_qobject(m, rust_file_path.as_ref().to_path_buf()).unwrap();
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());
@@ -122,7 +115,7 @@ impl GeneratedCpp {
         GeneratedCpp {
             cxx_qt,
             cxx,
-            module_ident,
+            file_ident,
         }
     }
 
@@ -150,7 +143,7 @@ impl GeneratedCpp {
             let header_path = PathBuf::from(format!(
                 "{}/{}.cxxqt.h",
                 include_directory_path.display(),
-                self.module_ident
+                self.file_ident
             ));
             let mut header =
                 File::create(&header_path).expect("Could not create cxx-qt header file");
@@ -162,7 +155,7 @@ impl GeneratedCpp {
             let cpp_path = PathBuf::from(format!(
                 "{}/{}.cxxqt.cpp",
                 source_directory_path.display(),
-                &self.module_ident
+                self.file_ident
             ));
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
             cpp.write_all(cxx_qt_generated.source.as_bytes())
@@ -173,7 +166,7 @@ impl GeneratedCpp {
         let header_path = PathBuf::from(format!(
             "{}/{}.cxx.h",
             include_directory_path.display(),
-            self.module_ident
+            self.file_ident
         ));
         let mut header = File::create(&header_path).expect("Could not create cxx header file");
         header
@@ -184,7 +177,7 @@ impl GeneratedCpp {
         let cpp_path = PathBuf::from(format!(
             "{}/{}.cxx.cpp",
             source_directory_path.display(),
-            self.module_ident
+            self.file_ident
         ));
         let mut cpp = File::create(&cpp_path).expect("Could not create cxx source file");
         cpp.write_all(&self.cxx.implementation)

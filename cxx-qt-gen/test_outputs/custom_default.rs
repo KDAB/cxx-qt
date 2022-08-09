@@ -1,5 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -12,40 +12,40 @@ mod my_object {
         fn setPublic(self: Pin<&mut MyObjectQt>, value: i32);
 
         #[cxx_name = "unsafe_rust"]
-        fn rust(self: &MyObjectQt) -> &RustObj;
+        fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "C++" {
         #[cxx_name = "unsafe_rust_mut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
-        type RustObj;
+        type MyObject;
 
         #[cxx_name = "createRs"]
-        fn create_rs() -> Box<RustObj>;
+        fn create_rs() -> Box<MyObject>;
 
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
-pub use self::cxx_qt_my_object::*;
-mod cxx_qt_my_object {
-    use super::my_object::*;
+pub use self::cxx_qt_ffi::*;
+mod cxx_qt_ffi {
+    use super::ffi::*;
 
-    pub type FFICppObj = super::my_object::MyObjectQt;
+    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
-    pub struct RustObj {
+    pub struct MyObject {
         private: i32,
     }
 
-    impl RustObj {}
+    impl MyObject {}
 
     pub struct CppObj<'a> {
         cpp: std::pin::Pin<&'a mut FFICppObj>,
@@ -93,13 +93,13 @@ mod cxx_qt_my_object {
         }
     }
 
-    impl Default for RustObj {
+    impl Default for MyObject {
         fn default() -> Self {
             Self { private: 64 }
         }
     }
 
-    pub fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 

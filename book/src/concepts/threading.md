@@ -25,7 +25,7 @@ We provide a solution to prevent entering deadlocks from signal connections, eg 
 
 To achieve safe multi-threading on the Rust side we use an `UpdateRequester`. Where the Rust thread is started (eg an invokable) the `UpdateRequester` should be cloned into the thread.
 
-Then when the background thread needs to update a value in the Qt object it requests an update, this is posted into the same queue as above. Once the event loop occurs this calls `UpdateRequestHandler` in the [RustObj Handlers](../qobject/handlers.md) so that you can safely call setters or emit signals from the Qt thread and synchronise your state to the foreground.
+Then when the background thread needs to update a value in the Qt object it requests an update, this is posted into the same queue as above. Once the event loop occurs this calls `UpdateRequestHandler` in the [Handlers](../qobject/handlers.md) so that you can safely call setters or emit signals from the Qt thread and synchronise your state to the foreground.
 
 We recommend using a channel in the thread to send enums or values which are then processed in `UpdateRequestHandler`.
 

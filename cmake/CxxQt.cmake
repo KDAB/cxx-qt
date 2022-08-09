@@ -32,10 +32,10 @@ function(cxx_qt_generate_cpp GEN_SOURCES)
     endif()
     # TODO: figure out if RelWithDebInfo is a thing in Rust and fix accordingly
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CARGO_CMD cargo build)
+        set(CARGO_CMD cargo +nightly build)
         set(TARGET_DIR "debug")
     else ()
-        set(CARGO_CMD cargo build --release)
+        set(CARGO_CMD cargo +nightly build --release)
         set(TARGET_DIR "release")
     endif ()
 
@@ -89,7 +89,7 @@ function(cxx_qt_link_rustlib APP_NAME)
     endif ()
     # TODO: figure out if RelWithDebInfo is a thing in Rust and fix accordingly
     if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
-        set(CARGO_CMD cargo build)
+        set(CARGO_CMD cargo +nightly build)
         set(TARGET_DIR "debug")
         # Hack around Rust standard library linked with Release version of C runtime
         # Refer to https://github.com/robmikh/linkerissuerepro for explanation
@@ -97,7 +97,7 @@ function(cxx_qt_link_rustlib APP_NAME)
             set_property(TARGET "${APP_NAME}" PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
         endif()
     else ()
-        set(CARGO_CMD cargo build --release)
+        set(CARGO_CMD cargo +nightly build --release)
         set(TARGET_DIR "release")
     endif ()
 

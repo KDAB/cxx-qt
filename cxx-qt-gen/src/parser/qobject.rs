@@ -17,8 +17,8 @@ pub struct ParsedQObject {
     ///
     /// In the future this will be removed
     pub data_struct: Option<ItemStruct>,
-    /// RustObj struct that stores the invokables for the QObject
-    pub rust_struct: Option<ItemStruct>,
+    /// QObject struct that stores the invokables for the QObject
+    pub qobject_struct: Option<ItemStruct>,
     /// Representation of the Signals enum that defines the Q_SIGNALS for the QObject
     pub signals: Option<ParsedSignalsEnum>,
     /// List of invokables that need to be implemented on the C++ object in Rust

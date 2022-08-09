@@ -21,7 +21,7 @@ If the [`Data` struct](./data_struct.md) has a field called `number: i32`, then 
 
 If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` or `unsafe emit_immediate(&mut self, Signals)` on the `CppObj` to emit a signal.
 
-Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the `RustObj` which is already locked.
+Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/src/signals.rs:book_rust_obj_impl}}

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[cxx_qt::bridge(namespace = "cxx_qt::my_types")]
-mod my_types {
+mod ffi {
     #[derive(Default)]
     pub struct Data {
         boolean: bool,
@@ -19,6 +19,7 @@ mod my_types {
         uint_32: u32,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyTypes;
 }
