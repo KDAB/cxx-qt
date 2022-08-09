@@ -8,7 +8,7 @@
 // ANCHOR: book_bridge_macro
 
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     // ANCHOR_END: book_bridge_macro
 
     #[namespace = ""]
@@ -37,11 +37,11 @@ mod my_object {
     // ANCHOR: book_rustobj_struct
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
     // ANCHOR_END: book_rustobj_struct
 
     // ANCHOR: book_rustobj_impl
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MyObject> {
         #[invokable]
         pub fn increment_number(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);

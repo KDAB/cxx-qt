@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 The `#[cxx_qt::qobject]` marked struct allows you to define the following items
 
+  * The name of the C++ class for the QObject
   * Invokable methods that are exposed to Qt
   * Private methods and fields for struct to use (eg this is useful for storing the channels for [threading](../concepts/threading.md))
   * Mutate C++ state with [`CppObj`](./cpp_object.md)

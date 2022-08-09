@@ -1,5 +1,5 @@
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     #[derive(Default)]
     pub struct Data {
         boolean: bool,
@@ -15,5 +15,5 @@ mod my_object {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 }

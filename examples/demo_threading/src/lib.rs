@@ -112,7 +112,7 @@ impl Default for SensorData {
 }
 
 #[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
-mod energy_usage {
+mod ffi {
     use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
         net::{TcpListener, TcpStream},
@@ -150,13 +150,13 @@ mod energy_usage {
     }
 
     #[cxx_qt::qobject]
-    pub struct RustObj {
+    pub struct EnergyUsage {
         qt_rx: Receiver<Data>,
         qt_tx: SyncSender<Data>,
         join_handles: Option<[JoinHandle<()>; 4]>,
     }
 
-    impl Default for RustObj {
+    impl Default for EnergyUsage {
         fn default() -> Self {
             let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
             Self {
@@ -167,7 +167,7 @@ mod energy_usage {
         }
     }
 
-    impl RustObj {
+    impl EnergyUsage {
         /// Read from a TCP stream and create a Request
         async fn build_request(stream: &mut TcpStream) -> Result<Request, Status> {
             let mut buf = vec![0u8; 128];
@@ -185,7 +185,7 @@ mod energy_usage {
         }
 
         async fn handle_connection(mut stream: TcpStream, network_tx: SyncSender<NetworkChannel>) {
-            let response: Response = match RustObj::build_request(&mut stream).await {
+            let response: Response = match EnergyUsage::build_request(&mut stream).await {
                 Ok(request) => {
                     match request.command {
                         RequestCommand::Power { value } => {
@@ -217,7 +217,7 @@ mod energy_usage {
         }
     }
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<EnergyUsage> {
         #[invokable]
         pub fn start_server(&mut self, cpp: &mut CppObj) {
             if self.join_handles.is_some() {
@@ -354,7 +354,7 @@ mod energy_usage {
                     .map(|stream| (stream, network_tx.clone()))
                     .for_each_concurrent(/* limit */ None, |(stream, network_tx)| async move {
                         let stream = stream.unwrap();
-                        spawn(RustObj::handle_connection(stream, network_tx));
+                        spawn(EnergyUsage::handle_connection(stream, network_tx));
                     })
                     .await;
             };
@@ -369,7 +369,7 @@ mod energy_usage {
         }
     }
 
-    impl UpdateRequestHandler<CppObj<'_>> for RustObj {
+    impl UpdateRequestHandler<CppObj<'_>> for EnergyUsage {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             // Process the new data from the background thread
             if let Some(data) = self.qt_rx.try_iter().last() {

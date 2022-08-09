@@ -1,5 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
         include!("cxx-qt-lib/include/convert.h");
@@ -9,88 +9,97 @@ mod my_object {
         type MyObjectQt;
 
         #[cxx_name = "unsafe_rust"]
-        fn rust(self: &MyObjectQt) -> &RustObj;
+        fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "C++" {
         #[cxx_name = "unsafe_rust_mut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
-        type RustObj;
+        type MyObject;
 
         #[cxx_name = "testColorWrapper"]
         fn test_color_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             color: &QColor,
         ) -> UniquePtr<QColor>;
 
         #[cxx_name = "testDateWrapper"]
-        fn test_date_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, date: &QDate) -> QDate;
+        fn test_date_wrapper(self: &MyObject, _cpp: Pin<&mut MyObjectQt>, date: &QDate) -> QDate;
 
         #[cxx_name = "testDateTimeWrapper"]
         fn test_date_time_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             dateTime: &QDateTime,
         ) -> UniquePtr<QDateTime>;
 
         #[cxx_name = "testPointWrapper"]
-        fn test_point_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, point: &QPoint)
-            -> QPoint;
+        fn test_point_wrapper(
+            self: &MyObject,
+            _cpp: Pin<&mut MyObjectQt>,
+            point: &QPoint,
+        ) -> QPoint;
 
         #[cxx_name = "testPointfWrapper"]
         fn test_pointf_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             pointf: &QPointF,
         ) -> QPointF;
 
         #[cxx_name = "testRectWrapper"]
-        fn test_rect_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, rect: &QRect) -> QRect;
+        fn test_rect_wrapper(self: &MyObject, _cpp: Pin<&mut MyObjectQt>, rect: &QRect) -> QRect;
 
         #[cxx_name = "testRectfWrapper"]
-        fn test_rectf_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, rectf: &QRectF)
-            -> QRectF;
+        fn test_rectf_wrapper(
+            self: &MyObject,
+            _cpp: Pin<&mut MyObjectQt>,
+            rectf: &QRectF,
+        ) -> QRectF;
 
         #[cxx_name = "testSizeWrapper"]
-        fn test_size_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, size: &QSize) -> QSize;
+        fn test_size_wrapper(self: &MyObject, _cpp: Pin<&mut MyObjectQt>, size: &QSize) -> QSize;
 
         #[cxx_name = "testSizefWrapper"]
-        fn test_sizef_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, sizef: &QSizeF)
-            -> QSizeF;
+        fn test_sizef_wrapper(
+            self: &MyObject,
+            _cpp: Pin<&mut MyObjectQt>,
+            sizef: &QSizeF,
+        ) -> QSizeF;
 
         #[cxx_name = "testStringWrapper"]
         fn test_string_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             string: &QString,
         ) -> UniquePtr<QString>;
 
         #[cxx_name = "testTimeWrapper"]
-        fn test_time_wrapper(self: &RustObj, _cpp: Pin<&mut MyObjectQt>, time: &QTime) -> QTime;
+        fn test_time_wrapper(self: &MyObject, _cpp: Pin<&mut MyObjectQt>, time: &QTime) -> QTime;
 
         #[cxx_name = "testUrlWrapper"]
         fn test_url_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             url: &QUrl,
         ) -> UniquePtr<QUrl>;
 
         #[cxx_name = "testVariantWrapper"]
         fn test_variant_wrapper(
-            self: &RustObj,
+            self: &MyObject,
             _cpp: Pin<&mut MyObjectQt>,
             variant: &QVariant,
         ) -> UniquePtr<QVariant>;
 
         #[cxx_name = "createRs"]
-        fn create_rs() -> Box<RustObj>;
+        fn create_rs() -> Box<MyObject>;
 
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
@@ -115,17 +124,17 @@ mod my_object {
     }
 }
 
-pub use self::cxx_qt_my_object::*;
-mod cxx_qt_my_object {
-    use super::my_object::*;
+pub use self::cxx_qt_ffi::*;
+mod cxx_qt_ffi {
+    use super::ffi::*;
 
-    pub type FFICppObj = super::my_object::MyObjectQt;
+    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl RustObj {
+    impl MyObject {
         pub fn test_color_wrapper(
             &self,
             _cpp: std::pin::Pin<&mut FFICppObj>,
@@ -327,7 +336,7 @@ mod cxx_qt_my_object {
         }
     }
 
-    pub fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 

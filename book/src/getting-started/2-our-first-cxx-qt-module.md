@@ -29,16 +29,15 @@ Starting with the module definition:
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_bridge_macro}}
 ```
 
-Because we add the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to the module definition, CXX-Qt will create a new QObject subclass from this module.
-The new QObject subclass in our case will be named `MyObject`, as CXX-Qt automatically converts Rusts snake_case to the Qt default PascalCase.
-CXX-Qt is all about idiomatic code in both Rust and C++, so it will do its best to keep styling consistent for C++ and Rust as well.
+Because we add the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to the module definition,
+CXX-Qt will look inside the module for further macros which can define the QObject.
 
 For the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to work, we first need to define the data that will live in the new C++ object.
 This is done with the `Data` struct:
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_data_struct}}
 ```
-That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will again perform the snake_case to camelCase conversion to fit with C++/QML naming conventions.
+That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will perform the snake_case to camelCase conversion to fit with C++/QML naming conventions.
 
 Note that the data types we use here are normal Rust data types.
 CXX-Qt will automatically convert these types to their C++/Qt equivalent.
@@ -56,7 +55,7 @@ Now that we've defined the data that will live on the C++ side of things, let's 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_struct}}
 ```
-In our case, this is just an empty struct.
+The name of this struct is used as the name of the C++ QObject subclass, in our case this is just an empty struct.
 However, the `#[cxx_qt::qobject]` marked struct could contain any data we want.
 It is not converted into a C++ class, so it isn't limited to the Qt-compatible types that the `Data` struct is.
 

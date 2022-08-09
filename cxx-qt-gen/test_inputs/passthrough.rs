@@ -1,7 +1,7 @@
 #[attrA]
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 #[attrB]
-pub mod my_object {
+pub mod ffi {
     // ItemConst
     const MAX: u16 = 65535;
 
@@ -88,9 +88,9 @@ pub mod my_object {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl RustObj {
+    impl MyObject {
         fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
             optional
         }
@@ -100,7 +100,7 @@ pub mod my_object {
         }
     }
 
-    impl MyTrait for RustObj {
+    impl MyTrait for MyObject {
         fn my_func() -> String {
             "Hello".to_owned()
         }

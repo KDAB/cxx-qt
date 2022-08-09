@@ -52,11 +52,11 @@ impl From<Data> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
-    use super::DataSerde;
+const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
-    const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+mod ffi {
+    use super::{DataSerde, DEFAULT_STR};
 
     #[namespace = ""]
     unsafe extern "C++" {
@@ -87,9 +87,9 @@ mod my_object {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MyObject> {
         #[invokable]
         pub fn increment(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);

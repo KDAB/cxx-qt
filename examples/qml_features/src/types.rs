@@ -5,7 +5,7 @@
 
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(namespace = "cxx_qt::types")]
-mod types {
+mod ffi {
     use cxx_qt_lib::QVariantValue;
 
     #[namespace = ""]
@@ -28,9 +28,9 @@ mod types {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct Types;
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<Types> {
         #[invokable]
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
