@@ -4,11 +4,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[cxx_qt::bridge(namespace = "cxx_qt::empty")]
-mod empty {
+mod ffi {
     #[derive(Default)]
     pub struct Data;
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct Empty;
 }

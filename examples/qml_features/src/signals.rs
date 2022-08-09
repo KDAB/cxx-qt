@@ -5,7 +5,7 @@
 
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(namespace = "cxx_qt::signals")]
-pub mod signals {
+pub mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
@@ -14,7 +14,7 @@ pub mod signals {
     }
 
     // ANCHOR: book_signals_enum
-    #[cxx_qt::signals(RustObj)]
+    #[cxx_qt::signals(Signals)]
     pub enum Signal {
         Ready,
         RustDataChanged { data: i32 },
@@ -41,10 +41,10 @@ pub mod signals {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct Signals;
 
     // ANCHOR: book_rust_obj_impl
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<Signals> {
         #[invokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {

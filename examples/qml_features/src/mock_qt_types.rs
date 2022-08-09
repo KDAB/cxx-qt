@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[cxx_qt::bridge(namespace = "cxx_qt::mock_qt_types")]
-mod mock_qt_types {
+mod ffi {
     use cxx_qt_lib::QVariantValue;
 
     #[namespace = ""]
@@ -26,7 +26,7 @@ mod mock_qt_types {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[cxx_qt::signals(RustObj)]
+    #[cxx_qt::signals(MockQtTypes)]
     pub enum Signal {
         Ready,
         DataChanged { variant: UniquePtr<QVariant> },
@@ -73,9 +73,9 @@ mod mock_qt_types {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MockQtTypes;
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<MockQtTypes> {
         #[invokable]
         pub fn test_signal(&self, cpp: &mut CppObj) {
             cpp.emit_queued(Signal::Ready);

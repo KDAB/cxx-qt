@@ -1,5 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
-mod my_object {
+mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -20,7 +20,7 @@ mod my_object {
         fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
         #[cxx_name = "unsafe_rust"]
-        fn rust(self: &MyObjectQt) -> &RustObj;
+        fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
 
@@ -30,21 +30,21 @@ mod my_object {
 
     extern "C++" {
         #[cxx_name = "unsafe_rust_mut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut RustObj>;
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
-        type RustObj;
+        type MyObject;
 
         #[cxx_name = "createRs"]
-        fn create_rs() -> Box<RustObj>;
+        fn create_rs() -> Box<MyObject>;
 
         #[cxx_name = "initialiseCpp"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "handleUpdateRequest"]
-        fn call_handle_update_request(self: &mut RustObj, cpp: Pin<&mut MyObjectQt>);
+        fn call_handle_update_request(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
 
     #[namespace = ""]
@@ -54,19 +54,19 @@ mod my_object {
     }
 }
 
-pub use self::cxx_qt_my_object::*;
-mod cxx_qt_my_object {
-    use super::my_object::*;
+pub use self::cxx_qt_ffi::*;
+mod cxx_qt_ffi {
+    use super::ffi::*;
 
     use cxx_qt_lib::UpdateRequestHandler;
 
-    pub type FFICppObj = super::my_object::MyObjectQt;
+    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
-    pub struct RustObj;
+    pub struct MyObject;
 
-    impl RustObj {
+    impl MyObject {
         pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             let mut cpp = CppObj::new(cpp);
             self.handle_update_request(&mut cpp);
@@ -129,13 +129,13 @@ mod cxx_qt_my_object {
         }
     }
 
-    impl UpdateRequestHandler<CppObj> for RustObj {
+    impl UpdateRequestHandler<CppObj> for MyObject {
         fn handle_update_request(&mut self, _cpp: &mut CppObj) {
             println!("update")
         }
     }
 
-    pub fn create_rs() -> std::boxed::Box<RustObj> {
+    pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 

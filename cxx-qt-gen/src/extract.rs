@@ -664,7 +664,7 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         )
         .to_compile_error());
     }
-    let (_, qobject) = parser.cxx_qt_data.qobjects.drain().take(1).next().unwrap();
+    let (qt_ident, qobject) = parser.cxx_qt_data.qobjects.drain().take(1).next().unwrap();
 
     // Find the items from the module
     let original_mod = parser.passthrough_module.clone();
@@ -675,8 +675,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     let original_data_struct = qobject.data_struct;
     // The original RustObj Item::Struct if one is found
     let original_rust_struct = qobject.qobject_struct;
-    // The name of the Qt object we are creating
-    let qt_ident = quote::format_ident!("{}", original_mod.ident.to_string().to_case(Case::Pascal));
 
     // A list of the invokables for the struct
     let object_invokables = qobject
@@ -782,7 +780,7 @@ mod tests {
         if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[1] {
             if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
                 assert_eq!(path.segments.len(), 1);
-                assert_eq!(path.segments[0].ident.to_string(), "RustObj");
+                assert_eq!(path.segments[0].ident.to_string(), "MyObject");
             } else {
                 panic!("Trait impl was not a TypePath");
             }
@@ -799,8 +797,8 @@ mod tests {
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
-        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+        assert_eq!(qobject.original_mod.ident.to_string(), "ffi");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "MyObject");
 
         // Check that it got the invokables
         assert_eq!(qobject.invokables.len(), 9);
@@ -1007,8 +1005,8 @@ mod tests {
 
         // Check that it got the names right
         assert_eq!(qobject.ident.to_string(), "MyObject");
-        assert_eq!(qobject.original_mod.ident.to_string(), "my_object");
-        assert_eq!(qobject.original_rust_struct.ident.to_string(), "RustObj");
+        assert_eq!(qobject.original_mod.ident.to_string(), "ffi");
+        assert_eq!(qobject.original_rust_struct.ident.to_string(), "MyObject");
 
         // Check that it got the inovkables and properties
         assert_eq!(qobject.invokables.len(), 0);

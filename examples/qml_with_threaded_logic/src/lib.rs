@@ -10,7 +10,7 @@ enum Event {
 }
 
 #[cxx_qt::bridge(namespace = "cxx_qt::website")]
-mod website {
+mod ffi {
     use super::Event;
     use futures::{
         channel::mpsc::{UnboundedReceiver, UnboundedSender},
@@ -45,13 +45,13 @@ mod website {
     }
 
     #[cxx_qt::qobject]
-    pub struct RustObj {
+    pub struct Website {
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,
         loading: AtomicBool,
     }
 
-    impl Default for RustObj {
+    impl Default for Website {
         fn default() -> Self {
             let (event_sender, event_queue) = futures::channel::mpsc::unbounded();
 
@@ -63,7 +63,7 @@ mod website {
         }
     }
 
-    impl cxx_qt::QObject<RustObj> {
+    impl cxx_qt::QObject<Website> {
         #[invokable]
         pub fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url().to_string();
@@ -133,7 +133,7 @@ mod website {
     }
 
     // ANCHOR: book_update_request_handler
-    impl UpdateRequestHandler<CppObj<'_>> for RustObj {
+    impl UpdateRequestHandler<CppObj<'_>> for Website {
         fn handle_update_request(&mut self, cpp: &mut CppObj) {
             while let Some(event) = self.event_queue.next().now_or_never() {
                 if let Some(event) = event {
