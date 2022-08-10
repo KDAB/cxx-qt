@@ -361,6 +361,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let namespace = &obj.namespace;
 
     // Build the module ident
+    let mod_attrs = &obj.original_mod.attrs;
     let mod_ident = &obj.original_mod.ident;
     let mod_vis = &obj.original_mod.vis;
 
@@ -386,6 +387,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
     let output = quote! {
         #[cxx::bridge(namespace = #namespace)]
+        #(#mod_attrs)*
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
@@ -721,13 +723,9 @@ fn invokable_generate_wrapper(
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Load macro attributes that were on the module
-    let mod_attrs = &obj.original_mod.attrs;
-
     // Cache the original module ident and visibility
     let mod_ident = &obj.original_mod.ident;
     let cxx_qt_mod_ident = format_ident!("cxx_qt_{}", mod_ident);
-    let mod_vis = &obj.original_mod.vis;
     let class_name = &obj.ident;
 
     // Cache the rust class name
@@ -933,8 +931,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         #cxx_block
 
         pub use self::#cxx_qt_mod_ident::*;
-        #(#mod_attrs)*
-        #mod_vis mod #cxx_qt_mod_ident {
+        mod #cxx_qt_mod_ident {
             use super::#mod_ident::*;
 
             #(#use_traits)*
