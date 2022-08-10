@@ -367,6 +367,20 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Retrieve the passthrough items to CXX
     let cxx_items = &obj.cxx_items;
 
+    // For now we always include QObject, but when a base class can be specified this will
+    // become None and require the include to be in the extern "C++" block
+    //
+    // Note that quote formats this with spaces but it is valid syntax for CXX
+    // https://github.com/dtolnay/cxx/blob/1862c5dad56c3da71420c5dca6e80ab788bb193d/syntax/parse.rs#L1101
+    let qt_include = quote! { <QtCore/QObject> };
+
+    // Add an include for the UpdateRequester if it is used
+    let update_requester_include = if obj.handle_updates_impl.is_some() {
+        quote! { include!("cxx-qt-lib/include/update_requester.h"); }
+    } else {
+        quote! {}
+    };
+
     // Build the CXX bridge
     let class_name_str = class_name.to_string();
     let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
@@ -375,6 +389,9 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
+                include!("cxx-qt-lib/include/convert.h");
+                #update_requester_include
+                include!(#qt_include);
 
                 #[cxx_name = #class_name_str]
                 type #rust_class_name_cpp;

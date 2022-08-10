@@ -1,12 +1,15 @@
 #pragma once
 
+#include <memory>
 #include <mutex>
 
-#include "cxx-qt-lib/include/qt_types.h"
+namespace cxx_qt::my_object {
+class MyObject;
+} // namespace cxx_qt::my_object
+
+#include "cxx-qt-gen/include/my_object.cxx.h"
 
 namespace cxx_qt::my_object {
-
-class MyObjectRust;
 
 class MyObject : public QObject
 {

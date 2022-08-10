@@ -19,9 +19,6 @@ trait CppType {
     fn as_ptr_str(&self) -> &str;
     /// String representation of the ref part of this type
     fn as_ref_str(&self) -> &str;
-    /// Any include paths for this type, this is used for Ptr types
-    /// for example so that when Object uses SubObject it includes sub_object.h
-    fn include_paths(&self) -> Vec<String>;
     /// Whether this type is a const (when used as an input to methods)
     fn is_const(&self) -> bool;
     /// Whether this type is a Pin<T>
@@ -61,28 +58,6 @@ impl CppType for QtTypes {
             "&"
         } else {
             ""
-        }
-    }
-
-    /// Any include paths for this type, this is used for Ptr types
-    /// for example so that when Object uses SubObject it includes sub_object.h
-    fn include_paths(&self) -> Vec<String> {
-        match self {
-            Self::QColor => vec!["#include <QtGui/QColor>".to_owned()],
-            Self::QDate => vec!["#include <QtCore/QDate>".to_owned()],
-            Self::QDateTime => vec!["#include <QtCore/QDateTime>".to_owned()],
-            Self::QPoint => vec!["#include <QtCore/QPoint>".to_owned()],
-            Self::QPointF => vec!["#include <QtCore/QPointF>".to_owned()],
-            Self::QRect => vec!["#include <QtCore/QRect>".to_owned()],
-            Self::QRectF => vec!["#include <QtCore/QRectF>".to_owned()],
-            Self::QSize => vec!["#include <QtCore/QSize>".to_owned()],
-            Self::QSizeF => vec!["#include <QtCore/QSizeF>".to_owned()],
-            Self::QString => vec!["#include <QtCore/QString>".to_owned()],
-            Self::QTime => vec!["#include <QtCore/QTime>".to_owned()],
-            Self::QUrl => vec!["#include <QtCore/QUrl>".to_owned()],
-            Self::QVariant => vec!["#include <QtCore/QVariant>".to_owned()],
-            Self::UniquePtr { inner } => inner.include_paths(),
-            _others => vec![],
         }
     }
 
@@ -226,8 +201,6 @@ struct CppParameter<'a> {
 /// Describes a C++ invokable with header and source parts
 #[derive(Debug)]
 struct CppInvokable {
-    /// Any extra include that is required for the invokable
-    header_includes: Vec<String>,
     /// The header definition of the invokable
     header: String,
     /// The source implementation of the invokable
@@ -236,8 +209,6 @@ struct CppInvokable {
 /// Describes a C++ signal with header and source parts
 #[derive(Debug)]
 struct CppSignal {
-    /// Any extra include that is required for the signal
-    header_includes: Vec<String>,
     /// Any public methods that are defined by the signal
     header_public: Vec<String>,
     /// Any signals that are defined by the signal
@@ -248,8 +219,6 @@ struct CppSignal {
 /// Describes a C++ property with header and source parts
 #[derive(Debug)]
 struct CppProperty {
-    /// Any extra include that is required for the property
-    header_includes: Vec<String>,
     /// Any members that are required for the property
     header_members: Vec<String>,
     /// The header meta definition of the invokable
@@ -309,9 +278,6 @@ fn generate_invokables_cpp(
         // This includes the const, ref, ptr, type, and ident of the parameter
         // eg this could be "const QString& string" or "MyObject* object"
         args: Vec<String>,
-        // These are a list of the include paths for the parameters types
-        // This is used for if a SubObject is in a parameter.
-        include_paths: Vec<String>,
         // These are a list of names of the parameters
         // If the parameter has a converter then it could be the name wrapped in a converted
         // eg this could be "arg1" or "converter(arg1)" or "*this"
@@ -325,7 +291,6 @@ fn generate_invokables_cpp(
             .fold(
                 CppParameterHelper {
                     args: vec![],
-                    include_paths: vec![],
                     names: vec![],
                 },
                 |mut acc, parameter| {
@@ -343,12 +308,6 @@ fn generate_invokables_cpp(
                             is_ptr = parameter.type_ident.as_ptr_str(),
                             type_ident = parameter.type_ident.type_ident()
                         ));
-
-                        // Add any includes paths for the type
-                        //
-                        // We do not need to do this when we are "this"
-                        acc.include_paths
-                            .append(&mut parameter.type_ident.include_paths());
                     }
 
                     // Build the parameter names
@@ -395,7 +354,6 @@ fn generate_invokables_cpp(
 
         // Prepare the CppInvokable
         items.push(CppInvokable {
-            header_includes: parameters.include_paths,
             // TODO: detect if method is const from whether we have &self or &mut self in rust
             // TODO: also needs to consider if there is a Pin<&mut T> as we need non-const if
             // we are passing *this across for cpp objects in rust.
@@ -472,9 +430,6 @@ fn generate_properties_cpp(
 
         // Build a basic C++ property with parts that are defined if the property is a pointer or not
         let mut cpp_property = CppProperty {
-            // Set any includes from the type of the property
-            // eg this is used if the type is a pointer to include that type
-            header_includes: parameter.type_ident.include_paths(),
             // Members are defined later for only the pointer
             header_members: vec![],
             // Set the Q_PROPERTY for the C++ class
@@ -674,7 +629,6 @@ fn generate_signals_cpp(
     let mut items: Vec<CppSignal> = vec![];
 
     for signal in signals {
-        let mut header_includes = vec![];
         let mut header_public = vec![];
         let mut header_signals = vec![];
 
@@ -706,8 +660,6 @@ fn generate_signals_cpp(
             .parameters
             .iter()
             .map(|parameter| {
-                header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
-
                 format!(
                     "{type_ident} {ident}",
                     ident = parameter.ident,
@@ -721,8 +673,6 @@ fn generate_signals_cpp(
             .parameters
             .iter()
             .map(|parameter| {
-                header_includes.append(&mut parameter.type_ident.qt_type.include_paths());
-
                 format!(
                     "{type_ident} {ident}",
                     ident = parameter.ident,
@@ -776,7 +726,6 @@ fn generate_signals_cpp(
         };
 
         items.push(CppSignal {
-            header_includes,
             header_public,
             header_signals,
             source,
@@ -793,7 +742,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // A helper which allows us to flatten data from vec of properties
     struct CppPropertyHelper {
-        headers_includes: Vec<String>,
         headers_members: Vec<String>,
         headers_meta: Vec<String>,
         headers_public: Vec<String>,
@@ -807,7 +755,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         .drain(..)
         .fold(
             CppPropertyHelper {
-                headers_includes: vec![],
                 headers_members: vec![],
                 headers_meta: vec![],
                 headers_public: vec![],
@@ -816,7 +763,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
                 sources: vec![],
             },
             |mut acc, mut property| {
-                acc.headers_includes.append(&mut property.header_includes);
                 acc.headers_meta.append(&mut property.header_meta);
                 acc.headers_members.append(&mut property.header_members);
                 acc.headers_public.append(&mut property.header_public);
@@ -829,22 +775,19 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // A helper which allows us to flatten data from vec of invokables
     struct CppInvokableHelper {
-        headers_includes: Vec<String>,
         headers: Vec<String>,
         sources: Vec<String>,
     }
 
     // Build CppInvokable's for the object, then drain them into our CppInvokableHelper
-    let mut invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
+    let invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
         .drain(..)
         .fold(
             CppInvokableHelper {
-                headers_includes: vec![],
                 headers: vec![],
                 sources: vec![],
             },
-            |mut acc, mut invokable| {
-                acc.headers_includes.append(&mut invokable.header_includes);
+            |mut acc, invokable| {
                 acc.headers.push(invokable.header);
                 acc.sources.push(invokable.source);
                 acc
@@ -853,7 +796,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // A helper which allows us to flatten data from vec of signals
     struct CppSignalHelper {
-        headers_includes: Vec<String>,
         headers_public: Vec<String>,
         headers_signals: Vec<String>,
         sources: Vec<String>,
@@ -863,13 +805,11 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         .drain(..)
         .fold(
             CppSignalHelper {
-                headers_includes: vec![],
                 headers_public: vec![],
                 headers_signals: vec![],
                 sources: vec![],
             },
             |mut acc, mut signal| {
-                acc.headers_includes.append(&mut signal.header_includes);
                 acc.headers_public.append(&mut signal.header_public);
                 acc.headers_signals.append(&mut signal.header_signals);
                 acc.sources.push(signal.source);
@@ -935,15 +875,16 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let header = formatdoc! {r#"
         #pragma once
 
+        #include <memory>
         #include <mutex>
 
-        #include "cxx-qt-lib/include/qt_types.h"
+        namespace {namespace} {{
+            class {ident};
+        }} // namespace {namespace}
 
-        {includes}
+        #include "cxx-qt-gen/include/{ident_snake}.cxx.h"
 
         namespace {namespace} {{
-
-        class {rust_struct_ident};
 
         class {ident} : public QObject {{
             Q_OBJECT
@@ -984,17 +925,9 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         Q_DECLARE_METATYPE({namespace}::CppObj*)
         "#,
     ident = struct_ident_str,
+    ident_snake = struct_ident_str.to_case(Case::Snake),
     invokables = invokables.headers.join("\n"),
     members_private = properties.headers_members.join("\n"),
-    includes = {
-        let mut includes = properties.headers_includes;
-        includes.append(&mut invokables.headers_includes);
-        includes.append(&mut signals.headers_includes);
-        // Sort and remove duplicates
-        includes.sort();
-        includes.dedup();
-        includes.join("\n")
-    },
     namespace = obj.namespace,
     properties_meta = properties.headers_meta.join("\n"),
     properties_public = properties.headers_public.join("\n"),
@@ -1007,7 +940,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // Generate C++ source part
     let source = formatdoc! {r#"
-        #include "cxx-qt-gen/include/{ident_snake}.cxx.h"
         #include "cxx-qt-gen/include/{ident_snake}.cxxqt.h"
 
         namespace {namespace} {{

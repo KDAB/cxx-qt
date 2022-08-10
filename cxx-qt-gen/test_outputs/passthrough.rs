@@ -2,6 +2,8 @@
 pub mod my_object {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
+        include!("cxx-qt-lib/include/convert.h");
+        include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
         type MyObjectQt;
