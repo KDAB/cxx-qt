@@ -23,27 +23,6 @@ pub(crate) struct CppRustIdent {
 #[derive(Debug, PartialEq)]
 pub(crate) enum QtTypes {
     Bool,
-    /// A CppObj which is being passed as a parameter in a method
-    CppObj {
-        /// The ident of the type for C++, eg the MyObject or CppObj from:
-        /// C++ - MyObject or cxx_qt::sub_object::CppObj
-        cpp_type_idents: Vec<Ident>,
-        /// A cache of the C++ type as a string with the namespace
-        /// eg "cxx_qt::module::CppObj"
-        cpp_type_idents_string: String,
-        /// The ident of the type for Rust, eg the MyObject or CppObj from:
-        /// Rust - MyObject or crate::sub_object::CppObj
-        rust_type_idents: Vec<Ident>,
-        /// The combined name of the type, this is a single word which is used
-        /// as the type name of the C++ type in the Rust cxx bridge
-        /// eg MyObject or SubObject
-        /// This needs the match the name of the C++ class without namespace
-        /// as we add this in the macro attribute
-        //
-        // TODO: later can we use the fully qualified path
-        // eg crate::my_module::CppObj to Crate_MyModule_CppObj?
-        combined_name: Ident,
-    },
     F32,
     F64,
     I8,
@@ -65,25 +44,19 @@ pub(crate) enum QtTypes {
     U8,
     U16,
     U32,
-    UniquePtr {
-        inner: Box<QtTypes>,
-    },
+    UniquePtr { inner: Box<QtTypes> },
     Unknown,
 }
 
 impl QtTypes {
     /// Whether this type is allowed to be a ref mut
     fn ref_mut_is_valid(&self) -> bool {
-        match self {
-            Self::CppObj { .. } => true,
-            _others => false,
-        }
+        false
     }
 
     /// Whether this type is opaque so will be a UniquePtr<T> when returned from Rust to C++
     pub(crate) fn is_opaque(&self) -> bool {
         match self {
-            Self::CppObj { .. } => true,
             Self::UniquePtr { .. } => true,
             _others => false,
         }
@@ -117,7 +90,7 @@ pub(crate) struct Invokable {
     /// The ident of the function
     pub(crate) ident: CppRustIdent,
     /// If the invokable needs a wrapper, this is it's ident
-    pub(crate) ident_wrapper: Option<CppRustIdent>,
+    pub(crate) ident_wrapper: CppRustIdent,
     /// The parameters that the function takes in
     pub(crate) parameters: Vec<Parameter>,
     /// The return type information
@@ -224,12 +197,6 @@ fn extract_qt_type(
         // We can assume that idents has an entry at index zero, because there is one entry
         match idents[0].to_string().as_str() {
             "bool" => Ok(QtTypes::Bool),
-            "CppObj" => Ok(QtTypes::CppObj {
-                cpp_type_idents: vec![qt_ident.clone()],
-                cpp_type_idents_string: qt_ident.to_string(),
-                rust_type_idents: vec![quote::format_ident!("{}Qt", qt_ident)],
-                combined_name: qt_ident.clone(),
-            }),
             "f32" => Ok(QtTypes::F32),
             "f64" => Ok(QtTypes::F64),
             "i8" => Ok(QtTypes::I8),
@@ -379,6 +346,10 @@ pub(crate) fn extract_method_params(
                     );
                 };
 
+                if parameter_ident == "self" {
+                    return Ok(None);
+                }
+
                 // Try to extract the type of the parameter
                 match extract_type_ident(ty, qt_ident) {
                     Ok(result) => type_ident = result,
@@ -426,11 +397,36 @@ pub(crate) fn extract_method_params(
 // Note that self: Box<Self> is parsed as FnArg::Typed not FnArg::Receiver so will be false
 // but we don't use this case with CXX, so this can be ignored.
 fn is_method_mutable(method: &ImplItemMethod) -> bool {
-    if let Some(FnArg::Receiver(Receiver { mutability, .. })) = method.sig.inputs.first() {
-        return mutability.is_some();
-    }
+    match method.sig.inputs.first() {
+        Some(FnArg::Receiver(Receiver { mutability, .. })) => mutability.is_some(),
+        Some(FnArg::Typed(PatType { ty, pat, .. })) => {
+            if let Pat::Ident(PatIdent { ident, .. }) = pat.as_ref() {
+                if ident != "self" {
+                    return false;
+                }
+            }
+            if let Type::Path(TypePath { path, .. }) = ty.as_ref() {
+                if !crate::syntax::path::path_compare_str(path, &["Pin"]) {
+                    return false;
+                }
 
-    false
+                if let Some(last) = path.segments.last() {
+                    if let PathArguments::AngleBracketed(args) = &last.arguments {
+                        // TODO: Maybe check that the reference is of type `Self`.
+                        if let Some(GenericArgument::Type(Type::Reference(TypeReference {
+                            mutability: Some(_),
+                            ..
+                        }))) = args.args.first()
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            false
+        }
+        _ => false,
+    }
 }
 
 fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invokable, TokenStream> {
@@ -479,21 +475,10 @@ fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invoka
     };
 
     // We need a wrapper for any opaque types or pointers in the parameters or return types
-    let ident_wrapper = if return_type
-        .as_ref()
-        .map_or(false, |return_type| return_type.qt_type.is_opaque())
-        || parameters
-            .iter()
-            .any(|parameter| parameter.type_ident.qt_type.is_opaque())
-    {
-        Some(CppRustIdent {
-            cpp_ident: quote::format_ident!("{}Wrapper", ident_method.cpp_ident),
-            rust_ident: quote::format_ident!("{}_wrapper", ident_method.rust_ident),
-        })
-    } else {
-        None
+    let ident_wrapper = CppRustIdent {
+        cpp_ident: quote::format_ident!("{}Wrapper", ident_method.cpp_ident),
+        rust_ident: quote::format_ident!("{}_wrapper", ident_method.rust_ident),
     };
-
     Ok(Invokable {
         ident: ident_method,
         ident_wrapper,
@@ -805,7 +790,7 @@ mod tests {
         assert_eq!(qobject.original_rust_struct.ident.to_string(), "MyObject");
 
         // Check that it got the invokables
-        assert_eq!(qobject.invokables.len(), 9);
+        assert_eq!(qobject.invokables.len(), 6);
 
         let mut invokables = qobject.invokables.into_iter();
         // Check empty invokable ident
@@ -816,22 +801,6 @@ mod tests {
         assert!(invokable.return_type.is_none());
         assert!(!invokable.mutable);
 
-        // Check CppObj invokable
-        let invokable = invokables.next().unwrap();
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableCppObj");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_cpp_obj");
-        assert_eq!(invokable.parameters.len(), 1);
-        assert!(invokable.return_type.is_none());
-        assert!(!invokable.mutable);
-        let parameter = &invokable.parameters[0];
-        assert_eq!(parameter.ident.to_string(), "cpp");
-        assert!(std::matches!(
-            &parameter.type_ident.qt_type,
-            QtTypes::CppObj { .. }
-        ));
-        assert!(parameter.type_ident.is_ref);
-        assert!(parameter.type_ident.is_mut);
-
         // Check the mutable invokable
         let invokable = invokables.next().unwrap();
         assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableMutable");
@@ -839,28 +808,6 @@ mod tests {
         assert_eq!(invokable.parameters.len(), 0);
         assert!(invokable.return_type.is_none());
         assert!(invokable.mutable);
-
-        // Check the mutable CppObj invokable
-        let invokable = invokables.next().unwrap();
-        assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableMutableCppObj"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_mutable_cpp_obj"
-        );
-        assert_eq!(invokable.parameters.len(), 1);
-        assert!(invokable.return_type.is_none());
-        assert!(invokable.mutable);
-        let parameter = &invokable.parameters[0];
-        assert_eq!(parameter.ident.to_string(), "cpp");
-        assert!(std::matches!(
-            &parameter.type_ident.qt_type,
-            QtTypes::CppObj { .. }
-        ));
-        assert!(parameter.type_ident.is_ref);
-        assert!(parameter.type_ident.is_mut);
 
         // Check Parameters invokable
         let invokable = invokables.next().unwrap();
@@ -884,32 +831,6 @@ mod tests {
         assert_eq!(parameter.ident.to_string(), "primitive");
         assert!(!parameter.type_ident.is_ref);
         assert!(!parameter.type_ident.is_mut);
-
-        // Check Parameters CppObj invokable
-        let invokable = invokables.next().unwrap();
-        assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableParametersCppObj"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_parameters_cpp_obj"
-        );
-        assert_eq!(invokable.parameters.len(), 2);
-        assert!(invokable.return_type.is_none());
-        assert!(!invokable.mutable);
-        let parameter = &invokable.parameters[0];
-        assert_eq!(parameter.ident.to_string(), "primitive");
-        assert!(!parameter.type_ident.is_ref);
-        assert!(!parameter.type_ident.is_mut);
-        let parameter = &invokable.parameters[1];
-        assert_eq!(parameter.ident.to_string(), "cpp");
-        assert!(std::matches!(
-            &parameter.type_ident.qt_type,
-            QtTypes::CppObj { .. }
-        ));
-        assert!(parameter.type_ident.is_ref);
-        assert!(parameter.type_ident.is_mut);
 
         // Check return opaque invokable
         let invokable = invokables.next().unwrap();
@@ -954,7 +875,7 @@ mod tests {
         assert!(invokable.mutable);
 
         // Check that the normal method was also detected
-        assert_eq!(qobject.methods.len(), 4);
+        assert_eq!(qobject.methods.len(), 3);
         assert_eq!(qobject.original_passthrough_decls.len(), 1);
     }
 

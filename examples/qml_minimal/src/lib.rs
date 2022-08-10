@@ -42,8 +42,9 @@ mod ffi {
     // ANCHOR: book_rustobj_impl
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn increment_number(&self, cpp: &mut CppObj) {
-            cpp.set_number(cpp.number() + 1);
+        pub fn increment_number(self: Pin<&mut Self>) {
+            let previous = self.as_ref().number();
+            self.set_number(previous + 1);
         }
 
         #[qinvokable]

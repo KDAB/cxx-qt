@@ -130,138 +130,29 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {}
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn color(&self) -> &cxx_qt_lib::QColor {
-            self.cpp.color()
-        }
-
-        pub fn set_color(&mut self, value: &cxx_qt_lib::QColor) {
-            self.cpp.as_mut().set_color(value);
-        }
-
-        pub fn date(&self) -> &cxx_qt_lib::QDate {
-            self.cpp.date()
-        }
-
-        pub fn set_date(&mut self, value: &cxx_qt_lib::QDate) {
-            self.cpp.as_mut().set_date(value);
-        }
-
-        pub fn date_time(&self) -> &cxx_qt_lib::QDateTime {
-            self.cpp.date_time()
-        }
-
-        pub fn set_date_time(&mut self, value: &cxx_qt_lib::QDateTime) {
-            self.cpp.as_mut().set_date_time(value);
-        }
-
-        pub fn point(&self) -> &cxx_qt_lib::QPoint {
-            self.cpp.point()
-        }
-
-        pub fn set_point(&mut self, value: &cxx_qt_lib::QPoint) {
-            self.cpp.as_mut().set_point(value);
-        }
-
-        pub fn pointf(&self) -> &cxx_qt_lib::QPointF {
-            self.cpp.pointf()
-        }
-
-        pub fn set_pointf(&mut self, value: &cxx_qt_lib::QPointF) {
-            self.cpp.as_mut().set_pointf(value);
-        }
-
-        pub fn rect(&self) -> &cxx_qt_lib::QRect {
-            self.cpp.rect()
-        }
-
-        pub fn set_rect(&mut self, value: &cxx_qt_lib::QRect) {
-            self.cpp.as_mut().set_rect(value);
-        }
-
-        pub fn rectf(&self) -> &cxx_qt_lib::QRectF {
-            self.cpp.rectf()
-        }
-
-        pub fn set_rectf(&mut self, value: &cxx_qt_lib::QRectF) {
-            self.cpp.as_mut().set_rectf(value);
-        }
-
-        pub fn size(&self) -> &cxx_qt_lib::QSize {
-            self.cpp.size()
-        }
-
-        pub fn set_size(&mut self, value: &cxx_qt_lib::QSize) {
-            self.cpp.as_mut().set_size(value);
-        }
-
-        pub fn sizef(&self) -> &cxx_qt_lib::QSizeF {
-            self.cpp.sizef()
-        }
-
-        pub fn set_sizef(&mut self, value: &cxx_qt_lib::QSizeF) {
-            self.cpp.as_mut().set_sizef(value);
-        }
-
-        pub fn string(&self) -> &cxx_qt_lib::QString {
-            self.cpp.string()
-        }
-
-        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
-            self.cpp.as_mut().set_string(value);
-        }
-
-        pub fn time(&self) -> &cxx_qt_lib::QTime {
-            self.cpp.time()
-        }
-
-        pub fn set_time(&mut self, value: &cxx_qt_lib::QTime) {
-            self.cpp.as_mut().set_time(value);
-        }
-
-        pub fn url(&self) -> &cxx_qt_lib::QUrl {
-            self.cpp.url()
-        }
-
-        pub fn set_url(&mut self, value: &cxx_qt_lib::QUrl) {
-            self.cpp.as_mut().set_url(value);
-        }
-
-        pub fn variant(&self) -> &cxx_qt_lib::QVariant {
-            self.cpp.variant()
-        }
-
-        pub fn set_variant(&mut self, value: &cxx_qt_lib::QVariant) {
-            self.cpp.as_mut().set_variant(value);
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_color(data.color.as_ref().unwrap());
-            self.set_date(&data.date);
-            self.set_date_time(data.date_time.as_ref().unwrap());
-            self.set_point(&data.point);
-            self.set_pointf(&data.pointf);
-            self.set_rect(&data.rect);
-            self.set_rectf(&data.rectf);
-            self.set_size(&data.size);
-            self.set_sizef(&data.sizef);
-            self.set_string(data.string.as_ref().unwrap());
-            self.set_time(&data.time);
-            self.set_url(data.url.as_ref().unwrap());
-            self.set_variant(data.variant.as_ref().unwrap());
+    impl MyObjectQt {
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_color(data.color.as_ref().unwrap());
+            self.as_mut().set_date(&data.date);
+            self.as_mut()
+                .set_date_time(data.date_time.as_ref().unwrap());
+            self.as_mut().set_point(&data.point);
+            self.as_mut().set_pointf(&data.pointf);
+            self.as_mut().set_rect(&data.rect);
+            self.as_mut().set_rectf(&data.rectf);
+            self.as_mut().set_size(&data.size);
+            self.as_mut().set_sizef(&data.sizef);
+            self.as_mut().set_string(data.string.as_ref().unwrap());
+            self.as_mut().set_time(&data.time);
+            self.as_mut().set_url(data.url.as_ref().unwrap());
+            self.as_mut().set_variant(data.variant.as_ref().unwrap());
         }
     }
 
@@ -282,8 +173,8 @@ mod cxx_qt_ffi {
         variant: UniquePtr<QVariant>,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 color: value.color().into(),
                 date: value.date().into(),
@@ -302,18 +193,11 @@ mod cxx_qt_ffi {
         }
     }
 
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
-        }
-    }
-
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }

@@ -37,9 +37,9 @@ mod ffi {
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn double_number_self(&self, cpp: &mut CppObj) {
-            let value = cpp.number() * 2;
-            cpp.set_number(value);
+        pub fn double_number_self(self: Pin<&mut Self>) {
+            let value = self.number() * 2;
+            self.set_number(value);
         }
 
         #[qinvokable]
@@ -56,20 +56,20 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn request_update_test(&self, cpp: &mut CppObj) {
-            let update_requester = cpp.update_requester();
+        pub fn request_update_test(self: Pin<&mut Self>) {
+            let update_requester = self.update_requester();
             update_requester.request_update();
         }
 
         #[qinvokable]
-        pub fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
+        pub fn request_update_test_multi_thread(mut self: Pin<&mut Self>) {
             static N_THREADS: usize = 100;
             static N_REQUESTS: std::sync::atomic::AtomicUsize =
                 std::sync::atomic::AtomicUsize::new(0);
 
             let mut handles = Vec::new();
             for _ in 0..N_THREADS {
-                let update_requester = cpp.update_requester();
+                let update_requester = self.as_mut().update_requester();
                 handles.push(std::thread::spawn(move || {
                     update_requester.request_update();
                     N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -89,13 +89,15 @@ mod ffi {
 
         #[qinvokable]
         pub fn update_call_count(&self) -> i32 {
-            self.update_call_count
+            self.rust().update_call_count
         }
     }
 
-    impl UpdateRequestHandler<CppObj<'_>> for MyObject {
-        fn handle_update_request(&mut self, _cpp: &mut CppObj) {
-            self.update_call_count += 1;
+    impl UpdateRequestHandler for cxx_qt::QObject<MyObject> {
+        fn handle_update_request(self: Pin<&mut Self>) {
+            unsafe {
+                self.rust_mut().update_call_count += 1;
+            }
         }
     }
 }

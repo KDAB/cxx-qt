@@ -7,6 +7,8 @@
 mod types;
 pub use types::*;
 
-pub trait UpdateRequestHandler<C> {
-    fn handle_update_request(&mut self, cpp: &mut C);
+use std::pin::Pin;
+
+pub trait UpdateRequestHandler {
+    fn handle_update_request(self: Pin<&mut Self>);
 }

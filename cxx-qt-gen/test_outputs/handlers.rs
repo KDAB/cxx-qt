@@ -75,48 +75,21 @@ mod cxx_qt_ffi {
 
     use cxx_qt_lib::UpdateRequestHandler;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {
         pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
-            let mut cpp = CppObj::new(cpp);
-            self.handle_update_request(&mut cpp);
+            cpp.handle_update_request();
         }
     }
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn number(&self) -> i32 {
-            self.cpp.number()
-        }
-
-        pub fn set_number(&mut self, value: i32) {
-            self.cpp.as_mut().set_number(value);
-        }
-
-        pub fn string(&self) -> &cxx_qt_lib::QString {
-            self.cpp.string()
-        }
-
-        pub fn set_string(&mut self, value: &cxx_qt_lib::QString) {
-            self.cpp.as_mut().set_string(value);
-        }
-
-        pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
-            cxx_qt_lib::UpdateRequester::from_unique_ptr(self.cpp.as_mut().update_requester())
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_number(data.number);
-            self.set_string(&data.string);
+    impl MyObjectQt {
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_number(data.number);
+            self.as_mut().set_string(&data.string);
         }
     }
 
@@ -126,8 +99,8 @@ mod cxx_qt_ffi {
         string: QString,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 number: value.number().into(),
                 string: value.string().into(),
@@ -135,14 +108,8 @@ mod cxx_qt_ffi {
         }
     }
 
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
-        }
-    }
-
-    impl UpdateRequestHandler<CppObj> for MyObject {
-        fn handle_update_request(&mut self, _cpp: &mut CppObj) {
+    impl UpdateRequestHandler for MyObjectQt {
+        fn handle_update_request(self: Pin<&mut Self>) {
             println!("update")
         }
     }
@@ -151,8 +118,7 @@ mod cxx_qt_ffi {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }

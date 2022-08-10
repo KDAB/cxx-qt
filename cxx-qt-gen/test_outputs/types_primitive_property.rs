@@ -92,102 +92,24 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {}
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn boolean(&self) -> bool {
-            self.cpp.boolean()
-        }
-
-        pub fn set_boolean(&mut self, value: bool) {
-            self.cpp.as_mut().set_boolean(value);
-        }
-
-        pub fn float_32(&self) -> f32 {
-            self.cpp.float_32()
-        }
-
-        pub fn set_float_32(&mut self, value: f32) {
-            self.cpp.as_mut().set_float_32(value);
-        }
-
-        pub fn float_64(&self) -> f64 {
-            self.cpp.float_64()
-        }
-
-        pub fn set_float_64(&mut self, value: f64) {
-            self.cpp.as_mut().set_float_64(value);
-        }
-
-        pub fn int_8(&self) -> i8 {
-            self.cpp.int_8()
-        }
-
-        pub fn set_int_8(&mut self, value: i8) {
-            self.cpp.as_mut().set_int_8(value);
-        }
-
-        pub fn int_16(&self) -> i16 {
-            self.cpp.int_16()
-        }
-
-        pub fn set_int_16(&mut self, value: i16) {
-            self.cpp.as_mut().set_int_16(value);
-        }
-
-        pub fn int_32(&self) -> i32 {
-            self.cpp.int_32()
-        }
-
-        pub fn set_int_32(&mut self, value: i32) {
-            self.cpp.as_mut().set_int_32(value);
-        }
-
-        pub fn uint_8(&self) -> u8 {
-            self.cpp.uint_8()
-        }
-
-        pub fn set_uint_8(&mut self, value: u8) {
-            self.cpp.as_mut().set_uint_8(value);
-        }
-
-        pub fn uint_16(&self) -> u16 {
-            self.cpp.uint_16()
-        }
-
-        pub fn set_uint_16(&mut self, value: u16) {
-            self.cpp.as_mut().set_uint_16(value);
-        }
-
-        pub fn uint_32(&self) -> u32 {
-            self.cpp.uint_32()
-        }
-
-        pub fn set_uint_32(&mut self, value: u32) {
-            self.cpp.as_mut().set_uint_32(value);
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_boolean(data.boolean);
-            self.set_float_32(data.float_32);
-            self.set_float_64(data.float_64);
-            self.set_int_8(data.int_8);
-            self.set_int_16(data.int_16);
-            self.set_int_32(data.int_32);
-            self.set_uint_8(data.uint_8);
-            self.set_uint_16(data.uint_16);
-            self.set_uint_32(data.uint_32);
+    impl MyObjectQt {
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_boolean(data.boolean);
+            self.as_mut().set_float_32(data.float_32);
+            self.as_mut().set_float_64(data.float_64);
+            self.as_mut().set_int_8(data.int_8);
+            self.as_mut().set_int_16(data.int_16);
+            self.as_mut().set_int_32(data.int_32);
+            self.as_mut().set_uint_8(data.uint_8);
+            self.as_mut().set_uint_16(data.uint_16);
+            self.as_mut().set_uint_32(data.uint_32);
         }
     }
 
@@ -204,8 +126,8 @@ mod cxx_qt_ffi {
         uint_32: u32,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 boolean: value.boolean().into(),
                 float_32: value.float_32().into(),
@@ -220,18 +142,11 @@ mod cxx_qt_ffi {
         }
     }
 
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
-        }
-    }
-
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }

@@ -40,9 +40,9 @@ mod ffi {
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn increment_number_self(&self, cpp: &mut CppObj) {
-            let value = cpp.number() + 1;
-            cpp.set_number(value);
+        pub fn increment_number_self(self: Pin<&mut Self>) {
+            let value = self.as_ref().number() + 1;
+            self.set_number(value);
         }
 
         #[qinvokable]

@@ -19,17 +19,7 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn invokable_cpp_obj(&self, cpp: &mut CppObj) {
-            println!("cppobj");
-        }
-
-        #[qinvokable]
-        pub fn invokable_mutable(&mut self) {
-            println!("This method is mutable!");
-        }
-
-        #[qinvokable]
-        pub fn invokable_mutable_cpp_obj(&mut self, cpp: &mut CppObj) {
+        pub fn invokable_mutable(self: Pin<&mut Self>) {
             println!("This method is mutable!");
         }
 
@@ -44,22 +34,17 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn invokable_parameters_cpp_obj(&self, primitive: i32, cpp: &mut CppObj) {
-            println!("{}", primitive);
-        }
-
-        #[qinvokable]
-        pub fn invokable_return_opaque(&mut self) -> UniquePtr<QColor> {
+        pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
 
         #[qinvokable]
-        pub fn invokable_return_primitive(&mut self) -> i32 {
+        pub fn invokable_return_primitive(self: Pin<&mut Self>) -> i32 {
             2
         }
 
         #[qinvokable]
-        pub fn invokable_return_static(&mut self) -> UniquePtr<QString> {
+        pub fn invokable_return_static(self: Pin<&mut Self>) -> UniquePtr<QString> {
             QString::from_str("static")
         }
 
@@ -67,12 +52,8 @@ mod ffi {
             println!("C++ context method");
         }
 
-        pub fn cpp_context_method_mutable(&mut self) {
+        pub fn cpp_context_method_mutable(self: Pin<&mut Self>) {
             println!("mutable method");
-        }
-
-        pub fn cpp_context_method_cpp_obj(&mut self, cpp: &mut CppObj) {
-            println!("cppobj");
         }
 
         pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {

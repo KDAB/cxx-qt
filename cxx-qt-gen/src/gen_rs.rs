@@ -111,6 +111,82 @@ impl RustType for QtTypes {
     }
 }
 
+fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStream {
+    let rust_class_name = &obj.original_rust_struct.ident;
+    let cpp_class_name = format_ident!("{}Qt", rust_class_name);
+
+    // Cache the ident and parameters as they are used multiple times later
+    let (ident, ident_cpp_str) = (
+        &i.ident_wrapper.rust_ident,
+        i.ident_wrapper.cpp_ident.to_string(),
+    );
+    let parameters = &i.parameters;
+    let mutablility = if i.mutable {
+        Some(quote! { mut })
+    } else {
+        None
+    };
+
+    // TODO: invokables need to also become freestanding functions that
+    // take as input a reference to both the Rs class and the CppObject
+    // inside a wrapper. The functions that are impl'ed on the Rs class
+    // will then simply create the wrapper and call the free functions.
+    //
+    // As a first step we could maybe just add a `cpp: Pin<&mut FFICppObj>`
+    // argument to invokables so that users can manually wrap it.
+
+    // Determine if the invokable has any parameter
+    let mut parameters_quotes = Vec::new();
+
+    let cpp_type = if i.mutable {
+        quote! { Pin<&mut #cpp_class_name> }
+    } else {
+        quote! { &#cpp_class_name }
+    };
+
+    parameters_quotes.push(quote! { cpp: #cpp_type });
+
+    for p in parameters {
+        // Cache the name and type
+        let ident = &p.ident;
+
+        // If the type is Pin<T> then we need to change extract differently
+        let type_ident = &p.type_ident.qt_type.cxx_bridge_type_ident();
+        let is_ref = if p.type_ident.is_ref {
+            quote! {&}
+        } else {
+            quote! {}
+        };
+        let is_mut = if p.type_ident.is_mut {
+            quote! {mut}
+        } else {
+            quote! {}
+        };
+        parameters_quotes.push(quote! {
+            #ident: #is_ref #is_mut #type_ident
+        });
+    }
+    // Determine if there is a return type
+    let return_expr = if let Some(return_type) = &i.return_type {
+        // Cache and build the return type
+        let type_ident = &return_type.qt_type.cxx_bridge_type_ident();
+        if return_type.qt_type.is_opaque() {
+            Some(quote! { -> UniquePtr<#type_ident> })
+        } else if return_type.is_ref {
+            Some(quote! { -> &#type_ident })
+        } else {
+            Some(quote! { -> #type_ident })
+        }
+    } else {
+        None
+    };
+
+    quote! {
+        #[cxx_name = #ident_cpp_str]
+        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) #return_expr;
+    }
+}
+
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
 pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
@@ -133,112 +209,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // TODO: later support a cxx_qt_name attribute on invokables to allow for renaming
     // to a custom name for C++ or Rust side?
     for i in &obj.invokables {
-        // Cache the ident and parameters as they are used multiple times later
-        let (ident, ident_cpp_str) = if let Some(ident_wrapper) = &i.ident_wrapper {
-            (
-                &ident_wrapper.rust_ident,
-                ident_wrapper.cpp_ident.to_string(),
-            )
-        } else {
-            (&i.ident.rust_ident, i.ident.cpp_ident.to_string())
-        };
-        let parameters = &i.parameters;
-        let mutablility = if i.mutable {
-            Some(quote! { mut })
-        } else {
-            None
-        };
-
-        // TODO: invokables need to also become freestanding functions that
-        // take as input a reference to both the Rs class and the CppObject
-        // inside a wrapper. The functions that are impl'ed on the Rs class
-        // will then simply create the wrapper and call the free functions.
-        //
-        // As a first step we could maybe just add a `cpp: Pin<&mut FFICppObj>`
-        // argument to invokables so that users can manually wrap it.
-
-        // Determine if the invokable has any parameter
-        if parameters.is_empty() {
-            // Determine if there is a return type
-            if let Some(return_type) = &i.return_type {
-                // Cache and build the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident();
-                let type_ident = if return_type.qt_type.is_opaque() {
-                    quote! { UniquePtr<#type_ident> }
-                } else if return_type.is_ref {
-                    quote! { &#type_ident }
-                } else {
-                    quote! { #type_ident }
-                };
-
-                rs_functions.push(quote! {
-                    #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#mutablility #rust_class_name) -> #type_ident;
-                });
-            } else {
-                rs_functions.push(quote! {
-                    #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#mutablility #rust_class_name);
-                });
-            }
-        } else {
-            // Build a list of quotes of the parameter name and type
-            let mut parameters_quotes = Vec::new();
-            for p in parameters {
-                // Cache the name and type
-                let ident = &p.ident;
-
-                // If the type is Pin<T> then we need to change extract differently
-                match &p.type_ident.qt_type {
-                    QtTypes::CppObj {
-                        rust_type_idents, ..
-                    } => {
-                        parameters_quotes.push(quote! {
-                            #ident: Pin<&mut #(#rust_type_idents)::*>
-                        });
-                    }
-                    _others => {
-                        let type_ident = &p.type_ident.qt_type.cxx_bridge_type_ident();
-                        let is_ref = if p.type_ident.is_ref {
-                            quote! {&}
-                        } else {
-                            quote! {}
-                        };
-                        let is_mut = if p.type_ident.is_mut {
-                            quote! {mut}
-                        } else {
-                            quote! {}
-                        };
-                        parameters_quotes.push(quote! {
-                            #ident: #is_ref #is_mut #type_ident
-                        });
-                    }
-                };
-            }
-
-            // Determine if there is a return type and if it's a reference
-            if let Some(return_type) = &i.return_type {
-                // Cache and build the return type
-                let type_ident = &return_type.qt_type.cxx_bridge_type_ident();
-                let type_ident = if return_type.qt_type.is_opaque() {
-                    quote! { UniquePtr<#type_ident> }
-                } else if return_type.is_ref {
-                    quote! { &#type_ident }
-                } else {
-                    quote! { #type_ident }
-                };
-
-                rs_functions.push(quote! {
-                    #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) -> #type_ident;
-                });
-            } else {
-                rs_functions.push(quote! {
-                    #[cxx_name = #ident_cpp_str]
-                    fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*);
-                });
-            }
-        }
+        rs_functions.push(generate_invokable_cxx_declaration(obj, i));
     }
 
     // Add getters/setters/notify from properties
@@ -413,79 +384,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     syn::parse2::<ItemMod>(output.into_token_stream()).map_err(|err| err.to_compile_error())
 }
 
-fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
-    // Build a list of property methods impls
-    let mut property_methods = Vec::new();
-
-    for property in &obj.properties {
-        let qt_type = if let QtTypes::UniquePtr { inner } = &property.type_ident.qt_type {
-            &**inner
-        } else {
-            &property.type_ident.qt_type
-        };
-        let rust_param_type = qt_type.cxx_qt_lib_type();
-        // When the output type is opaque we pass by value rather than ref
-        // even though it's a non trivial type
-        let rust_param_type = if !qt_type.is_opaque() && qt_type.is_ref() {
-            quote! {&#rust_param_type}
-        } else {
-            quote! {#rust_param_type}
-        };
-
-        let cpp_getter_ident = &property.getter.as_ref().unwrap().rust_ident;
-        let cpp_setter_ident = &property.setter.as_ref().unwrap().rust_ident;
-
-        if let QtTypes::CppObj { .. } = property.type_ident.qt_type {
-            let ident = &property.ident.rust_ident;
-            let take_ident = format_ident!("take_{}", ident);
-            let give_ident = format_ident!("give_{}", ident);
-
-            property_methods.push(quote! {
-                pub fn #take_ident(&mut self) -> #rust_param_type {
-                    self.cpp.as_mut().#take_ident()
-                }
-            });
-
-            property_methods.push(quote! {
-                pub fn #give_ident(&mut self, value: #rust_param_type) {
-                    self.cpp.as_mut().#give_ident(value);
-                }
-            });
-        } else {
-            if let Some(getter) = &property.getter {
-                // Generate a getter using the rust ident
-                let getter_ident = &getter.rust_ident;
-
-                property_methods.push(quote! {
-                    pub fn #getter_ident(&self) -> #rust_param_type {
-                        self.cpp.#cpp_getter_ident()
-                    }
-                });
-            }
-
-            if let Some(setter) = &property.setter {
-                // Generate a setter using the rust ident
-                let setter_ident = &setter.rust_ident;
-                if qt_type.is_opaque() {
-                    property_methods.push(quote! {
-                        pub fn #setter_ident(&mut self, value: #rust_param_type) {
-                            self.cpp.as_mut().#cpp_setter_ident(&value);
-                        }
-                    });
-                } else {
-                    property_methods.push(quote! {
-                        pub fn #setter_ident(&mut self, value: #rust_param_type) {
-                            self.cpp.as_mut().#cpp_setter_ident(value);
-                        }
-                    });
-                };
-            }
-        }
-    }
-
-    Ok(property_methods)
-}
-
 fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
     let mut signal_methods = Vec::new();
     let mut queued_cases = Vec::new();
@@ -528,17 +426,17 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
         let signal_ident = &signal.signal_ident.rust_ident;
 
         queued_cases.push(quote! {
-            #ident::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#emit_ident(#(#parameters_to_value_queued),*),
+            #ident::#enum_ident { #(#parameters),* } => self.#emit_ident(#(#parameters_to_value_queued),*),
         });
 
         immediate_cases.push(quote! {
-            #ident::#enum_ident { #(#parameters),* } => self.cpp.as_mut().#signal_ident(#(#parameters_to_value_immediate),*),
+            #ident::#enum_ident { #(#parameters),* } => self.#signal_ident(#(#parameters_to_value_immediate),*),
         });
     }
 
     if !queued_cases.is_empty() {
         signal_methods.push(quote! {
-            pub fn emit_queued(&mut self, signal: #ident) {
+            pub fn emit_queued(self: Pin<&mut Self>, signal: #ident) {
                 match signal {
                     #(#queued_cases)*
                 }
@@ -548,7 +446,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
 
     if !immediate_cases.is_empty() {
         signal_methods.push(quote! {
-            pub unsafe fn emit_immediate(&mut self, signal: #ident) {
+            pub unsafe fn emit_immediate(self: Pin<&mut Self>, signal: #ident) {
                 match signal {
                     #(#immediate_cases)*
                 }
@@ -604,6 +502,13 @@ fn invokable_generate_wrapper(
     let mut output_parameters = vec![];
     let mut wrappers = vec![];
 
+    let cpp_type = if invokable.mutable {
+        quote! { std::pin::Pin<&mut FFICppObj> }
+    } else {
+        quote! { &FFICppObj }
+    };
+    input_parameters.push(quote! { cpp: #cpp_type });
+
     for param in &invokable.parameters {
         let param_ident = &param.ident;
         let is_mut = if param.type_ident.is_mut {
@@ -617,49 +522,21 @@ fn invokable_generate_wrapper(
             quote! {}
         };
 
-        if let QtTypes::CppObj {
-            rust_type_idents, ..
-        } = &param.type_ident.qt_type
-        {
-            // Create Rust idents with CppObj and FFICppObj at the end
-            let rust_idents_module = rust_type_idents
-                .iter()
-                .take(rust_type_idents.len() - 1)
-                .cloned()
-                .collect::<Vec<Ident>>();
-            let rust_idents_ffi = rust_idents_module
-                .iter()
-                .cloned()
-                .chain(vec![format_ident!("FFICppObj")]);
-            let rust_idents_cpp_obj = rust_idents_module
-                .iter()
-                .cloned()
-                .chain(vec![format_ident!("CppObj")]);
-
-            input_parameters
-                .push(quote! { #param_ident: std::pin::Pin<&mut #(#rust_idents_ffi)::*> });
-
+        // If we are an opaque input type we need to convert to the Rust type
+        //
+        // And then keep the ref and mut state of the parameter
+        if param.type_ident.qt_type.is_opaque() {
             wrappers.push(quote! {
-                let mut #param_ident = #(#rust_idents_cpp_obj)::*::new(#param_ident);
+                let #is_mut #param_ident = #param_ident.to_rust();
             });
+
             output_parameters.push(quote! { #is_ref #is_mut #param_ident });
         } else {
-            // If we are an opaque input type we need to convert to the Rust type
-            //
-            // And then keep the ref and mut state of the parameter
-            if param.type_ident.qt_type.is_opaque() {
-                wrappers.push(quote! {
-                    let #is_mut #param_ident = #param_ident.to_rust();
-                });
-
-                output_parameters.push(quote! { #is_ref #is_mut #param_ident });
-            } else {
-                output_parameters.push(quote! { #param_ident });
-            }
-
-            let param_type = param.type_ident.qt_type.cxx_qt_lib_type();
-            input_parameters.push(quote! { #param_ident: #is_ref #is_mut #param_type });
+            output_parameters.push(quote! { #param_ident });
         }
+
+        let param_type = param.type_ident.qt_type.cxx_qt_lib_type();
+        input_parameters.push(quote! { #param_ident: #is_ref #is_mut #param_type });
     }
 
     // If we are an opaque return type then we need to convert into the C++ type
@@ -669,14 +546,14 @@ fn invokable_generate_wrapper(
         Ok(quote! {
             pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) -> #return_type_ident {
                 #(#wrappers)*
-                return self.#ident(#(#output_parameters),*);
+                return cpp.#ident(#(#output_parameters),*);
             }
         })
     } else {
         Ok(quote! {
             pub fn #ident_wrapper(&#mutablility self, #(#input_parameters),*) {
                 #(#wrappers)*
-                self.#ident(#(#output_parameters),*);
+                cpp.#ident(#(#output_parameters),*);
             }
         })
     }
@@ -686,7 +563,7 @@ fn invokable_generate_wrapper(
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Cache the rust class name
     let rust_class_name = &obj.original_rust_struct.ident;
-    let rust_wrapper_name = format_ident!("CppObj");
+    let class_name_cpp = format_ident!("{}Qt", rust_class_name);
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj)?;
@@ -701,13 +578,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         .properties
         .iter()
         .zip(&obj.original_data_struct.fields)
-        .filter_map(|(prop, field)| {
-            if let QtTypes::CppObj { .. } = prop.type_ident.qt_type {
-                None
-            } else {
-                Some((&prop.type_ident.qt_type, field))
-            }
-        })
+        .map(|(prop, field)| (&prop.type_ident.qt_type, field))
         .collect::<Vec<(&QtTypes, &syn::Field)>>();
     // TODO: we need to update this to only store fields defined as "private" once we have an API for that
     let data_struct = build_struct_with_fields(
@@ -718,7 +589,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .collect::<Vec<&syn::Field>>(),
     );
 
-    // Build a converter for Data -> CppObj
+    // Build a converter for QObject -> Data
     let data_struct_impl = {
         let mut fields_into = vec![];
         // If there are no filtered fields then use _value
@@ -739,24 +610,17 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
 
         quote! {
-            impl<'a> From<&#rust_wrapper_name<'a>> for #data_struct_name {
-                fn from(#value_ident: &#rust_wrapper_name<'a>) -> Self {
+            impl From<&#class_name_cpp> for #data_struct_name {
+                fn from(#value_ident: &#class_name_cpp) -> Self {
                     Self {
                         #(#fields_into),*
                     }
-                }
-            }
-
-            impl<'a> From<&mut #rust_wrapper_name<'a>> for #data_struct_name {
-                fn from(#value_ident: &mut #rust_wrapper_name<'a>) -> Self {
-                    Self::from(&*#value_ident)
                 }
             }
         }
     };
 
     // Generate property methods from the object
-    let property_methods = generate_property_methods_rs(obj)?;
     let signal_methods = generate_signal_methods_rs(obj)?;
     let signal_enum = obj.original_signal_enum.as_ref();
 
@@ -764,11 +628,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let invokable_method_wrappers = obj
         .invokables
         .iter()
-        .filter_map(|i| {
-            i.ident_wrapper
-                .as_ref()
-                .map(|ident_wrapper| invokable_generate_wrapper(i, &ident_wrapper.rust_ident))
-        })
+        .map(|i| invokable_generate_wrapper(i, &i.ident_wrapper.rust_ident))
         .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
     let invokable_methods = obj
         .invokables
@@ -792,8 +652,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let handle_update_request = if obj.handle_updates_impl.is_some() {
         quote! {
             pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
-                let mut cpp = CppObj::new(cpp);
-                self.handle_update_request(&mut cpp);
+                cpp.handle_update_request();
             }
         }
     } else {
@@ -803,17 +662,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let rust_struct_impl = quote! {
         impl #rust_class_name {
             #(#invokable_method_wrappers)*
-            #(#invokable_methods)*
-            #(#methods)*
 
             #handle_update_request
-        }
-    };
-
-    // Create a struct that wraps the CppObject with a nicer interface
-    let wrapper_struct = quote! {
-        pub struct #rust_wrapper_name<'a> {
-            cpp: std::pin::Pin<&'a mut FFICppObj>,
         }
     };
 
@@ -826,7 +676,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
             if qt_type.is_opaque() {
                 grab_values.push(quote! {
-                    self.#setter_name(data.#field_name.as_ref().unwrap());
+                    self.as_mut().#setter_name(data.#field_name.as_ref().unwrap());
                 });
             } else {
                 let is_ref = if qt_type.is_ref() {
@@ -836,34 +686,20 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 };
 
                 grab_values.push(quote! {
-                    self.#setter_name(#is_ref data.#field_name);
+                    self.as_mut().#setter_name(#is_ref data.#field_name);
                 });
             }
         }
     }
 
-    let update_requester = if obj.handle_updates_impl.is_some() {
-        quote! {
-            pub fn update_requester(&mut self) -> cxx_qt_lib::UpdateRequester {
-                cxx_qt_lib::UpdateRequester::from_unique_ptr(self.cpp.as_mut().update_requester())
-            }
-        }
-    } else {
-        quote! {}
-    };
+    let qobject_impl = quote! {
+        impl #class_name_cpp {
+            #(#invokable_methods)*
+            #(#methods)*
 
-    let wrapper_struct_impl = quote! {
-        impl<'a> #rust_wrapper_name<'a> {
-            pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-                Self { cpp }
-            }
-
-            #(#property_methods)*
             #(#signal_methods)*
 
-            #update_requester
-
-            pub fn grab_values_from_data(&mut self, mut data: #data_struct_name) {
+            pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: #data_struct_name) {
                 #(#grab_values)*
             }
         }
@@ -874,7 +710,16 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         use_traits.push(quote! { use cxx_qt_lib::UpdateRequestHandler; });
     }
 
-    let handle_updates_impl = &obj.handle_updates_impl;
+    let handle_updates_impl = if let Some(updates_impl) = &obj.handle_updates_impl {
+        let handle_updates_inner = &updates_impl.items;
+        quote! {
+            impl UpdateRequestHandler for #class_name_cpp {
+                #(#handle_updates_inner),*
+            }
+        }
+    } else {
+        quote! {}
+    };
 
     // Create the namespace for internal use
     //
@@ -893,6 +738,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // later this code will be moved into a generator phase
     let cxx_qt_mod_fake: ItemMod = syn::parse2::<ItemMod>(quote! {
         mod fake {
+            use std::pin::Pin;
+
             #(#use_traits)*
 
             #signal_enum
@@ -901,9 +748,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
             #rust_struct_impl
 
-            #wrapper_struct
-
-            #wrapper_struct_impl
+            #qobject_impl
 
             #data_struct
 

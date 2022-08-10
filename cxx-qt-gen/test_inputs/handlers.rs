@@ -16,8 +16,8 @@ mod ffi {
     #[derive(Default)]
     pub struct MyObject;
 
-    impl UpdateRequestHandler<CppObj> for MyObject {
-        fn handle_update_request(&mut self, _cpp: &mut CppObj) {
+    impl UpdateRequestHandler for cxx_qt::QObject<MyObject> {
+        fn handle_update_request(self: Pin<&mut Self>) {
             println!("update")
         }
     }

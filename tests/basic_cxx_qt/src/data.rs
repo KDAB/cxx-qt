@@ -60,18 +60,18 @@ mod ffi {
 
     impl cxx_qt::QObject<MyData> {
         #[qinvokable]
-        pub fn as_json_str(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
-            let data = Data::from(cpp);
+        pub fn as_json_str(&self) -> UniquePtr<QString> {
+            let data = Data::from(self);
             let data_serde = DataSerde::from(data);
             let data_string = serde_json::to_string(&data_serde).unwrap();
             QString::from_str(&data_string)
         }
 
         #[qinvokable]
-        pub fn grab_values(&self, cpp: &mut CppObj) {
+        pub fn grab_values(self: Pin<&mut Self>) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            cpp.grab_values_from_data(data_serde.into());
+            self.grab_values_from_data(data_serde.into());
         }
     }
 }

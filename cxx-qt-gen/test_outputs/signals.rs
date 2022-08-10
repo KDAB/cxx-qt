@@ -27,7 +27,7 @@ mod ffi {
         type MyObject;
 
         #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &MyObject, cpp: Pin<&mut MyObjectQt>);
+        fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
 
     #[namespace = ""]
@@ -72,6 +72,8 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     enum MySignals {
         Ready,
         DataChanged {
@@ -85,70 +87,55 @@ mod cxx_qt_ffi {
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_wrapper(&self, cpp: std::pin::Pin<&mut FFICppObj>) {
-            let mut cpp = CppObj::new(cpp);
-            self.invokable(&mut cpp);
+        pub fn invokable_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+            cpp.invokable();
         }
+    }
 
-        pub fn invokable(&self, cpp: &mut CppObj) {
+    impl MyObjectQt {
+        pub fn invokable(self: Pin<&mut Self>) {
             unsafe {
-                cpp.emit_immediate(MySignals::Ready);
+                self.as_mut().emit_immediate(MySignals::Ready);
             }
 
-            cpp.emit_queued(MySignals::DataChanged {
+            self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),
                 third: QPoint::new(1, 2),
             });
         }
-    }
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn emit_queued(&mut self, signal: MySignals) {
+        pub fn emit_queued(self: Pin<&mut Self>, signal: MySignals) {
             match signal {
-                MySignals::Ready {} => self.cpp.as_mut().emit_ready(),
+                MySignals::Ready {} => self.emit_ready(),
                 MySignals::DataChanged {
                     first,
                     second,
                     third,
-                } => self.cpp.as_mut().emit_data_changed(first, second, third),
+                } => self.emit_data_changed(first, second, third),
             }
         }
 
-        pub unsafe fn emit_immediate(&mut self, signal: MySignals) {
+        pub unsafe fn emit_immediate(self: Pin<&mut Self>, signal: MySignals) {
             match signal {
-                MySignals::Ready {} => self.cpp.as_mut().ready(),
+                MySignals::Ready {} => self.ready(),
                 MySignals::DataChanged {
                     first,
                     second,
                     third,
-                } => self.cpp.as_mut().data_changed(first, &second, &third),
+                } => self.data_changed(first, &second, &third),
             }
         }
 
-        pub fn grab_values_from_data(&mut self, mut data: Data) {}
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {}
     }
 
     #[derive(Default)]
     pub struct Data;
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(_value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(_value: &MyObjectQt) -> Self {
             Self {}
-        }
-    }
-
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(_value: &mut CppObj<'a>) -> Self {
-            Self::from(&*_value)
         }
     }
 
@@ -156,8 +143,7 @@ mod cxx_qt_ffi {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }
