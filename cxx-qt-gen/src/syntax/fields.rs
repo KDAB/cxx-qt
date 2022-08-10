@@ -10,22 +10,31 @@ use syn::{spanned::Spanned, Error, Field, Fields, FieldsNamed, Ident, Result, Ty
 ///
 /// If there are [syn::FieldsUnnamed] then an error occurs
 pub fn fields_named_to_ident_type(fields: &Fields) -> Result<Vec<(Ident, Type)>> {
-    match fields {
-        Fields::Named(FieldsNamed { named, .. }) => {
-            let mut fields = vec![];
-            for name in named {
-                if let Field {
-                    ident: Some(ident),
-                    ty,
-                    ..
-                } = name
-                {
-                    fields.push((ident.clone(), ty.clone()));
-                }
-            }
+    Ok(fields_to_named_fields(fields)?
+        .iter()
+        // These are named fields so they have an ident
+        .map(|field| (field.ident.clone().unwrap(), field.ty.clone()))
+        .collect())
+}
 
-            Ok(fields)
-        }
+/// In a group of [syn::Fields] extract any [syn::FieldNamed] fields and allow for mutation
+///
+/// If there are [syn::FieldsUnnamed] then an error occurs
+pub fn fields_to_named_fields_mut(fields: &mut Fields) -> Result<Vec<&mut Field>> {
+    match fields {
+        Fields::Named(FieldsNamed { named, .. }) => Ok(named.iter_mut().collect()),
+        Fields::Unnamed(_) => Err(Error::new(fields.span(), "Fields cannot be unnamed")),
+        // Unit is an empty struct or enum etc
+        Fields::Unit => Ok(vec![]),
+    }
+}
+
+/// In a group of [syn::Fields] extract any [syn::FieldNamed] fields
+///
+/// If there are [syn::FieldsUnnamed] then an error occurs
+pub fn fields_to_named_fields(fields: &Fields) -> Result<Vec<&Field>> {
+    match fields {
+        Fields::Named(FieldsNamed { named, .. }) => Ok(named.iter().collect()),
         Fields::Unnamed(_) => Err(Error::new(fields.span(), "Fields cannot be unnamed")),
         // Unit is an empty struct or enum etc
         Fields::Unit => Ok(vec![]),
@@ -108,5 +117,27 @@ mod tests {
         });
         let result = fields_named_to_ident_type(&s.fields).unwrap();
         assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_fields_to_named_fields_mut() {
+        let mut s: ItemStruct = tokens_to_syn(quote! {
+            struct Point {
+                #[attribute]
+                x: f64,
+                y: f64
+            }
+        });
+        let mut result = fields_to_named_fields_mut(&mut s.fields).unwrap();
+        assert_eq!(result.len(), 2);
+        result[0].attrs.clear();
+
+        let expected: ItemStruct = tokens_to_syn(quote! {
+            struct Point {
+                x: f64,
+                y: f64
+            }
+        });
+        assert_eq!(s, expected);
     }
 }

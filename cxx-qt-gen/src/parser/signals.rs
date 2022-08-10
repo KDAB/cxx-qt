@@ -70,15 +70,10 @@ impl ParsedSignalsEnum {
 mod tests {
     use super::*;
 
+    use crate::parser::tests::f64_type;
     use crate::syntax::path::path_compare_str;
     use crate::tests::tokens_to_syn;
     use quote::quote;
-    use syn::Type;
-
-    /// Helper which returns a f64 as a [syn::Type]
-    fn f64_type() -> Type {
-        tokens_to_syn(quote! { f64 })
-    }
 
     #[test]
     fn test_parsed_signals_from_empty() {

@@ -3,9 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::signals::ParsedSignalsEnum;
-use crate::syntax::attribute::attribute_find_path;
-use syn::{spanned::Spanned, Error, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStruct, Result};
+use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum};
+use crate::syntax::{attribute::attribute_find_path, fields::fields_to_named_fields_mut};
+use syn::{
+    spanned::Spanned, Error, Fields, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStruct, Result,
+};
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
@@ -29,6 +31,10 @@ pub struct ParsedQObject {
     ///
     /// Note that they will only be visible on the Rust side
     pub methods: Vec<ImplItemMethod>,
+    /// List of properties that need to be implemented on the C++ object
+    ///
+    /// These will be exposed as Q_PROPERTY on the C++ object
+    pub properties: Vec<ParsedQProperty>,
     /// Update request handler for the QObject
     ///
     /// In the future this may be removed
@@ -62,15 +68,35 @@ impl ParsedQObject {
 
         Ok(())
     }
+
+    /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
+    pub fn parse_struct_fields(&mut self, fields: &mut Fields) -> Result<()> {
+        for field in fields_to_named_fields_mut(fields)? {
+            // Try to find any properties defined within the struct
+            if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
+                // Remove the #[qproperty] attribute
+                field.attrs.remove(index);
+
+                self.properties.push(ParsedQProperty {
+                    ident: field.ident.clone().unwrap(),
+                    ty: field.ty.clone(),
+                    vis: field.vis.clone(),
+                });
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    use crate::parser::tests::f64_type;
     use crate::tests::tokens_to_syn;
     use quote::quote;
-    use syn::ItemImpl;
+    use syn::{ItemImpl, Visibility};
 
     #[test]
     fn test_parse_impl_items_valid() {
@@ -106,5 +132,38 @@ mod tests {
             }
         });
         assert!(qobject.parse_impl_items(&item.items).is_err());
+    }
+
+    #[test]
+    fn test_parse_struct_fields_valid() {
+        let mut qobject = ParsedQObject::default();
+        let mut item: ItemStruct = tokens_to_syn(quote! {
+            struct T {
+                #[qproperty]
+                f64_property: f64,
+
+                #[qproperty]
+                pub public_property: f64,
+
+                field: f64,
+            }
+        });
+        assert!(qobject.parse_struct_fields(&mut item.fields).is_ok());
+        assert_eq!(qobject.properties.len(), 2);
+        assert_eq!(qobject.properties[0].ident, "f64_property");
+        assert_eq!(qobject.properties[0].ty, f64_type());
+        assert!(matches!(qobject.properties[0].vis, Visibility::Inherited));
+        assert_eq!(qobject.properties[1].ident, "public_property");
+        assert_eq!(qobject.properties[1].ty, f64_type());
+        assert!(matches!(qobject.properties[1].vis, Visibility::Public(_)));
+    }
+
+    #[test]
+    fn test_parse_struct_fields_invalid() {
+        let mut qobject = ParsedQObject::default();
+        let mut item: ItemStruct = tokens_to_syn(quote! {
+            struct T(f64);
+        });
+        assert!(qobject.parse_struct_fields(&mut item.fields).is_err());
     }
 }

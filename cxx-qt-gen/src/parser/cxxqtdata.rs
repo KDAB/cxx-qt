@@ -155,6 +155,10 @@ impl ParsedCxxQtData {
             s.attrs.remove(index);
 
             if let Some(qobject) = self.qobjects.get_mut(&s.ident) {
+                // Parse any properties in the struct
+                // and remove the #[qproperty] attribute
+                qobject.parse_struct_fields(&mut s.fields)?;
+
                 qobject.qobject_struct = Some(s);
                 return Ok(None);
             } else {
@@ -333,6 +337,61 @@ mod tests {
         assert!(cxx_qt_data.qobjects[&qobject_ident()]
             .qobject_struct
             .is_some());
+    }
+
+    #[test]
+    fn test_find_and_merge_cxx_qt_item_struct_valid_properties() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject {
+                #[qproperty]
+                int_property: i32,
+
+                #[qproperty]
+                pub public_property: i32,
+            }
+        });
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].properties.len(), 2);
+    }
+
+    #[test]
+    fn test_find_and_merge_cxx_qt_item_struct_valid_properties_and_fields() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject {
+                #[qproperty]
+                int_property: i32,
+
+                #[qproperty]
+                pub public_property: i32,
+
+                field: i32,
+            }
+        });
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].properties.len(), 2);
+    }
+
+    #[test]
+    fn test_find_and_merge_cxx_qt_item_struct_valid_fields() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject {
+                field: i32,
+            }
+        });
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].properties.len(), 0);
     }
 
     #[test]
