@@ -49,7 +49,7 @@ void
 MyObject::invokableName()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableName();
+  m_rustObj->invokableNameWrapper(*this);
 }
 
 namespace cxx_qt_my_object {

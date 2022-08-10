@@ -219,8 +219,8 @@ mod ffi {
 
     impl cxx_qt::QObject<EnergyUsage> {
         #[qinvokable]
-        pub fn start_server(&mut self, cpp: &mut CppObj) {
-            if self.join_handles.is_some() {
+        pub fn start_server(mut self: Pin<&mut Self>) {
+            if self.rust().join_handles.is_some() {
                 println!("Already running a server!");
                 return;
             }
@@ -264,9 +264,9 @@ mod ffi {
             // Prepare our update thread
             //
             // When values change this then requests an update to Qt
-            let qt_tx = self.qt_tx.clone();
+            let qt_tx = self.rust().qt_tx.clone();
             let update_network_tx = network_tx.clone();
-            let update_requester = cpp.update_requester();
+            let update_requester = self.as_mut().update_requester();
             let update_sensors_changed = sensors_changed.clone();
             let run_update = async move {
                 loop {
@@ -360,23 +360,25 @@ mod ffi {
             };
 
             // Start our threads
-            self.join_handles = Some([
-                std::thread::spawn(move || block_on(run_timeout)),
-                std::thread::spawn(move || block_on(run_update)),
-                std::thread::spawn(move || block_on(run_sensors)),
-                std::thread::spawn(move || block_on(run_server)),
-            ]);
+            unsafe {
+                self.rust_mut().join_handles = Some([
+                    std::thread::spawn(move || block_on(run_timeout)),
+                    std::thread::spawn(move || block_on(run_update)),
+                    std::thread::spawn(move || block_on(run_sensors)),
+                    std::thread::spawn(move || block_on(run_server)),
+                ]);
+            }
         }
     }
 
-    impl UpdateRequestHandler<CppObj<'_>> for EnergyUsage {
-        fn handle_update_request(&mut self, cpp: &mut CppObj) {
+    impl UpdateRequestHandler for cxx_qt::QObject<EnergyUsage> {
+        fn handle_update_request(self: Pin<&mut Self>) {
             // Process the new data from the background thread
-            if let Some(data) = self.qt_rx.try_iter().last() {
+            if let Some(data) = self.rust().qt_rx.try_iter().last() {
                 // Here we have constructed a new Data struct so can consume it's values
                 // for other uses we could have passed an Enum across the channel
                 // and then process the required action here
-                cpp.grab_values_from_data(data);
+                self.grab_values_from_data(data);
             }
         }
     }

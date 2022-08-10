@@ -87,9 +87,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 std::default::Default::default()
             }
 
-            pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-                let mut wrapper = CppObj::new(cpp);
-                wrapper.grab_values_from_data(Data::default());
+            pub fn initialise_cpp(cpp: std::pin::Pin<&mut #cpp_struct_ident>) {
+                cpp.grab_values_from_data(Data::default());
             }
         }
     }
@@ -203,9 +202,8 @@ mod tests {
                     std::default::Default::default()
                 }
 
-                pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-                    let mut wrapper = CppObj::new(cpp);
-                    wrapper.grab_values_from_data(Data::default());
+                pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+                    cpp.grab_values_from_data(Data::default());
                 }
             }
         }

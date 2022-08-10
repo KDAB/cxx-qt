@@ -76,26 +76,26 @@ mod ffi {
 
     impl cxx_qt::QObject<MockQtTypes> {
         #[qinvokable]
-        pub fn test_signal(&self, cpp: &mut CppObj) {
-            cpp.emit_queued(Signal::Ready);
-            cpp.emit_queued(Signal::DataChanged {
+        pub fn test_signal(mut self: Pin<&mut Self>) {
+            self.as_mut().emit_queued(Signal::Ready);
+            self.as_mut().emit_queued(Signal::DataChanged {
                 variant: QVariant::from(true),
             });
         }
 
         #[qinvokable]
-        pub fn test_unsafe_signal(&self, cpp: &mut CppObj) {
+        pub fn test_unsafe_signal(mut self: Pin<&mut Self>) {
             unsafe {
-                cpp.emit_immediate(Signal::Ready);
-                cpp.emit_immediate(Signal::DataChanged {
+                self.as_mut().emit_immediate(Signal::Ready);
+                self.as_mut().emit_immediate(Signal::DataChanged {
                     variant: QVariant::from(true),
                 });
             }
         }
 
         #[qinvokable]
-        pub fn test_color_property(&self, cpp: &mut CppObj) {
-            cpp.set_color(QColor::from_rgba(0, 0, 255, 255).as_ref().unwrap());
+        pub fn test_color_property(self: Pin<&mut Self>) {
+            self.set_color(QColor::from_rgba(0, 0, 255, 255).as_ref().unwrap());
         }
 
         #[qinvokable]
@@ -104,10 +104,10 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_date_property(&self, cpp: &mut CppObj) {
-            let mut date = *cpp.date();
+        pub fn test_date_property(self: Pin<&mut Self>) {
+            let mut date = *self.date();
             date.set_date(2021, 12, 31);
-            cpp.set_date(&date);
+            self.set_date(&date);
         }
 
         #[qinvokable]
@@ -118,8 +118,8 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_date_time_property(&self, cpp: &mut CppObj) {
-            let date_time = cpp.date_time();
+        pub fn test_date_time_property(self: Pin<&mut Self>) {
+            let date_time = self.date_time();
             let new_date_time = QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -129,7 +129,7 @@ mod ffi {
                     date_time.time().msec() * 5,
                 ),
             );
-            cpp.set_date_time(new_date_time.as_ref().unwrap());
+            self.set_date_time(new_date_time.as_ref().unwrap());
         }
 
         #[qinvokable]
@@ -146,11 +146,11 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_point_property(&self, cpp: &mut CppObj) {
-            let mut point = *cpp.point();
+        pub fn test_point_property(self: Pin<&mut Self>) {
+            let mut point = *self.point();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
-            cpp.set_point(&point);
+            self.set_point(&point);
         }
 
         #[qinvokable]
@@ -162,11 +162,11 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_pointf_property(&self, cpp: &mut CppObj) {
-            let mut point = *cpp.pointf();
+        pub fn test_pointf_property(self: Pin<&mut Self>) {
+            let mut point = *self.pointf();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
-            cpp.set_pointf(&point);
+            self.set_pointf(&point);
         }
 
         #[qinvokable]
@@ -178,15 +178,15 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_rect_property(&self, cpp: &mut CppObj) {
-            let mut rect = *cpp.rect();
+        pub fn test_rect_property(self: Pin<&mut Self>) {
+            let mut rect = *self.rect();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2);
             rect.set_y(rect.y() * 3);
             rect.set_width(width * 4);
             rect.set_height(height * 5);
-            cpp.set_rect(&rect);
+            self.set_rect(&rect);
         }
 
         #[qinvokable]
@@ -202,15 +202,15 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_rectf_property(&self, cpp: &mut CppObj) {
-            let mut rect = *cpp.rectf();
+        pub fn test_rectf_property(self: Pin<&mut Self>) {
+            let mut rect = *self.rectf();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
             rect.set_y(rect.y() * 3.0);
             rect.set_width(width * 4.0);
             rect.set_height(height * 5.0);
-            cpp.set_rectf(&rect);
+            self.set_rectf(&rect);
         }
 
         #[qinvokable]
@@ -226,11 +226,11 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_size_property(&self, cpp: &mut CppObj) {
-            let mut size = *cpp.size();
+        pub fn test_size_property(self: Pin<&mut Self>) {
+            let mut size = *self.size();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
-            cpp.set_size(&size);
+            self.set_size(&size);
         }
 
         #[qinvokable]
@@ -242,11 +242,11 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_sizef_property(&self, cpp: &mut CppObj) {
-            let mut size = *cpp.sizef();
+        pub fn test_sizef_property(self: Pin<&mut Self>) {
+            let mut size = *self.sizef();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
-            cpp.set_sizef(&size);
+            self.set_sizef(&size);
         }
 
         #[qinvokable]
@@ -258,9 +258,9 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_string_property(&self, cpp: &mut CppObj) {
-            let string = QString::from_str(&(cpp.string().to_string() + "/cxx-qt"));
-            cpp.set_string(string.as_ref().unwrap());
+        pub fn test_string_property(self: Pin<&mut Self>) {
+            let string = QString::from_str(&(self.string().to_string() + "/cxx-qt"));
+            self.set_string(string.as_ref().unwrap());
         }
 
         #[qinvokable]
@@ -269,15 +269,15 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_time_property(&self, cpp: &mut CppObj) {
-            let mut time = *cpp.time();
+        pub fn test_time_property(self: Pin<&mut Self>) {
+            let mut time = *self.time();
             time.set_hms(
                 time.hour() * 2,
                 time.minute() * 3,
                 time.second() * 4,
                 time.msec() * 5,
             );
-            cpp.set_time(&time);
+            self.set_time(&time);
         }
 
         #[qinvokable]
@@ -293,9 +293,9 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_url_property(&self, cpp: &mut CppObj) {
-            let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt"));
-            cpp.set_url(url.as_ref().unwrap());
+        pub fn test_url_property(self: Pin<&mut Self>) {
+            let url = QUrl::from_str(&(self.url().string() + "/cxx-qt"));
+            self.set_url(url.as_ref().unwrap());
         }
 
         #[qinvokable]
@@ -304,14 +304,26 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_variant_property(&self, cpp: &mut CppObj) {
-            match cpp.variant().value() {
-                QVariantValue::Bool(b) => cpp.set_variant(QVariant::from(!b).as_ref().unwrap()),
-                QVariantValue::F32(f) => cpp.set_variant(QVariant::from(f * 2.0).as_ref().unwrap()),
-                QVariantValue::F64(d) => cpp.set_variant(QVariant::from(d * 2.0).as_ref().unwrap()),
-                QVariantValue::I8(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
-                QVariantValue::I16(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
-                QVariantValue::I32(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+        pub fn test_variant_property(mut self: Pin<&mut Self>) {
+            match self.variant().value() {
+                QVariantValue::Bool(b) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(!b).as_ref().unwrap()),
+                QVariantValue::F32(f) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(f * 2.0).as_ref().unwrap()),
+                QVariantValue::F64(d) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(d * 2.0).as_ref().unwrap()),
+                QVariantValue::I8(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::I16(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::I32(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
                 QVariantValue::QColor(mut color) => {
                     if let Some(mut color) = color.as_mut() {
                         color.as_mut().set_red(0);
@@ -319,11 +331,13 @@ mod ffi {
                         color.as_mut().set_blue(255);
                         color.as_mut().set_alpha(255);
                     }
-                    cpp.set_variant(QVariant::from(color.as_ref().unwrap()).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(color.as_ref().unwrap()).as_ref().unwrap());
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
-                    cpp.set_variant(QVariant::from(date).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(date).as_ref().unwrap());
                 }
                 QVariantValue::QDateTime(mut date_time) => {
                     if let Some(mut date_time) = date_time.as_mut() {
@@ -336,28 +350,28 @@ mod ffi {
                         );
                         date_time.as_mut().set_time(new_time);
                     }
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(date_time.as_ref().unwrap())
                             .as_ref()
                             .unwrap(),
                     );
                 }
                 QVariantValue::QPoint(point) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QPoint::new(point.x() * 2, point.y() * 2))
                             .as_ref()
                             .unwrap(),
                     );
                 }
                 QVariantValue::QPointF(pointf) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
                             .as_ref()
                             .unwrap(),
                     );
                 }
                 QVariantValue::QRect(rect) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QRect::new(
                             rect.x() * 2,
                             rect.y() * 3,
@@ -369,7 +383,7 @@ mod ffi {
                     );
                 }
                 QVariantValue::QRectF(rectf) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QRectF::new(
                             rectf.x() * 2.0,
                             rectf.y() * 3.0,
@@ -381,14 +395,14 @@ mod ffi {
                     );
                 }
                 QVariantValue::QSize(size) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QSize::new(size.width() * 2, size.height() * 2))
                             .as_ref()
                             .unwrap(),
                     );
                 }
                 QVariantValue::QSizeF(sizef) => {
-                    cpp.set_variant(
+                    self.as_mut().set_variant(
                         QVariant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
                             .as_ref()
                             .unwrap(),
@@ -396,7 +410,8 @@ mod ffi {
                 }
                 QVariantValue::QString(string) => {
                     let string = QString::from_str(&(string.to_string() + "/cxx-qt"));
-                    cpp.set_variant(QVariant::from(string.as_ref().unwrap()).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(string.as_ref().unwrap()).as_ref().unwrap());
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -405,15 +420,23 @@ mod ffi {
                         time.second() * 4,
                         time.msec() * 5,
                     );
-                    cpp.set_variant(QVariant::from(time).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(time).as_ref().unwrap());
                 }
                 QVariantValue::QUrl(url) => {
                     let url = QUrl::from_str(&(url.string() + "/cxx-qt"));
-                    cpp.set_variant(QVariant::from(url.as_ref().unwrap()).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(url.as_ref().unwrap()).as_ref().unwrap());
                 }
-                QVariantValue::U8(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
-                QVariantValue::U16(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
-                QVariantValue::U32(i) => cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::U8(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::U16(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
+                QVariantValue::U32(i) => self
+                    .as_mut()
+                    .set_variant(QVariant::from(i * 2).as_ref().unwrap()),
                 _ => panic!("Incorrect variant type!"),
             }
         }

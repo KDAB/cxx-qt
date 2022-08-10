@@ -15,8 +15,9 @@ mod ffi {
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn invokable_name(&self) {
+        pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");
+            self.as_mut().set_property_name(5);
         }
     }
 }

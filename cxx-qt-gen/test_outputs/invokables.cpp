@@ -28,28 +28,14 @@ void
 MyObject::invokable()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokable();
-}
-
-void
-MyObject::invokableCppObj()
-{
-  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableCppObjWrapper(*this);
+  m_rustObj->invokableWrapper(*this);
 }
 
 void
 MyObject::invokableMutable()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableMutable();
-}
-
-void
-MyObject::invokableMutableCppObj()
-{
-  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableMutableCppObjWrapper(*this);
+  m_rustObj->invokableMutableWrapper(*this);
 }
 
 void
@@ -58,14 +44,7 @@ MyObject::invokableParameters(const QColor& opaque,
                               qint32 primitive)
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableParameters(opaque, trivial, primitive);
-}
-
-void
-MyObject::invokableParametersCppObj(qint32 primitive)
-{
-  const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-  m_rustObj->invokableParametersCppObjWrapper(primitive, *this);
+  m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);
 }
 
 QColor
@@ -73,7 +52,7 @@ MyObject::invokableReturnOpaque()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
-    m_rustObj->invokableReturnOpaqueWrapper());
+    m_rustObj->invokableReturnOpaqueWrapper(*this));
 }
 
 qint32
@@ -81,7 +60,7 @@ MyObject::invokableReturnPrimitive()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
-    m_rustObj->invokableReturnPrimitive());
+    m_rustObj->invokableReturnPrimitiveWrapper(*this));
 }
 
 QString
@@ -89,7 +68,7 @@ MyObject::invokableReturnStatic()
 {
   const std::lock_guard<std::mutex> guard(m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<QString, std::unique_ptr<QString>>{}(
-    m_rustObj->invokableReturnStaticWrapper());
+    m_rustObj->invokableReturnStaticWrapper(*this));
 }
 
 } // namespace cxx_qt::my_object

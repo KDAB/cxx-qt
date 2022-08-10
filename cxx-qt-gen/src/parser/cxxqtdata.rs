@@ -102,6 +102,20 @@ impl ParsedCxxQtData {
                     // Convert the path to a single ident, and error if it isn't
                     .get_mut(&path_to_single_ident(&qobject_path)?)
                 {
+                    // If we are the UpdateRequestHandler, then we need to store in list
+                    //
+                    // TODO: once impl UpdateRequestHandler is removed this block can go
+                    if let Some(trait_) = &imp.trait_ {
+                        if let Some(first) = trait_.1.segments.first() {
+                            if first.ident == "UpdateRequestHandler" {
+                                // We know that there is only one impl block because the compiler
+                                // already ensures this.
+                                qobject.update_requester_handler = Some(imp.clone());
+                                return Ok(None);
+                            }
+                        }
+                    }
+
                     // Extract the ImplItem's from each Impl block
                     qobject.parse_impl_items(&imp.items)?;
                 } else {
@@ -122,19 +136,6 @@ impl ParsedCxxQtData {
                     return Ok(None);
                 // Find if we are an impl block for a qobject
                 } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
-                    // If we are the UpdateRequestHandler, then we need to store in list
-                    //
-                    // TODO: once impl UpdateRequestHandler is removed this block can go
-                    if let Some(trait_) = &imp.trait_ {
-                        if let Some(first) = trait_.1.segments.first() {
-                            if first.ident == "UpdateRequestHandler" {
-                                // We assume that there is only one impl block from the compiler
-                                qobject.update_requester_handler = Some(imp.clone());
-                                return Ok(None);
-                            }
-                        }
-                    }
-
                     qobject.others.push(Item::Impl(imp));
                     return Ok(None);
                 }
@@ -511,7 +512,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl UpdateRequestHandler for MyObject {
+            impl UpdateRequestHandler for cxx_qt::QObject<MyObject> {
                 fn method() {}
             }
         });

@@ -23,13 +23,10 @@ public:
 
 public:
   Q_INVOKABLE void invokable();
-  Q_INVOKABLE void invokableCppObj();
   Q_INVOKABLE void invokableMutable();
-  Q_INVOKABLE void invokableMutableCppObj();
   Q_INVOKABLE void invokableParameters(const QColor& opaque,
                                        const QPoint& trivial,
                                        qint32 primitive);
-  Q_INVOKABLE void invokableParametersCppObj(qint32 primitive);
   Q_INVOKABLE QColor invokableReturnOpaque();
   Q_INVOKABLE qint32 invokableReturnPrimitive();
   Q_INVOKABLE QString invokableReturnStatic();

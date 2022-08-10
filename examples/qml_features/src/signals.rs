@@ -45,18 +45,21 @@ pub mod ffi {
     // ANCHOR: book_rust_obj_impl
     impl cxx_qt::QObject<Signals> {
         #[qinvokable]
-        pub fn invokable(&self, cpp: &mut CppObj) {
+        pub fn invokable(mut self: Pin<&mut Self>) {
             unsafe {
-                cpp.emit_immediate(Signal::Ready);
+                self.as_mut().emit_immediate(Signal::Ready);
             }
 
-            cpp.emit_queued(Signal::RustDataChanged { data: cpp.data() });
-            cpp.emit_queued(Signal::TrivialDataChanged {
-                trivial: *cpp.trivial(),
-            });
-            cpp.emit_queued(Signal::OpaqueDataChanged {
-                opaque: QVariant::from_ref(cpp.opaque()),
-            });
+            let signal = Signal::RustDataChanged { data: self.data() };
+            self.as_mut().emit_queued(signal);
+            let signal = Signal::TrivialDataChanged {
+                trivial: *self.trivial(),
+            };
+            self.as_mut().emit_queued(signal);
+            let signal = Signal::OpaqueDataChanged {
+                opaque: QVariant::from_ref(self.opaque()),
+            };
+            self.as_mut().emit_queued(signal);
         }
     }
     // ANCHOR_END: book_rust_obj_impl

@@ -31,13 +31,15 @@ mod ffi {
 
     impl cxx_qt::QObject<Types> {
         #[qinvokable]
-        pub fn test_variant_property(&self, cpp: &mut CppObj) {
-            match cpp.variant().value() {
+        pub fn test_variant_property(mut self: Pin<&mut Self>) {
+            match self.variant().value() {
                 QVariantValue::Bool(b) => {
-                    cpp.set_variant(QVariant::from(!b).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(!b).as_ref().unwrap());
                 }
                 QVariantValue::I32(i) => {
-                    cpp.set_variant(QVariant::from(i * 2).as_ref().unwrap());
+                    self.as_mut()
+                        .set_variant(QVariant::from(i * 2).as_ref().unwrap());
                 }
                 _ => panic!("Incorrect variant type!"),
             }

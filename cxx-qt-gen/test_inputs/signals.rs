@@ -26,12 +26,12 @@ mod ffi {
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn invokable(&self, cpp: &mut CppObj) {
+        pub fn invokable(self: Pin<&mut Self>) {
             unsafe {
-                cpp.emit_immediate(MySignals::Ready);
+                self.as_mut().emit_immediate(MySignals::Ready);
             }
 
-            cpp.emit_queued(MySignals::DataChanged {
+            self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),
                 third: QPoint::new(1, 2),

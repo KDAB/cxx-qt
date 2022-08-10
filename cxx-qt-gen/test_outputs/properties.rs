@@ -63,39 +63,17 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {}
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn primitive(&self) -> i32 {
-            self.cpp.primitive()
-        }
-
-        pub fn set_primitive(&mut self, value: i32) {
-            self.cpp.as_mut().set_primitive(value);
-        }
-
-        pub fn opaque(&self) -> &cxx_qt_lib::QColor {
-            self.cpp.opaque()
-        }
-
-        pub fn set_opaque(&mut self, value: &cxx_qt_lib::QColor) {
-            self.cpp.as_mut().set_opaque(value);
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_primitive(data.primitive);
-            self.set_opaque(data.opaque.as_ref().unwrap());
+    impl MyObjectQt {
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_primitive(data.primitive);
+            self.as_mut().set_opaque(data.opaque.as_ref().unwrap());
         }
     }
 
@@ -105,8 +83,8 @@ mod cxx_qt_ffi {
         opaque: UniquePtr<QColor>,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 primitive: value.primitive().into(),
                 opaque: value.opaque().into(),
@@ -114,18 +92,11 @@ mod cxx_qt_ffi {
         }
     }
 
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
-        }
-    }
-
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }

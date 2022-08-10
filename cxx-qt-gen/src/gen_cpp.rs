@@ -70,7 +70,6 @@ impl CppType for QtTypes {
     fn is_const(&self) -> bool {
         match self {
             Self::Bool => false,
-            Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::QColor => true,
@@ -95,18 +94,12 @@ impl CppType for QtTypes {
     /// Whether this type is a Pin<T> this is then used in method definitions
     /// to add *this to this or *arg to arg.
     fn is_pin(&self) -> bool {
-        match self {
-            Self::CppObj { .. } => true,
-            _others => false,
-        }
+        false
     }
 
     /// Whether this type is a pointer
     fn is_ptr(&self) -> bool {
-        match self {
-            Self::CppObj { .. } => true,
-            _other => false,
-        }
+        false
     }
 
     /// Whether this type is a reference (when used as an input to methods)
@@ -120,7 +113,6 @@ impl CppType for QtTypes {
     fn is_ref(&self) -> bool {
         match self {
             Self::Bool => false,
-            Self::CppObj { .. } => false,
             Self::F32 | Self::F64 => false,
             Self::I8 | Self::I16 | Self::I32 => false,
             Self::QColor => true,
@@ -145,20 +137,13 @@ impl CppType for QtTypes {
     /// Whether this type is_this, this is used to determine if the ident is changed in method
     /// definitions and if the parameter should be skipped in method declarations
     fn is_this(&self) -> bool {
-        match self {
-            Self::CppObj { .. } => true,
-            _others => false,
-        }
+        false
     }
 
     /// The C++ type name of the CppType
     fn type_ident(&self) -> &str {
         match self {
             Self::Bool => "bool",
-            Self::CppObj {
-                cpp_type_idents_string,
-                ..
-            } => cpp_type_idents_string,
             Self::F32 => "float",
             Self::F64 => "double",
             Self::I8 => "qint8",
@@ -339,12 +324,12 @@ fn generate_invokables_cpp(
         let body = format!(
             "m_rustObj->{ident}({parameter_names})",
             // If we are a pointer to a CppObj then we need a wrapper
-            ident = if let Some(ident_wrapper) = &invokable.ident_wrapper {
-                ident_wrapper.cpp_ident.to_string()
-            } else {
-                invokable.ident.cpp_ident.to_string()
-            },
-            parameter_names = parameters.names.join(", ")
+            ident = invokable.ident_wrapper.cpp_ident,
+            parameter_names = (vec!["*this".to_owned()]
+                .into_iter()
+                .chain(parameters.names.into_iter()))
+            .collect::<Vec<_>>()
+            .join(", ")
         );
 
         // Cache the return ident as it's used in both header and source

@@ -16,8 +16,8 @@ mod ffi {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
 
-        #[cxx_name = "invokableName"]
-        fn invokable_name(self: &MyObject);
+        #[cxx_name = "invokableNameWrapper"]
+        fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -59,34 +59,25 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_name(&self) {
+        pub fn invokable_name_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+            cpp.invokable_name();
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");
-        }
-    }
-
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
+            self.as_mut().set_property_name(5);
         }
 
-        pub fn property_name(&self) -> i32 {
-            self.cpp.property_name()
-        }
-
-        pub fn set_property_name(&mut self, value: i32) {
-            self.cpp.as_mut().set_property_name(value);
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_property_name(data.property_name);
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_property_name(data.property_name);
         }
     }
 
@@ -95,17 +86,11 @@ mod cxx_qt_ffi {
         property_name: i32,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 property_name: value.property_name().into(),
             }
-        }
-    }
-
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
         }
     }
 
@@ -113,8 +98,7 @@ mod cxx_qt_ffi {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }

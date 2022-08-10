@@ -68,31 +68,35 @@ mod ffi {
 
     impl cxx_qt::QObject<Website> {
         #[qinvokable]
-        pub fn change_url(&self, cpp: &mut CppObj) {
-            let url = cpp.url().to_string();
+        pub fn change_url(self: Pin<&mut Self>) {
+            let url = self.as_ref().url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
-            cpp.set_url(QString::from_str(new_url).as_ref().unwrap());
+            self.set_url(QString::from_str(new_url).as_ref().unwrap());
         }
 
         #[qinvokable]
-        pub fn refresh_title(&self, cpp: &mut CppObj) {
+        pub fn refresh_title(mut self: Pin<&mut Self>) {
             // TODO: SeqCst is probably not the most efficient solution
-            let new_load =
-                self.loading
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
+            let new_load = self.rust().loading.compare_exchange(
+                false,
+                true,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            );
             if new_load.is_err() {
                 println!("Skipped refresh_title request, because already in progress.");
                 return;
             }
 
-            cpp.set_title(QString::from_str("Loading...").as_ref().unwrap());
+            self.as_mut()
+                .set_title(QString::from_str("Loading...").as_ref().unwrap());
 
-            let url = cpp.url().to_string();
+            let url = self.as_ref().url().to_string();
             // ANCHOR: book_cpp_update_requester
             // Retrieve the update requester from the CppObj
-            let update_requester = cpp.update_requester();
+            let update_requester = self.as_mut().update_requester();
             // ANCHOR_END: book_cpp_update_requester
-            let event_sender = self.event_sender.clone();
+            let event_sender = self.rust().event_sender.clone();
 
             let fetch_title = async move {
                 // Simulate the delay of a network request with a simple timer
@@ -116,31 +120,34 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn new_title_value(&mut self) {
+        pub fn new_title_value(self: Pin<&mut Self>) {
             println!("title changed");
         }
 
         #[qinvokable]
-        pub fn new_url_value(&mut self, cpp: &mut CppObj) {
-            self.refresh_title(cpp);
+        pub fn new_url_value(self: Pin<&mut Self>) {
+            self.refresh_title();
         }
 
-        fn process_event(&mut self, event: &Event, cpp: &mut CppObj) {
+        fn process_event(mut self: Pin<&mut Self>, event: &Event) {
             match event {
                 Event::TitleArrived(title) => {
-                    cpp.set_title(QString::from_str(title).as_ref().unwrap());
-                    self.loading.store(false, Ordering::Relaxed);
+                    self.as_mut()
+                        .set_title(QString::from_str(title).as_ref().unwrap());
+                    self.rust().loading.store(false, Ordering::Relaxed);
                 }
             }
         }
     }
 
     // ANCHOR: book_update_request_handler
-    impl UpdateRequestHandler<CppObj<'_>> for Website {
-        fn handle_update_request(&mut self, cpp: &mut CppObj) {
-            while let Some(event) = self.event_queue.next().now_or_never() {
+    impl UpdateRequestHandler for cxx_qt::QObject<Website> {
+        fn handle_update_request(mut self: Pin<&mut Self>) {
+            while let Some(event) =
+                unsafe { self.as_mut().rust_mut().event_queue.next().now_or_never() }
+            {
                 if let Some(event) = event {
-                    self.process_event(&event, cpp);
+                    self.as_mut().process_event(&event);
                 }
             }
         }

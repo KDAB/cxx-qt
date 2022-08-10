@@ -111,30 +111,16 @@ mod cxx_qt_ffi {
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use std::pin::Pin;
+
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {}
 
-    pub struct CppObj<'a> {
-        cpp: std::pin::Pin<&'a mut FFICppObj>,
-    }
-
-    impl<'a> CppObj<'a> {
-        pub fn new(cpp: std::pin::Pin<&'a mut FFICppObj>) -> Self {
-            Self { cpp }
-        }
-
-        pub fn number(&self) -> i32 {
-            self.cpp.number()
-        }
-
-        pub fn set_number(&mut self, value: i32) {
-            self.cpp.as_mut().set_number(value);
-        }
-
-        pub fn grab_values_from_data(&mut self, mut data: Data) {
-            self.set_number(data.number);
+    impl MyObjectQt {
+        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
+            self.as_mut().set_number(data.number);
         }
     }
 
@@ -143,17 +129,11 @@ mod cxx_qt_ffi {
         number: i32,
     }
 
-    impl<'a> From<&CppObj<'a>> for Data {
-        fn from(value: &CppObj<'a>) -> Self {
+    impl From<&MyObjectQt> for Data {
+        fn from(value: &MyObjectQt) -> Self {
             Self {
                 number: value.number().into(),
             }
-        }
-    }
-
-    impl<'a> From<&mut CppObj<'a>> for Data {
-        fn from(value: &mut CppObj<'a>) -> Self {
-            Self::from(&*value)
         }
     }
 
@@ -185,8 +165,7 @@ mod cxx_qt_ffi {
         std::default::Default::default()
     }
 
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-        let mut wrapper = CppObj::new(cpp);
-        wrapper.grab_values_from_data(Data::default());
+    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
+        cpp.grab_values_from_data(Data::default());
     }
 }
