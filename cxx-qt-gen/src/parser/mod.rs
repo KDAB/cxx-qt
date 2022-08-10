@@ -5,6 +5,7 @@
 
 pub mod cxxqtdata;
 pub mod parameter;
+pub mod property;
 pub mod qobject;
 pub mod signals;
 
@@ -87,6 +88,12 @@ mod tests {
     use crate::tests::tokens_to_syn;
     use quote::quote;
     use syn::ItemMod;
+    use syn::Type;
+
+    /// Helper which returns a f64 as a [syn::Type]
+    pub fn f64_type() -> Type {
+        tokens_to_syn(quote! { f64 })
+    }
 
     #[test]
     fn test_parser_from_empty_module() {
