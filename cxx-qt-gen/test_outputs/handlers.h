@@ -23,9 +23,9 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   qint32 getNumber() const;
   const QString& getString() const;
-
   std::unique_ptr<rust::cxxqtlib1::UpdateRequester> updateRequester();
   Q_INVOKABLE void updateState();
 

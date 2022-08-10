@@ -21,8 +21,8 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   Q_INVOKABLE void invokable();
-
   void emitReady();
   void emitDataChanged(qint32 first,
                        std::unique_ptr<QVariant> second,
