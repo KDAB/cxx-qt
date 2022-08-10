@@ -1,4 +1,6 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
+#[attrA]
+#[attrB]
 pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
@@ -94,9 +96,7 @@ pub mod ffi {
 }
 
 pub use self::cxx_qt_ffi::*;
-#[attrA]
-#[attrB]
-pub mod cxx_qt_ffi {
+mod cxx_qt_ffi {
     use super::ffi::*;
 
     pub type FFICppObj = super::ffi::MyObjectQt;
