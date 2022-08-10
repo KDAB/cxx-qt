@@ -36,6 +36,7 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   const QColor& getColor() const;
   const QDate& getDate() const;
   const QDateTime& getDateTime() const;

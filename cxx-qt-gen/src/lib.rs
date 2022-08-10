@@ -6,8 +6,10 @@
 mod extract;
 mod gen_cpp;
 mod gen_rs;
+mod generator;
 mod parser;
 mod syntax;
+mod writer;
 
 pub use extract::{extract_qobject, QObject};
 pub use gen_cpp::{generate_format, generate_qobject_cpp, CppObject};

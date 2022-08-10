@@ -24,6 +24,7 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   qint32 getPrimitive() const;
   const QColor& getOpaque() const;
 

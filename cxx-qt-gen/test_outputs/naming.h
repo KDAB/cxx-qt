@@ -23,8 +23,8 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   qint32 getPropertyName() const;
-
   Q_INVOKABLE void invokableName();
 
 public Q_SLOTS:

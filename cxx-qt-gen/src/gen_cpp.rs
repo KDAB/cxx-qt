@@ -3,13 +3,15 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use clang_format::{clang_format, ClangFormatStyle, CLANG_FORMAT_STYLE};
+use clang_format::{ClangFormatStyle, CLANG_FORMAT_STYLE};
 use convert_case::{Case, Casing};
 use indoc::formatdoc;
 use proc_macro2::TokenStream;
 use syn::Ident;
 
 use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject, QtTypes, Signal};
+use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::writer::cpp::write_cpp;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait CppType {
@@ -740,261 +742,120 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let struct_ident_str = obj.ident.to_string();
     let rust_struct_ident = format!("{}Rust", struct_ident_str);
 
-    // A helper which allows us to flatten data from vec of properties
-    struct CppPropertyHelper {
-        headers_members: Vec<String>,
-        headers_meta: Vec<String>,
-        headers_public: Vec<String>,
-        headers_signals: Vec<String>,
-        headers_slots: Vec<String>,
-        sources: Vec<String>,
+    // TODO: For now we proxy the gen_cpp code into what the writer phase expects
+    // later this code will be moved into a generator phase
+    let mut members: Vec<String> = vec![];
+    let mut metaobjects: Vec<String> = vec![];
+    let mut methods: Vec<CppFragmentPair> = vec![];
+    let mut signals: Vec<String> = vec![];
+    let mut slots: Vec<CppFragmentPair> = vec![];
+
+    for mut property in generate_properties_cpp(&obj.ident, &obj.properties)?.drain(..) {
+        members.append(&mut property.header_members);
+        metaobjects.append(&mut property.header_meta);
+        methods.append(
+            &mut property
+                .header_public
+                .drain(..)
+                .map(|header| CppFragmentPair {
+                    header,
+                    source: "".to_owned(),
+                })
+                .collect::<Vec<CppFragmentPair>>(),
+        );
+        signals.append(&mut property.header_signals);
+        slots.append(
+            &mut property
+                .header_slots
+                .drain(..)
+                .map(|header| CppFragmentPair {
+                    header,
+                    source: "".to_owned(),
+                })
+                .collect::<Vec<CppFragmentPair>>(),
+        );
+        methods.append(
+            &mut property
+                .source
+                .drain(..)
+                .map(|source| CppFragmentPair {
+                    header: "".to_owned(),
+                    source,
+                })
+                .collect::<Vec<CppFragmentPair>>(),
+        );
     }
 
-    // Build CppProperty's for the object, then drain them into our CppPropertyHelper
-    let properties = generate_properties_cpp(&obj.ident, &obj.properties)?
-        .drain(..)
-        .fold(
-            CppPropertyHelper {
-                headers_members: vec![],
-                headers_meta: vec![],
-                headers_public: vec![],
-                headers_signals: vec![],
-                headers_slots: vec![],
-                sources: vec![],
-            },
-            |mut acc, mut property| {
-                acc.headers_meta.append(&mut property.header_meta);
-                acc.headers_members.append(&mut property.header_members);
-                acc.headers_public.append(&mut property.header_public);
-                acc.headers_signals.append(&mut property.header_signals);
-                acc.headers_slots.append(&mut property.header_slots);
-                acc.sources.append(&mut property.source);
-                acc
-            },
-        );
-
-    // A helper which allows us to flatten data from vec of invokables
-    struct CppInvokableHelper {
-        headers: Vec<String>,
-        sources: Vec<String>,
+    for invokable in generate_invokables_cpp(&obj.ident, &obj.invokables)?.drain(..) {
+        methods.push(CppFragmentPair {
+            header: invokable.header,
+            source: invokable.source,
+        });
     }
 
-    // Build CppInvokable's for the object, then drain them into our CppInvokableHelper
-    let invokables = generate_invokables_cpp(&obj.ident, &obj.invokables)?
-        .drain(..)
-        .fold(
-            CppInvokableHelper {
-                headers: vec![],
-                sources: vec![],
-            },
-            |mut acc, invokable| {
-                acc.headers.push(invokable.header);
-                acc.sources.push(invokable.source);
-                acc
-            },
+    for mut signal in generate_signals_cpp(&obj.ident, &obj.signals)?.drain(..) {
+        methods.append(
+            &mut signal
+                .header_public
+                .drain(..)
+                .map(|header| CppFragmentPair {
+                    header,
+                    source: "".to_owned(),
+                })
+                .collect::<Vec<CppFragmentPair>>(),
         );
-
-    // A helper which allows us to flatten data from vec of signals
-    struct CppSignalHelper {
-        headers_public: Vec<String>,
-        headers_signals: Vec<String>,
-        sources: Vec<String>,
+        signals.append(&mut signal.header_signals);
+        methods.push(CppFragmentPair {
+            header: "".to_owned(),
+            source: signal.source,
+        });
     }
-
-    let mut signals = generate_signals_cpp(&obj.ident, &obj.signals)?
-        .drain(..)
-        .fold(
-            CppSignalHelper {
-                headers_public: vec![],
-                headers_signals: vec![],
-                sources: vec![],
-            },
-            |mut acc, mut signal| {
-                acc.headers_public.append(&mut signal.header_public);
-                acc.headers_signals.append(&mut signal.header_signals);
-                acc.sources.push(signal.source);
-                acc
-            },
-        );
-
-    // If there are signals then prepare a string otherwise leave an empty string
-    // We need to do this otherwise we are left with a Q_SIGNALS with nothing after it
-    let cpp_signals = if properties.headers_signals.is_empty() && signals.headers_signals.is_empty()
-    {
-        "".to_owned()
-    } else {
-        let mut qt_signals = properties.headers_signals;
-        qt_signals.append(&mut signals.headers_signals);
-
-        formatdoc! {r#"
-            Q_SIGNALS:
-            {signals}
-            "#,
-            signals = qt_signals.join("\n"),
-        }
-    };
-    // If there are public slots then prepare a string otherwise leave an empty string
-    // We need to do this otherwise we are left with a Q_SLOTS with nothing after it
-    let public_slots = if properties.headers_slots.is_empty() {
-        "".to_owned()
-    } else {
-        formatdoc! {r#"
-            public Q_SLOTS:
-            {properties_slots}
-            "#,
-            properties_slots = properties.headers_slots.join("\n"),
-        }
-    };
-
-    let mut public_method_headers = vec![];
-    let mut public_method_sources = vec![];
 
     if obj.handle_updates_impl.is_some() {
-        public_method_headers
-            .push("std::unique_ptr<rust::cxxqtlib1::UpdateRequester> updateRequester();");
-        public_method_headers.push("Q_INVOKABLE void updateState();");
-
-        public_method_sources.push(formatdoc! {r#"
-            std::unique_ptr<rust::cxxqtlib1::UpdateRequester> {ident}::updateRequester() {{
-                return std::make_unique<rust::cxxqtlib1::UpdateRequester>(this, "updateState");
-            }}
-        "#,
-        ident = struct_ident_str,
-        });
-        public_method_sources.push(formatdoc! {r#"
-            void {ident}::updateState() {{
-                const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-                m_rustObj->handleUpdateRequest(*this);
-            }}
-        "#,
-        ident = struct_ident_str,
+        methods.push(
+            CppFragmentPair {
+                header: "std::unique_ptr<rust::cxxqtlib1::UpdateRequester> updateRequester();".to_owned(),
+                source: formatdoc! {r#"
+                    std::unique_ptr<rust::cxxqtlib1::UpdateRequester> {ident}::updateRequester() {{
+                        return std::make_unique<rust::cxxqtlib1::UpdateRequester>(this, "updateState");
+                    }}
+                "#,
+                ident = struct_ident_str,
+                }
+            }
+        );
+        methods.push(CppFragmentPair {
+            header: "Q_INVOKABLE void updateState();".to_owned(),
+            source: formatdoc! {r#"
+                    void {ident}::updateState() {{
+                        const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+                        m_rustObj->handleUpdateRequest(*this);
+                    }}
+                "#,
+            ident = struct_ident_str,
+            },
         });
     }
 
-    // Generate the C++ header part
-    let header = formatdoc! {r#"
-        #pragma once
-
-        #include <memory>
-        #include <mutex>
-
-        namespace {namespace} {{
-            class {ident};
-        }} // namespace {namespace}
-
-        #include "cxx-qt-gen/include/{ident_snake}.cxx.h"
-
-        namespace {namespace} {{
-
-        class {ident} : public QObject {{
-            Q_OBJECT
-        {properties_meta}
-
-        public:
-            explicit {ident}(QObject *parent = nullptr);
-            ~{ident}();
-            const {rust_struct_ident}& unsafe_rust() const;
-            {rust_struct_ident}& unsafe_rust_mut();
-
-        {properties_public}
-
-        {invokables}
-
-        {public_method_headers}
-
-        {signal_emitters}
-
-        {public_slots}
-
-        {signals}
-
-        private:
-            rust::Box<{rust_struct_ident}> m_rustObj;
-            std::mutex m_rustObjMutex;
-            bool m_initialised = false;
-
-            {members_private}
-        }};
-
-        typedef {ident} CppObj;
-
-        std::unique_ptr<CppObj> newCppObject();
-
-        }} // namespace {namespace}
-
-        Q_DECLARE_METATYPE({namespace}::CppObj*)
-        "#,
-    ident = struct_ident_str,
-    ident_snake = struct_ident_str.to_case(Case::Snake),
-    invokables = invokables.headers.join("\n"),
-    members_private = properties.headers_members.join("\n"),
-    namespace = obj.namespace,
-    properties_meta = properties.headers_meta.join("\n"),
-    properties_public = properties.headers_public.join("\n"),
-    rust_struct_ident = rust_struct_ident,
-    signals = cpp_signals,
-    signal_emitters = signals.headers_public.join("\n"),
-    public_slots = public_slots,
-    public_method_headers = public_method_headers.join("\n"),
+    // For now convert our gen_cpp code into the GeneratedCppBlocks struct
+    let generated = GeneratedCppBlocks {
+        cxx_stem: struct_ident_str.to_case(Case::Snake),
+        ident: struct_ident_str,
+        rust_ident: rust_struct_ident,
+        namespace: obj.namespace.clone(),
+        metaobjects,
+        methods,
+        slots,
+        signals,
+        members,
     };
 
-    // Generate C++ source part
-    let source = formatdoc! {r#"
-        #include "cxx-qt-gen/include/{ident_snake}.cxxqt.h"
-
-        namespace {namespace} {{
-
-        {ident}::{ident}(QObject *parent)
-            : QObject(parent)
-            , m_rustObj(createRs())
-        {{
-            initialiseCpp(*this);
-            m_initialised = true;
-        }}
-
-        {ident}::~{ident}() = default;
-
-        const {rust_struct_ident}&
-        {ident}::unsafe_rust() const
-        {{
-          return *m_rustObj;
-        }}
-
-        {rust_struct_ident}&
-        {ident}::unsafe_rust_mut()
-        {{
-          return *m_rustObj;
-        }}
-
-        {properties}
-
-        {invokables}
-
-        {public_method_sources}
-
-        {signals}
-
-        std::unique_ptr<CppObj> newCppObject()
-        {{
-            return std::make_unique<CppObj>();
-        }}
-
-        }} // namespace {namespace}
-        "#,
-        ident = struct_ident_str,
-        ident_snake = struct_ident_str.to_case(Case::Snake),
-        invokables = invokables.sources.join("\n"),
-        namespace = obj.namespace,
-        properties = properties.sources.join("\n"),
-        public_method_sources = public_method_sources.join("\n"),
-        rust_struct_ident = rust_struct_ident,
-        signals = signals.sources.join("\n"),
-    };
+    // Use our writer phase to convert to a string
+    let writer = write_cpp(&generated);
 
     Ok(CppObject {
-        // TODO: handle clang-format errors?
-        header: clang_format(&header).unwrap_or(header),
-        source: clang_format(&source).unwrap_or(source),
+        header: writer.header,
+        source: writer.source,
     })
 }
 
@@ -1009,6 +870,7 @@ mod tests {
     use super::*;
 
     use crate::extract_qobject;
+    use clang_format::clang_format;
 
     use pretty_assertions::assert_str_eq;
     use syn::ItemMod;

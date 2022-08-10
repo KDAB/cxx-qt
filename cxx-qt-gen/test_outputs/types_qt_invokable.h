@@ -21,6 +21,7 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   Q_INVOKABLE QColor testColor(const QColor& color);
   Q_INVOKABLE QDate testDate(const QDate& date);
   Q_INVOKABLE QDateTime testDateTime(const QDateTime& dateTime);

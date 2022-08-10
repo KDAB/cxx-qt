@@ -21,6 +21,7 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   Q_INVOKABLE void invokable();
   Q_INVOKABLE void invokableCppObj();
   Q_INVOKABLE void invokableMutable();

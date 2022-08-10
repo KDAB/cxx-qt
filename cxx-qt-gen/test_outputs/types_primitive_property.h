@@ -33,6 +33,7 @@ public:
   const MyObjectRust& unsafe_rust() const;
   MyObjectRust& unsafe_rust_mut();
 
+public:
   bool getBoolean() const;
   float getFloat32() const;
   double getFloat64() const;
