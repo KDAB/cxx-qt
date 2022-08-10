@@ -114,7 +114,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let class_name = &obj.ident;
     let rust_class_name_cpp = format_ident!("{}Qt", class_name);
     let cxx_class_name_rust = format_ident!("{}Rust", class_name);
-    let rust_class_name = format_ident!("RustObj");
+    let rust_class_name = &obj.original_rust_struct.ident;
 
     // Build a snake version of the class name, this is used for rust method names
     //
@@ -731,7 +731,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let class_name = &obj.ident;
 
     // Cache the rust class name
-    let rust_class_name = format_ident!("RustObj");
+    let rust_class_name = &obj.original_rust_struct.ident;
     let rust_wrapper_name = format_ident!("CppObj");
 
     // Generate cxx block
@@ -960,7 +960,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
             #(#original_passthrough_decls)*
 
-            pub fn create_rs() -> std::boxed::Box<RustObj> {
+            pub fn create_rs() -> std::boxed::Box<#rust_class_name> {
                 std::default::Default::default()
             }
 

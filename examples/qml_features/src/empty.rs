@@ -8,6 +8,7 @@ mod empty {
     #[derive(Default)]
     pub struct Data;
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 }

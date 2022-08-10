@@ -34,6 +34,7 @@ mod my_object {
         }
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

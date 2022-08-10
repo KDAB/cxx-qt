@@ -71,6 +71,7 @@ mod mock_qt_types {
         }
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

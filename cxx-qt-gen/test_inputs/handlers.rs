@@ -12,6 +12,7 @@ mod my_object {
         string: QString,
     }
 
+    #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustObj;
 

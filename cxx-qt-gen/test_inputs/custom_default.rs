@@ -10,6 +10,7 @@ mod my_object {
         }
     }
 
+    #[cxx_qt::qobject]
     pub struct RustObj {
         private: i32,
     }

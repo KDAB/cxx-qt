@@ -8,7 +8,6 @@ use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::{path_angled_args_to_type_path, path_compare_str, path_to_single_ident},
 };
-use quote::format_ident;
 use std::collections::HashMap;
 use syn::{
     spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, ItemStruct, Result, Type, TypePath,
@@ -29,14 +28,12 @@ impl ParsedCxxQtData {
     pub fn find_qobject_keys(&mut self, items: &[Item]) -> Result<()> {
         for item in items {
             if let Item::Struct(s) = item {
-                // TODO: instead find the cxx_qt::qobject macro
-                // and support multiple QObjects in one block
-                if s.ident == "RustObj" {
+                if attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]).is_some() {
                     // TODO: for now we only support one qobject per block
                     if !self.qobjects.is_empty() {
                         return Err(Error::new(
                             s.span(),
-                            "Only one RustObj struct is supported per mod",
+                            "Only one #[cxx_qt::qobject] struct is supported per mod",
                         ));
                     }
 
@@ -114,39 +111,30 @@ impl ParsedCxxQtData {
                 }
                 return Ok(None);
             } else {
-                // TODO: once Data, RustObj, and impl UpdateRequestHandler are removed (?)
-                // other items can be ignored and just returned, so this block of code below
-                // can be removed in the future.
-                //
-                // For now we need to find the Data, RustObj, and impl UpdateRequestHandler
-                if path_compare_str(path, &["Data"]) {
+                // TODO: Once Data and "RustObj" have been merged this can be removed
+                if !self.qobjects.is_empty() && path_compare_str(path, &["Data"]) {
                     // TODO: for now we assume that Data is related to the only struct
-                    // which is called "RustObj"
+                    let qobject_ident = self.qobjects.keys().next().unwrap().clone();
                     self.qobjects
-                        .entry(format_ident!("RustObj"))
+                        .entry(qobject_ident)
                         .and_modify(|qobject| qobject.others.push(Item::Impl(imp)));
                     return Ok(None);
-                } else if path_compare_str(path, &["RustObj"]) {
+                // Find if we are an impl block for a qobject
+                } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
                     // If we are the UpdateRequestHandler, then we need to store in list
+                    //
+                    // TODO: once impl UpdateRequestHandler is removed this block can go
                     if let Some(trait_) = &imp.trait_ {
                         if let Some(first) = trait_.1.segments.first() {
                             if first.ident == "UpdateRequestHandler" {
-                                self.qobjects
-                                    .entry(format_ident!("RustObj"))
-                                    // We assume that there is only one impl block from the compiler
-                                    //
-                                    // TODO: later this might be removed/changed anyway
-                                    .and_modify(|qobject| {
-                                        qobject.update_requester_handler = Some(imp.clone())
-                                    });
+                                // We assume that there is only one impl block from the compiler
+                                qobject.update_requester_handler = Some(imp.clone());
                                 return Ok(None);
                             }
                         }
                     }
 
-                    self.qobjects
-                        .entry(format_ident!("RustObj"))
-                        .and_modify(|qobject| qobject.others.push(Item::Impl(imp)));
+                    qobject.others.push(Item::Impl(imp));
                     return Ok(None);
                 }
             }
@@ -158,33 +146,34 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemStruct] into the qobjects if it's a CXX-Qt struct
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_struct(&mut self, s: ItemStruct) -> Result<Option<Item>> {
-        // TODO: instead check for the cxx_qt::qobject macro
-        //
-        // // If the attribute is cxx_qt::qobject<T> then this the struct defining a qobject
-        // if let Some(attr) = attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]) {
-        //     if let Some(qobject) = attribute_tokens_to_ident(attr)? {
-        //         self
-        //             .qobjects
-        //             .entry(qobject)
-        //             .and_modify(|qobject| qobject.rust_struct = Some(s.clone()));
-        //         return Ok(None);
-        //     }
-        // }
-        match s.ident.to_string().as_str() {
-            // TODO: for now we assume that Data is related to the only struct
-            // which is called "RustObj"
-            "Data" => {
-                self.qobjects
-                    .entry(format_ident!("RustObj"))
-                    .and_modify(|qobject| qobject.data_struct = Some(s.clone()));
-                Ok(None)
+        // If the attribute is #[cxx_qt::qobject] then this the struct defining a qobject
+        if let Some(index) = attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]) {
+            // Remove the macro from the struct
+            //
+            // TODO: we need to read the base class from the macro
+            let mut s = s.clone();
+            s.attrs.remove(index);
+
+            if let Some(qobject) = self.qobjects.get_mut(&s.ident) {
+                qobject.qobject_struct = Some(s);
+                return Ok(None);
+            } else {
+                return Err(Error::new(
+                    s.span(),
+                    "cxx_qt::qobject struct was not found by find_qobject_keys",
+                ));
             }
-            // TODO: for now we assume that Data is related to the only struct
-            // which is called "RustObj"
-            "RustObj" => {
+        }
+
+        // TODO: for now we assume that Data is related to the only struct in the qobjects
+        //
+        // Once Data and "RustObj" have been merged this can be removed
+        match s.ident.to_string().as_str() {
+            "Data" if !self.qobjects.is_empty() => {
+                let qobject_ident = self.qobjects.keys().next().unwrap().clone();
                 self.qobjects
-                    .entry(s.ident.clone())
-                    .and_modify(|qobject| qobject.rust_struct = Some(s.clone()));
+                    .entry(qobject_ident)
+                    .and_modify(|qobject| qobject.data_struct = Some(s.clone()));
                 Ok(None)
             }
             _others => Ok(Some(Item::Struct(s))),
@@ -197,13 +186,13 @@ mod tests {
     use super::*;
 
     use crate::tests::tokens_to_syn;
-    use quote::quote;
+    use quote::{format_ident, quote};
     use syn::ItemMod;
 
     /// The QObject ident used in these tests as the ident that already
     /// has been found.
     fn qobject_ident() -> Ident {
-        format_ident!("RustObj")
+        format_ident!("MyObject")
     }
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
@@ -220,7 +209,8 @@ mod tests {
         let module: ItemMod = tokens_to_syn(quote! {
             mod module {
                 struct Other;
-                struct RustObj;
+                #[cxx_qt::qobject]
+                struct MyObject;
             }
         });
         let result = cxx_qt_data.find_qobject_keys(&module.content.unwrap().1);
@@ -236,8 +226,10 @@ mod tests {
         let module: ItemMod = tokens_to_syn(quote! {
             mod module {
                 struct Other;
-                struct RustObj;
-                struct RustObj;
+                #[cxx_qt::qobject]
+                struct MyObject;
+                #[cxx_qt::qobject]
+                struct MyObject;
             }
         });
         let result = cxx_qt_data.find_qobject_keys(&module.content.unwrap().1);
@@ -245,11 +237,26 @@ mod tests {
     }
 
     #[test]
+    fn test_find_qobjects_no_macro() {
+        let mut cxx_qt_data = ParsedCxxQtData::default();
+
+        let module: ItemMod = tokens_to_syn(quote! {
+            mod module {
+                struct Other;
+                struct MyObject;
+            }
+        });
+        let result = cxx_qt_data.find_qobject_keys(&module.content.unwrap().1);
+        assert!(result.is_ok());
+        assert_eq!(cxx_qt_data.qobjects.len(), 0);
+    }
+
+    #[test]
     fn test_find_and_merge_cxx_qt_item_enum_valid_signals() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::signals(RustObj)]
+            #[cxx_qt::signals(MyObject)]
             enum MySignals {
                 Ready,
             }
@@ -318,11 +325,14 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            struct RustObj;
+            #[cxx_qt::qobject]
+            struct MyObject;
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].rust_struct.is_some());
+        assert!(cxx_qt_data.qobjects[&qobject_ident()]
+            .qobject_struct
+            .is_some());
     }
 
     #[test]
@@ -341,7 +351,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject<RustObj> {
+            impl cxx_qt::QObject<MyObject> {
                 #[invokable]
                 fn invokable() {}
 
@@ -401,7 +411,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl RustObj {
+            impl MyObject {
                 fn method() {}
             }
         });
@@ -415,7 +425,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl UpdateRequestHandler for RustObj {
+            impl UpdateRequestHandler for MyObject {
                 fn method() {}
             }
         });

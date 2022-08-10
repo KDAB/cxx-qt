@@ -11,6 +11,7 @@ pub mod rust_obj_invokables {
         number: i32,
     }
 
+    #[cxx_qt::qobject]
     pub struct RustObj {
         rust_only_field: i32,
     }
