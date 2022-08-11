@@ -22,7 +22,7 @@ mod ffi {
         #[rust_name = "set_string"]
         fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
-        #[cxx_name = "unsafe_rust"]
+        #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
@@ -32,7 +32,7 @@ mod ffi {
     }
 
     extern "C++" {
-        #[cxx_name = "unsafe_rust_mut"]
+        #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 

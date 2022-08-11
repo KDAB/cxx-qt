@@ -30,8 +30,8 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
-  const MyObjectRust& unsafe_rust() const;
-  MyObjectRust& unsafe_rust_mut();
+  const MyObjectRust& unsafeRust() const;
+  MyObjectRust& unsafeRustMut();
 
 public:
   bool getBoolean() const;

@@ -29,13 +29,13 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         {ident}::~{ident}() = default;
 
         const {rust_ident}&
-        {ident}::unsafe_rust() const
+        {ident}::unsafeRust() const
         {{
           return *m_rustObj;
         }}
 
         {rust_ident}&
-        {ident}::unsafe_rust_mut()
+        {ident}::unsafeRustMut()
         {{
           return *m_rustObj;
         }}

@@ -402,7 +402,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 
                 #(#cpp_functions)*
 
-                #[cxx_name = "unsafe_rust"]
+                #[cxx_name = "unsafeRust"]
                 fn rust(self: &#rust_class_name_cpp) -> &#rust_class_name;
                 #[rust_name = "new_cpp_object"]
                 fn newCppObject() -> UniquePtr<#rust_class_name_cpp>;
@@ -411,7 +411,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
             }
 
             extern "C++" {
-                #[cxx_name = "unsafe_rust_mut"]
+                #[cxx_name = "unsafeRustMut"]
                 unsafe fn rust_mut(self: Pin<&mut #rust_class_name_cpp>) -> Pin<&mut #rust_class_name>;
             }
 
