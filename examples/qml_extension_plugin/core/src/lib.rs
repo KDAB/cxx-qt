@@ -26,7 +26,7 @@ impl From<Data> for DataSerde {
 
 const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
-#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+#[cxx_qt::bridge(namespace = "core")]
 mod ffi {
     use super::{DataSerde, DEFAULT_STR};
 

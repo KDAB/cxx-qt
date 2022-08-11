@@ -29,10 +29,10 @@ Starting with the module definition:
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_bridge_macro}}
 ```
 
-Because we add the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to the module definition,
+Because we add the `#[cxx_qt::bridge]` macro to the module definition,
 CXX-Qt will look inside the module for further macros which can define the QObject.
 
-For the `#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]` macro to work, we first need to define the data that will live in the new C++ object.
+For the `#[cxx_qt::bridge]` macro to work, we first need to define the data that will live in the new C++ object.
 This is done with the `Data` struct:
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/src/lib.rs:book_data_struct}}

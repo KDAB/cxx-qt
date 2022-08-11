@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(namespace = "cxx_qt::rust_obj_invokables")]
+#[cxx_qt::bridge]
 pub mod ffi {
     #[derive(Default)]
     pub struct Data {

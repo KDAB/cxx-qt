@@ -7,11 +7,10 @@
 // ANCHOR: book_cxx_qt_module
 // ANCHOR: book_bridge_macro
 
-#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+#[cxx_qt::bridge]
 mod ffi {
     // ANCHOR_END: book_bridge_macro
 
-    #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QString = cxx_qt_lib::QString;

@@ -32,8 +32,6 @@ They will always be in the `cxx-qt-gen/include/` include path and use the snake_
 
 The second code snippet then exports the class to QML.
 This works the same as it would for any other QObject subclass, as that is exactly what `MyObject` is, as far as Qt is concerned.
-The only thing to note here is that the class is generated in the `cxx_qt::my_object` namespace.
-Where `my_object` is the name of the Rust module we defined earlier.
 
 As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file in the `src` folder as well:
 ```qrc,ignore

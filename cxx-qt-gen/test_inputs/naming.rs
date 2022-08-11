@@ -1,4 +1,4 @@
-#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+#[cxx_qt::bridge]
 mod ffi {
     #[derive(Default)]
     pub struct Data {

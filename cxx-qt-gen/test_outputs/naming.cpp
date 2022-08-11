@@ -1,12 +1,10 @@
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 
-namespace cxx_qt::my_object {
-
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
-  , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
+  , m_rustObj(cxx_qt_my_object::createRs())
 {
-  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
+  cxx_qt_my_object::initialiseCpp(*this);
   m_initialised = true;
 }
 
@@ -54,12 +52,10 @@ MyObject::invokableName()
   m_rustObj->invokableName();
 }
 
-} // namespace cxx_qt::my_object
-
-namespace cxx_qt::my_object::cxx_qt_my_object {
+namespace cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject()
 {
   return std::make_unique<MyObject>();
 }
-} // namespace cxx_qt::my_object::cxx_qt_my_object
+} // namespace cxx_qt_my_object

@@ -16,7 +16,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     formatdoc! {r#"
         #include "cxx-qt-gen/include/{cxx_stem}.cxxqt.h"
 
-        namespace {namespace} {{
+        {namespace_start}
 
         {ident}::{ident}(QObject* parent)
           : QObject(parent)
@@ -42,7 +42,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
 
         {methods}
         {slots}
-        }} // namespace {namespace}
+        {namespace_end}
 
         namespace {namespace_internals} {{
         std::unique_ptr<{ident}>
@@ -54,7 +54,16 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
-    namespace = generated.namespace,
+    namespace_start = if generated.namespace.is_empty() {
+      "".to_owned()
+    } else {
+      format!("namespace {namespace} {{", namespace = generated.namespace)
+    },
+    namespace_end = if generated.namespace.is_empty() {
+      "".to_owned()
+    } else {
+      format!("}} // namespace {namespace}", namespace = generated.namespace)
+    },
     namespace_internals = generated.namespace_internals,
     rust_ident = generated.rust_ident,
     methods = generated.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
@@ -66,7 +75,10 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
 mod tests {
     use super::*;
 
-    use crate::writer::cpp::tests::{create_generated_cpp, expected_source};
+    use crate::writer::cpp::tests::{
+        create_generated_cpp, create_generated_cpp_no_namespace, expected_source,
+        expected_source_no_namespace,
+    };
     use pretty_assertions::assert_str_eq;
 
     #[test]
@@ -74,5 +86,12 @@ mod tests {
         let generated = create_generated_cpp();
         let output = write_cpp_source(&generated);
         assert_str_eq!(output, expected_source());
+    }
+
+    #[test]
+    fn test_write_cpp_source_no_namespace() {
+        let generated = create_generated_cpp_no_namespace();
+        let output = write_cpp_source(&generated);
+        assert_str_eq!(output, expected_source_no_namespace());
     }
 }
