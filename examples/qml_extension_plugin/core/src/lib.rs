@@ -62,18 +62,18 @@ mod ffi {
     pub struct MyObject;
 
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn increment(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn reset(&self, cpp: &mut CppObj) {
             let data: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
             cpp.grab_values_from_data(data.into());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn serialize(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);
             let data_serde = DataSerde::from(data);
@@ -81,7 +81,7 @@ mod ffi {
             QString::from_str(&data_string)
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data: DataSerde = serde_json::from_str(string).unwrap();

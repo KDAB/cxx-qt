@@ -48,7 +48,7 @@ These CXX-Qt modules consist of multiple parts:
     - Needs to implement the `Default` trait.
 - The `impl` of the `#[cxx_qt::qobject]` marked struct (optional):
     - Contains any Rust code.
-    - Functions marked with `#[invokable]` will be callable from QML and C++.
+    - Functions marked with `#[qinvokable]` will be callable from QML and C++.
 - The `Signal` enum
     - A normal Rust enum.
     - Defines signals that are added to the QObject class
@@ -75,7 +75,7 @@ Typically this will be instantiated by QML and the lifetime will be directly ass
 Any properties declared in the `Data` struct will be stored as a member of the C++ QObject.
 
 However, the generated QObject subclass will defer to the `#[cxx_qt::qobject]` marked struct for any behavior, which is then defined in Rust.
-The `#[cxx_qt::qobject]` marked struct can expose additional functionality with functions marked as `#[invokable]`, which will generate a function on the C++ side that will directly call the appropriate Rust method.
+The `#[cxx_qt::qobject]` marked struct can expose additional functionality with functions marked as `#[qinvokable]`, which will generate a function on the C++ side that will directly call the appropriate Rust method.
 These Rust methods can take a reference to the members of the C++ object via a wrapper called `CppObj`, so the Rust code can modify them.
 
 Now that we have taken a look the theory of it all, lets jump in and write [our first CXX-Qt module](./2-our-first-cxx-qt-module.md).

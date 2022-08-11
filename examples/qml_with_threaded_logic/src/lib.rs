@@ -64,14 +64,14 @@ mod ffi {
     }
 
     impl cxx_qt::QObject<Website> {
-        #[invokable]
+        #[qinvokable]
         pub fn change_url(&self, cpp: &mut CppObj) {
             let url = cpp.url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
             cpp.set_url(QString::from_str(new_url).as_ref().unwrap());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn refresh_title(&self, cpp: &mut CppObj) {
             // TODO: SeqCst is probably not the most efficient solution
             let new_load =
@@ -112,12 +112,12 @@ mod ffi {
             thread::spawn(move || block_on(fetch_title));
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn new_title_value(&mut self) {
             println!("title changed");
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn new_url_value(&mut self, cpp: &mut CppObj) {
             self.refresh_title(cpp);
         }

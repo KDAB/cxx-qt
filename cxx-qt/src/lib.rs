@@ -24,7 +24,7 @@ use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 ///     struct RustObj;
 ///
 ///     impl cxx_qt::QObject<RustObj> {
-///         #[invokable]
+///         #[qinvokable]
 ///         fn invokable(&self, a: i32, b: i32) -> i32 {
 ///             a + b
 ///         }
@@ -110,7 +110,7 @@ pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
 ///     struct RustObj;
 ///
 ///     impl cxx_qt::QObject<RustObj> {
-///         #[invokable]
+///         #[qinvokable]
 ///         fn invokable(&self, a: i32, b: i32) -> i32 {
 ///             a + b
 ///         }

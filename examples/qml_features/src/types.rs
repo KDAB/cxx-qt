@@ -31,7 +31,7 @@ mod ffi {
     pub struct Types;
 
     impl cxx_qt::QObject<Types> {
-        #[invokable]
+        #[qinvokable]
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 QVariantValue::Bool(b) => {
@@ -44,7 +44,7 @@ mod ffi {
             }
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
