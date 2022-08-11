@@ -655,6 +655,9 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     // of Parser
     let mut parser = Parser::from(module.to_owned()).map_err(|err| err.to_compile_error())?;
 
+    // Validate that we pass our checks
+    crate::checks::validate(&parser).map_err(|err| err.to_compile_error())?;
+
     // TODO: for now we only support one QObject per ItemMod block
     // so extract the first qobject we find
     if parser.cxx_qt_data.qobjects.len() != 1 {

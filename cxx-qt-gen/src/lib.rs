@@ -3,6 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+mod checks;
 mod extract;
 mod gen_cpp;
 mod gen_rs;
