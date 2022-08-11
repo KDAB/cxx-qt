@@ -9,7 +9,7 @@ use quote::ToTokens;
 use syn::parse::{Parse, ParseStream};
 use syn::{Attribute, Item, ItemMod, Result, Token, Visibility};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum CxxQtItem {
     /// A normal syntax item that we pass through
     Item(Item),
