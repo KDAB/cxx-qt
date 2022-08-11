@@ -71,16 +71,19 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
           {members}
         }};
 
+        }} // namespace {namespace}
+
+        namespace {namespace_internals} {{
         std::unique_ptr<{ident}>
         newCppObject();
-
-        }} // namespace {namespace}
+        }} // namespace {namespace_internals}
 
         Q_DECLARE_METATYPE({namespace}::{ident}*)
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
     namespace = generated.namespace,
+    namespace_internals = generated.namespace_internals,
     rust_ident = generated.rust_ident,
     metaobjects = generated.metaobjects.join("\n  "),
     methods = create_block("public", &generated.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),

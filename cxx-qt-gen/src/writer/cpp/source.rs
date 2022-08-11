@@ -20,9 +20,9 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
 
         {ident}::{ident}(QObject* parent)
           : QObject(parent)
-          , m_rustObj(createRs())
+          , m_rustObj({namespace_internals}::createRs())
         {{
-          initialiseCpp(*this);
+          {namespace_internals}::initialiseCpp(*this);
           m_initialised = true;
         }}
 
@@ -42,17 +42,20 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
 
         {methods}
         {slots}
+        }} // namespace {namespace}
+
+        namespace {namespace_internals} {{
         std::unique_ptr<{ident}>
         newCppObject()
         {{
           return std::make_unique<{ident}>();
         }}
-
-        }} // namespace {namespace}
+        }} // namespace {namespace_internals}
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
     namespace = generated.namespace,
+    namespace_internals = generated.namespace_internals,
     rust_ident = generated.rust_ident,
     methods = generated.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
     slots = generated.slots.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),

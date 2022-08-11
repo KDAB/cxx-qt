@@ -26,6 +26,7 @@ mod ffi {
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
@@ -42,9 +43,11 @@ mod ffi {
         fn invokable_wrapper(self: &MyObject, cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
 
         #[cxx_name = "initialiseCpp"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 

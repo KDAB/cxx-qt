@@ -4,9 +4,9 @@ namespace cxx_qt::my_object {
 
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
-  , m_rustObj(createRs())
+  , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
 {
-  initialiseCpp(*this);
+  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
   m_initialised = true;
 }
 
@@ -70,10 +70,12 @@ MyObject::setOpaque(const QColor& value)
   }
 }
 
+} // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object::cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject()
 {
   return std::make_unique<MyObject>();
 }
-
-} // namespace cxx_qt::my_object
+} // namespace cxx_qt::my_object::cxx_qt_my_object

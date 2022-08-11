@@ -36,6 +36,7 @@ mod tests {
             ident: "MyObject".to_owned(),
             rust_ident: "MyObjectRust".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
+            namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
             metaobjects: vec![
                 "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
                 "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
@@ -178,10 +179,12 @@ mod tests {
           bool m_toggle;
         };
 
+        } // namespace cxx_qt::my_object
+
+        namespace cxx_qt::my_object::cxx_qt_my_object {
         std::unique_ptr<MyObject>
         newCppObject();
-
-        } // namespace cxx_qt::my_object
+        } // namespace cxx_qt::my_object::cxx_qt_my_object
 
         Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
         "#}
@@ -196,9 +199,9 @@ mod tests {
 
         MyObject::MyObject(QObject* parent)
           : QObject(parent)
-          , m_rustObj(createRs())
+          , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
         {
-          initialiseCpp(*this);
+          cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
           m_initialised = true;
         }
 
@@ -260,13 +263,15 @@ mod tests {
           }
         }
 
+        } // namespace cxx_qt::my_object
+
+        namespace cxx_qt::my_object::cxx_qt_my_object {
         std::unique_ptr<MyObject>
         newCppObject()
         {
           return std::make_unique<MyObject>();
         }
-
-        } // namespace cxx_qt::my_object
+        } // namespace cxx_qt::my_object::cxx_qt_my_object
         "#}
     }
 
