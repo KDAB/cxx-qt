@@ -70,10 +70,10 @@ MyObject::setOpaque(const QColor& value)
   }
 }
 
-std::unique_ptr<CppObj>
+std::unique_ptr<MyObject>
 newCppObject()
 {
-  return std::make_unique<CppObj>();
+  return std::make_unique<MyObject>();
 }
 
 } // namespace cxx_qt::my_object

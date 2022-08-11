@@ -71,14 +71,12 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
           {members}
         }};
 
-        typedef {ident} CppObj;
-
-        std::unique_ptr<CppObj>
+        std::unique_ptr<{ident}>
         newCppObject();
 
         }} // namespace {namespace}
 
-        Q_DECLARE_METATYPE({namespace}::CppObj*)
+        Q_DECLARE_METATYPE({namespace}::{ident}*)
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,

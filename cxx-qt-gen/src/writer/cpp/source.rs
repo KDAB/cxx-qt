@@ -42,10 +42,10 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
 
         {methods}
         {slots}
-        std::unique_ptr<CppObj>
+        std::unique_ptr<{ident}>
         newCppObject()
         {{
-          return std::make_unique<CppObj>();
+          return std::make_unique<{ident}>();
         }}
 
         }} // namespace {namespace}
