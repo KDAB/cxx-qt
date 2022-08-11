@@ -23,14 +23,14 @@ mod ffi {
             third: QPoint,
         );
 
-        #[cxx_name = "unsafe_rust"]
+        #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
         #[rust_name = "new_cpp_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "C++" {
-        #[cxx_name = "unsafe_rust_mut"]
+        #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 

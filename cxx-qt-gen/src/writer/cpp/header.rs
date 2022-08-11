@@ -57,8 +57,8 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         public:
           explicit {ident}(QObject* parent = nullptr);
           ~{ident}();
-          const {rust_ident}& unsafe_rust() const;
-          {rust_ident}& unsafe_rust_mut();
+          const {rust_ident}& unsafeRust() const;
+          {rust_ident}& unsafeRustMut();
 
         {methods}
         {slots}

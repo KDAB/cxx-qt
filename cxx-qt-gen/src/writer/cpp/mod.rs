@@ -152,8 +152,8 @@ mod tests {
         public:
           explicit MyObject(QObject* parent = nullptr);
           ~MyObject();
-          const MyObjectRust& unsafe_rust() const;
-          MyObjectRust& unsafe_rust_mut();
+          const MyObjectRust& unsafeRust() const;
+          MyObjectRust& unsafeRustMut();
 
         public:
           int count() const;
@@ -205,13 +205,13 @@ mod tests {
         MyObject::~MyObject() = default;
 
         const MyObjectRust&
-        MyObject::unsafe_rust() const
+        MyObject::unsafeRust() const
         {
           return *m_rustObj;
         }
 
         MyObjectRust&
-        MyObject::unsafe_rust_mut()
+        MyObject::unsafeRustMut()
         {
           return *m_rustObj;
         }
