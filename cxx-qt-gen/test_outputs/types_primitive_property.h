@@ -82,11 +82,9 @@ private:
   quint32 m_uint32;
 };
 
-typedef MyObject CppObj;
-
-std::unique_ptr<CppObj>
+std::unique_ptr<MyObject>
 newCppObject();
 
 } // namespace cxx_qt::my_object
 
-Q_DECLARE_METATYPE(cxx_qt::my_object::CppObj*)
+Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)

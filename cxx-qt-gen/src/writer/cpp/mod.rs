@@ -178,14 +178,12 @@ mod tests {
           bool m_toggle;
         };
 
-        typedef MyObject CppObj;
-
-        std::unique_ptr<CppObj>
+        std::unique_ptr<MyObject>
         newCppObject();
 
         } // namespace cxx_qt::my_object
 
-        Q_DECLARE_METATYPE(cxx_qt::my_object::CppObj*)
+        Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
         "#}
     }
 
@@ -262,10 +260,10 @@ mod tests {
           }
         }
 
-        std::unique_ptr<CppObj>
+        std::unique_ptr<MyObject>
         newCppObject()
         {
-          return std::make_unique<CppObj>();
+          return std::make_unique<MyObject>();
         }
 
         } // namespace cxx_qt::my_object
