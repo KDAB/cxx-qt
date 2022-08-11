@@ -24,18 +24,18 @@ pub mod ffi {
 
     impl cxx_qt::QObject<RustObjInvokables> {
         // ANCHOR: book_cpp_obj
-        #[invokable]
+        #[qinvokable]
         pub fn invokable_mutate_cpp(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() * 2);
         }
         // ANCHOR_END: book_cpp_obj
 
-        #[invokable]
+        #[qinvokable]
         pub fn invokable_return(&self) -> i32 {
             self.rust_only_field
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn invokable_multiply(&mut self, factor: i32) -> i32 {
             self.rust_only_method(factor);
             self.rust_only_field

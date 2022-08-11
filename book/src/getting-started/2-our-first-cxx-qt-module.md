@@ -77,9 +77,9 @@ In our case, we define two new functions:
     - Prints a provided number and string.
     - The name will be converted to `sayHello` in C++.
 
-Both functions are marked with the `#[invokable]` macro, which means the functions will be added to the C++ code of `MyObject` and will be callable from QML as well.
+Both functions are marked with the `#[qinvokable]` macro, which means the functions will be added to the C++ code of `MyObject` and will be callable from QML as well.
 
-Apart from functions marked with the `#[invokable]` macro, the `#[cxx_qt::qobject]` marked struct impl is just a normal Rust struct impl and can contain normal Rust functions, which the invokable functions can call as usual.
+Apart from functions marked with the `#[qinvokable]` macro, the `#[cxx_qt::qobject]` marked struct impl is just a normal Rust struct impl and can contain normal Rust functions, which the invokable functions can call as usual.
 
 And that's it. We've defined our first QObject subclass in Rust. That wasn't so hard, was it?
 

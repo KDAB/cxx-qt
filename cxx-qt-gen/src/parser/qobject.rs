@@ -53,7 +53,7 @@ impl ParsedQObject {
             // Check if this item is a method
             if let ImplItem::Method(method) = item {
                 // Determine if this method is an invokable
-                if let Some(index) = attribute_find_path(&method.attrs, &["invokable"]) {
+                if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"]) {
                     // Remove the invokable attribute
                     let mut invokable = method.clone();
                     invokable.attrs.remove(index);
@@ -103,7 +103,7 @@ mod tests {
         let mut qobject = ParsedQObject::default();
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
-                #[invokable]
+                #[qinvokable]
                 fn invokable() {}
 
                 fn cpp_context() {}
@@ -125,7 +125,7 @@ mod tests {
 
                 type A = i32;
 
-                #[invokable]
+                #[qinvokable]
                 fn invokable() {}
 
                 fn cpp_context() {}

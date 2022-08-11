@@ -76,7 +76,7 @@ mod ffi {
     pub struct MockQtTypes;
 
     impl cxx_qt::QObject<MockQtTypes> {
-        #[invokable]
+        #[qinvokable]
         pub fn test_signal(&self, cpp: &mut CppObj) {
             cpp.emit_queued(Signal::Ready);
             cpp.emit_queued(Signal::DataChanged {
@@ -84,7 +84,7 @@ mod ffi {
             });
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_unsafe_signal(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
@@ -94,31 +94,31 @@ mod ffi {
             }
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_color_property(&self, cpp: &mut CppObj) {
             cpp.set_color(QColor::from_rgba(0, 0, 255, 255).as_ref().unwrap());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_color_invokable(&self, _color: &QColor) -> UniquePtr<QColor> {
             QColor::from_rgba(0, 255, 0, 255)
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_date_property(&self, cpp: &mut CppObj) {
             let mut date = *cpp.date();
             date.set_date(2021, 12, 31);
             cpp.set_date(&date);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_date_invokable(&self, date: &QDate) -> QDate {
             let mut date = *date;
             date.set_date(2021, 12, 31);
             date
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_date_time_property(&self, cpp: &mut CppObj) {
             let date_time = cpp.date_time();
             let new_date_time = QDateTime::from_date_and_time(
@@ -133,7 +133,7 @@ mod ffi {
             cpp.set_date_time(new_date_time.as_ref().unwrap());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> UniquePtr<QDateTime> {
             QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
@@ -146,7 +146,7 @@ mod ffi {
             )
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_point_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.point();
             point.set_x(point.x() * 2);
@@ -154,7 +154,7 @@ mod ffi {
             cpp.set_point(&point);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_point_invokable(&self, point: &QPoint) -> QPoint {
             let mut point = *point;
             point.set_x(point.x() * 2);
@@ -162,7 +162,7 @@ mod ffi {
             point
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_pointf_property(&self, cpp: &mut CppObj) {
             let mut point = *cpp.pointf();
             point.set_x(point.x() * 2.0);
@@ -170,7 +170,7 @@ mod ffi {
             cpp.set_pointf(&point);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
             let mut point = *point;
             point.set_x(point.x() * 2.0);
@@ -178,7 +178,7 @@ mod ffi {
             point
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_rect_property(&self, cpp: &mut CppObj) {
             let mut rect = *cpp.rect();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
@@ -190,7 +190,7 @@ mod ffi {
             cpp.set_rect(&rect);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_rect_invokable(&self, rect: &QRect) -> QRect {
             let mut rect = *rect;
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
@@ -202,7 +202,7 @@ mod ffi {
             rect
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_rectf_property(&self, cpp: &mut CppObj) {
             let mut rect = *cpp.rectf();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
@@ -214,7 +214,7 @@ mod ffi {
             cpp.set_rectf(&rect);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
             let mut rect = *rect;
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
@@ -226,7 +226,7 @@ mod ffi {
             rect
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_size_property(&self, cpp: &mut CppObj) {
             let mut size = *cpp.size();
             size.set_width(size.width() * 2);
@@ -234,7 +234,7 @@ mod ffi {
             cpp.set_size(&size);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_size_invokable(&self, size: &QSize) -> QSize {
             let mut size = *size;
             size.set_width(size.width() * 2);
@@ -242,7 +242,7 @@ mod ffi {
             size
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_sizef_property(&self, cpp: &mut CppObj) {
             let mut size = *cpp.sizef();
             size.set_width(size.width() * 2.0);
@@ -250,7 +250,7 @@ mod ffi {
             cpp.set_sizef(&size);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_sizef_invokable(&self, size: &QSizeF) -> QSizeF {
             let mut size = *size;
             size.set_width(size.width() * 2.0);
@@ -258,18 +258,18 @@ mod ffi {
             size
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_string_property(&self, cpp: &mut CppObj) {
             let string = QString::from_str(&(cpp.string().to_string() + "/cxx-qt"));
             cpp.set_string(string.as_ref().unwrap());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_string_invokable(&self, string: &QString) -> UniquePtr<QString> {
             QString::from_str(&(string.to_string() + "/cxx-qt"))
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_time_property(&self, cpp: &mut CppObj) {
             let mut time = *cpp.time();
             time.set_hms(
@@ -281,7 +281,7 @@ mod ffi {
             cpp.set_time(&time);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_time_invokable(&self, time: &QTime) -> QTime {
             let mut time = *time;
             time.set_hms(
@@ -293,18 +293,18 @@ mod ffi {
             time
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_url_property(&self, cpp: &mut CppObj) {
             let url = QUrl::from_str(&(cpp.url().string() + "/cxx-qt"));
             cpp.set_url(url.as_ref().unwrap());
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_url_invokable(&self, url: &QUrl) -> UniquePtr<QUrl> {
             QUrl::from_str(&(url.string() + "/cxx-qt"))
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_variant_property(&self, cpp: &mut CppObj) {
             match cpp.variant().value() {
                 QVariantValue::Bool(b) => cpp.set_variant(QVariant::from(!b).as_ref().unwrap()),
@@ -419,7 +419,7 @@ mod ffi {
             }
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),

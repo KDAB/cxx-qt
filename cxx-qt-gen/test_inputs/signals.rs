@@ -25,7 +25,7 @@ mod ffi {
     pub struct MyObject;
 
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(MySignals::Ready);

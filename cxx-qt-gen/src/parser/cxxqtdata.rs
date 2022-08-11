@@ -411,7 +411,7 @@ mod tests {
 
         let item: Item = tokens_to_syn(quote! {
             impl cxx_qt::QObject<MyObject> {
-                #[invokable]
+                #[qinvokable]
                 fn invokable() {}
 
                 fn cpp_context() {}
@@ -429,7 +429,7 @@ mod tests {
 
         let item: Item = tokens_to_syn(quote! {
             impl cxx_qt::QObject {
-                #[invokable]
+                #[qinvokable]
                 fn invokable() {}
             }
         });
@@ -443,7 +443,7 @@ mod tests {
 
         let item: Item = tokens_to_syn(quote! {
             impl cxx_qt::QObject<UnknownObj> {
-                #[invokable]
+                #[qinvokable]
                 fn invokable() {}
             }
         });

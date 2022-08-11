@@ -24,7 +24,7 @@ The `#[cxx_qt::qobject]` marked struct allows you to define the following items
 A `impl cxx_qt::QObject<T>` is used to define invokables, the `impl cxx_qt::QObject<T>` defines that the methods are implemented onto the C++ QObject `T`.
 Therefore they have access to both C++ and Rust methods. Also CXX-Qt adds wrapper code around your invokables to automatically perform any conversion between the [C++ and Rust types](../concepts/types.md).
 
-To mark a method as invokable simply add the `#[invokable]` attribute to the Rust method. This then causes `Q_INVOKABLE` to be set on the C++ definition of the method, allowing QML to call the invokable.
+To mark a method as invokable simply add the `#[qinvokable]` attribute to the Rust method. This then causes `Q_INVOKABLE` to be set on the C++ definition of the method, allowing QML to call the invokable.
 
 Note to access properties on the C++ object use [Cpp Object](./cpp_object.md).
 

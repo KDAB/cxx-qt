@@ -218,7 +218,7 @@ mod ffi {
     }
 
     impl cxx_qt::QObject<EnergyUsage> {
-        #[invokable]
+        #[qinvokable]
         pub fn start_server(&mut self, cpp: &mut CppObj) {
             if self.join_handles.is_some() {
                 println!("Already running a server!");

@@ -123,14 +123,14 @@ mod tests {
     #[test]
     fn test_attribute_find_path() {
         let module: ItemMod = tokens_to_syn(quote! {
-            #[invokable]
+            #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::signals(MyObject)]
             #[cxx_qt::bridge(namespace = "my::namespace")]
             mod module;
         });
 
-        assert!(attribute_find_path(&module.attrs, &["invokable"]).is_some());
+        assert!(attribute_find_path(&module.attrs, &["qinvokable"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "signals"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "missing"]).is_none());
@@ -139,7 +139,7 @@ mod tests {
     #[test]
     fn test_attribute_tokens_to_ident() {
         let module: ItemMod = tokens_to_syn(quote! {
-            #[invokable]
+            #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::signals(MyObject)]
             #[cxx_qt::bridge(namespace = "my::namespace")]
@@ -163,7 +163,7 @@ mod tests {
     #[test]
     fn test_attribute_tokens_to_list() {
         let module: ItemMod = tokens_to_syn(quote! {
-            #[invokable]
+            #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::signals(MyObject)]
             #[cxx_qt::bridge(namespace = "my::namespace")]
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_attribute_tokens_to_map() {
         let module: ItemMod = tokens_to_syn(quote! {
-            #[invokable]
+            #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::signals(MyObject)]
             #[cxx_qt::bridge(namespace = "my::namespace")]

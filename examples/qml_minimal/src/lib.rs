@@ -42,12 +42,12 @@ mod ffi {
 
     // ANCHOR: book_rustobj_impl
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn increment_number(&self, cpp: &mut CppObj) {
             cpp.set_number(cpp.number() + 1);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is '{}' and number is {}",

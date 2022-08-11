@@ -36,18 +36,18 @@ mod ffi {
     }
 
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn double_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() * 2;
             cpp.set_number(value);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn double_number(&self, number: i32) -> i32 {
             number * 2
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",
@@ -55,13 +55,13 @@ mod ffi {
             );
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn request_update_test(&self, cpp: &mut CppObj) {
             let update_requester = cpp.update_requester();
             update_requester.request_update();
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn request_update_test_multi_thread(&self, cpp: &mut CppObj) {
             static N_THREADS: usize = 100;
             static N_REQUESTS: std::sync::atomic::AtomicUsize =
@@ -87,7 +87,7 @@ mod ffi {
             );
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn update_call_count(&self) -> i32 {
             self.update_call_count
         }

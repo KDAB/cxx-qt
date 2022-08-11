@@ -59,7 +59,7 @@ mod ffi {
     pub struct MyData;
 
     impl cxx_qt::QObject<MyData> {
-        #[invokable]
+        #[qinvokable]
         pub fn as_json_str(&self, cpp: &mut CppObj) -> UniquePtr<QString> {
             let data = Data::from(cpp);
             let data_serde = DataSerde::from(data);
@@ -67,7 +67,7 @@ mod ffi {
             QString::from_str(&data_string)
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn grab_values(&self, cpp: &mut CppObj) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();

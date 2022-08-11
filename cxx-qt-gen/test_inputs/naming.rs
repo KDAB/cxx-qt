@@ -10,7 +10,7 @@ mod ffi {
     pub struct MyObject;
 
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn invokable_name(&self) {
             println!("Bye from Rust!");
         }

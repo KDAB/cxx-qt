@@ -39,18 +39,18 @@ mod ffi {
     pub struct MyObject;
 
     impl cxx_qt::QObject<MyObject> {
-        #[invokable]
+        #[qinvokable]
         pub fn increment_number_self(&self, cpp: &mut CppObj) {
             let value = cpp.number() + 1;
             cpp.set_number(value);
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn increment_number(&self, number: i32) -> i32 {
             number + 1
         }
 
-        #[invokable]
+        #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
             println!(
                 "Hi from Rust! String is {} and number is {}",

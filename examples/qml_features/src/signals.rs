@@ -45,7 +45,7 @@ pub mod ffi {
 
     // ANCHOR: book_rust_obj_impl
     impl cxx_qt::QObject<Signals> {
-        #[invokable]
+        #[qinvokable]
         pub fn invokable(&self, cpp: &mut CppObj) {
             unsafe {
                 cpp.emit_immediate(Signal::Ready);
