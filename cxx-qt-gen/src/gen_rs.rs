@@ -6,8 +6,11 @@
 use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
+use syn::ItemMod;
 
 use crate::extract::{Invokable, QObject, QtTypes};
+use crate::generator::rust::GeneratedRustBlocks;
+use crate::writer::rust::write_rust;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
 trait RustType {
@@ -109,7 +112,7 @@ impl RustType for QtTypes {
 }
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
-pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
+pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let class_name = &obj.ident;
     let rust_class_name_cpp = format_ident!("{}Qt", class_name);
@@ -358,8 +361,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
 
-    let namespace = &obj.namespace;
-
     // Build the module ident
     let mod_attrs = &obj.original_mod.attrs;
     let mod_ident = &obj.original_mod.ident;
@@ -386,7 +387,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let class_name_str = class_name.to_string();
     let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
     let output = quote! {
-        #[cxx::bridge(namespace = #namespace)]
         #(#mod_attrs)*
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
@@ -434,22 +434,8 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
     };
 
-    Ok(output.into_token_stream())
-}
-
-/// Generate a Rust function that initialises a QObject with the values from Data::default()
-fn generate_cpp_object_initialiser(obj: &QObject) -> TokenStream {
-    let data_class_name = &obj.original_data_struct.ident;
-
-    // We assume that all Data classes implement default
-    let output = quote! {
-        pub fn initialise_cpp(cpp: std::pin::Pin<&mut FFICppObj>) {
-            let mut wrapper = CppObj::new(cpp);
-            wrapper.grab_values_from_data(#data_class_name::default());
-        }
-    };
-
-    output.into_token_stream()
+    // Convert into an ItemMod for our writer phase
+    syn::parse2::<ItemMod>(output.into_token_stream()).map_err(|err| err.to_compile_error())
 }
 
 fn generate_property_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
@@ -723,11 +709,6 @@ fn invokable_generate_wrapper(
 
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
-    // Cache the original module ident and visibility
-    let mod_ident = &obj.original_mod.ident;
-    let cxx_qt_mod_ident = format_ident!("cxx_qt_{}", mod_ident);
-    let class_name = &obj.ident;
-
     // Cache the rust class name
     let rust_class_name = &obj.original_rust_struct.ident;
     let rust_wrapper_name = format_ident!("CppObj");
@@ -822,9 +803,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let methods = &obj.methods;
     let original_passthrough_decls = &obj.original_passthrough_decls;
-
-    // Generate the cpp initialiser function
-    let initialiser_fn = generate_cpp_object_initialiser(obj);
 
     // Build our filtered rust struct
     let rust_struct = build_struct_with_fields(
@@ -923,21 +901,11 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let handle_updates_impl = &obj.handle_updates_impl;
 
-    // Build our rewritten module that replaces the input from the macro
-    //
-    // TODO: where do the mod_attrs go ?
-    let class_name_cpp = format_ident!("{}Qt", class_name);
-    let output = quote! {
-        #cxx_block
-
-        pub use self::#cxx_qt_mod_ident::*;
-        mod #cxx_qt_mod_ident {
-            use super::#mod_ident::*;
-
+    // TODO: For now we proxy the gen_cpp code into what the writer phase expects
+    // later this code will be moved into a generator phase
+    let cxx_qt_mod_fake: ItemMod = syn::parse2::<ItemMod>(quote! {
+        mod fake {
             #(#use_traits)*
-
-            pub type FFICppObj = super::#mod_ident::#class_name_cpp;
-            type UniquePtr<T> = cxx::UniquePtr<T>;
 
             #signal_enum
 
@@ -956,16 +924,21 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #handle_updates_impl
 
             #(#original_passthrough_decls)*
-
-            pub fn create_rs() -> std::boxed::Box<#rust_class_name> {
-                std::default::Default::default()
-            }
-
-            #initialiser_fn
         }
-    };
+    })
+    .map_err(|err| err.to_compile_error())?;
 
-    Ok(output.into_token_stream())
+    let generated = GeneratedRustBlocks {
+        cxx_mod: cxx_block,
+        cxx_qt_mod_contents: cxx_qt_mod_fake
+            .content
+            .unwrap_or((syn::token::Brace::default(), vec![]))
+            .1,
+        cpp_struct_ident: format_ident!("{}Qt", obj.ident),
+        namespace: obj.namespace.to_owned(),
+        rust_struct_ident: obj.ident.clone(),
+    };
+    Ok(write_rust(&generated))
 }
 
 #[cfg(test)]

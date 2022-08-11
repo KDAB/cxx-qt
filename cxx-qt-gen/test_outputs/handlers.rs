@@ -61,10 +61,10 @@ pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
 
-    use cxx_qt_lib::UpdateRequestHandler;
-
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
+
+    use cxx_qt_lib::UpdateRequestHandler;
 
     #[derive(Default)]
     pub struct MyObject;
