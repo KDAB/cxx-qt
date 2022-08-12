@@ -6,6 +6,46 @@
 use crate::generator::rust::GeneratedRustBlocks;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
+use syn::Ident;
+
+/// Return common blocks for CXX bridge which the C++ writer adds as well
+fn cxx_common_blocks(
+    cpp_struct_ident: &Ident,
+    rust_struct_ident: &Ident,
+    namespace_internals: &String,
+) -> Vec<TokenStream> {
+    vec![
+        quote! {
+            unsafe extern "C++" {
+                include!("cxx-qt-lib/include/convert.h");
+
+                #[cxx_name = "unsafeRust"]
+                fn rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
+
+                #[rust_name = "new_cpp_object"]
+                #[namespace = #namespace_internals]
+                fn newCppObject() -> UniquePtr<#cpp_struct_ident>;
+            }
+        },
+        quote! {
+            extern "C++" {
+                #[cxx_name = "unsafeRustMut"]
+                unsafe fn rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+            }
+        },
+        quote! {
+            extern "Rust" {
+                #[cxx_name = "createRs"]
+                #[namespace = #namespace_internals]
+                fn create_rs() -> Box<#rust_struct_ident>;
+
+                #[cxx_name = "initialiseCpp"]
+                #[namespace = #namespace_internals]
+                fn initialise_cpp(cpp: Pin<&mut #cpp_struct_ident>);
+            }
+        },
+    ]
+}
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
@@ -18,9 +58,16 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     let cxx_qt_mod_ident = format_ident!("cxx_qt_{}", cxx_mod_ident);
 
     // Retrieve the module contents and namespace
-    let cxx_mod = &generated.cxx_mod;
+    let mut cxx_mod = generated.cxx_mod.clone();
     let cxx_qt_mod_contents = &generated.cxx_qt_mod_contents;
     let namespace = &generated.namespace;
+    let namespace_internals = &generated.namespace_internals;
+
+    // Inject the common blocks into the bridge which we need
+    let cxx_mod_items = &mut cxx_mod.content.as_mut().expect("").1;
+    for block in cxx_common_blocks(cpp_struct_ident, rust_struct_ident, namespace_internals) {
+        cxx_mod_items.push(syn::parse2(block).expect("Could not build CXX common block"));
+    }
 
     quote! {
         #[cxx::bridge(namespace = #namespace)]
@@ -87,6 +134,7 @@ mod tests {
             ],
             cpp_struct_ident: format_ident!("MyObjectQt"),
             namespace: "cxx_qt::my_object".to_owned(),
+            namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
             rust_struct_ident: format_ident!("MyObject"),
         }
     }
@@ -104,6 +152,32 @@ mod tests {
                 extern "Rust" {
                     #[cxx_name = "MyObjectRust"]
                     type MyObject;
+                }
+
+                unsafe extern "C++" {
+                    include!("cxx-qt-lib/include/convert.h");
+
+                    #[cxx_name = "unsafeRust"]
+                    fn rust(self: &MyObjectQt) -> &MyObject;
+
+                    #[rust_name = "new_cpp_object"]
+                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+                    fn newCppObject() -> UniquePtr<MyObjectQt>;
+                }
+
+                extern "C++" {
+                    #[cxx_name = "unsafeRustMut"]
+                    unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+                }
+
+                extern "Rust" {
+                    #[cxx_name = "createRs"]
+                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+                    fn create_rs() -> Box<MyObject>;
+
+                    #[cxx_name = "initialiseCpp"]
+                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+                    fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
                 }
             }
 

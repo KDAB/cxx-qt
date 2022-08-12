@@ -2,7 +2,6 @@
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
-        include!("cxx-qt-lib/include/convert.h");
         include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
@@ -52,9 +51,19 @@ mod ffi {
         fn getUint32(self: &MyObjectQt) -> u32;
         #[rust_name = "set_uint_32"]
         fn setUint32(self: Pin<&mut MyObjectQt>, value: u32);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
+        type MyObject;
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/convert.h");
 
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
+
         #[rust_name = "new_cpp_object"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
@@ -66,9 +75,6 @@ mod ffi {
     }
 
     extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
-        type MyObject;
-
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;

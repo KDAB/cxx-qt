@@ -383,19 +383,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         quote! {}
     };
 
-    // Create the namespace for internal use
-    //
-    // TODO: when we move to generator share this with gen_cpp
-    let mut namespace_internals = vec![];
-    if !obj.namespace.is_empty() {
-        namespace_internals.push(obj.namespace.to_owned());
-    }
-    namespace_internals.push(format!(
-        "cxx_qt_{}",
-        obj.ident.to_string().to_case(Case::Snake)
-    ));
-    let namespace_internals = namespace_internals.join("::");
-
     // Build the CXX bridge
     let class_name_str = class_name.to_string();
     let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
@@ -404,7 +391,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
-                include!("cxx-qt-lib/include/convert.h");
                 #update_requester_include
                 include!(#qt_include);
 
@@ -415,18 +401,7 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 
                 #(#cpp_functions)*
 
-                #[cxx_name = "unsafeRust"]
-                fn rust(self: &#rust_class_name_cpp) -> &#rust_class_name;
-                #[rust_name = "new_cpp_object"]
-                #[namespace = #namespace_internals]
-                fn newCppObject() -> UniquePtr<#rust_class_name_cpp>;
-
                 #request_updater_method
-            }
-
-            extern "C++" {
-                #[cxx_name = "unsafeRustMut"]
-                unsafe fn rust_mut(self: Pin<&mut #rust_class_name_cpp>) -> Pin<&mut #rust_class_name>;
             }
 
             extern "Rust" {
@@ -434,14 +409,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
                 type #rust_class_name;
 
                 #(#rs_functions)*
-
-                #[cxx_name = "createRs"]
-                #[namespace = #namespace_internals]
-                fn create_rs() -> Box<#rust_class_name>;
-
-                #[cxx_name = "initialiseCpp"]
-                #[namespace = #namespace_internals]
-                fn initialise_cpp(cpp: Pin<&mut #rust_class_name_cpp>);
 
                 #handle_update_request
             }
@@ -917,6 +884,19 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let handle_updates_impl = &obj.handle_updates_impl;
 
+    // Create the namespace for internal use
+    //
+    // TODO: when we move to generator share this with gen_cpp
+    let mut namespace_internals = vec![];
+    if !obj.namespace.is_empty() {
+        namespace_internals.push(obj.namespace.to_owned());
+    }
+    namespace_internals.push(format!(
+        "cxx_qt_{}",
+        obj.ident.to_string().to_case(Case::Snake)
+    ));
+    let namespace_internals = namespace_internals.join("::");
+
     // TODO: For now we proxy the gen_cpp code into what the writer phase expects
     // later this code will be moved into a generator phase
     let cxx_qt_mod_fake: ItemMod = syn::parse2::<ItemMod>(quote! {
@@ -952,6 +932,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .1,
         cpp_struct_ident: format_ident!("{}Qt", obj.ident),
         namespace: obj.namespace.to_owned(),
+        namespace_internals,
         rust_struct_ident: obj.ident.clone(),
     };
     Ok(write_rust(&generated))

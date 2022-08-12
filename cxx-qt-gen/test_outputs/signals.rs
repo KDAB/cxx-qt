@@ -2,7 +2,6 @@
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
-        include!("cxx-qt-lib/include/convert.h");
         include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
@@ -22,9 +21,29 @@ mod ffi {
             second: UniquePtr<QVariant>,
             third: QPoint,
         );
+    }
+
+    extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
+        type MyObject;
+
+        #[cxx_name = "invokableWrapper"]
+        fn invokable_wrapper(self: &MyObject, cpp: Pin<&mut MyObjectQt>);
+    }
+
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QPoint = cxx_qt_lib::QPoint;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/convert.h");
 
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
+
         #[rust_name = "new_cpp_object"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
@@ -36,12 +55,6 @@ mod ffi {
     }
 
     extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
-        type MyObject;
-
-        #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &MyObject, cpp: Pin<&mut MyObjectQt>);
-
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
@@ -49,13 +62,6 @@ mod ffi {
         #[cxx_name = "initialiseCpp"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
-    }
-
-    #[namespace = ""]
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-        type QPoint = cxx_qt_lib::QPoint;
-        type QVariant = cxx_qt_lib::QVariant;
     }
 }
 

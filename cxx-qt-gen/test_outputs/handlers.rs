@@ -2,7 +2,6 @@
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
-        include!("cxx-qt-lib/include/convert.h");
         include!("cxx-qt-lib/include/update_requester.h");
         include ! (< QtCore / QObject >);
 
@@ -22,32 +21,13 @@ mod ffi {
         #[rust_name = "set_string"]
         fn setString(self: Pin<&mut MyObjectQt>, value: &QString);
 
-        #[cxx_name = "unsafeRust"]
-        fn rust(self: &MyObjectQt) -> &MyObject;
-        #[rust_name = "new_cpp_object"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn newCppObject() -> UniquePtr<MyObjectQt>;
-
         #[rust_name = "update_requester"]
         fn updateRequester(self: Pin<&mut MyObjectQt>) -> UniquePtr<UpdateRequester>;
-    }
-
-    extern "C++" {
-        #[cxx_name = "unsafeRustMut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
-
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "handleUpdateRequest"]
         fn call_handle_update_request(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
@@ -57,6 +37,32 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QString = cxx_qt_lib::QString;
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/convert.h");
+
+        #[cxx_name = "unsafeRust"]
+        fn rust(self: &MyObjectQt) -> &MyObject;
+
+        #[rust_name = "new_cpp_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
+    }
+
+    extern "C++" {
+        #[cxx_name = "unsafeRustMut"]
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+    }
+
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn create_rs() -> Box<MyObject>;
+
+        #[cxx_name = "initialiseCpp"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
