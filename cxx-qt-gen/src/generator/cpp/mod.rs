@@ -15,6 +15,8 @@ pub struct GeneratedCppBlocks {
     pub ident: String,
     /// Ident of the Rust object
     pub rust_ident: String,
+    /// Ident of the CxxQtThread object
+    pub cxx_qt_thread_ident: String,
     /// Ident of the namespace of the QObject
     pub namespace: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject

@@ -21,12 +21,18 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         {ident}::{ident}(QObject* parent)
           : {base_class}(parent)
           , m_rustObj({namespace_internals}::createRs())
+          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
         {{
           {namespace_internals}::initialiseCpp(*this);
           m_initialised = true;
         }}
 
-        {ident}::~{ident}() = default;
+        {ident}::~{ident}()
+        {{
+          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          m_cxxQtThreadObj->ptr = nullptr;
+        }}
 
         const {rust_ident}&
         {ident}::unsafeRust() const
@@ -38,6 +44,12 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         {ident}::unsafeRustMut()
         {{
           return *m_rustObj;
+        }}
+
+        std::unique_ptr<{cxx_qt_thread_ident}>
+        {ident}::qtThread() const
+        {{
+          return std::make_unique<{cxx_qt_thread_ident}>(m_cxxQtThreadObj, m_rustObjMutex);
         }}
 
         {methods}
@@ -54,6 +66,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
+    cxx_qt_thread_ident = generated.cxx_qt_thread_ident,
     namespace_start = if generated.namespace.is_empty() {
       "".to_owned()
     } else {

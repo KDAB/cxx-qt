@@ -102,20 +102,6 @@ impl ParsedCxxQtData {
                     // Convert the path to a single ident, and error if it isn't
                     .get_mut(&path_to_single_ident(&qobject_path)?)
                 {
-                    // If we are the UpdateRequestHandler, then we need to store in list
-                    //
-                    // TODO: once impl UpdateRequestHandler is removed this block can go
-                    if let Some(trait_) = &imp.trait_ {
-                        if let Some(first) = trait_.1.segments.first() {
-                            if first.ident == "UpdateRequestHandler" {
-                                // We know that there is only one impl block because the compiler
-                                // already ensures this.
-                                qobject.update_requester_handler = Some(imp.clone());
-                                return Ok(None);
-                            }
-                        }
-                    }
-
                     // Extract the ImplItem's from each Impl block
                     qobject.parse_impl_items(&imp.items)?;
                 } else {
@@ -505,22 +491,6 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_impl_valid_update_request_handler() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = tokens_to_syn(quote! {
-            impl UpdateRequestHandler for cxx_qt::QObject<MyObject> {
-                fn method() {}
-            }
-        });
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()]
-            .update_requester_handler
-            .is_some(),);
     }
 
     #[test]

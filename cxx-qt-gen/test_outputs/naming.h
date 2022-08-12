@@ -3,7 +3,13 @@
 #include <memory>
 #include <mutex>
 
+namespace rust::cxxqtlib1 {
+template<typename T>
+class CxxQtThread;
+}
+
 class MyObject;
+using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
 
 #include "cxx-qt-gen/include/my_object.cxx.h"
 
@@ -18,6 +24,7 @@ public:
   ~MyObject();
   const MyObjectRust& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
+  std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   qint32 getPropertyName() const;
@@ -31,8 +38,10 @@ Q_SIGNALS:
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
-  std::mutex m_rustObjMutex;
+  std::shared_ptr<std::mutex> m_rustObjMutex;
   bool m_initialised = false;
+  std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
+    m_cxxQtThreadObj;
 
   qint32 m_propertyName;
 };

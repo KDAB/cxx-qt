@@ -29,17 +29,7 @@ Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` i
 
 ## Threading
 
-The `CppObj` is used for [threading](../concepts/threading.md) to access the `UpdateRequester` via the `update_requester(&self) -> cxx_qt_lib::update_requester::UpdateRequester` method.
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_cpp_update_requester}}
-```
-
-The `UpdateRequester` is moved into the Rust thread, then when `request_update(&self) -> bool` is called it triggers the [`UpdateRequestHandler`](./handlers.md) on the Qt thread.
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_request_update}}
-```
+`CppObj` can be used for [threading](../concepts/threading.md) to access the [`CxxQtThread<T>`](./cxxqtthread.md) via the `qt_thread(&self)` method.
 
 ## Deserialisation and serialisation
 

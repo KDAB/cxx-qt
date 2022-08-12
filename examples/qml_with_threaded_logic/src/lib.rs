@@ -92,10 +92,9 @@ mod ffi {
                 .set_title(QString::from_str("Loading...").as_ref().unwrap());
 
             let url = self.as_ref().url().to_string();
-            // ANCHOR: book_cpp_update_requester
-            // Retrieve the update requester from the CppObj
-            let update_requester = self.as_mut().update_requester();
-            // ANCHOR_END: book_cpp_update_requester
+            // ANCHOR: book_qt_thread
+            let qt_thread = self.qt_thread();
+            // ANCHOR_END: book_qt_thread
             let event_sender = self.rust().event_sender.clone();
 
             let fetch_title = async move {
@@ -111,10 +110,36 @@ mod ffi {
                 event_sender
                     .unbounded_send(Event::TitleArrived(title.to_owned()))
                     .unwrap();
-                // ANCHOR: book_request_update
-                // Request an update from the background thread
-                update_requester.request_update();
-                // ANCHOR_END: book_request_update
+                // ANCHOR: book_qt_thread_queue
+                // TODO: for now we use the unsafe rust_mut() API
+                // later there will be getters and setters for the properties
+                qt_thread
+                    .queue(|mut qobject_website| unsafe {
+                        while let Some(event) = qobject_website
+                            .as_mut()
+                            .rust_mut()
+                            .event_queue
+                            .next()
+                            .now_or_never()
+                        {
+                            if let Some(event) = event {
+                                match event {
+                                    Event::TitleArrived(title) => {
+                                        qobject_website
+                                            .as_mut()
+                                            .set_title(QString::from_str(&title).as_ref().unwrap());
+                                        qobject_website
+                                            .as_mut()
+                                            .rust_mut()
+                                            .loading
+                                            .store(false, Ordering::Relaxed);
+                                    }
+                                }
+                            }
+                        }
+                    })
+                    .unwrap();
+                // ANCHOR_END: book_qt_thread_queue
             };
             thread::spawn(move || block_on(fetch_title));
         }
@@ -128,30 +153,6 @@ mod ffi {
         pub fn new_url_value(self: Pin<&mut Self>) {
             self.refresh_title();
         }
-
-        fn process_event(mut self: Pin<&mut Self>, event: &Event) {
-            match event {
-                Event::TitleArrived(title) => {
-                    self.as_mut()
-                        .set_title(QString::from_str(title).as_ref().unwrap());
-                    self.rust().loading.store(false, Ordering::Relaxed);
-                }
-            }
-        }
     }
-
-    // ANCHOR: book_update_request_handler
-    impl UpdateRequestHandler for cxx_qt::QObject<Website> {
-        fn handle_update_request(mut self: Pin<&mut Self>) {
-            while let Some(event) =
-                unsafe { self.as_mut().rust_mut().event_queue.next().now_or_never() }
-            {
-                if let Some(event) = event {
-                    self.as_mut().process_event(&event);
-                }
-            }
-        }
-    }
-    // ANCHOR_END: book_update_request_handler
 }
 // ANCHOR_END: book_macro_code

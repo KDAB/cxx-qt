@@ -302,33 +302,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         }
     }
 
-    // Define a function to handle update requests if we have one
-    let handle_update_request = if obj.handle_updates_impl.is_some() {
-        quote! {
-            #[cxx_name = "handleUpdateRequest"]
-            fn call_handle_update_request(self: &mut #rust_class_name, cpp: Pin<&mut #rust_class_name_cpp>);
-        }
-    } else {
-        quote! {}
-    };
-
-    let update_requester_type = if obj.handle_updates_impl.is_some() {
-        quote! {
-            #[namespace = "rust::cxxqtlib1"]
-            type UpdateRequester = cxx_qt_lib::UpdateRequesterCpp;
-        }
-    } else {
-        quote! {}
-    };
-    let request_updater_method = if obj.handle_updates_impl.is_some() {
-        quote! {
-            #[rust_name = "update_requester"]
-            fn updateRequester(self: Pin<&mut #rust_class_name_cpp>) -> UniquePtr<UpdateRequester>;
-        }
-    } else {
-        quote! {}
-    };
-
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
 
@@ -340,13 +313,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Retrieve the passthrough items to CXX
     let cxx_items = &obj.cxx_items;
 
-    // Add an include for the UpdateRequester if it is used
-    let update_requester_include = if obj.handle_updates_impl.is_some() {
-        quote! { include!("cxx-qt-lib/include/update_requester.h"); }
-    } else {
-        quote! {}
-    };
-
     // Build the CXX bridge
     let class_name_str = class_name.to_string();
     let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
@@ -355,16 +321,11 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
-                #update_requester_include
 
                 #[cxx_name = #class_name_str]
                 type #rust_class_name_cpp;
 
-                #update_requester_type
-
                 #(#cpp_functions)*
-
-                #request_updater_method
             }
 
             extern "Rust" {
@@ -372,8 +333,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
                 type #rust_class_name;
 
                 #(#rs_functions)*
-
-                #handle_update_request
             }
 
             #(#cxx_items)*
@@ -648,22 +607,9 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .collect::<Vec<&syn::Field>>(),
     );
 
-    // Define a function to handle update requests if we have one
-    let handle_update_request = if obj.handle_updates_impl.is_some() {
-        quote! {
-            pub fn call_handle_update_request(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
-                cpp.handle_update_request();
-            }
-        }
-    } else {
-        quote! {}
-    };
-
     let rust_struct_impl = quote! {
         impl #rust_class_name {
             #(#invokable_method_wrappers)*
-
-            #handle_update_request
         }
     };
 
@@ -692,6 +638,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
     }
 
+    let cxx_qt_thread_ident = format_ident!("{}CxxQtThread", rust_class_name);
     let qobject_impl = quote! {
         impl #class_name_cpp {
             #(#invokable_methods)*
@@ -703,22 +650,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 #(#grab_values)*
             }
         }
-    };
-
-    let mut use_traits = Vec::new();
-    if obj.handle_updates_impl.is_some() {
-        use_traits.push(quote! { use cxx_qt_lib::UpdateRequestHandler; });
-    }
-
-    let handle_updates_impl = if let Some(updates_impl) = &obj.handle_updates_impl {
-        let handle_updates_inner = &updates_impl.items;
-        quote! {
-            impl UpdateRequestHandler for #class_name_cpp {
-                #(#handle_updates_inner),*
-            }
-        }
-    } else {
-        quote! {}
     };
 
     // Create the namespace for internal use
@@ -740,8 +671,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         mod fake {
             use std::pin::Pin;
 
-            #(#use_traits)*
-
             #signal_enum
 
             #rust_struct
@@ -753,8 +682,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #data_struct
 
             #data_struct_impl
-
-            #handle_updates_impl
 
             #(#original_passthrough_decls)*
         }
@@ -768,6 +695,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .unwrap_or((syn::token::Brace::default(), vec![]))
             .1,
         cpp_struct_ident: format_ident!("{}Qt", obj.ident),
+        cxx_qt_thread_ident,
         namespace: obj.namespace.to_owned(),
         namespace_internals,
         rust_struct_ident: obj.ident.clone(),
@@ -818,21 +746,6 @@ mod tests {
         let qobject = extract_qobject(&module).unwrap();
 
         let expected_output = include_str!("../test_outputs/custom_default.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_str_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
-    fn generates_handlers() {
-        let source = include_str!("../test_inputs/handlers.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_output = include_str!("../test_outputs/handlers.rs");
         let expected_output = format_rs_source(expected_output);
 
         let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();

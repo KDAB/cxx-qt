@@ -56,22 +56,32 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn request_update_test(self: Pin<&mut Self>) {
-            let update_requester = self.update_requester();
-            update_requester.request_update();
+        pub fn queue_test(self: Pin<&mut Self>) {
+            let qt_thread = self.qt_thread();
+            qt_thread
+                .queue(|ctx| unsafe {
+                    ctx.rust_mut().update_call_count += 1;
+                })
+                .unwrap();
         }
 
         #[qinvokable]
-        pub fn request_update_test_multi_thread(mut self: Pin<&mut Self>) {
+        pub fn queue_test_multi_thread(self: Pin<&mut Self>) {
             static N_THREADS: usize = 100;
             static N_REQUESTS: std::sync::atomic::AtomicUsize =
                 std::sync::atomic::AtomicUsize::new(0);
 
             let mut handles = Vec::new();
             for _ in 0..N_THREADS {
-                let update_requester = self.as_mut().update_requester();
+                let qt_thread = self.qt_thread();
                 handles.push(std::thread::spawn(move || {
-                    update_requester.request_update();
+                    // TODO: for now we use the unsafe rust_mut() API
+                    // later there will be getters and setters for the properties
+                    qt_thread
+                        .queue(|ctx| unsafe {
+                            ctx.rust_mut().update_call_count += 1;
+                        })
+                        .unwrap();
                     N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 }));
             }
@@ -90,14 +100,6 @@ mod ffi {
         #[qinvokable]
         pub fn update_call_count(&self) -> i32 {
             self.rust().update_call_count
-        }
-    }
-
-    impl UpdateRequestHandler for cxx_qt::QObject<MyObject> {
-        fn handle_update_request(self: Pin<&mut Self>) {
-            unsafe {
-                self.rust_mut().update_call_count += 1;
-            }
         }
     }
 }

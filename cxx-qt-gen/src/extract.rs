@@ -162,8 +162,6 @@ pub struct QObject {
     pub(crate) original_signal_enum: Option<ItemEnum>,
     /// The original Rust declarations from the mod that will be directly passed through
     pub(crate) original_passthrough_decls: Vec<Item>,
-    /// The Rust impl that has optionally been provided to handle updates
-    pub(crate) handle_updates_impl: Option<ItemImpl>,
     /// The base class of the QObject
     pub(crate) base_class: Option<String>,
 }
@@ -690,9 +688,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         .unwrap_or((Brace::default(), vec![]))
         .1;
 
-    // Determines if (and how) this object can respond to update requests
-    let handle_updates_impl = qobject.update_requester_handler;
-
     // Read properties from the Data struct
     let object_properties = if let Some(ref original_struct) = original_data_struct {
         extract_properties(original_struct, &qt_ident)?
@@ -730,7 +725,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         original_signal_enum,
         original_rust_struct,
         original_passthrough_decls,
-        handle_updates_impl,
         base_class: qobject.base_class,
     })
 }
