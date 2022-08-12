@@ -2,7 +2,6 @@
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
-        include!("cxx-qt-lib/include/convert.h");
         include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
@@ -12,9 +11,22 @@ mod ffi {
         fn getPropertyName(self: &MyObjectQt) -> i32;
         #[rust_name = "set_property_name"]
         fn setPropertyName(self: Pin<&mut MyObjectQt>, value: i32);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
+        type MyObject;
+
+        #[cxx_name = "invokableName"]
+        fn invokable_name(self: &MyObject);
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/convert.h");
 
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
+
         #[rust_name = "new_cpp_object"]
         #[namespace = "cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
@@ -26,12 +38,6 @@ mod ffi {
     }
 
     extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
-        type MyObject;
-
-        #[cxx_name = "invokableName"]
-        fn invokable_name(self: &MyObject);
-
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;

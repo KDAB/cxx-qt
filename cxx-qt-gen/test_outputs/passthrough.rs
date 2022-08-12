@@ -4,7 +4,6 @@
 pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
-        include!("cxx-qt-lib/include/convert.h");
         include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
@@ -14,30 +13,11 @@ pub mod ffi {
         fn getNumber(self: &MyObjectQt) -> i32;
         #[rust_name = "set_number"]
         fn setNumber(self: Pin<&mut MyObjectQt>, value: i32);
-
-        #[cxx_name = "unsafeRust"]
-        fn rust(self: &MyObjectQt) -> &MyObject;
-        #[rust_name = "new_cpp_object"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn newCppObject() -> UniquePtr<MyObjectQt>;
-    }
-
-    extern "C++" {
-        #[cxx_name = "unsafeRustMut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
-
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 
     const MAX: u16 = 65535;
@@ -95,6 +75,32 @@ pub mod ffi {
     union Foo<A, B> {
         x: A,
         y: B,
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/convert.h");
+
+        #[cxx_name = "unsafeRust"]
+        fn rust(self: &MyObjectQt) -> &MyObject;
+
+        #[rust_name = "new_cpp_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn newCppObject() -> UniquePtr<MyObjectQt>;
+    }
+
+    extern "C++" {
+        #[cxx_name = "unsafeRustMut"]
+        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+    }
+
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn create_rs() -> Box<MyObject>;
+
+        #[cxx_name = "initialiseCpp"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
