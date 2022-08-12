@@ -11,6 +11,7 @@ use cxx_qt_build::CxxQtBuilder;
 fn main() {
     CxxQtBuilder::new()
         .cpp_format(ClangFormatStyle::Mozilla)
+        .file("src/custom_base.rs")
         .file("src/data_struct_properties.rs")
         .file("src/empty.rs")
         .file("src/lib.rs")

@@ -19,7 +19,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         {namespace_start}
 
         {ident}::{ident}(QObject* parent)
-          : QObject(parent)
+          : {base_class}(parent)
           , m_rustObj({namespace_internals}::createRs())
         {{
           {namespace_internals}::initialiseCpp(*this);
@@ -65,6 +65,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
       format!("}} // namespace {namespace}", namespace = generated.namespace)
     },
     namespace_internals = generated.namespace_internals,
+    base_class = generated.base_class,
     rust_ident = generated.rust_ident,
     methods = generated.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
     slots = generated.slots.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),

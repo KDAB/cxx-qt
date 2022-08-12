@@ -5,12 +5,13 @@
 
 use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
 use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_ident},
+    attribute::{attribute_find_path, attribute_tokens_to_ident, attribute_tokens_to_map},
     path::{path_angled_args_to_type_path, path_compare_str, path_to_single_ident},
 };
 use std::collections::HashMap;
 use syn::{
-    spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, ItemStruct, Result, Type, TypePath,
+    spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, ItemStruct, LitStr, Result, Type,
+    TypePath,
 };
 
 #[derive(Default)]
@@ -145,25 +146,31 @@ impl ParsedCxxQtData {
 
     /// Parse a [syn::ItemStruct] into the qobjects if it's a CXX-Qt struct
     /// otherwise return as a [syn::Item] to pass through.
-    fn parse_struct(&mut self, s: ItemStruct) -> Result<Option<Item>> {
+    fn parse_struct(&mut self, item_struct: ItemStruct) -> Result<Option<Item>> {
         // If the attribute is #[cxx_qt::qobject] then this the struct defining a qobject
-        if let Some(index) = attribute_find_path(&s.attrs, &["cxx_qt", "qobject"]) {
-            // Remove the macro from the struct
-            //
-            // TODO: we need to read the base class from the macro
-            let mut s = s.clone();
-            s.attrs.remove(index);
+        if let Some(index) = attribute_find_path(&item_struct.attrs, &["cxx_qt", "qobject"]) {
+            if let Some(qobject) = self.qobjects.get_mut(&item_struct.ident) {
+                // Find if there is any base class
+                if let Some(base) =
+                    attribute_tokens_to_map::<Ident, LitStr>(&item_struct.attrs[index])?
+                        .get(&quote::format_ident!("base"))
+                {
+                    qobject.base_class = Some(base.value());
+                }
 
-            if let Some(qobject) = self.qobjects.get_mut(&s.ident) {
+                // Remove the macro from the struct
+                let mut item_struct = item_struct.clone();
+                item_struct.attrs.remove(index);
+
                 // Parse any properties in the struct
                 // and remove the #[qproperty] attribute
-                qobject.parse_struct_fields(&mut s.fields)?;
+                qobject.parse_struct_fields(&mut item_struct.fields)?;
 
-                qobject.qobject_struct = Some(s);
+                qobject.qobject_struct = Some(item_struct);
                 return Ok(None);
             } else {
                 return Err(Error::new(
-                    s.span(),
+                    item_struct.span(),
                     "cxx_qt::qobject struct was not found by find_qobject_keys",
                 ));
             }
@@ -172,15 +179,15 @@ impl ParsedCxxQtData {
         // TODO: for now we assume that Data is related to the only struct in the qobjects
         //
         // Once Data and "RustObj" have been merged this can be removed
-        match s.ident.to_string().as_str() {
+        match item_struct.ident.to_string().as_str() {
             "Data" if !self.qobjects.is_empty() => {
                 let qobject_ident = self.qobjects.keys().next().unwrap().clone();
                 self.qobjects
                     .entry(qobject_ident)
-                    .and_modify(|qobject| qobject.data_struct = Some(s.clone()));
+                    .and_modify(|qobject| qobject.data_struct = Some(item_struct.clone()));
                 Ok(None)
             }
-            _others => Ok(Some(Item::Struct(s))),
+            _others => Ok(Some(Item::Struct(item_struct))),
         }
     }
 }
@@ -325,6 +332,25 @@ mod tests {
     }
 
     #[test]
+    fn test_find_and_merge_cxx_qt_item_struct_valid_base_class() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(base = "QStringListModel")]
+            struct MyObject;
+        });
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+        assert_eq!(
+            cxx_qt_data.qobjects[&qobject_ident()]
+                .base_class
+                .as_ref()
+                .unwrap(),
+            "QStringListModel"
+        );
+    }
+
+    #[test]
     fn test_find_and_merge_cxx_qt_item_struct_valid_rustobj() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -337,6 +363,7 @@ mod tests {
         assert!(cxx_qt_data.qobjects[&qobject_ident()]
             .qobject_struct
             .is_some());
+        assert!(cxx_qt_data.qobjects[&qobject_ident()].base_class.is_none());
     }
 
     #[test]

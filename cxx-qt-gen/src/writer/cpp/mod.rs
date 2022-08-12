@@ -37,6 +37,7 @@ mod tests {
             rust_ident: "MyObjectRust".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
             namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
+            base_class: "QStringListModel".to_owned(),
             metaobjects: vec![
                 "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
                 "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
@@ -152,7 +153,7 @@ mod tests {
 
         namespace cxx_qt::my_object {
 
-        class MyObject : public QObject
+        class MyObject : public QStringListModel
         {
           Q_OBJECT
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
@@ -186,6 +187,8 @@ mod tests {
           int m_count;
           bool m_toggle;
         };
+
+        static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
 
         } // namespace cxx_qt::my_object
 
@@ -214,7 +217,7 @@ mod tests {
 
 
 
-        class MyObject : public QObject
+        class MyObject : public QStringListModel
         {
           Q_OBJECT
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
@@ -249,6 +252,8 @@ mod tests {
           bool m_toggle;
         };
 
+        static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
+
 
 
         namespace cxx_qt_my_object {
@@ -268,7 +273,7 @@ mod tests {
         namespace cxx_qt::my_object {
 
         MyObject::MyObject(QObject* parent)
-          : QObject(parent)
+          : QStringListModel(parent)
           , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
         {
           cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
@@ -353,7 +358,7 @@ mod tests {
 
 
         MyObject::MyObject(QObject* parent)
-          : QObject(parent)
+          : QStringListModel(parent)
           , m_rustObj(cxx_qt_my_object::createRs())
         {
           cxx_qt_my_object::initialiseCpp(*this);

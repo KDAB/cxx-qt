@@ -49,7 +49,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
 
         {namespace_start}
 
-        class {ident} : public QObject
+        class {ident} : public {base_class}
         {{
           Q_OBJECT
           {metaobjects}
@@ -70,6 +70,8 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
 
           {members}
         }};
+
+        static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
 
         {namespace_end}
 
@@ -94,6 +96,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     },
     namespace_internals = generated.namespace_internals,
     rust_ident = generated.rust_ident,
+    base_class = generated.base_class,
     metaobjects = generated.metaobjects.join("\n  "),
     methods = create_block("public", &generated.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
     slots = create_block("public Q_SLOTS", &generated.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),

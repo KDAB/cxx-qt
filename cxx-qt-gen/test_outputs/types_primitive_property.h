@@ -82,6 +82,9 @@ private:
   quint32 m_uint32;
 };
 
+static_assert(std::is_base_of<QObject, MyObject>::value,
+              "MyObject must inherit from QObject");
+
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {

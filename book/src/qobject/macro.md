@@ -31,4 +31,8 @@ Then when registering the type you use the type with your namespace as usual.
 {{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_namespace_register}}
 ```
 
-Note: this might change in the future to allow for defining the base class or options when exporting to QML and could become namespaced to `#[cxx_qt::qobject(base = "QAbstractListModel")]` ( [https://github.com/KDAB/cxx-qt/issues/22](https://github.com/KDAB/cxx-qt/issues/22) ).
+You can also specify the base class by using `#[cxx_qt::qobject(base = "QStringListModel")]`. Note that you need to use CXX to include the header that the base class is declared in.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/src/custom_base.rs:book_macro_code}}
+```

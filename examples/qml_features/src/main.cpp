@@ -8,6 +8,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
+#include "cxx-qt-gen/include/custom_base.cxxqt.h"
 #include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/serialisation.cxxqt.h"
@@ -31,6 +32,7 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
+  qmlRegisterType<CustomBase>("com.kdab.cxx_qt.demo", 1, 0, "CustomBase");
   qmlRegisterType<DataStructProperties>(
     "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
