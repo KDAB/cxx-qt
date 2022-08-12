@@ -18,8 +18,7 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<cxx_qt::my_object::MyObject>(
-      "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+    qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   }
 };
 

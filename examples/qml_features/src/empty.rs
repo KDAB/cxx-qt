@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge(namespace = "cxx_qt::empty")]
+#[cxx_qt::bridge]
 mod ffi {
     #[derive(Default)]
     pub struct Data;

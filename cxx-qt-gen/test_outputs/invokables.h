@@ -40,9 +40,11 @@ private:
   bool m_initialised = false;
 };
 
+} // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object::cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject();
-
-} // namespace cxx_qt::my_object
+} // namespace cxx_qt::my_object::cxx_qt_my_object
 
 Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)

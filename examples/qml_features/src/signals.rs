@@ -4,9 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(namespace = "cxx_qt::signals")]
+#[cxx_qt::bridge]
 pub mod ffi {
-    #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QPoint = cxx_qt_lib::QPoint;

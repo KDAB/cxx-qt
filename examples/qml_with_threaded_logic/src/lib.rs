@@ -9,8 +9,11 @@ enum Event {
     TitleArrived(String),
 }
 
+// ANCHOR: book_namespace_macro
 #[cxx_qt::bridge(namespace = "cxx_qt::website")]
 mod ffi {
+    // ANCHOR_END: book_namespace_macro
+
     use super::Event;
     use futures::{
         channel::mpsc::{UnboundedReceiver, UnboundedSender},

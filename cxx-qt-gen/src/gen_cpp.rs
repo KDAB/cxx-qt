@@ -837,12 +837,25 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         });
     }
 
+    // Create the namespace for internal use
+    //
+    // TODO: when we move to generator share this with gen_rs
+    let mut namespace_internals = vec![];
+    if !obj.namespace.is_empty() {
+        namespace_internals.push(obj.namespace.to_owned());
+    }
+    namespace_internals.push(format!(
+        "cxx_qt_{}",
+        obj.ident.to_string().to_case(Case::Snake)
+    ));
+
     // For now convert our gen_cpp code into the GeneratedCppBlocks struct
     let generated = GeneratedCppBlocks {
         cxx_stem: struct_ident_str.to_case(Case::Snake),
         ident: struct_ident_str,
         rust_ident: rust_struct_ident,
         namespace: obj.namespace.clone(),
+        namespace_internals: namespace_internals.join("::"),
         metaobjects,
         methods,
         slots,

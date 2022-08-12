@@ -23,11 +23,10 @@ impl From<Data> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge(namespace = "cxx_qt::serialisation")]
+#[cxx_qt::bridge]
 mod ffi {
     use super::DataSerde;
 
-    #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QString = cxx_qt_lib::QString;

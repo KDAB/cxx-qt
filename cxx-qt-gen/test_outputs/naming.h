@@ -3,13 +3,9 @@
 #include <memory>
 #include <mutex>
 
-namespace cxx_qt::my_object {
 class MyObject;
-} // namespace cxx_qt::my_object
 
 #include "cxx-qt-gen/include/my_object.cxx.h"
-
-namespace cxx_qt::my_object {
 
 class MyObject : public QObject
 {
@@ -41,9 +37,9 @@ private:
   qint32 m_propertyName;
 };
 
+namespace cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject();
+} // namespace cxx_qt_my_object
 
-} // namespace cxx_qt::my_object
-
-Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
+Q_DECLARE_METATYPE(MyObject*)

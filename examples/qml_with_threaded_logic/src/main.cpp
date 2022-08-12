@@ -28,8 +28,10 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
+  // ANCHOR: book_namespace_register
   qmlRegisterType<cxx_qt::website::Website>(
     "com.kdab.cxx_qt.demo", 1, 0, "Website");
+  // ANCHOR: book_namespace_register
 
   engine.load(url);
 

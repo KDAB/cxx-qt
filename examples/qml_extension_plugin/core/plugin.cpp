@@ -19,7 +19,7 @@ class CoreQmlpluginPlugin : public QQmlExtensionPlugin
 public:
   void registerTypes(const char* uri) override
   {
-    qmlRegisterType<cxx_qt::my_object::MyObject>(uri, 1, 0, "MyObject");
+    qmlRegisterType<core::MyObject>(uri, 1, 0, "MyObject");
   }
 };
 

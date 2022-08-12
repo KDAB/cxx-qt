@@ -41,13 +41,13 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         #include <memory>
         #include <mutex>
 
-        namespace {namespace} {{
+        {namespace_start}
         class {ident};
-        }} // namespace {namespace}
+        {namespace_end}
 
         #include "cxx-qt-gen/include/{cxx_stem}.cxx.h"
 
-        namespace {namespace} {{
+        {namespace_start}
 
         class {ident} : public QObject
         {{
@@ -71,22 +71,39 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
           {members}
         }};
 
+        {namespace_end}
+
+        namespace {namespace_internals} {{
         std::unique_ptr<{ident}>
         newCppObject();
+        }} // namespace {namespace_internals}
 
-        }} // namespace {namespace}
-
-        Q_DECLARE_METATYPE({namespace}::{ident}*)
+        Q_DECLARE_METATYPE({metatype}*)
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
-    namespace = generated.namespace,
+    namespace_start = if generated.namespace.is_empty() {
+        "".to_owned()
+    } else {
+        format!("namespace {namespace} {{", namespace = generated.namespace)
+    },
+    namespace_end = if generated.namespace.is_empty() {
+        "".to_owned()
+    } else {
+        format!("}} // namespace {namespace}", namespace = generated.namespace)
+    },
+    namespace_internals = generated.namespace_internals,
     rust_ident = generated.rust_ident,
     metaobjects = generated.metaobjects.join("\n  "),
     methods = create_block("public", &generated.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
     slots = create_block("public Q_SLOTS", &generated.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
     signals = create_block("Q_SIGNALS", &generated.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
     members = generated.members.join("\n  "),
+    metatype = if generated.namespace.is_empty() {
+        generated.ident.clone()
+    } else {
+        format!("{namespace}::{ident}", namespace = generated.namespace, ident = generated.ident)
+    },
     }
 }
 
@@ -94,7 +111,10 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
 mod tests {
     use super::*;
 
-    use crate::writer::cpp::tests::{create_generated_cpp, expected_header};
+    use crate::writer::cpp::tests::{
+        create_generated_cpp, create_generated_cpp_no_namespace, expected_header,
+        expected_header_no_namespace,
+    };
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
 
@@ -125,5 +145,12 @@ mod tests {
         let generated = create_generated_cpp();
         let output = write_cpp_header(&generated);
         assert_str_eq!(output, expected_header());
+    }
+
+    #[test]
+    fn test_write_cpp_header_no_namespace() {
+        let generated = create_generated_cpp_no_namespace();
+        let output = write_cpp_header(&generated);
+        assert_str_eq!(output, expected_header_no_namespace());
     }
 }

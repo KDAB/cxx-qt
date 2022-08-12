@@ -4,11 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(namespace = "cxx_qt::types")]
+#[cxx_qt::bridge]
 mod ffi {
     use cxx_qt_lib::QVariantValue;
 
-    #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QVariant = cxx_qt_lib::QVariant;

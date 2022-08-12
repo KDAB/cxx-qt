@@ -31,13 +31,11 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
-  qmlRegisterType<cxx_qt::data_struct_properties::DataStructProperties>(
+  qmlRegisterType<DataStructProperties>(
     "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
-  qmlRegisterType<cxx_qt::my_object::MyObject>(
-    "com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-  qmlRegisterType<cxx_qt::serialisation::Serialisation>(
-    "com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
-  qmlRegisterType<cxx_qt::types::Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
+  qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+  qmlRegisterType<Serialisation>("com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
+  qmlRegisterType<Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
 
   engine.load(url);
 
