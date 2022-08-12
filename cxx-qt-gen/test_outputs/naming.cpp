@@ -1,7 +1,7 @@
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 
 MyObject::MyObject(QObject* parent)
-  : QObject(parent)
+  : QStringListModel(parent)
   , m_rustObj(cxx_qt_my_object::createRs())
 {
   cxx_qt_my_object::initialiseCpp(*this);

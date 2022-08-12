@@ -7,7 +7,7 @@ class MyObject;
 
 #include "cxx-qt-gen/include/my_object.cxx.h"
 
-class MyObject : public QObject
+class MyObject : public QStringListModel
 {
   Q_OBJECT
   Q_PROPERTY(qint32 propertyName READ getPropertyName WRITE setPropertyName
@@ -36,6 +36,9 @@ private:
 
   qint32 m_propertyName;
 };
+
+static_assert(std::is_base_of<QObject, MyObject>::value,
+              "MyObject must inherit from QObject");
 
 namespace cxx_qt_my_object {
 std::unique_ptr<MyObject>

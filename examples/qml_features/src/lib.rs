@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod custom_base;
 mod data_struct_properties;
 mod empty;
 mod mock_qt_types;

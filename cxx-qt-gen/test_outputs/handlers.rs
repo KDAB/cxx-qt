@@ -3,7 +3,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
         include!("cxx-qt-lib/include/update_requester.h");
-        include ! (< QtCore / QObject >);
 
         #[cxx_name = "MyObject"]
         type MyObjectQt;
@@ -40,6 +39,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/include/convert.h");
 
         #[cxx_name = "unsafeRust"]

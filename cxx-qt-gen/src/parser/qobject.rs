@@ -15,6 +15,8 @@ use syn::{
 /// then mutate these [syn::Item]'s for generation purposes.
 #[derive(Default)]
 pub struct ParsedQObject {
+    /// The base class of the struct
+    pub base_class: Option<String>,
     /// Data struct that currently stores the properties for the QObject
     ///
     /// In the future this will be removed

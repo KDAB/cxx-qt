@@ -19,6 +19,8 @@ pub struct GeneratedCppBlocks {
     pub namespace: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
+    /// Base class of the QObject
+    pub base_class: String,
     /// List of Qt Meta Object items (eg Q_PROPERTY)
     pub metaobjects: Vec<String>,
     /// List of public methods for the QObject

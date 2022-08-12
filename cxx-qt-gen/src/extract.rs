@@ -191,6 +191,8 @@ pub struct QObject {
     pub(crate) original_passthrough_decls: Vec<Item>,
     /// The Rust impl that has optionally been provided to handle updates
     pub(crate) handle_updates_impl: Option<ItemImpl>,
+    /// The base class of the QObject
+    pub(crate) base_class: Option<String>,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -744,6 +746,7 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         original_rust_struct,
         original_passthrough_decls,
         handle_updates_impl,
+        base_class: qobject.base_class,
     })
 }
 

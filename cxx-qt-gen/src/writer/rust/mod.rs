@@ -17,6 +17,7 @@ fn cxx_common_blocks(
     vec![
         quote! {
             unsafe extern "C++" {
+                include ! (< QtCore / QObject >);
                 include!("cxx-qt-lib/include/convert.h");
 
                 #[cxx_name = "unsafeRust"]
@@ -155,6 +156,7 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
+                    include ! (< QtCore / QObject >);
                     include!("cxx-qt-lib/include/convert.h");
 
                     #[cxx_name = "unsafeRust"]

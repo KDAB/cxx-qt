@@ -5,7 +5,11 @@ mod ffi {
         property_name: i32,
     }
 
-    #[cxx_qt::qobject]
+    unsafe extern "C++" {
+        include!(<QtCore/QStringListModel>);
+    }
+
+    #[cxx_qt::qobject(base = "QStringListModel")]
     #[derive(Default)]
     pub struct MyObject;
 

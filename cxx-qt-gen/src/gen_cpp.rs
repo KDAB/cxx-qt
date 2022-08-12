@@ -856,6 +856,10 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         rust_ident: rust_struct_ident,
         namespace: obj.namespace.clone(),
         namespace_internals: namespace_internals.join("::"),
+        base_class: obj
+            .base_class
+            .clone()
+            .unwrap_or_else(|| "QObject".to_owned()),
         metaobjects,
         methods,
         slots,
