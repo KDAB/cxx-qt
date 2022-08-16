@@ -20,6 +20,8 @@ pub struct ParsedQObject {
     /// In the future this will be removed
     pub data_struct: Option<ItemStruct>,
     /// QObject struct that stores the invokables for the QObject
+    //
+    // TODO: this should not be optional
     pub qobject_struct: Option<ItemStruct>,
     /// Representation of the Signals enum that defines the Q_SIGNALS for the QObject
     pub signals: Option<ParsedSignalsEnum>,

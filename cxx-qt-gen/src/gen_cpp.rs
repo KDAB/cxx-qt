@@ -4,13 +4,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use clang_format::{ClangFormatStyle, CLANG_FORMAT_STYLE};
-use convert_case::{Case, Casing};
 use indoc::formatdoc;
 use proc_macro2::TokenStream;
 use syn::Ident;
 
 use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject, QtTypes, Signal};
 use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::generator::{naming, naming::property::QPropertyName};
 use crate::writer::cpp::write_cpp;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -143,7 +143,6 @@ impl CppType for QtTypes {
 }
 
 /// Describes a C++ parameter, which is a name combined with a type
-#[derive(Debug)]
 struct CppParameter<'a> {
     /// The ident of the parameter
     ident: String,
@@ -152,7 +151,6 @@ struct CppParameter<'a> {
 }
 
 /// Describes a C++ invokable with header and source parts
-#[derive(Debug)]
 struct CppInvokable {
     /// The header definition of the invokable
     header: String,
@@ -160,7 +158,6 @@ struct CppInvokable {
     source: String,
 }
 /// Describes a C++ signal with header and source parts
-#[derive(Debug)]
 struct CppSignal {
     /// Any public methods that are defined by the signal
     header_public: Vec<String>,
@@ -170,7 +167,6 @@ struct CppSignal {
     source: String,
 }
 /// Describes a C++ property with header and source parts
-#[derive(Debug)]
 struct CppProperty {
     /// Any members that are required for the property
     header_members: Vec<String>,
@@ -187,7 +183,6 @@ struct CppProperty {
 }
 
 /// Describes a C++ header and source files of a C++ class
-#[derive(Debug)]
 pub struct CppObject {
     /// The header of the C++ class
     pub header: String,
@@ -267,7 +262,7 @@ fn generate_invokables_cpp(
         let body = format!(
             "m_rustObj->{ident}({parameter_names})",
             // If we are a pointer to a CppObj then we need a wrapper
-            ident = invokable.ident_wrapper.cpp_ident,
+            ident = invokable.ident_wrapper.cpp,
             parameter_names = (vec!["*this".to_owned()]
                 .into_iter()
                 .chain(parameters.names.into_iter()))
@@ -289,7 +284,7 @@ fn generate_invokables_cpp(
             // we are passing *this across for cpp objects in rust.
             header: format!(
                 "Q_INVOKABLE {return_ident} {ident}({parameter_types});",
-                ident = invokable.ident.cpp_ident,
+                ident = invokable.ident.cpp,
                 parameter_types = parameter_arg_line,
                 return_ident = return_ident,
             ),
@@ -315,7 +310,7 @@ fn generate_invokables_cpp(
                 } else {
                     body
                 },
-                ident = invokable.ident.cpp_ident.to_string(),
+                ident = invokable.ident.cpp.to_string(),
                 parameter_types = parameter_arg_line,
                 struct_ident = struct_ident.to_string(),
                 return_ident = return_ident,
@@ -334,18 +329,20 @@ fn generate_properties_cpp(
     let mut items: Vec<CppProperty> = vec![];
 
     for property in properties {
+        let property_ident = QPropertyName::from(&property.ident);
+
         // Build a CppParameter for the name and type of the property
         let parameter = CppParameter {
-            ident: property.ident.cpp_ident.to_string(),
+            ident: property_ident.name.cpp.to_string(),
             type_ident: &property.type_ident.qt_type,
         };
 
         // Collect the C++ idents for the getter, setter, notify of the property
         //
         // TODO: for now we assume that all properties have a getter/setter/notify
-        let ident_getter = property.getter.as_ref().unwrap().cpp_ident.to_string();
-        let ident_setter = property.setter.as_ref().unwrap().cpp_ident.to_string();
-        let ident_changed = property.notify.as_ref().unwrap().cpp_ident.to_string();
+        let ident_getter = property_ident.getter.cpp.to_string();
+        let ident_setter = property_ident.setter.cpp.to_string();
+        let ident_changed = property_ident.notify.cpp.to_string();
 
         // Build the C++ strings for whether the const, ref, and ptr are set for this property
         let is_const = parameter.type_ident.as_const_str();
@@ -446,8 +443,8 @@ fn generate_signals_cpp(
         let mut header_public = vec![];
         let mut header_signals = vec![];
 
-        let queued_ident_cpp = signal.emit_ident.cpp_ident.to_string();
-        let signal_ident_cpp = signal.signal_ident.cpp_ident.to_string();
+        let queued_ident_cpp = signal.emit_ident.cpp.to_string();
+        let signal_ident_cpp = signal.signal_ident.cpp.to_string();
 
         let type_ident_to_immediate = |type_ident: &ParameterType| -> String {
             format!(
@@ -546,8 +543,8 @@ fn generate_signals_cpp(
 
 /// Generate a CppObject object containing the header and source of a given rust QObject
 pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
-    let struct_ident_str = obj.ident.to_string();
-    let rust_struct_ident = format!("{}Rust", struct_ident_str);
+    let qobject_idents = naming::qobject::QObjectName::from(&obj.ident);
+    let rust_struct_ident = qobject_idents.rust_struct.cpp.to_string();
 
     // TODO: For now we proxy the gen_cpp code into what the writer phase expects
     // later this code will be moved into a generator phase
@@ -619,29 +616,17 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     }
 
     // Create the namespace for internal use
-    //
-    // TODO: when we move to generator share this with gen_rs
-    let mut namespace_internals = vec![];
-    if !obj.namespace.is_empty() {
-        namespace_internals.push(obj.namespace.to_owned());
-    }
-    namespace_internals.push(format!(
-        "cxx_qt_{}",
-        obj.ident.to_string().to_case(Case::Snake)
-    ));
-
-    // Build the CxxQtThread ident
-    // TODO: later this will be shared with gen_rs in the generator phase
-    let cxx_qt_thread_ident = format!("{}CxxQtThread", struct_ident_str);
+    let namespace_internals =
+        naming::namespace::NamespaceName::from_pair_str(&obj.namespace, &obj.ident).internal;
 
     // For now convert our gen_cpp code into the GeneratedCppBlocks struct
     let generated = GeneratedCppBlocks {
-        cxx_stem: struct_ident_str.to_case(Case::Snake),
-        ident: struct_ident_str,
+        cxx_stem: naming::module::cxx_stem_from_ident(&obj.ident).to_string(),
+        ident: obj.ident.to_string(),
         rust_ident: rust_struct_ident,
-        cxx_qt_thread_ident,
+        cxx_qt_thread_ident: qobject_idents.cxx_qt_thread_class.to_string(),
         namespace: obj.namespace.clone(),
-        namespace_internals: namespace_internals.join("::"),
+        namespace_internals,
         base_class: obj
             .base_class
             .clone()
