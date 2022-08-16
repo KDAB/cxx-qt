@@ -9,7 +9,9 @@ use proc_macro2::TokenStream;
 use syn::Ident;
 
 use crate::extract::{Invokable, Parameter, ParameterType, Property, QObject, QtTypes, Signal};
-use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::generator::cpp::{
+    fragment::CppFragmentPair, qobject::GeneratedCppQObjectBlocks, GeneratedCppBlocks,
+};
 use crate::generator::{naming, naming::property::QPropertyName};
 use crate::writer::cpp::write_cpp;
 
@@ -605,13 +607,11 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
     let namespace_internals =
         naming::namespace::NamespaceName::from_pair_str(&obj.namespace, &obj.ident).internal;
 
-    // For now convert our gen_cpp code into the GeneratedCppBlocks struct
-    let generated = GeneratedCppBlocks {
-        cxx_stem: naming::module::cxx_stem_from_ident(&obj.ident).to_string(),
+    // For now we only create a single QObject
+    let qobjects = vec![GeneratedCppQObjectBlocks {
         ident: obj.ident.to_string(),
         rust_ident: rust_struct_ident,
         cxx_qt_thread_ident: qobject_idents.cxx_qt_thread_class.to_string(),
-        namespace: obj.namespace.clone(),
         namespace_internals,
         base_class: obj
             .base_class
@@ -621,6 +621,13 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         methods,
         slots,
         signals,
+    }];
+
+    // For now convert our gen_cpp code into the GeneratedCppBlocks struct
+    let generated = GeneratedCppBlocks {
+        cxx_stem: naming::module::cxx_stem_from_ident(&obj.ident).to_string(),
+        namespace: obj.namespace.clone(),
+        qobjects,
     };
 
     // Use our writer phase to convert to a string
