@@ -13,10 +13,12 @@ description = "Helpers for integrating `cxx-qt` crate into a Cargo build"
 repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
+cc = "1.0.73"
 clang-format = "0.1"
 cxx-gen = "0.7"
-cxx-qt-lib = { path = "../cxx-qt-lib", version = "0.3" }
+cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.3" }
 cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.3" }
 proc-macro2 = "1.0"
 quote = "1.0"
 convert_case = "0.4"
+qt-build = { path = "../qt-build" }

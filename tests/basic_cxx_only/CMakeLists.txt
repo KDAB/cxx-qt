@@ -10,19 +10,26 @@ cmake_minimum_required(VERSION 3.16)
 project(tests_basic_cxx_only)
 set(APP_NAME ${PROJECT_NAME})
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
+get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 
-# TODO: at some point we want to transform cxx-qt-build into cxx-cmake-build
-# to clarify that qt support is optional. At this point it would make more
-# sense to never generate files with Qt code rather than to #ifdef it out using
-# this flag as we currently do for cases where the application doesn't link to Qt.
-add_compile_definitions(NO_QT)
-
-set(
-    CPP_SOURCES
-    src/main.cpp
+set(CRATE basic-cxx-only)
+corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
+set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
+corrosion_set_env_vars(${CRATE}
+    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
+    "QMAKE=${QMAKE}"
+)
+target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${CRATE} INTERFACE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
 )
 
-cxx_qt_cmake(${APP_NAME} "${CPP_SOURCES}")
-target_link_libraries(${APP_NAME} PRIVATE doctest)
+add_executable(${APP_NAME} src/main.cpp)
+target_include_directories(${APP_NAME} PRIVATE include)
+target_link_libraries(${APP_NAME} PRIVATE
+    ${CRATE} doctest
+    Qt${QT_VERSION_MAJOR}::Test
+)

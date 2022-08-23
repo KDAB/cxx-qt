@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use convert_case::{Case, Casing};
 use quote::ToTokens;
-use std::env;
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
+use std::{
+    collections::HashSet,
+    env,
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
@@ -38,6 +41,12 @@ fn manifest_dir() -> String {
     manifest_dir
 }
 
+pub struct GeneratedCppFilePaths {
+    pub plain_cpp: PathBuf,
+    pub qobject: Option<PathBuf>,
+    pub qobject_header: Option<PathBuf>,
+}
+
 pub struct GeneratedCpp {
     cxx_qt: Option<CppObject>,
     cxx: cxx_gen::GeneratedCode,
@@ -46,7 +55,7 @@ pub struct GeneratedCpp {
 
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
-    pub fn new(rust_file_path: &impl AsRef<std::path::Path>) -> Self {
+    pub fn new(rust_file_path: &impl AsRef<Path>) -> Self {
         let file = parse_qt_file(rust_file_path).unwrap();
 
         let mut cxx_qt = None;
@@ -121,29 +130,27 @@ impl GeneratedCpp {
     }
 
     /// Write generated code to files in a directory. Returns the absolute paths of all files written.
-    pub fn write_to_directory(&self, directory: &impl AsRef<std::path::Path>) -> Vec<PathBuf> {
-        let directory = directory.as_ref();
-        if !directory.is_dir() {
-            panic!(
-                "Output directory {} is not a directory",
-                directory.display()
-            );
+    pub fn write_to_directory(
+        &self,
+        cpp_directory: &impl AsRef<Path>,
+        header_directory: &impl AsRef<Path>,
+    ) -> GeneratedCppFilePaths {
+        let cpp_directory = cpp_directory.as_ref();
+        let header_directory = header_directory.as_ref();
+        for directory in [cpp_directory, header_directory] {
+            std::fs::create_dir_all(&directory)
+                .expect("Could not create directory to write cxx-qt generated files");
         }
 
-        let include_directory_path = PathBuf::from(format!("{}/include", &directory.display()));
-        std::fs::create_dir_all(&include_directory_path)
-            .expect("Could not create cxx-qt include dir");
-
-        let source_directory_path = PathBuf::from(format!("{}/src", &directory.display()));
-        std::fs::create_dir_all(&source_directory_path)
-            .expect("Could not create cxx-qt source dir");
-
-        let mut written_files = Vec::with_capacity(4);
-
+        let mut cpp_file_paths = GeneratedCppFilePaths {
+            plain_cpp: PathBuf::new(),
+            qobject: None,
+            qobject_header: None,
+        };
         if let Some(cxx_qt_generated) = &self.cxx_qt {
             let header_path = PathBuf::from(format!(
                 "{}/{}.cxxqt.h",
-                include_directory_path.display(),
+                header_directory.display(),
                 self.file_ident
             ));
             let mut header =
@@ -151,105 +158,116 @@ impl GeneratedCpp {
             header
                 .write_all(cxx_qt_generated.header.as_bytes())
                 .expect("Could not write cxx-qt header file");
-            written_files.push(header_path);
+            cpp_file_paths.qobject_header = Some(header_path);
 
             let cpp_path = PathBuf::from(format!(
                 "{}/{}.cxxqt.cpp",
-                source_directory_path.display(),
+                cpp_directory.display(),
                 self.file_ident
             ));
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
             cpp.write_all(cxx_qt_generated.source.as_bytes())
                 .expect("Could not write cxx-qt source file");
-            written_files.push(cpp_path);
+            cpp_file_paths.qobject = Some(cpp_path);
         }
 
         let header_path = PathBuf::from(format!(
             "{}/{}.cxx.h",
-            include_directory_path.display(),
+            header_directory.display(),
             self.file_ident
         ));
         let mut header = File::create(&header_path).expect("Could not create cxx header file");
         header
             .write_all(&self.cxx.header)
             .expect("Could not write cxx header file");
-        written_files.push(header_path);
 
         let cpp_path = PathBuf::from(format!(
             "{}/{}.cxx.cpp",
-            source_directory_path.display(),
+            cpp_directory.display(),
             self.file_ident
         ));
         let mut cpp = File::create(&cpp_path).expect("Could not create cxx source file");
         cpp.write_all(&self.cxx.implementation)
             .expect("Could not write cxx source file");
-        written_files.push(cpp_path);
+        cpp_file_paths.plain_cpp = cpp_path;
 
-        written_files
+        cpp_file_paths
     }
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
-fn write_cxx_generated_files_for_cargo(rs_source: &[&'static str]) -> Vec<PathBuf> {
+fn write_cxx_generated_files_for_cargo(
+    rs_source: &[&'static str],
+    header_dir: &impl AsRef<Path>,
+) -> Vec<GeneratedCppFilePaths> {
     let manifest_dir = manifest_dir();
-    let directory = format!("{}/target/cxx-qt-gen", manifest_dir);
-    std::fs::create_dir_all(&directory).expect("Could not create cxx-qt code generation directory");
+    let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
 
-    let mut cpp_files = Vec::new();
-
+    let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::new();
     for rs_path in rs_source {
         let path = format!("{}/{}", manifest_dir, rs_path);
         println!("cargo:rerun-if-changed={}", path);
 
         let generated_code = GeneratedCpp::new(&path);
-        cpp_files.append(&mut generated_code.write_to_directory(&directory));
+        generated_file_paths.push(generated_code.write_to_directory(&cpp_directory, header_dir));
     }
 
-    cpp_files
+    generated_file_paths
 }
 
-/// Write the list of C++ paths to the file
-fn write_cpp_sources_list(paths: &[PathBuf]) {
-    let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen", manifest_dir);
-    std::fs::create_dir_all(path).expect("Could not create target dir");
-
-    let path = format!("{}/target/cxx-qt-gen/cpp_sources.txt", manifest_dir);
-    let mut file = File::create(&path).expect("Could not create cpp_sources file");
-
-    for path in paths {
-        writeln!(file, "{}", path.display()).unwrap();
-    }
-}
-
-/// Write out the static header file for both the cxx
-fn write_cxx_static_header() {
-    let manifest_dir = manifest_dir();
-
-    let path = format!("{}/target/cxx-qt-gen/statics/rust", manifest_dir);
-    std::fs::create_dir_all(&path).expect("Could not create static header dir");
-
-    let h_path = format!("{}/cxx.h", path);
-    let mut header = File::create(&h_path).expect("Could not create cxx.h");
-    write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
-}
-
-/// Describes a cxx Qt builder which helps parse and generate sources for cxx-qt
+/// Run cxx-qt's C++ code generator on Rust modules marked with the [cxx_qt::bridge] macro, compile
+/// the code, and link to Qt. This is the complement of the [cxx_qt::bridge] macro, which the Rust
+/// compiler uses to generate the corresponding Rust code. No dependencies besides Qt, a C++17 compiler,
+/// and Rust toolchain are required.
+///
+/// For example, if your [cxx_qt::bridge] module is in a file called `src/lib.rs` within your crate,
+/// put this in your [build.rs](https://doc.rust-lang.org/cargo/reference/build-scripts.html):
+///
+/// ```no_run
+/// use cxx_qt_build::CxxQtBuilder;
+///
+/// CxxQtBuilder::new()
+///     .file("src/lib.rs")
+///     .build();
+/// ```
+///
+/// If you have multiple major versions of Qt installed (for example, 5 and 6), you can tell
+/// [CxxQtBuilder] which one to use by setting the `QT_VERSION_MAJOR` environment variable to when
+/// running `cargo build`. Otherwise [CxxQtBuilder] prefers the newer version by default.
+///
+/// To use [CxxQtBuilder] for a library to link with a C++ application, specify a directory to output
+/// cxx-qt's autogenerated headers by having the C++ build system set the `CXXQT_EXPORT_DIR`
+/// environment variable before calling `cargo build`. Then, add the same directory path to the C++
+/// include paths. Also, set the `QMAKE` environment variable to the path of the `qmake` executable
+/// for the Qt installation found by the C++ build system. This ensures that the C++ build system and
+/// [CxxQtBuilder] link to the same installation of Qt.
+///
+/// Under the hood, [CxxQtBuilder] uses [cc::Build], which allows compiling aditional C++ files as well.
+/// Refer to [CxxQtBuilder::cc_builder] for details.
+///
+/// In addition to autogenerating and building QObject C++ subclasses, manually written QObject
+/// subclasses can be parsed by moc and built using [CxxQtBuilder::qobject_header].
 #[derive(Default)]
 pub struct CxxQtBuilder {
     cpp_format: Option<ClangFormatStyle>,
     rust_sources: Vec<&'static str>,
-    qt_enabled: bool,
+    qobject_headers: Vec<PathBuf>,
+    qt_modules: HashSet<String>,
+    cc_builder: cc::Build,
 }
 
 impl CxxQtBuilder {
     /// Create a new builder
     pub fn new() -> Self {
+        let mut qt_modules = HashSet::new();
+        qt_modules.insert("Core".to_owned());
+        qt_modules.insert("Gui".to_owned());
         Self {
             cpp_format: None,
             rust_sources: vec![],
-            qt_enabled: true,
+            qobject_headers: vec![],
+            qt_modules,
+            cc_builder: cc::Build::new(),
         }
     }
 
@@ -259,43 +277,111 @@ impl CxxQtBuilder {
         self
     }
 
-    /// Choose to disable Qt support
-    ///
-    /// This will disable including cxx-qt-lib headers.
-    pub fn disable_qt(mut self) -> Self {
-        self.qt_enabled = false;
-        self
-    }
-
     /// Specify rust file paths to parse through the cxx-qt marco
     ///
     /// Currently the path should be relative to CARGO_MANIFEST_DIR
     pub fn file(mut self, rust_source: &'static str) -> Self {
         self.rust_sources.push(rust_source);
+        println!("cargo:rerun-if-changed={}", rust_source);
         self
     }
 
-    // TODO: support globs with files("src/**/*.rs")
+    /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html).
+    /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
+    /// The Core and Gui modules are linked automatically; there is no need to specify them.
+    pub fn qt_modules(mut self, modules: &[&str]) -> Self {
+        self.qt_modules
+            .extend(modules.iter().cloned().map(String::from));
+        self
+    }
 
-    /// Perform the build task, for example parsing and generating sources
-    pub fn build(self) {
+    /// Specify a C++ header containing a Q_OBJECT macro to run [moc](https://doc.qt.io/qt-6/moc.html) on.
+    /// This allows building QObject C++ subclasses besides the ones autogenerated by cxx-qt.
+    pub fn qobject_header(mut self, path: &impl AsRef<Path>) -> Self {
+        self.qobject_headers.push(path.as_ref().to_path_buf());
+        self
+    }
+
+    /// Use a closure to run additional customization on [CxxQtBuilder]'s internal [cc::Build]
+    /// before calling [CxxQtBuilder::build]. This allows to add extra include paths, compiler flags,
+    /// or anything else available via [cc::Build]'s API. For example, to add an include path for
+    /// manually written C++ headers located in a directory called `include` within your crate:
+    ///
+    /// ```no_run
+    /// # use cxx_qt_build::CxxQtBuilder;
+    ///
+    /// CxxQtBuilder::new()
+    ///     .file("src/lib.rs")
+    ///     .cc_builder(|cc| {
+    ///         cc.include("include");
+    ///     })
+    ///     .build();
+    /// ```
+    pub fn cc_builder(mut self, mut callback: impl FnMut(&mut cc::Build)) -> Self {
+        callback(&mut self.cc_builder);
+        self
+    }
+
+    /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
+    /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
+    pub fn build(mut self) {
         // Set clang-format format
         if generate_format(self.cpp_format).is_err() {
             panic!("Failed to set clang-format.");
         }
 
-        // TODO: somewhere check that we don't have duplicate class names
-        // TODO: later use the module::object to turn into module/object.h
+        self.cc_builder.cpp(true);
+        // MSVC
+        self.cc_builder.flag_if_supported("/std:c++17");
+        self.cc_builder.flag_if_supported("/Zc:__cplusplus");
+        self.cc_builder.flag_if_supported("/permissive-");
+        // GCC + Clang
+        self.cc_builder.flag_if_supported("-std=c++17");
+
+        let mut qtbuild = qt_build::QtBuild::new(self.qt_modules.into_iter().collect())
+            .expect("Could not find Qt installation");
+        qtbuild.cargo_link_libraries();
+        for include_dir in qtbuild.include_paths() {
+            self.cc_builder.include(include_dir);
+        }
+
+        // The include directory needs to be namespaced by crate name when exporting for a C++ build system,
+        // but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
+        let header_root = match env::var("CXXQT_EXPORT_DIR") {
+            Ok(export_dir) => format!("{}/{}", export_dir, env::var("CARGO_PKG_NAME").unwrap()),
+            Err(_) => env::var("OUT_DIR").unwrap(),
+        };
+        self.cc_builder.include(&header_root);
+        let generated_header_dir = format!("{}/cxx-qt-gen/include", header_root);
+
+        cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib/include", header_root));
+
+        // Write cxx header
+        std::fs::create_dir_all(&format!("{}/rust", header_root))
+            .expect("Could not create cxx header directory");
+        let h_path = format!("{}/rust/cxx.h", header_root);
+        // Wrap the File in a block scope so the file is closed before the compiler is run.
+        // Otherwise MSVC fails to open cxx.h because the process for this build script already has it open.
+        {
+            let mut header = File::create(&h_path).expect("Could not create cxx.h");
+            write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
+        }
 
         // Generate files
-        let cpp_paths = write_cxx_generated_files_for_cargo(&self.rust_sources);
+        for files in write_cxx_generated_files_for_cargo(&self.rust_sources, &generated_header_dir)
+        {
+            self.cc_builder.file(files.plain_cpp);
+            if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
+                self.cc_builder.file(&qobject);
+                self.qobject_headers.push(qobject_header);
+            }
+        }
 
-        // TODO: in large projects where where CXX-Qt is used in multiple individual
-        // components that end up being linked together, having these same static
-        // files in each one could cause issues.
-        write_cxx_static_header();
+        // Run moc on C++ headers with Q_OBJECT macro
+        for qobject_header in self.qobject_headers {
+            self.cc_builder.file(qtbuild.moc(&qobject_header));
+        }
 
-        // TODO: find a way to only do this when cargo is called during the config stage of CMake
-        write_cpp_sources_list(&cpp_paths);
+        self.cc_builder.compile("cxx-qt-gen");
     }
 }

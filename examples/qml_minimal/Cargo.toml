@@ -16,10 +16,9 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 # This will instruct Cargo to create a static
-# lib named "rust" which CMake can link against
+# library which CMake can link against
 # ANCHOR: book_static_lib
 [lib]
-name = "rust"
 crate-type = ["staticlib"]
 # ANCHOR_END: book_static_lib
 

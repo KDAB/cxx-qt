@@ -10,8 +10,6 @@ cmake_minimum_required(VERSION 3.16)
 project(example_qml_features)
 set(APP_NAME ${PROJECT_NAME})
 
-# TODO: Add a helper function to our CMake module which automatically
-# handles some of this boilerplate for a "typical" Qt application
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,35 +17,38 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
+get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
+find_package(Corrosion QUIET)
+if(NOT Corrosion_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v0.2.1
+    )
 
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    FetchContent_MakeAvailable(Corrosion)
+endif()
+
+set(CRATE qml-features)
+corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
+set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
+corrosion_set_env_vars(${CRATE}
+    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
+    "QMAKE=${QMAKE}"
 )
-
-set(
-    RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/qml.qrc
-)
-
-# Generate the C++ code
-cxx_qt_generate_cpp(GEN_SOURCES)
-# Define our executable with our QML resource files
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
-target_link_libraries(${APP_NAME} PRIVATE
+target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml
     Qt${QT_VERSION_MAJOR}::QuickControls2
-    Qt${QT_VERSION_MAJOR}::Test
 )
+
+add_executable(${APP_NAME} src/main.cpp src/qml.qrc)
+
+target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 qt_import_qml_plugins(${APP_NAME})
 
 #
@@ -59,11 +60,10 @@ function(add_qml_test TEST_NAME)
     # this is so that our tst_${TEST_NAME} executable can find the QML files
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
-    cxx_qt_cmake(${APP_NAME}_${TEST_NAME}_test "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    add_executable(${APP_NAME}_${TEST_NAME}_test "src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
-        Qt${QT_VERSION_MAJOR}::Core
-        Qt${QT_VERSION_MAJOR}::Gui
-        Qt${QT_VERSION_MAJOR}::Qml
+        ${CRATE}
+        Qt${QT_VERSION_MAJOR}::Test
         Qt${QT_VERSION_MAJOR}::QuickTest
     )
     qt_import_qml_plugins(${APP_NAME}_${TEST_NAME}_test)

@@ -17,9 +17,3 @@ path = "src/main.rs"
 [dependencies]
 cxx-qt-build = { path = "../cxx-qt-build" }
 clap = { version = "^3.2.12", features = [ "derive" ] }
-
-[features]
-# Requires nightly compiler until std::path::absolute is stabilized
-# https://github.com/rust-lang/rust/issues/92750
-# TODO: enable by default when stabilized
-absolute-paths = []

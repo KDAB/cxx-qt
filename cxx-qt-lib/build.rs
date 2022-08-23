@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::env;
-
 fn main() {
     let qt_modules = vec!["Core", "Gui"]
         .iter()
@@ -12,43 +10,6 @@ fn main() {
         .collect();
     let qtbuild = qt_build::QtBuild::new(qt_modules).expect("Could not find Qt installation");
     qtbuild.cargo_link_libraries();
-
-    // Copy qt_types.h so C++ build systems can #include it.
-    // By design, CARGO_TARGET_DIR is not set by cargo when running build scripts.
-    // Copying the header is only needed for making the header available to a C++
-    // build system, in which case CARGO_TARGET_DIR will be set by
-    // the C++ build system.
-    println!("cargo:rerun-if-changed=include/convert.h");
-    println!("cargo:rerun-if-changed=include/qt_types.h");
-    println!("cargo:rerun-if-changed=include/update_requester.h");
-    println!("cargo:rerun-if-env-changed=CARGO_TARGET_DIR");
-    if let Ok(target_dir) = env::var("CARGO_TARGET_DIR") {
-        let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-        std::fs::create_dir_all(&format!("{}/cxxbridge/cxx-qt-lib/include", target_dir)).unwrap();
-
-        for cpp_file in [
-            "include/convert.h",
-            "include/qt_types.h",
-            "include/update_requester.h",
-        ] {
-            // FIXME: Horrible hack around this sometimes failing because
-            // Windows doesn't allow multiple processes to access a file by default.
-            loop {
-                match std::fs::copy(
-                    &format!("{}/{}", manifest_dir, cpp_file),
-                    &format!("{}/cxxbridge/cxx-qt-lib/{}", target_dir, cpp_file),
-                ) {
-                    Ok(_) => break,
-                    #[cfg(windows)]
-                    Err(e) if e.raw_os_error() == Some(32) => {
-                        std::thread::sleep(std::time::Duration::from_millis(100));
-                        continue;
-                    }
-                    Err(e) => panic!("Error copying {}: {:?}", e, cpp_file),
-                }
-            }
-        }
-    }
 
     let bridge_files = [
         "src/types/qcolor.rs",
@@ -81,6 +42,12 @@ fn main() {
         builder.file(cpp_file);
         println!("cargo:rerun-if-changed={}", cpp_file);
     }
+
+    // Write this library's manually written C++ headers to files and add them to include paths
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+    cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib/include", out_dir));
+    builder.include(out_dir);
+
     // MSVC
     builder.flag_if_supported("/std:c++17");
     builder.flag_if_supported("/Zc:__cplusplus");

@@ -12,5 +12,8 @@ fn main() {
         .file("src/data.rs")
         .file("src/lib.rs")
         .file("src/types.rs")
+        .cc_builder(|cc| {
+            cc.include("include");
+        })
         .build();
 }
