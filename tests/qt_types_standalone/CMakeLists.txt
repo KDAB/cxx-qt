@@ -19,26 +19,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
+get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-include(CxxQt)
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/bridge.h
+set(CRATE qt-types-standalone)
+corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
+set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
+corrosion_set_env_vars(${CRATE}
+    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
+    "QMAKE=${QMAKE}"
 )
-
-# Generate the C++ code
-cxx_qt_generate_cpp(GEN_SOURCES)
-# Define our executable
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}")
-# Include generated sources
-cxx_qt_include(${APP_NAME})
-# Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
-target_link_libraries(${APP_NAME} PRIVATE
-    doctest
+target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
+)
+
+add_executable(${APP_NAME} src/main.cpp)
+target_include_directories(${APP_NAME} PRIVATE include)
+
+target_link_libraries(${APP_NAME} PRIVATE
+    ${CRATE}
+    doctest
     Qt${QT_VERSION_MAJOR}::Test
 )

@@ -20,4 +20,5 @@ cxx = "1.0"
 
 [build-dependencies]
 cxx-build = "1.0"
+cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.3" }
 qt-build = { path = "../qt-build" }

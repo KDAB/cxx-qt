@@ -8,8 +8,10 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        .disable_qt()
         .cpp_format(ClangFormatStyle::Mozilla)
         .file("src/lib.rs")
+        .cc_builder(|cc| {
+            cc.include("include");
+        })
         .build();
 }

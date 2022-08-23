@@ -10,5 +10,8 @@ fn main() {
     CxxQtBuilder::new()
         .cpp_format(ClangFormatStyle::Mozilla)
         .file("src/lib.rs")
+        .cc_builder(|cc| {
+            cc.include("include");
+        })
         .build();
 }

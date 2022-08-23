@@ -23,12 +23,13 @@ fn main() {
     let cli = Cli::parse();
 
     let generated_code = GeneratedCpp::new(&cli.input);
-    let output_file_paths = generated_code.write_to_directory(&cli.output);
 
-    for output_file_path in output_file_paths {
-        #[cfg(feature = "absolute-paths")]
-        let output_file_path = std::path::absolute(output_file_path).unwrap();
+    let cpp_directory = format!("{}/src", &cli.output.display());
+    let header_directory = format!("{}/include", &cli.output.display());
+    let output_file_paths = generated_code.write_to_directory(&cpp_directory, &header_directory);
 
-        println!("{}", output_file_path.display());
+    println!("{}", output_file_paths.plain_cpp.display());
+    if let Some(qobject) = output_file_paths.qobject {
+        println!("{}", qobject.display());
     }
 }
