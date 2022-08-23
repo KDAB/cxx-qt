@@ -11,7 +11,11 @@
 //! [cxx_build](https://docs.rs/cxx-build/latest/cxx_build/), or
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
 
-use std::{env, path::PathBuf, process::Command};
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 pub use versions::SemVer;
 
@@ -56,6 +60,7 @@ pub enum QtBuildError {
 pub struct QtBuild {
     version: SemVer,
     qmake_executable: String,
+    moc_executable: Option<String>,
     qt_modules: Vec<String>,
 }
 
@@ -151,6 +156,7 @@ impl QtBuild {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
                         qmake_executable: executable_name.to_string(),
+                        moc_executable: None,
                         version,
                         qt_modules,
                     });
@@ -171,6 +177,7 @@ impl QtBuild {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
                         qmake_executable: executable_name.to_string(),
+                        moc_executable: None,
                         version,
                         qt_modules,
                     });
@@ -284,5 +291,52 @@ impl QtBuild {
     /// Version of the detected Qt installation
     pub fn version(&self) -> &SemVer {
         &self.version
+    }
+
+    /// Lazy load the path of the moc executable
+    // Skip doing this in the constructor because not every user of this crate will use moc
+    fn get_moc_executable(&mut self) -> &str {
+        if self.moc_executable.is_none() {
+            for qmake_query_var in [
+                "QT_HOST_LIBEXECS",
+                "QT_HOST_BINS",
+                "QT_INSTALL_LIBEXECS",
+                "QT_INSTALL_BINS",
+            ] {
+                let executable_path = format!("{}/moc", self.qmake_query(qmake_query_var));
+                match Command::new(&executable_path).args(&["-help"]).output() {
+                    Ok(_) => {
+                        self.moc_executable = Some(executable_path);
+                        break;
+                    }
+                    Err(_) => continue,
+                }
+            }
+        }
+        self.moc_executable
+            .as_ref()
+            .expect("moc executable not found")
+    }
+
+    /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
+    /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
+    pub fn moc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+        let input_path = input_file.as_ref();
+        let output_path = PathBuf::from(&format!(
+            "{}/moc_{}.cpp",
+            env::var("OUT_DIR").unwrap(),
+            input_path.file_name().unwrap().to_str().unwrap()
+        ));
+
+        let _ = Command::new(self.get_moc_executable())
+            .args(&[
+                input_path.to_str().unwrap(),
+                "-o",
+                output_path.to_str().unwrap(),
+            ])
+            .output()
+            .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
+
+        output_path
     }
 }
