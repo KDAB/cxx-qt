@@ -152,9 +152,13 @@ jobs:
 
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
+      # Ubuntu 22.04 uses GCC 11 by default. Somehow when using that compiler,
+      # GNU ld fails to link, though lld works. To test a full GNU toolchain,
+      # use GCC 12 (with the default GNU ld).
       run: >-
         sudo apt-get update &&
         sudo apt-get install -y
+        gcc-12
         ninja-build
         clang-format-12
         libssl-dev
