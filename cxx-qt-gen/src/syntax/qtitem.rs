@@ -10,6 +10,9 @@ use syn::parse::{Parse, ParseStream};
 use syn::{Attribute, Item, ItemMod, Result, Token, Visibility};
 
 #[derive(Clone, PartialEq, Eq)]
+// This warning is triggered when running clippy on crates that depend on cxx-qt-gen,
+// but not when running clippy on cxx-qt-gen.
+#[allow(clippy::large_enum_variant)]
 pub enum CxxQtItem {
     /// A normal syntax item that we pass through
     Item(Item),
