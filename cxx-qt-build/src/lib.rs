@@ -182,7 +182,7 @@ impl GeneratedCpp {
 }
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
-fn write_cxx_generated_files_for_cargo(
+fn generate_cxxqt_cpp_files(
     rs_source: &[PathBuf],
     header_dir: impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
@@ -341,7 +341,7 @@ impl CxxQtBuilder {
         }
 
         // Generate files
-        for files in write_cxx_generated_files_for_cargo(&self.rust_sources, &generated_header_dir)
+        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir)
         {
             self.cc_builder.file(files.plain_cpp);
             if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
