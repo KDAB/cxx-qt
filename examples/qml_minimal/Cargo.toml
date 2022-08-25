@@ -35,7 +35,6 @@ cxx-qt-lib = { path = "../../cxx-qt-lib" }
 # C++ code in a consistent manner.
 # ANCHOR: book_build_dependencies
 [build-dependencies]
-clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }
 # ANCHOR_END: book_build_dependencies
 

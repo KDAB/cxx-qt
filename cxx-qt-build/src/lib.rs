@@ -14,10 +14,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use clang_format::ClangFormatStyle;
 use cxx_qt_gen::{
-    extract_qobject, generate_format, generate_qobject_cpp, generate_qobject_rs, parse_qt_file,
-    CppObject, CxxQtItem,
+    extract_qobject, generate_qobject_cpp, generate_qobject_rs, parse_qt_file, CppObject, CxxQtItem,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -236,7 +234,6 @@ fn write_cxx_generated_files_for_cargo(
 /// subclasses can be parsed by moc and built using [CxxQtBuilder::qobject_header].
 #[derive(Default)]
 pub struct CxxQtBuilder {
-    cpp_format: Option<ClangFormatStyle>,
     rust_sources: Vec<&'static str>,
     qobject_headers: Vec<PathBuf>,
     qt_modules: HashSet<String>,
@@ -250,18 +247,11 @@ impl CxxQtBuilder {
         qt_modules.insert("Core".to_owned());
         qt_modules.insert("Gui".to_owned());
         Self {
-            cpp_format: None,
             rust_sources: vec![],
             qobject_headers: vec![],
             qt_modules,
             cc_builder: cc::Build::new(),
         }
-    }
-
-    /// Choose the ClangFormatStyle to use for generated C++ files
-    pub fn cpp_format(mut self, format: ClangFormatStyle) -> Self {
-        self.cpp_format = Some(format);
-        self
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco
@@ -312,11 +302,6 @@ impl CxxQtBuilder {
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
-        // Set clang-format format
-        if generate_format(self.cpp_format).is_err() {
-            panic!("Failed to set clang-format.");
-        }
-
         self.cc_builder.cpp(true);
         // MSVC
         self.cc_builder.flag_if_supported("/std:c++17");

@@ -14,7 +14,6 @@ repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
 cc = "1.0.73"
-clang-format = "0.1"
 cxx-gen = "0.7"
 cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.3" }
 cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.3" }

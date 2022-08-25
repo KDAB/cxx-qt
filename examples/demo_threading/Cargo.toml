@@ -24,5 +24,4 @@ serde_json = "1.0"
 uuid = { version = "0.8", features = ["serde", "v4"] }
 
 [build-dependencies]
-clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }
