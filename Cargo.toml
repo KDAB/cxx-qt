@@ -7,7 +7,6 @@
 members = [
     "cxx-qt",
     "cxx-qt-build",
-    "cxx-qt-cli",
     "cxx-qt-gen",
     "cxx-qt-lib",
     "cxx-qt-lib-headers",
