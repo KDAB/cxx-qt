@@ -61,6 +61,7 @@ pub struct QtBuild {
     version: SemVer,
     qmake_executable: String,
     moc_executable: Option<String>,
+    rcc_executable: Option<String>,
     qt_modules: Vec<String>,
 }
 
@@ -157,6 +158,7 @@ impl QtBuild {
                     return Ok(Self {
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
+                        rcc_executable: None,
                         version,
                         qt_modules,
                     });
@@ -178,6 +180,7 @@ impl QtBuild {
                     return Ok(Self {
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
+                        rcc_executable: None,
                         version,
                         qt_modules,
                     });
@@ -290,34 +293,31 @@ impl QtBuild {
         &self.version
     }
 
-    /// Lazy load the path of the moc executable
-    // Skip doing this in the constructor because not every user of this crate will use moc
-    fn get_moc_executable(&mut self) -> &str {
-        if self.moc_executable.is_none() {
-            for qmake_query_var in [
-                "QT_HOST_LIBEXECS",
-                "QT_HOST_BINS",
-                "QT_INSTALL_LIBEXECS",
-                "QT_INSTALL_BINS",
-            ] {
-                let executable_path = format!("{}/moc", self.qmake_query(qmake_query_var));
-                match Command::new(&executable_path).args(&["-help"]).output() {
-                    Ok(_) => {
-                        self.moc_executable = Some(executable_path);
-                        break;
-                    }
-                    Err(_) => continue,
-                }
+    /// Lazy load the path of a Qt executable tool
+    /// Skip doing this in the constructor because not every user of this crate will use each tool
+    fn get_qt_tool(&self, tool_name: &str) -> Result<String, ()> {
+        for qmake_query_var in [
+            "QT_HOST_LIBEXECS",
+            "QT_HOST_BINS",
+            "QT_INSTALL_LIBEXECS",
+            "QT_INSTALL_BINS",
+        ] {
+            let executable_path = format!("{}/{}", self.qmake_query(qmake_query_var), tool_name);
+            match Command::new(&executable_path).args(&["-help"]).output() {
+                Ok(_) => return Ok(executable_path),
+                Err(_) => continue,
             }
         }
-        self.moc_executable
-            .as_ref()
-            .expect("moc executable not found")
+        Err(())
     }
 
     /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
     pub fn moc(&mut self, input_file: impl AsRef<Path>) -> PathBuf {
+        if self.moc_executable.is_none() {
+            self.moc_executable = Some(self.get_qt_tool("moc").expect("Could not find moc"));
+        }
+
         let input_path = input_file.as_ref();
         let output_path = PathBuf::from(&format!(
             "{}/moc_{}.cpp",
@@ -325,7 +325,7 @@ impl QtBuild {
             input_path.file_name().unwrap().to_str().unwrap()
         ));
 
-        let _ = Command::new(self.get_moc_executable())
+        let _ = Command::new(self.moc_executable.as_ref().unwrap())
             .args(&[
                 input_path.to_str().unwrap(),
                 "-o",
@@ -333,6 +333,32 @@ impl QtBuild {
             ])
             .output()
             .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
+
+        output_path
+    }
+
+    /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
+    /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
+    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+        if self.rcc_executable.is_none() {
+            self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
+        }
+
+        let input_path = input_file.as_ref();
+        let output_path = PathBuf::from(&format!(
+            "{}/{}.cpp",
+            env::var("OUT_DIR").unwrap(),
+            input_path.file_name().unwrap().to_str().unwrap()
+        ));
+
+        let _ = Command::new(self.rcc_executable.as_ref().unwrap())
+            .args(&[
+                input_path.to_str().unwrap(),
+                "-o",
+                output_path.to_str().unwrap(),
+            ])
+            .output()
+            .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
 
         output_path
     }
