@@ -41,13 +41,13 @@ fn manifest_dir() -> String {
     manifest_dir
 }
 
-pub struct GeneratedCppFilePaths {
-    pub plain_cpp: PathBuf,
-    pub qobject: Option<PathBuf>,
-    pub qobject_header: Option<PathBuf>,
+struct GeneratedCppFilePaths {
+    plain_cpp: PathBuf,
+    qobject: Option<PathBuf>,
+    qobject_header: Option<PathBuf>,
 }
 
-pub struct GeneratedCpp {
+struct GeneratedCpp {
     cxx_qt: Option<CppObject>,
     cxx: cxx_gen::GeneratedCode,
     file_ident: String,
