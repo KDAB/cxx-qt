@@ -182,7 +182,7 @@ impl GeneratedCpp {
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
 fn write_cxx_generated_files_for_cargo(
-    rs_source: &[&'static str],
+    rs_source: &[PathBuf],
     header_dir: &impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -190,7 +190,7 @@ fn write_cxx_generated_files_for_cargo(
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::new();
     for rs_path in rs_source {
-        let path = format!("{}/{}", manifest_dir, rs_path);
+        let path = format!("{}/{}", manifest_dir, rs_path.display());
         println!("cargo:rerun-if-changed={}", path);
 
         let generated_code = GeneratedCpp::new(&path);
@@ -234,7 +234,7 @@ fn write_cxx_generated_files_for_cargo(
 /// subclasses can be parsed by moc and built using [CxxQtBuilder::qobject_header].
 #[derive(Default)]
 pub struct CxxQtBuilder {
-    rust_sources: Vec<&'static str>,
+    rust_sources: Vec<PathBuf>,
     qobject_headers: Vec<PathBuf>,
     qt_modules: HashSet<String>,
     cc_builder: cc::Build,
@@ -255,11 +255,11 @@ impl CxxQtBuilder {
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco
-    ///
-    /// Currently the path should be relative to CARGO_MANIFEST_DIR
-    pub fn file(mut self, rust_source: &'static str) -> Self {
-        self.rust_sources.push(rust_source);
-        println!("cargo:rerun-if-changed={}", rust_source);
+    /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
+    pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
+        let rust_source = rust_source.as_ref();
+        self.rust_sources.push(rust_source.to_path_buf());
+        println!("cargo:rerun-if-changed={}", rust_source.display());
         self
     }
 
