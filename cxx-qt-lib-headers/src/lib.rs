@@ -20,7 +20,7 @@ static HEADERS: [(&str, &str); 3] = [
 ];
 
 /// Write the cxx-qt-lib headers to the specified directory.
-pub fn write_headers(directory: &impl AsRef<Path>) {
+pub fn write_headers(directory: impl AsRef<Path>) {
     let directory = directory.as_ref();
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt-lib header directory");
     for (file_contents, file_name) in HEADERS {

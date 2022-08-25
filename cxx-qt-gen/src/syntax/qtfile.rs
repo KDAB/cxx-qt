@@ -40,7 +40,7 @@ impl ToTokens for CxxQtFile {
     }
 }
 
-pub fn parse_qt_file(path: &impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
+pub fn parse_qt_file(path: impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
     let source = std::fs::read_to_string(path.as_ref()).expect("Could not read path {} to string");
 
     // We drop the shebang from the generated Rust code

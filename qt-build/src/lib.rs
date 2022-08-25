@@ -320,7 +320,7 @@ impl QtBuild {
 
     /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
-    pub fn moc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+    pub fn moc(&mut self, input_file: impl AsRef<Path>) -> PathBuf {
         let input_path = input_file.as_ref();
         let output_path = PathBuf::from(&format!(
             "{}/moc_{}.cpp",
