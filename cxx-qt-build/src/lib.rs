@@ -189,7 +189,7 @@ fn write_cxx_generated_files_for_cargo(
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
 
-    let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::new();
+    let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
         let path = format!("{}/{}", manifest_dir, rs_path.display());
         println!("cargo:rerun-if-changed={}", path);
