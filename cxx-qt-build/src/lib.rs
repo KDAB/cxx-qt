@@ -27,20 +27,6 @@ use cxx_qt_gen::{
 // QObject macros and at most one "raw CXX" macro per file already. For now this remains a TODO
 // as to keep things simpler. We also want to able to warn users about duplicate names eventually.
 
-fn manifest_dir() -> String {
-    let mut manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Could not get manifest dir");
-    // CARGO_MANIFEST_DIR uses \ path separators on Windows, but the format! macros that
-    // use the return value of this function use / separators. CMake's `file(STRINGS)` command
-    // which is used to load list of generated file paths fails if \ and / path separators
-    // are mixed. CMake also fails when using all \ separators because it treats them as escaping
-    // the character after the \
-    if cfg!(windows) {
-        manifest_dir = manifest_dir.replace('\\', "/");
-    }
-    println!("cargo:rerun-if-env-changed=CARGO_MANIFEST_DIR");
-    manifest_dir
-}
-
 struct GeneratedCppFilePaths {
     plain_cpp: PathBuf,
     qobject: Option<PathBuf>,
@@ -200,7 +186,7 @@ fn write_cxx_generated_files_for_cargo(
     rs_source: &[&'static str],
     header_dir: &impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
-    let manifest_dir = manifest_dir();
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::new();
