@@ -19,5 +19,4 @@ cxx-qt-gen = { path = "../../cxx-qt-gen" }
 cxx-qt-lib = { path = "../../cxx-qt-lib" }
 
 [build-dependencies]
-clang-format = "0.1"
 cxx-qt-build = { path = "../../cxx-qt-build" }

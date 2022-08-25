@@ -5,13 +5,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_build_rs
-use clang_format::ClangFormatStyle;
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new()
-        .cpp_format(ClangFormatStyle::Mozilla)
-        .file("src/lib.rs")
-        .build();
+    CxxQtBuilder::new().file("src/lib.rs").build();
 }
 // ANCHOR_END: book_build_rs
