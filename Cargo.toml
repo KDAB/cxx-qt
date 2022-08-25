@@ -11,6 +11,7 @@ members = [
     "cxx-qt-lib",
     "cxx-qt-lib-headers",
 
+    "examples/cargo_without_cmake",
     "examples/demo_threading",
     "examples/qml_extension_plugin/core",
     "examples/qml_features",
