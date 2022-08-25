@@ -237,6 +237,7 @@ fn generate_cxxqt_cpp_files(
 pub struct CxxQtBuilder {
     rust_sources: Vec<PathBuf>,
     qobject_headers: Vec<PathBuf>,
+    qrc_files: Vec<PathBuf>,
     qt_modules: HashSet<String>,
     cc_builder: cc::Build,
 }
@@ -250,6 +251,7 @@ impl CxxQtBuilder {
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
+            qrc_files: vec![],
             qt_modules,
             cc_builder: cc::Build::new(),
         }
@@ -261,6 +263,33 @@ impl CxxQtBuilder {
         let rust_source = rust_source.as_ref();
         self.rust_sources.push(rust_source.to_path_buf());
         println!("cargo:rerun-if-changed={}", rust_source.display());
+        self
+    }
+
+    /// Generate C++ files from [Qt resource .qrc files](https://doc.qt.io/qt-6/resources.html).
+    /// The generated file needs to be `#include`d in another .cpp file. For example:
+    /// ```no_run
+    /// # use cxx_qt_build::CxxQtBuilder;
+    /// CxxQtBuilder::new()
+    ///     .file("src/cxxqt_module.rs")
+    ///     .qrc("src/my_resources.qrc")
+    ///     .cc_builder(|cc| {
+    ///         cc.file("file_with_include.cpp");
+    ///     })
+    ///     .build();
+    /// ```
+    ///
+    /// In `file_with_include.cpp`:
+    /// ```C++
+    /// #include "my_resources.qrc.cpp"
+    /// ```
+    ///
+    /// You also need to [explicitly load](https://doc.qt.io/qt-6/resources.html#explicit-loading-and-unloading-of-embedded-resources)
+    /// the resources in your .cpp file by calling `qInitResources()` once before starting your application.
+    pub fn qrc(mut self, qrc_file: impl AsRef<Path>) -> Self {
+        let qrc_file = qrc_file.as_ref();
+        self.qrc_files.push(qrc_file.to_path_buf());
+        println!("cargo:rerun-if-changed={}", qrc_file.display());
         self
     }
 
@@ -354,6 +383,12 @@ impl CxxQtBuilder {
         // Run moc on C++ headers with Q_OBJECT macro
         for qobject_header in self.qobject_headers {
             self.cc_builder.file(qtbuild.moc(&qobject_header));
+        }
+
+        // Generate code from .qrc files, but do not compile it. Instead, the user needs to #include them
+        // in a .cpp file. Otherwise, MSVC won't link if the generated C++ is built separately.
+        for qrc_file in self.qrc_files {
+            qtbuild.qrc(&qrc_file);
         }
 
         self.cc_builder.compile("cxx-qt-gen");
