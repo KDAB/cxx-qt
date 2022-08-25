@@ -115,8 +115,8 @@ impl GeneratedCpp {
         }
     }
 
-    /// Write generated code to files in a directory. Returns the absolute paths of all files written.
-    pub fn write_to_directory(
+    /// Write generated .cpp and .h files to specified directories. Returns the paths of all files written.
+    pub fn write_to_directories(
         &self,
         cpp_directory: impl AsRef<Path>,
         header_directory: impl AsRef<Path>,
@@ -195,7 +195,7 @@ fn generate_cxxqt_cpp_files(
         println!("cargo:rerun-if-changed={}", path);
 
         let generated_code = GeneratedCpp::new(&path);
-        generated_file_paths.push(generated_code.write_to_directory(&cpp_directory, &header_dir));
+        generated_file_paths.push(generated_code.write_to_directories(&cpp_directory, &header_dir));
     }
 
     generated_file_paths
@@ -341,8 +341,7 @@ impl CxxQtBuilder {
         }
 
         // Generate files
-        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir)
-        {
+        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
             self.cc_builder.file(files.plain_cpp);
             if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
                 self.cc_builder.file(&qobject);
