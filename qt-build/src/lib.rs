@@ -241,6 +241,7 @@ impl QtBuild {
         let prefix = "lib";
 
         for qt_module in &self.qt_modules {
+            println!("cargo:rustc-link-lib=Qt{}{}", self.version.major, qt_module);
             let prl_path = format!(
                 "{}/{}Qt{}{}.prl",
                 lib_path, prefix, self.version.major, qt_module
@@ -259,10 +260,6 @@ impl QtBuild {
                             link_args.as_bytes(),
                             &pkg_config,
                         );
-                    } else {
-                        // When Qt is linked dynamically, the .prl files do not have a QT_PRL_LIBS line.
-                        // This expected, not an error.
-                        println!("cargo:rustc-link-lib=Qt{}{}", self.version.major, qt_module);
                     }
                 }
                 Err(e) => {
@@ -270,7 +267,6 @@ impl QtBuild {
                         "Could not open {} file to read libraries to link: {}",
                         &prl_path, e
                     );
-                    println!("cargo:rustc-link-lib=Qt{}{}", self.version.major, qt_module);
                 }
             }
         }
