@@ -35,6 +35,7 @@ mod tests {
             cxx_stem: "cxx_stem".to_owned(),
             ident: "MyObject".to_owned(),
             rust_ident: "MyObjectRust".to_owned(),
+            cxx_qt_thread_ident: "MyObjectCxxQtThread".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
             namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
             base_class: "QStringListModel".to_owned(),
@@ -145,14 +146,19 @@ mod tests {
         #include <memory>
         #include <mutex>
 
+        namespace rust::cxxqtlib1 {
+        template<typename T>
+        class CxxQtThread;
+        }
+
         namespace cxx_qt::my_object {
         class MyObject;
+        using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
         } // namespace cxx_qt::my_object
 
         #include "cxx-qt-gen/include/cxx_stem.cxx.h"
 
         namespace cxx_qt::my_object {
-
         class MyObject : public QStringListModel
         {
           Q_OBJECT
@@ -164,6 +170,7 @@ mod tests {
           ~MyObject();
           const MyObjectRust& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
+          std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -181,15 +188,15 @@ mod tests {
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
-          std::mutex m_rustObjMutex;
+          std::shared_ptr<std::mutex> m_rustObjMutex;
           bool m_initialised = false;
+          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
 
           int m_count;
           bool m_toggle;
         };
 
         static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
-
         } // namespace cxx_qt::my_object
 
         namespace cxx_qt::my_object::cxx_qt_my_object {
@@ -209,12 +216,17 @@ mod tests {
         #include <memory>
         #include <mutex>
 
+        namespace rust::cxxqtlib1 {
+        template<typename T>
+        class CxxQtThread;
+        }
+
 
         class MyObject;
+        using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
 
 
         #include "cxx-qt-gen/include/cxx_stem.cxx.h"
-
 
 
         class MyObject : public QStringListModel
@@ -228,6 +240,7 @@ mod tests {
           ~MyObject();
           const MyObjectRust& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
+          std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -245,15 +258,15 @@ mod tests {
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
-          std::mutex m_rustObjMutex;
+          std::shared_ptr<std::mutex> m_rustObjMutex;
           bool m_initialised = false;
+          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
 
           int m_count;
           bool m_toggle;
         };
 
         static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
-
 
 
         namespace cxx_qt_my_object {
@@ -275,12 +288,18 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
+          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
           cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
           m_initialised = true;
         }
 
-        MyObject::~MyObject() = default;
+        MyObject::~MyObject()
+        {
+          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          m_cxxQtThreadObj->ptr = nullptr;
+        }
 
         const MyObjectRust&
         MyObject::unsafeRust() const
@@ -292,6 +311,12 @@ mod tests {
         MyObject::unsafeRustMut()
         {
           return *m_rustObj;
+        }
+
+        std::unique_ptr<MyObjectCxxQtThread>
+        MyObject::qtThread() const
+        {
+          return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -360,12 +385,18 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt_my_object::createRs())
+          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
           cxx_qt_my_object::initialiseCpp(*this);
           m_initialised = true;
         }
 
-        MyObject::~MyObject() = default;
+        MyObject::~MyObject()
+        {
+          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          m_cxxQtThreadObj->ptr = nullptr;
+        }
 
         const MyObjectRust&
         MyObject::unsafeRust() const
@@ -377,6 +408,12 @@ mod tests {
         MyObject::unsafeRustMut()
         {
           return *m_rustObj;
+        }
+
+        std::unique_ptr<MyObjectCxxQtThread>
+        MyObject::qtThread() const
+        {
+          return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int

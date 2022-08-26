@@ -354,7 +354,7 @@ fn generate_invokables_cpp(
                 r#"
                 {return_ident} {struct_ident}::{ident}({parameter_types})
                 {{
-                    const std::lock_guard<std::mutex> guard(m_rustObjMutex);
+                    const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
                     {body};
                 }}
                 "#,
@@ -796,32 +796,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         });
     }
 
-    if obj.handle_updates_impl.is_some() {
-        methods.push(
-            CppFragmentPair {
-                header: "std::unique_ptr<rust::cxxqtlib1::UpdateRequester> updateRequester();".to_owned(),
-                source: formatdoc! {r#"
-                    std::unique_ptr<rust::cxxqtlib1::UpdateRequester> {ident}::updateRequester() {{
-                        return std::make_unique<rust::cxxqtlib1::UpdateRequester>(this, "updateState");
-                    }}
-                "#,
-                ident = struct_ident_str,
-                }
-            }
-        );
-        methods.push(CppFragmentPair {
-            header: "Q_INVOKABLE void updateState();".to_owned(),
-            source: formatdoc! {r#"
-                    void {ident}::updateState() {{
-                        const std::lock_guard<std::mutex> guard(m_rustObjMutex);
-                        m_rustObj->handleUpdateRequest(*this);
-                    }}
-                "#,
-            ident = struct_ident_str,
-            },
-        });
-    }
-
     // Create the namespace for internal use
     //
     // TODO: when we move to generator share this with gen_rs
@@ -834,11 +808,16 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         obj.ident.to_string().to_case(Case::Snake)
     ));
 
+    // Build the CxxQtThread ident
+    // TODO: later this will be shared with gen_rs in the generator phase
+    let cxx_qt_thread_ident = format!("{}CxxQtThread", struct_ident_str);
+
     // For now convert our gen_cpp code into the GeneratedCppBlocks struct
     let generated = GeneratedCppBlocks {
         cxx_stem: struct_ident_str.to_case(Case::Snake),
         ident: struct_ident_str,
         rust_ident: rust_struct_ident,
+        cxx_qt_thread_ident,
         namespace: obj.namespace.clone(),
         namespace_internals: namespace_internals.join("::"),
         base_class: obj
@@ -876,19 +855,6 @@ mod tests {
 
     use pretty_assertions::assert_str_eq;
     use syn::ItemMod;
-
-    #[test]
-    fn generates_handlers() {
-        let source = include_str!("../test_inputs/handlers.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_header = clang_format(include_str!("../test_outputs/handlers.h")).unwrap();
-        let expected_source = clang_format(include_str!("../test_outputs/handlers.cpp")).unwrap();
-        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_str_eq!(cpp_object.header, expected_header);
-        assert_str_eq!(cpp_object.source, expected_source);
-    }
 
     #[test]
     fn generates_invokables() {

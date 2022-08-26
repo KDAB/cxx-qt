@@ -60,9 +60,16 @@ mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/include/convert.h");
+        include!("cxx-qt-lib/include/cxxqt_thread.h");
+
+        type MyObjectCxxQtThread;
 
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
+
+        #[cxx_name = "qtThread"]
+        fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+        fn queue(self: &MyObjectCxxQtThread, func: fn(ctx: Pin<&mut MyObjectQt>)) -> Result<()>;
 
         #[rust_name = "new_cpp_object"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -91,6 +98,8 @@ mod cxx_qt_ffi {
 
     pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
+
+    unsafe impl Send for MyObjectCxxQtThread {}
 
     use std::pin::Pin;
 

@@ -13,7 +13,7 @@ The `#[cxx_qt::qobject]` marked struct allows you to define the following items
   * Invokable methods that are exposed to Qt
   * Private methods and fields for struct to use (eg this is useful for storing the channels for [threading](../concepts/threading.md))
   * Mutate C++ state with [`CppObj`](./cpp_object.md)
-  * Implement [handlers](./handlers.md) for property or update requests
+  * Use [CxxQtThread<T>](./cxxqtthread.md) for multi threaded workflows
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/src/rust_obj_invokables.rs:book_macro_code}}

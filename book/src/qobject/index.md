@@ -14,4 +14,4 @@ A QObject is constructed with the following parts
   * [A QObject marked struct defining invokables](./qobject_struct.md)
   * [Cpp Object wrapper](./cpp_object.md)
   * [A Signals enum for defining signals](./signals_enum.md)
-  * [Handlers for processing events on the Qt thread](./handlers.md)
+  * [Queueing function pointers onto the Qt thread](./cxxqtthread.md)

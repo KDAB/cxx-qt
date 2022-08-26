@@ -13,6 +13,8 @@ pub struct GeneratedRustBlocks {
     pub cxx_qt_mod_contents: Vec<Item>,
     /// Ident of the Rust name for the C++ object
     pub cpp_struct_ident: Ident,
+    /// Ident of the CxxQtThread object
+    pub cxx_qt_thread_ident: Ident,
     /// Ident of the namespace of the QObject
     pub namespace: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject

@@ -25,7 +25,6 @@ fn main() {
         "src/types/qtime.rs",
         "src/types/qurl.rs",
         "src/types/qvariant.rs",
-        "src/types/update_requester.rs",
     ];
     for bridge_file in bridge_files {
         println!("cargo:rerun-if-changed={}", bridge_file);
@@ -38,10 +37,8 @@ fn main() {
     }
 
     let mut builder = cxx_build::bridges(&bridge_files);
-    for cpp_file in ["src/qt_types.cpp", "src/update_requester.cpp"] {
-        builder.file(cpp_file);
-        println!("cargo:rerun-if-changed={}", cpp_file);
-    }
+    builder.file("src/qt_types.cpp");
+    println!("cargo:rerun-if-changed=src/qt_types.cpp");
 
     // Write this library's manually written C++ headers to files and add them to include paths
     let out_dir = std::env::var("OUT_DIR").unwrap();

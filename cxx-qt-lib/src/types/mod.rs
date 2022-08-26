@@ -41,6 +41,3 @@ pub use qurl::QUrl;
 
 mod qvariant;
 pub use qvariant::{QVariant, QVariantValue};
-
-mod update_requester;
-pub use update_requester::{UpdateRequester, UpdateRequesterCpp};

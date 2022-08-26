@@ -13,10 +13,7 @@ use std::{fs::File, io::Write, path::Path};
 static HEADERS: [(&str, &str); 3] = [
     (include_str!("../include/convert.h"), "convert.h"),
     (include_str!("../include/qt_types.h"), "qt_types.h"),
-    (
-        include_str!("../include/update_requester.h"),
-        "update_requester.h",
-    ),
+    (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
 ];
 
 /// Write the cxx-qt-lib headers to the specified directory.

@@ -41,14 +41,19 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         #include <memory>
         #include <mutex>
 
+        namespace rust::cxxqtlib1 {{
+        template<typename T>
+        class CxxQtThread;
+        }}
+
         {namespace_start}
         class {ident};
+        using {cxx_qt_thread_ident} = rust::cxxqtlib1::CxxQtThread<{ident}>;
         {namespace_end}
 
         #include "cxx-qt-gen/include/{cxx_stem}.cxx.h"
 
         {namespace_start}
-
         class {ident} : public {base_class}
         {{
           Q_OBJECT
@@ -59,20 +64,21 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
           ~{ident}();
           const {rust_ident}& unsafeRust() const;
           {rust_ident}& unsafeRustMut();
+          std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
 
         {methods}
         {slots}
         {signals}
         private:
           rust::Box<{rust_ident}> m_rustObj;
-          std::mutex m_rustObjMutex;
+          std::shared_ptr<std::mutex> m_rustObjMutex;
           bool m_initialised = false;
+          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
 
           {members}
         }};
 
         static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
-
         {namespace_end}
 
         namespace {namespace_internals} {{
@@ -84,6 +90,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     "#,
     cxx_stem = generated.cxx_stem,
     ident = generated.ident,
+    cxx_qt_thread_ident = generated.cxx_qt_thread_ident,
     namespace_start = if generated.namespace.is_empty() {
         "".to_owned()
     } else {

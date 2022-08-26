@@ -12,6 +12,7 @@ use syn::Ident;
 fn cxx_common_blocks(
     cpp_struct_ident: &Ident,
     rust_struct_ident: &Ident,
+    cxx_qt_thread_ident: &Ident,
     namespace_internals: &String,
 ) -> Vec<TokenStream> {
     vec![
@@ -19,9 +20,22 @@ fn cxx_common_blocks(
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
                 include!("cxx-qt-lib/include/convert.h");
+                include!("cxx-qt-lib/include/cxxqt_thread.h");
+
+                // Specialised version of CxxQtThread
+                //
+                // CXX doesn't support having generic types in the function yet
+                // so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
+                // For now we use a type alias on C++ then use it like a normal type here
+                // https://github.com/dtolnay/cxx/issues/683
+                type #cxx_qt_thread_ident;
 
                 #[cxx_name = "unsafeRust"]
                 fn rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
+
+                #[cxx_name = "qtThread"]
+                fn qt_thread(self: &#cpp_struct_ident) -> UniquePtr<#cxx_qt_thread_ident>;
+                fn queue(self: &#cxx_qt_thread_ident, func: fn(ctx: Pin<&mut #cpp_struct_ident>)) -> Result<()>;
 
                 #[rust_name = "new_cpp_object"]
                 #[namespace = #namespace_internals]
@@ -53,6 +67,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     // Retrieve the struct idents
     let cpp_struct_ident = &generated.cpp_struct_ident;
     let rust_struct_ident = &generated.rust_struct_ident;
+    let cxx_qt_thread_ident = &generated.cxx_qt_thread_ident;
 
     // Build the module idents
     let cxx_mod_ident = &generated.cxx_mod.ident;
@@ -66,7 +81,12 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     // Inject the common blocks into the bridge which we need
     let cxx_mod_items = &mut cxx_mod.content.as_mut().expect("").1;
-    for block in cxx_common_blocks(cpp_struct_ident, rust_struct_ident, namespace_internals) {
+    for block in cxx_common_blocks(
+        cpp_struct_ident,
+        rust_struct_ident,
+        cxx_qt_thread_ident,
+        namespace_internals,
+    ) {
         cxx_mod_items.push(syn::parse2(block).expect("Could not build CXX common block"));
     }
 
@@ -80,6 +100,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
             pub type FFICppObj = super::#cxx_mod_ident::#cpp_struct_ident;
             type UniquePtr<T> = cxx::UniquePtr<T>;
+
+            unsafe impl Send for #cxx_qt_thread_ident {}
 
             #(#cxx_qt_mod_contents)*
 
@@ -133,6 +155,7 @@ mod tests {
                 }),
             ],
             cpp_struct_ident: format_ident!("MyObjectQt"),
+            cxx_qt_thread_ident: format_ident!("MyObjectCxxQtThread"),
             namespace: "cxx_qt::my_object".to_owned(),
             namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
             rust_struct_ident: format_ident!("MyObject"),
@@ -157,9 +180,16 @@ mod tests {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
                     include!("cxx-qt-lib/include/convert.h");
+                    include!("cxx-qt-lib/include/cxxqt_thread.h");
+
+                    type MyObjectCxxQtThread;
 
                     #[cxx_name = "unsafeRust"]
                     fn rust(self: &MyObjectQt) -> &MyObject;
+
+                    #[cxx_name = "qtThread"]
+                    fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+                    fn queue(self: &MyObjectCxxQtThread, func: fn(ctx: Pin<&mut MyObjectQt>)) -> Result<()>;
 
                     #[rust_name = "new_cpp_object"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -188,6 +218,8 @@ mod tests {
 
                 pub type FFICppObj = super::ffi::MyObjectQt;
                 type UniquePtr<T> = cxx::UniquePtr<T>;
+
+                unsafe impl Send for MyObjectCxxQtThread {}
 
                 #[derive(Default)]
                 pub struct MyObject;

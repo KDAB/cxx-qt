@@ -219,7 +219,7 @@ mod ffi {
 
     impl cxx_qt::QObject<EnergyUsage> {
         #[qinvokable]
-        pub fn start_server(mut self: Pin<&mut Self>) {
+        pub fn start_server(self: Pin<&mut Self>) {
             if self.rust().join_handles.is_some() {
                 println!("Already running a server!");
                 return;
@@ -266,7 +266,7 @@ mod ffi {
             // When values change this then requests an update to Qt
             let qt_tx = self.rust().qt_tx.clone();
             let update_network_tx = network_tx.clone();
-            let update_requester = self.as_mut().update_requester();
+            let qt_thread = self.qt_thread();
             let update_sensors_changed = sensors_changed.clone();
             let run_update = async move {
                 loop {
@@ -296,7 +296,29 @@ mod ffi {
                                 })
                                 .unwrap();
 
-                            update_requester.request_update();
+                            qt_thread
+                                .queue(|mut qobject_energy_usage| {
+                                    // TODO: for now we use the unsafe rust_mut() API
+                                    // later there will be getters and setters for the properties
+                                    unsafe {
+                                        // Process the new data from the background thread
+                                        if let Some(data) = qobject_energy_usage
+                                            .as_mut()
+                                            .rust_mut()
+                                            .qt_rx
+                                            .try_iter()
+                                            .last()
+                                        {
+                                            // Here we have constructed a new Data struct so can consume it's values
+                                            // for other uses we could have passed an Enum across the channel
+                                            // and then process the required action here
+                                            qobject_energy_usage
+                                                .as_mut()
+                                                .grab_values_from_data(data);
+                                        }
+                                    }
+                                })
+                                .unwrap();
                         }
                     }
                 }
@@ -367,18 +389,6 @@ mod ffi {
                     std::thread::spawn(move || block_on(run_sensors)),
                     std::thread::spawn(move || block_on(run_server)),
                 ]);
-            }
-        }
-    }
-
-    impl UpdateRequestHandler for cxx_qt::QObject<EnergyUsage> {
-        fn handle_update_request(self: Pin<&mut Self>) {
-            // Process the new data from the background thread
-            if let Some(data) = self.rust().qt_rx.try_iter().last() {
-                // Here we have constructed a new Data struct so can consume it's values
-                // for other uses we could have passed an Enum across the channel
-                // and then process the required action here
-                self.grab_values_from_data(data);
             }
         }
     }

@@ -5,9 +5,7 @@
 
 use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum};
 use crate::syntax::{attribute::attribute_find_path, fields::fields_to_named_fields_mut};
-use syn::{
-    spanned::Spanned, Error, Fields, ImplItem, ImplItemMethod, Item, ItemImpl, ItemStruct, Result,
-};
+use syn::{spanned::Spanned, Error, Fields, ImplItem, ImplItemMethod, Item, ItemStruct, Result};
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
@@ -37,10 +35,6 @@ pub struct ParsedQObject {
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
-    /// Update request handler for the QObject
-    ///
-    /// In the future this may be removed
-    pub update_requester_handler: Option<ItemImpl>,
     /// Items that we don't need to generate anything for CXX or C++
     /// eg impls on the Rust object or Default implementations
     pub others: Vec<Item>,

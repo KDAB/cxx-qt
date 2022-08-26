@@ -15,4 +15,4 @@ We provide [Qt types](./types.md) to help pass common data types across the brid
 
 When Rust items are exposed to C++ we automatically perform a conversion between Snake case and Camel case. So that items (such as properties and invokables) appear as Camel case to C++ but Snake case to Rust.
 
-Note that the Rust [`QObject marked struct`](../qobject/qobject_struct.md) of a constructed Qt object is owned by the C++ side of the bridge representing it. So when the C++ object is destroyed the Rust object will be destroyed. In the future there will be [handlers](../qobject/handlers.md) for executing Rust code from the (de)constructor of the C++ object [https://github.com/KDAB/cxx-qt/issues/13](https://github.com/KDAB/cxx-qt/issues/13).
+Note that the Rust [`QObject marked struct`](../qobject/qobject_struct.md) of a constructed Qt object is owned by the C++ side of the bridge representing it. So when the C++ object is destroyed the Rust object will be destroyed. In the future there maybe be handlers for executing Rust code from the (de)constructor of the C++ object [https://github.com/KDAB/cxx-qt/issues/13](https://github.com/KDAB/cxx-qt/issues/13).
