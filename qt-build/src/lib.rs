@@ -253,6 +253,7 @@ impl QtBuild {
                             .get(1)
                             .unwrap()
                             .as_str()
+                            .replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
                             .replace(r"$$[QT_INSTALL_PREFIX]", &lib_path);
                         let mut lib = pkg_config::Library::new();
                         lib.parse_libs_cflags(
