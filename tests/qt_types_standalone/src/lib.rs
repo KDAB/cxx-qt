@@ -95,43 +95,43 @@ mod ffi {
 
         fn construct_qdate() -> QDate;
         fn read_qdate(d: &QDate) -> bool;
-        fn copy_qdate(d: &QDate) -> QDate;
-        fn copy_value_qdate(d: QDate) -> QDate;
+        fn clone_qdate(d: &QDate) -> QDate;
+        fn clone_value_qdate(d: QDate) -> QDate;
 
         fn construct_qpoint() -> QPoint;
         fn read_qpoint(p: &QPoint) -> bool;
-        fn copy_qpoint(p: &QPoint) -> QPoint;
-        fn copy_value_qpoint(p: QPoint) -> QPoint;
+        fn clone_qpoint(p: &QPoint) -> QPoint;
+        fn clone_value_qpoint(p: QPoint) -> QPoint;
 
         fn construct_qpointf() -> QPointF;
         fn read_qpointf(p: &QPointF) -> bool;
-        fn copy_qpointf(p: &QPointF) -> QPointF;
-        fn copy_value_qpointf(p: QPointF) -> QPointF;
+        fn clone_qpointf(p: &QPointF) -> QPointF;
+        fn clone_value_qpointf(p: QPointF) -> QPointF;
 
         fn construct_qrect() -> QRect;
         fn read_qrect(p: &QRect) -> bool;
-        fn copy_qrect(p: &QRect) -> QRect;
-        fn copy_value_qrect(p: QRect) -> QRect;
+        fn clone_qrect(p: &QRect) -> QRect;
+        fn clone_value_qrect(p: QRect) -> QRect;
 
         fn construct_qrectf() -> QRectF;
         fn read_qrectf(p: &QRectF) -> bool;
-        fn copy_qrectf(p: &QRectF) -> QRectF;
-        fn copy_value_qrectf(p: QRectF) -> QRectF;
+        fn clone_qrectf(p: &QRectF) -> QRectF;
+        fn clone_value_qrectf(p: QRectF) -> QRectF;
 
         fn construct_qsize() -> QSize;
         fn read_qsize(p: &QSize) -> bool;
-        fn copy_qsize(p: &QSize) -> QSize;
-        fn copy_value_qsize(p: QSize) -> QSize;
+        fn clone_qsize(p: &QSize) -> QSize;
+        fn clone_value_qsize(p: QSize) -> QSize;
 
         fn construct_qsizef() -> QSizeF;
         fn read_qsizef(p: &QSizeF) -> bool;
-        fn copy_qsizef(p: &QSizeF) -> QSizeF;
-        fn copy_value_qsizef(p: QSizeF) -> QSizeF;
+        fn clone_qsizef(p: &QSizeF) -> QSizeF;
+        fn clone_value_qsizef(p: QSizeF) -> QSizeF;
 
         fn construct_qtime() -> QTime;
         fn read_qtime(p: &QTime) -> bool;
-        fn copy_qtime(p: &QTime) -> QTime;
-        fn copy_value_qtime(p: QTime) -> QTime;
+        fn clone_qtime(p: &QTime) -> QTime;
+        fn clone_value_qtime(p: QTime) -> QTime;
     }
 }
 
@@ -387,11 +387,11 @@ fn read_qdate(d: &QDate) -> bool {
     d.year() == 2022 && d.month() == 1 && d.day() == 1
 }
 
-fn copy_qdate(d: &QDate) -> QDate {
-    *d
+fn clone_qdate(d: &QDate) -> QDate {
+    d.clone()
 }
 
-fn copy_value_qdate(d: QDate) -> QDate {
+fn clone_value_qdate(d: QDate) -> QDate {
     d
 }
 
@@ -403,11 +403,11 @@ fn read_qpoint(p: &QPoint) -> bool {
     p.x() == 2 && p.y() == 4
 }
 
-fn copy_qpoint(p: &QPoint) -> QPoint {
-    *p
+fn clone_qpoint(p: &QPoint) -> QPoint {
+    p.clone()
 }
 
-fn copy_value_qpoint(p: QPoint) -> QPoint {
+fn clone_value_qpoint(p: QPoint) -> QPoint {
     p
 }
 
@@ -419,11 +419,11 @@ fn read_qpointf(p: &QPointF) -> bool {
     ((p.x() - 1.23).abs() < f64::EPSILON) && ((p.y() - 4.56).abs() < f64::EPSILON)
 }
 
-fn copy_qpointf(p: &QPointF) -> QPointF {
-    *p
+fn clone_qpointf(p: &QPointF) -> QPointF {
+    p.clone()
 }
 
-fn copy_value_qpointf(p: QPointF) -> QPointF {
+fn clone_value_qpointf(p: QPointF) -> QPointF {
     p
 }
 
@@ -435,11 +435,11 @@ fn read_qrect(r: &QRect) -> bool {
     r.x() == 1 && r.y() == 4 && r.width() == 2 && r.height() == 8
 }
 
-fn copy_qrect(r: &QRect) -> QRect {
-    *r
+fn clone_qrect(r: &QRect) -> QRect {
+    r.clone()
 }
 
-fn copy_value_qrect(r: QRect) -> QRect {
+fn clone_value_qrect(r: QRect) -> QRect {
     r
 }
 
@@ -454,11 +454,11 @@ fn read_qrectf(p: &QRectF) -> bool {
         && ((p.height() - 9.12).abs() < f64::EPSILON)
 }
 
-fn copy_qrectf(p: &QRectF) -> QRectF {
-    *p
+fn clone_qrectf(p: &QRectF) -> QRectF {
+    p.clone()
 }
 
-fn copy_value_qrectf(p: QRectF) -> QRectF {
+fn clone_value_qrectf(p: QRectF) -> QRectF {
     p
 }
 
@@ -470,11 +470,11 @@ fn read_qsize(s: &QSize) -> bool {
     s.width() == 1 && s.height() == 4
 }
 
-fn copy_qsize(s: &QSize) -> QSize {
-    *s
+fn clone_qsize(s: &QSize) -> QSize {
+    s.clone()
 }
 
-fn copy_value_qsize(s: QSize) -> QSize {
+fn clone_value_qsize(s: QSize) -> QSize {
     s
 }
 
@@ -486,11 +486,11 @@ fn read_qsizef(s: &QSizeF) -> bool {
     ((s.width() - 1.23).abs() < f64::EPSILON) && ((s.height() - 4.56).abs() < f64::EPSILON)
 }
 
-fn copy_qsizef(s: &QSizeF) -> QSizeF {
-    *s
+fn clone_qsizef(s: &QSizeF) -> QSizeF {
+    s.clone()
 }
 
-fn copy_value_qsizef(s: QSizeF) -> QSizeF {
+fn clone_value_qsizef(s: QSizeF) -> QSizeF {
     s
 }
 
@@ -502,10 +502,10 @@ fn read_qtime(s: &QTime) -> bool {
     s.hour() == 1 && s.minute() == 2 && s.second() == 3 && s.msec() == 4
 }
 
-fn copy_qtime(s: &QTime) -> QTime {
-    *s
+fn clone_qtime(s: &QTime) -> QTime {
+    s.clone()
 }
 
-fn copy_value_qtime(s: QTime) -> QTime {
+fn clone_value_qtime(s: QTime) -> QTime {
     s
 }

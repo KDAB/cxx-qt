@@ -53,7 +53,7 @@ pub mod ffi {
             let signal = Signal::RustDataChanged { data: self.data() };
             self.as_mut().emit_queued(signal);
             let signal = Signal::TrivialDataChanged {
-                trivial: *self.trivial(),
+                trivial: self.trivial().clone(),
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::OpaqueDataChanged {

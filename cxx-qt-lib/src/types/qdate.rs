@@ -38,7 +38,7 @@ mod ffi {
 }
 
 /// The QDate class provides date functions.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
@@ -66,10 +66,10 @@ unsafe impl ExternType for QDate {
     type Kind = cxx::kind::Trivial;
 }
 
+// TODO: once grab_values_from_data has been removed this can be removed
 #[doc(hidden)]
 impl From<&QDate> for QDate {
-    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qdate: &QDate) -> Self {
-        *qdate
+        qdate.clone()
     }
 }

@@ -36,7 +36,7 @@ mod ffi {
 }
 
 /// The QSize struct defines the size of a two-dimensional object using integer point precision.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct QSize {
     w: i32,
@@ -65,10 +65,10 @@ unsafe impl ExternType for QSize {
     type Kind = cxx::kind::Trivial;
 }
 
+// TODO: once grab_values_from_data has been removed this can be removed
 #[doc(hidden)]
 impl From<&QSize> for QSize {
-    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qsize: &QSize) -> Self {
-        *qsize
+        qsize.clone()
     }
 }

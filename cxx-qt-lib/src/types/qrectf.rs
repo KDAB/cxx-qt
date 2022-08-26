@@ -46,7 +46,7 @@ mod ffi {
 }
 
 /// The QRectF struct defines a rectangle in the plane using floating point precision.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct QRectF {
     xp: f64,
@@ -77,10 +77,10 @@ unsafe impl ExternType for QRectF {
     type Kind = cxx::kind::Trivial;
 }
 
+// TODO: once grab_values_from_data has been removed this can be removed
 #[doc(hidden)]
 impl From<&QRectF> for QRectF {
-    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qrectf: &QRectF) -> Self {
-        *qrectf
+        qrectf.clone()
     }
 }

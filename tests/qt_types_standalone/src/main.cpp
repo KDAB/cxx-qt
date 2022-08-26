@@ -331,18 +331,18 @@ TEST_CASE("Can read a QPoint on the Rust side")
   CHECK(read_qpoint(p));
 }
 
-TEST_CASE("Can copy a QPoint on the Rust side")
+TEST_CASE("Can clone a QPoint on the Rust side")
 {
   const auto p = QPoint(2, 4);
-  const auto c = copy_qpoint(p);
+  const auto c = clone_qpoint(p);
   CHECK(c.x() == 2);
   CHECK(c.y() == 4);
 }
 
-TEST_CASE("Can copy a value QPoint on the Rust side")
+TEST_CASE("Can clone a value QPoint on the Rust side")
 {
   const auto p = QPoint(2, 4);
-  const auto c = copy_value_qpoint(p);
+  const auto c = clone_value_qpoint(p);
   CHECK(c.x() == 2);
   CHECK(c.y() == 4);
 }
@@ -361,19 +361,19 @@ TEST_CASE("Can read a QDate on the Rust side")
   CHECK(read_qdate(d));
 }
 
-TEST_CASE("Can copy a QDate on the Rust side")
+TEST_CASE("Can clone a QDate on the Rust side")
 {
   const auto d = QDate(2022, 1, 1);
-  const auto c = copy_qdate(d);
+  const auto c = clone_qdate(d);
   CHECK(c.year() == 2022);
   CHECK(c.month() == 1);
   CHECK(c.day() == 1);
 }
 
-TEST_CASE("Can copy a value QDate on the Rust side")
+TEST_CASE("Can clone a value QDate on the Rust side")
 {
   const auto d = QDate(2022, 1, 1);
-  const auto c = copy_value_qdate(d);
+  const auto c = clone_value_qdate(d);
   CHECK(c.year() == 2022);
   CHECK(c.month() == 1);
   CHECK(c.day() == 1);
@@ -392,18 +392,18 @@ TEST_CASE("Can read a QPointF on the Rust side")
   CHECK(read_qpointf(p));
 }
 
-TEST_CASE("Can copy a QPointF on the Rust side")
+TEST_CASE("Can clone a QPointF on the Rust side")
 {
   const auto p = QPointF(1.23, 4.56);
-  const auto c = copy_qpointf(p);
+  const auto c = clone_qpointf(p);
   CHECK(qFuzzyCompare(c.x(), 1.23));
   CHECK(qFuzzyCompare(c.y(), 4.56));
 }
 
-TEST_CASE("Can copy a value QPointF on the Rust side")
+TEST_CASE("Can clone a value QPointF on the Rust side")
 {
   const auto p = QPointF(1.23, 4.56);
-  const auto c = copy_value_qpointf(p);
+  const auto c = clone_value_qpointf(p);
   CHECK(qFuzzyCompare(c.x(), 1.23));
   CHECK(qFuzzyCompare(c.y(), 4.56));
 }
@@ -423,20 +423,20 @@ TEST_CASE("Can read a QRect on the Rust side")
   CHECK(read_qrect(r));
 }
 
-TEST_CASE("Can copy a QRect on the Rust side")
+TEST_CASE("Can clone a QRect on the Rust side")
 {
   const auto r = QRect(1, 4, 2, 8);
-  const auto c = copy_qrect(r);
+  const auto c = clone_qrect(r);
   CHECK(c.x() == 1);
   CHECK(c.y() == 4);
   CHECK(c.width() == 2);
   CHECK(c.height() == 8);
 }
 
-TEST_CASE("Can copy a value QRect on the Rust side")
+TEST_CASE("Can clone a value QRect on the Rust side")
 {
   const auto r = QRect(1, 4, 2, 8);
-  const auto c = copy_value_qrect(r);
+  const auto c = clone_value_qrect(r);
   CHECK(c.x() == 1);
   CHECK(c.y() == 4);
   CHECK(c.width() == 2);
@@ -458,20 +458,20 @@ TEST_CASE("Can read a QRectF on the Rust side")
   CHECK(read_qrectf(r));
 }
 
-TEST_CASE("Can copy a QRectF on the Rust side")
+TEST_CASE("Can clone a QRectF on the Rust side")
 {
   const auto r = QRectF(1.23, 4.56, 2.46, 9.12);
-  const auto c = copy_qrectf(r);
+  const auto c = clone_qrectf(r);
   CHECK(qFuzzyCompare(c.x(), 1.23));
   CHECK(qFuzzyCompare(c.y(), 4.56));
   CHECK(qFuzzyCompare(c.width(), 2.46));
   CHECK(qFuzzyCompare(c.height(), 9.12));
 }
 
-TEST_CASE("Can copy a value QRectF on the Rust side")
+TEST_CASE("Can clone a value QRectF on the Rust side")
 {
   const auto r = QRectF(1.23, 4.56, 2.46, 9.12);
-  const auto c = copy_value_qrectf(r);
+  const auto c = clone_value_qrectf(r);
   CHECK(qFuzzyCompare(c.x(), 1.23));
   CHECK(qFuzzyCompare(c.y(), 4.56));
   CHECK(qFuzzyCompare(c.width(), 2.46));
@@ -491,18 +491,18 @@ TEST_CASE("Can read a QSize on the Rust side")
   CHECK(read_qsize(s));
 }
 
-TEST_CASE("Can copy a QSize on the Rust side")
+TEST_CASE("Can clone a QSize on the Rust side")
 {
   const auto s = QSize(1, 4);
-  const auto c = copy_qsize(s);
+  const auto c = clone_qsize(s);
   CHECK(c.width() == 1);
   CHECK(c.height() == 4);
 }
 
-TEST_CASE("Can copy a value QSize on the Rust side")
+TEST_CASE("Can clone a value QSize on the Rust side")
 {
   const auto s = QSize(1, 4);
-  const auto c = copy_value_qsize(s);
+  const auto c = clone_value_qsize(s);
   CHECK(c.width() == 1);
   CHECK(c.height() == 4);
 }
@@ -520,18 +520,18 @@ TEST_CASE("Can read a QSizeF on the Rust side")
   CHECK(read_qsizef(s));
 }
 
-TEST_CASE("Can copy a QSizeF on the Rust side")
+TEST_CASE("Can clone a QSizeF on the Rust side")
 {
   const auto s = QSizeF(1.23, 4.56);
-  const auto c = copy_qsizef(s);
+  const auto c = clone_qsizef(s);
   CHECK(qFuzzyCompare(c.width(), 1.23));
   CHECK(qFuzzyCompare(c.height(), 4.56));
 }
 
-TEST_CASE("Can copy a value QSizeF on the Rust side")
+TEST_CASE("Can clone a value QSizeF on the Rust side")
 {
   const auto s = QSizeF(1.23, 4.56);
-  const auto c = copy_value_qsizef(s);
+  const auto c = clone_value_qsizef(s);
   CHECK(qFuzzyCompare(c.width(), 1.23));
   CHECK(qFuzzyCompare(c.height(), 4.56));
 }
@@ -551,22 +551,22 @@ TEST_CASE("Can read a QTime on the Rust side")
   CHECK(read_qtime(t));
 }
 
-TEST_CASE("Can copy a QTime on the Rust side")
+TEST_CASE("Can clone a QTime on the Rust side")
 {
   const auto t = QTime(1, 2, 3, 4);
-  const auto c = copy_qtime(t);
-  CHECK(t.hour() == 1);
-  CHECK(t.minute() == 2);
-  CHECK(t.second() == 3);
-  CHECK(t.msec() == 4);
+  const auto c = clone_qtime(t);
+  CHECK(c.hour() == 1);
+  CHECK(c.minute() == 2);
+  CHECK(c.second() == 3);
+  CHECK(c.msec() == 4);
 }
 
-TEST_CASE("Can copy a value QTime on the Rust side")
+TEST_CASE("Can clone a value QTime on the Rust side")
 {
   const auto t = QTime(1, 2, 3, 4);
-  const auto c = copy_value_qtime(t);
-  CHECK(t.hour() == 1);
-  CHECK(t.minute() == 2);
-  CHECK(t.second() == 3);
-  CHECK(t.msec() == 4);
+  const auto c = clone_value_qtime(t);
+  CHECK(c.hour() == 1);
+  CHECK(c.minute() == 2);
+  CHECK(c.second() == 3);
+  CHECK(c.msec() == 4);
 }
