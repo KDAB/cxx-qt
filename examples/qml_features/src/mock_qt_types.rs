@@ -105,14 +105,14 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_date_property(self: Pin<&mut Self>) {
-            let mut date = *self.date();
+            let mut date = self.date().clone();
             date.set_date(2021, 12, 31);
             self.set_date(&date);
         }
 
         #[qinvokable]
         pub fn test_date_invokable(&self, date: &QDate) -> QDate {
-            let mut date = *date;
+            let mut date = date.clone();
             date.set_date(2021, 12, 31);
             date
         }
@@ -147,7 +147,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_point_property(self: Pin<&mut Self>) {
-            let mut point = *self.point();
+            let mut point = self.point().clone();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
             self.set_point(&point);
@@ -155,7 +155,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_point_invokable(&self, point: &QPoint) -> QPoint {
-            let mut point = *point;
+            let mut point = point.clone();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
             point
@@ -163,7 +163,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_pointf_property(self: Pin<&mut Self>) {
-            let mut point = *self.pointf();
+            let mut point = self.pointf().clone();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             self.set_pointf(&point);
@@ -171,7 +171,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_pointf_invokable(&self, point: &QPointF) -> QPointF {
-            let mut point = *point;
+            let mut point = point.clone();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             point
@@ -179,7 +179,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rect_property(self: Pin<&mut Self>) {
-            let mut rect = *self.rect();
+            let mut rect = self.rect().clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2);
@@ -191,7 +191,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rect_invokable(&self, rect: &QRect) -> QRect {
-            let mut rect = *rect;
+            let mut rect = rect.clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2);
@@ -203,7 +203,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rectf_property(self: Pin<&mut Self>) {
-            let mut rect = *self.rectf();
+            let mut rect = self.rectf().clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
@@ -215,7 +215,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rectf_invokable(&self, rect: &QRectF) -> QRectF {
-            let mut rect = *rect;
+            let mut rect = rect.clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
@@ -227,7 +227,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_size_property(self: Pin<&mut Self>) {
-            let mut size = *self.size();
+            let mut size = self.size().clone();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
             self.set_size(&size);
@@ -235,7 +235,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_size_invokable(&self, size: &QSize) -> QSize {
-            let mut size = *size;
+            let mut size = size.clone();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
             size
@@ -243,7 +243,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_sizef_property(self: Pin<&mut Self>) {
-            let mut size = *self.sizef();
+            let mut size = self.sizef().clone();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             self.set_sizef(&size);
@@ -251,7 +251,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_sizef_invokable(&self, size: &QSizeF) -> QSizeF {
-            let mut size = *size;
+            let mut size = size.clone();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             size
@@ -270,7 +270,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_time_property(self: Pin<&mut Self>) {
-            let mut time = *self.time();
+            let mut time = self.time().clone();
             time.set_hms(
                 time.hour() * 2,
                 time.minute() * 3,
@@ -282,7 +282,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_time_invokable(&self, time: &QTime) -> QTime {
-            let mut time = *time;
+            let mut time = time.clone();
             time.set_hms(
                 time.hour() * 2,
                 time.minute() * 3,

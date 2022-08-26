@@ -37,7 +37,7 @@ mod ffi {
 }
 
 /// The QPointF struct defines a point in the plane using floating point precision.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct QPointF {
     x: f64,
@@ -66,10 +66,10 @@ unsafe impl ExternType for QPointF {
     type Kind = cxx::kind::Trivial;
 }
 
+// TODO: once grab_values_from_data has been removed this can be removed
 #[doc(hidden)]
 impl From<&QPointF> for QPointF {
-    // TODO: in the future remove at least the deref to a clone and potentially remove this ?
     fn from(qpointf: &QPointF) -> Self {
-        *qpointf
+        qpointf.clone()
     }
 }
