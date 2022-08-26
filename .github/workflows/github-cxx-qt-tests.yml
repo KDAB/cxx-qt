@@ -155,10 +155,13 @@ jobs:
       # Ubuntu 22.04 uses GCC 11 by default. Somehow when using that compiler,
       # GNU ld fails to link, though lld works. To test a full GNU toolchain,
       # use GCC 12 (with the default GNU ld).
+      #
+      # mold (or lld) is required for qml-minimal-no-cmake to link.
       run: >-
         sudo apt-get update &&
         sudo apt-get install -y
         gcc-12
+        mold
         ninja-build
         clang-format-12
         libssl-dev
