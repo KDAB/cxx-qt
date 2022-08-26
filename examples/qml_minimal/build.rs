@@ -8,6 +8,6 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new().file("src/lib.rs").build();
+    CxxQtBuilder::new().file("src/cxxqt_object.rs").build();
 }
 // ANCHOR_END: book_build_rs
