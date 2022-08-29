@@ -29,10 +29,8 @@ cxx-qt = { path = "../../../crates/cxx-qt" }
 cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
 # ANCHOR_END: book_dependencies
 
-# cxx-qt needs to be able to generate C++ code at
-# compile time, which is what cxx-qt-build is needed for.
-# cxx-qt uses clang-format, if available, to format all
-# C++ code in a consistent manner.
+# cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
+# and compiles it together with the Rust static library
 # ANCHOR: book_build_dependencies
 [build-dependencies]
 cxx-qt-build = { path = "../../../crates/cxx-qt-build" }

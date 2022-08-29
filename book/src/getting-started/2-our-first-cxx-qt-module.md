@@ -11,13 +11,17 @@ As with all things Rust, we'll first want to create a cargo project.
 ```bash
 cargo new --lib qml-minimal
 ```
-Note the `--lib` option here.
-It is important that we create a static library in Rust, rather than an executable.
-We'll discuss details of this later, when we [integrate our Rust project with CMake](./5-cmake-integration.md).
+Note the `--lib` option here. For this example, we will create a static library in Rust and use CMake to
+link this into a C++ executable. We'll discuss details of this later, when we [integrate our Rust project with CMake](./5-cmake-integration.md).
 
-As outlined in the previous section, to define a new QObject subclass, we'll need to create a Rust module.
-So let's go into the `src/lib.rs` file.
-We'll modify this file until it looks like this:
+As outlined in the previous section, to define a new QObject subclass, we'll create a Rust module within this library crate.
+First, in the `src/lib.rs`, we tell Cargo about the module we're about to create, so it gets built as part of the crate:
+
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/src/lib.rs:book_mod_statement}}
+```
+
+Now, create a `src/cxxqt_object.rs` file to define the language boundary:
 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_cxx_qt_module}}
