@@ -17,7 +17,10 @@ During this getting-started guide we'll first take a look at how CXX-Qt integrat
 Then we'll dive straight into practice and define our first [QObject as a Rust module](./2-our-first-cxx-qt-module.md).
 Once we've done that, its time to [expose the defined QObject to QML](./3-exposing-to-qml.md).
 Followed by actually [defining our GUI using QML](./4-qml-gui.md).
-And finally we [integrate our code with CMake](./5-cmake-integration.md) so we can build and run it.
+
+We will show two different ways to build the project.
+First, we will show how to integrate cxx-qt into a C++ application by [building with CMake](./5-cmake-integration.md).
+We will also demonstrate how to build the same cxx-qt code [as a Rust executable](./6-cargo-executable.md) without requiring a C++ build system.
 
 Note we only support 64-bit x86 Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future.
 

@@ -96,3 +96,5 @@ You should now see the two Labels that display the state of our `MyObject`, as w
 
 For further reading, you can take a look at the [QObject chapter](../qobject/index.md) which goes into detail about all features that CXX-Qt exposes to new QObject subclasses.
 As well as the [Concepts chapter](../concepts/index.md), which explains the under concepts underlying CXX-Qt.
+
+In the next chapter, we will show how to build the same QML application with Cargo without needing CMake.
