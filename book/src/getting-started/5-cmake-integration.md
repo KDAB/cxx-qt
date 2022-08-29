@@ -7,13 +7,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Building with CMake
 
-```diff,ignore
-- Disclaimer: The CMake integration for CXX-Qt is still work-in-progress.
-- The current state is far from optimal and will likely improve a lot
-- in the future, so don't be discouraged by anything in this chapter.
-- Contributions are also welcome.
-```
+In this example, we will demonstrate how to integrate cxx-qt code into a C++ application. Cargo builds the cxx-qt code
+as a static library, then CMake links it into a C++ executable.
 
+## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
 If you've generated your project with the `cargo new --lib` command, your `Cargo.toml` likely looks something like this:
 ```toml,ignore
@@ -26,11 +23,12 @@ edition = "2021"
 ```
 
 We'll have to do multiple things:
-- Instruct cargo to create a static lib with a defined name ("rust") for CMake to link against.
-- Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies.
-- Add `clang-format` and `cxx-qt-build` as build-dependencies.
+- Instruct cargo to create a staticlib
+- Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies
+- Add `cxx-qt-build` as a build dependency
 
-In the end, your `Cargo.toml` should look similar to this (note that `path` for the dependencies is not required):
+In the end, your `Cargo.toml` should look similar to this (note that `path` for the dependencies is only
+needed for the example within the cxx-qt repository; in your project you'd use the version from crates.io):
 ```toml,ignore
 {{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_all}}
 ```
@@ -43,41 +41,53 @@ This is what generates the C++ code for our `MyObject` class at compile-time.
 It will output the `cxx-qt-gen/include/my_object.h` file we included earlier in `main.cpp`.
 
 Note that all Rust source files that uses the `#[cxx_qt::bridge]` macro need to be included in this script!
-In our case, this is only the `src/lib.rs` file.
+In our case, this is only the `src/cxxqt_object.rs` file.
 
-Then we can write our `CMakeLists.txt` file:
+## CMake setup
+
+Start the CMakeLists.txt file like any other C++ project using Qt. For this example, we are [supporting both
+Qt5 and Qt6 with CMake](https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.html):
 
 ```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_full}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup}}
 ```
 
-This looks like a lot, but it is actually just a fairly standard CMake file for building a Qt application.
-
-The difference here are these lines:
+From the Qt CMake target, find the location of the qmake executable. cxx-qt-build will need this later.
 ```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_diff_1}}
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_tutorial_cmake_diff_2}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_qmake}}
 ```
 
-Which will do the code generation and include it into the C++ build.
+Locate [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake.
+If Corrosion is not installed, automatically download it:
 
-An important thing to note here is that CMake must be able to resolve the call to `include(CxxQt)`.
-For this to work, you'll want to clone the [CXX-Qt repository](https://github.com/KDAB/cxx-qt/) and add the `CxxQt.cmake` file to the `CMAKE_MODULE_PATH` CMake variable.
-An easy way to achieve this is by using CMake's `-D` option.
-For some alternatives, see the [CMake concepts chapter](../concepts/cmake.md).
+```cmake,ignore
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_corrosion}}
+```
 
-Therefore building our project can be done like this:
+Use Corrosion to create a CMake library target for the Rust library. cxx-qt requires a few more steps beyond using
+a typical Rust library with Corrosion:
+```cmake,ignore
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_use_corrosion}}
+```
+
+Finally, create the CMake executable target and link it to the Rust library:
+
+```cmake,ignore
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_executable}}
+```
+
+Build the project like any other CMake project:
+
 ```shell
-$ mkdir build && cd build
-$ cmake -DCMAKE_MODULE_PATH="<path-to-cxx-qt-repo>/cmake" ..
-$ cmake --build .
+$ cmake -S . -B build
+$ cmake --build build
 ```
 If this fails for any reason, take a look at the [`examples/qml_minimal`](https://github.com/KDAB/cxx-qt/tree/main/examples/qml_minimal) folder, which contains the complete example code.
 
 This should now configure and compile our project.
 If this was successful, you can now run our little project.
 ```shell
-$ ./qml_minimal
+$ build/qml_minimal
 ```
 
 You should now see the two Labels that display the state of our `MyObject`, as well as the two buttons to call our two Rust functions.

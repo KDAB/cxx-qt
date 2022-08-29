@@ -5,4 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+// ANCHOR: book_mod_statement
 mod cxxqt_object;
+// ANCHOR_END: book_mod_statement
