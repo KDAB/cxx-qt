@@ -17,6 +17,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Exposing to QML](./getting-started/3-exposing-to-qml.md)
     - [Creating the QML GUI](./getting-started/4-qml-gui.md)
     - [Building with CMake](./getting-started/5-cmake-integration.md)
+    - [Building with Cargo](./getting-started/6-cargo-executable.md)
 - [QObject](./qobject/index.md)
     - [Macro](./qobject/macro.md)
     - [QObject marked Struct](./qobject/qobject_struct.md)

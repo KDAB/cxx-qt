@@ -3,6 +3,8 @@
 # SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
+
+# ANCHOR: book_cargo_toml_no_cmake
 [package]
 name = "qml-minimal-no-cmake"
 version = "0.3.0"
@@ -22,3 +24,4 @@ cxx-qt-lib = { path = "../../crates/cxx-qt-lib" }
 
 [build-dependencies]
 cxx-qt-build = { path = "../../crates/cxx-qt-build" }
+# ANCHOR_END: book_cargo_toml_no_cmake
