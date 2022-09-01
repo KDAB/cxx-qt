@@ -36,5 +36,3 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Threading](./concepts/threading.md)
     - [Nested Objects](./concepts/nested_objects.md)
     - [Type Conversions](./concepts/type-conversions.md)
-- [Internal](./internal/index.md)
-    - [Build](./internal/build.md)
