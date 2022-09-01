@@ -9,8 +9,6 @@ MyObject::MyObject(QObject* parent)
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
-  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
-  m_initialised = true;
 }
 
 MyObject::~MyObject()
@@ -41,208 +39,208 @@ MyObject::qtThread() const
 bool
 MyObject::getBoolean() const
 {
-  return m_boolean;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<bool, bool>{}(
+    m_rustObj->getBoolean(*this));
 }
 
 void
 MyObject::setBoolean(bool value)
 {
-  if (!m_initialised) {
-    m_boolean = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setBoolean(*this, value);
+}
 
-  if (value != m_boolean) {
-    m_boolean = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "booleanChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitBooleanChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "booleanChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 float
 MyObject::getFloat32() const
 {
-  return m_float32;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<float, float>{}(
+    m_rustObj->getFloat32(*this));
 }
 
 void
 MyObject::setFloat32(float value)
 {
-  if (!m_initialised) {
-    m_float32 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setFloat32(*this, value);
+}
 
-  if (value != m_float32) {
-    m_float32 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "float32Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitFloat32Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "float32Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 double
 MyObject::getFloat64() const
 {
-  return m_float64;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<double, double>{}(
+    m_rustObj->getFloat64(*this));
 }
 
 void
 MyObject::setFloat64(double value)
 {
-  if (!m_initialised) {
-    m_float64 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setFloat64(*this, value);
+}
 
-  if (value != m_float64) {
-    m_float64 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "float64Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitFloat64Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "float64Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 qint8
 MyObject::getInt8() const
 {
-  return m_int8;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<qint8, qint8>{}(
+    m_rustObj->getInt8(*this));
 }
 
 void
 MyObject::setInt8(qint8 value)
 {
-  if (!m_initialised) {
-    m_int8 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setInt8(*this, value);
+}
 
-  if (value != m_int8) {
-    m_int8 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "int8Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitInt8Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "int8Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 qint16
 MyObject::getInt16() const
 {
-  return m_int16;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<qint16, qint16>{}(
+    m_rustObj->getInt16(*this));
 }
 
 void
 MyObject::setInt16(qint16 value)
 {
-  if (!m_initialised) {
-    m_int16 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setInt16(*this, value);
+}
 
-  if (value != m_int16) {
-    m_int16 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "int16Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitInt16Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "int16Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 qint32
 MyObject::getInt32() const
 {
-  return m_int32;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+    m_rustObj->getInt32(*this));
 }
 
 void
 MyObject::setInt32(qint32 value)
 {
-  if (!m_initialised) {
-    m_int32 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setInt32(*this, value);
+}
 
-  if (value != m_int32) {
-    m_int32 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "int32Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitInt32Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "int32Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 quint8
 MyObject::getUint8() const
 {
-  return m_uint8;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<quint8, quint8>{}(
+    m_rustObj->getUint8(*this));
 }
 
 void
 MyObject::setUint8(quint8 value)
 {
-  if (!m_initialised) {
-    m_uint8 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setUint8(*this, value);
+}
 
-  if (value != m_uint8) {
-    m_uint8 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "uint8Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitUint8Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "uint8Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 quint16
 MyObject::getUint16() const
 {
-  return m_uint16;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<quint16, quint16>{}(
+    m_rustObj->getUint16(*this));
 }
 
 void
 MyObject::setUint16(quint16 value)
 {
-  if (!m_initialised) {
-    m_uint16 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setUint16(*this, value);
+}
 
-  if (value != m_uint16) {
-    m_uint16 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "uint16Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitUint16Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "uint16Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 quint32
 MyObject::getUint32() const
 {
-  return m_uint32;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<quint32, quint32>{}(
+    m_rustObj->getUint32(*this));
 }
 
 void
 MyObject::setUint32(quint32 value)
 {
-  if (!m_initialised) {
-    m_uint32 = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setUint32(*this, value);
+}
 
-  if (value != m_uint32) {
-    m_uint32 = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "uint32Changed", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitUint32Changed()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "uint32Changed", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 } // namespace cxx_qt::my_object

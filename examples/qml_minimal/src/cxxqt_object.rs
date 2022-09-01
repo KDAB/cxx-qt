@@ -17,13 +17,16 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    // ANCHOR: book_data_struct
-    pub struct Data {
+    // ANCHOR: book_rustobj_struct
+    #[cxx_qt::qobject]
+    pub struct MyObject {
+        #[qproperty]
         number: i32,
+        #[qproperty]
         string: UniquePtr<QString>,
     }
 
-    impl Default for Data {
+    impl Default for MyObject {
         fn default() -> Self {
             Self {
                 number: 0,
@@ -31,20 +34,13 @@ mod ffi {
             }
         }
     }
-
-    // ANCHOR_END: book_data_struct
-
-    // ANCHOR: book_rustobj_struct
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MyObject;
     // ANCHOR_END: book_rustobj_struct
 
     // ANCHOR: book_rustobj_impl
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
         pub fn increment_number(self: Pin<&mut Self>) {
-            let previous = self.as_ref().number();
+            let previous = self.as_ref().get_number();
             self.set_number(previous + 1);
         }
 

@@ -14,8 +14,8 @@ pub struct DataSerde {
     string: String,
 }
 
-impl From<Data> for DataSerde {
-    fn from(value: Data) -> DataSerde {
+impl From<&Serialisation> for DataSerde {
+    fn from(value: &Serialisation) -> DataSerde {
         DataSerde {
             number: value.number,
             string: value.string.to_string(),
@@ -32,12 +32,15 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct Serialisation {
+        #[qproperty]
         pub number: i32,
+        #[qproperty]
         pub string: UniquePtr<QString>,
     }
 
-    impl Default for Data {
+    impl Default for Serialisation {
         fn default() -> Self {
             let string = r#"{"number": 4, "string": "Hello World!"}"#;
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();
@@ -45,34 +48,31 @@ mod ffi {
         }
     }
 
-    impl From<DataSerde> for Data {
-        fn from(value: DataSerde) -> Data {
-            Data {
+    impl From<DataSerde> for Serialisation {
+        fn from(value: DataSerde) -> Serialisation {
+            Serialisation {
                 number: value.number,
                 string: QString::from_str(&value.string),
             }
         }
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct Serialisation;
-
     impl cxx_qt::QObject<Serialisation> {
         #[qinvokable]
         pub fn as_json_str(&self) -> UniquePtr<QString> {
-            let data = Data::from(self);
-            let data_serde = DataSerde::from(data);
+            let data_serde = DataSerde::from(self.rust());
             let data_string = serde_json::to_string(&data_serde).unwrap();
             QString::from_str(&data_string)
         }
 
         // ANCHOR: book_grab_values
         #[qinvokable]
-        pub fn grab_values(self: Pin<&mut Self>) {
+        pub fn grab_values(mut self: Pin<&mut Self>) {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            self.grab_values_from_data(data_serde.into());
+            self.as_mut().set_number(data_serde.number);
+            self.as_mut()
+                .set_string(&QString::from_str(&data_serde.string));
         }
         // ANCHOR_END: book_grab_values
     }

@@ -33,22 +33,13 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    pub struct Data {
-        url: UniquePtr<QString>,
-        title: UniquePtr<QString>,
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            Self {
-                url: QString::from_str("known"),
-                title: QString::from_str("Press refresh to get a title..."),
-            }
-        }
-    }
-
     #[cxx_qt::qobject]
     pub struct Website {
+        #[qproperty]
+        url: UniquePtr<QString>,
+        #[qproperty]
+        title: UniquePtr<QString>,
+
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,
         loading: AtomicBool,
@@ -59,6 +50,9 @@ mod ffi {
             let (event_sender, event_queue) = futures::channel::mpsc::unbounded();
 
             Self {
+                url: QString::from_str("known"),
+                title: QString::from_str("Press refresh to get a title..."),
+
                 event_sender,
                 event_queue,
                 loading: AtomicBool::new(false),
@@ -69,7 +63,7 @@ mod ffi {
     impl cxx_qt::QObject<Website> {
         #[qinvokable]
         pub fn change_url(self: Pin<&mut Self>) {
-            let url = self.as_ref().url().to_string();
+            let url = self.get_url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
             self.set_url(QString::from_str(new_url).as_ref().unwrap());
         }
@@ -91,7 +85,7 @@ mod ffi {
             self.as_mut()
                 .set_title(QString::from_str("Loading...").as_ref().unwrap());
 
-            let url = self.as_ref().url().to_string();
+            let url = self.get_url().to_string();
             // ANCHOR: book_qt_thread
             let qt_thread = self.qt_thread();
             // ANCHOR_END: book_qt_thread

@@ -9,8 +9,6 @@ MyObject::MyObject(QObject* parent)
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
-  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
-  m_initialised = true;
 }
 
 MyObject::~MyObject()
@@ -41,47 +39,70 @@ MyObject::qtThread() const
 qint32
 MyObject::getPrimitive() const
 {
-  return m_primitive;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+    m_rustObj->getPrimitive(*this));
 }
 
 void
 MyObject::setPrimitive(qint32 value)
 {
-  if (!m_initialised) {
-    m_primitive = value;
-    return;
-  }
-
-  if (value != m_primitive) {
-    m_primitive = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "primitiveChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPrimitive(*this, value);
 }
 
-const QColor&
+void
+MyObject::emitPrimitiveChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "primitiveChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QPoint
+MyObject::getTrivial() const
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
+    m_rustObj->getTrivial(*this));
+}
+
+void
+MyObject::setTrivial(const QPoint& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setTrivial(*this, value);
+}
+
+void
+MyObject::emitTrivialChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "trivialChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QColor
 MyObject::getOpaque() const
 {
-  return m_opaque;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+    m_rustObj->getOpaque(*this));
 }
 
 void
 MyObject::setOpaque(const QColor& value)
 {
-  if (!m_initialised) {
-    m_opaque = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setOpaque(*this, value);
+}
 
-  if (value != m_opaque) {
-    m_opaque = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitOpaqueChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 } // namespace cxx_qt::my_object

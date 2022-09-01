@@ -9,9 +9,9 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/include/custom_base.cxxqt.h"
-#include "cxx-qt-gen/include/data_struct_properties.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/serialisation.cxxqt.h"
+#include "cxx-qt-gen/include/struct_properties.cxxqt.h"
 #include "cxx-qt-gen/include/types.cxxqt.h"
 
 int
@@ -33,8 +33,8 @@ main(int argc, char* argv[])
     Qt::QueuedConnection);
 
   qmlRegisterType<CustomBase>("com.kdab.cxx_qt.demo", 1, 0, "CustomBase");
-  qmlRegisterType<DataStructProperties>(
-    "com.kdab.cxx_qt.demo", 1, 0, "DataStructProperties");
+  qmlRegisterType<StructProperties>(
+    "com.kdab.cxx_qt.demo", 1, 0, "StructProperties");
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   qmlRegisterType<Serialisation>("com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
   qmlRegisterType<Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");

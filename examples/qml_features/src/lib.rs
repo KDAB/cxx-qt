@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod custom_base;
-mod data_struct_properties;
 mod empty;
 mod mock_qt_types;
 mod rust_obj_invokables;
 mod serialisation;
 mod signals;
+mod struct_properties;
 mod types;
 
 #[cxx_qt::bridge]
@@ -20,12 +20,15 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct MyObject {
+        #[qproperty]
         number: i32,
+        #[qproperty]
         string: UniquePtr<QString>,
     }
 
-    impl Default for Data {
+    impl Default for MyObject {
         fn default() -> Self {
             Self {
                 number: 0,
@@ -34,15 +37,11 @@ mod ffi {
         }
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MyObject;
-
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
-        pub fn increment_number_self(self: Pin<&mut Self>) {
-            let value = self.as_ref().number() + 1;
-            self.set_number(value);
+        pub fn increment_number_self(mut self: Pin<&mut Self>) {
+            let value = self.get_number() + 1;
+            self.as_mut().set_number(value);
         }
 
         #[qinvokable]

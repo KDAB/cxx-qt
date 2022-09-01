@@ -1,17 +1,15 @@
 #[cxx_qt::bridge]
 mod ffi {
-    #[derive(Default)]
-    pub struct Data {
-        property_name: i32,
-    }
-
     unsafe extern "C++" {
         include!(<QtCore/QStringListModel>);
     }
 
     #[cxx_qt::qobject(base = "QStringListModel")]
     #[derive(Default)]
-    pub struct MyObject;
+    pub struct MyObject {
+        #[qproperty]
+        property_name: i32,
+    }
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]

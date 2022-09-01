@@ -6,15 +6,18 @@ mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[rust_name = "public"]
-        fn getPublic(self: &MyObjectQt) -> i32;
-        #[rust_name = "set_public"]
-        fn setPublic(self: Pin<&mut MyObjectQt>, value: i32);
+        #[rust_name = "emit_public_changed"]
+        fn emitPublicChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+
+        #[cxx_name = "getPublic"]
+        fn get_public(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        #[cxx_name = "setPublic"]
+        fn set_public(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
 
     unsafe extern "C++" {
@@ -45,10 +48,6 @@ mod ffi {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -64,46 +63,43 @@ mod cxx_qt_ffi {
     use std::pin::Pin;
 
     pub struct MyObject {
+        public: i32,
         private: i32,
     }
 
-    impl MyObject {}
+    impl MyObject {
+        pub fn get_public(&self, cpp: &MyObjectQt) -> i32 {
+            cpp.get_public()
+        }
+
+        pub fn set_public(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_public(value);
+        }
+    }
 
     impl MyObjectQt {
-        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
-            self.as_mut().set_public(data.public);
+        pub fn get_public(&self) -> i32 {
+            self.rust().public
         }
-    }
 
-    pub struct Data {
-        public: i32,
-    }
-
-    impl From<&MyObjectQt> for Data {
-        fn from(value: &MyObjectQt) -> Self {
-            Self {
-                public: value.public().into(),
+        pub fn set_public(mut self: Pin<&mut Self>, value: i32) {
+            unsafe {
+                self.as_mut().rust_mut().public = value;
             }
-        }
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            Self { public: 32 }
+            self.as_mut().emit_public_changed();
         }
     }
 
     impl Default for MyObject {
         fn default() -> Self {
-            Self { private: 64 }
+            Self {
+                public: 32,
+                private: 64,
+            }
         }
     }
 
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-        cpp.grab_values_from_data(Data::default());
     }
 }

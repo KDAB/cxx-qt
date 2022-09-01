@@ -343,6 +343,7 @@ fn generate_properties_cpp(
         let ident_getter = property_ident.getter.cpp.to_string();
         let ident_setter = property_ident.setter.cpp.to_string();
         let ident_changed = property_ident.notify.cpp.to_string();
+        let ident_emit = property_ident.emit.cpp.to_string();
 
         // Build the C++ strings for whether the const, ref, and ptr are set for this property
         let is_const = parameter.type_ident.as_const_str();
@@ -364,12 +365,10 @@ fn generate_properties_cpp(
                 type_ident = type_ident,
             )],
             // Set basic getter, more are added later for only pointer
-            header_public: vec![format!("{is_const} {type_ident}{is_ref} {ident_getter}() const;",
+            header_public: vec![format!("{type_ident} {ident_getter}() const;",
                 ident_getter = ident_getter,
-                is_const = is_const,
-                is_ref = is_ref,
                 type_ident = type_ident,
-            )],
+            ), format!("void {ident_emit}();", ident_emit = ident_emit)],
             // Set the notify signals
             header_signals: vec![format!("void {ident_changed}();", ident_changed = ident_changed)],
             // Set the slots for the setter
@@ -385,46 +384,39 @@ fn generate_properties_cpp(
 
         cpp_property.source.push(formatdoc! {
             r#"
-            {is_const} {type_ident}{is_ref}
+            {type_ident}
             {struct_ident}::{ident_getter}() const
             {{
-                return {member_ident};
+                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                return rust::cxxqtlib1::cxx_qt_convert<{type_ident}, {getter_type_ident}>{{}}(m_rustObj->{ident_getter}(*this));
             }}
 
             void
             {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref} value)
             {{
-                if (!m_initialised) {{
-                    {member_ident} = value;
-                    return;
-                }}
+                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                m_rustObj->{ident_setter}(*this, value);
+            }}
 
-                if (value != {member_ident}) {{
-                    {member_ident} = value;
-
-                    const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
-                    Q_ASSERT(signalSuccess);
-                }}
+            void
+            {struct_ident}::{ident_emit}()
+            {{
+                const auto signalSuccess = QMetaObject::invokeMethod(this, "{ident_changed}", Qt::QueuedConnection);
+                Q_ASSERT(signalSuccess);
             }}
             "#,
             ident_changed = ident_changed,
             ident_getter = ident_getter,
             ident_setter = ident_setter,
-            is_const = is_const,
-            is_ref = is_ref,
+            ident_emit = ident_emit,
             struct_ident = struct_ident.to_string(),
             type_ident = type_ident,
-            member_ident = format!("m_{}", parameter.ident),
+            getter_type_ident = if parameter.type_ident.is_opaque() {
+                format!("std::unique_ptr<{}>", type_ident)
+            } else {
+                type_ident.to_string()
+            },
         });
-
-        // Own the member on the C++ side
-        // TODO: start using these in the getters and setters
-        // TODO: remove Rust side ownership
-        cpp_property.header_members.push(format!(
-            "{type_ident} m_{ident};",
-            ident = parameter.ident,
-            type_ident = type_ident
-        ));
 
         items.push(cpp_property);
     }

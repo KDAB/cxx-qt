@@ -75,20 +75,12 @@ pub mod ffi {
     // ItemUse
     use super::MyTrait;
 
-    #[derive(Default)]
-    pub struct Data {
-        number: i32,
-    }
-
-    impl MyTrait for Data {
-        fn my_func() -> String {
-            "Hello".to_owned()
-        }
-    }
-
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct MyObject;
+    pub struct MyObject {
+        #[qproperty]
+        number: i32,
+    }
 
     impl MyObject {
         fn test_angled(&self, optional: Option<bool>) -> Option<bool> {

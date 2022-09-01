@@ -18,24 +18,34 @@ mod ffi {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[derive(Default)]
-    pub struct Data {
-        color: UniquePtr<QColor>,
-        date: QDate,
-        date_time: UniquePtr<QDateTime>,
-        point: QPoint,
-        pointf: QPointF,
-        rect: QRect,
-        rectf: QRectF,
-        size: QSize,
-        sizef: QSizeF,
-        string: UniquePtr<QString>,
-        time: QTime,
-        url: UniquePtr<QUrl>,
-        variant: UniquePtr<QVariant>,
-    }
-
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct MyObject;
+    pub struct MyObject {
+        #[qproperty]
+        color: UniquePtr<QColor>,
+        #[qproperty]
+        date: QDate,
+        #[qproperty]
+        date_time: UniquePtr<QDateTime>,
+        #[qproperty]
+        point: QPoint,
+        #[qproperty]
+        pointf: QPointF,
+        #[qproperty]
+        rect: QRect,
+        #[qproperty]
+        rectf: QRectF,
+        #[qproperty]
+        size: QSize,
+        #[qproperty]
+        sizef: QSizeF,
+        #[qproperty]
+        string: UniquePtr<QString>,
+        #[qproperty]
+        time: QTime,
+        #[qproperty]
+        url: UniquePtr<QUrl>,
+        #[qproperty]
+        variant: UniquePtr<QVariant>,
+    }
 }

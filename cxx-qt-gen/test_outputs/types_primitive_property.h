@@ -41,14 +41,23 @@ public:
 
 public:
   bool getBoolean() const;
+  void emitBooleanChanged();
   float getFloat32() const;
+  void emitFloat32Changed();
   double getFloat64() const;
+  void emitFloat64Changed();
   qint8 getInt8() const;
+  void emitInt8Changed();
   qint16 getInt16() const;
+  void emitInt16Changed();
   qint32 getInt32() const;
+  void emitInt32Changed();
   quint8 getUint8() const;
+  void emitUint8Changed();
   quint16 getUint16() const;
+  void emitUint16Changed();
   quint32 getUint32() const;
+  void emitUint32Changed();
 
 public Q_SLOTS:
   void setBoolean(bool value);
@@ -75,19 +84,8 @@ Q_SIGNALS:
 private:
   rust::Box<MyObjectRust> m_rustObj;
   std::shared_ptr<std::mutex> m_rustObjMutex;
-  bool m_initialised = false;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
-
-  bool m_boolean;
-  float m_float32;
-  double m_float64;
-  qint8 m_int8;
-  qint16 m_int16;
-  qint32 m_int32;
-  quint8 m_uint8;
-  quint16 m_uint16;
-  quint32 m_uint32;
 };
 
 static_assert(std::is_base_of<QObject, MyObject>::value,

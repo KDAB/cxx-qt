@@ -14,6 +14,7 @@ pub struct QPropertyName {
     pub getter: CombinedIdent,
     pub setter: CombinedIdent,
     pub notify: CombinedIdent,
+    pub emit: CombinedIdent,
 }
 
 impl From<&Ident> for QPropertyName {
@@ -23,6 +24,7 @@ impl From<&Ident> for QPropertyName {
             getter: getter_from_ident(ident),
             setter: setter_from_ident(ident),
             notify: notify_from_ident(ident),
+            emit: emit_from_ident(ident),
         }
     }
 }
@@ -33,11 +35,21 @@ impl From<&ParsedQProperty> for QPropertyName {
     }
 }
 
+/// For a given ident generate the Rust and C++ emit names
+fn emit_from_ident(ident: &Ident) -> CombinedIdent {
+    let ident = format_ident!("emit_{}_changed", ident);
+    CombinedIdent {
+        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+        rust: ident,
+    }
+}
+
 /// For a given ident generate the Rust and C++ getter names
 fn getter_from_ident(ident: &Ident) -> CombinedIdent {
+    let ident = format_ident!("get_{}", ident);
     CombinedIdent {
-        cpp: format_ident!("get{}", ident.to_string().to_case(Case::Pascal)),
-        rust: ident.clone(),
+        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+        rust: ident,
     }
 }
 
@@ -83,10 +95,12 @@ mod tests {
             vis: syn::Visibility::Inherited,
         };
         let names = QPropertyName::from(&property);
+        assert_eq!(names.emit.cpp, format_ident!("emitMyPropertyChanged"));
+        assert_eq!(names.emit.rust, format_ident!("emit_my_property_changed"));
         assert_eq!(names.name.cpp, format_ident!("myProperty"));
         assert_eq!(names.name.rust, format_ident!("my_property"));
         assert_eq!(names.getter.cpp, format_ident!("getMyProperty"));
-        assert_eq!(names.getter.rust, format_ident!("my_property"));
+        assert_eq!(names.getter.rust, format_ident!("get_my_property"));
         assert_eq!(names.setter.cpp, format_ident!("setMyProperty"));
         assert_eq!(names.setter.rust, format_ident!("set_my_property"));
         assert_eq!(names.notify.cpp, format_ident!("myPropertyChanged"));

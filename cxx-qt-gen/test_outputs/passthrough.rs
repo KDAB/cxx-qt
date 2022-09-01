@@ -8,15 +8,17 @@ pub mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[rust_name = "number"]
-        fn getNumber(self: &MyObjectQt) -> i32;
-        #[rust_name = "set_number"]
-        fn setNumber(self: Pin<&mut MyObjectQt>, value: i32);
+        #[rust_name = "emit_number_changed"]
+        fn emitNumberChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+        #[cxx_name = "getNumber"]
+        fn get_number(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        #[cxx_name = "setNumber"]
+        fn set_number(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
 
     const MAX: u16 = 65535;
@@ -104,10 +106,6 @@ pub mod ffi {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -123,36 +121,34 @@ mod cxx_qt_ffi {
     use std::pin::Pin;
 
     #[derive(Default)]
-    pub struct MyObject;
-
-    impl MyObject {}
-
-    impl MyObjectQt {
-        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
-            self.as_mut().set_number(data.number);
-        }
-    }
-
-    #[derive(Default)]
-    pub struct Data {
+    pub struct MyObject {
         number: i32,
     }
 
-    impl From<&MyObjectQt> for Data {
-        fn from(value: &MyObjectQt) -> Self {
-            Self {
-                number: value.number().into(),
+    impl MyObject {
+        pub fn get_number(&self, cpp: &MyObjectQt) -> i32 {
+            cpp.get_number()
+        }
+
+        pub fn set_number(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_number(value);
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn get_number(&self) -> i32 {
+            self.rust().number
+        }
+
+        pub fn set_number(mut self: Pin<&mut Self>, value: i32) {
+            unsafe {
+                self.as_mut().rust_mut().number = value;
             }
+            self.as_mut().emit_number_changed();
         }
     }
 
     use super::MyTrait;
-
-    impl MyTrait for Data {
-        fn my_func() -> String {
-            "Hello".to_owned()
-        }
-    }
 
     impl MyObject {
         fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
@@ -172,9 +168,5 @@ mod cxx_qt_ffi {
 
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-        cpp.grab_values_from_data(Data::default());
     }
 }

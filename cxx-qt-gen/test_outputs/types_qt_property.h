@@ -43,19 +43,32 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  const QColor& getColor() const;
-  const QDate& getDate() const;
-  const QDateTime& getDateTime() const;
-  const QPoint& getPoint() const;
-  const QPointF& getPointf() const;
-  const QRect& getRect() const;
-  const QRectF& getRectf() const;
-  const QSize& getSize() const;
-  const QSizeF& getSizef() const;
-  const QString& getString() const;
-  const QTime& getTime() const;
-  const QUrl& getUrl() const;
-  const QVariant& getVariant() const;
+  QColor getColor() const;
+  void emitColorChanged();
+  QDate getDate() const;
+  void emitDateChanged();
+  QDateTime getDateTime() const;
+  void emitDateTimeChanged();
+  QPoint getPoint() const;
+  void emitPointChanged();
+  QPointF getPointf() const;
+  void emitPointfChanged();
+  QRect getRect() const;
+  void emitRectChanged();
+  QRectF getRectf() const;
+  void emitRectfChanged();
+  QSize getSize() const;
+  void emitSizeChanged();
+  QSizeF getSizef() const;
+  void emitSizefChanged();
+  QString getString() const;
+  void emitStringChanged();
+  QTime getTime() const;
+  void emitTimeChanged();
+  QUrl getUrl() const;
+  void emitUrlChanged();
+  QVariant getVariant() const;
+  void emitVariantChanged();
 
 public Q_SLOTS:
   void setColor(const QColor& value);
@@ -90,23 +103,8 @@ Q_SIGNALS:
 private:
   rust::Box<MyObjectRust> m_rustObj;
   std::shared_ptr<std::mutex> m_rustObjMutex;
-  bool m_initialised = false;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
-
-  QColor m_color;
-  QDate m_date;
-  QDateTime m_dateTime;
-  QPoint m_point;
-  QPointF m_pointf;
-  QRect m_rect;
-  QRectF m_rectf;
-  QSize m_size;
-  QSizeF m_sizef;
-  QString m_string;
-  QTime m_time;
-  QUrl m_url;
-  QVariant m_variant;
 };
 
 static_assert(std::is_base_of<QObject, MyObject>::value,

@@ -13,7 +13,7 @@ To access and mutate the C++ side, eg properties, we need a handle to access the
 
 To use the `CppObj` add `cpp: &mut CppObj` to your parameters of an invokable.
 
-If the [`Data` struct](./data_struct.md) has a field called `number: i32`, then you can access properties by using `number(&self) -> i32` and `set_number(&mut self, number: i32)` on the `CppObj`.
+If the [`cxx_qt::qobject` marked struct](./qobject_struct.md) has a property called `number: i32`, then you can access properties by using `get_number(&self) -> i32` and `set_number(mut self: Pin<&mut Self>, number: i32)` on the `CppObj`.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/src/rust_obj_invokables.rs:book_cpp_obj}}
@@ -30,14 +30,6 @@ Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` i
 ## Threading
 
 `CppObj` can be used for [threading](../concepts/threading.md) to access the [`CxxQtThread<T>`](./cxxqtthread.md) via the `qt_thread(&self)` method.
-
-## Deserialisation and serialisation
-
-As described in the (de)serialisation section of the [Data struct](./data_struct.md) the `CppObj` has a `grab_values_from_data` for loading values from `Data` into the C++ instance.
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/serialisation.rs:book_grab_values}}
-```
 
 ## Type Wrappers
 

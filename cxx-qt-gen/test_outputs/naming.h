@@ -28,6 +28,7 @@ public:
 
 public:
   qint32 getPropertyName() const;
+  void emitPropertyNameChanged();
   Q_INVOKABLE void invokableName();
 
 public Q_SLOTS:
@@ -39,11 +40,8 @@ Q_SIGNALS:
 private:
   rust::Box<MyObjectRust> m_rustObj;
   std::shared_ptr<std::mutex> m_rustObjMutex;
-  bool m_initialised = false;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
-
-  qint32 m_propertyName;
 };
 
 static_assert(std::is_base_of<QObject, MyObject>::value,

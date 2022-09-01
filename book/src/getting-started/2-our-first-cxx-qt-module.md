@@ -20,22 +20,22 @@ So let's go into the `src/lib.rs` file.
 We'll modify this file until it looks like this:
 
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/src/lib.rs:book_cxx_qt_module}}
+{{#include ../../../examples/qml_minimal/src/cxxqt_object.rs:book_cxx_qt_module}}
 ```
 
 This is a lot to take in, so let's go one step at a time.
 Starting with the module definition:
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/src/lib.rs:book_bridge_macro}}
+{{#include ../../../examples/qml_minimal/src/cxxqt_object.rs:book_bridge_macro}}
 ```
 
 Because we add the `#[cxx_qt::bridge]` macro to the module definition,
 CXX-Qt will look inside the module for further macros which can define the QObject.
 
-For the `#[cxx_qt::bridge]` macro to work, we first need to define the data that will live in the new C++ object.
-This is done with the `Data` struct:
+For the `#[cxx_qt::bridge]` macro to work, we first need to define the properties that will be exposed in the new C++ object.
+This is done by tagging fields with `#[qproperty]`:
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/src/lib.rs:book_data_struct}}
+{{#include ../../../examples/qml_minimal/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will perform the snake_case to camelCase conversion to fit with C++/QML naming conventions.
 
@@ -46,26 +46,16 @@ In our case that means:
 - `string: UniquePtr<QString>` -> `QString string`\
 For more details on the available types, see the [Qt types page](../concepts/types.md).
 
-You might have also noticed the `#[derive(Default)]` here.
-Currently the Data struct needs to always be default-constructable.
-The data returned by the implementation of `Default` will be converted to the appropriate C++ types and assigned to the properties of any newly-constructed `MyObject` instance.
-Alternatively, we could also provide our own `Default` implementation for Data.
+You might have also noticed the `impl Default for MyObject` here.
+The struct needs to always be default-constructable and allows you to provide default values for your `Q_PROPERTY`s.
 
-Now that we've defined the data that will live on the C++ side of things, let's take a look at the Rust side:
-```rust,ignore
-{{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_struct}}
-```
-The name of this struct is used as the name of the C++ QObject subclass, in our case this is just an empty struct.
-However, the `#[cxx_qt::qobject]` marked struct could contain any data we want.
-It is not converted into a C++ class, so it isn't limited to the Qt-compatible types that the `Data` struct is.
-
-An important point to note here is that the `#[cxx_qt::qobject]` marked struct, like the `Data` struct must implement the `Default` trait.
-Every instance of the `MyObject` class will automatically create a corresponding `#[cxx_qt::qobject]` marked struct instance by using the `Default` trait.
+The name of this struct is used as the name of the C++ QObject subclass, in our case this is struct only contains properties.
+However, the `#[cxx_qt::qobject]` marked struct could contain any fields we want which are Rust only.
 
 Just because the `#[cxx_qt::qobject]` marked struct struct doesn't contain any data, that still doesn't mean its not an important part of our `MyObject` class.
 That is because it actually defines the behavior of our class through its `impl`:
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/src/lib.rs:book_rustobj_impl}}
+{{#include ../../../examples/qml_minimal/src/cxxqt_object.rs:book_rustobj_impl}}
 ```
 
 In our case, we define two new functions:

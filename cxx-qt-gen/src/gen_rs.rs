@@ -7,7 +7,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::ItemMod;
 
-use crate::extract::{Invokable, QObject, QtTypes};
+use crate::extract::{Invokable, Property, QObject, QtTypes};
 use crate::generator::{naming, naming::property::QPropertyName, rust::GeneratedRustBlocks};
 use crate::writer::rust::write_rust;
 
@@ -209,11 +209,20 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Add getters/setters/notify from properties
     for property in &obj.properties {
         let property_ident = QPropertyName::from(&property.ident);
-        let getter_cpp = &property_ident.getter.cpp;
-        let getter_rust = property_ident.getter.rust.to_string();
+        let getter_cpp = &property_ident.getter.cpp.to_string();
+        let getter_rust = property_ident.getter.rust;
 
-        let setter_cpp = &property_ident.setter.cpp;
-        let setter_rust = property_ident.setter.rust.to_string();
+        let setter_cpp = &property_ident.setter.cpp.to_string();
+        let setter_rust = property_ident.setter.rust;
+
+        let emit_cpp = &property_ident.emit.cpp;
+        let emit_rust = property_ident.emit.rust.to_string();
+
+        // Add the emit changed
+        cpp_functions.push(quote! {
+            #[rust_name = #emit_rust]
+            fn #emit_cpp(self: Pin<&mut #cpp_class_name_rust>);
+        });
 
         let qt_type = &property.type_ident.qt_type;
         let param_type = qt_type.cxx_bridge_type_ident();
@@ -222,13 +231,19 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         } else {
             quote! {#param_type}
         };
+        let return_type = qt_type.cxx_bridge_type_ident();
+        let return_type = if qt_type.is_opaque() {
+            quote! { UniquePtr<#return_type> }
+        } else {
+            quote! { #return_type }
+        };
 
         // Add the getter and setter to C++ bridge
-        cpp_functions.push(quote! {
-            #[rust_name = #getter_rust]
-            fn #getter_cpp(self: &#cpp_class_name_rust) -> #param_type;
-            #[rust_name = #setter_rust]
-            fn #setter_cpp(self: Pin<&mut #cpp_class_name_rust>, value: #param_type);
+        rs_functions.push(quote! {
+            #[cxx_name = #getter_cpp]
+            fn #getter_rust(self: &#rust_struct_name_rust, cpp: &#cpp_class_name_rust) -> #return_type;
+            #[cxx_name = #setter_cpp]
+            fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #param_type);
         });
     }
 
@@ -507,6 +522,89 @@ fn invokable_generate_wrapper(
     }
 }
 
+/// Generate the wrapper method for a given property
+fn property_generate_wrapper(
+    property: &Property,
+    cpp_class_name: &Ident,
+) -> Result<TokenStream, TokenStream> {
+    let property_ident = QPropertyName::from(&property.ident);
+    let getter_ident = property_ident.getter.rust;
+    let setter_ident = property_ident.setter.rust;
+
+    let qt_type = &property.type_ident.qt_type;
+    let param_type = qt_type.cxx_bridge_type_ident();
+    let param_type = if qt_type.is_ref() {
+        quote! {&#param_type}
+    } else {
+        quote! {#param_type}
+    };
+    let return_type = qt_type.cxx_bridge_type_ident();
+    let return_type = if qt_type.is_opaque() {
+        quote! { UniquePtr<#return_type> }
+    } else {
+        quote! { #return_type }
+    };
+
+    Ok(quote! {
+        pub fn #getter_ident(&self, cpp: &#cpp_class_name) -> #return_type {
+            cpp.#getter_ident()
+        }
+
+        pub fn #setter_ident(&mut self, cpp: Pin<&mut #cpp_class_name>, value: #param_type) {
+            cpp.#setter_ident(value);
+        }
+    })
+}
+
+/// Generate the method for a given property
+fn property_generate(property: &Property) -> Result<TokenStream, TokenStream> {
+    let property_ident = QPropertyName::from(&property.ident);
+    let getter_ident = property_ident.getter.rust;
+    let setter_ident = property_ident.setter.rust;
+    let emit_ident = property_ident.emit.rust;
+    let ident = property_ident.name.rust;
+
+    let qt_type = &property.type_ident.qt_type;
+    let qt_type_ident = qt_type.cxx_bridge_type_ident();
+    let param_type = if qt_type.is_ref() {
+        quote! {&#qt_type_ident}
+    } else {
+        quote! {#qt_type_ident}
+    };
+    let return_type = if qt_type.is_opaque() {
+        quote! { UniquePtr<#qt_type_ident> }
+    } else {
+        quote! { #qt_type_ident }
+    };
+    let getter_body = if qt_type.is_opaque() {
+        quote! { #qt_type_ident::from_ref(&self.rust().#ident) }
+    } else if qt_type.is_ref() {
+        quote! { self.rust().#ident.clone() }
+    } else {
+        quote! { self.rust().#ident }
+    };
+    let setter_value = if qt_type.is_opaque() {
+        quote! { #qt_type_ident::from_ref(value) }
+    } else if qt_type.is_ref() {
+        quote! { value.clone() }
+    } else {
+        quote! { value }
+    };
+
+    Ok(quote! {
+        pub fn #getter_ident(&self) -> #return_type {
+            #getter_body
+        }
+
+        pub fn #setter_ident(mut self: Pin<&mut Self>, value: #param_type) {
+            unsafe {
+                self.as_mut().rust_mut().#ident = #setter_value;
+            }
+            self.as_mut().#emit_ident();
+        }
+    })
+}
+
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Cache the rust class name
@@ -517,58 +615,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj)?;
-
-    // Generate the data struct
-    //
-    // TODO: what happens with sub objects / pointers,
-    // do we need to rewrite the field to their data struct?
-    let data_struct_name = &obj.original_data_struct.ident;
-    // Build a list of the fields that aren't pointers as they are stored on C++ side
-    let data_fields_no_ptr = obj
-        .properties
-        .iter()
-        .zip(&obj.original_data_struct.fields)
-        .map(|(prop, field)| (&prop.type_ident.qt_type, field))
-        .collect::<Vec<(&QtTypes, &syn::Field)>>();
-    // TODO: we need to update this to only store fields defined as "private" once we have an API for that
-    let data_struct = build_struct_with_fields(
-        &obj.original_data_struct,
-        &data_fields_no_ptr
-            .iter()
-            .map(|(_, field)| *field)
-            .collect::<Vec<&syn::Field>>(),
-    );
-
-    // Build a converter for QObject -> Data
-    let data_struct_impl = {
-        let mut fields_into = vec![];
-        // If there are no filtered fields then use _value
-        let value_ident = if data_fields_no_ptr.is_empty() {
-            format_ident!("_value")
-        } else {
-            format_ident!("value")
-        };
-
-        for (_, field) in &data_fields_no_ptr {
-            if let Some(field_ident) = &field.ident {
-                let field_name = field_ident.clone();
-
-                // The Data struct should only contain "Qt-compatible" fields defined by
-                // us so we will insure that From is implemented where necessary.
-                fields_into.push(quote! { #field_name: #value_ident.#field_name().into() });
-            }
-        }
-
-        quote! {
-            impl From<&#cpp_class_name_rust> for #data_struct_name {
-                fn from(#value_ident: &#cpp_class_name_rust) -> Self {
-                    Self {
-                        #(#fields_into),*
-                    }
-                }
-            }
-        }
-    };
 
     // Generate property methods from the object
     let signal_methods = generate_signal_methods_rs(obj)?;
@@ -586,6 +632,17 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         .map(|m| m.original_method.clone())
         .collect::<Vec<syn::ImplItemMethod>>();
 
+    let property_method_wrappers = obj
+        .properties
+        .iter()
+        .map(|p| property_generate_wrapper(p, &cpp_class_name_rust))
+        .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
+    let property_methods = obj
+        .properties
+        .iter()
+        .map(property_generate)
+        .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
+
     let methods = &obj.methods;
     let original_passthrough_decls = &obj.original_passthrough_decls;
 
@@ -600,45 +657,18 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let rust_struct_impl = quote! {
         impl #rust_struct_name_rust {
+            #(#property_method_wrappers)*
             #(#invokable_method_wrappers)*
         }
     };
 
-    // TODO: eventually we want so support grabbing values from sub objects too
-    let mut grab_values = vec![];
-    for (qt_type, field) in &data_fields_no_ptr {
-        if let Some(field_ident) = &field.ident {
-            let property_ident = QPropertyName::from(field_ident);
-            let setter_name = property_ident.setter.rust;
-
-            if qt_type.is_opaque() {
-                grab_values.push(quote! {
-                    self.as_mut().#setter_name(data.#field_ident.as_ref().unwrap());
-                });
-            } else {
-                let is_ref = if qt_type.is_ref() {
-                    quote! {&}
-                } else {
-                    quote! {}
-                };
-
-                grab_values.push(quote! {
-                    self.as_mut().#setter_name(#is_ref data.#field_ident);
-                });
-            }
-        }
-    }
-
     let qobject_impl = quote! {
         impl #cpp_class_name_rust {
+            #(#property_methods)*
             #(#invokable_methods)*
             #(#methods)*
 
             #(#signal_methods)*
-
-            pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: #data_struct_name) {
-                #(#grab_values)*
-            }
         }
     };
 
@@ -659,10 +689,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #rust_struct_impl
 
             #qobject_impl
-
-            #data_struct
-
-            #data_struct_impl
 
             #(#original_passthrough_decls)*
         }

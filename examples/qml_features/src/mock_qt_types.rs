@@ -31,25 +31,39 @@ mod ffi {
         DataChanged { variant: UniquePtr<QVariant> },
     }
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct MockQtTypes {
+        #[qproperty]
         color: UniquePtr<QColor>,
+        #[qproperty]
         date: QDate,
+        #[qproperty]
         date_time: UniquePtr<QDateTime>,
+        #[qproperty]
         point: QPoint,
+        #[qproperty]
         pointf: QPointF,
+        #[qproperty]
         rect: QRect,
+        #[qproperty]
         rectf: QRectF,
+        #[qproperty]
         size: QSize,
+        #[qproperty]
         sizef: QSizeF,
+        #[qproperty]
         string: UniquePtr<QString>,
+        #[qproperty]
         time: QTime,
+        #[qproperty]
         url: UniquePtr<QUrl>,
+        #[qproperty]
         variant: UniquePtr<QVariant>,
     }
 
-    impl Default for Data {
+    impl Default for MockQtTypes {
         fn default() -> Self {
-            Data {
+            Self {
                 color: QColor::from_rgba(255, 0, 0, 255),
                 date: QDate::new(2022, 1, 1),
                 date_time: QDateTime::from_date_and_time(
@@ -69,10 +83,6 @@ mod ffi {
             }
         }
     }
-
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MockQtTypes;
 
     impl cxx_qt::QObject<MockQtTypes> {
         #[qinvokable]
@@ -105,7 +115,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_date_property(self: Pin<&mut Self>) {
-            let mut date = self.date().clone();
+            let mut date = self.get_date();
             date.set_date(2021, 12, 31);
             self.set_date(&date);
         }
@@ -119,7 +129,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_date_time_property(self: Pin<&mut Self>) {
-            let date_time = self.date_time();
+            let date_time = self.get_date_time();
             let new_date_time = QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -147,7 +157,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_point_property(self: Pin<&mut Self>) {
-            let mut point = self.point().clone();
+            let mut point = self.get_point();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
             self.set_point(&point);
@@ -163,7 +173,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_pointf_property(self: Pin<&mut Self>) {
-            let mut point = self.pointf().clone();
+            let mut point = self.get_pointf();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             self.set_pointf(&point);
@@ -179,7 +189,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rect_property(self: Pin<&mut Self>) {
-            let mut rect = self.rect().clone();
+            let mut rect = self.get_rect();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2);
@@ -203,7 +213,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rectf_property(self: Pin<&mut Self>) {
-            let mut rect = self.rectf().clone();
+            let mut rect = self.get_rectf();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
@@ -227,7 +237,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_size_property(self: Pin<&mut Self>) {
-            let mut size = self.size().clone();
+            let mut size = self.get_size();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
             self.set_size(&size);
@@ -243,7 +253,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_sizef_property(self: Pin<&mut Self>) {
-            let mut size = self.sizef().clone();
+            let mut size = self.get_sizef();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             self.set_sizef(&size);
@@ -259,7 +269,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_string_property(self: Pin<&mut Self>) {
-            let string = QString::from_str(&(self.string().to_string() + "/cxx-qt"));
+            let string = QString::from_str(&(self.get_string().to_string() + "/cxx-qt"));
             self.set_string(string.as_ref().unwrap());
         }
 
@@ -270,7 +280,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_time_property(self: Pin<&mut Self>) {
-            let mut time = self.time().clone();
+            let mut time = self.get_time();
             time.set_hms(
                 time.hour() * 2,
                 time.minute() * 3,
@@ -294,7 +304,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_url_property(self: Pin<&mut Self>) {
-            let url = QUrl::from_str(&(self.url().string() + "/cxx-qt"));
+            let url = QUrl::from_str(&(self.get_url().string() + "/cxx-qt"));
             self.set_url(url.as_ref().unwrap());
         }
 
@@ -305,7 +315,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
-            match self.variant().value() {
+            match self.get_variant().value() {
                 QVariantValue::Bool(b) => self
                     .as_mut()
                     .set_variant(QVariant::from(!b).as_ref().unwrap()),

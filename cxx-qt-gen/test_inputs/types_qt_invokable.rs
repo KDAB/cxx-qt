@@ -18,9 +18,6 @@ mod ffi {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[derive(Default)]
-    pub struct Data;
-
     #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct MyObject;

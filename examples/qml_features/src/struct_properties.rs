@@ -6,13 +6,11 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 mod ffi {
-    #[derive(Default)]
-    pub struct Data {
-        number: i32,
-    }
-
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct DataStructProperties;
+    pub struct StructProperties {
+        #[qproperty]
+        number: i32,
+    }
 }
 // ANCHOR_END: book_macro_code

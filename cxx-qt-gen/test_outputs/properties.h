@@ -21,6 +21,8 @@ class MyObject : public QObject
   Q_OBJECT
   Q_PROPERTY(qint32 primitive READ getPrimitive WRITE setPrimitive NOTIFY
                primitiveChanged)
+  Q_PROPERTY(
+    QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
   Q_PROPERTY(QColor opaque READ getOpaque WRITE setOpaque NOTIFY opaqueChanged)
 
 public:
@@ -32,25 +34,27 @@ public:
 
 public:
   qint32 getPrimitive() const;
-  const QColor& getOpaque() const;
+  void emitPrimitiveChanged();
+  QPoint getTrivial() const;
+  void emitTrivialChanged();
+  QColor getOpaque() const;
+  void emitOpaqueChanged();
 
 public Q_SLOTS:
   void setPrimitive(qint32 value);
+  void setTrivial(const QPoint& value);
   void setOpaque(const QColor& value);
 
 Q_SIGNALS:
   void primitiveChanged();
+  void trivialChanged();
   void opaqueChanged();
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
   std::shared_ptr<std::mutex> m_rustObjMutex;
-  bool m_initialised = false;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
-
-  qint32 m_primitive;
-  QColor m_opaque;
 };
 
 static_assert(std::is_base_of<QObject, MyObject>::value,

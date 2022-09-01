@@ -10,9 +10,6 @@ mod ffi {
         include!(<QtCore/QStringListModel>);
     }
 
-    #[derive(Default)]
-    pub struct Data;
-
     #[cxx_qt::qobject(base = "QStringListModel")]
     #[derive(Default)]
     pub struct CustomBase;
