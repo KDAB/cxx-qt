@@ -31,6 +31,4 @@ pub struct GeneratedCppBlocks {
     pub slots: Vec<CppFragmentPair>,
     /// List of public Q_SIGNALS for the QObject
     pub signals: Vec<String>,
-    /// List of private members for the QObject
-    pub members: Vec<String>,
 }

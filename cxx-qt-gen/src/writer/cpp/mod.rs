@@ -51,7 +51,7 @@ mod tests {
                         int
                         MyObject::count() const
                         {
-                          return m_count;
+                          // getter
                         }
                     "#}
                     .to_owned(),
@@ -62,7 +62,7 @@ mod tests {
                         bool
                         MyObject::toggle() const
                         {
-                          return m_count;
+                          // getter
                         }
                     "#}
                     .to_owned(),
@@ -97,11 +97,7 @@ mod tests {
                         void
                         MyObject::setCount(int count) const
                         {
-                          if (m_count != count) {
-                            m_count = count;
-
-                            Q_EMIT countChanged();
-                          }
+                          // setter
                         }
                     "#}
                     .to_owned(),
@@ -112,11 +108,7 @@ mod tests {
                         void
                         MyObject::setToggle(bool toggle) const
                         {
-                          if (m_toggle != toggle) {
-                            m_toggle = toggle;
-
-                            Q_EMIT toggleChanged();
-                          }
+                          // setter
                         }
                     "#}
                     .to_owned(),
@@ -126,7 +118,6 @@ mod tests {
                 "void countChanged();".to_owned(),
                 "void toggleChanged();".to_owned(),
             ],
-            members: vec!["int m_count;".to_owned(), "bool m_toggle;".to_owned()],
         }
     }
 
@@ -190,9 +181,6 @@ mod tests {
           rust::Box<MyObjectRust> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
-
-          int m_count;
-          bool m_toggle;
         };
 
         static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -259,9 +247,6 @@ mod tests {
           rust::Box<MyObjectRust> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
-
-          int m_count;
-          bool m_toggle;
         };
 
         static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -318,13 +303,13 @@ mod tests {
         int
         MyObject::count() const
         {
-          return m_count;
+          // getter
         }
 
         bool
         MyObject::toggle() const
         {
-          return m_count;
+          // getter
         }
 
         void
@@ -342,21 +327,13 @@ mod tests {
         void
         MyObject::setCount(int count) const
         {
-          if (m_count != count) {
-            m_count = count;
-
-            Q_EMIT countChanged();
-          }
+          // setter
         }
 
         void
         MyObject::setToggle(bool toggle) const
         {
-          if (m_toggle != toggle) {
-            m_toggle = toggle;
-
-            Q_EMIT toggleChanged();
-          }
+          // setter
         }
 
         } // namespace cxx_qt::my_object
@@ -413,13 +390,13 @@ mod tests {
         int
         MyObject::count() const
         {
-          return m_count;
+          // getter
         }
 
         bool
         MyObject::toggle() const
         {
-          return m_count;
+          // getter
         }
 
         void
@@ -437,21 +414,13 @@ mod tests {
         void
         MyObject::setCount(int count) const
         {
-          if (m_count != count) {
-            m_count = count;
-
-            Q_EMIT countChanged();
-          }
+          // setter
         }
 
         void
         MyObject::setToggle(bool toggle) const
         {
-          if (m_toggle != toggle) {
-            m_toggle = toggle;
-
-            Q_EMIT toggleChanged();
-          }
+          // setter
         }
 
 

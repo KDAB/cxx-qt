@@ -168,8 +168,6 @@ struct CppSignal {
 }
 /// Describes a C++ property with header and source parts
 struct CppProperty {
-    /// Any members that are required for the property
-    header_members: Vec<String>,
     /// The header meta definition of the invokable
     header_meta: Vec<String>,
     /// The header public definition of the invokable
@@ -354,8 +352,6 @@ fn generate_properties_cpp(
 
         // Build a basic C++ property with parts that are defined if the property is a pointer or not
         let mut cpp_property = CppProperty {
-            // Members are defined later for only the pointer
-            header_members: vec![],
             // Set the Q_PROPERTY for the C++ class
             header_meta: vec![format!("Q_PROPERTY({type_ident} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_changed})",
                 ident = parameter.ident,
@@ -540,14 +536,12 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
 
     // TODO: For now we proxy the gen_cpp code into what the writer phase expects
     // later this code will be moved into a generator phase
-    let mut members: Vec<String> = vec![];
     let mut metaobjects: Vec<String> = vec![];
     let mut methods: Vec<CppFragmentPair> = vec![];
     let mut signals: Vec<String> = vec![];
     let mut slots: Vec<CppFragmentPair> = vec![];
 
     for mut property in generate_properties_cpp(&obj.ident, &obj.properties)?.drain(..) {
-        members.append(&mut property.header_members);
         metaobjects.append(&mut property.header_meta);
         methods.append(
             &mut property
@@ -627,7 +621,6 @@ pub fn generate_qobject_cpp(obj: &QObject) -> Result<CppObject, TokenStream> {
         methods,
         slots,
         signals,
-        members,
     };
 
     // Use our writer phase to convert to a string
