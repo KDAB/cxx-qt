@@ -3,21 +3,11 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::generator::{naming, naming::CombinedIdent};
 use crate::parser::{signals::ParsedSignalsEnum, Parser};
-use convert_case::{Case, Casing};
-use derivative::*;
 use proc_macro2::{Span, TokenStream};
 use std::result::Result;
 use syn::{spanned::Spanned, token::Brace, *};
-
-/// Describes an ident which has a different name in C++ and Rust
-#[derive(Debug, PartialEq)]
-pub(crate) struct CppRustIdent {
-    /// The ident for C++
-    pub(crate) cpp_ident: Ident,
-    /// The ident for rust
-    pub(crate) rust_ident: Ident,
-}
 
 /// Describes a Qt type
 #[derive(Debug, PartialEq)]
@@ -64,7 +54,6 @@ impl QtTypes {
 }
 
 /// Describes a type
-#[derive(Debug)]
 pub(crate) struct ParameterType {
     /// If this parameter is mutable
     pub(crate) is_mut: bool,
@@ -75,7 +64,6 @@ pub(crate) struct ParameterType {
 }
 
 /// Describes a function parameter
-#[derive(Debug)]
 pub(crate) struct Parameter {
     /// The ident of the parameter
     pub(crate) ident: Ident,
@@ -84,13 +72,11 @@ pub(crate) struct Parameter {
 }
 
 /// Describes a function that can be invoked from QML
-#[derive(Derivative)]
-#[derivative(Debug)]
 pub(crate) struct Invokable {
     /// The ident of the function
-    pub(crate) ident: CppRustIdent,
+    pub(crate) ident: CombinedIdent,
     /// If the invokable needs a wrapper, this is it's ident
-    pub(crate) ident_wrapper: CppRustIdent,
+    pub(crate) ident_wrapper: CombinedIdent,
     /// The parameters that the function takes in
     pub(crate) parameters: Vec<Parameter>,
     /// The return type information
@@ -98,43 +84,32 @@ pub(crate) struct Invokable {
     /// Whether this invokable is using mut self or not
     pub(crate) mutable: bool,
     /// The original Rust method for the invokable
-    #[derivative(Debug = "ignore")]
     pub(crate) original_method: ImplItemMethod,
 }
 
 /// Describes a property that can be used from QML
-#[derive(Debug)]
 pub(crate) struct Property {
     /// The ident of the property
-    pub(crate) ident: CppRustIdent,
+    pub(crate) ident: Ident,
     /// The type of the property
     pub(crate) type_ident: ParameterType,
-    /// The getter ident of the property (used for READ)
-    pub(crate) getter: Option<CppRustIdent>,
-    /// The setter ident of the property (used for WRITE)
-    pub(crate) setter: Option<CppRustIdent>,
-    /// The notify ident of the property (used for NOTIFY)
-    pub(crate) notify: Option<CppRustIdent>,
-    // TODO: later we will further possibilities such as CONSTANT or FINAL
 }
 
 /// Describes a signal that can be used from QML
-#[derive(Debug)]
 pub(crate) struct Signal {
     /// The C++ and Rust names of the method to emit the signal as queued
     /// eg emitDataChanged and emit_data_changed
-    pub(crate) emit_ident: CppRustIdent,
+    pub(crate) emit_ident: CombinedIdent,
     /// The Rust name of the enum entry, eg DataChanged
     pub(crate) enum_ident: Ident,
     /// The parameters of the Signal
     pub(crate) parameters: Vec<Parameter>,
     /// The C++ and Rust names of the method to emit the signal as immediate
     /// eg dataChanged and data_changed
-    pub(crate) signal_ident: CppRustIdent,
+    pub(crate) signal_ident: CombinedIdent,
 }
 
 /// Describes all the properties of a QObject class
-#[derive(Debug)]
 pub struct QObject {
     /// The ident of the C++ class that represents the QObject
     pub ident: Ident,
@@ -428,7 +403,7 @@ fn is_method_mutable(method: &ImplItemMethod) -> bool {
 }
 
 fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invokable, TokenStream> {
-    let method_ident = &method.sig.ident;
+    let invokable_ident = naming::invokable::QInvokableName::from(method);
     let output = &method.sig.output;
 
     let mutable = is_method_mutable(method);
@@ -466,20 +441,9 @@ fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invoka
         None
     };
 
-    let ident_str = method_ident.to_string();
-    let ident_method = CppRustIdent {
-        cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
-        rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-    };
-
-    // We need a wrapper for any opaque types or pointers in the parameters or return types
-    let ident_wrapper = CppRustIdent {
-        cpp_ident: quote::format_ident!("{}Wrapper", ident_method.cpp_ident),
-        rust_ident: quote::format_ident!("{}_wrapper", ident_method.rust_ident),
-    };
     Ok(Invokable {
-        ident: ident_method,
-        ident_wrapper,
+        ident: invokable_ident.name,
+        ident_wrapper: invokable_ident.wrapper,
         mutable,
         parameters,
         return_type,
@@ -540,40 +504,10 @@ fn extract_properties(s: &ItemStruct, qt_ident: &Ident) -> Result<Vec<Property>,
                     }
                 }
 
-                // Build the getter/setter/notify idents with their Rust and C++ idents
-                //
-                // TODO: later these can be optional and have custom names from macro attributes
-                //
-                // TODO: we might also need to store whether a custom method is already implemented
-                // or whether a method needs to be auto generated on the rust side
-                //
-                // TODO: later support an attribute to keep original or override renaming
-                let ident_str = ident.to_string();
-                let ident_prop = CppRustIdent {
-                    cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
-                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-                };
-                let getter = Some(CppRustIdent {
-                    cpp_ident: quote::format_ident!("get{}", ident_str.to_case(Case::Pascal)),
-                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-                });
-                let setter = Some(CppRustIdent {
-                    cpp_ident: quote::format_ident!("set{}", ident_str.to_case(Case::Pascal)),
-                    rust_ident: quote::format_ident!("set_{}", ident_str.to_case(Case::Snake)),
-                });
-                let notify = Some(CppRustIdent {
-                    cpp_ident: quote::format_ident!("{}Changed", ident_str.to_case(Case::Camel)),
-                    // TODO: rust doesn't have notify on it's side?
-                    rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-                });
-
                 // Build and push the property
                 properties.push(Property {
-                    ident: ident_prop,
+                    ident: ident.clone(),
                     type_ident,
-                    getter,
-                    setter,
-                    notify,
                 });
             }
         }
@@ -591,12 +525,9 @@ fn extract_signals(
     qt_ident: &Ident,
 ) -> Result<Vec<Signal>, TokenStream> {
     signals.signals.iter().map(|signal| {
-        let ident_str = signal.ident.to_string();
+        let signal_ident = naming::signals::QSignalName::from(&signal.ident);
         Ok(Signal {
-            emit_ident: CppRustIdent {
-                cpp_ident: quote::format_ident!("emit{}", ident_str.to_case(Case::Pascal)),
-                rust_ident: quote::format_ident!("emit_{}", ident_str.to_case(Case::Snake)),
-            },
+            emit_ident: signal_ident.queued_name,
             enum_ident: signal.ident.clone(),
             parameters: signal.parameters.iter().map(|parameter| {
                 Ok(Parameter {
@@ -624,10 +555,7 @@ fn extract_signals(
                     },
                 })
             }).collect::<Result<Vec<Parameter>, TokenStream>>()?,
-            signal_ident: CppRustIdent {
-                cpp_ident: quote::format_ident!("{}", ident_str.to_case(Case::Camel)),
-                rust_ident: quote::format_ident!("{}", ident_str.to_case(Case::Snake)),
-            },
+            signal_ident: signal_ident.name,
         })
     }).collect()
 }
@@ -789,27 +717,24 @@ mod tests {
         let mut invokables = qobject.invokables.into_iter();
         // Check empty invokable ident
         let invokable = invokables.next().unwrap();
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokable");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable");
+        assert_eq!(invokable.ident.cpp.to_string(), "invokable");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable");
         assert_eq!(invokable.parameters.len(), 0);
         assert!(invokable.return_type.is_none());
         assert!(!invokable.mutable);
 
         // Check the mutable invokable
         let invokable = invokables.next().unwrap();
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableMutable");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_mutable");
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableMutable");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable_mutable");
         assert_eq!(invokable.parameters.len(), 0);
         assert!(invokable.return_type.is_none());
         assert!(invokable.mutable);
 
         // Check Parameters invokable
         let invokable = invokables.next().unwrap();
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableParameters");
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_parameters"
-        );
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableParameters");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable_parameters");
         assert_eq!(invokable.parameters.len(), 3);
         assert!(invokable.return_type.is_none());
         assert!(!invokable.mutable);
@@ -828,26 +753,17 @@ mod tests {
 
         // Check return opaque invokable
         let invokable = invokables.next().unwrap();
-        assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableReturnOpaque"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_return_opaque"
-        );
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableReturnOpaque");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable_return_opaque");
         assert_eq!(invokable.parameters.len(), 0);
         assert!(invokable.return_type.is_some());
         assert!(invokable.mutable);
 
         // Check return primitive invokable
         let invokable = invokables.next().unwrap();
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableReturnPrimitive");
         assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableReturnPrimitive"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
+            invokable.ident.rust.to_string(),
             "invokable_return_primitive"
         );
         assert_eq!(invokable.parameters.len(), 0);
@@ -856,14 +772,8 @@ mod tests {
 
         // Check return static invokable
         let invokable = invokables.next().unwrap();
-        assert_eq!(
-            invokable.ident.cpp_ident.to_string(),
-            "invokableReturnStatic"
-        );
-        assert_eq!(
-            invokable.ident.rust_ident.to_string(),
-            "invokable_return_static"
-        );
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableReturnStatic");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable_return_static");
         assert_eq!(invokable.parameters.len(), 0);
         assert!(invokable.return_type.is_some());
         assert!(invokable.mutable);
@@ -884,33 +794,16 @@ mod tests {
 
         // Check first property
         let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.cpp_ident.to_string(), "propertyName");
-        assert_eq!(prop_first.ident.rust_ident.to_string(), "property_name");
+        assert_eq!(prop_first.ident.to_string(), "property_name");
         assert!(!prop_first.type_ident.is_ref);
-
-        assert!(prop_first.getter.is_some());
-        let getter = prop_first.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getPropertyName");
-        assert_eq!(getter.rust_ident.to_string(), "property_name");
-
-        assert!(prop_first.setter.is_some());
-        let setter = prop_first.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setPropertyName");
-        assert_eq!(setter.rust_ident.to_string(), "set_property_name");
-
-        assert!(prop_first.notify.is_some());
-        let notify = prop_first.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "propertyNameChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "property_name");
 
         // Check that it got the invokables
         assert_eq!(qobject.invokables.len(), 1);
 
         // Check invokable ident
         let invokable = &qobject.invokables[0];
-        assert_eq!(invokable.ident.cpp_ident.to_string(), "invokableName");
-        assert_eq!(invokable.ident.rust_ident.to_string(), "invokable_name");
+        assert_eq!(invokable.ident.cpp.to_string(), "invokableName");
+        assert_eq!(invokable.ident.rust.to_string(), "invokable_name");
 
         // Check invokable parameters ident and type ident
         assert_eq!(invokable.parameters.len(), 0);
@@ -951,47 +844,13 @@ mod tests {
 
         // Check first property
         let prop_first = &qobject.properties[0];
-        assert_eq!(prop_first.ident.cpp_ident.to_string(), "primitive");
-        assert_eq!(prop_first.ident.rust_ident.to_string(), "primitive");
+        assert_eq!(prop_first.ident.to_string(), "primitive");
         assert!(!prop_first.type_ident.is_ref);
-
-        assert!(prop_first.getter.is_some());
-        let getter = prop_first.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getPrimitive");
-        assert_eq!(getter.rust_ident.to_string(), "primitive");
-
-        assert!(prop_first.setter.is_some());
-        let setter = prop_first.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setPrimitive");
-        assert_eq!(setter.rust_ident.to_string(), "set_primitive");
-
-        assert!(prop_first.notify.is_some());
-        let notify = prop_first.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "primitiveChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "primitive");
 
         // Check second property
         let prop_second = &qobject.properties[1];
-        assert_eq!(prop_second.ident.cpp_ident.to_string(), "opaque");
-        assert_eq!(prop_second.ident.rust_ident.to_string(), "opaque");
+        assert_eq!(prop_second.ident.to_string(), "opaque");
         assert!(!prop_second.type_ident.is_ref);
-
-        assert!(prop_second.getter.is_some());
-        let getter = prop_second.getter.as_ref().unwrap();
-        assert_eq!(getter.cpp_ident.to_string(), "getOpaque");
-        assert_eq!(getter.rust_ident.to_string(), "opaque");
-
-        assert!(prop_second.setter.is_some());
-        let setter = prop_second.setter.as_ref().unwrap();
-        assert_eq!(setter.cpp_ident.to_string(), "setOpaque");
-        assert_eq!(setter.rust_ident.to_string(), "set_opaque");
-
-        assert!(prop_second.notify.is_some());
-        let notify = prop_second.notify.as_ref().unwrap();
-        assert_eq!(notify.cpp_ident.to_string(), "opaqueChanged");
-        // TODO: does rust need a notify ident?
-        assert_eq!(notify.rust_ident.to_string(), "opaque");
     }
 
     #[test]
@@ -1004,31 +863,19 @@ mod tests {
         assert_eq!(qobject.invokables.len(), 1);
         assert_eq!(qobject.signals.len(), 2);
 
-        assert_eq!(
-            qobject.signals[0].emit_ident.cpp_ident.to_string(),
-            "emitReady"
-        );
-        assert_eq!(
-            qobject.signals[0].emit_ident.rust_ident.to_string(),
-            "emit_ready"
-        );
+        assert_eq!(qobject.signals[0].emit_ident.cpp.to_string(), "emitReady");
+        assert_eq!(qobject.signals[0].emit_ident.rust.to_string(), "emit_ready");
         assert_eq!(qobject.signals[0].enum_ident.to_string(), "Ready");
         assert_eq!(qobject.signals[0].parameters.len(), 0);
-        assert_eq!(
-            qobject.signals[0].signal_ident.cpp_ident.to_string(),
-            "ready"
-        );
-        assert_eq!(
-            qobject.signals[0].signal_ident.rust_ident.to_string(),
-            "ready"
-        );
+        assert_eq!(qobject.signals[0].signal_ident.cpp.to_string(), "ready");
+        assert_eq!(qobject.signals[0].signal_ident.rust.to_string(), "ready");
 
         assert_eq!(
-            qobject.signals[1].emit_ident.cpp_ident.to_string(),
+            qobject.signals[1].emit_ident.cpp.to_string(),
             "emitDataChanged"
         );
         assert_eq!(
-            qobject.signals[1].emit_ident.rust_ident.to_string(),
+            qobject.signals[1].emit_ident.rust.to_string(),
             "emit_data_changed"
         );
         assert_eq!(qobject.signals[1].enum_ident.to_string(), "DataChanged");
@@ -1037,11 +884,11 @@ mod tests {
         assert_eq!(qobject.signals[1].parameters[1].ident.to_string(), "second");
         assert_eq!(qobject.signals[1].parameters[2].ident.to_string(), "third");
         assert_eq!(
-            qobject.signals[1].signal_ident.cpp_ident.to_string(),
+            qobject.signals[1].signal_ident.cpp.to_string(),
             "dataChanged"
         );
         assert_eq!(
-            qobject.signals[1].signal_ident.rust_ident.to_string(),
+            qobject.signals[1].signal_ident.rust.to_string(),
             "data_changed"
         );
     }
@@ -1056,46 +903,31 @@ mod tests {
         assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 9);
 
-        assert_eq!(
-            qobject.properties[0].ident.rust_ident.to_string(),
-            "boolean"
-        );
+        assert_eq!(qobject.properties[0].ident.to_string(), "boolean");
         assert_eq!(qobject.properties[0].type_ident.qt_type, QtTypes::Bool);
 
-        assert_eq!(
-            qobject.properties[1].ident.rust_ident.to_string(),
-            "float_32"
-        );
+        assert_eq!(qobject.properties[1].ident.to_string(), "float_32");
         assert_eq!(qobject.properties[1].type_ident.qt_type, QtTypes::F32);
 
-        assert_eq!(
-            qobject.properties[2].ident.rust_ident.to_string(),
-            "float_64"
-        );
+        assert_eq!(qobject.properties[2].ident.to_string(), "float_64");
         assert_eq!(qobject.properties[2].type_ident.qt_type, QtTypes::F64);
 
-        assert_eq!(qobject.properties[3].ident.rust_ident.to_string(), "int_8");
+        assert_eq!(qobject.properties[3].ident.to_string(), "int_8");
         assert_eq!(qobject.properties[3].type_ident.qt_type, QtTypes::I8);
 
-        assert_eq!(qobject.properties[4].ident.rust_ident.to_string(), "int_16");
+        assert_eq!(qobject.properties[4].ident.to_string(), "int_16");
         assert_eq!(qobject.properties[4].type_ident.qt_type, QtTypes::I16);
 
-        assert_eq!(qobject.properties[5].ident.rust_ident.to_string(), "int_32");
+        assert_eq!(qobject.properties[5].ident.to_string(), "int_32");
         assert_eq!(qobject.properties[5].type_ident.qt_type, QtTypes::I32);
 
-        assert_eq!(qobject.properties[6].ident.rust_ident.to_string(), "uint_8");
+        assert_eq!(qobject.properties[6].ident.to_string(), "uint_8");
         assert_eq!(qobject.properties[6].type_ident.qt_type, QtTypes::U8);
 
-        assert_eq!(
-            qobject.properties[7].ident.rust_ident.to_string(),
-            "uint_16"
-        );
+        assert_eq!(qobject.properties[7].ident.to_string(), "uint_16");
         assert_eq!(qobject.properties[7].type_ident.qt_type, QtTypes::U16);
 
-        assert_eq!(
-            qobject.properties[8].ident.rust_ident.to_string(),
-            "uint_32"
-        );
+        assert_eq!(qobject.properties[8].ident.to_string(), "uint_32");
         assert_eq!(qobject.properties[8].type_ident.qt_type, QtTypes::U32);
     }
 }

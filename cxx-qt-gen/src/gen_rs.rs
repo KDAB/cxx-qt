@@ -3,13 +3,12 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::ItemMod;
 
 use crate::extract::{Invokable, QObject, QtTypes};
-use crate::generator::rust::GeneratedRustBlocks;
+use crate::generator::{naming, naming::property::QPropertyName, rust::GeneratedRustBlocks};
 use crate::writer::rust::write_rust;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -112,14 +111,12 @@ impl RustType for QtTypes {
 }
 
 fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStream {
-    let rust_class_name = &obj.original_rust_struct.ident;
-    let cpp_class_name = format_ident!("{}Qt", rust_class_name);
+    let qobject_idents = naming::qobject::QObjectName::from(&obj.original_rust_struct.ident);
+    let cpp_class_name_rust = qobject_idents.cpp_class.rust;
+    let rust_struct_name_rust = qobject_idents.rust_struct.rust;
 
     // Cache the ident and parameters as they are used multiple times later
-    let (ident, ident_cpp_str) = (
-        &i.ident_wrapper.rust_ident,
-        i.ident_wrapper.cpp_ident.to_string(),
-    );
+    let (ident, ident_cpp_str) = (&i.ident_wrapper.rust, i.ident_wrapper.cpp.to_string());
     let parameters = &i.parameters;
     let mutablility = if i.mutable {
         Some(quote! { mut })
@@ -139,9 +136,9 @@ fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStre
     let mut parameters_quotes = Vec::new();
 
     let cpp_type = if i.mutable {
-        quote! { Pin<&mut #cpp_class_name> }
+        quote! { Pin<&mut #cpp_class_name_rust> }
     } else {
-        quote! { &#cpp_class_name }
+        quote! { &#cpp_class_name_rust }
     };
 
     parameters_quotes.push(quote! { cpp: #cpp_type });
@@ -183,22 +180,19 @@ fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStre
 
     quote! {
         #[cxx_name = #ident_cpp_str]
-        fn #ident(self: &#mutablility #rust_class_name, #(#parameters_quotes),*) #return_expr;
+        fn #ident(self: &#mutablility #rust_struct_name_rust, #(#parameters_quotes),*) #return_expr;
     }
 }
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
 pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
-    let class_name = &obj.ident;
-    let rust_class_name_cpp = format_ident!("{}Qt", class_name);
-    let cxx_class_name_rust = format_ident!("{}Rust", class_name);
-    let rust_class_name = &obj.original_rust_struct.ident;
-
-    // Build a snake version of the class name, this is used for rust method names
-    //
-    // TODO: Abstract this calculation to make it common to gen_rs and gen_cpp
-    let ident_snake = class_name.to_string().to_case(Case::Snake);
+    let qobject_idents = naming::qobject::QObjectName::from(&obj.original_rust_struct.ident);
+    let cpp_class_name_cpp = qobject_idents.cpp_class.cpp.to_string();
+    let cpp_class_name_rust = qobject_idents.cpp_class.rust;
+    let rust_struct_name_cpp = qobject_idents.rust_struct.cpp.to_string();
+    let rust_struct_name_rust = qobject_idents.rust_struct.rust;
+    let cxx_stem = naming::module::cxx_stem_from_ident(&obj.original_rust_struct.ident);
 
     // Lists of functions we generate for the CXX bridge
     let mut cpp_functions = Vec::new();
@@ -214,15 +208,12 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 
     // Add getters/setters/notify from properties
     for property in &obj.properties {
-        // cache the snake and pascal case
-        let property_ident_snake = property.ident.rust_ident.to_string().to_case(Case::Snake);
-        let property_ident_pascal = property.ident.rust_ident.to_string().to_case(Case::Pascal);
+        let property_ident = QPropertyName::from(&property.ident);
+        let getter_cpp = &property_ident.getter.cpp;
+        let getter_rust = property_ident.getter.rust.to_string();
 
-        // Build the C++ method declarations names
-        let getter_str = &property_ident_snake;
-        let getter_cpp = format_ident!("get{}", property_ident_pascal);
-        let setter_str = format!("set_{}", property_ident_snake);
-        let setter_cpp = format_ident!("set{}", property_ident_pascal);
+        let setter_cpp = &property_ident.setter.cpp;
+        let setter_rust = property_ident.setter.rust.to_string();
 
         let qt_type = &property.type_ident.qt_type;
         let param_type = qt_type.cxx_bridge_type_ident();
@@ -234,27 +225,27 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 
         // Add the getter and setter to C++ bridge
         cpp_functions.push(quote! {
-            #[rust_name = #getter_str]
-            fn #getter_cpp(self: &#rust_class_name_cpp) -> #param_type;
-            #[rust_name = #setter_str]
-            fn #setter_cpp(self: Pin<&mut #rust_class_name_cpp>, value: #param_type);
+            #[rust_name = #getter_rust]
+            fn #getter_cpp(self: &#cpp_class_name_rust) -> #param_type;
+            #[rust_name = #setter_rust]
+            fn #setter_cpp(self: Pin<&mut #cpp_class_name_rust>, value: #param_type);
         });
     }
 
     // Add signals emitters
     for signal in &obj.signals {
-        let signal_ident_cpp = &signal.signal_ident.cpp_ident;
-        let signal_ident_rust_str = &signal.signal_ident.rust_ident.to_string();
+        let signal_ident_cpp = &signal.signal_ident.cpp;
+        let signal_ident_rust_str = &signal.signal_ident.rust.to_string();
 
-        let queued_ident_cpp = &signal.emit_ident.cpp_ident;
-        let queued_ident_rust_str = &signal.emit_ident.rust_ident.to_string();
+        let queued_ident_cpp = &signal.emit_ident.cpp;
+        let queued_ident_rust_str = &signal.emit_ident.rust.to_string();
 
         if signal.parameters.is_empty() {
             cpp_functions.push(quote! {
                 #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #rust_class_name_cpp>);
+                fn #signal_ident_cpp(self: Pin<&mut #cpp_class_name_rust>);
                 #[rust_name = #queued_ident_rust_str]
-                fn #queued_ident_cpp(self: Pin<&mut #rust_class_name_cpp>);
+                fn #queued_ident_cpp(self: Pin<&mut #cpp_class_name_rust>);
             });
         } else {
             // For immediate parameters we want by-ref or primitive by-value
@@ -295,15 +286,15 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
                 .collect::<Vec<TokenStream>>();
             cpp_functions.push(quote! {
                 #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #rust_class_name_cpp>, #(#parameters),*);
+                fn #signal_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, #(#parameters),*);
                 #[rust_name = #queued_ident_rust_str]
-                fn #queued_ident_cpp(self: Pin<&mut #rust_class_name_cpp>, #(#parameters_queued),*);
+                fn #queued_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, #(#parameters_queued),*);
             });
         }
     }
 
     // Build the import path for the C++ header
-    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", ident_snake);
+    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", cxx_stem);
 
     // Build the module ident
     let mod_attrs = &obj.original_mod.attrs;
@@ -314,23 +305,21 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     let cxx_items = &obj.cxx_items;
 
     // Build the CXX bridge
-    let class_name_str = class_name.to_string();
-    let cxx_class_name_rust_str = cxx_class_name_rust.to_string();
     let output = quote! {
         #(#mod_attrs)*
         #mod_vis mod #mod_ident {
             unsafe extern "C++" {
                 include!(#import_path);
 
-                #[cxx_name = #class_name_str]
-                type #rust_class_name_cpp;
+                #[cxx_name = #cpp_class_name_cpp]
+                type #cpp_class_name_rust;
 
                 #(#cpp_functions)*
             }
 
             extern "Rust" {
-                #[cxx_name = #cxx_class_name_rust_str]
-                type #rust_class_name;
+                #[cxx_name = #rust_struct_name_cpp]
+                type #rust_struct_name_rust;
 
                 #(#rs_functions)*
             }
@@ -350,7 +339,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
     let ident = &obj.signal_ident;
 
     for signal in &obj.signals {
-        let emit_ident = &signal.emit_ident.rust_ident;
+        let emit_ident = &signal.emit_ident.rust;
         let enum_ident = &signal.enum_ident;
         let parameters = signal
             .parameters
@@ -382,7 +371,7 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
                 }
             })
             .collect::<Vec<TokenStream>>();
-        let signal_ident = &signal.signal_ident.rust_ident;
+        let signal_ident = &signal.signal_ident.rust;
 
         queued_cases.push(quote! {
             #ident::#enum_ident { #(#parameters),* } => self.#emit_ident(#(#parameters_to_value_queued),*),
@@ -450,7 +439,7 @@ fn invokable_generate_wrapper(
     invokable: &Invokable,
     ident_wrapper: &Ident,
 ) -> Result<TokenStream, TokenStream> {
-    let ident = &invokable.ident.rust_ident;
+    let ident = &invokable.ident.rust;
     let mutablility = if invokable.mutable {
         Some(quote! { mut })
     } else {
@@ -521,8 +510,10 @@ fn invokable_generate_wrapper(
 /// Generate all the Rust code required to communicate with a QObject backed by generated C++ code
 pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // Cache the rust class name
-    let rust_class_name = &obj.original_rust_struct.ident;
-    let class_name_cpp = format_ident!("{}Qt", rust_class_name);
+    let qobject_idents = naming::qobject::QObjectName::from(&obj.original_rust_struct.ident);
+    let cpp_class_name_rust = qobject_idents.cpp_class.rust;
+    let rust_struct_name_rust = qobject_idents.rust_struct.rust;
+    let cxx_qt_thread_ident = qobject_idents.cxx_qt_thread_class;
 
     // Generate cxx block
     let cxx_block = generate_qobject_cxx(obj)?;
@@ -569,8 +560,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         }
 
         quote! {
-            impl From<&#class_name_cpp> for #data_struct_name {
-                fn from(#value_ident: &#class_name_cpp) -> Self {
+            impl From<&#cpp_class_name_rust> for #data_struct_name {
+                fn from(#value_ident: &#cpp_class_name_rust) -> Self {
                     Self {
                         #(#fields_into),*
                     }
@@ -587,7 +578,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let invokable_method_wrappers = obj
         .invokables
         .iter()
-        .map(|i| invokable_generate_wrapper(i, &i.ident_wrapper.rust_ident))
+        .map(|i| invokable_generate_wrapper(i, &i.ident_wrapper.rust))
         .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
     let invokable_methods = obj
         .invokables
@@ -608,7 +599,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     );
 
     let rust_struct_impl = quote! {
-        impl #rust_class_name {
+        impl #rust_struct_name_rust {
             #(#invokable_method_wrappers)*
         }
     };
@@ -617,12 +608,12 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let mut grab_values = vec![];
     for (qt_type, field) in &data_fields_no_ptr {
         if let Some(field_ident) = &field.ident {
-            let field_name = field_ident.clone();
-            let setter_name = format_ident!("set_{}", field_name);
+            let property_ident = QPropertyName::from(field_ident);
+            let setter_name = property_ident.setter.rust;
 
             if qt_type.is_opaque() {
                 grab_values.push(quote! {
-                    self.as_mut().#setter_name(data.#field_name.as_ref().unwrap());
+                    self.as_mut().#setter_name(data.#field_ident.as_ref().unwrap());
                 });
             } else {
                 let is_ref = if qt_type.is_ref() {
@@ -632,15 +623,14 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
                 };
 
                 grab_values.push(quote! {
-                    self.as_mut().#setter_name(#is_ref data.#field_name);
+                    self.as_mut().#setter_name(#is_ref data.#field_ident);
                 });
             }
         }
     }
 
-    let cxx_qt_thread_ident = format_ident!("{}CxxQtThread", rust_class_name);
     let qobject_impl = quote! {
-        impl #class_name_cpp {
+        impl #cpp_class_name_rust {
             #(#invokable_methods)*
             #(#methods)*
 
@@ -653,17 +643,8 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     };
 
     // Create the namespace for internal use
-    //
-    // TODO: when we move to generator share this with gen_cpp
-    let mut namespace_internals = vec![];
-    if !obj.namespace.is_empty() {
-        namespace_internals.push(obj.namespace.to_owned());
-    }
-    namespace_internals.push(format!(
-        "cxx_qt_{}",
-        obj.ident.to_string().to_case(Case::Snake)
-    ));
-    let namespace_internals = namespace_internals.join("::");
+    let namespace_internals =
+        naming::namespace::NamespaceName::from_pair_str(&obj.namespace, &obj.ident).internal;
 
     // TODO: For now we proxy the gen_cpp code into what the writer phase expects
     // later this code will be moved into a generator phase
@@ -694,7 +675,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             .content
             .unwrap_or((syn::token::Brace::default(), vec![]))
             .1,
-        cpp_struct_ident: format_ident!("{}Qt", obj.ident),
+        cpp_struct_ident: cpp_class_name_rust,
         cxx_qt_thread_ident,
         namespace: obj.namespace.to_owned(),
         namespace_internals,

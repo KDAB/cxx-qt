@@ -11,7 +11,7 @@ pub struct ParsedQProperty {
     pub ident: Ident,
     /// The [syn::Type] of the property
     pub ty: Type,
-    /// The [syn::Visiblity] of the property
+    /// The [syn::Visibility] of the property
     pub vis: Visibility,
     // TODO: later this will describe if the property has an attribute
     // stating that the a conversion in C++ needs to occur (eg UniquePtr<T> to T)..
