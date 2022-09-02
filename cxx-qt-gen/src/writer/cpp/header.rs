@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::writer::cpp::namespace_pair;
 use indoc::formatdoc;
 
 /// Extract the header from a given CppFragmentPair
@@ -33,6 +34,87 @@ fn create_block(block: &str, items: &[&str]) -> String {
     }
 }
 
+/// For a given GeneratedCppBlocks write the forward declare
+fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
+    let (namespace_start, namespace_end) = namespace_pair(generated);
+
+    generated
+        .qobjects
+        .iter()
+        .map(|qobject| {
+            formatdoc! { r#"
+                {namespace_start}
+                class {ident};
+                using {cxx_qt_thread_ident} = rust::cxxqtlib1::CxxQtThread<{ident}>;
+                {namespace_end}
+            "#,
+            ident = qobject.ident,
+            cxx_qt_thread_ident = qobject.cxx_qt_thread_ident,
+            namespace_start = namespace_start,
+            namespace_end = namespace_end,
+            }
+        })
+        .collect::<Vec<String>>()
+}
+
+/// For a given GeneratedCppBlocks write the classes
+fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
+    let (namespace_start, namespace_end) = namespace_pair(generated);
+
+    generated.qobjects.iter().map(|qobject| {
+        formatdoc! { r#"
+            {namespace_start}
+            class {ident} : public {base_class}
+            {{
+              Q_OBJECT
+              {metaobjects}
+
+            public:
+              explicit {ident}(QObject* parent = nullptr);
+              ~{ident}();
+              const {rust_ident}& unsafeRust() const;
+              {rust_ident}& unsafeRustMut();
+              std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
+
+            {methods}
+            {slots}
+            {signals}
+            private:
+              rust::Box<{rust_ident}> m_rustObj;
+              std::shared_ptr<std::mutex> m_rustObjMutex;
+              std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
+            }};
+
+            static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
+            {namespace_end}
+
+            namespace {namespace_internals} {{
+            std::unique_ptr<{ident}>
+            newCppObject();
+            }} // namespace {namespace_internals}
+
+            Q_DECLARE_METATYPE({metatype}*)
+        "#,
+        ident = qobject.ident,
+        cxx_qt_thread_ident = qobject.cxx_qt_thread_ident,
+        namespace_start = namespace_start,
+        namespace_end = namespace_end,
+        namespace_internals = qobject.namespace_internals,
+        rust_ident = qobject.rust_ident,
+        base_class = qobject.base_class,
+        metaobjects = qobject.metaobjects.join("\n  "),
+        methods = create_block("public", &qobject.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
+        slots = create_block("public Q_SLOTS", &qobject.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
+        signals = create_block("Q_SIGNALS", &qobject.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
+        metatype = if generated.namespace.is_empty() {
+            qobject.ident.clone()
+        } else {
+            format!("{namespace}::{ident}", namespace = generated.namespace, ident = qobject.ident)
+        },
+        }
+    }).collect::<Vec<String>>()
+}
+
 /// For a given GeneratedCppBlocks write this into a C++ header
 pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     formatdoc! {r#"
@@ -46,70 +128,14 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         class CxxQtThread;
         }}
 
-        {namespace_start}
-        class {ident};
-        using {cxx_qt_thread_ident} = rust::cxxqtlib1::CxxQtThread<{ident}>;
-        {namespace_end}
-
+        {forward_declare}
         #include "cxx-qt-gen/include/{cxx_stem}.cxx.h"
 
-        {namespace_start}
-        class {ident} : public {base_class}
-        {{
-          Q_OBJECT
-          {metaobjects}
-
-        public:
-          explicit {ident}(QObject* parent = nullptr);
-          ~{ident}();
-          const {rust_ident}& unsafeRust() const;
-          {rust_ident}& unsafeRustMut();
-          std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
-
-        {methods}
-        {slots}
-        {signals}
-        private:
-          rust::Box<{rust_ident}> m_rustObj;
-          std::shared_ptr<std::mutex> m_rustObjMutex;
-          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
-        }};
-
-        static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
-        {namespace_end}
-
-        namespace {namespace_internals} {{
-        std::unique_ptr<{ident}>
-        newCppObject();
-        }} // namespace {namespace_internals}
-
-        Q_DECLARE_METATYPE({metatype}*)
+        {qobjects}
     "#,
     cxx_stem = generated.cxx_stem,
-    ident = generated.ident,
-    cxx_qt_thread_ident = generated.cxx_qt_thread_ident,
-    namespace_start = if generated.namespace.is_empty() {
-        "".to_owned()
-    } else {
-        format!("namespace {namespace} {{", namespace = generated.namespace)
-    },
-    namespace_end = if generated.namespace.is_empty() {
-        "".to_owned()
-    } else {
-        format!("}} // namespace {namespace}", namespace = generated.namespace)
-    },
-    namespace_internals = generated.namespace_internals,
-    rust_ident = generated.rust_ident,
-    base_class = generated.base_class,
-    metaobjects = generated.metaobjects.join("\n  "),
-    methods = create_block("public", &generated.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
-    slots = create_block("public Q_SLOTS", &generated.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
-    signals = create_block("Q_SIGNALS", &generated.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
-    metatype = if generated.namespace.is_empty() {
-        generated.ident.clone()
-    } else {
-        format!("{namespace}::{ident}", namespace = generated.namespace, ident = generated.ident)
-    },
+    forward_declare = forward_declare(generated).join("\n"),
+    qobjects = qobjects_header(generated).join("\n"),
     }
 }
 
@@ -118,7 +144,8 @@ mod tests {
     use super::*;
 
     use crate::writer::cpp::tests::{
-        create_generated_cpp, create_generated_cpp_no_namespace, expected_header,
+        create_generated_cpp, create_generated_cpp_multi_qobjects,
+        create_generated_cpp_no_namespace, expected_header, expected_header_multi_qobjects,
         expected_header_no_namespace,
     };
     use indoc::indoc;
@@ -151,6 +178,13 @@ mod tests {
         let generated = create_generated_cpp();
         let output = write_cpp_header(&generated);
         assert_str_eq!(output, expected_header());
+    }
+
+    #[test]
+    fn test_write_cpp_header_multi_qobjects() {
+        let generated = create_generated_cpp_multi_qobjects();
+        let output = write_cpp_header(&generated);
+        assert_str_eq!(output, expected_header_multi_qobjects());
     }
 
     #[test]
