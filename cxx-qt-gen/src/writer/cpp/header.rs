@@ -73,8 +73,6 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
           rust::Box<{rust_ident}> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
-
-          {members}
         }};
 
         static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
@@ -107,7 +105,6 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     methods = create_block("public", &generated.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
     slots = create_block("public Q_SLOTS", &generated.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
     signals = create_block("Q_SIGNALS", &generated.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
-    members = generated.members.join("\n  "),
     metatype = if generated.namespace.is_empty() {
         generated.ident.clone()
     } else {
