@@ -13,7 +13,7 @@ Invokables can be defined using the [QObject Struct](../qobject/qobject_struct.m
 
 ## Properties
 
-Properties can be defined using the [Data struct](../qobject/data_struct.md), these will be exposed as a getter and setter method, a changed signal, and a `Q_PROPERTY` on the C++ class and therefore as QML properties too.
+Properties can be defined using the [QObject struct](../qobject/qobject_struct.md), these will be exposed as a getter and setter method, a changed signal, and a `Q_PROPERTY` on the C++ class and therefore as QML properties too.
 
 ## Signals
 

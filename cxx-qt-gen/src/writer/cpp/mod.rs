@@ -189,7 +189,6 @@ mod tests {
         private:
           rust::Box<MyObjectRust> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
-          bool m_initialised = false;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
 
           int m_count;
@@ -259,7 +258,6 @@ mod tests {
         private:
           rust::Box<MyObjectRust> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
-          bool m_initialised = false;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
 
           int m_count;
@@ -291,8 +289,6 @@ mod tests {
           , m_rustObjMutex(std::make_shared<std::mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
-          cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
-          m_initialised = true;
         }
 
         MyObject::~MyObject()
@@ -388,8 +384,6 @@ mod tests {
           , m_rustObjMutex(std::make_shared<std::mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
-          cxx_qt_my_object::initialiseCpp(*this);
-          m_initialised = true;
         }
 
         MyObject::~MyObject()

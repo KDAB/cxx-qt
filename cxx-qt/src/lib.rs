@@ -15,13 +15,12 @@ use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
 /// ```ignore
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod my_object {
+///     #[cxx_qt::qobject]
 ///     #[derive(Default)]
-///     struct Data {
+///     struct RustObj {
+///         #[qproperty]
 ///         property: i32,
 ///     }
-///
-///     #[derive(Default)]
-///     struct RustObj;
 ///
 ///     impl cxx_qt::QObject<RustObj> {
 ///         #[qinvokable]
@@ -117,13 +116,12 @@ pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
 /// ```ignore
 /// #[cxx_qt::bridge]
 /// mod my_object {
+///     #[cxx_qt::qobject]
 ///     #[derive(Default)]
-///     struct Data {
+///     struct RustObj {
+///         #[qproperty]
 ///         property: i32,
 ///     }
-///
-///     #[derive(Default)]
-///     struct RustObj;
 ///
 ///     impl cxx_qt::QObject<RustObj> {
 ///         #[qinvokable]

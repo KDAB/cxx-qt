@@ -28,9 +28,19 @@ To mark a method as invokable simply add the `#[qinvokable]` attribute to the Ru
 
 Note to access properties on the C++ object use [Cpp Object](./cpp_object.md).
 
+## Properties
+
+Fields within the `#[cxx_qt::qobject]` marked struct can be tagged with the `#[qproperty]`, this declares which fields should be exposed as `Q_PROPERTY`s on the QObject.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/src/struct_properties.rs:book_macro_code}}
+```
+
+If you want to provide default values for your QObject, then instead of deriving implement the `Default` trait for the struct.
+
 ## Private Methods and Fields
 
-Unlike the [Data Struct](./data_struct.md) fields which are defined on the `#[cxx_qt::qobject]` marked struct are not exposed as properties to Qt. These can be considered as "private to Rust" fields, and are useful for storing channels for threading or internal information for the QObject.
+Fields within the `#[cxx_qt::qobject]` marked struct that aren't tagged are not exposed as properties to Qt. These can be considered as "private to Rust" fields, and are useful for storing channels for threading or internal information for the QObject.
 
 Methods implemented using `impl T` (and not `impl cxx_qt::QObject<T>`) are just normal Rust member methods.
 Therefore they do not have access to any C++ or QObject functionality (e.g. emitting Signals, changing properties, etc.)

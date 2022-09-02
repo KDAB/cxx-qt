@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::{naming, naming::CombinedIdent};
-use crate::parser::{signals::ParsedSignalsEnum, Parser};
+use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum, Parser};
 use proc_macro2::{Span, TokenStream};
 use std::result::Result;
 use syn::{spanned::Spanned, token::Brace, *};
@@ -129,8 +129,6 @@ pub struct QObject {
     pub(crate) cxx_items: Vec<Item>,
     /// The original Rust mod for the struct
     pub(crate) original_mod: ItemMod,
-    /// The original Data struct that the object was generated from
-    pub(crate) original_data_struct: ItemStruct,
     /// The original Rust struct that the object was generated from
     pub(crate) original_rust_struct: ItemStruct,
     /// The original Signal enum that the signals were generated from
@@ -452,68 +450,41 @@ fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invoka
 }
 
 /// Extracts all the attributes from a struct and generates properties from them
-fn extract_properties(s: &ItemStruct, qt_ident: &Ident) -> Result<Vec<Property>, TokenStream> {
-    let mut properties = Vec::new();
+fn extract_property(property: &ParsedQProperty, qt_ident: &Ident) -> Result<Property, TokenStream> {
+    // Extract the type of the field
+    let type_ident;
 
-    // TODO: we need to set up an exclude list of properties names and give
-    // the user an error if they use one of those names.
-    // For instance "rustObj" is not allowed as that would cause a collision.
-
-    // Read the properties from the struct
-    //
-    // Extract only the named fields (eg "Point { x: f64, y: f64 }") and ignore any
-    // unnamed fields (eg "Some(T)") or units (eg "None")
-    if let ItemStruct {
-        fields: Fields::Named(FieldsNamed { named, .. }),
-        ..
-    } = s
-    {
-        // Process each named field individually
-        for name in named {
-            // Extract only fields with an ident (should be all as these are named fields).
-            if let Field {
-                // TODO: later we'll need to read the attributes (eg qt_property) here
-                // attrs,
-                ident: Some(ident),
-                ty,
-                ..
-            } = name
-            {
-                // Extract the type of the field
-                let type_ident;
-
-                match extract_type_ident(ty, qt_ident) {
-                    Ok(result) => type_ident = result,
-                    Err(ExtractTypeIdentError::InvalidArguments(span)) => {
-                        return Err(Error::new(
-                            span,
-                            "Named field should not be angle bracketed or parenthesized.",
-                        )
-                        .to_compile_error());
-                    }
-                    Err(ExtractTypeIdentError::InvalidType(span)) => {
-                        return Err(
-                            Error::new(span, "Invalid name field ident format.").to_compile_error()
-                        )
-                    }
-                    Err(ExtractTypeIdentError::IdentEmpty(span)) => {
-                        return Err(Error::new(span, "Named field type ident must have at least one segment").to_compile_error())
-                    }
-                    Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => {
-                        return Err(Error::new(span, "First named field type ident segment must start with 'crate' if there are multiple").to_compile_error())
-                    }
-                }
-
-                // Build and push the property
-                properties.push(Property {
-                    ident: ident.clone(),
-                    type_ident,
-                });
-            }
+    match extract_type_ident(&property.ty, qt_ident) {
+        Ok(result) => type_ident = result,
+        Err(ExtractTypeIdentError::InvalidArguments(span)) => {
+            return Err(Error::new(
+                span,
+                "Named field should not be angle bracketed or parenthesized.",
+            )
+            .to_compile_error());
         }
+        Err(ExtractTypeIdentError::InvalidType(span)) => {
+            return Err(Error::new(span, "Invalid name field ident format.").to_compile_error())
+        }
+        Err(ExtractTypeIdentError::IdentEmpty(span)) => {
+            return Err(Error::new(
+                span,
+                "Named field type ident must have at least one segment",
+            )
+            .to_compile_error())
+        }
+        Err(ExtractTypeIdentError::UnknownAndNotCrate(span)) => return Err(Error::new(
+            span,
+            "First named field type ident segment must start with 'crate' if there are multiple",
+        )
+        .to_compile_error()),
     }
 
-    Ok(properties)
+    // Build and push the property
+    Ok(Property {
+        ident: property.ident.clone(),
+        type_ident,
+    })
 }
 
 /// Extracts all the fields from an enum and generates signals from them
@@ -582,10 +553,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
     // Find the items from the module
     let original_mod = parser.passthrough_module.clone();
 
-    // Prepare variables to store struct, invokables, and other data
-    //
-    // The original Data Item::Struct if one is found
-    let original_data_struct = qobject.data_struct;
     // The original #[cxx_qt::qobject] marked struct Item::Struct if one is found
     //
     // qobject_struct will always exist if we have a qobject, so unwrap for now
@@ -616,12 +583,12 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         .unwrap_or((Brace::default(), vec![]))
         .1;
 
-    // Read properties from the Data struct
-    let object_properties = if let Some(ref original_struct) = original_data_struct {
-        extract_properties(original_struct, &qt_ident)?
-    } else {
-        vec![]
-    };
+    // Read properties
+    let object_properties = qobject
+        .properties
+        .iter()
+        .map(|property| extract_property(property, &qt_ident))
+        .collect::<Result<Vec<Property>, TokenStream>>()?;
 
     // Read signals from the Signal enum
     //
@@ -648,8 +615,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         namespace: parser.cxx_qt_data.namespace,
         cxx_items,
         original_mod,
-        original_data_struct: original_data_struct
-            .unwrap_or_else(|| syn::parse_str("pub struct Data;").unwrap()),
         original_signal_enum,
         original_rust_struct,
         original_passthrough_decls,
@@ -673,22 +638,10 @@ mod tests {
         assert_eq!(qobject.invokables.len(), 0);
         assert_eq!(qobject.properties.len(), 1);
 
-        assert_eq!(qobject.original_passthrough_decls.len(), 2);
-
-        // Check that impl Default was found for Data
-        if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[0] {
-            if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
-                assert_eq!(path.segments.len(), 1);
-                assert_eq!(path.segments[0].ident.to_string(), "Data");
-            } else {
-                panic!("Trait impl was not a TypePath");
-            }
-        } else {
-            panic!("Expected an impl block");
-        }
+        assert_eq!(qobject.original_passthrough_decls.len(), 1);
 
         // Check that impl Default was found for RustObj
-        if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[1] {
+        if let Item::Impl(trait_impl) = &qobject.original_passthrough_decls[0] {
             if let Type::Path(TypePath { path, .. }) = &*trait_impl.self_ty {
                 assert_eq!(path.segments.len(), 1);
                 assert_eq!(path.segments[0].ident.to_string(), "MyObject");
@@ -826,7 +779,7 @@ mod tests {
         assert_eq!(qobject.methods.len(), 0);
 
         // Check that there is a use, enum and fn declaration
-        assert_eq!(qobject.original_passthrough_decls.len(), 4);
+        assert_eq!(qobject.original_passthrough_decls.len(), 3);
 
         // Check that we have a CXX passthrough item
         assert_eq!(qobject.cxx_items.len(), 18);
@@ -839,8 +792,7 @@ mod tests {
         let qobject = extract_qobject(&module).unwrap();
 
         // Check that it got the properties and that the idents are correct
-        assert_eq!(qobject.properties.len(), 2);
-        assert_eq!(qobject.original_data_struct.ident.to_string(), "Data");
+        assert_eq!(qobject.properties.len(), 3);
 
         // Check first property
         let prop_first = &qobject.properties[0];
@@ -849,8 +801,13 @@ mod tests {
 
         // Check second property
         let prop_second = &qobject.properties[1];
-        assert_eq!(prop_second.ident.to_string(), "opaque");
+        assert_eq!(prop_second.ident.to_string(), "trivial");
         assert!(!prop_second.type_ident.is_ref);
+
+        // Check third property
+        let prop_third = &qobject.properties[2];
+        assert_eq!(prop_third.ident.to_string(), "opaque");
+        assert!(!prop_third.type_ident.is_ref);
     }
 
     #[test]

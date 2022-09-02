@@ -15,10 +15,6 @@ use syn::{spanned::Spanned, Error, Fields, ImplItem, ImplItemMethod, Item, ItemS
 pub struct ParsedQObject {
     /// The base class of the struct
     pub base_class: Option<String>,
-    /// Data struct that currently stores the properties for the QObject
-    ///
-    /// In the future this will be removed
-    pub data_struct: Option<ItemStruct>,
     /// QObject struct that stores the invokables for the QObject
     //
     // TODO: this should not be optional

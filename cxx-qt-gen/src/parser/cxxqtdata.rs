@@ -111,20 +111,10 @@ impl ParsedCxxQtData {
                     ));
                 }
                 return Ok(None);
-            } else {
-                // TODO: Once Data and "RustObj" have been merged this can be removed
-                if !self.qobjects.is_empty() && path_compare_str(path, &["Data"]) {
-                    // TODO: for now we assume that Data is related to the only struct
-                    let qobject_ident = self.qobjects.keys().next().unwrap().clone();
-                    self.qobjects
-                        .entry(qobject_ident)
-                        .and_modify(|qobject| qobject.others.push(Item::Impl(imp)));
-                    return Ok(None);
-                // Find if we are an impl block for a qobject
-                } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
-                    qobject.others.push(Item::Impl(imp));
-                    return Ok(None);
-                }
+            // Find if we are an impl block for a qobject
+            } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
+                qobject.others.push(Item::Impl(imp));
+                return Ok(None);
             }
         }
 
@@ -163,19 +153,7 @@ impl ParsedCxxQtData {
             }
         }
 
-        // TODO: for now we assume that Data is related to the only struct in the qobjects
-        //
-        // Once Data and "RustObj" have been merged this can be removed
-        match item_struct.ident.to_string().as_str() {
-            "Data" if !self.qobjects.is_empty() => {
-                let qobject_ident = self.qobjects.keys().next().unwrap().clone();
-                self.qobjects
-                    .entry(qobject_ident)
-                    .and_modify(|qobject| qobject.data_struct = Some(item_struct.clone()));
-                Ok(None)
-            }
-            _others => Ok(Some(Item::Struct(item_struct))),
-        }
+        Ok(Some(Item::Struct(item_struct)))
     }
 }
 
@@ -304,18 +282,6 @@ mod tests {
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_struct_valid_data() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = tokens_to_syn(quote! {
-            struct Data;
-        });
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].data_struct.is_some());
     }
 
     #[test]
@@ -463,20 +429,6 @@ mod tests {
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_impl_valid_data() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = tokens_to_syn(quote! {
-            impl Data {
-                fn method() {}
-            }
-        });
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
     }
 
     #[test]

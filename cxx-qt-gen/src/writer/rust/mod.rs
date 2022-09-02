@@ -53,10 +53,6 @@ fn cxx_common_blocks(
                 #[cxx_name = "createRs"]
                 #[namespace = #namespace_internals]
                 fn create_rs() -> Box<#rust_struct_ident>;
-
-                #[cxx_name = "initialiseCpp"]
-                #[namespace = #namespace_internals]
-                fn initialise_cpp(cpp: Pin<&mut #cpp_struct_ident>);
             }
         },
     ]
@@ -107,10 +103,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
             pub fn create_rs() -> std::boxed::Box<#rust_struct_ident> {
                 std::default::Default::default()
-            }
-
-            pub fn initialise_cpp(cpp: std::pin::Pin<&mut #cpp_struct_ident>) {
-                cpp.grab_values_from_data(Data::default());
             }
         }
     }
@@ -205,10 +197,6 @@ mod tests {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
                     fn create_rs() -> Box<MyObject>;
-
-                    #[cxx_name = "initialiseCpp"]
-                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-                    fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
                 }
             }
 
@@ -232,10 +220,6 @@ mod tests {
 
                 pub fn create_rs() -> std::boxed::Box<MyObject> {
                     std::default::Default::default()
-                }
-
-                pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-                    cpp.grab_values_from_data(Data::default());
                 }
             }
         }

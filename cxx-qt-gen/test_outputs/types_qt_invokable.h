@@ -45,7 +45,6 @@ public:
 private:
   rust::Box<MyObjectRust> m_rustObj;
   std::shared_ptr<std::mutex> m_rustObjMutex;
-  bool m_initialised = false;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
 };

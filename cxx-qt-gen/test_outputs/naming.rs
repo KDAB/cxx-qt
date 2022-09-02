@@ -6,10 +6,8 @@ mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[rust_name = "property_name"]
-        fn getPropertyName(self: &MyObjectQt) -> i32;
-        #[rust_name = "set_property_name"]
-        fn setPropertyName(self: Pin<&mut MyObjectQt>, value: i32);
+        #[rust_name = "emit_property_name_changed"]
+        fn emitPropertyNameChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
@@ -18,6 +16,11 @@ mod ffi {
 
         #[cxx_name = "invokableNameWrapper"]
         fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
+
+        #[cxx_name = "getPropertyName"]
+        fn get_property_name(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        #[cxx_name = "setPropertyName"]
+        fn set_property_name(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
 
     unsafe extern "C++" {
@@ -52,10 +55,6 @@ mod ffi {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -71,43 +70,43 @@ mod cxx_qt_ffi {
     use std::pin::Pin;
 
     #[derive(Default)]
-    pub struct MyObject;
+    pub struct MyObject {
+        property_name: i32,
+    }
 
     impl MyObject {
+        pub fn get_property_name(&self, cpp: &MyObjectQt) -> i32 {
+            cpp.get_property_name()
+        }
+
+        pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_property_name(value);
+        }
+
         pub fn invokable_name_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
             cpp.invokable_name();
         }
     }
 
     impl MyObjectQt {
+        pub fn get_property_name(&self) -> i32 {
+            self.rust().property_name
+        }
+
+        pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
+            unsafe {
+                self.as_mut().rust_mut().property_name = value;
+            }
+            self.as_mut().emit_property_name_changed();
+        }
+
         pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");
             self.as_mut().set_property_name(5);
-        }
-
-        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
-            self.as_mut().set_property_name(data.property_name);
-        }
-    }
-
-    #[derive(Default)]
-    pub struct Data {
-        property_name: i32,
-    }
-
-    impl From<&MyObjectQt> for Data {
-        fn from(value: &MyObjectQt) -> Self {
-            Self {
-                property_name: value.property_name().into(),
-            }
         }
     }
 
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-        cpp.grab_values_from_data(Data::default());
     }
 }

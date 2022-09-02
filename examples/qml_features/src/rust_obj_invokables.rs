@@ -6,19 +6,20 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 pub mod ffi {
-    #[derive(Default)]
-    pub struct Data {
-        number: i32,
-    }
-
     #[cxx_qt::qobject]
     pub struct RustObjInvokables {
+        #[qproperty]
+        number: i32,
+
         rust_only_field: i32,
     }
 
     impl Default for RustObjInvokables {
         fn default() -> Self {
-            Self { rust_only_field: 1 }
+            Self {
+                number: 0,
+                rust_only_field: 1,
+            }
         }
     }
 
@@ -26,7 +27,7 @@ pub mod ffi {
         // ANCHOR: book_cpp_obj
         #[qinvokable]
         pub fn invokable_mutate_cpp(self: Pin<&mut Self>) {
-            let new_number = self.number() * 2;
+            let new_number = self.get_number() * 2;
             self.set_number(new_number);
         }
         // ANCHOR_END: book_cpp_obj

@@ -13,26 +13,24 @@ mod ffi {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct Types {
+        #[qproperty]
         variant: UniquePtr<QVariant>,
     }
 
-    impl Default for Data {
+    impl Default for Types {
         fn default() -> Self {
-            Data {
+            Self {
                 variant: QVariant::from(1_i32),
             }
         }
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct Types;
-
     impl cxx_qt::QObject<Types> {
         #[qinvokable]
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
-            match self.variant().value() {
+            match self.get_variant().value() {
                 QVariantValue::Bool(b) => {
                     self.as_mut()
                         .set_variant(QVariant::from(!b).as_ref().unwrap());

@@ -22,13 +22,17 @@ pub mod ffi {
     }
     // ANCHOR_END: book_signals_enum
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct Signals {
+        #[qproperty]
         data: i32,
+        #[qproperty]
         trivial: QPoint,
+        #[qproperty]
         opaque: UniquePtr<QVariant>,
     }
 
-    impl Default for Data {
+    impl Default for Signals {
         fn default() -> Self {
             Self {
                 data: 0,
@@ -38,10 +42,6 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct Signals;
-
     // ANCHOR: book_rust_obj_impl
     impl cxx_qt::QObject<Signals> {
         #[qinvokable]
@@ -50,14 +50,16 @@ pub mod ffi {
                 self.as_mut().emit_immediate(Signal::Ready);
             }
 
-            let signal = Signal::RustDataChanged { data: self.data() };
+            let signal = Signal::RustDataChanged {
+                data: self.get_data(),
+            };
             self.as_mut().emit_queued(signal);
             let signal = Signal::TrivialDataChanged {
-                trivial: self.trivial().clone(),
+                trivial: self.get_trivial(),
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::OpaqueDataChanged {
-                opaque: QVariant::from_ref(self.opaque()),
+                opaque: self.get_opaque(),
             };
             self.as_mut().emit_queued(signal);
         }

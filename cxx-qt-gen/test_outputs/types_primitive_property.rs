@@ -6,55 +6,82 @@ mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[rust_name = "boolean"]
-        fn getBoolean(self: &MyObjectQt) -> bool;
-        #[rust_name = "set_boolean"]
-        fn setBoolean(self: Pin<&mut MyObjectQt>, value: bool);
+        #[rust_name = "emit_boolean_changed"]
+        fn emitBooleanChanged(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "float_32"]
-        fn getFloat32(self: &MyObjectQt) -> f32;
-        #[rust_name = "set_float_32"]
-        fn setFloat32(self: Pin<&mut MyObjectQt>, value: f32);
+        #[rust_name = "emit_float_32_changed"]
+        fn emitFloat32Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "float_64"]
-        fn getFloat64(self: &MyObjectQt) -> f64;
-        #[rust_name = "set_float_64"]
-        fn setFloat64(self: Pin<&mut MyObjectQt>, value: f64);
+        #[rust_name = "emit_float_64_changed"]
+        fn emitFloat64Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "int_8"]
-        fn getInt8(self: &MyObjectQt) -> i8;
-        #[rust_name = "set_int_8"]
-        fn setInt8(self: Pin<&mut MyObjectQt>, value: i8);
+        #[rust_name = "emit_int_8_changed"]
+        fn emitInt8Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "int_16"]
-        fn getInt16(self: &MyObjectQt) -> i16;
-        #[rust_name = "set_int_16"]
-        fn setInt16(self: Pin<&mut MyObjectQt>, value: i16);
+        #[rust_name = "emit_int_16_changed"]
+        fn emitInt16Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "int_32"]
-        fn getInt32(self: &MyObjectQt) -> i32;
-        #[rust_name = "set_int_32"]
-        fn setInt32(self: Pin<&mut MyObjectQt>, value: i32);
+        #[rust_name = "emit_int_32_changed"]
+        fn emitInt32Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "uint_8"]
-        fn getUint8(self: &MyObjectQt) -> u8;
-        #[rust_name = "set_uint_8"]
-        fn setUint8(self: Pin<&mut MyObjectQt>, value: u8);
+        #[rust_name = "emit_uint_8_changed"]
+        fn emitUint8Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "uint_16"]
-        fn getUint16(self: &MyObjectQt) -> u16;
-        #[rust_name = "set_uint_16"]
-        fn setUint16(self: Pin<&mut MyObjectQt>, value: u16);
+        #[rust_name = "emit_uint_16_changed"]
+        fn emitUint16Changed(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "uint_32"]
-        fn getUint32(self: &MyObjectQt) -> u32;
-        #[rust_name = "set_uint_32"]
-        fn setUint32(self: Pin<&mut MyObjectQt>, value: u32);
+        #[rust_name = "emit_uint_32_changed"]
+        fn emitUint32Changed(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+
+        #[cxx_name = "getBoolean"]
+        fn get_boolean(self: &MyObject, cpp: &MyObjectQt) -> bool;
+        #[cxx_name = "setBoolean"]
+        fn set_boolean(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: bool);
+
+        #[cxx_name = "getFloat32"]
+        fn get_float_32(self: &MyObject, cpp: &MyObjectQt) -> f32;
+        #[cxx_name = "setFloat32"]
+        fn set_float_32(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: f32);
+
+        #[cxx_name = "getFloat64"]
+        fn get_float_64(self: &MyObject, cpp: &MyObjectQt) -> f64;
+        #[cxx_name = "setFloat64"]
+        fn set_float_64(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: f64);
+
+        #[cxx_name = "getInt8"]
+        fn get_int_8(self: &MyObject, cpp: &MyObjectQt) -> i8;
+        #[cxx_name = "setInt8"]
+        fn set_int_8(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i8);
+
+        #[cxx_name = "getInt16"]
+        fn get_int_16(self: &MyObject, cpp: &MyObjectQt) -> i16;
+        #[cxx_name = "setInt16"]
+        fn set_int_16(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i16);
+
+        #[cxx_name = "getInt32"]
+        fn get_int_32(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        #[cxx_name = "setInt32"]
+        fn set_int_32(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
+
+        #[cxx_name = "getUint8"]
+        fn get_uint_8(self: &MyObject, cpp: &MyObjectQt) -> u8;
+        #[cxx_name = "setUint8"]
+        fn set_uint_8(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: u8);
+
+        #[cxx_name = "getUint16"]
+        fn get_uint_16(self: &MyObject, cpp: &MyObjectQt) -> u16;
+        #[cxx_name = "setUint16"]
+        fn set_uint_16(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: u16);
+
+        #[cxx_name = "getUint32"]
+        fn get_uint_32(self: &MyObject, cpp: &MyObjectQt) -> u32;
+        #[cxx_name = "setUint32"]
+        fn set_uint_32(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: u32);
     }
 
     unsafe extern "C++" {
@@ -85,10 +112,6 @@ mod ffi {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -104,26 +127,7 @@ mod cxx_qt_ffi {
     use std::pin::Pin;
 
     #[derive(Default)]
-    pub struct MyObject;
-
-    impl MyObject {}
-
-    impl MyObjectQt {
-        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {
-            self.as_mut().set_boolean(data.boolean);
-            self.as_mut().set_float_32(data.float_32);
-            self.as_mut().set_float_64(data.float_64);
-            self.as_mut().set_int_8(data.int_8);
-            self.as_mut().set_int_16(data.int_16);
-            self.as_mut().set_int_32(data.int_32);
-            self.as_mut().set_uint_8(data.uint_8);
-            self.as_mut().set_uint_16(data.uint_16);
-            self.as_mut().set_uint_32(data.uint_32);
-        }
-    }
-
-    #[derive(Default)]
-    pub struct Data {
+    pub struct MyObject {
         boolean: bool,
         float_32: f32,
         float_64: f64,
@@ -135,27 +139,182 @@ mod cxx_qt_ffi {
         uint_32: u32,
     }
 
-    impl From<&MyObjectQt> for Data {
-        fn from(value: &MyObjectQt) -> Self {
-            Self {
-                boolean: value.boolean().into(),
-                float_32: value.float_32().into(),
-                float_64: value.float_64().into(),
-                int_8: value.int_8().into(),
-                int_16: value.int_16().into(),
-                int_32: value.int_32().into(),
-                uint_8: value.uint_8().into(),
-                uint_16: value.uint_16().into(),
-                uint_32: value.uint_32().into(),
+    impl MyObject {
+        pub fn get_boolean(&self, cpp: &MyObjectQt) -> bool {
+            cpp.get_boolean()
+        }
+
+        pub fn set_boolean(&mut self, cpp: Pin<&mut MyObjectQt>, value: bool) {
+            cpp.set_boolean(value);
+        }
+
+        pub fn get_float_32(&self, cpp: &MyObjectQt) -> f32 {
+            cpp.get_float_32()
+        }
+
+        pub fn set_float_32(&mut self, cpp: Pin<&mut MyObjectQt>, value: f32) {
+            cpp.set_float_32(value);
+        }
+
+        pub fn get_float_64(&self, cpp: &MyObjectQt) -> f64 {
+            cpp.get_float_64()
+        }
+
+        pub fn set_float_64(&mut self, cpp: Pin<&mut MyObjectQt>, value: f64) {
+            cpp.set_float_64(value);
+        }
+
+        pub fn get_int_8(&self, cpp: &MyObjectQt) -> i8 {
+            cpp.get_int_8()
+        }
+
+        pub fn set_int_8(&mut self, cpp: Pin<&mut MyObjectQt>, value: i8) {
+            cpp.set_int_8(value);
+        }
+
+        pub fn get_int_16(&self, cpp: &MyObjectQt) -> i16 {
+            cpp.get_int_16()
+        }
+
+        pub fn set_int_16(&mut self, cpp: Pin<&mut MyObjectQt>, value: i16) {
+            cpp.set_int_16(value);
+        }
+
+        pub fn get_int_32(&self, cpp: &MyObjectQt) -> i32 {
+            cpp.get_int_32()
+        }
+
+        pub fn set_int_32(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_int_32(value);
+        }
+
+        pub fn get_uint_8(&self, cpp: &MyObjectQt) -> u8 {
+            cpp.get_uint_8()
+        }
+
+        pub fn set_uint_8(&mut self, cpp: Pin<&mut MyObjectQt>, value: u8) {
+            cpp.set_uint_8(value);
+        }
+
+        pub fn get_uint_16(&self, cpp: &MyObjectQt) -> u16 {
+            cpp.get_uint_16()
+        }
+
+        pub fn set_uint_16(&mut self, cpp: Pin<&mut MyObjectQt>, value: u16) {
+            cpp.set_uint_16(value);
+        }
+
+        pub fn get_uint_32(&self, cpp: &MyObjectQt) -> u32 {
+            cpp.get_uint_32()
+        }
+
+        pub fn set_uint_32(&mut self, cpp: Pin<&mut MyObjectQt>, value: u32) {
+            cpp.set_uint_32(value);
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn get_boolean(&self) -> bool {
+            self.rust().boolean
+        }
+
+        pub fn set_boolean(mut self: Pin<&mut Self>, value: bool) {
+            unsafe {
+                self.as_mut().rust_mut().boolean = value;
             }
+            self.as_mut().emit_boolean_changed();
+        }
+
+        pub fn get_float_32(&self) -> f32 {
+            self.rust().float_32
+        }
+
+        pub fn set_float_32(mut self: Pin<&mut Self>, value: f32) {
+            unsafe {
+                self.as_mut().rust_mut().float_32 = value;
+            }
+            self.as_mut().emit_float_32_changed();
+        }
+
+        pub fn get_float_64(&self) -> f64 {
+            self.rust().float_64
+        }
+
+        pub fn set_float_64(mut self: Pin<&mut Self>, value: f64) {
+            unsafe {
+                self.as_mut().rust_mut().float_64 = value;
+            }
+            self.as_mut().emit_float_64_changed();
+        }
+
+        pub fn get_int_8(&self) -> i8 {
+            self.rust().int_8
+        }
+
+        pub fn set_int_8(mut self: Pin<&mut Self>, value: i8) {
+            unsafe {
+                self.as_mut().rust_mut().int_8 = value;
+            }
+            self.as_mut().emit_int_8_changed();
+        }
+
+        pub fn get_int_16(&self) -> i16 {
+            self.rust().int_16
+        }
+
+        pub fn set_int_16(mut self: Pin<&mut Self>, value: i16) {
+            unsafe {
+                self.as_mut().rust_mut().int_16 = value;
+            }
+            self.as_mut().emit_int_16_changed();
+        }
+
+        pub fn get_int_32(&self) -> i32 {
+            self.rust().int_32
+        }
+
+        pub fn set_int_32(mut self: Pin<&mut Self>, value: i32) {
+            unsafe {
+                self.as_mut().rust_mut().int_32 = value;
+            }
+            self.as_mut().emit_int_32_changed();
+        }
+
+        pub fn get_uint_8(&self) -> u8 {
+            self.rust().uint_8
+        }
+
+        pub fn set_uint_8(mut self: Pin<&mut Self>, value: u8) {
+            unsafe {
+                self.as_mut().rust_mut().uint_8 = value;
+            }
+            self.as_mut().emit_uint_8_changed();
+        }
+
+        pub fn get_uint_16(&self) -> u16 {
+            self.rust().uint_16
+        }
+
+        pub fn set_uint_16(mut self: Pin<&mut Self>, value: u16) {
+            unsafe {
+                self.as_mut().rust_mut().uint_16 = value;
+            }
+            self.as_mut().emit_uint_16_changed();
+        }
+
+        pub fn get_uint_32(&self) -> u32 {
+            self.rust().uint_32
+        }
+
+        pub fn set_uint_32(mut self: Pin<&mut Self>, value: u32) {
+            unsafe {
+                self.as_mut().rust_mut().uint_32 = value;
+            }
+            self.as_mut().emit_uint_32_changed();
         }
     }
 
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-        cpp.grab_values_from_data(Data::default());
     }
 }

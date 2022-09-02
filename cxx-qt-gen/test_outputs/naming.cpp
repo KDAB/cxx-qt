@@ -7,8 +7,6 @@ MyObject::MyObject(QObject* parent)
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
-  cxx_qt_my_object::initialiseCpp(*this);
-  m_initialised = true;
 }
 
 MyObject::~MyObject()
@@ -39,24 +37,24 @@ MyObject::qtThread() const
 qint32
 MyObject::getPropertyName() const
 {
-  return m_propertyName;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+    m_rustObj->getPropertyName(*this));
 }
 
 void
 MyObject::setPropertyName(qint32 value)
 {
-  if (!m_initialised) {
-    m_propertyName = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPropertyName(*this, value);
+}
 
-  if (value != m_propertyName) {
-    m_propertyName = value;
-
-    const auto signalSuccess = QMetaObject::invokeMethod(
-      this, "propertyNameChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitPropertyNameChanged()
+{
+  const auto signalSuccess = QMetaObject::invokeMethod(
+    this, "propertyNameChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 void

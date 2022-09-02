@@ -19,7 +19,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Building with CMake](./getting-started/5-cmake-integration.md)
 - [QObject](./qobject/index.md)
     - [Macro](./qobject/macro.md)
-    - [Data Struct](./qobject/data_struct.md)
     - [QObject marked Struct](./qobject/qobject_struct.md)
     - [Cpp Object](./qobject/cpp_object.md)
     - [Signals enum](./qobject/signals_enum.md)

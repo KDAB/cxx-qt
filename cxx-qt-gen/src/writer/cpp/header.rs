@@ -72,7 +72,6 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         private:
           rust::Box<{rust_ident}> m_rustObj;
           std::shared_ptr<std::mutex> m_rustObjMutex;
-          bool m_initialised = false;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
 
           {members}

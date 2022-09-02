@@ -9,8 +9,6 @@ MyObject::MyObject(QObject* parent)
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
-  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
-  m_initialised = true;
 }
 
 MyObject::~MyObject()

@@ -1,19 +1,25 @@
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod ffi {
-    #[derive(Default)]
-    pub struct Data {
-        boolean: bool,
-        float_32: f32,
-        float_64: f64,
-        int_8: i8,
-        int_16: i16,
-        int_32: i32,
-        uint_8: u8,
-        uint_16: u16,
-        uint_32: u32,
-    }
-
     #[cxx_qt::qobject]
     #[derive(Default)]
-    pub struct MyObject;
+    pub struct MyObject {
+        #[qproperty]
+        boolean: bool,
+        #[qproperty]
+        float_32: f32,
+        #[qproperty]
+        float_64: f64,
+        #[qproperty]
+        int_8: i8,
+        #[qproperty]
+        int_16: i16,
+        #[qproperty]
+        int_32: i32,
+        #[qproperty]
+        uint_8: u8,
+        #[qproperty]
+        uint_16: u16,
+        #[qproperty]
+        uint_32: u32,
+    }
 }

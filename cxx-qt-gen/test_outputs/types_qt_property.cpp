@@ -9,8 +9,6 @@ MyObject::MyObject(QObject* parent)
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
-  cxx_qt::my_object::cxx_qt_my_object::initialiseCpp(*this);
-  m_initialised = true;
 }
 
 MyObject::~MyObject()
@@ -38,303 +36,304 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-const QColor&
+QColor
 MyObject::getColor() const
 {
-  return m_color;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+    m_rustObj->getColor(*this));
 }
 
 void
 MyObject::setColor(const QColor& value)
 {
-  if (!m_initialised) {
-    m_color = value;
-    return;
-  }
-
-  if (value != m_color) {
-    m_color = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "colorChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setColor(*this, value);
 }
 
-const QDate&
+void
+MyObject::emitColorChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "colorChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QDate
 MyObject::getDate() const
 {
-  return m_date;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QDate, QDate>{}(
+    m_rustObj->getDate(*this));
 }
 
 void
 MyObject::setDate(const QDate& value)
 {
-  if (!m_initialised) {
-    m_date = value;
-    return;
-  }
-
-  if (value != m_date) {
-    m_date = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "dateChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setDate(*this, value);
 }
 
-const QDateTime&
+void
+MyObject::emitDateChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "dateChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QDateTime
 MyObject::getDateTime() const
 {
-  return m_dateTime;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QDateTime,
+                                         std::unique_ptr<QDateTime>>{}(
+    m_rustObj->getDateTime(*this));
 }
 
 void
 MyObject::setDateTime(const QDateTime& value)
 {
-  if (!m_initialised) {
-    m_dateTime = value;
-    return;
-  }
-
-  if (value != m_dateTime) {
-    m_dateTime = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "dateTimeChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setDateTime(*this, value);
 }
 
-const QPoint&
+void
+MyObject::emitDateTimeChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "dateTimeChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QPoint
 MyObject::getPoint() const
 {
-  return m_point;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
+    m_rustObj->getPoint(*this));
 }
 
 void
 MyObject::setPoint(const QPoint& value)
 {
-  if (!m_initialised) {
-    m_point = value;
-    return;
-  }
-
-  if (value != m_point) {
-    m_point = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "pointChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPoint(*this, value);
 }
 
-const QPointF&
+void
+MyObject::emitPointChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "pointChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QPointF
 MyObject::getPointf() const
 {
-  return m_pointf;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QPointF, QPointF>{}(
+    m_rustObj->getPointf(*this));
 }
 
 void
 MyObject::setPointf(const QPointF& value)
 {
-  if (!m_initialised) {
-    m_pointf = value;
-    return;
-  }
-
-  if (value != m_pointf) {
-    m_pointf = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "pointfChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPointf(*this, value);
 }
 
-const QRect&
+void
+MyObject::emitPointfChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "pointfChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QRect
 MyObject::getRect() const
 {
-  return m_rect;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QRect, QRect>{}(
+    m_rustObj->getRect(*this));
 }
 
 void
 MyObject::setRect(const QRect& value)
 {
-  if (!m_initialised) {
-    m_rect = value;
-    return;
-  }
-
-  if (value != m_rect) {
-    m_rect = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "rectChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setRect(*this, value);
 }
 
-const QRectF&
+void
+MyObject::emitRectChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "rectChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QRectF
 MyObject::getRectf() const
 {
-  return m_rectf;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QRectF, QRectF>{}(
+    m_rustObj->getRectf(*this));
 }
 
 void
 MyObject::setRectf(const QRectF& value)
 {
-  if (!m_initialised) {
-    m_rectf = value;
-    return;
-  }
-
-  if (value != m_rectf) {
-    m_rectf = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "rectfChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setRectf(*this, value);
 }
 
-const QSize&
+void
+MyObject::emitRectfChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "rectfChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QSize
 MyObject::getSize() const
 {
-  return m_size;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QSize, QSize>{}(
+    m_rustObj->getSize(*this));
 }
 
 void
 MyObject::setSize(const QSize& value)
 {
-  if (!m_initialised) {
-    m_size = value;
-    return;
-  }
-
-  if (value != m_size) {
-    m_size = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "sizeChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setSize(*this, value);
 }
 
-const QSizeF&
+void
+MyObject::emitSizeChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "sizeChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QSizeF
 MyObject::getSizef() const
 {
-  return m_sizef;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QSizeF, QSizeF>{}(
+    m_rustObj->getSizef(*this));
 }
 
 void
 MyObject::setSizef(const QSizeF& value)
 {
-  if (!m_initialised) {
-    m_sizef = value;
-    return;
-  }
-
-  if (value != m_sizef) {
-    m_sizef = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "sizefChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setSizef(*this, value);
 }
 
-const QString&
+void
+MyObject::emitSizefChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "sizefChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QString
 MyObject::getString() const
 {
-  return m_string;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QString, std::unique_ptr<QString>>{}(
+    m_rustObj->getString(*this));
 }
 
 void
 MyObject::setString(const QString& value)
 {
-  if (!m_initialised) {
-    m_string = value;
-    return;
-  }
-
-  if (value != m_string) {
-    m_string = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setString(*this, value);
 }
 
-const QTime&
+void
+MyObject::emitStringChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "stringChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QTime
 MyObject::getTime() const
 {
-  return m_time;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QTime, QTime>{}(
+    m_rustObj->getTime(*this));
 }
 
 void
 MyObject::setTime(const QTime& value)
 {
-  if (!m_initialised) {
-    m_time = value;
-    return;
-  }
-
-  if (value != m_time) {
-    m_time = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "timeChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setTime(*this, value);
 }
 
-const QUrl&
+void
+MyObject::emitTimeChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "timeChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QUrl
 MyObject::getUrl() const
 {
-  return m_url;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QUrl, std::unique_ptr<QUrl>>{}(
+    m_rustObj->getUrl(*this));
 }
 
 void
 MyObject::setUrl(const QUrl& value)
 {
-  if (!m_initialised) {
-    m_url = value;
-    return;
-  }
-
-  if (value != m_url) {
-    m_url = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "urlChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setUrl(*this, value);
 }
 
-const QVariant&
+void
+MyObject::emitUrlChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "urlChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
+}
+
+QVariant
 MyObject::getVariant() const
 {
-  return m_variant;
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  return rust::cxxqtlib1::cxx_qt_convert<QVariant, std::unique_ptr<QVariant>>{}(
+    m_rustObj->getVariant(*this));
 }
 
 void
 MyObject::setVariant(const QVariant& value)
 {
-  if (!m_initialised) {
-    m_variant = value;
-    return;
-  }
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setVariant(*this, value);
+}
 
-  if (value != m_variant) {
-    m_variant = value;
-
-    const auto signalSuccess =
-      QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection);
-    Q_ASSERT(signalSuccess);
-  }
+void
+MyObject::emitVariantChanged()
+{
+  const auto signalSuccess =
+    QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection);
+  Q_ASSERT(signalSuccess);
 }
 
 } // namespace cxx_qt::my_object

@@ -24,8 +24,6 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
           , m_rustObjMutex(std::make_shared<std::mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
         {{
-          {namespace_internals}::initialiseCpp(*this);
-          m_initialised = true;
         }}
 
         {ident}::~{ident}()

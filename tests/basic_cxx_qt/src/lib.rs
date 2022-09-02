@@ -15,30 +15,30 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    pub struct Data {
+    #[cxx_qt::qobject]
+    pub struct MyObject {
+        #[qproperty]
         number: i32,
+        #[qproperty]
         string: UniquePtr<QString>,
+
+        update_call_count: i32,
     }
 
-    impl Default for Data {
+    impl Default for MyObject {
         fn default() -> Self {
             Self {
                 number: 0,
                 string: QString::from_str(""),
+                update_call_count: 0,
             }
         }
-    }
-
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MyObject {
-        update_call_count: i32,
     }
 
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
         pub fn double_number_self(self: Pin<&mut Self>) {
-            let value = self.number() * 2;
+            let value = self.get_number() * 2;
             self.set_number(value);
         }
 

@@ -111,9 +111,15 @@ impl Default for SensorData {
     }
 }
 
+struct QtData {
+    average_use: f64,
+    sensors: u32,
+    total_use: f64,
+}
+
 #[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
 mod ffi {
-    use super::{NetworkChannel, Request, RequestCommand, Response, SensorData, Status};
+    use super::{NetworkChannel, QtData, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
         net::{TcpListener, TcpStream},
         prelude::*,
@@ -133,26 +139,17 @@ mod ffi {
     };
     use uuid::Uuid;
 
-    pub struct Data {
-        average_use: f64,
-        sensors: u32,
-        total_use: f64,
-    }
-
-    impl Default for Data {
-        fn default() -> Self {
-            Self {
-                average_use: 0.0,
-                sensors: 0,
-                total_use: 0.0,
-            }
-        }
-    }
-
     #[cxx_qt::qobject]
     pub struct EnergyUsage {
-        qt_rx: Receiver<Data>,
-        qt_tx: SyncSender<Data>,
+        #[qproperty]
+        average_use: f64,
+        #[qproperty]
+        sensors: u32,
+        #[qproperty]
+        total_use: f64,
+
+        qt_rx: Receiver<QtData>,
+        qt_tx: SyncSender<QtData>,
         join_handles: Option<[JoinHandle<()>; 4]>,
     }
 
@@ -160,6 +157,10 @@ mod ffi {
         fn default() -> Self {
             let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
             Self {
+                average_use: 0.0,
+                sensors: 0,
+                total_use: 0.0,
+
                 qt_rx,
                 qt_tx,
                 join_handles: None,
@@ -289,7 +290,7 @@ mod ffi {
                             };
 
                             qt_tx
-                                .send(Data {
+                                .send(QtData {
                                     average_use,
                                     sensors,
                                     total_use,
@@ -314,7 +315,11 @@ mod ffi {
                                             // and then process the required action here
                                             qobject_energy_usage
                                                 .as_mut()
-                                                .grab_values_from_data(data);
+                                                .set_average_use(data.average_use);
+                                            qobject_energy_usage.as_mut().set_sensors(data.sensors);
+                                            qobject_energy_usage
+                                                .as_mut()
+                                                .set_total_use(data.total_use);
                                         }
                                     }
                                 })

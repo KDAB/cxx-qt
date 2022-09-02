@@ -113,10 +113,6 @@ mod ffi {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs() -> Box<MyObject>;
-
-        #[cxx_name = "initialiseCpp"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn initialise_cpp(cpp: Pin<&mut MyObjectQt>);
     }
 }
 
@@ -292,24 +288,9 @@ mod cxx_qt_ffi {
         pub fn test_variant(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             variant
         }
-
-        pub fn grab_values_from_data(mut self: Pin<&mut Self>, mut data: Data) {}
-    }
-
-    #[derive(Default)]
-    pub struct Data;
-
-    impl From<&MyObjectQt> for Data {
-        fn from(_value: &MyObjectQt) -> Self {
-            Self {}
-        }
     }
 
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-
-    pub fn initialise_cpp(cpp: std::pin::Pin<&mut MyObjectQt>) {
-        cpp.grab_values_from_data(Data::default());
     }
 }
