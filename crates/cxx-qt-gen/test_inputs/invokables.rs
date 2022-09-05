@@ -33,7 +33,7 @@ mod ffi {
             );
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QColor")]
         pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
@@ -43,7 +43,7 @@ mod ffi {
             2
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QString")]
         pub fn invokable_return_static(self: Pin<&mut Self>) -> UniquePtr<QString> {
             QString::from_str("static")
         }

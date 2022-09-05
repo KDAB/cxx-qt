@@ -41,7 +41,7 @@ mod ffi {
             }
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QVariant")]
         pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),

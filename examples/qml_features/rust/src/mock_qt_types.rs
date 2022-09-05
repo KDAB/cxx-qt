@@ -108,7 +108,7 @@ mod ffi {
             self.set_color(QColor::from_rgba(0, 0, 255, 255));
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QColor")]
         pub fn test_color_invokable(&self, _color: &QColor) -> UniquePtr<QColor> {
             QColor::from_rgba(0, 255, 0, 255)
         }
@@ -142,7 +142,7 @@ mod ffi {
             self.set_date_time(new_date_time);
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QDateTime")]
         pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> UniquePtr<QDateTime> {
             QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
@@ -273,7 +273,7 @@ mod ffi {
             self.set_string(string);
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QString")]
         pub fn test_string_invokable(&self, string: &QString) -> UniquePtr<QString> {
             QString::from_str(&(string.to_string() + "/cxx-qt"))
         }
@@ -308,7 +308,7 @@ mod ffi {
             self.set_url(url);
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QUrl")]
         pub fn test_url_invokable(&self, url: &QUrl) -> UniquePtr<QUrl> {
             QUrl::from_str(&(url.string() + "/cxx-qt"))
         }
@@ -414,7 +414,7 @@ mod ffi {
             }
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QVariant")]
         pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
