@@ -65,7 +65,7 @@ mod ffi {
         pub fn change_url(self: Pin<&mut Self>) {
             let url = self.get_url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
-            self.set_url(QString::from_str(new_url).as_ref().unwrap());
+            self.set_url(QString::from_str(new_url));
         }
 
         #[qinvokable]
@@ -82,8 +82,7 @@ mod ffi {
                 return;
             }
 
-            self.as_mut()
-                .set_title(QString::from_str("Loading...").as_ref().unwrap());
+            self.as_mut().set_title(QString::from_str("Loading..."));
 
             let url = self.get_url().to_string();
             // ANCHOR: book_qt_thread
@@ -121,7 +120,7 @@ mod ffi {
                                     Event::TitleArrived(title) => {
                                         qobject_website
                                             .as_mut()
-                                            .set_title(QString::from_str(&title).as_ref().unwrap());
+                                            .set_title(QString::from_str(&title));
                                         qobject_website
                                             .as_mut()
                                             .rust_mut()

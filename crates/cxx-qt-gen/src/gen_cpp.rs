@@ -345,10 +345,6 @@ fn generate_properties_cpp(
         let ident_changed = property_ident.notify.cpp.to_string();
         let ident_emit = property_ident.emit.cpp.to_string();
 
-        // Build the C++ strings for whether the const, ref, and ptr are set for this property
-        let is_const = parameter.type_ident.as_const_str();
-        let is_ref = parameter.type_ident.as_ref_str();
-
         // Cache the type ident of the property as this is used multiple times
         let type_ident = parameter.type_ident.type_ident();
 
@@ -363,17 +359,15 @@ fn generate_properties_cpp(
                 type_ident = type_ident,
             )],
             // Set basic getter, more are added later for only pointer
-            header_public: vec![format!("{type_ident} {ident_getter}() const;",
+            header_public: vec![format!("const {type_ident}& {ident_getter}() const;",
                 ident_getter = ident_getter,
                 type_ident = type_ident,
             ), format!("void {ident_emit}();", ident_emit = ident_emit)],
             // Set the notify signals
             header_signals: vec![format!("void {ident_changed}();", ident_changed = ident_changed)],
             // Set the slots for the setter
-            header_slots: vec![format!("void {ident_setter}({is_const} {type_ident}{is_ref} value);",
+            header_slots: vec![format!("void {ident_setter}(const {type_ident}& value);",
                 ident_setter = ident_setter,
-                is_const = is_const,
-                is_ref = is_ref,
                 type_ident = type_ident,
             )],
             // The source is created later
@@ -382,18 +376,18 @@ fn generate_properties_cpp(
 
         cpp_property.source.push(formatdoc! {
             r#"
-            {type_ident}
+            const {type_ident}&
             {struct_ident}::{ident_getter}() const
             {{
                 const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<{type_ident}, {getter_type_ident}>{{}}(m_rustObj->{ident_getter}(*this));
+                return rust::cxxqtlib1::cxx_qt_convert<const {type_ident}&, const {rust_type_ident}&>{{}}(m_rustObj->{ident_getter}(*this));
             }}
 
             void
-            {struct_ident}::{ident_setter}({is_const} {type_ident}{is_ref} value)
+            {struct_ident}::{ident_setter}(const {type_ident}& value)
             {{
                 const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-                m_rustObj->{ident_setter}(*this, value);
+                m_rustObj->{ident_setter}(*this, rust::cxxqtlib1::cxx_qt_convert<{rust_type_ident}, const {type_ident}&>{{}}(value));
             }}
 
             void
@@ -409,7 +403,7 @@ fn generate_properties_cpp(
             ident_emit = ident_emit,
             struct_ident = struct_ident.to_string(),
             type_ident = type_ident,
-            getter_type_ident = if parameter.type_ident.is_opaque() {
+            rust_type_ident = if parameter.type_ident.is_opaque() {
                 format!("std::unique_ptr<{}>", type_ident)
             } else {
                 type_ident.to_string()

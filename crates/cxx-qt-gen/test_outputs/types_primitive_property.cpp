@@ -36,19 +36,20 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-bool
+const bool&
 MyObject::getBoolean() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<bool, bool>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const bool&, const bool&>{}(
     m_rustObj->getBoolean(*this));
 }
 
 void
-MyObject::setBoolean(bool value)
+MyObject::setBoolean(const bool& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setBoolean(*this, value);
+  m_rustObj->setBoolean(
+    *this, rust::cxxqtlib1::cxx_qt_convert<bool, const bool&>{}(value));
 }
 
 void
@@ -59,19 +60,20 @@ MyObject::emitBooleanChanged()
   Q_ASSERT(signalSuccess);
 }
 
-float
+const float&
 MyObject::getFloat32() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<float, float>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const float&, const float&>{}(
     m_rustObj->getFloat32(*this));
 }
 
 void
-MyObject::setFloat32(float value)
+MyObject::setFloat32(const float& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setFloat32(*this, value);
+  m_rustObj->setFloat32(
+    *this, rust::cxxqtlib1::cxx_qt_convert<float, const float&>{}(value));
 }
 
 void
@@ -82,19 +84,20 @@ MyObject::emitFloat32Changed()
   Q_ASSERT(signalSuccess);
 }
 
-double
+const double&
 MyObject::getFloat64() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<double, double>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const double&, const double&>{}(
     m_rustObj->getFloat64(*this));
 }
 
 void
-MyObject::setFloat64(double value)
+MyObject::setFloat64(const double& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setFloat64(*this, value);
+  m_rustObj->setFloat64(
+    *this, rust::cxxqtlib1::cxx_qt_convert<double, const double&>{}(value));
 }
 
 void
@@ -105,19 +108,20 @@ MyObject::emitFloat64Changed()
   Q_ASSERT(signalSuccess);
 }
 
-qint8
+const qint8&
 MyObject::getInt8() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint8, qint8>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const qint8&, const qint8&>{}(
     m_rustObj->getInt8(*this));
 }
 
 void
-MyObject::setInt8(qint8 value)
+MyObject::setInt8(const qint8& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setInt8(*this, value);
+  m_rustObj->setInt8(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint8, const qint8&>{}(value));
 }
 
 void
@@ -128,19 +132,20 @@ MyObject::emitInt8Changed()
   Q_ASSERT(signalSuccess);
 }
 
-qint16
+const qint16&
 MyObject::getInt16() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint16, qint16>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const qint16&, const qint16&>{}(
     m_rustObj->getInt16(*this));
 }
 
 void
-MyObject::setInt16(qint16 value)
+MyObject::setInt16(const qint16& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setInt16(*this, value);
+  m_rustObj->setInt16(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint16, const qint16&>{}(value));
 }
 
 void
@@ -151,19 +156,20 @@ MyObject::emitInt16Changed()
   Q_ASSERT(signalSuccess);
 }
 
-qint32
+const qint32&
 MyObject::getInt32() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(
     m_rustObj->getInt32(*this));
 }
 
 void
-MyObject::setInt32(qint32 value)
+MyObject::setInt32(const qint32& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setInt32(*this, value);
+  m_rustObj->setInt32(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 void
@@ -174,19 +180,20 @@ MyObject::emitInt32Changed()
   Q_ASSERT(signalSuccess);
 }
 
-quint8
+const quint8&
 MyObject::getUint8() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<quint8, quint8>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const quint8&, const quint8&>{}(
     m_rustObj->getUint8(*this));
 }
 
 void
-MyObject::setUint8(quint8 value)
+MyObject::setUint8(const quint8& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setUint8(*this, value);
+  m_rustObj->setUint8(
+    *this, rust::cxxqtlib1::cxx_qt_convert<quint8, const quint8&>{}(value));
 }
 
 void
@@ -197,19 +204,20 @@ MyObject::emitUint8Changed()
   Q_ASSERT(signalSuccess);
 }
 
-quint16
+const quint16&
 MyObject::getUint16() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<quint16, quint16>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const quint16&, const quint16&>{}(
     m_rustObj->getUint16(*this));
 }
 
 void
-MyObject::setUint16(quint16 value)
+MyObject::setUint16(const quint16& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setUint16(*this, value);
+  m_rustObj->setUint16(
+    *this, rust::cxxqtlib1::cxx_qt_convert<quint16, const quint16&>{}(value));
 }
 
 void
@@ -220,19 +228,20 @@ MyObject::emitUint16Changed()
   Q_ASSERT(signalSuccess);
 }
 
-quint32
+const quint32&
 MyObject::getUint32() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<quint32, quint32>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const quint32&, const quint32&>{}(
     m_rustObj->getUint32(*this));
 }
 
 void
-MyObject::setUint32(quint32 value)
+MyObject::setUint32(const quint32& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setUint32(*this, value);
+  m_rustObj->setUint32(
+    *this, rust::cxxqtlib1::cxx_qt_convert<quint32, const quint32&>{}(value));
 }
 
 void

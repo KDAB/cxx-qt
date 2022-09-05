@@ -18,7 +18,7 @@ mod ffi {
         fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
 
         #[cxx_name = "getPropertyName"]
-        fn get_property_name(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        unsafe fn get_property_name<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
         #[cxx_name = "setPropertyName"]
         fn set_property_name(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
@@ -75,7 +75,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_property_name(&self, cpp: &MyObjectQt) -> i32 {
+        pub fn get_property_name<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_property_name()
         }
 
@@ -89,8 +89,8 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        pub fn get_property_name(&self) -> i32 {
-            self.rust().property_name
+        pub fn get_property_name(&self) -> &i32 {
+            &self.rust().property_name
         }
 
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {

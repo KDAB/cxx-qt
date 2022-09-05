@@ -36,19 +36,20 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-qint32
+const qint32&
 MyObject::getPrimitive() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(
     m_rustObj->getPrimitive(*this));
 }
 
 void
-MyObject::setPrimitive(qint32 value)
+MyObject::setPrimitive(const qint32& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPrimitive(*this, value);
+  m_rustObj->setPrimitive(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 void
@@ -59,11 +60,11 @@ MyObject::emitPrimitiveChanged()
   Q_ASSERT(signalSuccess);
 }
 
-QPoint
+const QPoint&
 MyObject::getTrivial() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
     m_rustObj->getTrivial(*this));
 }
 
@@ -71,7 +72,8 @@ void
 MyObject::setTrivial(const QPoint& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setTrivial(*this, value);
+  m_rustObj->setTrivial(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
 }
 
 void
@@ -82,11 +84,12 @@ MyObject::emitTrivialChanged()
   Q_ASSERT(signalSuccess);
 }
 
-QColor
+const QColor&
 MyObject::getOpaque() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const QColor&,
+                                         const std::unique_ptr<QColor>&>{}(
     m_rustObj->getOpaque(*this));
 }
 
@@ -94,7 +97,10 @@ void
 MyObject::setOpaque(const QColor& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setOpaque(*this, value);
+  m_rustObj->setOpaque(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QColor>, const QColor&>{}(
+      value));
 }
 
 void

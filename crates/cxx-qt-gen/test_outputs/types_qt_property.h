@@ -43,31 +43,31 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  QColor getColor() const;
+  const QColor& getColor() const;
   void emitColorChanged();
-  QDate getDate() const;
+  const QDate& getDate() const;
   void emitDateChanged();
-  QDateTime getDateTime() const;
+  const QDateTime& getDateTime() const;
   void emitDateTimeChanged();
-  QPoint getPoint() const;
+  const QPoint& getPoint() const;
   void emitPointChanged();
-  QPointF getPointf() const;
+  const QPointF& getPointf() const;
   void emitPointfChanged();
-  QRect getRect() const;
+  const QRect& getRect() const;
   void emitRectChanged();
-  QRectF getRectf() const;
+  const QRectF& getRectf() const;
   void emitRectfChanged();
-  QSize getSize() const;
+  const QSize& getSize() const;
   void emitSizeChanged();
-  QSizeF getSizef() const;
+  const QSizeF& getSizef() const;
   void emitSizefChanged();
-  QString getString() const;
+  const QString& getString() const;
   void emitStringChanged();
-  QTime getTime() const;
+  const QTime& getTime() const;
   void emitTimeChanged();
-  QUrl getUrl() const;
+  const QUrl& getUrl() const;
   void emitUrlChanged();
-  QVariant getVariant() const;
+  const QVariant& getVariant() const;
   void emitVariantChanged();
 
 public Q_SLOTS:

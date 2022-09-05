@@ -34,19 +34,20 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-qint32
+const qint32&
 MyObject::getPropertyName() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(
     m_rustObj->getPropertyName(*this));
 }
 
 void
-MyObject::setPropertyName(qint32 value)
+MyObject::setPropertyName(const qint32& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(*this, value);
+  m_rustObj->setPropertyName(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 void

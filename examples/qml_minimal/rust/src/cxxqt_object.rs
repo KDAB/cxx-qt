@@ -40,7 +40,7 @@ mod ffi {
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
         pub fn increment_number(self: Pin<&mut Self>) {
-            let previous = self.as_ref().get_number();
+            let previous = *self.as_ref().get_number();
             self.set_number(previous + 1);
         }
 

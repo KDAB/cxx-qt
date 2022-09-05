@@ -51,69 +51,80 @@ mod ffi {
         type MyObject;
 
         #[cxx_name = "getColor"]
-        fn get_color(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QColor>;
+        unsafe fn get_color<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
         #[cxx_name = "setColor"]
-        fn set_color(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QColor);
+        fn set_color(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
 
         #[cxx_name = "getDate"]
-        fn get_date(self: &MyObject, cpp: &MyObjectQt) -> QDate;
+        unsafe fn get_date<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QDate;
         #[cxx_name = "setDate"]
-        fn set_date(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QDate);
+        fn set_date(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QDate);
 
         #[cxx_name = "getDateTime"]
-        fn get_date_time(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QDateTime>;
+        unsafe fn get_date_time<'a>(
+            self: &'a MyObject,
+            cpp: &'a MyObjectQt,
+        ) -> &'a UniquePtr<QDateTime>;
         #[cxx_name = "setDateTime"]
-        fn set_date_time(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QDateTime);
+        fn set_date_time(
+            self: &mut MyObject,
+            cpp: Pin<&mut MyObjectQt>,
+            value: UniquePtr<QDateTime>,
+        );
 
         #[cxx_name = "getPoint"]
-        fn get_point(self: &MyObject, cpp: &MyObjectQt) -> QPoint;
+        unsafe fn get_point<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPoint;
         #[cxx_name = "setPoint"]
-        fn set_point(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QPoint);
+        fn set_point(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QPoint);
 
         #[cxx_name = "getPointf"]
-        fn get_pointf(self: &MyObject, cpp: &MyObjectQt) -> QPointF;
+        unsafe fn get_pointf<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPointF;
         #[cxx_name = "setPointf"]
-        fn set_pointf(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QPointF);
+        fn set_pointf(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QPointF);
 
         #[cxx_name = "getRect"]
-        fn get_rect(self: &MyObject, cpp: &MyObjectQt) -> QRect;
+        unsafe fn get_rect<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QRect;
         #[cxx_name = "setRect"]
-        fn set_rect(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QRect);
+        fn set_rect(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QRect);
 
         #[cxx_name = "getRectf"]
-        fn get_rectf(self: &MyObject, cpp: &MyObjectQt) -> QRectF;
+        unsafe fn get_rectf<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QRectF;
         #[cxx_name = "setRectf"]
-        fn set_rectf(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QRectF);
+        fn set_rectf(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QRectF);
 
         #[cxx_name = "getSize"]
-        fn get_size(self: &MyObject, cpp: &MyObjectQt) -> QSize;
+        unsafe fn get_size<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QSize;
         #[cxx_name = "setSize"]
-        fn set_size(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QSize);
+        fn set_size(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QSize);
 
         #[cxx_name = "getSizef"]
-        fn get_sizef(self: &MyObject, cpp: &MyObjectQt) -> QSizeF;
+        unsafe fn get_sizef<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QSizeF;
         #[cxx_name = "setSizef"]
-        fn set_sizef(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QSizeF);
+        fn set_sizef(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QSizeF);
 
         #[cxx_name = "getString"]
-        fn get_string(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QString>;
+        unsafe fn get_string<'a>(self: &'a MyObject, cpp: &'a MyObjectQt)
+            -> &'a UniquePtr<QString>;
         #[cxx_name = "setString"]
-        fn set_string(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QString);
+        fn set_string(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QString>);
 
         #[cxx_name = "getTime"]
-        fn get_time(self: &MyObject, cpp: &MyObjectQt) -> QTime;
+        unsafe fn get_time<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QTime;
         #[cxx_name = "setTime"]
-        fn set_time(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QTime);
+        fn set_time(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QTime);
 
         #[cxx_name = "getUrl"]
-        fn get_url(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QUrl>;
+        unsafe fn get_url<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QUrl>;
         #[cxx_name = "setUrl"]
-        fn set_url(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QUrl);
+        fn set_url(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QUrl>);
 
         #[cxx_name = "getVariant"]
-        fn get_variant(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QVariant>;
+        unsafe fn get_variant<'a>(
+            self: &'a MyObject,
+            cpp: &'a MyObjectQt,
+        ) -> &'a UniquePtr<QVariant>;
         #[cxx_name = "setVariant"]
-        fn set_variant(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QVariant);
+        fn set_variant(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QVariant>);
     }
 
     #[namespace = ""]
@@ -194,255 +205,255 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_color(&self, cpp: &MyObjectQt) -> UniquePtr<QColor> {
+        pub fn get_color<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
             cpp.get_color()
         }
 
-        pub fn set_color(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QColor) {
+        pub fn set_color(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
             cpp.set_color(value);
         }
 
-        pub fn get_date(&self, cpp: &MyObjectQt) -> QDate {
+        pub fn get_date<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QDate {
             cpp.get_date()
         }
 
-        pub fn set_date(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QDate) {
+        pub fn set_date(&mut self, cpp: Pin<&mut MyObjectQt>, value: QDate) {
             cpp.set_date(value);
         }
 
-        pub fn get_date_time(&self, cpp: &MyObjectQt) -> UniquePtr<QDateTime> {
+        pub fn get_date_time<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QDateTime> {
             cpp.get_date_time()
         }
 
-        pub fn set_date_time(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QDateTime) {
+        pub fn set_date_time(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QDateTime>) {
             cpp.set_date_time(value);
         }
 
-        pub fn get_point(&self, cpp: &MyObjectQt) -> QPoint {
+        pub fn get_point<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
             cpp.get_point()
         }
 
-        pub fn set_point(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QPoint) {
+        pub fn set_point(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPoint) {
             cpp.set_point(value);
         }
 
-        pub fn get_pointf(&self, cpp: &MyObjectQt) -> QPointF {
+        pub fn get_pointf<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPointF {
             cpp.get_pointf()
         }
 
-        pub fn set_pointf(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QPointF) {
+        pub fn set_pointf(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPointF) {
             cpp.set_pointf(value);
         }
 
-        pub fn get_rect(&self, cpp: &MyObjectQt) -> QRect {
+        pub fn get_rect<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QRect {
             cpp.get_rect()
         }
 
-        pub fn set_rect(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QRect) {
+        pub fn set_rect(&mut self, cpp: Pin<&mut MyObjectQt>, value: QRect) {
             cpp.set_rect(value);
         }
 
-        pub fn get_rectf(&self, cpp: &MyObjectQt) -> QRectF {
+        pub fn get_rectf<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QRectF {
             cpp.get_rectf()
         }
 
-        pub fn set_rectf(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QRectF) {
+        pub fn set_rectf(&mut self, cpp: Pin<&mut MyObjectQt>, value: QRectF) {
             cpp.set_rectf(value);
         }
 
-        pub fn get_size(&self, cpp: &MyObjectQt) -> QSize {
+        pub fn get_size<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QSize {
             cpp.get_size()
         }
 
-        pub fn set_size(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QSize) {
+        pub fn set_size(&mut self, cpp: Pin<&mut MyObjectQt>, value: QSize) {
             cpp.set_size(value);
         }
 
-        pub fn get_sizef(&self, cpp: &MyObjectQt) -> QSizeF {
+        pub fn get_sizef<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QSizeF {
             cpp.get_sizef()
         }
 
-        pub fn set_sizef(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QSizeF) {
+        pub fn set_sizef(&mut self, cpp: Pin<&mut MyObjectQt>, value: QSizeF) {
             cpp.set_sizef(value);
         }
 
-        pub fn get_string(&self, cpp: &MyObjectQt) -> UniquePtr<QString> {
+        pub fn get_string<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QString> {
             cpp.get_string()
         }
 
-        pub fn set_string(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QString) {
+        pub fn set_string(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QString>) {
             cpp.set_string(value);
         }
 
-        pub fn get_time(&self, cpp: &MyObjectQt) -> QTime {
+        pub fn get_time<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QTime {
             cpp.get_time()
         }
 
-        pub fn set_time(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QTime) {
+        pub fn set_time(&mut self, cpp: Pin<&mut MyObjectQt>, value: QTime) {
             cpp.set_time(value);
         }
 
-        pub fn get_url(&self, cpp: &MyObjectQt) -> UniquePtr<QUrl> {
+        pub fn get_url<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QUrl> {
             cpp.get_url()
         }
 
-        pub fn set_url(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QUrl) {
+        pub fn set_url(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QUrl>) {
             cpp.set_url(value);
         }
 
-        pub fn get_variant(&self, cpp: &MyObjectQt) -> UniquePtr<QVariant> {
+        pub fn get_variant<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QVariant> {
             cpp.get_variant()
         }
 
-        pub fn set_variant(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QVariant) {
+        pub fn set_variant(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QVariant>) {
             cpp.set_variant(value);
         }
     }
 
     impl MyObjectQt {
-        pub fn get_color(&self) -> UniquePtr<QColor> {
-            QColor::from_ref(&self.rust().color)
+        pub fn get_color(&self) -> &UniquePtr<QColor> {
+            &self.rust().color
         }
 
-        pub fn set_color(mut self: Pin<&mut Self>, value: &QColor) {
+        pub fn set_color(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
             unsafe {
-                self.as_mut().rust_mut().color = QColor::from_ref(value);
+                self.as_mut().rust_mut().color = value;
             }
             self.as_mut().emit_color_changed();
         }
 
-        pub fn get_date(&self) -> QDate {
-            self.rust().date.clone()
+        pub fn get_date(&self) -> &QDate {
+            &self.rust().date
         }
 
-        pub fn set_date(mut self: Pin<&mut Self>, value: &QDate) {
+        pub fn set_date(mut self: Pin<&mut Self>, value: QDate) {
             unsafe {
-                self.as_mut().rust_mut().date = value.clone();
+                self.as_mut().rust_mut().date = value;
             }
             self.as_mut().emit_date_changed();
         }
 
-        pub fn get_date_time(&self) -> UniquePtr<QDateTime> {
-            QDateTime::from_ref(&self.rust().date_time)
+        pub fn get_date_time(&self) -> &UniquePtr<QDateTime> {
+            &self.rust().date_time
         }
 
-        pub fn set_date_time(mut self: Pin<&mut Self>, value: &QDateTime) {
+        pub fn set_date_time(mut self: Pin<&mut Self>, value: UniquePtr<QDateTime>) {
             unsafe {
-                self.as_mut().rust_mut().date_time = QDateTime::from_ref(value);
+                self.as_mut().rust_mut().date_time = value;
             }
             self.as_mut().emit_date_time_changed();
         }
 
-        pub fn get_point(&self) -> QPoint {
-            self.rust().point.clone()
+        pub fn get_point(&self) -> &QPoint {
+            &self.rust().point
         }
 
-        pub fn set_point(mut self: Pin<&mut Self>, value: &QPoint) {
+        pub fn set_point(mut self: Pin<&mut Self>, value: QPoint) {
             unsafe {
-                self.as_mut().rust_mut().point = value.clone();
+                self.as_mut().rust_mut().point = value;
             }
             self.as_mut().emit_point_changed();
         }
 
-        pub fn get_pointf(&self) -> QPointF {
-            self.rust().pointf.clone()
+        pub fn get_pointf(&self) -> &QPointF {
+            &self.rust().pointf
         }
 
-        pub fn set_pointf(mut self: Pin<&mut Self>, value: &QPointF) {
+        pub fn set_pointf(mut self: Pin<&mut Self>, value: QPointF) {
             unsafe {
-                self.as_mut().rust_mut().pointf = value.clone();
+                self.as_mut().rust_mut().pointf = value;
             }
             self.as_mut().emit_pointf_changed();
         }
 
-        pub fn get_rect(&self) -> QRect {
-            self.rust().rect.clone()
+        pub fn get_rect(&self) -> &QRect {
+            &self.rust().rect
         }
 
-        pub fn set_rect(mut self: Pin<&mut Self>, value: &QRect) {
+        pub fn set_rect(mut self: Pin<&mut Self>, value: QRect) {
             unsafe {
-                self.as_mut().rust_mut().rect = value.clone();
+                self.as_mut().rust_mut().rect = value;
             }
             self.as_mut().emit_rect_changed();
         }
 
-        pub fn get_rectf(&self) -> QRectF {
-            self.rust().rectf.clone()
+        pub fn get_rectf(&self) -> &QRectF {
+            &self.rust().rectf
         }
 
-        pub fn set_rectf(mut self: Pin<&mut Self>, value: &QRectF) {
+        pub fn set_rectf(mut self: Pin<&mut Self>, value: QRectF) {
             unsafe {
-                self.as_mut().rust_mut().rectf = value.clone();
+                self.as_mut().rust_mut().rectf = value;
             }
             self.as_mut().emit_rectf_changed();
         }
 
-        pub fn get_size(&self) -> QSize {
-            self.rust().size.clone()
+        pub fn get_size(&self) -> &QSize {
+            &self.rust().size
         }
-        pub fn set_size(mut self: Pin<&mut Self>, value: &QSize) {
+
+        pub fn set_size(mut self: Pin<&mut Self>, value: QSize) {
             unsafe {
-                self.as_mut().rust_mut().size = value.clone();
+                self.as_mut().rust_mut().size = value;
             }
             self.as_mut().emit_size_changed();
         }
 
-        pub fn get_sizef(&self) -> QSizeF {
-            self.rust().sizef.clone()
+        pub fn get_sizef(&self) -> &QSizeF {
+            &self.rust().sizef
         }
 
-        pub fn set_sizef(mut self: Pin<&mut Self>, value: &QSizeF) {
+        pub fn set_sizef(mut self: Pin<&mut Self>, value: QSizeF) {
             unsafe {
-                self.as_mut().rust_mut().sizef = value.clone();
+                self.as_mut().rust_mut().sizef = value;
             }
             self.as_mut().emit_sizef_changed();
         }
 
-        pub fn get_string(&self) -> UniquePtr<QString> {
-            QString::from_ref(&self.rust().string)
+        pub fn get_string(&self) -> &UniquePtr<QString> {
+            &self.rust().string
         }
 
-        pub fn set_string(mut self: Pin<&mut Self>, value: &QString) {
+        pub fn set_string(mut self: Pin<&mut Self>, value: UniquePtr<QString>) {
             unsafe {
-                self.as_mut().rust_mut().string = QString::from_ref(value);
+                self.as_mut().rust_mut().string = value;
             }
             self.as_mut().emit_string_changed();
         }
 
-        pub fn get_time(&self) -> QTime {
-            self.rust().time.clone()
+        pub fn get_time(&self) -> &QTime {
+            &self.rust().time
         }
 
-        pub fn set_time(mut self: Pin<&mut Self>, value: &QTime) {
+        pub fn set_time(mut self: Pin<&mut Self>, value: QTime) {
             unsafe {
-                self.as_mut().rust_mut().time = value.clone();
+                self.as_mut().rust_mut().time = value;
             }
             self.as_mut().emit_time_changed();
         }
 
-        pub fn get_url(&self) -> UniquePtr<QUrl> {
-            QUrl::from_ref(&self.rust().url)
+        pub fn get_url(&self) -> &UniquePtr<QUrl> {
+            &self.rust().url
         }
 
-        pub fn set_url(mut self: Pin<&mut Self>, value: &QUrl) {
+        pub fn set_url(mut self: Pin<&mut Self>, value: UniquePtr<QUrl>) {
             unsafe {
-                self.as_mut().rust_mut().url = QUrl::from_ref(value);
+                self.as_mut().rust_mut().url = value;
             }
             self.as_mut().emit_url_changed();
         }
 
-        pub fn get_variant(&self) -> UniquePtr<QVariant> {
-            QVariant::from_ref(&self.rust().variant)
+        pub fn get_variant(&self) -> &UniquePtr<QVariant> {
+            &self.rust().variant
         }
 
-        pub fn set_variant(mut self: Pin<&mut Self>, value: &QVariant) {
+        pub fn set_variant(mut self: Pin<&mut Self>, value: UniquePtr<QVariant>) {
             unsafe {
-                self.as_mut().rust_mut().variant = QVariant::from_ref(value);
+                self.as_mut().rust_mut().variant = value;
             }
             self.as_mut().emit_variant_changed();
         }
     }
-
     pub fn create_rs() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
