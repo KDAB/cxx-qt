@@ -3,19 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{spanned::Spanned, Error, Field, Fields, FieldsNamed, Ident, Result, Type};
-
-/// In a group of [syn::Fields] extract the [syn::Ident] and [syn::Type] from
-/// any [syn::FieldsNamed] fields
-///
-/// If there are [syn::FieldsUnnamed] then an error occurs
-pub fn fields_named_to_ident_type(fields: &Fields) -> Result<Vec<(Ident, Type)>> {
-    Ok(fields_to_named_fields(fields)?
-        .iter()
-        // These are named fields so they have an ident
-        .map(|field| (field.ident.clone().unwrap(), field.ty.clone()))
-        .collect())
-}
+use syn::{spanned::Spanned, Error, Field, Fields, FieldsNamed, Result};
 
 /// In a group of [syn::Fields] extract any [syn::FieldNamed] fields and allow for mutation
 ///
@@ -23,18 +11,6 @@ pub fn fields_named_to_ident_type(fields: &Fields) -> Result<Vec<(Ident, Type)>>
 pub fn fields_to_named_fields_mut(fields: &mut Fields) -> Result<Vec<&mut Field>> {
     match fields {
         Fields::Named(FieldsNamed { named, .. }) => Ok(named.iter_mut().collect()),
-        Fields::Unnamed(_) => Err(Error::new(fields.span(), "Fields cannot be unnamed")),
-        // Unit is an empty struct or enum etc
-        Fields::Unit => Ok(vec![]),
-    }
-}
-
-/// In a group of [syn::Fields] extract any [syn::FieldNamed] fields
-///
-/// If there are [syn::FieldsUnnamed] then an error occurs
-pub fn fields_to_named_fields(fields: &Fields) -> Result<Vec<&Field>> {
-    match fields {
-        Fields::Named(FieldsNamed { named, .. }) => Ok(named.iter().collect()),
         Fields::Unnamed(_) => Err(Error::new(fields.span(), "Fields cannot be unnamed")),
         // Unit is an empty struct or enum etc
         Fields::Unit => Ok(vec![]),
@@ -55,72 +31,72 @@ mod tests {
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_enum_variant_named() {
-        let v: Variant = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_enum_variant_named() {
+        let mut v: Variant = tokens_to_syn(quote! {
             PointChanged { x: f64, y: f64 }
         });
-        let result = fields_named_to_ident_type(&v.fields).unwrap();
+        let result = fields_to_named_fields_mut(&mut v.fields).unwrap();
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].0, "x");
-        assert_eq!(result[0].1, f64_type());
-        assert_eq!(result[1].0, "y");
-        assert_eq!(result[1].1, f64_type());
+        assert_eq!(result[0].ident.as_ref().unwrap(), "x");
+        assert_eq!(result[0].ty, f64_type());
+        assert_eq!(result[1].ident.as_ref().unwrap(), "y");
+        assert_eq!(result[1].ty, f64_type());
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_enum_variant_unamed() {
-        let v: Variant = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_enum_variant_unamed() {
+        let mut v: Variant = tokens_to_syn(quote! {
             PointChanged(f64, f64)
         });
-        let result = fields_named_to_ident_type(&v.fields);
+        let result = fields_to_named_fields_mut(&mut v.fields);
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_enum_variant_empty() {
-        let v: Variant = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_enum_variant_empty() {
+        let mut v: Variant = tokens_to_syn(quote! {
             PointChanged
         });
-        let result = fields_named_to_ident_type(&v.fields).unwrap();
+        let result = fields_to_named_fields_mut(&mut v.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_struct_named() {
-        let s: ItemStruct = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_struct_named() {
+        let mut s: ItemStruct = tokens_to_syn(quote! {
             struct Point {
                 x: f64,
                 y: f64
             }
         });
-        let result = fields_named_to_ident_type(&s.fields).unwrap();
+        let result = fields_to_named_fields_mut(&mut s.fields).unwrap();
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0].0, "x");
-        assert_eq!(result[0].1, f64_type());
-        assert_eq!(result[1].0, "y");
-        assert_eq!(result[1].1, f64_type());
+        assert_eq!(result[0].ident.as_ref().unwrap(), "x");
+        assert_eq!(result[0].ty, f64_type());
+        assert_eq!(result[1].ident.as_ref().unwrap(), "y");
+        assert_eq!(result[1].ty, f64_type());
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_struct_unamed() {
-        let s: ItemStruct = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_struct_unamed() {
+        let mut s: ItemStruct = tokens_to_syn(quote! {
             struct Point(f64, f64);
         });
-        let result = fields_named_to_ident_type(&s.fields);
+        let result = fields_to_named_fields_mut(&mut s.fields);
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_fields_named_to_ident_type_struct_empty() {
-        let s: ItemStruct = tokens_to_syn(quote! {
+    fn test_fields_to_named_fields_struct_empty() {
+        let mut s: ItemStruct = tokens_to_syn(quote! {
             struct Point;
         });
-        let result = fields_named_to_ident_type(&s.fields).unwrap();
+        let result = fields_to_named_fields_mut(&mut s.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 
     #[test]
-    fn test_fields_to_named_fields_mut() {
+    fn test_fields_to_named_fields_mutatable() {
         let mut s: ItemStruct = tokens_to_syn(quote! {
             struct Point {
                 #[attribute]

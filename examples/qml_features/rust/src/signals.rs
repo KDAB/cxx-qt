@@ -16,9 +16,16 @@ pub mod ffi {
     #[cxx_qt::signals(Signals)]
     pub enum Signal {
         Ready,
-        RustDataChanged { data: i32 },
-        TrivialDataChanged { trivial: QPoint },
-        OpaqueDataChanged { opaque: UniquePtr<QVariant> },
+        RustDataChanged {
+            data: i32,
+        },
+        TrivialDataChanged {
+            trivial: QPoint,
+        },
+        OpaqueDataChanged {
+            #[cxx_type = "QVariant"]
+            opaque: UniquePtr<QVariant>,
+        },
     }
     // ANCHOR_END: book_signals_enum
 
