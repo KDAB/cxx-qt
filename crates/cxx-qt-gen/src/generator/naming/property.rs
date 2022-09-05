@@ -93,6 +93,7 @@ mod tests {
             ident: format_ident!("my_property"),
             ty,
             vis: syn::Visibility::Inherited,
+            cxx_type: None,
         };
         let names = QPropertyName::from(&property);
         assert_eq!(names.emit.cpp, format_ident!("emitMyPropertyChanged"));

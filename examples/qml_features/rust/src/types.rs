@@ -15,7 +15,7 @@ mod ffi {
 
     #[cxx_qt::qobject]
     pub struct Types {
-        #[qproperty]
+        #[qproperty(cxx_type = "QVariant")]
         variant: UniquePtr<QVariant>,
     }
 

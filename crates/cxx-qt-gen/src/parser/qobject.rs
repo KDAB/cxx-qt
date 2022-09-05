@@ -4,8 +4,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum};
-use crate::syntax::{attribute::attribute_find_path, fields::fields_to_named_fields_mut};
-use syn::{spanned::Spanned, Error, Fields, ImplItem, ImplItemMethod, Item, ItemStruct, Result};
+use crate::syntax::{
+    attribute::{attribute_find_path, attribute_tokens_to_map},
+    fields::fields_to_named_fields_mut,
+};
+use syn::{
+    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
+    Result,
+};
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
@@ -71,6 +77,11 @@ impl ParsedQObject {
         for field in fields_to_named_fields_mut(fields)? {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
+                // Parse any cxx_type in the qproperty macro
+                let cxx_type = attribute_tokens_to_map::<Ident, LitStr>(&field.attrs[index])?
+                    .get(&quote::format_ident!("cxx_type"))
+                    .map(|lit_str| lit_str.value());
+
                 // Remove the #[qproperty] attribute
                 field.attrs.remove(index);
 
@@ -78,6 +89,7 @@ impl ParsedQObject {
                     ident: field.ident.clone().unwrap(),
                     ty: field.ty.clone(),
                     vis: field.vis.clone(),
+                    cxx_type,
                 });
             }
         }
@@ -142,17 +154,28 @@ mod tests {
                 #[qproperty]
                 pub public_property: f64,
 
+                #[qproperty(cxx_type = "f32")]
+                property_with_cxx_type: f64,
+
                 field: f64,
             }
         });
         assert!(qobject.parse_struct_fields(&mut item.fields).is_ok());
-        assert_eq!(qobject.properties.len(), 2);
+        assert_eq!(qobject.properties.len(), 3);
         assert_eq!(qobject.properties[0].ident, "f64_property");
         assert_eq!(qobject.properties[0].ty, f64_type());
         assert!(matches!(qobject.properties[0].vis, Visibility::Inherited));
+        assert!(qobject.properties[0].cxx_type.is_none());
+
         assert_eq!(qobject.properties[1].ident, "public_property");
         assert_eq!(qobject.properties[1].ty, f64_type());
         assert!(matches!(qobject.properties[1].vis, Visibility::Public(_)));
+        assert!(qobject.properties[1].cxx_type.is_none());
+
+        assert_eq!(qobject.properties[2].ident, "property_with_cxx_type");
+        assert_eq!(qobject.properties[2].ty, f64_type());
+        assert!(matches!(qobject.properties[2].vis, Visibility::Inherited));
+        assert_eq!(qobject.properties[2].cxx_type.as_ref().unwrap(), "f32");
     }
 
     #[test]

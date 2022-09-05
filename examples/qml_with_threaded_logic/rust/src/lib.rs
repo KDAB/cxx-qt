@@ -35,9 +35,9 @@ mod ffi {
 
     #[cxx_qt::qobject]
     pub struct Website {
-        #[qproperty]
+        #[qproperty(cxx_type = "QString")]
         url: UniquePtr<QString>,
-        #[qproperty]
+        #[qproperty(cxx_type = "QString")]
         title: UniquePtr<QString>,
 
         event_sender: UnboundedSender<Event>,

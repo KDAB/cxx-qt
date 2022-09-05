@@ -36,7 +36,7 @@ mod ffi {
     pub struct MyData {
         #[qproperty]
         pub number: i32,
-        #[qproperty]
+        #[qproperty(cxx_type = "QString")]
         pub string: UniquePtr<QString>,
     }
 
