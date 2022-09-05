@@ -2,8 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#[cfg(test)]
-use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::parser::qobject::ParsedQObject;
 use convert_case::{Case, Casing};
 use syn::Ident;
 
@@ -13,16 +12,16 @@ pub struct NamespaceName {
     pub internal: String,
 }
 
-impl NamespaceName {
-    /// Build the namespace names from a given module and qobject ident
-    #[cfg(test)]
-    pub fn from_pair(module: &ParsedCxxQtData, ident: &Ident) -> Self {
-        Self {
-            namespace: module.namespace.clone(),
-            internal: namespace_internal_from_pair(&module.namespace, ident),
-        }
+impl From<&ParsedQObject> for NamespaceName {
+    fn from(qobject: &ParsedQObject) -> Self {
+        NamespaceName::from_pair_str(
+            &qobject.namespace,
+            &qobject.qobject_struct.as_ref().unwrap().ident,
+        )
     }
+}
 
+impl NamespaceName {
     /// Build the namespace names from a given module and qobject ident
     pub fn from_pair_str(namespace: &str, ident: &Ident) -> Self {
         Self {
@@ -48,23 +47,36 @@ fn namespace_internal_from_pair(base: &str, ident: &Ident) -> String {
 mod tests {
     use super::*;
 
-    use quote::format_ident;
+    use crate::tests::tokens_to_syn;
+    use quote::quote;
+    use syn::ItemStruct;
 
     #[test]
     fn test_namespace_pair() {
-        let module = ParsedCxxQtData {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            struct MyObject;
+        });
+        let module = ParsedQObject {
             namespace: "cxx_qt".to_owned(),
+            qobject_struct: Some(qobject_struct),
             ..Default::default()
         };
-        let names = NamespaceName::from_pair(&module, &format_ident!("MyObject"));
+        let names = NamespaceName::from(&module);
         assert_eq!(names.internal, "cxx_qt::cxx_qt_my_object");
         assert_eq!(names.namespace, "cxx_qt");
     }
 
     #[test]
     fn test_namespace_pair_empty_base() {
-        let module = ParsedCxxQtData::default();
-        let names = NamespaceName::from_pair(&module, &format_ident!("MyObject"));
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            struct MyObject;
+        });
+        let module = ParsedQObject {
+            namespace: "".to_owned(),
+            qobject_struct: Some(qobject_struct),
+            ..Default::default()
+        };
+        let names = NamespaceName::from(&module);
         assert_eq!(names.internal, "cxx_qt_my_object");
         assert_eq!(names.namespace, "");
     }

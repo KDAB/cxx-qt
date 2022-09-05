@@ -56,6 +56,13 @@ impl Parser {
 
             // Loop through any qobjects that were found
             if !cxx_qt_data.qobjects.is_empty() {
+                // Copy the namespace from the module into each QObject
+                //
+                // TODO: later we will read the namespace attribute from the qobject as well
+                for qobject in cxx_qt_data.qobjects.values_mut() {
+                    qobject.namespace = cxx_qt_data.namespace.clone();
+                }
+
                 for item in items.1.drain(..) {
                     // Try to find any CXX-Qt items, if found add them to the relevant
                     // qobject. Otherwise return them to be added to other
