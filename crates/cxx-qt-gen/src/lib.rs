@@ -20,8 +20,12 @@ pub use syntax::{parse_qt_file, CxxQtItem};
 mod tests {
     use super::*;
 
-    use clang_format::ClangFormatStyle;
+    use clang_format::{clang_format, ClangFormatStyle};
+    use generator::cpp::GeneratedCppBlocks;
+    use parser::Parser;
+    use pretty_assertions::assert_str_eq;
     use quote::ToTokens;
+    use writer::cpp::write_cpp;
 
     #[ctor::ctor]
     fn init_tests() {
@@ -33,5 +37,19 @@ mod tests {
     /// Helper to parse a quote TokenStream into a given syn item
     pub fn tokens_to_syn<T: syn::parse::Parse>(tokens: proc_macro2::TokenStream) -> T {
         syn::parse2(tokens.into_token_stream()).unwrap()
+    }
+
+    #[test]
+    fn generates_properties_cpp() {
+        let parser =
+            Parser::from(syn::parse_str(include_str!("../test_inputs/properties.rs")).unwrap())
+                .unwrap();
+        let generated = GeneratedCppBlocks::from(&parser).unwrap();
+        let cpp = write_cpp(&generated);
+
+        let expected_header = clang_format(include_str!("../test_outputs/properties.h")).unwrap();
+        let expected_source = clang_format(include_str!("../test_outputs/properties.cpp")).unwrap();
+        assert_str_eq!(cpp.header, expected_header);
+        assert_str_eq!(cpp.source, expected_source);
     }
 }
