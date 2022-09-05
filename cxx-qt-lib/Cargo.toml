@@ -16,7 +16,7 @@ repository = "https://github.com/KDAB/cxx-qt/"
 links = "cxx-qt-lib"
 
 [dependencies]
-cxx = { git = "https://github.com/LeonMatthesKDAB/cxx.git", branch = "unpin-uniqueptr" }
+cxx = "1.0.75"
 
 [build-dependencies]
 cxx-build = { version = "1.0", features = [ "parallel" ] }
