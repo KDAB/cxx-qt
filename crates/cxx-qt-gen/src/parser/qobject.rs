@@ -19,6 +19,9 @@ pub struct ParsedQObject {
     //
     // TODO: this should not be optional
     pub qobject_struct: Option<ItemStruct>,
+    /// The namespace of the QObject. If one isn't specified for the QObject,
+    /// this will be the same as the module
+    pub namespace: String,
     /// Representation of the Signals enum that defines the Q_SIGNALS for the QObject
     pub signals: Option<ParsedSignalsEnum>,
     /// List of invokables that need to be implemented on the C++ object in Rust
