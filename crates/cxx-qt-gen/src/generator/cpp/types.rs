@@ -3,7 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{spanned::Spanned, Error, GenericArgument, PathArguments, PathSegment, Result, Type};
+use syn::{
+    spanned::Spanned, Error, GenericArgument, PathArguments, PathSegment, Result, Type,
+    TypeReference,
+};
 
 /// A helper for describing a C++ type
 ///
@@ -57,9 +60,16 @@ fn to_cpp_string(ty: &Type) -> Result<String> {
                 Ok(ty_strings.join("::"))
             }
         }
+        Type::Reference(TypeReference {
+            mutability, elem, ..
+        }) => Ok(format!(
+            "{is_const}{ty}&",
+            is_const = if mutability.is_some() { "" } else { "const " },
+            ty = to_cpp_string(elem)?
+        )),
         _others => Err(Error::new(
             ty.span(),
-            "Unsupported type, needs to be a TypePath",
+            format!("Unsupported type, needs to be a TypePath: {:?}", _others),
         )),
     }
 }
@@ -195,6 +205,18 @@ mod tests {
     }
 
     #[test]
+    fn test_to_cpp_string_ref_const_one_part() {
+        let ty = tokens_to_syn(quote! { &QPoint });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "const QPoint&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_ref_mut_one_part() {
+        let ty = tokens_to_syn(quote! { &mut QPoint });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "QPoint&");
+    }
+
+    #[test]
     fn test_to_cpp_string_templated_built_in() {
         let ty = tokens_to_syn(quote! { Vec<f64> });
         assert_eq!(to_cpp_string(&ty).unwrap(), "::rust::Vec<double>");
@@ -204,5 +226,17 @@ mod tests {
     fn test_to_cpp_string_templated_unknown() {
         let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
         assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<QColor>");
+    }
+
+    #[test]
+    fn test_to_cpp_string_templated_built_in_ref_const() {
+        let ty = tokens_to_syn(quote! { &Vec<f64> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "const ::rust::Vec<double>&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_templated_unknown_ref_mut() {
+        let ty = tokens_to_syn(quote! { &mut UniquePtr<QColor> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<QColor>&");
     }
 }
