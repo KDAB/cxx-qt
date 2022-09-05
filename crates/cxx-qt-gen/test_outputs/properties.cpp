@@ -45,14 +45,6 @@ MyObject::getPrimitive() const
 }
 
 void
-MyObject::setPrimitive(const qint32& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPrimitive(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
-}
-
-void
 MyObject::emitPrimitiveChanged()
 {
   const auto signalSuccess =
@@ -69,14 +61,6 @@ MyObject::getTrivial() const
 }
 
 void
-MyObject::setTrivial(const QPoint& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setTrivial(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
-}
-
-void
 MyObject::emitTrivialChanged()
 {
   const auto signalSuccess =
@@ -89,18 +73,8 @@ MyObject::getOpaque() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QColor&,
-                                         const std::unique_ptr<QColor>&>{}(
+                                         const ::std::unique_ptr<QColor>&>{}(
     m_rustObj->getOpaque(*this));
-}
-
-void
-MyObject::setOpaque(const QColor& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setOpaque(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QColor>, const QColor&>{}(
-      value));
 }
 
 void
@@ -109,6 +83,32 @@ MyObject::emitOpaqueChanged()
   const auto signalSuccess =
     QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection);
   Q_ASSERT(signalSuccess);
+}
+
+void
+MyObject::setPrimitive(const qint32& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPrimitive(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+}
+
+void
+MyObject::setTrivial(const QPoint& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setTrivial(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
+}
+
+void
+MyObject::setOpaque(const QColor& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setOpaque(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, const QColor&>{}(
+      value));
 }
 
 } // namespace cxx_qt::my_object

@@ -80,14 +80,13 @@ fn setter_from_ident(ident: &Ident) -> CombinedIdent {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
 
     use crate::tests::tokens_to_syn;
     use quote::quote;
 
-    #[test]
-    fn test_parsed_property() {
+    pub fn create_i32_qpropertyname() -> QPropertyName {
         let ty: syn::Type = tokens_to_syn(quote! { i32 });
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
@@ -95,7 +94,12 @@ mod tests {
             vis: syn::Visibility::Inherited,
             cxx_type: None,
         };
-        let names = QPropertyName::from(&property);
+        QPropertyName::from(&property)
+    }
+
+    #[test]
+    fn test_parsed_property() {
+        let names = create_i32_qpropertyname();
         assert_eq!(names.emit.cpp, format_ident!("emitMyPropertyChanged"));
         assert_eq!(names.emit.rust, format_ident!("emit_my_property_changed"));
         assert_eq!(names.name.cpp, format_ident!("myProperty"));
