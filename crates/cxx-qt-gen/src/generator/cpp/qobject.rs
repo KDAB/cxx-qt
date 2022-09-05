@@ -4,7 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{
-    cpp::{fragment::CppFragmentPair, property::generate_cpp_properties},
+    cpp::{
+        fragment::CppFragmentPair, invokable::generate_cpp_invokables,
+        property::generate_cpp_properties,
+    },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
 use crate::parser::qobject::ParsedQObject;
@@ -51,7 +54,7 @@ impl GeneratedCppQObjectBlocks {
 
         // Generate methods for the properties, invokables, signals
         generate_cpp_properties(&mut generated, &qobject.properties, &qobject_idents)?;
-        // generate_cpp_invokables(&mut generated, qobject)?;
+        generate_cpp_invokables(&mut generated, &qobject.invokables, &qobject_idents)?;
         // generate_cpp_signals(&mut generated, qobject)?;
 
         Ok(generated)

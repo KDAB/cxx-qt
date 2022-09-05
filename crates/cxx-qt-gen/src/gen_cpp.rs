@@ -650,19 +650,6 @@ mod tests {
     use syn::ItemMod;
 
     #[test]
-    fn generates_invokables() {
-        let source = include_str!("../test_inputs/invokables.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_header = clang_format(include_str!("../test_outputs/invokables.h")).unwrap();
-        let expected_source = clang_format(include_str!("../test_outputs/invokables.cpp")).unwrap();
-        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_str_eq!(cpp_object.header, expected_header);
-        assert_str_eq!(cpp_object.source, expected_source);
-    }
-
-    #[test]
     fn generates_naming() {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
