@@ -27,12 +27,12 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  qint32 getPropertyName() const;
+  const qint32& getPropertyName() const;
   void emitPropertyNameChanged();
   Q_INVOKABLE void invokableName();
 
 public Q_SLOTS:
-  void setPropertyName(qint32 value);
+  void setPropertyName(const qint32& value);
 
 Q_SIGNALS:
   void propertyNameChanged();

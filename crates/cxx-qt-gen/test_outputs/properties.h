@@ -33,15 +33,15 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  qint32 getPrimitive() const;
+  const qint32& getPrimitive() const;
   void emitPrimitiveChanged();
-  QPoint getTrivial() const;
+  const QPoint& getTrivial() const;
   void emitTrivialChanged();
-  QColor getOpaque() const;
+  const QColor& getOpaque() const;
   void emitOpaqueChanged();
 
 public Q_SLOTS:
-  void setPrimitive(qint32 value);
+  void setPrimitive(const qint32& value);
   void setTrivial(const QPoint& value);
   void setOpaque(const QColor& value);
 

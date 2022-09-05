@@ -15,7 +15,7 @@ mod ffi {
         type MyObject;
 
         #[cxx_name = "getPublic"]
-        fn get_public(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        unsafe fn get_public<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
         #[cxx_name = "setPublic"]
         fn set_public(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
@@ -68,7 +68,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_public(&self, cpp: &MyObjectQt) -> i32 {
+        pub fn get_public<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_public()
         }
 
@@ -78,8 +78,8 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        pub fn get_public(&self) -> i32 {
-            self.rust().public
+        pub fn get_public(&self) -> &i32 {
+            &self.rust().public
         }
 
         pub fn set_public(mut self: Pin<&mut Self>, value: i32) {

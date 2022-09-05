@@ -32,12 +32,10 @@ mod ffi {
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
             match self.get_variant().value() {
                 QVariantValue::Bool(b) => {
-                    self.as_mut()
-                        .set_variant(QVariant::from(!b).as_ref().unwrap());
+                    self.as_mut().set_variant(QVariant::from(!b));
                 }
                 QVariantValue::I32(i) => {
-                    self.as_mut()
-                        .set_variant(QVariant::from(i * 2).as_ref().unwrap());
+                    self.as_mut().set_variant(QVariant::from(i * 2));
                 }
                 _ => panic!("Incorrect variant type!"),
             }

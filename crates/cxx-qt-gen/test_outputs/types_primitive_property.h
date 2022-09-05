@@ -40,35 +40,35 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  bool getBoolean() const;
+  const bool& getBoolean() const;
   void emitBooleanChanged();
-  float getFloat32() const;
+  const float& getFloat32() const;
   void emitFloat32Changed();
-  double getFloat64() const;
+  const double& getFloat64() const;
   void emitFloat64Changed();
-  qint8 getInt8() const;
+  const qint8& getInt8() const;
   void emitInt8Changed();
-  qint16 getInt16() const;
+  const qint16& getInt16() const;
   void emitInt16Changed();
-  qint32 getInt32() const;
+  const qint32& getInt32() const;
   void emitInt32Changed();
-  quint8 getUint8() const;
+  const quint8& getUint8() const;
   void emitUint8Changed();
-  quint16 getUint16() const;
+  const quint16& getUint16() const;
   void emitUint16Changed();
-  quint32 getUint32() const;
+  const quint32& getUint32() const;
   void emitUint32Changed();
 
 public Q_SLOTS:
-  void setBoolean(bool value);
-  void setFloat32(float value);
-  void setFloat64(double value);
-  void setInt8(qint8 value);
-  void setInt16(qint16 value);
-  void setInt32(qint32 value);
-  void setUint8(quint8 value);
-  void setUint16(quint16 value);
-  void setUint32(quint32 value);
+  void setBoolean(const bool& value);
+  void setFloat32(const float& value);
+  void setFloat64(const double& value);
+  void setInt8(const qint8& value);
+  void setInt16(const qint16& value);
+  void setInt32(const qint32& value);
+  void setUint8(const quint8& value);
+  void setUint16(const quint16& value);
+  void setUint32(const quint32& value);
 
 Q_SIGNALS:
   void booleanChanged();

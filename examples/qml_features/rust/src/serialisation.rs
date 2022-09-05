@@ -72,7 +72,7 @@ mod ffi {
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();
             self.as_mut().set_number(data_serde.number);
             self.as_mut()
-                .set_string(&QString::from_str(&data_serde.string));
+                .set_string(QString::from_str(&data_serde.string));
         }
         // ANCHOR_END: book_grab_values
     }

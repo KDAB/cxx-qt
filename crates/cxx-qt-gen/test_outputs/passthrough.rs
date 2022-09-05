@@ -16,7 +16,7 @@ pub mod ffi {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
         #[cxx_name = "getNumber"]
-        fn get_number(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        unsafe fn get_number<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
         #[cxx_name = "setNumber"]
         fn set_number(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
@@ -126,7 +126,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_number(&self, cpp: &MyObjectQt) -> i32 {
+        pub fn get_number<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_number()
         }
 
@@ -136,8 +136,8 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        pub fn get_number(&self) -> i32 {
-            self.rust().number
+        pub fn get_number(&self) -> &i32 {
+            &self.rust().number
         }
 
         pub fn set_number(mut self: Pin<&mut Self>, value: i32) {

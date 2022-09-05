@@ -51,15 +51,15 @@ pub mod ffi {
             }
 
             let signal = Signal::RustDataChanged {
-                data: self.get_data(),
+                data: *self.get_data(),
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::TrivialDataChanged {
-                trivial: self.get_trivial(),
+                trivial: self.get_trivial().clone(),
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::OpaqueDataChanged {
-                opaque: self.get_opaque(),
+                opaque: QVariant::from_ref(self.get_opaque()),
             };
             self.as_mut().emit_queued(signal);
         }

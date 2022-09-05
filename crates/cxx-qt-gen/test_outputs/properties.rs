@@ -19,19 +19,19 @@ mod ffi {
         type MyObject;
 
         #[cxx_name = "getPrimitive"]
-        fn get_primitive(self: &MyObject, cpp: &MyObjectQt) -> i32;
+        unsafe fn get_primitive<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
         #[cxx_name = "setPrimitive"]
         fn set_primitive(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
 
         #[cxx_name = "getTrivial"]
-        fn get_trivial(self: &MyObject, cpp: &MyObjectQt) -> QPoint;
+        unsafe fn get_trivial<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPoint;
         #[cxx_name = "setTrivial"]
-        fn set_trivial(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QPoint);
+        fn set_trivial(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QPoint);
 
         #[cxx_name = "getOpaque"]
-        fn get_opaque(self: &MyObject, cpp: &MyObjectQt) -> UniquePtr<QColor>;
+        unsafe fn get_opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
         #[cxx_name = "setOpaque"]
-        fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: &QColor);
+        fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
     }
 
     #[namespace = ""]
@@ -91,7 +91,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_primitive(&self, cpp: &MyObjectQt) -> i32 {
+        pub fn get_primitive<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_primitive()
         }
 
@@ -99,26 +99,26 @@ mod cxx_qt_ffi {
             cpp.set_primitive(value);
         }
 
-        pub fn get_trivial(&self, cpp: &MyObjectQt) -> QPoint {
+        pub fn get_trivial<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
             cpp.get_trivial()
         }
 
-        pub fn set_trivial(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QPoint) {
+        pub fn set_trivial(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPoint) {
             cpp.set_trivial(value);
         }
 
-        pub fn get_opaque(&self, cpp: &MyObjectQt) -> UniquePtr<QColor> {
+        pub fn get_opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
             cpp.get_opaque()
         }
 
-        pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: &QColor) {
+        pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
             cpp.set_opaque(value);
         }
     }
 
     impl MyObjectQt {
-        pub fn get_primitive(&self) -> i32 {
-            self.rust().primitive
+        pub fn get_primitive(&self) -> &i32 {
+            &self.rust().primitive
         }
 
         pub fn set_primitive(mut self: Pin<&mut Self>, value: i32) {
@@ -128,24 +128,24 @@ mod cxx_qt_ffi {
             self.as_mut().emit_primitive_changed();
         }
 
-        pub fn get_trivial(&self) -> QPoint {
-            self.rust().trivial.clone()
+        pub fn get_trivial(&self) -> &QPoint {
+            &self.rust().trivial
         }
 
-        pub fn set_trivial(mut self: Pin<&mut Self>, value: &QPoint) {
+        pub fn set_trivial(mut self: Pin<&mut Self>, value: QPoint) {
             unsafe {
-                self.as_mut().rust_mut().trivial = value.clone();
+                self.as_mut().rust_mut().trivial = value;
             }
             self.as_mut().emit_trivial_changed();
         }
 
-        pub fn get_opaque(&self) -> UniquePtr<QColor> {
-            QColor::from_ref(&self.rust().opaque)
+        pub fn get_opaque(&self) -> &UniquePtr<QColor> {
+            &self.rust().opaque
         }
 
-        pub fn set_opaque(mut self: Pin<&mut Self>, value: &QColor) {
+        pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
             unsafe {
-                self.as_mut().rust_mut().opaque = QColor::from_ref(value);
+                self.as_mut().rust_mut().opaque = value;
             }
             self.as_mut().emit_opaque_changed();
         }

@@ -54,5 +54,20 @@ struct cxx_qt_convert<const R&, std::unique_ptr<T>>
   const R& operator()(const std::unique_ptr<T>& ptr) { return *ptr; }
 };
 
+template<typename R, typename T>
+struct cxx_qt_convert<const R&, const std::unique_ptr<T>&>
+{
+  const R& operator()(const std::unique_ptr<T>& ptr) { return *ptr; }
+};
+
+template<typename R, typename T>
+struct cxx_qt_convert<std::unique_ptr<R>, const T&>
+{
+  std::unique_ptr<R> operator()(const T& value)
+  {
+    return std::make_unique<R>(value);
+  }
+};
+
 } // namespace cxxqtlib1
 } // namespace rust

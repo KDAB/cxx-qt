@@ -225,25 +225,19 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
         });
 
         let qt_type = &property.type_ident.qt_type;
-        let param_type = qt_type.cxx_bridge_type_ident();
-        let param_type = if qt_type.is_ref() {
-            quote! {&#param_type}
+        let qt_type_ident = qt_type.cxx_bridge_type_ident();
+        let ty = if qt_type.is_opaque() {
+            quote! { UniquePtr<#qt_type_ident> }
         } else {
-            quote! {#param_type}
-        };
-        let return_type = qt_type.cxx_bridge_type_ident();
-        let return_type = if qt_type.is_opaque() {
-            quote! { UniquePtr<#return_type> }
-        } else {
-            quote! { #return_type }
+            quote! { #qt_type_ident }
         };
 
         // Add the getter and setter to C++ bridge
         rs_functions.push(quote! {
             #[cxx_name = #getter_cpp]
-            fn #getter_rust(self: &#rust_struct_name_rust, cpp: &#cpp_class_name_rust) -> #return_type;
+            unsafe fn #getter_rust<'a>(self: &'a #rust_struct_name_rust, cpp: &'a #cpp_class_name_rust) -> &'a #ty;
             #[cxx_name = #setter_cpp]
-            fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #param_type);
+            fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty);
         });
     }
 
@@ -532,25 +526,19 @@ fn property_generate_wrapper(
     let setter_ident = property_ident.setter.rust;
 
     let qt_type = &property.type_ident.qt_type;
-    let param_type = qt_type.cxx_bridge_type_ident();
-    let param_type = if qt_type.is_ref() {
-        quote! {&#param_type}
+    let qt_type_ident = qt_type.cxx_bridge_type_ident();
+    let ty = if qt_type.is_opaque() {
+        quote! { UniquePtr<#qt_type_ident> }
     } else {
-        quote! {#param_type}
-    };
-    let return_type = qt_type.cxx_bridge_type_ident();
-    let return_type = if qt_type.is_opaque() {
-        quote! { UniquePtr<#return_type> }
-    } else {
-        quote! { #return_type }
+        quote! { #qt_type_ident }
     };
 
     Ok(quote! {
-        pub fn #getter_ident(&self, cpp: &#cpp_class_name) -> #return_type {
+        pub fn #getter_ident<'a>(&'a self, cpp: &'a #cpp_class_name) -> &'a #ty {
             cpp.#getter_ident()
         }
 
-        pub fn #setter_ident(&mut self, cpp: Pin<&mut #cpp_class_name>, value: #param_type) {
+        pub fn #setter_ident(&mut self, cpp: Pin<&mut #cpp_class_name>, value: #ty) {
             cpp.#setter_ident(value);
         }
     })
@@ -566,39 +554,20 @@ fn property_generate(property: &Property) -> Result<TokenStream, TokenStream> {
 
     let qt_type = &property.type_ident.qt_type;
     let qt_type_ident = qt_type.cxx_bridge_type_ident();
-    let param_type = if qt_type.is_ref() {
-        quote! {&#qt_type_ident}
-    } else {
-        quote! {#qt_type_ident}
-    };
-    let return_type = if qt_type.is_opaque() {
+    let ty = if qt_type.is_opaque() {
         quote! { UniquePtr<#qt_type_ident> }
     } else {
         quote! { #qt_type_ident }
     };
-    let getter_body = if qt_type.is_opaque() {
-        quote! { #qt_type_ident::from_ref(&self.rust().#ident) }
-    } else if qt_type.is_ref() {
-        quote! { self.rust().#ident.clone() }
-    } else {
-        quote! { self.rust().#ident }
-    };
-    let setter_value = if qt_type.is_opaque() {
-        quote! { #qt_type_ident::from_ref(value) }
-    } else if qt_type.is_ref() {
-        quote! { value.clone() }
-    } else {
-        quote! { value }
-    };
 
     Ok(quote! {
-        pub fn #getter_ident(&self) -> #return_type {
-            #getter_body
+        pub fn #getter_ident(&self) -> &#ty {
+            &self.rust().#ident
         }
 
-        pub fn #setter_ident(mut self: Pin<&mut Self>, value: #param_type) {
+        pub fn #setter_ident(mut self: Pin<&mut Self>, value: #ty) {
             unsafe {
-                self.as_mut().rust_mut().#ident = #setter_value;
+                self.as_mut().rust_mut().#ident = value;
             }
             self.as_mut().#emit_ident();
         }
