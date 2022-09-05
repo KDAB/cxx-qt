@@ -22,7 +22,7 @@ mod ffi {
     pub struct MyObject {
         #[qproperty]
         number: i32,
-        #[qproperty]
+        #[qproperty(cxx_type = "QString")]
         string: UniquePtr<QString>,
     }
 

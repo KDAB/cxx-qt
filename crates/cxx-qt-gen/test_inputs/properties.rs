@@ -14,7 +14,7 @@ mod ffi {
         primitive: i32,
         #[qproperty]
         trivial: QPoint,
-        #[qproperty]
+        #[qproperty(cxx_type = "QColor")]
         opaque: UniquePtr<QColor>,
     }
 }

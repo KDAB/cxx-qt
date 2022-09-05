@@ -28,7 +28,7 @@ pub mod ffi {
         data: i32,
         #[qproperty]
         trivial: QPoint,
-        #[qproperty]
+        #[qproperty(cxx_type = "QVariant")]
         opaque: UniquePtr<QVariant>,
     }
 

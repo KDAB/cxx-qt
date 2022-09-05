@@ -21,11 +21,11 @@ mod ffi {
     #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct MyObject {
-        #[qproperty]
+        #[qproperty(cxx_type = "QColor")]
         color: UniquePtr<QColor>,
         #[qproperty]
         date: QDate,
-        #[qproperty]
+        #[qproperty(cxx_type = "QDateTime")]
         date_time: UniquePtr<QDateTime>,
         #[qproperty]
         point: QPoint,
@@ -39,13 +39,13 @@ mod ffi {
         size: QSize,
         #[qproperty]
         sizef: QSizeF,
-        #[qproperty]
+        #[qproperty(cxx_type = "QString")]
         string: UniquePtr<QString>,
         #[qproperty]
         time: QTime,
-        #[qproperty]
+        #[qproperty(cxx_type = "QUrl")]
         url: UniquePtr<QUrl>,
-        #[qproperty]
+        #[qproperty(cxx_type = "QVariant")]
         variant: UniquePtr<QVariant>,
     }
 }
