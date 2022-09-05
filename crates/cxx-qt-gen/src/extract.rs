@@ -4,7 +4,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::{naming, naming::CombinedIdent};
-use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum, Parser};
+use crate::parser::{
+    invokable::ParsedQInvokable, property::ParsedQProperty, signals::ParsedSignalsEnum, Parser,
+};
 use proc_macro2::{Span, TokenStream};
 use std::result::Result;
 use syn::{spanned::Spanned, token::Brace, *};
@@ -400,7 +402,11 @@ fn is_method_mutable(method: &ImplItemMethod) -> bool {
     }
 }
 
-fn extract_invokable(method: &ImplItemMethod, qt_ident: &Ident) -> Result<Invokable, TokenStream> {
+fn extract_invokable(
+    method: &ParsedQInvokable,
+    qt_ident: &Ident,
+) -> Result<Invokable, TokenStream> {
+    let method = &method.method;
     let invokable_ident = naming::invokable::QInvokableName::from(method);
     let output = &method.sig.output;
 

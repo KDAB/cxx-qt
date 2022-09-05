@@ -23,7 +23,7 @@ mod ffi {
     pub struct MyObject;
 
     impl cxx_qt::QObject<MyObject> {
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QColor")]
         pub fn test_color(&self, color: &QColor) -> UniquePtr<QColor> {
             color
         }
@@ -33,7 +33,7 @@ mod ffi {
             date
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QDateTime")]
         pub fn test_date_time(&self, dateTime: &QDateTime) -> UniquePtr<QDateTime> {
             dateTime
         }
@@ -68,7 +68,7 @@ mod ffi {
             sizef
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QString")]
         pub fn test_string(&self, string: &QString) -> UniquePtr<QString> {
             string.to_owned()
         }
@@ -78,12 +78,12 @@ mod ffi {
             time
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QUrl")]
         pub fn test_url(&self, url: &QUrl) -> UniquePtr<QUrl> {
             url
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QVariant")]
         pub fn test_variant(&self, variant: &QVariant) -> UniquePtr<QVariant> {
             variant
         }

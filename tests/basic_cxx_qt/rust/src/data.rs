@@ -58,7 +58,7 @@ mod ffi {
     }
 
     impl cxx_qt::QObject<MyData> {
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QString")]
         pub fn as_json_str(&self) -> UniquePtr<QString> {
             let data_serde = DataSerde::from(self.rust());
             let data_string = serde_json::to_string(&data_serde).unwrap();

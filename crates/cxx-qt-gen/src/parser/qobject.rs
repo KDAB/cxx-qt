@@ -3,7 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{property::ParsedQProperty, signals::ParsedSignalsEnum};
+use crate::parser::{
+    invokable::ParsedQInvokable, property::ParsedQProperty, signals::ParsedSignalsEnum,
+};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map},
     fields::fields_to_named_fields_mut,
@@ -33,7 +35,7 @@ pub struct ParsedQObject {
     /// List of invokables that need to be implemented on the C++ object in Rust
     ///
     /// These will also be exposed as Q_INVOKABLE on the C++ object
-    pub invokables: Vec<ImplItemMethod>,
+    pub invokables: Vec<ParsedQInvokable>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// Note that they will only be visible on the Rust side
@@ -57,10 +59,19 @@ impl ParsedQObject {
             if let ImplItem::Method(method) = item {
                 // Determine if this method is an invokable
                 if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"]) {
+                    // Parse any return_cxx_type in the qproperty macro
+                    let return_cxx_type =
+                        attribute_tokens_to_map::<Ident, LitStr>(&method.attrs[index])?
+                            .get(&quote::format_ident!("return_cxx_type"))
+                            .map(|lit_str| lit_str.value());
+
                     // Remove the invokable attribute
-                    let mut invokable = method.clone();
-                    invokable.attrs.remove(index);
-                    self.invokables.push(invokable);
+                    let mut method = method.clone();
+                    method.attrs.remove(index);
+                    self.invokables.push(ParsedQInvokable {
+                        method,
+                        return_cxx_type,
+                    });
                 } else {
                     self.methods.push(method.clone());
                 }
@@ -115,12 +126,20 @@ mod tests {
                 #[qinvokable]
                 fn invokable() {}
 
+                #[qinvokable(return_cxx_type = "f32")]
+                fn invokable_with_return_cxx_type() -> f64 {}
+
                 fn cpp_context() {}
             }
         });
         assert!(qobject.parse_impl_items(&item.items).is_ok());
-        assert_eq!(qobject.invokables.len(), 1);
+        assert_eq!(qobject.invokables.len(), 2);
         assert_eq!(qobject.methods.len(), 1);
+        assert!(qobject.invokables[0].return_cxx_type.is_none());
+        assert_eq!(
+            qobject.invokables[1].return_cxx_type.as_ref().unwrap(),
+            "f32"
+        );
     }
 
     #[test]

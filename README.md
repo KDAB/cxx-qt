@@ -102,7 +102,7 @@ mod ffi {
             self.as_mut().set_string(QString::from_str(&data.string));
         }
 
-        #[qinvokable]
+        #[qinvokable(return_cxx_type = "QString")]
         pub fn serialize(&self) -> UniquePtr<QString> {
             let data_serde = DataSerde::from(self.rust());
             let data_string = serde_json::to_string(&data_serde).unwrap();

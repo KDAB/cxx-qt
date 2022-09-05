@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::generator::naming::CombinedIdent;
+use crate::{generator::naming::CombinedIdent, parser::invokable::ParsedQInvokable};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{Ident, ImplItemMethod};
@@ -13,9 +13,15 @@ pub struct QInvokableName {
     pub wrapper: CombinedIdent,
 }
 
+impl From<&ParsedQInvokable> for QInvokableName {
+    fn from(invokable: &ParsedQInvokable) -> Self {
+        Self::from(&invokable.method)
+    }
+}
+
 impl From<&ImplItemMethod> for QInvokableName {
-    fn from(invokable: &ImplItemMethod) -> Self {
-        let ident = &invokable.sig.ident;
+    fn from(method: &ImplItemMethod) -> Self {
+        let ident = &method.sig.ident;
         Self {
             name: name_from_ident(ident),
             wrapper: wrapper_from_ident(ident),
@@ -54,7 +60,12 @@ mod tests {
 
             }
         });
-        let invokable = QInvokableName::from(&item);
+        let parsed = ParsedQInvokable {
+            method: item,
+            return_cxx_type: None,
+        };
+
+        let invokable = QInvokableName::from(&parsed);
         assert_eq!(invokable.name.cpp, format_ident!("myInvokable"));
         assert_eq!(invokable.name.rust, format_ident!("my_invokable"));
         assert_eq!(invokable.wrapper.cpp, format_ident!("myInvokableWrapper"));
