@@ -4,8 +4,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::parameter::ParsedFunctionParameter;
-use crate::syntax::fields::fields_named_to_ident_type;
-use syn::{Ident, ItemEnum, Result, Variant};
+use crate::syntax::{
+    attribute::{attribute_find_path, attribute_tokens_to_value},
+    fields::fields_to_named_fields_mut,
+};
+use syn::{Ident, ItemEnum, LitStr, Result, Variant};
 
 /// Describes an individual Signal
 pub struct ParsedSignal {
@@ -18,12 +21,30 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    pub fn from(variant: &Variant) -> Result<Self> {
+    pub fn from(variant: &mut Variant) -> Result<Self> {
         // Read the fields into parameter blocks
-        let parameters = fields_named_to_ident_type(&variant.fields)?
+        let parameters = fields_to_named_fields_mut(&mut variant.fields)?
             .into_iter()
-            .map(|(ident, ty)| ParsedFunctionParameter { ident, ty })
-            .collect();
+            .map(|field| {
+                // Parse any cxx_type for the signal
+                let cxx_type = if let Some(index) = attribute_find_path(&field.attrs, &["cxx_type"])
+                {
+                    let str = attribute_tokens_to_value::<LitStr>(&field.attrs[index])?.value();
+                    // Remove the attribute from the original enum
+                    // so that it doesn't end up in the Rust generation
+                    field.attrs.remove(index);
+                    Some(str)
+                } else {
+                    None
+                };
+
+                Ok(ParsedFunctionParameter {
+                    ident: field.ident.clone().unwrap(),
+                    ty: field.ty.clone(),
+                    cxx_type,
+                })
+            })
+            .collect::<Result<Vec<ParsedFunctionParameter>>>()?;
 
         Ok(ParsedSignal {
             // TODO: later we might have attributes on the signal
@@ -54,7 +75,8 @@ impl ParsedSignalsEnum {
 
         let signals = item
             .variants
-            .iter()
+            // Note we use mut here so that any cxx_type attributes can be removed
+            .iter_mut()
             .map(ParsedSignal::from)
             .collect::<Result<Vec<ParsedSignal>>>()?;
 
@@ -109,7 +131,11 @@ mod tests {
             #[cxx_qt::signals(MyObject)]
             enum MySignals {
                 Ready,
-                PointChanged { x: f64, y: f64 },
+                PointChanged {
+                    x: f64,
+                    #[cxx_type = "f32"]
+                    y: f64
+                },
             }
         });
         let signals = ParsedSignalsEnum::from(&e, 0).unwrap();
@@ -120,8 +146,13 @@ mod tests {
         assert_eq!(signals.signals[0].parameters.len(), 0);
         assert_eq!(signals.signals[1].ident, "PointChanged");
         assert_eq!(signals.signals[1].parameters.len(), 2);
+        assert!(signals.signals[1].parameters[0].cxx_type.is_none());
         assert_eq!(signals.signals[1].parameters[0].ident, "x");
         assert_eq!(signals.signals[1].parameters[0].ty, f64_type());
+        assert_eq!(
+            signals.signals[1].parameters[1].cxx_type.as_ref().unwrap(),
+            "f32"
+        );
         assert_eq!(signals.signals[1].parameters[1].ident, "y");
         assert_eq!(signals.signals[1].parameters[1].ty, f64_type());
     }

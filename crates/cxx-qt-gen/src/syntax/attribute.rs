@@ -8,7 +8,7 @@ use std::{collections::HashMap, iter::FromIterator};
 use syn::{
     ext::IdentExt,
     parenthesized,
-    parse::{Parse, ParseStream},
+    parse::{Parse, ParseStream, Parser},
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Comma, Paren},
@@ -110,6 +110,15 @@ pub fn attribute_tokens_to_map<K: std::cmp::Eq + std::hash::Hash + Parse, V: Par
         }
     }
     Ok(map)
+}
+
+/// Returns the value in a attribute, eg the value in #[key = value]
+pub fn attribute_tokens_to_value<V: Parse>(attr: &Attribute) -> Result<V> {
+    let parse_value = |input: ParseStream| -> Result<V> {
+        input.parse::<Token![=]>()?;
+        input.parse::<V>()
+    };
+    parse_value.parse2(attr.tokens.clone())
 }
 
 #[cfg(test)]
@@ -236,5 +245,22 @@ mod tests {
 
         let result = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[7]).unwrap();
         assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_attribute_tokens_to_value() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_type = "QColor"]
+            #[cxx_type]
+            mod module;
+        });
+
+        assert_eq!(
+            attribute_tokens_to_value::<LitStr>(&module.attrs[0])
+                .unwrap()
+                .value(),
+            "QColor"
+        );
+        assert!(attribute_tokens_to_value::<LitStr>(&module.attrs[1]).is_err());
     }
 }

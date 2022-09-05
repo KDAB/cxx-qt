@@ -12,6 +12,7 @@ mod ffi {
         Ready,
         DataChanged {
             first: i32,
+            #[cxx_type = "QVariant"]
             second: UniquePtr<QVariant>,
             third: QPoint,
         },

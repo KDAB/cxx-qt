@@ -28,7 +28,10 @@ mod ffi {
     #[cxx_qt::signals(MockQtTypes)]
     pub enum Signal {
         Ready,
-        DataChanged { variant: UniquePtr<QVariant> },
+        DataChanged {
+            #[cxx_type = "QVariant"]
+            variant: UniquePtr<QVariant>,
+        },
     }
 
     #[cxx_qt::qobject]

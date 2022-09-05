@@ -11,6 +11,6 @@ pub struct ParsedFunctionParameter {
     pub ident: Ident,
     /// The [syn::Type] of the parameter
     pub ty: Type,
-    // TODO: later this will describe if the parameter has an attribute
-    // stating that the a conversion in C++ needs to occur (eg UniquePtr<T> to T)..
+    /// The name of the C++ type if one has been specified
+    pub cxx_type: Option<String>,
 }
