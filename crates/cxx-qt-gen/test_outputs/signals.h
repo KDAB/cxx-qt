@@ -31,12 +31,12 @@ public:
   Q_INVOKABLE void invokable();
   void emitReady();
   void emitDataChanged(qint32 first,
-                       std::unique_ptr<QVariant> second,
+                       ::std::unique_ptr<QVariant> second,
                        QPoint third);
 
 Q_SIGNALS:
   void ready();
-  void dataChanged(qint32 first, const QVariant& second, const QPoint& third);
+  void dataChanged(qint32 first, QVariant second, QPoint third);
 
 private:
   rust::Box<MyObjectRust> m_rustObj;

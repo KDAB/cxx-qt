@@ -47,13 +47,13 @@ void
 MyObject::emitReady()
 {
   const auto signalSuccess = QMetaObject::invokeMethod(
-    this, [this]() { Q_EMIT ready(); }, Qt::QueuedConnection);
+    this, [this]() mutable { Q_EMIT ready(); }, Qt::QueuedConnection);
   Q_ASSERT(signalSuccess);
 }
 
 void
 MyObject::emitDataChanged(qint32 first,
-                          std::unique_ptr<QVariant> second,
+                          ::std::unique_ptr<QVariant> second,
                           QPoint third)
 {
   const auto signalSuccess = QMetaObject::invokeMethod(
@@ -61,12 +61,13 @@ MyObject::emitDataChanged(qint32 first,
     [this,
      first = std::move(first),
      second = std::move(second),
-     third = std::move(third)]() {
+     third = std::move(third)]() mutable {
       Q_EMIT dataChanged(
-        rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(first),
-        rust::cxxqtlib1::cxx_qt_convert<const QVariant&,
-                                        std::unique_ptr<QVariant>>{}(second),
-        rust::cxxqtlib1::cxx_qt_convert<const QPoint&, QPoint>{}(third));
+        rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(first)),
+        rust::cxxqtlib1::cxx_qt_convert<QVariant,
+                                        ::std::unique_ptr<QVariant>>{}(
+          std::move(second)),
+        rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(std::move(third)));
     },
     Qt::QueuedConnection);
   Q_ASSERT(signalSuccess);

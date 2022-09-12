@@ -66,4 +66,18 @@ mod tests {
         assert_str_eq!(cpp.header, expected_header);
         assert_str_eq!(cpp.source, expected_source);
     }
+
+    #[test]
+    fn generates_signals_cpp() {
+        let parser =
+            Parser::from(syn::parse_str(include_str!("../test_inputs/signals.rs")).unwrap())
+                .unwrap();
+        let generated = GeneratedCppBlocks::from(&parser).unwrap();
+        let cpp = write_cpp(&generated);
+
+        let expected_header = clang_format(include_str!("../test_outputs/signals.h")).unwrap();
+        let expected_source = clang_format(include_str!("../test_outputs/signals.cpp")).unwrap();
+        assert_str_eq!(cpp.header, expected_header);
+        assert_str_eq!(cpp.source, expected_source);
+    }
 }

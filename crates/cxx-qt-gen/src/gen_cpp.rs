@@ -663,19 +663,6 @@ mod tests {
     }
 
     #[test]
-    fn generates_signals() {
-        let source = include_str!("../test_inputs/signals.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_header = clang_format(include_str!("../test_outputs/signals.h")).unwrap();
-        let expected_source = clang_format(include_str!("../test_outputs/signals.cpp")).unwrap();
-        let cpp_object = generate_qobject_cpp(&qobject).unwrap();
-        assert_str_eq!(cpp_object.header, expected_header);
-        assert_str_eq!(cpp_object.source, expected_source);
-    }
-
-    #[test]
     fn generates_types_primitive_property() {
         let source = include_str!("../test_inputs/types_primitive_property.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
