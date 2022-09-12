@@ -41,18 +41,8 @@ MyObject::getColor() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QColor&,
-                                         const std::unique_ptr<QColor>&>{}(
+                                         const ::std::unique_ptr<QColor>&>{}(
     m_rustObj->getColor(*this));
-}
-
-void
-MyObject::setColor(const QColor& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setColor(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QColor>, const QColor&>{}(
-      value));
 }
 
 void
@@ -72,14 +62,6 @@ MyObject::getDate() const
 }
 
 void
-MyObject::setDate(const QDate& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setDate(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QDate, const QDate&>{}(value));
-}
-
-void
 MyObject::emitDateChanged()
 {
   const auto signalSuccess =
@@ -92,18 +74,8 @@ MyObject::getDateTime() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QDateTime&,
-                                         const std::unique_ptr<QDateTime>&>{}(
+                                         const ::std::unique_ptr<QDateTime>&>{}(
     m_rustObj->getDateTime(*this));
-}
-
-void
-MyObject::setDateTime(const QDateTime& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setDateTime(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QDateTime>,
-                                    const QDateTime&>{}(value));
 }
 
 void
@@ -123,14 +95,6 @@ MyObject::getPoint() const
 }
 
 void
-MyObject::setPoint(const QPoint& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPoint(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
-}
-
-void
 MyObject::emitPointChanged()
 {
   const auto signalSuccess =
@@ -144,14 +108,6 @@ MyObject::getPointf() const
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QPointF&, const QPointF&>{}(
     m_rustObj->getPointf(*this));
-}
-
-void
-MyObject::setPointf(const QPointF& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPointf(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QPointF, const QPointF&>{}(value));
 }
 
 void
@@ -171,14 +127,6 @@ MyObject::getRect() const
 }
 
 void
-MyObject::setRect(const QRect& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setRect(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QRect, const QRect&>{}(value));
-}
-
-void
 MyObject::emitRectChanged()
 {
   const auto signalSuccess =
@@ -192,14 +140,6 @@ MyObject::getRectf() const
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QRectF&, const QRectF&>{}(
     m_rustObj->getRectf(*this));
-}
-
-void
-MyObject::setRectf(const QRectF& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setRectf(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QRectF, const QRectF&>{}(value));
 }
 
 void
@@ -219,14 +159,6 @@ MyObject::getSize() const
 }
 
 void
-MyObject::setSize(const QSize& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setSize(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QSize, const QSize&>{}(value));
-}
-
-void
 MyObject::emitSizeChanged()
 {
   const auto signalSuccess =
@@ -243,14 +175,6 @@ MyObject::getSizef() const
 }
 
 void
-MyObject::setSizef(const QSizeF& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setSizef(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QSizeF, const QSizeF&>{}(value));
-}
-
-void
 MyObject::emitSizefChanged()
 {
   const auto signalSuccess =
@@ -263,18 +187,8 @@ MyObject::getString() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QString&,
-                                         const std::unique_ptr<QString>&>{}(
+                                         const ::std::unique_ptr<QString>&>{}(
     m_rustObj->getString(*this));
-}
-
-void
-MyObject::setString(const QString& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setString(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QString>, const QString&>{}(
-      value));
 }
 
 void
@@ -294,14 +208,6 @@ MyObject::getTime() const
 }
 
 void
-MyObject::setTime(const QTime& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setTime(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QTime, const QTime&>{}(value));
-}
-
-void
 MyObject::emitTimeChanged()
 {
   const auto signalSuccess =
@@ -314,18 +220,8 @@ MyObject::getUrl() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QUrl&,
-                                         const std::unique_ptr<QUrl>&>{}(
+                                         const ::std::unique_ptr<QUrl>&>{}(
     m_rustObj->getUrl(*this));
-}
-
-void
-MyObject::setUrl(const QUrl& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setUrl(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QUrl>, const QUrl&>{}(
-      value));
 }
 
 void
@@ -341,18 +237,8 @@ MyObject::getVariant() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QVariant&,
-                                         const std::unique_ptr<QVariant>&>{}(
+                                         const ::std::unique_ptr<QVariant>&>{}(
     m_rustObj->getVariant(*this));
-}
-
-void
-MyObject::setVariant(const QVariant& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setVariant(
-    *this,
-    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QVariant>,
-                                    const QVariant&>{}(value));
 }
 
 void
@@ -361,6 +247,120 @@ MyObject::emitVariantChanged()
   const auto signalSuccess =
     QMetaObject::invokeMethod(this, "variantChanged", Qt::QueuedConnection);
   Q_ASSERT(signalSuccess);
+}
+
+void
+MyObject::setColor(const QColor& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setColor(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, const QColor&>{}(
+      value));
+}
+
+void
+MyObject::setDate(const QDate& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setDate(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QDate, const QDate&>{}(value));
+}
+
+void
+MyObject::setDateTime(const QDateTime& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setDateTime(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QDateTime>,
+                                    const QDateTime&>{}(value));
+}
+
+void
+MyObject::setPoint(const QPoint& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPoint(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
+}
+
+void
+MyObject::setPointf(const QPointF& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPointf(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPointF, const QPointF&>{}(value));
+}
+
+void
+MyObject::setRect(const QRect& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setRect(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QRect, const QRect&>{}(value));
+}
+
+void
+MyObject::setRectf(const QRectF& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setRectf(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QRectF, const QRectF&>{}(value));
+}
+
+void
+MyObject::setSize(const QSize& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setSize(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QSize, const QSize&>{}(value));
+}
+
+void
+MyObject::setSizef(const QSizeF& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setSizef(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QSizeF, const QSizeF&>{}(value));
+}
+
+void
+MyObject::setString(const QString& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setString(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QString>,
+                                    const QString&>{}(value));
+}
+
+void
+MyObject::setTime(const QTime& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setTime(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QTime, const QTime&>{}(value));
+}
+
+void
+MyObject::setUrl(const QUrl& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setUrl(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QUrl>, const QUrl&>{}(
+      value));
+}
+
+void
+MyObject::setVariant(const QVariant& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setVariant(
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QVariant>,
+                                    const QVariant&>{}(value));
 }
 
 } // namespace cxx_qt::my_object

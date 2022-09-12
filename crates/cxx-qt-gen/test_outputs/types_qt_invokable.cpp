@@ -40,7 +40,7 @@ QColor
 MyObject::testColor(const QColor& color)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(
     m_rustObj->testColorWrapper(*this, color));
 }
 
@@ -57,7 +57,7 @@ MyObject::testDateTime(const QDateTime& dateTime)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<QDateTime,
-                                         std::unique_ptr<QDateTime>>{}(
+                                         ::std::unique_ptr<QDateTime>>{}(
     m_rustObj->testDateTimeWrapper(*this, dateTime));
 }
 
@@ -113,7 +113,7 @@ QString
 MyObject::testString(const QString& string)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QString, std::unique_ptr<QString>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<QString, ::std::unique_ptr<QString>>{}(
     m_rustObj->testStringWrapper(*this, string));
 }
 
@@ -129,7 +129,7 @@ QUrl
 MyObject::testUrl(const QUrl& url)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QUrl, std::unique_ptr<QUrl>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<QUrl, ::std::unique_ptr<QUrl>>{}(
     m_rustObj->testUrlWrapper(*this, url));
 }
 
@@ -137,7 +137,8 @@ QVariant
 MyObject::testVariant(const QVariant& variant)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QVariant, std::unique_ptr<QVariant>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<QVariant,
+                                         ::std::unique_ptr<QVariant>>{}(
     m_rustObj->testVariantWrapper(*this, variant));
 }
 

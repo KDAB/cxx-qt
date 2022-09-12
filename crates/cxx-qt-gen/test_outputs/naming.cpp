@@ -43,14 +43,6 @@ MyObject::getPropertyName() const
 }
 
 void
-MyObject::setPropertyName(const qint32& value)
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
-}
-
-void
 MyObject::emitPropertyNameChanged()
 {
   const auto signalSuccess = QMetaObject::invokeMethod(
@@ -63,6 +55,14 @@ MyObject::invokableName()
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableNameWrapper(*this);
+}
+
+void
+MyObject::setPropertyName(const qint32& value)
+{
+  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPropertyName(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 namespace cxx_qt_my_object {

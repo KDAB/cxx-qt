@@ -30,7 +30,6 @@ pub struct GeneratedCppBlocks {
 }
 
 impl GeneratedCppBlocks {
-    #[allow(dead_code)]
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
         // TODO: for now we use the name of the first and only QObject
         // later this needs to come from elsewhere

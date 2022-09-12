@@ -15,7 +15,8 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    extract_qobject, generate_qobject_cpp, generate_qobject_rs, parse_qt_file, CppObject, CxxQtItem,
+    extract_qobject, generate_qobject_rs, parse_qt_file, write_cpp, CppFragmentPair, CxxQtItem,
+    GeneratedCppBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -33,7 +34,7 @@ struct GeneratedCppFilePaths {
 }
 
 struct GeneratedCpp {
-    cxx_qt: Option<CppObject>,
+    cxx_qt: Option<CppFragmentPair>,
     cxx: cxx_gen::GeneratedCode,
     file_ident: String,
 }
@@ -82,14 +83,17 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
+                    let parser = Parser::from(m.clone()).unwrap();
+                    let generated = GeneratedCppBlocks::from(&parser).unwrap();
+                    // TODO: we'll have to extend the C++ data here rather than overwriting
+                    // assuming we share the same file
+                    cxx_qt = Some(write_cpp(&generated));
+
                     // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
                     // which will take a CxxQtItemMod and respond with a C++ header and source
                     let qobject = extract_qobject(m).unwrap();
                     // Use the qobject ident as the output file name?
                     file_ident = qobject.ident.to_string().to_case(Case::Snake);
-                    // TODO: we'll have to extend the C++ data here rather than overwriting
-                    // assuming we share the same file
-                    cxx_qt = Some(generate_qobject_cpp(&qobject).unwrap());
 
                     // TODO: later we will likely have cxx_qt_gen::generate_rust
                     // which will take a CxxQtItemMod and respond with the Rust code
