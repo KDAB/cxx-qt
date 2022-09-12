@@ -15,10 +15,10 @@ crate-type = ["staticlib"]
 
 [dependencies]
 cxx = "1.0.75"
-cxx-qt = { path = "../../../cxx-qt" }
-cxx-qt-lib = { path = "../../../cxx-qt-lib" }
+cxx-qt = { path = "../../../crates/cxx-qt" }
+cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
 futures = "0.3"
 futures-timer = "3.0"
 
 [build-dependencies]
-cxx-qt-build = { path = "../../../cxx-qt-build" }
+cxx-qt-build = { path = "../../../crates/cxx-qt-build" }

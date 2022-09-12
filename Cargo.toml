@@ -5,11 +5,11 @@
 
 [workspace]
 members = [
-    "cxx-qt",
-    "cxx-qt-build",
-    "cxx-qt-gen",
-    "cxx-qt-lib",
-    "cxx-qt-lib-headers",
+    "crates/cxx-qt",
+    "crates/cxx-qt-build",
+    "crates/cxx-qt-gen",
+    "crates/cxx-qt-lib",
+    "crates/cxx-qt-lib-headers",
 
     "examples/cargo_without_cmake",
     "examples/demo_threading/rust",

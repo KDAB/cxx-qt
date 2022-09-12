@@ -25,8 +25,8 @@ crate-type = ["staticlib"]
 # ANCHOR: book_dependencies
 [dependencies]
 cxx = "1.0.75"
-cxx-qt = { path = "../../../cxx-qt" }
-cxx-qt-lib = { path = "../../../cxx-qt-lib" }
+cxx-qt = { path = "../../../crates/cxx-qt" }
+cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
 # ANCHOR_END: book_dependencies
 
 # cxx-qt needs to be able to generate C++ code at
@@ -35,7 +35,7 @@ cxx-qt-lib = { path = "../../../cxx-qt-lib" }
 # C++ code in a consistent manner.
 # ANCHOR: book_build_dependencies
 [build-dependencies]
-cxx-qt-build = { path = "../../../cxx-qt-build" }
+cxx-qt-build = { path = "../../../crates/cxx-qt-build" }
 # ANCHOR_END: book_build_dependencies
 
 # ANCHOR_END: book_all
