@@ -19,20 +19,10 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportSc
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
 get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 
-add_subdirectory(core)
+add_subdirectory(plugin)
 add_subdirectory(tests)
 
-set(
-    CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-)
-
-set(
-    RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ui/qml.qrc
-)
-
-add_executable(${APP_NAME} "${CPP_SOURCES}" "${RESOURCES}")
+add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
 target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui

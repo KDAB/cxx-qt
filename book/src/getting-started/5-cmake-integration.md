@@ -32,12 +32,12 @@ We'll have to do multiple things:
 
 In the end, your `Cargo.toml` should look similar to this (note that `path` for the dependencies is not required):
 ```toml,ignore
-{{#include ../../../examples/qml_minimal/Cargo.toml:book_all}}
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_all}}
 ```
 
 We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/build.rs:book_build_rs}}
+{{#include ../../../examples/qml_minimal/rust/build.rs:book_build_rs}}
 ```
 This is what generates the C++ code for our `MyObject` class at compile-time.
 It will output the `cxx-qt-gen/include/my_object.h` file we included earlier in `main.cpp`.

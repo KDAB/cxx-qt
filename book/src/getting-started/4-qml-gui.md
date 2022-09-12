@@ -13,7 +13,7 @@ It's powerful, flexible, declarative, and allows us to iterate very quickly.
 
 So let's add a `main.qml` next to our two other files in the `src` folder:
 ```qml,ignore
-{{#include ../../../examples/qml_minimal/src/main.qml:book_main_qml}}
+{{#include ../../../examples/qml_minimal/qml/main.qml:book_main_qml}}
 ```
 
 If you're not familiar with QML, I recommend you take a look at the [Qt QML intro](https://doc.qt.io/qt-5/qmlapplications.html).

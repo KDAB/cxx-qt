@@ -24,7 +24,7 @@ For use as a parameter in an invokable write `secondary_object: &mut crate::mymo
 The following example shows a nested object as a property and parameter.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/nested.rs:book_macro_code}}
+#include ../../../examples/qml_features/rust/src/nested.rs:book_macro_code
 ```
 
 Note that until nested objects are `UniquePtr<T>` on the Rust side we need to use `cxx_qt_` as a prefix in the last module path to reach the correct `CppObj`.

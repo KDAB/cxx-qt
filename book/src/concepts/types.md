@@ -70,7 +70,7 @@ Note that when they are used as a parameter type in invokables they should be pa
 An example of a QVariant as a parameter, return type, and property is shown below.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/types.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/types.rs:book_macro_code}}
 ```
 
 ## Future possible types

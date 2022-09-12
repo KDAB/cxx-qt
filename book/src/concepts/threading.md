@@ -34,5 +34,5 @@ Updating the QObject is then thread-safe.
 Below is a complete Rust example of a multi-threaded object.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_macro_code}}
+{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_macro_code}}
 ```

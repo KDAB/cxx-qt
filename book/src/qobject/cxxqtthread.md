@@ -12,11 +12,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 To access the `CxxQtThread<T>` use the `qt_thread(&self)` method on the [`CppObj`](./cpp_object.md) or on the C++ pointer of the QObject.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_qt_thread}}
+{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_qt_thread}}
 ```
 
 The `CxxQtThread<T>` can then be moved into the Rust thread, a `queue(fn(ctx: Pin<&mut TQt>) -> bool` is used to queue a Rust function pointer onto the Qt event loop. The first argument in the function pointer is a pinned pointer to the C++ side of the QObject.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_qt_thread_queue}}
+{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_qt_thread_queue}}
 ```

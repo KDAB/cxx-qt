@@ -16,7 +16,7 @@ To use the `CppObj` add `cpp: &mut CppObj` to your parameters of an invokable.
 If the [`cxx_qt::qobject` marked struct](./qobject_struct.md) has a property called `number: i32`, then you can access properties by using `get_number(&self) -> i32` and `set_number(mut self: Pin<&mut Self>, number: i32)` on the `CppObj`.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/rust_obj_invokables.rs:book_cpp_obj}}
+{{#include ../../../examples/qml_features/rust/src/rust_obj_invokables.rs:book_cpp_obj}}
 ```
 
 If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` or `unsafe emit_immediate(&mut self, Signals)` on the `CppObj` to emit a signal.
@@ -24,7 +24,7 @@ If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued
 Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/signals.rs:book_rust_obj_impl}}
+{{#include ../../../examples/qml_features/rust/src/signals.rs:book_rust_obj_impl}}
 ```
 
 ## Threading

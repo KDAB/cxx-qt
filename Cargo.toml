@@ -12,13 +12,13 @@ members = [
     "cxx-qt-lib-headers",
 
     "examples/cargo_without_cmake",
-    "examples/demo_threading",
-    "examples/qml_extension_plugin/core",
-    "examples/qml_features",
-    "examples/qml_minimal",
-    "examples/qml_with_threaded_logic",
+    "examples/demo_threading/rust",
+    "examples/qml_extension_plugin/plugin/rust",
+    "examples/qml_features/rust",
+    "examples/qml_minimal/rust",
+    "examples/qml_with_threaded_logic/rust",
 
-    "tests/basic_cxx_only",
-    "tests/basic_cxx_qt",
-    "tests/qt_types_standalone",
+    "tests/basic_cxx_only/rust",
+    "tests/basic_cxx_qt/rust",
+    "tests/qt_types_standalone/rust",
 ]

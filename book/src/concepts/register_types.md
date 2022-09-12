@@ -14,13 +14,13 @@ There are two options for registering the generated QML types, either as a [QQml
 If you are registering the types to the engine, firstly you include the generated objects (determined by the name of the Rust module).
 
 ```cpp,ignore
-{{#include ../../../examples/qml_minimal/src/main.cpp:book_cpp_include}}
+{{#include ../../../examples/qml_minimal/cpp/main.cpp:book_cpp_include}}
 ```
 
 Then you register the QML Type in the normal way.
 
 ```cpp,ignore
-{{#include ../../../examples/qml_minimal/src/main.cpp:book_qml_register}}
+{{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_register}}
 ```
 
 Note in the future there may be a helper to call which could register all the types even when not using a plugin ( [https://github.com/KDAB/cxx-qt/issues/33](https://github.com/KDAB/cxx-qt/issues/33) ).
@@ -30,7 +30,7 @@ Note in the future there may be a helper to call which could register all the ty
 If you are using a [QQmlExtensionPlugin](./qqmlextensionplugin.md) then ensure the generated library is in the import path.
 
 ```cpp,ignore
-{{#include ../../../examples/qml_extension_plugin/main.cpp:book_extension_plugin_register}}
+{{#include ../../../examples/qml_extension_plugin/cpp/main.cpp:book_extension_plugin_register}}
 ```
 
 ## QML
@@ -38,5 +38,5 @@ If you are using a [QQmlExtensionPlugin](./qqmlextensionplugin.md) then ensure t
 Once you have used either of the methods above for registering the types to the engine, then from QML you can include these like a normal C++ module.
 
 ```qml,ignore
-{{#include ../../../examples/qml_minimal/src/main.qml:book_qml_import}}
+{{#include ../../../examples/qml_minimal/qml/main.qml:book_qml_import}}
 ```
