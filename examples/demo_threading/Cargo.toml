@@ -14,7 +14,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 async-std = "1.10"
-cxx = { git = "https://github.com/LeonMatthesKDAB/cxx.git", branch = "unpin-uniqueptr" }
+cxx = "1.0.75"
 cxx-qt = { path = "../../cxx-qt" }
 cxx-qt-lib = { path = "../../cxx-qt-lib" }
 futures = "0.3"

@@ -14,7 +14,7 @@ license = "MIT OR Apache-2.0"
 crate-type = ["staticlib"]
 
 [dependencies]
-cxx = { git = "https://github.com/LeonMatthesKDAB/cxx.git", branch = "unpin-uniqueptr" }
+cxx = "1.0.75"
 cxx-qt = { path = "../../../cxx-qt" }
 cxx-qt-lib = { path = "../../../cxx-qt-lib" }
 serde = { version = "1.0", features = ["derive"] }
