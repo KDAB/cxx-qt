@@ -15,8 +15,8 @@ crate-type = ["staticlib"]
 
 [dependencies]
 cxx = "1.0.75"
-cxx-qt-gen = { path = "../../../cxx-qt-gen" }
-cxx-qt-lib = { path = "../../../cxx-qt-lib" }
+cxx-qt-gen = { path = "../../../crates/cxx-qt-gen" }
+cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
 
 [build-dependencies]
-cxx-qt-build = { path = "../../../cxx-qt-build" }
+cxx-qt-build = { path = "../../../crates/cxx-qt-build" }
