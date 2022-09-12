@@ -39,7 +39,7 @@ endif()
 
 set(CRATE qml-minimal)
 # Corrosion crates a CMake target with the same name as the crate.
-corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
+corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 # The Rust library's build script needs to be told where to output the generated headers so CMake can find them
 # by setting the CXXQT_EXPORT_DIR environment variable.
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
@@ -61,7 +61,7 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 # Define the executable with the C++ source and Qt resource files
-add_executable(${APP_NAME} src/main.cpp src/qml.qrc)
+add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
 
 # Link to the Rust library
 target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
@@ -78,9 +78,9 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS QuickTest Test REQUIRED)
 function(add_qml_test TEST_NAME)
     # Copy QML unit test to build folder
     # this is so that our tst_${TEST_NAME} executable can find the QML files
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
-    add_executable("${APP_NAME}_${TEST_NAME}_test" "src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    add_executable("${APP_NAME}_${TEST_NAME}_test" "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
         ${CRATE}
         Qt${QT_VERSION_MAJOR}::QuickTest

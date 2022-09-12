@@ -1,1 +1,0 @@
-../../qml_minimal/src/main.qml

@@ -1,1 +1,1 @@
-../../qml_minimal/src/cxxqt_object.rs
+../../qml_minimal/rust/src/cxxqt_object.rs

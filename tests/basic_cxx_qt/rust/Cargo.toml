@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "basic-cxx-qt"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+cxx = "1.0.75"
+cxx-qt = { path = "../../../cxx-qt" }
+cxx-qt-lib = { path = "../../../cxx-qt-lib" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[build-dependencies]
+cxx-qt-build = { path = "../../../cxx-qt-build" }

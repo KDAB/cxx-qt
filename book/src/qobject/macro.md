@@ -16,23 +16,23 @@ The example below would export the struct marked with `#[cxx_qt::qobject]` as `D
 Note that the object name needs to be unique to avoid clashes, in the future full module paths may be used to aid avoiding collisions [https://github.com/KDAB/cxx-qt/issues/19](https://github.com/KDAB/cxx-qt/issues/19) - but this doesn't prevent attempting to register two QML types with the same name.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/data_struct_properties.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/struct_properties.rs:book_macro_code}}
 ```
 
 The threaded logic example shows how you can use a namespace to segment the generated C++ code.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_namespace_macro}}
+{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_namespace_macro}}
 ```
 
 Then when registering the type you use the type with your namespace as usual.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/src/lib.rs:book_namespace_register}}
+{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_namespace_register}}
 ```
 
 You can also specify the base class by using `#[cxx_qt::qobject(base = "QStringListModel")]`. Note that you need to use CXX to include the header that the base class is declared in.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/custom_base.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/custom_base.rs:book_macro_code}}
 ```

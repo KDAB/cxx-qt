@@ -32,7 +32,7 @@ if(NOT Corrosion_FOUND)
 endif()
 
 set(CRATE qml-features)
-corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
+corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
@@ -46,7 +46,7 @@ target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::QuickControls2
 )
 
-add_executable(${APP_NAME} src/main.cpp src/qml.qrc)
+add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
 
 target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 qt_import_qml_plugins(${APP_NAME})
@@ -58,9 +58,9 @@ qt_import_qml_plugins(${APP_NAME})
 function(add_qml_test TEST_NAME)
     # Copy QML unit test to build folder
     # this is so that our tst_${TEST_NAME} executable can find the QML files
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
-    add_executable(${APP_NAME}_${TEST_NAME}_test "src/tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    add_executable(${APP_NAME}_${TEST_NAME}_test "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
         ${CRATE}
         Qt${QT_VERSION_MAJOR}::Test

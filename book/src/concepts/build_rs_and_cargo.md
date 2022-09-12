@@ -17,7 +17,7 @@ The following options are available
 A build.rs script could look like the following
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_minimal/build.rs:book_build_rs}}
+{{#include ../../../examples/qml_minimal/rust/build.rs:book_build_rs}}
 ```
 
 # Cargo.toml
@@ -27,19 +27,19 @@ The `Cargo.toml` file of your project needs minimal changes to work with CXX-Qt.
 Firstly we currently need to build as a static library (as the Rust library is statically linked into the C++ executable or library).
 
 ```cargo
-{{#include ../../../examples/qml_minimal/Cargo.toml:book_static_lib}}
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_static_lib}}
 ```
 
 Then the following dependencies are required for CXX-Qt to be used in the project.
 
 ```cargo
-{{#include ../../../examples/qml_minimal/Cargo.toml:book_dependencies}}
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_dependencies}}
 ```
 
 Finally the following build dependencies are required for the build.rs file to function.
 
 ```cargo
-{{#include ../../../examples/qml_minimal/Cargo.toml:book_build_dependencies}}
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_build_dependencies}}
 ```
 
 Note that for the dependencies if you are using [crates.io](https://crates.io/) then you don't need the path parameter and can place the version as usual (eg `cxx-qt = "0.3"`).

@@ -16,7 +16,7 @@ The `#[cxx_qt::qobject]` marked struct allows you to define the following items
   * Use [CxxQtThread<T>](./cxxqtthread.md) for multi threaded workflows
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/rust_obj_invokables.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/rust_obj_invokables.rs:book_macro_code}}
 ```
 
 ## Invokables
@@ -33,7 +33,7 @@ Note to access properties on the C++ object use [Cpp Object](./cpp_object.md).
 Fields within the `#[cxx_qt::qobject]` marked struct can be tagged with the `#[qproperty]`, this declares which fields should be exposed as `Q_PROPERTY`s on the QObject.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/src/struct_properties.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/struct_properties.rs:book_macro_code}}
 ```
 
 If you want to provide default values for your QObject, then instead of deriving implement the `Default` trait for the struct.

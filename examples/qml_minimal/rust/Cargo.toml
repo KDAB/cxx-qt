@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# ANCHOR: book_all
+[package]
+name = "qml-minimal"
+version = "0.1.0"
+authors = [
+  "Andrew Hayzen <andrew.hayzen@kdab.com>",
+  "Gerhard de Clercq <gerhard.declercq@kdab.com>",
+  "Leon Matthes <leon.matthes@kdab.com>"
+]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+# This will instruct Cargo to create a static
+# library which CMake can link against
+# ANCHOR: book_static_lib
+[lib]
+crate-type = ["staticlib"]
+# ANCHOR_END: book_static_lib
+
+# ANCHOR: book_dependencies
+[dependencies]
+cxx = "1.0.75"
+cxx-qt = { path = "../../../cxx-qt" }
+cxx-qt-lib = { path = "../../../cxx-qt-lib" }
+# ANCHOR_END: book_dependencies
+
+# cxx-qt needs to be able to generate C++ code at
+# compile time, which is what cxx-qt-build is needed for.
+# cxx-qt uses clang-format, if available, to format all
+# C++ code in a consistent manner.
+# ANCHOR: book_build_dependencies
+[build-dependencies]
+cxx-qt-build = { path = "../../../cxx-qt-build" }
+# ANCHOR_END: book_build_dependencies
+
+# ANCHOR_END: book_all

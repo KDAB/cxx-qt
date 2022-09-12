@@ -12,7 +12,7 @@ function(add_acceptance_tests TEST_NAME)
     set(NAME_WITH_PREFIX test_${TEST_NAME})
 
     # Add all the normal tests used on the other modules
-    add_test_cargo(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}/Cargo.toml" DOCTESTS_OFF)
+    add_test_cargo(${NAME_WITH_PREFIX} "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}/rust/Cargo.toml" DOCTESTS_OFF)
 
     # The executable itself is a test that needs to be run
     if(WIN32)

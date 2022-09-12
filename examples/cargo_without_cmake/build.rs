@@ -9,10 +9,10 @@ fn main() {
     CxxQtBuilder::new()
         .qt_modules(&["Qml", "Network"])
         .file("src/cxxqt_object.rs")
-        .qrc("src/qml.qrc")
+        .qrc("qml/qml.qrc")
         .cc_builder(|cc| {
-            cc.file("src/run.cpp");
-            println!("cargo:rerun-if-changed=src/run.cpp");
+            cc.file("src/cpp/run.cpp");
+            println!("cargo:rerun-if-changed=src/cpp/run.cpp");
         })
         .build();
 }
