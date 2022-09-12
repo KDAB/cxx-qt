@@ -7,6 +7,7 @@ pub mod fragment;
 pub mod invokable;
 pub mod property;
 pub mod qobject;
+pub mod signal;
 pub mod types;
 
 use crate::generator::naming;

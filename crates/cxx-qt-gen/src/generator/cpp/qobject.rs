@@ -6,7 +6,7 @@
 use crate::generator::{
     cpp::{
         fragment::CppFragmentPair, invokable::generate_cpp_invokables,
-        property::generate_cpp_properties,
+        property::generate_cpp_properties, signal::generate_cpp_signals,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
@@ -55,7 +55,9 @@ impl GeneratedCppQObjectBlocks {
         // Generate methods for the properties, invokables, signals
         generate_cpp_properties(&mut generated, &qobject.properties, &qobject_idents)?;
         generate_cpp_invokables(&mut generated, &qobject.invokables, &qobject_idents)?;
-        // generate_cpp_signals(&mut generated, qobject)?;
+        if let Some(signals_enum) = &qobject.signals {
+            generate_cpp_signals(&mut generated, &signals_enum.signals, &qobject_idents)?;
+        }
 
         Ok(generated)
     }
