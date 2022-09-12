@@ -108,9 +108,6 @@ pub(crate) struct Signal {
     pub(crate) enum_ident: Ident,
     /// The parameters of the Signal
     pub(crate) parameters: Vec<Parameter>,
-    /// The C++ and Rust names of the method to emit the signal as immediate
-    /// eg dataChanged and data_changed
-    pub(crate) signal_ident: CombinedIdent,
 }
 
 /// Describes all the properties of a QObject class
@@ -137,8 +134,6 @@ pub struct QObject {
     pub(crate) original_signal_enum: Option<ItemEnum>,
     /// The original Rust declarations from the mod that will be directly passed through
     pub(crate) original_passthrough_decls: Vec<Item>,
-    /// The base class of the QObject
-    pub(crate) base_class: Option<String>,
 }
 
 /// Describe the error type from extract_qt_type and extract_type_ident
@@ -533,7 +528,6 @@ fn extract_signals(
                     },
                 })
             }).collect::<Result<Vec<Parameter>, TokenStream>>()?,
-            signal_ident: signal_ident.name,
         })
     }).collect()
 }
@@ -616,7 +610,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         original_signal_enum,
         original_rust_struct,
         original_passthrough_decls,
-        base_class: qobject.base_class,
     })
 }
 
@@ -822,8 +815,6 @@ mod tests {
         assert_eq!(qobject.signals[0].emit_ident.rust.to_string(), "emit_ready");
         assert_eq!(qobject.signals[0].enum_ident.to_string(), "Ready");
         assert_eq!(qobject.signals[0].parameters.len(), 0);
-        assert_eq!(qobject.signals[0].signal_ident.cpp.to_string(), "ready");
-        assert_eq!(qobject.signals[0].signal_ident.rust.to_string(), "ready");
 
         assert_eq!(
             qobject.signals[1].emit_ident.cpp.to_string(),
@@ -838,14 +829,6 @@ mod tests {
         assert_eq!(qobject.signals[1].parameters[0].ident.to_string(), "first");
         assert_eq!(qobject.signals[1].parameters[1].ident.to_string(), "second");
         assert_eq!(qobject.signals[1].parameters[2].ident.to_string(), "third");
-        assert_eq!(
-            qobject.signals[1].signal_ident.cpp.to_string(),
-            "dataChanged"
-        );
-        assert_eq!(
-            qobject.signals[1].signal_ident.rust.to_string(),
-            "data_changed"
-        );
     }
 
     #[test]
