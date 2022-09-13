@@ -22,15 +22,6 @@ main(int argc, char* argv[])
   // ANCHOR_END: book_extension_plugin_register
 
   const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
-  QObject::connect(
-    &engine,
-    &QQmlApplicationEngine::objectCreated,
-    &app,
-    [url](QObject* obj, const QUrl& objUrl) {
-      if (!obj && url == objUrl)
-        QCoreApplication::exit(-1);
-    },
-    Qt::QueuedConnection);
 
   engine.load(url);
 

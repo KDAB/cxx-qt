@@ -17,15 +17,6 @@ main(int argc, char* argv[])
   QQmlApplicationEngine engine;
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
-  QObject::connect(
-    &engine,
-    &QQmlApplicationEngine::objectCreated,
-    &app,
-    [url](QObject* obj, const QUrl& objUrl) {
-      if (!obj && url == objUrl)
-        QCoreApplication::exit(-1);
-    },
-    Qt::QueuedConnection);
 
   qmlRegisterType<cxx_qt::energy_usage::EnergyUsage>(
     "com.kdab.energy", 1, 0, "EnergyUsage");

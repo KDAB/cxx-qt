@@ -18,15 +18,6 @@ main(int argc, char* argv[])
   QQmlApplicationEngine engine;
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
-  QObject::connect(
-    &engine,
-    &QQmlApplicationEngine::objectCreated,
-    &app,
-    [url](QObject* obj, const QUrl& objUrl) {
-      if (!obj && url == objUrl)
-        QCoreApplication::exit(-1);
-    },
-    Qt::QueuedConnection);
 
   // ANCHOR: book_namespace_register
   qmlRegisterType<cxx_qt::website::Website>(
