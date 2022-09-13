@@ -13,6 +13,7 @@
 
 #include "bridge.h"
 #include "cxx-qt-gen/include/ffi.cxx.h"
+#include "cxx-qt-lib/include/convert.h"
 
 TEST_CASE("Can construct a QString on the Rust side")
 {
@@ -569,4 +570,43 @@ TEST_CASE("Can clone a value QTime on the Rust side")
   CHECK(c.minute() == 2);
   CHECK(c.second() == 3);
   CHECK(c.msec() == 4);
+}
+
+TEST_CASE("Check that cxx_qt_convert can convert types correctly")
+{
+  // T -> R
+  QColor ret1a = rust::cxxqtlib1::cxx_qt_convert<QColor, QColor>{}(QColor());
+  auto colorRef = QColor();
+  QColor& ret1b = rust::cxxqtlib1::cxx_qt_convert<QColor&, QColor&>{}(colorRef);
+  const QColor& ret1c =
+    rust::cxxqtlib1::cxx_qt_convert<const QColor&, const QColor&>{}(QColor());
+
+  // T -> const R&
+  //
+  // TODO: can be removed once signals are by value (T -> R)
+  const QColor& ret2 =
+    rust::cxxqtlib1::cxx_qt_convert<const QColor&, QColor>{}(QColor());
+
+  // std::unique_ptr<T> -> R
+  QColor ret3 =
+    rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
+      std::make_unique<QColor>(QColor()));
+
+  // std::unique_ptr<T> -> const R&
+  //
+  // TODO: can be removed once signals are by value (std::unique_ptr<T> -> R)
+  const QColor& ret4 =
+    rust::cxxqtlib1::cxx_qt_convert<const QColor&, std::unique_ptr<QColor>>{}(
+      std::make_unique<QColor>(QColor()));
+
+  // const std::unique_ptr<T>& -> const R&
+  const QColor& ret5 =
+    rust::cxxqtlib1::cxx_qt_convert<const QColor&,
+                                    const std::unique_ptr<QColor>&>{}(
+      std::make_unique<QColor>(QColor()));
+
+  // const T& -> std::unique_ptr<T>
+  std::unique_ptr<QColor> ret6 =
+    rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QColor>, const QColor&>{}(
+      QColor());
 }
