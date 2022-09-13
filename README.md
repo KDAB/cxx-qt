@@ -9,19 +9,19 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # CXX-Qt
 
-CXX-Qt is a library that automatically generates code to transfer data between Rust and C++ through common interfaces
-such as QObjects that can be exposed directly into QML. It relies on the cxx crate internally to achieve this and thus
-it is recommended that any interactions with Qt that are not covered by the built-in code generators should be done
-directly in C++ and connected to relevant Rust logic by writing additional cxx code. The CXX-Qt build system is based
-on CMake, but is compatible with cxx on its own as well.
+CXX-Qt is a set of Rust crates for creating bidirectional Rust ⇄ C++ bindings with [Qt](https://www.qt.io/).
+It can be used to integrate Rust into C++ applications using CMake or used to build Rust applications with Cargo.
+CXX-Qt provides tools for implementing [QObject](https://doc.qt.io/qt-6/object.html) subclasses in Rust which can
+be used from C++, QML, and JavaScript. It consists of two parts:
 
-The examples folder contains an example application using the CXX-Qt crate and will be used for development and testing
-purposes. The cxx-qt folder contains the source for the actual crate which contains a proc-macro. The cxx-qt-gen folder
-contains the source for a crate which extracts and generates C++ and Rust source code. The cxx-qt-build folder contains
-the source for a crate which provides helper functions to be used in a `build.rs` file.
+  * cxx-qt-lib, a library of Rust bindings to common QtCore and QtGui classes made with [CXX](https://cxx.rs/)
 
-Initially the projects in the examples folder will also serve as a template for new projects should use CXX-Qt.
-In future we might improve upon this with a custom CMake module for instance.
+  * cxx-qt & cxx-qt-build, a pair of Rust & C++ code generators which are a superset of CXX plus additional attributes
+    to interface with Qt's [signals & slots](https://doc.qt.io/qt-6/signalsandslots.html) and [property system](https://doc.qt.io/qt-6/properties.html).
+    The cxx-qt crate implements a macro for Rust code generation. cxx-qt-build is used in [Cargo build scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
+    to generate and compile the corresponding C++ code.
+
+CXX-Qt is in early development and the API changes frequently.
 
 ## Getting Started
 
