@@ -25,10 +25,6 @@ mod ffi {
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
         pub fn invokable(self: Pin<&mut Self>) {
-            unsafe {
-                self.as_mut().emit_immediate(MySignals::Ready);
-            }
-
             self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),

@@ -15,9 +15,9 @@ The `cxx_qt::signals(T)` attribute is used on an enum to define which signals sh
 
 ## Emitting a signal
 
-To emit a signal from Rust use the [`CppObj`](./cpp_object.md) and call either the `emit_queued(Signal)` or `unsafe emit_immediate(Signal)` method.
+To emit a signal from Rust use the [`CppObj`](./cpp_object.md) and call either the `emit_queued(Signal)` method.
 
-Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
+Note that signals are queued to avoid a deadlock if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_rust_obj_impl}}

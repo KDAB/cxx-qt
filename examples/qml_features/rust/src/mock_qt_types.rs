@@ -97,16 +97,6 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn test_unsafe_signal(mut self: Pin<&mut Self>) {
-            unsafe {
-                self.as_mut().emit_immediate(Signal::Ready);
-                self.as_mut().emit_immediate(Signal::DataChanged {
-                    variant: QVariant::from(true),
-                });
-            }
-        }
-
-        #[qinvokable]
         pub fn test_color_property(self: Pin<&mut Self>) {
             self.set_color(QColor::from_rgba(0, 0, 255, 255));
         }
