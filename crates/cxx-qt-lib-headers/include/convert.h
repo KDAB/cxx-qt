@@ -34,32 +34,12 @@ struct cxx_qt_convert
   R operator()(T val) { return val; }
 };
 
-// T -> const R&
-//
-// TODO: can be removed once signals are by value (T -> R)
-template<typename R, typename T>
-struct cxx_qt_convert<const R&, T>
-{
-  constexpr static CxxQtConvertCheck<const R&, const T&> check{};
-  const R& operator()(const T& val) { return val; }
-};
-
 // std::unique_ptr<T> -> R
 template<typename R, typename T>
 struct cxx_qt_convert<R, std::unique_ptr<T>>
 {
   constexpr static CxxQtConvertCheck<R, T> check{};
   R operator()(std::unique_ptr<T> ptr) { return std::move(*ptr); }
-};
-
-// std::unique_ptr<T> -> const R&
-//
-// TODO: can be removed once signals are by value (std::unique_ptr<T> -> R)
-template<typename R, typename T>
-struct cxx_qt_convert<const R&, std::unique_ptr<T>>
-{
-  constexpr static CxxQtConvertCheck<const R&, T> check{};
-  const R& operator()(const std::unique_ptr<T>& ptr) { return *ptr; }
 };
 
 // const std::unique_ptr<T>& -> const R&
