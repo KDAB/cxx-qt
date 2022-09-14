@@ -19,9 +19,9 @@ If the [`cxx_qt::qobject` marked struct](./qobject_struct.md) has a property cal
 {{#include ../../../examples/qml_features/rust/src/rust_obj_invokables.rs:book_cpp_obj}}
 ```
 
-If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` or `unsafe emit_immediate(&mut self, Signals)` on the `CppObj` to emit a signal.
+If there is a [`Signals` enum](./signals_enum.md) then you can call `emit_queued(&mut self, Signals)` on the `CppObj` to emit a signal.
 
-Note that `emit_immediate` is unsafe as it can cause deadlocks if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
+Note that signals are queued to avoid a deadlock if the `Q_EMIT` is `Qt::DirectConnection` connected to a Rust invokable on the same QObject that has caused the `Q_EMIT`, as this would then try to lock the internal Rust object which is already locked.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_rust_obj_impl}}

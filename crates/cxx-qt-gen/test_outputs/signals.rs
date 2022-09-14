@@ -6,13 +6,9 @@ mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
-        #[rust_name = "ready"]
-        fn ready(self: Pin<&mut MyObjectQt>);
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
 
-        #[rust_name = "data_changed"]
-        fn dataChanged(self: Pin<&mut MyObjectQt>, first: i32, second: &QVariant, third: &QPoint);
         #[rust_name = "emit_data_changed"]
         fn emitDataChanged(
             self: Pin<&mut MyObjectQt>,
@@ -99,10 +95,6 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn invokable(self: Pin<&mut Self>) {
-            unsafe {
-                self.as_mut().emit_immediate(MySignals::Ready);
-            }
-
             self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
                 second: QVariant::from_bool(true),
@@ -118,17 +110,6 @@ mod cxx_qt_ffi {
                     second,
                     third,
                 } => self.emit_data_changed(first, second, third),
-            }
-        }
-
-        pub unsafe fn emit_immediate(self: Pin<&mut Self>, signal: MySignals) {
-            match signal {
-                MySignals::Ready {} => self.ready(),
-                MySignals::DataChanged {
-                    first,
-                    second,
-                    third,
-                } => self.data_changed(first, &second, &third),
             }
         }
     }

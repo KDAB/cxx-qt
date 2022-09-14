@@ -243,38 +243,15 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 
     // Add signals emitters
     for signal in &obj.signals {
-        let signal_ident_cpp = &signal.signal_ident.cpp;
-        let signal_ident_rust_str = &signal.signal_ident.rust.to_string();
-
         let queued_ident_cpp = &signal.emit_ident.cpp;
         let queued_ident_rust_str = &signal.emit_ident.rust.to_string();
 
         if signal.parameters.is_empty() {
             cpp_functions.push(quote! {
-                #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #cpp_class_name_rust>);
                 #[rust_name = #queued_ident_rust_str]
                 fn #queued_ident_cpp(self: Pin<&mut #cpp_class_name_rust>);
             });
         } else {
-            // For immediate parameters we want by-ref or primitive by-value
-            let parameters = signal
-                .parameters
-                .iter()
-                .map(|parameter| {
-                    let ident = &parameter.ident;
-                    let param_type = parameter.type_ident.qt_type.cxx_bridge_type_ident();
-                    if parameter.type_ident.qt_type.is_ref() {
-                        quote! {
-                            #ident: &#param_type
-                        }
-                    } else {
-                        quote! {
-                            #ident: #param_type
-                        }
-                    }
-                })
-                .collect::<Vec<TokenStream>>();
             // For queued parameters we want by-value (or UniquePtr<T>)
             let parameters_queued = signal
                 .parameters
@@ -294,8 +271,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
                 })
                 .collect::<Vec<TokenStream>>();
             cpp_functions.push(quote! {
-                #[rust_name = #signal_ident_rust_str]
-                fn #signal_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, #(#parameters),*);
                 #[rust_name = #queued_ident_rust_str]
                 fn #queued_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, #(#parameters_queued),*);
             });
@@ -344,7 +319,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
 fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
     let mut signal_methods = Vec::new();
     let mut queued_cases = Vec::new();
-    let mut immediate_cases = Vec::new();
     let ident = &obj.signal_ident;
 
     for signal in &obj.signals {
@@ -355,19 +329,6 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
             .iter()
             .map(|parameter| &parameter.ident)
             .collect::<Vec<&Ident>>();
-        let parameters_to_value_immediate = signal
-            .parameters
-            .iter()
-            .map(|parameter| {
-                let ident = &parameter.ident;
-                if parameter.type_ident.qt_type.is_opaque() || parameter.type_ident.qt_type.is_ref()
-                {
-                    quote! { &#ident }
-                } else {
-                    ident.into_token_stream()
-                }
-            })
-            .collect::<Vec<TokenStream>>();
         let parameters_to_value_queued = signal
             .parameters
             .iter()
@@ -380,14 +341,9 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
                 }
             })
             .collect::<Vec<TokenStream>>();
-        let signal_ident = &signal.signal_ident.rust;
 
         queued_cases.push(quote! {
             #ident::#enum_ident { #(#parameters),* } => self.#emit_ident(#(#parameters_to_value_queued),*),
-        });
-
-        immediate_cases.push(quote! {
-            #ident::#enum_ident { #(#parameters),* } => self.#signal_ident(#(#parameters_to_value_immediate),*),
         });
     }
 
@@ -396,16 +352,6 @@ fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenSt
             pub fn emit_queued(self: Pin<&mut Self>, signal: #ident) {
                 match signal {
                     #(#queued_cases)*
-                }
-            }
-        });
-    }
-
-    if !immediate_cases.is_empty() {
-        signal_methods.push(quote! {
-            pub unsafe fn emit_immediate(self: Pin<&mut Self>, signal: #ident) {
-                match signal {
-                    #(#immediate_cases)*
                 }
             }
         });

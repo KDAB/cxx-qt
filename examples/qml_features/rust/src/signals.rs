@@ -53,9 +53,7 @@ pub mod ffi {
     impl cxx_qt::QObject<Signals> {
         #[qinvokable]
         pub fn invokable(mut self: Pin<&mut Self>) {
-            unsafe {
-                self.as_mut().emit_immediate(Signal::Ready);
-            }
+            self.as_mut().emit_queued(Signal::Ready);
 
             let signal = Signal::RustDataChanged {
                 data: *self.get_data(),
