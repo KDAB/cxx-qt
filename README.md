@@ -25,7 +25,10 @@ The [CXX-Qt Book](https://kdab.github.io/cxx-qt/book/getting-started/index.html)
 step-by-step and documents CXX-Qt's features for the latest release. The [examples folder](./examples) contains
 demonstrations of using threading, QQmlExtensionPlugin, and various other features.
 
-CXX-Qt is in early development and the API changes frequently. For the latest documentation, [install mdBook](https://rust-lang.github.io/mdBook/guide/installation.html)
+CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86). It should work on other platforms that Qt and
+Rust both support, however, these are not tested regularly.
+
+CXX-Qt is in early development and the API changes frequently. For the latest documentation between releases, [install mdBook](https://rust-lang.github.io/mdBook/guide/installation.html)
 and run `mdbook serve` in the [book folder](./book).
 
 ## Comparison to other Rust Qt bindings
@@ -56,13 +59,15 @@ Ensure that you have the following installed
   * C++ compiler
   * [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
   * [CMake v3.16+](https://cmake.org/)
-  * [Qt 5 or Qt 6 (experimental)](https://www.qt.io/)
-  * [Rust](https://www.rust-lang.org/)
-  * Linux 64-bit x86 - currently we only support Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future
+  * [Qt 5 and/or Qt 6](https://www.qt.io/)
+  * [Rust toolchain](https://www.rust-lang.org/)
+  * [mold](https://github.com/rui314/mold) or [lld](https://lld.llvm.org/) for Linux (lld is included in the XCode toolchain on macOS)
 
-### Compiling
-In a CXX-Qt project, the build system is based on CMake, which uses Cargo under the hood.
-Therefore, unlike a typical Rust project, CMake must be used to build CXX-Qt.
+This repository's build system uses CMake, which calls Cargo under the hood to build all the
+examples and tests. One example can be built and run with Cargo directly without using CMake:
+`cargo run -p qml-minimal-no-cmake` (this example is also built in the CMake build). This
+example does not link with GNU ld; [using mold](https://github.com/rui314/mold#how-to-use) or lld
+is required on Linux.
 
 On Windows and macOS, CXX-Qt defaults to installing Qt from vcpkg. Prebuilt packages are
 automatically downloaded from GitHub Packages (this will take several minutes the first time
@@ -86,14 +91,10 @@ cmake --build . -j$(nproc)
 ./build/examples/qml_minimal/example_qml_minimal
 ```
 
-### Book
-
-You can build the book using `mdbook serve` from the `book` folder, you should install `mdbook` and `mdbook-linkcheck` from cargo.
-
 ### Testing
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
-For testing the book, it assumes that `mdbook` and `mdbook-linkcheck` from cargo have been installed.
+For testing the book, it assumes that [`mdbook` and `mdbook-linkcheck`](https://rust-lang.github.io/mdBook/guide/installation.html) are installed.
 
 For license and memory testing, it assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
 
