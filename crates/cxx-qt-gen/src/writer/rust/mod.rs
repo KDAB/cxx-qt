@@ -4,9 +4,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::rust::GeneratedRustBlocks;
+use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::Ident;
+
+/// Mangle an input name with an object name
+///
+/// For now we need to do this to avoid free Rust methods from colliding
+/// Once static methods are possible in CXX this could be removed
+/// https://github.com/dtolnay/cxx/issues/447
+fn mangle(name: &str, object: &Ident) -> Ident {
+    format_ident!(
+        "{}",
+        format!("{name}_{object}", name = name, object = object).to_case(Case::Snake)
+    )
+}
 
 /// Return common blocks for CXX bridge which the C++ writer adds as well
 fn cxx_common_blocks(
@@ -15,6 +28,9 @@ fn cxx_common_blocks(
     cxx_qt_thread_ident: &Ident,
     namespace_internals: &String,
 ) -> Vec<TokenStream> {
+    let new_cpp_obj_str = mangle("new_cpp_object", cpp_struct_ident).to_string();
+    let create_rs_ident = mangle("create_rs", rust_struct_ident);
+
     vec![
         quote! {
             unsafe extern "C++" {
@@ -37,7 +53,7 @@ fn cxx_common_blocks(
                 fn qt_thread(self: &#cpp_struct_ident) -> UniquePtr<#cxx_qt_thread_ident>;
                 fn queue(self: &#cxx_qt_thread_ident, func: fn(ctx: Pin<&mut #cpp_struct_ident>)) -> Result<()>;
 
-                #[rust_name = "new_cpp_object"]
+                #[rust_name = #new_cpp_obj_str]
                 #[namespace = #namespace_internals]
                 fn newCppObject() -> UniquePtr<#cpp_struct_ident>;
             }
@@ -52,7 +68,7 @@ fn cxx_common_blocks(
             extern "Rust" {
                 #[cxx_name = "createRs"]
                 #[namespace = #namespace_internals]
-                fn create_rs() -> Box<#rust_struct_ident>;
+                fn #create_rs_ident() -> Box<#rust_struct_ident>;
             }
         },
     ]
@@ -86,6 +102,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         cxx_mod_items.push(syn::parse2(block).expect("Could not build CXX common block"));
     }
 
+    let create_rs_ident = mangle("create_rs", rust_struct_ident);
+
     quote! {
         #[cxx::bridge(namespace = #namespace)]
         #cxx_mod
@@ -100,7 +118,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
             #(#cxx_qt_mod_contents)*
 
-            pub fn create_rs() -> std::boxed::Box<#rust_struct_ident> {
+            pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
                 std::default::Default::default()
             }
         }
@@ -182,7 +200,7 @@ mod tests {
                     fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
                     fn queue(self: &MyObjectCxxQtThread, func: fn(ctx: Pin<&mut MyObjectQt>)) -> Result<()>;
 
-                    #[rust_name = "new_cpp_object"]
+                    #[rust_name = "new_cpp_object_my_object_qt"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
                     fn newCppObject() -> UniquePtr<MyObjectQt>;
                 }
@@ -195,7 +213,7 @@ mod tests {
                 extern "Rust" {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-                    fn create_rs() -> Box<MyObject>;
+                    fn create_rs_my_object() -> Box<MyObject>;
                 }
             }
 
@@ -216,7 +234,7 @@ mod tests {
                     }
                 }
 
-                pub fn create_rs() -> std::boxed::Box<MyObject> {
+                pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
                     std::default::Default::default()
                 }
             }

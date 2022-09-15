@@ -159,7 +159,7 @@ mod ffi {
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
         fn queue(self: &MyObjectCxxQtThread, func: fn(ctx: Pin<&mut MyObjectQt>)) -> Result<()>;
 
-        #[rust_name = "new_cpp_object"]
+        #[rust_name = "new_cpp_object_my_object_qt"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
@@ -172,7 +172,7 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs() -> Box<MyObject>;
+        fn create_rs_my_object() -> Box<MyObject>;
     }
 }
 
@@ -453,7 +453,7 @@ mod cxx_qt_ffi {
             self.as_mut().emit_variant_changed();
         }
     }
-    pub fn create_rs() -> std::boxed::Box<MyObject> {
+    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 }
