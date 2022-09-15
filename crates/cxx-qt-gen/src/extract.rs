@@ -79,6 +79,8 @@ pub(crate) struct Invokable {
     pub(crate) ident: CombinedIdent,
     /// If the invokable needs a wrapper, this is it's ident
     pub(crate) ident_wrapper: CombinedIdent,
+    /// The ident of the QObject for this invokable
+    pub(crate) qt_ident: Ident,
     /// The parameters that the function takes in
     pub(crate) parameters: Vec<Parameter>,
     /// The return type information
@@ -448,6 +450,7 @@ fn extract_invokable(
     Ok(Invokable {
         ident: invokable_ident.name,
         ident_wrapper: invokable_ident.wrapper,
+        qt_ident: qt_ident.clone(),
         mutable,
         parameters,
         return_type,

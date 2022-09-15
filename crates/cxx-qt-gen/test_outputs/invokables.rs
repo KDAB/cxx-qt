@@ -83,7 +83,6 @@ pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
 
-    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     unsafe impl Send for MyObjectCxxQtThread {}
@@ -94,17 +93,17 @@ mod cxx_qt_ffi {
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_wrapper(&self, cpp: &FFICppObj) {
+        pub fn invokable_wrapper(&self, cpp: &MyObjectQt) {
             cpp.invokable();
         }
 
-        pub fn invokable_mutable_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn invokable_mutable_wrapper(&mut self, cpp: std::pin::Pin<&mut MyObjectQt>) {
             cpp.invokable_mutable();
         }
 
         pub fn invokable_parameters_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             opaque: &cxx_qt_lib::QColor,
             trivial: &cxx_qt_lib::QPoint,
             primitive: i32,
@@ -114,21 +113,21 @@ mod cxx_qt_ffi {
 
         pub fn invokable_return_opaque_wrapper(
             &mut self,
-            cpp: std::pin::Pin<&mut FFICppObj>,
+            cpp: std::pin::Pin<&mut MyObjectQt>,
         ) -> UniquePtr<cxx_qt_lib::QColor> {
             return cpp.invokable_return_opaque();
         }
 
         pub fn invokable_return_primitive_wrapper(
             &mut self,
-            cpp: std::pin::Pin<&mut FFICppObj>,
+            cpp: std::pin::Pin<&mut MyObjectQt>,
         ) -> i32 {
             return cpp.invokable_return_primitive();
         }
 
         pub fn invokable_return_static_wrapper(
             &mut self,
-            cpp: std::pin::Pin<&mut FFICppObj>,
+            cpp: std::pin::Pin<&mut MyObjectQt>,
         ) -> UniquePtr<cxx_qt_lib::QString> {
             return cpp.invokable_return_static();
         }

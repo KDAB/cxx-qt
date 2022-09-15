@@ -94,7 +94,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
 
-            pub type FFICppObj = super::#cxx_mod_ident::#cpp_struct_ident;
             type UniquePtr<T> = cxx::UniquePtr<T>;
 
             unsafe impl Send for #cxx_qt_thread_ident {}
@@ -204,7 +203,6 @@ mod tests {
             mod cxx_qt_ffi {
                 use super::ffi::*;
 
-                pub type FFICppObj = super::ffi::MyObjectQt;
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
                 unsafe impl Send for MyObjectCxxQtThread {}
