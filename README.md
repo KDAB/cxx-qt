@@ -21,104 +21,12 @@ be used from C++, QML, and JavaScript. It consists of two parts:
     The cxx-qt crate implements a macro for Rust code generation. cxx-qt-build is used in [Cargo build scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
     to generate and compile the corresponding C++ code.
 
-CXX-Qt is in early development and the API changes frequently.
+The [CXX-Qt Book](https://kdab.github.io/cxx-qt/book/getting-started/index.html) walks through a minimal example
+step-by-step and documents CXX-Qt's features for the latest release. The [examples folder](./examples) contains
+demonstrations of using threading, QQmlExtensionPlugin, and various other features.
 
-## Getting Started
-
-If you want to use CXX-Qt and see it in action visit our Getting Started guide in our Rust book [https://kdab.github.io/cxx-qt/book/getting-started/index.html](https://kdab.github.io/cxx-qt/book/getting-started/index.html).
-
-Here we go through the steps of creating a Rust project and exposing to QML.
-
-For more complex examples navigate to the [examples folder](./examples) where there are demonstrations of using threading, QQmlExtensionPlugin, and various other features.
-
-Below is an example of Rust code that exposes a QObject with two properties and four invokable methods to Qt.
-
-```rust
-use serde::{Deserialize, Serialize};
-
-// Represent the data within the QObject below with serde friendly types, so we can (de)serialize it
-#[derive(Deserialize, Serialize)]
-pub struct DataSerde {
-    number: i32,
-    string: String,
-}
-
-impl From<&MyObject> for DataSerde {
-    fn from(value: &MyObject) -> DataSerde {
-        DataSerde {
-            number: value.number,
-            string: value.string.to_string(),
-        }
-    }
-}
-
-const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
-
-#[cxx_qt::bridge(namespace = "core")]
-mod ffi {
-    use super::{DataSerde, DEFAULT_STR};
-
-    #[namespace = ""]
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-        type QString = cxx_qt_lib::QString;
-    }
-
-    #[cxx_qt::qobject]
-    pub struct MyObject {
-        #[qproperty]
-        pub number: i32,
-        #[qproperty(cxx_type = "QString")]
-        pub string: UniquePtr<QString>,
-    }
-
-    impl Default for MyObject {
-        fn default() -> Self {
-            let data_serde: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
-            data_serde.into()
-        }
-    }
-
-    impl From<DataSerde> for MyObject {
-        fn from(value: DataSerde) -> MyObject {
-            MyObject {
-                number: value.number,
-                string: QString::from_str(&value.string),
-            }
-        }
-    }
-
-    impl cxx_qt::QObject<MyObject> {
-        #[qinvokable]
-        pub fn increment(self: Pin<&mut Self>) {
-            let new_number = self.get_number() + 1;
-            self.set_number(new_number);
-        }
-
-        #[qinvokable]
-        pub fn reset(mut self: Pin<&mut Self>) {
-            let data: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
-            self.as_mut().set_number(data.number);
-            self.as_mut().set_string(QString::from_str(&data.string));
-        }
-
-        #[qinvokable(return_cxx_type = "QString")]
-        pub fn serialize(&self) -> UniquePtr<QString> {
-            let data_serde = DataSerde::from(self.rust());
-            let data_string = serde_json::to_string(&data_serde).unwrap();
-            QString::from_str(&data_string)
-        }
-
-        #[qinvokable]
-        pub fn grab_values(mut self: Pin<&mut Self>) {
-            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data: DataSerde = serde_json::from_str(string).unwrap();
-            self.as_mut().set_number(data.number);
-            self.as_mut().set_string(QString::from_str(&data.string));
-        }
-    }
-}
-```
+CXX-Qt is in early development and the API changes frequently. For the latest documentation, [install mdBook](https://rust-lang.github.io/mdBook/guide/installation.html)
+and run `mdbook serve` in the [book folder](./book).
 
 ## Comparison to other Rust Qt bindings
 
