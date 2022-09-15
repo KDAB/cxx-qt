@@ -79,10 +79,8 @@ or you want to tell vcpkg to use Qt5, add `-D QT_DEFAULT_MAJOR_VERSION=5` to the
 configure step.
 
 ```bash
-mkdir build/
-cd build/
-cmake ../
-cmake --build . -j$(nproc)
+cmake -S . -B build
+cmake --build build
 ```
 
 ### Run the basic QML example
@@ -99,8 +97,7 @@ For testing the book, it assumes that [`mdbook` and `mdbook-linkcheck`](https://
 For license and memory testing, it assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
 
 ```bash
-cd build/
-ctest -j$(nproc)
+ctest --test-dir build
 ```
 
 ## Licensing
