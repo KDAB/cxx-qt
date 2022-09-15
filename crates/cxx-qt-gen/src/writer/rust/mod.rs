@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::rust::GeneratedRustBlocks;
+use crate::generator::rust::{qobject::GeneratedRustQObjectBlocks, GeneratedRustBlocks};
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::Ident;
+use syn::{Ident, Item};
 
 /// Mangle an input name with an object name
 ///
@@ -22,22 +22,18 @@ fn mangle(name: &str, object: &Ident) -> Ident {
 }
 
 /// Return common blocks for CXX bridge which the C++ writer adds as well
-fn cxx_common_blocks(
-    cpp_struct_ident: &Ident,
-    rust_struct_ident: &Ident,
-    cxx_qt_thread_ident: &Ident,
-    namespace_internals: &String,
-) -> Vec<TokenStream> {
+fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObjectBlocks) -> Vec<TokenStream> {
+    let cpp_struct_ident = &qobject.cpp_struct_ident;
+    let rust_struct_ident = &qobject.rust_struct_ident;
+    let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
+    let namespace_internals = &qobject.namespace_internals;
+
     let new_cpp_obj_str = mangle("new_cpp_object", cpp_struct_ident).to_string();
     let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
     vec![
         quote! {
             unsafe extern "C++" {
-                include ! (< QtCore / QObject >);
-                include!("cxx-qt-lib/include/convert.h");
-                include!("cxx-qt-lib/include/cxxqt_thread.h");
-
                 // Specialised version of CxxQtThread
                 //
                 // CXX doesn't support having generic types in the function yet
@@ -74,35 +70,67 @@ fn cxx_common_blocks(
     ]
 }
 
+/// Return common blocks for CXX-Qt implementation which the C++ writer adds as well
+fn cxx_qt_common_blocks(qobject: &GeneratedRustQObjectBlocks) -> Vec<TokenStream> {
+    let rust_struct_ident = &qobject.rust_struct_ident;
+    let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
+    let create_rs_ident = mangle("create_rs", rust_struct_ident);
+
+    vec![
+        quote! {
+            unsafe impl Send for #cxx_qt_thread_ident {}
+        },
+        quote! {
+            pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
+                std::default::Default::default()
+            }
+        },
+    ]
+}
+
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
-    // Retrieve the struct idents
-    let cpp_struct_ident = &generated.cpp_struct_ident;
-    let rust_struct_ident = &generated.rust_struct_ident;
-    let cxx_qt_thread_ident = &generated.cxx_qt_thread_ident;
-
     // Build the module idents
     let cxx_mod_ident = &generated.cxx_mod.ident;
     let cxx_qt_mod_ident = format_ident!("cxx_qt_{}", cxx_mod_ident);
 
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
-    let cxx_qt_mod_contents = &generated.cxx_qt_mod_contents;
+    let mut cxx_qt_mod_contents: Vec<Item> = vec![];
     let namespace = &generated.namespace;
-    let namespace_internals = &generated.namespace_internals;
 
-    // Inject the common blocks into the bridge which we need
-    let cxx_mod_items = &mut cxx_mod.content.as_mut().expect("").1;
-    for block in cxx_common_blocks(
-        cpp_struct_ident,
-        rust_struct_ident,
-        cxx_qt_thread_ident,
-        namespace_internals,
-    ) {
-        cxx_mod_items.push(syn::parse2(block).expect("Could not build CXX common block"));
+    // Add comment includes for all objects
+    cxx_mod.content.as_mut().expect("").1.push(
+        syn::parse2(quote! {
+            unsafe extern "C++" {
+                include ! (< QtCore / QObject >);
+                include!("cxx-qt-lib/include/convert.h");
+                include!("cxx-qt-lib/include/cxxqt_thread.h");
+            }
+        })
+        .expect("Could not build CXX common block"),
+    );
+
+    for qobject in &generated.qobjects {
+        // Inject the common blocks into the bridge which we need
+        let cxx_mod_items = &mut cxx_mod.content.as_mut().expect("").1;
+        cxx_mod_items.extend_from_slice(&qobject.cxx_mod_contents);
+        cxx_mod_items.append(
+            &mut cxx_bridge_common_blocks(qobject)
+                .into_iter()
+                .map(|block| syn::parse2(block).expect("Could not build CXX common block"))
+                .collect(),
+        );
+
+        // Inject the common blocks into the implementation we need
+        cxx_qt_mod_contents.extend_from_slice(&qobject.cxx_qt_mod_contents);
+        cxx_qt_mod_contents.append(
+            &mut cxx_qt_common_blocks(qobject)
+                .into_iter()
+                .map(|block| syn::parse2(block).expect("Could not build CXX-Qt common block"))
+                .collect(),
+        );
     }
-
-    let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
     quote! {
         #[cxx::bridge(namespace = #namespace)]
@@ -114,13 +142,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
             type UniquePtr<T> = cxx::UniquePtr<T>;
 
-            unsafe impl Send for #cxx_qt_thread_ident {}
-
             #(#cxx_qt_mod_contents)*
-
-            pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
-                std::default::Default::default()
-            }
         }
     }
     .into_token_stream()
@@ -130,7 +152,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::{generator::rust::qobject::GeneratedRustQObjectBlocks, tests::tokens_to_syn};
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
 
@@ -138,36 +160,120 @@ mod tests {
     pub fn create_generated_rust() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
             cxx_mod: tokens_to_syn(quote! {
-                mod ffi {
-                    unsafe extern "C++" {
-                        #[cxx_name = "MyObject"]
-                        type MyObjectQt;
-                    }
-
-                    extern "Rust" {
-                        #[cxx_name = "MyObjectRust"]
-                        type MyObject;
-                    }
-                }
+                mod ffi {}
             }),
-            cxx_qt_mod_contents: vec![
-                tokens_to_syn(quote! {
-                    #[derive(Default)]
-                    pub struct MyObject;
-                }),
-                tokens_to_syn(quote! {
-                    impl MyObject {
-                        fn rust_method(&self) {
-
-                        }
-                    }
-                }),
-            ],
-            cpp_struct_ident: format_ident!("MyObjectQt"),
-            cxx_qt_thread_ident: format_ident!("MyObjectCxxQtThread"),
             namespace: "cxx_qt::my_object".to_owned(),
-            namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
-            rust_struct_ident: format_ident!("MyObject"),
+            qobjects: vec![GeneratedRustQObjectBlocks {
+                cxx_mod_contents: vec![
+                    tokens_to_syn(quote! {
+                        unsafe extern "C++" {
+                            #[cxx_name = "MyObject"]
+                            type MyObjectQt;
+                        }
+                    }),
+                    tokens_to_syn(quote! {
+                        extern "Rust" {
+                            #[cxx_name = "MyObjectRust"]
+                            type MyObject;
+                        }
+                    }),
+                ],
+                cxx_qt_mod_contents: vec![
+                    tokens_to_syn(quote! {
+                        #[derive(Default)]
+                        pub struct MyObject;
+                    }),
+                    tokens_to_syn(quote! {
+                        impl MyObject {
+                            fn rust_method(&self) {
+
+                            }
+                        }
+                    }),
+                ],
+                cpp_struct_ident: format_ident!("MyObjectQt"),
+                cxx_qt_thread_ident: format_ident!("MyObjectCxxQtThread"),
+                namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
+                rust_struct_ident: format_ident!("MyObject"),
+            }],
+        }
+    }
+
+    /// Helper to create a GeneratedRustBlocks for testing with multiple qobjects
+    pub fn create_generated_rust_multi_qobjects() -> GeneratedRustBlocks {
+        GeneratedRustBlocks {
+            cxx_mod: tokens_to_syn(quote! {
+                mod ffi {}
+            }),
+            namespace: "cxx_qt".to_owned(),
+            qobjects: vec![
+                GeneratedRustQObjectBlocks {
+                    cxx_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            unsafe extern "C++" {
+                                #[cxx_name = "FirstObject"]
+                                type FirstObjectQt;
+                            }
+                        }),
+                        tokens_to_syn(quote! {
+                            extern "Rust" {
+                                #[cxx_name = "FirstObjectRust"]
+                                type FirstObject;
+                            }
+                        }),
+                    ],
+                    cxx_qt_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            #[derive(Default)]
+                            pub struct FirstObject;
+                        }),
+                        tokens_to_syn(quote! {
+                            impl FirstObject {
+                                fn rust_method(&self) {
+
+                                }
+                            }
+                        }),
+                    ],
+                    cpp_struct_ident: format_ident!("FirstObjectQt"),
+                    cxx_qt_thread_ident: format_ident!("FirstObjectCxxQtThread"),
+                    namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
+                    rust_struct_ident: format_ident!("FirstObject"),
+                },
+                GeneratedRustQObjectBlocks {
+                    cxx_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            unsafe extern "C++" {
+                                #[cxx_name = "SecondObject"]
+                                type SecondObjectQt;
+                            }
+                        }),
+                        tokens_to_syn(quote! {
+                            extern "Rust" {
+                                #[cxx_name = "SecondObjectRust"]
+                                type SecondObject;
+                            }
+                        }),
+                    ],
+                    cxx_qt_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            #[derive(Default)]
+                            pub struct SecondObject;
+                        }),
+                        tokens_to_syn(quote! {
+                            impl SecondObject {
+                                fn rust_method(&self) {
+
+                                }
+                            }
+                        }),
+                    ],
+                    cpp_struct_ident: format_ident!("SecondObjectQt"),
+                    cxx_qt_thread_ident: format_ident!("SecondObjectCxxQtThread"),
+                    namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
+                    rust_struct_ident: format_ident!("SecondObject"),
+                },
+            ],
         }
     }
 
@@ -176,6 +282,12 @@ mod tests {
         quote! {
             #[cxx::bridge(namespace = "cxx_qt::my_object")]
             mod ffi {
+                unsafe extern "C++" {
+                    include ! (< QtCore / QObject >);
+                    include!("cxx-qt-lib/include/convert.h");
+                    include!("cxx-qt-lib/include/cxxqt_thread.h");
+                }
+
                 unsafe extern "C++" {
                     #[cxx_name = "MyObject"]
                     type MyObjectQt;
@@ -187,10 +299,6 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    include ! (< QtCore / QObject >);
-                    include!("cxx-qt-lib/include/convert.h");
-                    include!("cxx-qt-lib/include/cxxqt_thread.h");
-
                     type MyObjectCxxQtThread;
 
                     #[cxx_name = "unsafeRust"]
@@ -223,8 +331,6 @@ mod tests {
 
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
-                unsafe impl Send for MyObjectCxxQtThread {}
-
                 #[derive(Default)]
                 pub struct MyObject;
 
@@ -234,7 +340,133 @@ mod tests {
                     }
                 }
 
+                unsafe impl Send for MyObjectCxxQtThread {}
+
                 pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
+                    std::default::Default::default()
+                }
+            }
+        }
+        .into_token_stream()
+        .to_string()
+    }
+
+    /// Helper for the expected Rust with multiple qobjects
+    pub fn expected_rust_multi_qobjects() -> String {
+        quote! {
+            #[cxx::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                unsafe extern "C++" {
+                    include ! (< QtCore / QObject >);
+                    include!("cxx-qt-lib/include/convert.h");
+                    include!("cxx-qt-lib/include/cxxqt_thread.h");
+                }
+
+                unsafe extern "C++" {
+                    #[cxx_name = "FirstObject"]
+                    type FirstObjectQt;
+                }
+
+                extern "Rust" {
+                    #[cxx_name = "FirstObjectRust"]
+                    type FirstObject;
+                }
+
+                unsafe extern "C++" {
+                    type FirstObjectCxxQtThread;
+
+                    #[cxx_name = "unsafeRust"]
+                    fn rust(self: &FirstObjectQt) -> &FirstObject;
+
+                    #[cxx_name = "qtThread"]
+                    fn qt_thread(self: &FirstObjectQt) -> UniquePtr<FirstObjectCxxQtThread>;
+                    fn queue(self: &FirstObjectCxxQtThread, func: fn(ctx: Pin<&mut FirstObjectQt>)) -> Result<()>;
+
+                    #[rust_name = "new_cpp_object_first_object_qt"]
+                    #[namespace = "cxx_qt::cxx_qt_first_object"]
+                    fn newCppObject() -> UniquePtr<FirstObjectQt>;
+                }
+
+                extern "C++" {
+                    #[cxx_name = "unsafeRustMut"]
+                    unsafe fn rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
+                }
+
+                extern "Rust" {
+                    #[cxx_name = "createRs"]
+                    #[namespace = "cxx_qt::cxx_qt_first_object"]
+                    fn create_rs_first_object() -> Box<FirstObject>;
+                }
+                unsafe extern "C++" {
+                    #[cxx_name = "SecondObject"]
+                    type SecondObjectQt;
+                }
+
+                extern "Rust" {
+                    #[cxx_name = "SecondObjectRust"]
+                    type SecondObject;
+                }
+
+                unsafe extern "C++" {
+                    type SecondObjectCxxQtThread;
+
+                    #[cxx_name = "unsafeRust"]
+                    fn rust(self: &SecondObjectQt) -> &SecondObject;
+
+                    #[cxx_name = "qtThread"]
+                    fn qt_thread(self: &SecondObjectQt) -> UniquePtr<SecondObjectCxxQtThread>;
+                    fn queue(self: &SecondObjectCxxQtThread, func: fn(ctx: Pin<&mut SecondObjectQt>)) -> Result<()>;
+
+                    #[rust_name = "new_cpp_object_second_object_qt"]
+                    #[namespace = "cxx_qt::cxx_qt_second_object"]
+                    fn newCppObject() -> UniquePtr<SecondObjectQt>;
+                }
+
+                extern "C++" {
+                    #[cxx_name = "unsafeRustMut"]
+                    unsafe fn rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
+                }
+
+                extern "Rust" {
+                    #[cxx_name = "createRs"]
+                    #[namespace = "cxx_qt::cxx_qt_second_object"]
+                    fn create_rs_second_object() -> Box<SecondObject>;
+                }
+            }
+
+            pub use self::cxx_qt_ffi::*;
+            mod cxx_qt_ffi {
+                use super::ffi::*;
+
+                type UniquePtr<T> = cxx::UniquePtr<T>;
+
+                #[derive(Default)]
+                pub struct FirstObject;
+
+                impl FirstObject {
+                    fn rust_method(&self) {
+
+                    }
+                }
+
+                unsafe impl Send for FirstObjectCxxQtThread {}
+
+                pub fn create_rs_first_object() -> std::boxed::Box<FirstObject> {
+                    std::default::Default::default()
+                }
+
+                #[derive(Default)]
+                pub struct SecondObject;
+
+                impl SecondObject {
+                    fn rust_method(&self) {
+
+                    }
+                }
+
+                unsafe impl Send for SecondObjectCxxQtThread {}
+
+                pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
                     std::default::Default::default()
                 }
             }
@@ -248,5 +480,12 @@ mod tests {
         let generated = create_generated_rust();
         let result = write_rust(&generated);
         assert_str_eq!(result.to_string(), expected_rust());
+    }
+
+    #[test]
+    fn test_write_rust_multi_qobjects() {
+        let generated = create_generated_rust_multi_qobjects();
+        let result = write_rust(&generated);
+        assert_str_eq!(result.to_string(), expected_rust_multi_qobjects());
     }
 }

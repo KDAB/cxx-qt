@@ -2,25 +2,6 @@
 #[attrA]
 #[attrB]
 pub mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-gen/include/my_object.cxxqt.h");
-
-        #[cxx_name = "MyObject"]
-        type MyObjectQt;
-
-        #[rust_name = "emit_number_changed"]
-        fn emitNumberChanged(self: Pin<&mut MyObjectQt>);
-    }
-
-    extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
-        type MyObject;
-        #[cxx_name = "getNumber"]
-        unsafe fn get_number<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
-        #[cxx_name = "setNumber"]
-        fn set_number(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
-    }
-
     const MAX: u16 = 65535;
 
     enum Event {
@@ -82,7 +63,28 @@ pub mod ffi {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/include/convert.h");
         include!("cxx-qt-lib/include/cxxqt_thread.h");
+    }
 
+    unsafe extern "C++" {
+        include!("cxx-qt-gen/include/my_object.cxxqt.h");
+
+        #[cxx_name = "MyObject"]
+        type MyObjectQt;
+
+        #[rust_name = "emit_number_changed"]
+        fn emitNumberChanged(self: Pin<&mut MyObjectQt>);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
+        type MyObject;
+        #[cxx_name = "getNumber"]
+        unsafe fn get_number<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+        #[cxx_name = "setNumber"]
+        fn set_number(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
+    }
+
+    unsafe extern "C++" {
         type MyObjectCxxQtThread;
 
         #[cxx_name = "unsafeRust"]
@@ -114,8 +116,6 @@ mod cxx_qt_ffi {
     use super::ffi::*;
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
-    unsafe impl Send for MyObjectCxxQtThread {}
 
     use std::pin::Pin;
 
@@ -164,6 +164,8 @@ mod cxx_qt_ffi {
             "Hello".to_owned()
         }
     }
+
+    unsafe impl Send for MyObjectCxxQtThread {}
 
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()

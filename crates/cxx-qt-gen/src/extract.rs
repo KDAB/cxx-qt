@@ -9,7 +9,7 @@ use crate::parser::{
 };
 use proc_macro2::{Span, TokenStream};
 use std::result::Result;
-use syn::{spanned::Spanned, token::Brace, *};
+use syn::{spanned::Spanned, *};
 
 /// Describes a Qt type
 #[derive(Debug, PartialEq)]
@@ -129,8 +129,6 @@ pub struct QObject {
     pub(crate) signal_ident: Option<Ident>,
     /// The namespace to use for C++
     pub(crate) namespace: String,
-    /// Items we just pass through to the CXX bridge
-    pub(crate) cxx_items: Vec<Item>,
     /// The original Rust mod for the struct
     pub(crate) original_mod: ItemMod,
     /// The original Rust struct that the object was generated from
@@ -583,14 +581,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         .chain(qobject.others.iter())
         .cloned()
         .collect::<Vec<Item>>();
-    // A list of items we will pass through to the CXX bridge
-    //
-    // TODO: for now this just includes ItemForeignMod but later this will switch to all non CXX-Qt items
-    let cxx_items = parser
-        .passthrough_module
-        .content
-        .unwrap_or((Brace::default(), vec![]))
-        .1;
 
     // Read properties
     let object_properties = qobject
@@ -622,7 +612,6 @@ pub fn extract_qobject(module: &ItemMod) -> Result<QObject, TokenStream> {
         signals: object_signals,
         signal_ident,
         namespace: parser.cxx_qt_data.namespace,
-        cxx_items,
         original_mod,
         original_signal_enum,
         original_rust_struct,
@@ -791,7 +780,7 @@ mod tests {
         assert_eq!(qobject.original_passthrough_decls.len(), 3);
 
         // Check that we have a CXX passthrough item
-        assert_eq!(qobject.cxx_items.len(), 18);
+        assert_eq!(qobject.original_mod.content.unwrap().1.len(), 18);
     }
 
     #[test]

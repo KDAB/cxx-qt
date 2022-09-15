@@ -1,5 +1,29 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod ffi {
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+        type QDate = cxx_qt_lib::QDate;
+        type QDateTime = cxx_qt_lib::QDateTime;
+        type QPoint = cxx_qt_lib::QPoint;
+        type QPointF = cxx_qt_lib::QPointF;
+        type QRect = cxx_qt_lib::QRect;
+        type QRectF = cxx_qt_lib::QRectF;
+        type QSize = cxx_qt_lib::QSize;
+        type QSizeF = cxx_qt_lib::QSizeF;
+        type QString = cxx_qt_lib::QString;
+        type QTime = cxx_qt_lib::QTime;
+        type QUrl = cxx_qt_lib::QUrl;
+        type QVariant = cxx_qt_lib::QVariant;
+    }
+
+    unsafe extern "C++" {
+        include ! (< QtCore / QObject >);
+        include!("cxx-qt-lib/include/convert.h");
+        include!("cxx-qt-lib/include/cxxqt_thread.h");
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -127,29 +151,7 @@ mod ffi {
         fn set_variant(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QVariant>);
     }
 
-    #[namespace = ""]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-        type QColor = cxx_qt_lib::QColor;
-        type QDate = cxx_qt_lib::QDate;
-        type QDateTime = cxx_qt_lib::QDateTime;
-        type QPoint = cxx_qt_lib::QPoint;
-        type QPointF = cxx_qt_lib::QPointF;
-        type QRect = cxx_qt_lib::QRect;
-        type QRectF = cxx_qt_lib::QRectF;
-        type QSize = cxx_qt_lib::QSize;
-        type QSizeF = cxx_qt_lib::QSizeF;
-        type QString = cxx_qt_lib::QString;
-        type QTime = cxx_qt_lib::QTime;
-        type QUrl = cxx_qt_lib::QUrl;
-        type QVariant = cxx_qt_lib::QVariant;
-    }
-
-    unsafe extern "C++" {
-        include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/include/convert.h");
-        include!("cxx-qt-lib/include/cxxqt_thread.h");
-
         type MyObjectCxxQtThread;
 
         #[cxx_name = "unsafeRust"]
@@ -181,8 +183,6 @@ mod cxx_qt_ffi {
     use super::ffi::*;
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
-    unsafe impl Send for MyObjectCxxQtThread {}
 
     use std::pin::Pin;
 
@@ -453,6 +453,9 @@ mod cxx_qt_ffi {
             self.as_mut().emit_variant_changed();
         }
     }
+
+    unsafe impl Send for MyObjectCxxQtThread {}
+
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }

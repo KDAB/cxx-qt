@@ -1,5 +1,18 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
 mod ffi {
+    #[namespace = ""]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/include/qt_types.h");
+        type QColor = cxx_qt_lib::QColor;
+        type QPoint = cxx_qt_lib::QPoint;
+    }
+
+    unsafe extern "C++" {
+        include ! (< QtCore / QObject >);
+        include!("cxx-qt-lib/include/convert.h");
+        include!("cxx-qt-lib/include/cxxqt_thread.h");
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
 
@@ -34,18 +47,7 @@ mod ffi {
         fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
     }
 
-    #[namespace = ""]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-        type QColor = cxx_qt_lib::QColor;
-        type QPoint = cxx_qt_lib::QPoint;
-    }
-
-    unsafe extern "C++" {
-        include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/include/convert.h");
-        include!("cxx-qt-lib/include/cxxqt_thread.h");
-
         type MyObjectCxxQtThread;
 
         #[cxx_name = "unsafeRust"]
@@ -77,8 +79,6 @@ mod cxx_qt_ffi {
     use super::ffi::*;
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
-    unsafe impl Send for MyObjectCxxQtThread {}
 
     use std::pin::Pin;
 
@@ -149,6 +149,8 @@ mod cxx_qt_ffi {
             self.as_mut().emit_opaque_changed();
         }
     }
+
+    unsafe impl Send for MyObjectCxxQtThread {}
 
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
