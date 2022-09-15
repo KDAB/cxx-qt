@@ -120,7 +120,6 @@ pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
 
-    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     unsafe impl Send for MyObjectCxxQtThread {}
@@ -133,7 +132,7 @@ mod cxx_qt_ffi {
     impl MyObject {
         pub fn test_color_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             color: &cxx_qt_lib::QColor,
         ) -> UniquePtr<cxx_qt_lib::QColor> {
             return cpp.test_color(color);
@@ -141,7 +140,7 @@ mod cxx_qt_ffi {
 
         pub fn test_date_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             date: &cxx_qt_lib::QDate,
         ) -> cxx_qt_lib::QDate {
             return cpp.test_date(date);
@@ -149,7 +148,7 @@ mod cxx_qt_ffi {
 
         pub fn test_date_time_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             dateTime: &cxx_qt_lib::QDateTime,
         ) -> UniquePtr<cxx_qt_lib::QDateTime> {
             return cpp.test_date_time(dateTime);
@@ -157,7 +156,7 @@ mod cxx_qt_ffi {
 
         pub fn test_point_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             point: &cxx_qt_lib::QPoint,
         ) -> cxx_qt_lib::QPoint {
             return cpp.test_point(point);
@@ -165,7 +164,7 @@ mod cxx_qt_ffi {
 
         pub fn test_pointf_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             pointf: &cxx_qt_lib::QPointF,
         ) -> cxx_qt_lib::QPointF {
             return cpp.test_pointf(pointf);
@@ -173,7 +172,7 @@ mod cxx_qt_ffi {
 
         pub fn test_rect_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             rect: &cxx_qt_lib::QRect,
         ) -> cxx_qt_lib::QRect {
             return cpp.test_rect(rect);
@@ -181,7 +180,7 @@ mod cxx_qt_ffi {
 
         pub fn test_rectf_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             rectf: &cxx_qt_lib::QRectF,
         ) -> cxx_qt_lib::QRectF {
             return cpp.test_rectf(rectf);
@@ -189,7 +188,7 @@ mod cxx_qt_ffi {
 
         pub fn test_size_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             size: &cxx_qt_lib::QSize,
         ) -> cxx_qt_lib::QSize {
             return cpp.test_size(size);
@@ -197,7 +196,7 @@ mod cxx_qt_ffi {
 
         pub fn test_sizef_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             sizef: &cxx_qt_lib::QSizeF,
         ) -> cxx_qt_lib::QSizeF {
             return cpp.test_sizef(sizef);
@@ -205,7 +204,7 @@ mod cxx_qt_ffi {
 
         pub fn test_string_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             string: &cxx_qt_lib::QString,
         ) -> UniquePtr<cxx_qt_lib::QString> {
             return cpp.test_string(string);
@@ -213,7 +212,7 @@ mod cxx_qt_ffi {
 
         pub fn test_time_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             time: &cxx_qt_lib::QTime,
         ) -> cxx_qt_lib::QTime {
             return cpp.test_time(time);
@@ -221,7 +220,7 @@ mod cxx_qt_ffi {
 
         pub fn test_url_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             url: &cxx_qt_lib::QUrl,
         ) -> UniquePtr<cxx_qt_lib::QUrl> {
             return cpp.test_url(url);
@@ -229,7 +228,7 @@ mod cxx_qt_ffi {
 
         pub fn test_variant_wrapper(
             &self,
-            cpp: &FFICppObj,
+            cpp: &MyObjectQt,
             variant: &cxx_qt_lib::QVariant,
         ) -> UniquePtr<cxx_qt_lib::QVariant> {
             return cpp.test_variant(variant);

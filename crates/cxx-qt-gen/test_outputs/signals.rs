@@ -68,7 +68,6 @@ pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
 
-    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     unsafe impl Send for MyObjectCxxQtThread {}
@@ -88,7 +87,7 @@ mod cxx_qt_ffi {
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_wrapper(&mut self, cpp: std::pin::Pin<&mut FFICppObj>) {
+        pub fn invokable_wrapper(&mut self, cpp: std::pin::Pin<&mut MyObjectQt>) {
             cpp.invokable();
         }
     }

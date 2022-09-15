@@ -8,7 +8,11 @@ use quote::{format_ident, quote, ToTokens};
 use syn::ItemMod;
 
 use crate::extract::{Invokable, Property, QObject, QtTypes};
-use crate::generator::{naming, naming::property::QPropertyName, rust::GeneratedRustBlocks};
+use crate::generator::{
+    naming,
+    naming::{property::QPropertyName, qobject::QObjectName},
+    rust::GeneratedRustBlocks,
+};
 use crate::writer::rust::write_rust;
 
 /// A trait which we implement on QtTypes allowing retrieval of attributes of the enum value.
@@ -129,7 +133,7 @@ fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStre
     // inside a wrapper. The functions that are impl'ed on the Rs class
     // will then simply create the wrapper and call the free functions.
     //
-    // As a first step we could maybe just add a `cpp: Pin<&mut FFICppObj>`
+    // As a first step we could maybe just add a `cpp: Pin<&mut MyObjectQt>`
     // argument to invokables so that users can manually wrap it.
 
     // Determine if the invokable has any parameter
@@ -405,10 +409,11 @@ fn invokable_generate_wrapper(
     let mut output_parameters = vec![];
     let mut wrappers = vec![];
 
+    let cpp_struct_ident = QObjectName::from(&invokable.qt_ident).cpp_class.rust;
     let cpp_type = if invokable.mutable {
-        quote! { std::pin::Pin<&mut FFICppObj> }
+        quote! { std::pin::Pin<&mut #cpp_struct_ident> }
     } else {
-        quote! { &FFICppObj }
+        quote! { &#cpp_struct_ident }
     };
     input_parameters.push(quote! { cpp: #cpp_type });
 

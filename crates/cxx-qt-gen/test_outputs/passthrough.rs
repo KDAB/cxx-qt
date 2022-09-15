@@ -113,7 +113,6 @@ pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
 
-    pub type FFICppObj = super::ffi::MyObjectQt;
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     unsafe impl Send for MyObjectCxxQtThread {}
