@@ -12,11 +12,10 @@ is built with CMake. A minimal example building the same code with Cargo is in t
 
 Then we have multiple other examples availabe inside the projects
 
-  * [Defining properties and invokables](./qml_features/src/rust_obj_invokables.rs)
-  * [Handling property changes on the Rust side](./qml_features/src/handler_property_change.rs)
-  * [How to (de)serialise QObjects](./qml_features/src/serialisation.rs)
-  * [Using threaded logic](./qml_with_threaded_logic/src/lib.rs)
-  * [Using Qt types such as QVariant](./qml_features/src/types.rs)
-  * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/core/)
+  * [Defining properties and invokables](./qml_features/rust/src/rust_obj_invokables.rs)
+  * [How to (de)serialise QObjects](./qml_features/rust/src/serialisation.rs)
+  * [Using threaded logic](./qml_with_threaded_logic/rust/src/lib.rs)
+  * [Using Qt types such as QVariant](./qml_features/rust/src/types.rs)
+  * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/plugin/)
 
 For documentation on how to use these features please visit our Book [https://kdab.github.io/cxx-qt/book/](https://kdab.github.io/cxx-qt/book/).
