@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::ItemMod;
+use syn::{Item, ItemMod};
 
 use crate::extract::{Invokable, Property, QObject, QtTypes};
 use crate::generator::{
     naming,
     naming::{property::QPropertyName, qobject::QObjectName},
-    rust::GeneratedRustBlocks,
+    rust::{qobject::GeneratedRustQObjectBlocks, GeneratedRustBlocks},
 };
 use crate::writer::rust::write_rust;
 
@@ -189,7 +189,7 @@ fn generate_invokable_cxx_declaration(obj: &QObject, i: &Invokable) -> TokenStre
 }
 
 /// Generate Rust code that used CXX to interact with the C++ code generated for a QObject
-pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
+pub fn generate_qobject_cxx(obj: &QObject) -> Result<Vec<Item>, TokenStream> {
     // Cache the original and rust class names, these are used multiple times later
     let qobject_idents = naming::qobject::QObjectName::from(&obj.original_rust_struct.ident);
     let cpp_class_name_cpp = qobject_idents.cpp_class.cpp.to_string();
@@ -284,40 +284,35 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<ItemMod, TokenStream> {
     // Build the import path for the C++ header
     let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", cxx_stem);
 
-    // Build the module ident
-    let mod_attrs = &obj.original_mod.attrs;
-    let mod_ident = &obj.original_mod.ident;
-    let mod_vis = &obj.original_mod.vis;
-
-    // Retrieve the passthrough items to CXX
-    let cxx_items = &obj.cxx_items;
-
     // Build the CXX bridge
-    let output = quote! {
-        #(#mod_attrs)*
-        #mod_vis mod #mod_ident {
-            unsafe extern "C++" {
-                include!(#import_path);
+    Ok(vec![
+        syn::parse2::<Item>(
+            quote! {
+                unsafe extern "C++" {
+                    include!(#import_path);
 
-                #[cxx_name = #cpp_class_name_cpp]
-                type #cpp_class_name_rust;
+                    #[cxx_name = #cpp_class_name_cpp]
+                    type #cpp_class_name_rust;
 
-                #(#cpp_functions)*
+                    #(#cpp_functions)*
+                }
             }
+            .into_token_stream(),
+        )
+        .map_err(|err| err.to_compile_error())?,
+        syn::parse2::<Item>(
+            quote! {
+                extern "Rust" {
+                    #[cxx_name = #rust_struct_name_cpp]
+                    type #rust_struct_name_rust;
 
-            extern "Rust" {
-                #[cxx_name = #rust_struct_name_cpp]
-                type #rust_struct_name_rust;
-
-                #(#rs_functions)*
+                    #(#rs_functions)*
+                }
             }
-
-            #(#cxx_items)*
-        }
-    };
-
-    // Convert into an ItemMod for our writer phase
-    syn::parse2::<ItemMod>(output.into_token_stream()).map_err(|err| err.to_compile_error())
+            .into_token_stream(),
+        )
+        .map_err(|err| err.to_compile_error())?,
+    ])
 }
 
 fn generate_signal_methods_rs(obj: &QObject) -> Result<Vec<TokenStream>, TokenStream> {
@@ -534,7 +529,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     let cxx_qt_thread_ident = qobject_idents.cxx_qt_thread_class;
 
     // Generate cxx block
-    let cxx_block = generate_qobject_cxx(obj)?;
+    let cxx_mod_contents = generate_qobject_cxx(obj)?;
 
     // Generate property methods from the object
     let signal_methods = generate_signal_methods_rs(obj)?;
@@ -615,17 +610,22 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     })
     .map_err(|err| err.to_compile_error())?;
 
-    let generated = GeneratedRustBlocks {
-        cxx_mod: cxx_block,
+    let qobjects = vec![GeneratedRustQObjectBlocks {
+        cxx_mod_contents,
         cxx_qt_mod_contents: cxx_qt_mod_fake
             .content
             .unwrap_or((syn::token::Brace::default(), vec![]))
             .1,
         cpp_struct_ident: cpp_class_name_rust,
         cxx_qt_thread_ident,
-        namespace: obj.namespace.to_owned(),
         namespace_internals,
         rust_struct_ident: obj.ident.clone(),
+    }];
+
+    let generated = GeneratedRustBlocks {
+        cxx_mod: obj.original_mod.clone(),
+        namespace: obj.namespace.to_owned(),
+        qobjects,
     };
     Ok(write_rust(&generated))
 }
