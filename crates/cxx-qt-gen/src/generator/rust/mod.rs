@@ -7,6 +7,7 @@ pub mod fragment;
 pub mod invokable;
 pub mod property;
 pub mod qobject;
+pub mod signals;
 
 use crate::generator::{naming::module::cxx_stem_from_ident, rust::qobject::GeneratedRustQObject};
 use crate::parser::Parser;

@@ -8,7 +8,7 @@ use crate::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
             fragment::RustFragmentPair, invokable::generate_rust_invokables,
-            property::generate_rust_properties,
+            property::generate_rust_properties, signals::generate_rust_signals,
         },
     },
     parser::qobject::ParsedQObject,
@@ -83,6 +83,12 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
+
+        if let Some(signals_enum) = &qobject.signals {
+            generated
+                .blocks
+                .append(&mut generate_rust_signals(signals_enum, &qobject_idents)?);
+        }
 
         Ok(generated)
     }

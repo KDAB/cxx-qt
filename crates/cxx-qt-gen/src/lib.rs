@@ -202,4 +202,16 @@ mod tests {
         let expected_output = format_rs_source(include_str!("../test_outputs/properties.rs"));
         assert_str_eq!(rust, expected_output);
     }
+
+    #[test]
+    fn generates_signals_rust() {
+        let parser =
+            Parser::from(syn::parse_str(include_str!("../test_inputs/signals.rs")).unwrap())
+                .unwrap();
+        let generated = GeneratedRustBlocks::from(&parser).unwrap();
+        let rust = format_rs_source(&write_rust(&generated).to_string());
+
+        let expected_output = format_rs_source(include_str!("../test_outputs/signals.rs"));
+        assert_str_eq!(rust, expected_output);
+    }
 }
