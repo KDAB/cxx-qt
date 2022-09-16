@@ -8,11 +8,14 @@ template<typename T>
 class CxxQtThread;
 }
 
+namespace cxx_qt::my_object {
 class MyObject;
 using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
+} // namespace cxx_qt::my_object
 
 #include "cxx-qt-gen/include/my_object.cxx.h"
 
+namespace cxx_qt::my_object {
 class MyObject : public QStringListModel
 {
   Q_OBJECT
@@ -46,10 +49,11 @@ private:
 
 static_assert(std::is_base_of<QObject, MyObject>::value,
               "MyObject must inherit from QObject");
+} // namespace cxx_qt::my_object
 
-namespace cxx_qt_my_object {
+namespace cxx_qt::my_object::cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject();
-} // namespace cxx_qt_my_object
+} // namespace cxx_qt::my_object::cxx_qt_my_object
 
-Q_DECLARE_METATYPE(MyObject*)
+Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)

@@ -118,8 +118,8 @@ mod tests {
     }
 
     #[test]
-    fn generates_naming_cpp() {
-        test_cpp_generation!("naming");
+    fn generates_passthrough_and_naming_cpp() {
+        test_cpp_generation!("passthrough_and_naming");
     }
 
     #[test]
@@ -133,38 +133,13 @@ mod tests {
     }
 
     #[test]
-    fn generates_types_primitive_property_cpp() {
-        test_cpp_generation!("types_primitive_property");
-    }
-
-    #[test]
-    fn generates_types_qt_property_cpp() {
-        test_cpp_generation!("types_qt_property");
-    }
-
-    #[test]
-    fn generates_types_qt_invokable_cpp() {
-        test_cpp_generation!("types_qt_invokable");
-    }
-
-    #[test]
-    fn generates_custom_default_rust() {
-        test_rust_generation!("custom_default");
-    }
-
-    #[test]
     fn generates_invokables_rust() {
         test_rust_generation!("invokables");
     }
 
     #[test]
-    fn generates_naming_rust() {
-        test_rust_generation!("naming");
-    }
-
-    #[test]
-    fn generates_passthrough_rust() {
-        test_rust_generation!("passthrough");
+    fn generates_passthrough_and_naming_rust() {
+        test_rust_generation!("passthrough_and_naming");
     }
 
     #[test]
@@ -175,20 +150,5 @@ mod tests {
     #[test]
     fn generates_signals_rust() {
         test_rust_generation!("signals");
-    }
-
-    #[test]
-    fn generates_types_primitive_property_rust() {
-        test_rust_generation!("types_primitive_property");
-    }
-
-    #[test]
-    fn generates_types_qt_property_rust() {
-        test_rust_generation!("types_qt_property");
-    }
-
-    #[test]
-    fn generates_types_qt_invokable_rust() {
-        test_rust_generation!("types_qt_invokable");
     }
 }
