@@ -9,6 +9,8 @@ use syn::ImplItemMethod;
 pub struct ParsedQInvokable {
     /// The original [syn::ImplItemMethod] of the invokable
     pub method: ImplItemMethod,
+    /// Whether this invokable is mutable
+    pub mutable: bool,
     /// The name of the C++ type for the return type if one has been specified
     pub return_cxx_type: Option<String>,
 }

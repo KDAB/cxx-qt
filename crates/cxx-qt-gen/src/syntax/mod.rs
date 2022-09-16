@@ -5,6 +5,7 @@
 
 pub mod attribute;
 pub mod fields;
+pub mod implitemmethod;
 pub mod path;
 mod qtfile;
 mod qtitem;

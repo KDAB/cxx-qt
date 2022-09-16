@@ -360,52 +360,15 @@ pub(crate) fn extract_method_params(
         .collect::<Result<Vec<Parameter>, TokenStream>>()
 }
 
-/// Return whether the first parameter of a method is a mutable self argument
-//
-// Note that self: Box<Self> is parsed as FnArg::Typed not FnArg::Receiver so will be false
-// but we don't use this case with CXX, so this can be ignored.
-fn is_method_mutable(method: &ImplItemMethod) -> bool {
-    match method.sig.inputs.first() {
-        Some(FnArg::Receiver(Receiver { mutability, .. })) => mutability.is_some(),
-        Some(FnArg::Typed(PatType { ty, pat, .. })) => {
-            if let Pat::Ident(PatIdent { ident, .. }) = pat.as_ref() {
-                if ident != "self" {
-                    return false;
-                }
-            }
-            if let Type::Path(TypePath { path, .. }) = ty.as_ref() {
-                if !crate::syntax::path::path_compare_str(path, &["Pin"]) {
-                    return false;
-                }
-
-                if let Some(last) = path.segments.last() {
-                    if let PathArguments::AngleBracketed(args) = &last.arguments {
-                        // TODO: Maybe check that the reference is of type `Self`.
-                        if let Some(GenericArgument::Type(Type::Reference(TypeReference {
-                            mutability: Some(_),
-                            ..
-                        }))) = args.args.first()
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            false
-        }
-        _ => false,
-    }
-}
-
 fn extract_invokable(
     method: &ParsedQInvokable,
     qt_ident: &Ident,
 ) -> Result<Invokable, TokenStream> {
+    let mutable = method.mutable;
     let method = &method.method;
     let invokable_ident = naming::invokable::QInvokableName::from(method);
     let output = &method.sig.output;
 
-    let mutable = is_method_mutable(method);
     let parameters = extract_method_params(method, qt_ident)?;
 
     let return_type = if let ReturnType::Type(_, ty) = output {

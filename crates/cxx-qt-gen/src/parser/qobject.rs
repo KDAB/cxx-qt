@@ -9,6 +9,7 @@ use crate::parser::{
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map},
     fields::fields_to_named_fields_mut,
+    implitemmethod::is_method_mutable,
 };
 use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
@@ -64,12 +65,14 @@ impl ParsedQObject {
                         attribute_tokens_to_map::<Ident, LitStr>(&method.attrs[index])?
                             .get(&quote::format_ident!("return_cxx_type"))
                             .map(|lit_str| lit_str.value());
+                    let mutable = is_method_mutable(method);
 
                     // Remove the invokable attribute
                     let mut method = method.clone();
                     method.attrs.remove(index);
                     self.invokables.push(ParsedQInvokable {
                         method,
+                        mutable,
                         return_cxx_type,
                     });
                 } else {
@@ -124,22 +127,24 @@ mod tests {
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
                 #[qinvokable]
-                fn invokable() {}
+                fn invokable(&self) {}
 
                 #[qinvokable(return_cxx_type = "f32")]
-                fn invokable_with_return_cxx_type() -> f64 {}
+                fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
 
-                fn cpp_context() {}
+                fn cpp_context(&self) {}
             }
         });
         assert!(qobject.parse_impl_items(&item.items).is_ok());
         assert_eq!(qobject.invokables.len(), 2);
         assert_eq!(qobject.methods.len(), 1);
         assert!(qobject.invokables[0].return_cxx_type.is_none());
+        assert!(!qobject.invokables[0].mutable);
         assert_eq!(
             qobject.invokables[1].return_cxx_type.as_ref().unwrap(),
             "f32"
         );
+        assert!(qobject.invokables[1].mutable);
     }
 
     #[test]
