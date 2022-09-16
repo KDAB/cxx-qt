@@ -44,7 +44,7 @@ pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragmentPair {
 mod tests {
     use super::*;
 
-    use crate::generator::cpp::qobject::GeneratedCppQObjectBlocks;
+    use crate::generator::cpp::qobject::{GeneratedCppQObject, GeneratedCppQObjectBlocks};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
 
@@ -54,91 +54,93 @@ mod tests {
             cxx_stem: "cxx_stem".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![
-                GeneratedCppQObjectBlocks {
+                GeneratedCppQObject {
                     ident: "MyObject".to_owned(),
                     rust_ident: "MyObjectRust".to_owned(),
                     cxx_qt_thread_ident: "MyObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    metaobjects: vec![
-                        "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
-                        "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
-                            .to_owned(),
-                    ],
-                    methods: vec![
-                        CppFragmentPair {
-                            header: "int count() const;".to_owned(),
-                            source: indoc! {r#"
-                                int
-                                MyObject::count() const
-                                {
-                                  // getter
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                        CppFragmentPair {
-                            header: "bool toggle() const;".to_owned(),
-                            source: indoc! {r#"
-                                bool
-                                MyObject::toggle() const
-                                {
-                                  // getter
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                        CppFragmentPair {
-                            header: "Q_INVOKABLE void invokable();".to_owned(),
-                            source: indoc! {r#"
-                                void
-                                MyObject::invokable()
-                                {
-                                  // invokable method
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                        CppFragmentPair {
-                            header: "void cppMethod();".to_owned(),
-                            source: indoc! {r#"
-                                void
-                                MyObject::cppMethod()
-                                {
-                                  // cpp method
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                    ],
-                    slots: vec![
-                        CppFragmentPair {
-                            header: "void setCount(int count);".to_owned(),
-                            source: indoc! {r#"
-                                void
-                                MyObject::setCount(int count) const
-                                {
-                                  // setter
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                        CppFragmentPair {
-                            header: "void setToggle(bool toggle);".to_owned(),
-                            source: indoc! {r#"
-                                void
-                                MyObject::setToggle(bool toggle) const
-                                {
-                                  // setter
-                                }
-                            "#}
-                            .to_owned(),
-                        },
-                    ],
-                    signals: vec![
-                        "void countChanged();".to_owned(),
-                        "void toggleChanged();".to_owned(),
-                    ],
+                    blocks: GeneratedCppQObjectBlocks {
+                        metaobjects: vec![
+                            "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
+                            "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
+                                .to_owned(),
+                        ],
+                        methods: vec![
+                            CppFragmentPair {
+                                header: "int count() const;".to_owned(),
+                                source: indoc! {r#"
+                                    int
+                                    MyObject::count() const
+                                    {
+                                      // getter
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                            CppFragmentPair {
+                                header: "bool toggle() const;".to_owned(),
+                                source: indoc! {r#"
+                                    bool
+                                    MyObject::toggle() const
+                                    {
+                                      // getter
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                            CppFragmentPair {
+                                header: "Q_INVOKABLE void invokable();".to_owned(),
+                                source: indoc! {r#"
+                                    void
+                                    MyObject::invokable()
+                                    {
+                                      // invokable method
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                            CppFragmentPair {
+                                header: "void cppMethod();".to_owned(),
+                                source: indoc! {r#"
+                                    void
+                                    MyObject::cppMethod()
+                                    {
+                                      // cpp method
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                        ],
+                        slots: vec![
+                            CppFragmentPair {
+                                header: "void setCount(int count);".to_owned(),
+                                source: indoc! {r#"
+                                    void
+                                    MyObject::setCount(int count) const
+                                    {
+                                      // setter
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                            CppFragmentPair {
+                                header: "void setToggle(bool toggle);".to_owned(),
+                                source: indoc! {r#"
+                                    void
+                                    MyObject::setToggle(bool toggle) const
+                                    {
+                                      // setter
+                                    }
+                                "#}
+                                .to_owned(),
+                            },
+                        ],
+                        signals: vec![
+                            "void countChanged();".to_owned(),
+                            "void toggleChanged();".to_owned(),
+                        ],
+                    }
                 }
             ],
         }
@@ -150,73 +152,77 @@ mod tests {
             cxx_stem: "cxx_stem".to_owned(),
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
-                GeneratedCppQObjectBlocks {
+                GeneratedCppQObject {
                     ident: "FirstObject".to_owned(),
                     rust_ident: "FirstObjectRust".to_owned(),
                     cxx_qt_thread_ident: "FirstObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    metaobjects: vec![
-                        "Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)"
+                    blocks: GeneratedCppQObjectBlocks {
+                        metaobjects: vec![
+                            "Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)"
+                                .to_owned(),
+                        ],
+                        methods: vec![CppFragmentPair {
+                            header: "int count() const;".to_owned(),
+                            source: indoc! {r#"
+                                    int
+                                    FirstObject::count() const
+                                    {
+                                      // getter
+                                    }
+                                "#}
                             .to_owned(),
-                    ],
-                    methods: vec![CppFragmentPair {
-                        header: "int count() const;".to_owned(),
-                        source: indoc! {r#"
-                                int
-                                FirstObject::count() const
-                                {
-                                  // getter
-                                }
-                            "#}
-                        .to_owned(),
-                    }],
-                    slots: vec![CppFragmentPair {
-                        header: "void setCount(int count);".to_owned(),
-                        source: indoc! {r#"
-                                void
-                                FirstObject::setCount(int count) const
-                                {
-                                  // setter
-                                }
-                            "#}
-                        .to_owned(),
-                    }],
-                    signals: vec!["void countChanged();".to_owned()],
+                        }],
+                        slots: vec![CppFragmentPair {
+                            header: "void setCount(int count);".to_owned(),
+                            source: indoc! {r#"
+                                    void
+                                    FirstObject::setCount(int count) const
+                                    {
+                                      // setter
+                                    }
+                                "#}
+                            .to_owned(),
+                        }],
+                        signals: vec!["void countChanged();".to_owned()],
+                    }
                 },
-                GeneratedCppQObjectBlocks {
+                GeneratedCppQObject {
                     ident: "SecondObject".to_owned(),
                     rust_ident: "SecondObjectRust".to_owned(),
                     cxx_qt_thread_ident: "SecondObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    metaobjects: vec![
-                        "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)"
+                    blocks: GeneratedCppQObjectBlocks {
+                        metaobjects: vec![
+                            "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)"
+                                .to_owned(),
+                        ],
+                        methods: vec![CppFragmentPair {
+                            header: "int count() const;".to_owned(),
+                            source: indoc! {r#"
+                                    int
+                                    SecondObject::count() const
+                                    {
+                                      // getter
+                                    }
+                                "#}
                             .to_owned(),
-                    ],
-                    methods: vec![CppFragmentPair {
-                        header: "int count() const;".to_owned(),
-                        source: indoc! {r#"
-                                int
-                                SecondObject::count() const
-                                {
-                                  // getter
-                                }
-                            "#}
-                        .to_owned(),
-                    }],
-                    slots: vec![CppFragmentPair {
-                        header: "void setCount(int count);".to_owned(),
-                        source: indoc! {r#"
-                                void
-                                SecondObject::setCount(int count) const
-                                {
-                                  // setter
-                                }
-                            "#}
-                        .to_owned(),
-                    }],
-                    signals: vec!["void countChanged();".to_owned()],
+                        }],
+                        slots: vec![CppFragmentPair {
+                            header: "void setCount(int count);".to_owned(),
+                            source: indoc! {r#"
+                                    void
+                                    SecondObject::setCount(int count) const
+                                    {
+                                      // setter
+                                    }
+                                "#}
+                            .to_owned(),
+                        }],
+                        signals: vec!["void countChanged();".to_owned()],
+                    }
                 },
             ],
         }

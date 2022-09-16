@@ -17,10 +17,10 @@ use indoc::formatdoc;
 use syn::Result;
 
 pub fn generate_cpp_signals(
-    generated: &mut GeneratedCppQObjectBlocks,
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
-) -> Result<()> {
+) -> Result<GeneratedCppQObjectBlocks> {
+    let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
 
     for signal in signals {
@@ -94,7 +94,7 @@ pub fn generate_cpp_signals(
         });
     }
 
-    Ok(())
+    Ok(generated)
 }
 
 #[cfg(test)]
@@ -110,7 +110,6 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals() {
-        let mut generated = GeneratedCppQObjectBlocks::default();
         let signals = vec![ParsedSignal {
             ident: format_ident!("data_changed"),
             parameters: vec![
@@ -128,7 +127,7 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        assert!(generate_cpp_signals(&mut generated, &signals, &qobject_idents).is_ok());
+        let generated = generate_cpp_signals(&signals, &qobject_idents).unwrap();
 
         assert_eq!(generated.signals.len(), 1);
         assert_str_eq!(

@@ -12,7 +12,7 @@ pub mod types;
 
 use crate::generator::naming;
 use crate::parser::Parser;
-use qobject::GeneratedCppQObjectBlocks;
+use qobject::GeneratedCppQObject;
 use syn::{spanned::Spanned, Error, Result};
 
 pub const RUST_OBJ_MUTEX_LOCK_GUARD: &str =
@@ -25,8 +25,8 @@ pub struct GeneratedCppBlocks {
     pub cxx_stem: String,
     /// Ident of the common namespace of the QObjects
     pub namespace: String,
-    /// Generated QObject blocks
-    pub qobjects: Vec<GeneratedCppQObjectBlocks>,
+    /// Generated QObjects
+    pub qobjects: Vec<GeneratedCppQObject>,
 }
 
 impl GeneratedCppBlocks {
@@ -48,8 +48,8 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qobjects
                 .values()
-                .map(GeneratedCppQObjectBlocks::from)
-                .collect::<Result<Vec<GeneratedCppQObjectBlocks>>>()?,
+                .map(GeneratedCppQObject::from)
+                .collect::<Result<Vec<GeneratedCppQObject>>>()?,
         })
     }
 }

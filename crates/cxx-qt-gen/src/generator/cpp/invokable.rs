@@ -19,10 +19,10 @@ use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result, ReturnType};
 
 pub fn generate_cpp_invokables(
-    generated: &mut GeneratedCppQObjectBlocks,
     invokables: &Vec<ParsedQInvokable>,
     qobject_idents: &QObjectName,
-) -> Result<()> {
+) -> Result<GeneratedCppQObjectBlocks> {
+    let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
@@ -126,7 +126,7 @@ pub fn generate_cpp_invokables(
         });
     }
 
-    Ok(())
+    Ok(generated)
 }
 
 #[cfg(test)]
@@ -141,7 +141,6 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables() {
-        let mut generated = GeneratedCppQObjectBlocks::default();
         let invokables = vec![
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn void_invokable(&self) {} }),
@@ -160,7 +159,7 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        assert!(generate_cpp_invokables(&mut generated, &invokables, &qobject_idents).is_ok());
+        let generated = generate_cpp_invokables(&invokables, &qobject_idents).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 3);
