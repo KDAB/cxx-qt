@@ -595,8 +595,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     // later this code will be moved into a generator phase
     let cxx_qt_mod_fake: ItemMod = syn::parse2::<ItemMod>(quote! {
         mod fake {
-            use std::pin::Pin;
-
             #signal_enum
 
             #rust_struct
