@@ -63,6 +63,7 @@ mod tests {
         let parsed = ParsedQInvokable {
             method: item,
             mutable: false,
+            parameters: vec![],
             return_cxx_type: None,
         };
 
