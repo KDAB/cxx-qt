@@ -88,6 +88,12 @@ mod cxx_qt_ffi {
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    impl MyObject {
+        pub fn rust_only_method(&self) {
+            println!("QML or C++ can't call this :)");
+        }
+    }
+
     #[derive(Default)]
     pub struct MyObject;
 
@@ -172,12 +178,6 @@ mod cxx_qt_ffi {
 
         pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
-        }
-    }
-
-    impl MyObject {
-        pub fn rust_only_method(&self) {
-            println!("QML or C++ can't call this :)");
         }
     }
 

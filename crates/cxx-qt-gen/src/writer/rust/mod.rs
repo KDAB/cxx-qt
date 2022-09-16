@@ -7,7 +7,7 @@ use crate::generator::rust::{qobject::GeneratedRustQObjectBlocks, GeneratedRustB
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{Ident, Item};
+use syn::Ident;
 
 /// Mangle an input name with an object name
 ///
@@ -96,7 +96,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
-    let mut cxx_qt_mod_contents: Vec<Item> = vec![];
+    let mut cxx_qt_mod_contents = generated.cxx_qt_mod_contents.clone();
     let namespace = &generated.namespace;
 
     // Add comment includes for all objects
@@ -163,6 +163,9 @@ mod tests {
             cxx_mod: tokens_to_syn(quote! {
                 mod ffi {}
             }),
+            cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
+                use module::Struct;
+            })],
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![GeneratedRustQObjectBlocks {
                 cxx_mod_contents: vec![
@@ -206,6 +209,9 @@ mod tests {
             cxx_mod: tokens_to_syn(quote! {
                 mod ffi {}
             }),
+            cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
+                use module::Struct;
+            })],
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
                 GeneratedRustQObjectBlocks {
@@ -333,6 +339,8 @@ mod tests {
 
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
+                use module::Struct;
+
                 #[derive(Default)]
                 pub struct MyObject;
 
@@ -442,6 +450,8 @@ mod tests {
                 use std::pin::Pin;
 
                 type UniquePtr<T> = cxx::UniquePtr<T>;
+
+                use module::Struct;
 
                 #[derive(Default)]
                 pub struct FirstObject;

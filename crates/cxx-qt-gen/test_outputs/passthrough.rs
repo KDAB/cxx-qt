@@ -118,6 +118,24 @@ mod cxx_qt_ffi {
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    use super::MyTrait;
+
+    impl MyObject {
+        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
+            optional
+        }
+
+        fn test_unknown(&self, unknown: MyType) -> MyType {
+            unknown
+        }
+    }
+
+    impl MyTrait for MyObject {
+        fn my_func() -> String {
+            "Hello".to_owned()
+        }
+    }
+
     #[derive(Default)]
     pub struct MyObject {
         number: i32,
@@ -143,24 +161,6 @@ mod cxx_qt_ffi {
                 self.as_mut().rust_mut().number = value;
             }
             self.as_mut().emit_number_changed();
-        }
-    }
-
-    use super::MyTrait;
-
-    impl MyObject {
-        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
-            optional
-        }
-
-        fn test_unknown(&self, unknown: MyType) -> MyType {
-            unknown
-        }
-    }
-
-    impl MyTrait for MyObject {
-        fn my_func() -> String {
-            "Hello".to_owned()
         }
     }
 
