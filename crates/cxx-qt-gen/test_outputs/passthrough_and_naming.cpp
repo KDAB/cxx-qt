@@ -1,8 +1,10 @@
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 
+namespace cxx_qt::my_object {
+
 MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
-  , m_rustObj(cxx_qt_my_object::createRs())
+  , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
   , m_rustObjMutex(std::make_shared<std::mutex>())
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
@@ -65,10 +67,12 @@ MyObject::setPropertyName(const qint32& value)
     *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
-namespace cxx_qt_my_object {
+} // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object::cxx_qt_my_object {
 std::unique_ptr<MyObject>
 newCppObject()
 {
   return std::make_unique<MyObject>();
 }
-} // namespace cxx_qt_my_object
+} // namespace cxx_qt::my_object::cxx_qt_my_object

@@ -75,11 +75,28 @@ pub mod ffi {
     // ItemUse
     use super::MyTrait;
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
+    unsafe extern "C++" {
+        include!(<QtCore/QStringListModel>);
+    }
+
+    #[cxx_qt::qobject(base = "QStringListModel")]
     pub struct MyObject {
         #[qproperty]
-        number: i32,
+        property_name: i32,
+    }
+
+    impl Default for MyObject {
+        fn default() -> Self {
+            Self { property_name: 32 }
+        }
+    }
+
+    impl cxx_qt::QObject<MyObject> {
+        #[qinvokable]
+        pub fn invokable_name(self: Pin<&mut Self>) {
+            println!("Bye from Rust!");
+            self.as_mut().set_property_name(5);
+        }
     }
 
     impl MyObject {

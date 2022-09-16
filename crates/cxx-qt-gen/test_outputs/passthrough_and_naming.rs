@@ -1,5 +1,64 @@
-#[cxx::bridge(namespace = "")]
-mod ffi {
+#[cxx::bridge(namespace = "cxx_qt::my_object")]
+#[attrA]
+#[attrB]
+pub mod ffi {
+    const MAX: u16 = 65535;
+
+    enum Event {
+        MyEvent,
+    }
+
+    extern crate serde;
+
+    fn do_something() {
+        println!("I am a free function");
+    }
+
+    extern "C" {}
+
+    #[namespace = "namespace"]
+    extern "C" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
+    extern "C" {}
+
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    unsafe extern "C++" {}
+
+    #[namespace = "namespace"]
+    #[custom_attr = "test"]
+    unsafe extern "C++" {}
+
+    macro_rules! macro1 {
+        () => {
+            0
+        };
+    }
+
+    macro macro2() {
+        0
+    }
+
+    mod m {}
+
+    static BIKE: Event = Event::MyEvent;
+
+    pub trait CustomTrait {
+        fn method();
+    }
+
+    pub trait SharableIterator = CustomTrait + Sync;
+
+    type Result<T> = std::result::Result<T, Event>;
+
+    union Foo<A, B> {
+        x: A,
+        y: B,
+    }
+
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
     }
@@ -55,7 +114,7 @@ mod ffi {
         fn queue(self: &MyObjectCxxQtThread, func: fn(ctx: Pin<&mut MyObjectQt>)) -> Result<()>;
 
         #[rust_name = "new_cpp_object_my_object_qt"]
-        #[namespace = "cxx_qt_my_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
@@ -66,7 +125,7 @@ mod ffi {
 
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt_my_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs_my_object() -> Box<MyObject>;
     }
 }
@@ -78,7 +137,30 @@ mod cxx_qt_ffi {
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
-    #[derive(Default)]
+    use super::MyTrait;
+
+    impl Default for MyObject {
+        fn default() -> Self {
+            Self { property_name: 32 }
+        }
+    }
+
+    impl MyObject {
+        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
+            optional
+        }
+
+        fn test_unknown(&self, unknown: MyType) -> MyType {
+            unknown
+        }
+    }
+
+    impl MyTrait for MyObject {
+        fn my_func() -> String {
+            "Hello".to_owned()
+        }
+    }
+
     pub struct MyObject {
         property_name: i32,
     }
