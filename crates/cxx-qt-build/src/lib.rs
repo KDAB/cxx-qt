@@ -15,8 +15,8 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    extract_qobject, generate_qobject_rs, parse_qt_file, write_cpp, CppFragmentPair, CxxQtItem,
-    GeneratedCppBlocks, Parser,
+    parse_qt_file, write_cpp, write_rust, CppFragmentPair, CxxQtItem, GeneratedCppBlocks,
+    GeneratedRustBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -84,23 +84,32 @@ impl GeneratedCpp {
                     }
 
                     let parser = Parser::from(m.clone()).unwrap();
-                    let generated = GeneratedCppBlocks::from(&parser).unwrap();
+                    let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
-                    cxx_qt = Some(write_cpp(&generated));
+                    cxx_qt = Some(write_cpp(&generated_cpp));
 
-                    // TODO: later we will likely have cxx_qt_gen::generate_header_and_cpp
-                    // which will take a CxxQtItemMod and respond with a C++ header and source
-                    let qobject = extract_qobject(m).unwrap();
+                    let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
+                    let rust_tokens = write_rust(&generated_rust);
                     // Use the qobject ident as the output file name?
-                    file_ident = qobject.ident.to_string().to_case(Case::Snake);
-
-                    // TODO: later we will likely have cxx_qt_gen::generate_rust
-                    // which will take a CxxQtItemMod and respond with the Rust code
                     //
+                    // TODO: for now we use the qobject name but in the future this will come from elswhere
+                    if parser.cxx_qt_data.qobjects.len() != 1 {
+                        panic!("Expected one QObject in the ItemMod.");
+                    }
+                    file_ident = parser
+                        .cxx_qt_data
+                        .qobjects
+                        .keys()
+                        .take(1)
+                        .next()
+                        .unwrap()
+                        .to_string()
+                        .to_case(Case::Snake);
+
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
-                    tokens.extend(generate_qobject_rs(&qobject).unwrap());
+                    tokens.extend(rust_tokens);
                 }
                 CxxQtItem::Item(item) => {
                     tokens.extend(item.into_token_stream());
