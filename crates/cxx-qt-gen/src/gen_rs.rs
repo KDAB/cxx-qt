@@ -688,21 +688,6 @@ mod tests {
     }
 
     #[test]
-    fn generates_invokables() {
-        let source = include_str!("../test_inputs/invokables.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_output = include_str!("../test_outputs/invokables.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_str_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
     fn generates_naming() {
         let source = include_str!("../test_inputs/naming.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();

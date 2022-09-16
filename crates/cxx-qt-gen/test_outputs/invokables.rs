@@ -26,11 +26,19 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
 
+    extern "Rust" {
         #[cxx_name = "invokableWrapper"]
         fn invokable_wrapper(self: &MyObject, cpp: &MyObjectQt);
+    }
+
+    extern "Rust" {
         #[cxx_name = "invokableMutableWrapper"]
         fn invokable_mutable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
+    }
+
+    extern "Rust" {
         #[cxx_name = "invokableParametersWrapper"]
         fn invokable_parameters_wrapper(
             self: &MyObject,
@@ -39,16 +47,25 @@ mod ffi {
             trivial: &QPoint,
             primitive: i32,
         );
+    }
+
+    extern "Rust" {
         #[cxx_name = "invokableReturnOpaqueWrapper"]
         fn invokable_return_opaque_wrapper(
             self: &mut MyObject,
             cpp: Pin<&mut MyObjectQt>,
         ) -> UniquePtr<QColor>;
+    }
+
+    extern "Rust" {
         #[cxx_name = "invokableReturnPrimitiveWrapper"]
         fn invokable_return_primitive_wrapper(
             self: &mut MyObject,
             cpp: Pin<&mut MyObjectQt>,
         ) -> i32;
+    }
+
+    extern "Rust" {
         #[cxx_name = "invokableReturnStaticWrapper"]
         fn invokable_return_static_wrapper(
             self: &mut MyObject,
@@ -100,43 +117,8 @@ mod cxx_qt_ffi {
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_wrapper(&self, cpp: &MyObjectQt) {
+        pub fn invokable_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable();
-        }
-
-        pub fn invokable_mutable_wrapper(&mut self, cpp: std::pin::Pin<&mut MyObjectQt>) {
-            cpp.invokable_mutable();
-        }
-
-        pub fn invokable_parameters_wrapper(
-            &self,
-            cpp: &MyObjectQt,
-            opaque: &cxx_qt_lib::QColor,
-            trivial: &cxx_qt_lib::QPoint,
-            primitive: i32,
-        ) {
-            cpp.invokable_parameters(opaque, trivial, primitive);
-        }
-
-        pub fn invokable_return_opaque_wrapper(
-            &mut self,
-            cpp: std::pin::Pin<&mut MyObjectQt>,
-        ) -> UniquePtr<cxx_qt_lib::QColor> {
-            return cpp.invokable_return_opaque();
-        }
-
-        pub fn invokable_return_primitive_wrapper(
-            &mut self,
-            cpp: std::pin::Pin<&mut MyObjectQt>,
-        ) -> i32 {
-            return cpp.invokable_return_primitive();
-        }
-
-        pub fn invokable_return_static_wrapper(
-            &mut self,
-            cpp: std::pin::Pin<&mut MyObjectQt>,
-        ) -> UniquePtr<cxx_qt_lib::QString> {
-            return cpp.invokable_return_static();
         }
     }
 
@@ -144,11 +126,33 @@ mod cxx_qt_ffi {
         pub fn invokable(&self) {
             println!("invokable");
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_mutable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
+            cpp.invokable_mutable();
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_mutable(self: Pin<&mut Self>) {
             println!("This method is mutable!");
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_parameters_wrapper(
+            self: &MyObject,
+            cpp: &MyObjectQt,
+            opaque: &QColor,
+            trivial: &QPoint,
+            primitive: i32,
+        ) {
+            cpp.invokable_parameters(opaque, trivial, primitive);
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
             println!(
                 "Red: {}, Point X: {}, Number: {}",
@@ -157,27 +161,66 @@ mod cxx_qt_ffi {
                 primitive,
             );
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_return_opaque_wrapper(
+            self: &mut MyObject,
+            cpp: Pin<&mut MyObjectQt>,
+        ) -> UniquePtr<QColor> {
+            return cpp.invokable_return_opaque();
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_return_primitive_wrapper(
+            self: &mut MyObject,
+            cpp: Pin<&mut MyObjectQt>,
+        ) -> i32 {
+            return cpp.invokable_return_primitive();
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_return_primitive(self: Pin<&mut Self>) -> i32 {
             2
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_return_static_wrapper(
+            self: &mut MyObject,
+            cpp: Pin<&mut MyObjectQt>,
+        ) -> UniquePtr<QString> {
+            return cpp.invokable_return_static();
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_return_static(self: Pin<&mut Self>) -> UniquePtr<QString> {
             QString::from_str("static")
         }
+    }
 
+    impl MyObjectQt {
         pub fn cpp_context_method(&self) {
             println!("C++ context method");
         }
+    }
 
+    impl MyObjectQt {
         pub fn cpp_context_method_mutable(self: Pin<&mut Self>) {
             println!("mutable method");
         }
+    }
 
+    impl MyObjectQt {
         pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {
             cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
         }

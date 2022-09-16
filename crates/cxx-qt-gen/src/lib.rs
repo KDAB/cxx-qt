@@ -180,6 +180,18 @@ mod tests {
     }
 
     #[test]
+    fn generates_invokables_rust() {
+        let parser =
+            Parser::from(syn::parse_str(include_str!("../test_inputs/invokables.rs")).unwrap())
+                .unwrap();
+        let generated = GeneratedRustBlocks::from(&parser).unwrap();
+        let rust = format_rs_source(&write_rust(&generated).to_string());
+
+        let expected_output = format_rs_source(include_str!("../test_outputs/invokables.rs"));
+        assert_str_eq!(rust, expected_output);
+    }
+
+    #[test]
     fn generates_properties_rust() {
         let parser =
             Parser::from(syn::parse_str(include_str!("../test_inputs/properties.rs")).unwrap())

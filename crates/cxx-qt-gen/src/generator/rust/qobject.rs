@@ -6,12 +6,15 @@
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
-        rust::{fragment::RustFragmentPair, property::generate_rust_properties},
+        rust::{
+            fragment::RustFragmentPair, invokable::generate_rust_invokables,
+            property::generate_rust_properties,
+        },
     },
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, Item, Result};
+use syn::{Ident, ImplItemMethod, Item, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -73,9 +76,40 @@ impl GeneratedRustQObject {
             &qobject.properties,
             &qobject_idents,
         )?);
+        generated.blocks.append(&mut generate_rust_invokables(
+            &qobject.invokables,
+            &qobject_idents,
+        )?);
+        generated
+            .blocks
+            .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
 
         Ok(generated)
     }
+}
+
+/// Generate the non invokable methods for the Rust side
+pub fn generate_methods(
+    methods: &[ImplItemMethod],
+    qobject_idents: &QObjectName,
+) -> Result<GeneratedRustQObjectBlocks> {
+    let mut blocks = GeneratedRustQObjectBlocks::default();
+    blocks.cxx_qt_mod_contents.extend_from_slice(
+        &methods
+            .iter()
+            // Build non invokables on the C++ struct
+            .map(|method| {
+                let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+                syn::parse2(quote! {
+                    impl #cpp_class_name_rust {
+                        #method
+                    }
+                })
+            })
+            .collect::<Result<Vec<Item>>>()?,
+    );
+
+    Ok(blocks)
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
