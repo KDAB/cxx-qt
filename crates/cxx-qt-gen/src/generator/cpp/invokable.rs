@@ -144,16 +144,19 @@ mod tests {
         let invokables = vec![
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn void_invokable(&self) {} }),
+                mutable: false,
                 return_cxx_type: None,
             },
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: i32) -> i32 {} }),
+                mutable: false,
                 return_cxx_type: None,
             },
             ParsedQInvokable {
                 method: tokens_to_syn(
                     quote! { fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {} },
                 ),
+                mutable: true,
                 return_cxx_type: Some("QColor".to_owned()),
             },
         ];
