@@ -60,6 +60,14 @@ mod cxx_qt_ffi {
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
+    impl Default for MyObject {
+        fn default() -> Self {
+            Self {
+                public: 32,
+                private: 64,
+            }
+        }
+    }
 
     pub struct MyObject {
         public: i32,
@@ -86,15 +94,6 @@ mod cxx_qt_ffi {
                 self.as_mut().rust_mut().public = value;
             }
             self.as_mut().emit_public_changed();
-        }
-    }
-
-    impl Default for MyObject {
-        fn default() -> Self {
-            Self {
-                public: 32,
-                private: 64,
-            }
         }
     }
 

@@ -559,7 +559,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
         .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
 
     let methods = &obj.methods;
-    let original_passthrough_decls = &obj.original_passthrough_decls;
 
     // Build our filtered rust struct
     let rust_struct = build_struct_with_fields(
@@ -602,8 +601,6 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
             #rust_struct_impl
 
             #qobject_impl
-
-            #(#original_passthrough_decls)*
         }
     })
     .map_err(|err| err.to_compile_error())?;
@@ -622,6 +619,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let generated = GeneratedRustBlocks {
         cxx_mod: obj.original_mod.clone(),
+        cxx_qt_mod_contents: obj.original_passthrough_decls.clone(),
         namespace: obj.namespace.to_owned(),
         qobjects,
     };
