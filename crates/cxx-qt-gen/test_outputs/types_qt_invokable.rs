@@ -121,10 +121,9 @@ mod ffi {
 pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
+    use std::pin::Pin;
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
-    use std::pin::Pin;
 
     #[derive(Default)]
     pub struct MyObject;

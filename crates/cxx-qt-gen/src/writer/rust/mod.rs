@@ -139,6 +139,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         pub use self::#cxx_qt_mod_ident::*;
         mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
+            use std::pin::Pin;
 
             type UniquePtr<T> = cxx::UniquePtr<T>;
 
@@ -328,6 +329,7 @@ mod tests {
             pub use self::cxx_qt_ffi::*;
             mod cxx_qt_ffi {
                 use super::ffi::*;
+                use std::pin::Pin;
 
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
@@ -437,6 +439,7 @@ mod tests {
             pub use self::cxx_qt_ffi::*;
             mod cxx_qt_ffi {
                 use super::ffi::*;
+                use std::pin::Pin;
 
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
