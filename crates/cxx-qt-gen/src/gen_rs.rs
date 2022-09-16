@@ -733,21 +733,6 @@ mod tests {
     }
 
     #[test]
-    fn generates_properties() {
-        let source = include_str!("../test_inputs/properties.rs");
-        let module: ItemMod = syn::parse_str(source).unwrap();
-        let qobject = extract_qobject(&module).unwrap();
-
-        let expected_output = include_str!("../test_outputs/properties.rs");
-        let expected_output = format_rs_source(expected_output);
-
-        let generated_rs = generate_qobject_rs(&qobject).unwrap().to_string();
-        let generated_rs = format_rs_source(&generated_rs);
-
-        assert_str_eq!(generated_rs, expected_output);
-    }
-
-    #[test]
     fn generates_signals() {
         let source = include_str!("../test_inputs/signals.rs");
         let module: ItemMod = syn::parse_str(source).unwrap();
