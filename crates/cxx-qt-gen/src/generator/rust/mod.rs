@@ -29,7 +29,6 @@ pub struct GeneratedRustBlocks {
 }
 
 impl GeneratedRustBlocks {
-    #[allow(dead_code)]
     pub fn from(parser: &Parser) -> Result<GeneratedRustBlocks> {
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),

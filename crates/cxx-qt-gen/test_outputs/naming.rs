@@ -17,22 +17,31 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
-
-        #[rust_name = "emit_property_name_changed"]
-        fn emitPropertyNameChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
 
-        #[cxx_name = "invokableNameWrapper"]
-        fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
-
+    extern "Rust" {
         #[cxx_name = "getPropertyName"]
         unsafe fn get_property_name<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+    }
+
+    extern "Rust" {
         #[cxx_name = "setPropertyName"]
         fn set_property_name(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
+    }
+
+    unsafe extern "C++" {
+        #[rust_name = "emit_property_name_changed"]
+        fn emitPropertyNameChanged(self: Pin<&mut MyObjectQt>);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "invokableNameWrapper"]
+        fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -78,28 +87,36 @@ mod cxx_qt_ffi {
         pub fn get_property_name<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_property_name()
         }
-
-        pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
-            cpp.set_property_name(value);
-        }
-
-        pub fn invokable_name_wrapper(&mut self, cpp: std::pin::Pin<&mut MyObjectQt>) {
-            cpp.invokable_name();
-        }
     }
 
     impl MyObjectQt {
         pub fn get_property_name(&self) -> &i32 {
             &self.rust().property_name
         }
+    }
 
+    impl MyObject {
+        pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_property_name(value);
+        }
+    }
+
+    impl MyObjectQt {
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
             unsafe {
                 self.as_mut().rust_mut().property_name = value;
             }
             self.as_mut().emit_property_name_changed();
         }
+    }
 
+    impl MyObject {
+        pub fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
+            cpp.invokable_name();
+        }
+    }
+
+    impl MyObjectQt {
         pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");
             self.as_mut().set_property_name(5);

@@ -72,18 +72,26 @@ pub mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
-
-        #[rust_name = "emit_number_changed"]
-        fn emitNumberChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
+
+    extern "Rust" {
         #[cxx_name = "getNumber"]
         unsafe fn get_number<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+    }
+
+    extern "Rust" {
         #[cxx_name = "setNumber"]
         fn set_number(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
+    }
+
+    unsafe extern "C++" {
+        #[rust_name = "emit_number_changed"]
+        fn emitNumberChanged(self: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -147,17 +155,21 @@ mod cxx_qt_ffi {
         pub fn get_number<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_number()
         }
-
-        pub fn set_number(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
-            cpp.set_number(value);
-        }
     }
 
     impl MyObjectQt {
         pub fn get_number(&self) -> &i32 {
             &self.rust().number
         }
+    }
 
+    impl MyObject {
+        pub fn set_number(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_number(value);
+        }
+    }
+
+    impl MyObjectQt {
         pub fn set_number(mut self: Pin<&mut Self>, value: i32) {
             unsafe {
                 self.as_mut().rust_mut().number = value;

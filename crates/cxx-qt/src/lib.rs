@@ -6,7 +6,7 @@
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemMod};
 
-use cxx_qt_gen::{extract_qobject, generate_qobject_rs};
+use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 
 /// A procedural macro which generates a QObject for a struct inside a module.
 ///
@@ -139,17 +139,7 @@ pub fn QObject(_input: TokenStream) -> TokenStream {
 
 // Take the module and C++ namespace and generate the rust code
 fn extract_and_generate(module: ItemMod) -> TokenStream {
-    // Attempt to extract information about a QObject inside the module
-    let qobject = match extract_qobject(&module) {
-        Ok(o) => o,
-        Err(e) => return e.into(),
-    };
-
-    // From the extracted QObject, generate the rust code that replaces the original code
-    // for the given QObject.
-    let gen_result = generate_qobject_rs(&qobject);
-    match gen_result {
-        Ok(tokens) => tokens.into(),
-        Err(tokens) => tokens.into(),
-    }
+    let parser = Parser::from(module).unwrap();
+    let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
+    write_rust(&generated_rust).into()
 }

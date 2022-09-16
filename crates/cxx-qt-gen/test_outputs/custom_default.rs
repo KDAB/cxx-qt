@@ -13,19 +13,26 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
-
-        #[rust_name = "emit_public_changed"]
-        fn emitPublicChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
 
+    extern "Rust" {
         #[cxx_name = "getPublic"]
         unsafe fn get_public<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+    }
+
+    extern "Rust" {
         #[cxx_name = "setPublic"]
         fn set_public(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
+    }
+
+    unsafe extern "C++" {
+        #[rust_name = "emit_public_changed"]
+        fn emitPublicChanged(self: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -80,17 +87,21 @@ mod cxx_qt_ffi {
         pub fn get_public<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.get_public()
         }
-
-        pub fn set_public(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
-            cpp.set_public(value);
-        }
     }
 
     impl MyObjectQt {
         pub fn get_public(&self) -> &i32 {
             &self.rust().public
         }
+    }
 
+    impl MyObject {
+        pub fn set_public(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
+            cpp.set_public(value);
+        }
+    }
+
+    impl MyObjectQt {
         pub fn set_public(mut self: Pin<&mut Self>, value: i32) {
             unsafe {
                 self.as_mut().rust_mut().public = value;
