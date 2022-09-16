@@ -5,11 +5,7 @@
 
 use syn::{Ident, Item};
 
-pub struct GeneratedRustQObjectBlocks {
-    /// Module for the CXX bridge
-    pub cxx_mod_contents: Vec<Item>,
-    /// Items for the CXX-Qt module
-    pub cxx_qt_mod_contents: Vec<Item>,
+pub struct GeneratedRustQObject {
     /// Ident of the Rust name for the C++ object
     pub cpp_struct_ident: Ident,
     /// Ident of the CxxQtThread object
@@ -18,4 +14,13 @@ pub struct GeneratedRustQObjectBlocks {
     pub namespace_internals: String,
     /// Ident of the Rust name for the Rust object
     pub rust_struct_ident: Ident,
+    /// The blocks for this QObject
+    pub blocks: GeneratedRustQObjectBlocks,
+}
+
+pub struct GeneratedRustQObjectBlocks {
+    /// Module for the CXX bridge
+    pub cxx_mod_contents: Vec<Item>,
+    /// Items for the CXX-Qt module
+    pub cxx_qt_mod_contents: Vec<Item>,
 }

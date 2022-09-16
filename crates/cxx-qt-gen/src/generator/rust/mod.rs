@@ -18,5 +18,5 @@ pub struct GeneratedRustBlocks {
     /// Ident of the namespace of the QObject
     pub namespace: String,
     /// Generated QObject blocks
-    pub qobjects: Vec<qobject::GeneratedRustQObjectBlocks>,
+    pub qobjects: Vec<qobject::GeneratedRustQObject>,
 }

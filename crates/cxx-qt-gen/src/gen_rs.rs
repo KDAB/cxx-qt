@@ -11,7 +11,10 @@ use crate::extract::{Invokable, Property, QObject, QtTypes};
 use crate::generator::{
     naming,
     naming::{property::QPropertyName, qobject::QObjectName},
-    rust::{qobject::GeneratedRustQObjectBlocks, GeneratedRustBlocks},
+    rust::{
+        qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks},
+        GeneratedRustBlocks,
+    },
 };
 use crate::writer::rust::write_rust;
 
@@ -609,16 +612,18 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     })
     .map_err(|err| err.to_compile_error())?;
 
-    let qobjects = vec![GeneratedRustQObjectBlocks {
-        cxx_mod_contents,
-        cxx_qt_mod_contents: cxx_qt_mod_fake
-            .content
-            .unwrap_or((syn::token::Brace::default(), vec![]))
-            .1,
+    let qobjects = vec![GeneratedRustQObject {
         cpp_struct_ident: cpp_class_name_rust,
         cxx_qt_thread_ident,
         namespace_internals,
         rust_struct_ident: obj.ident.clone(),
+        blocks: GeneratedRustQObjectBlocks {
+            cxx_mod_contents,
+            cxx_qt_mod_contents: cxx_qt_mod_fake
+                .content
+                .unwrap_or((syn::token::Brace::default(), vec![]))
+                .1,
+        },
     }];
 
     let generated = GeneratedRustBlocks {
