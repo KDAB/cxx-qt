@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::rust::{qobject::GeneratedRustQObjectBlocks, GeneratedRustBlocks};
+use crate::generator::rust::{qobject::GeneratedRustQObject, GeneratedRustBlocks};
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
@@ -22,7 +22,7 @@ fn mangle(name: &str, object: &Ident) -> Ident {
 }
 
 /// Return common blocks for CXX bridge which the C++ writer adds as well
-fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObjectBlocks) -> Vec<TokenStream> {
+fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
     let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
@@ -71,7 +71,7 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObjectBlocks) -> Vec<TokenSt
 }
 
 /// Return common blocks for CXX-Qt implementation which the C++ writer adds as well
-fn cxx_qt_common_blocks(qobject: &GeneratedRustQObjectBlocks) -> Vec<TokenStream> {
+fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let rust_struct_ident = &qobject.rust_struct_ident;
     let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
     let create_rs_ident = mangle("create_rs", rust_struct_ident);
@@ -115,7 +115,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     for qobject in &generated.qobjects {
         // Add the common blocks into the bridge which we need
-        cxx_mod_contents.extend_from_slice(&qobject.cxx_mod_contents);
+        cxx_mod_contents.extend_from_slice(&qobject.blocks.cxx_mod_contents);
         cxx_mod_contents.append(
             &mut cxx_bridge_common_blocks(qobject)
                 .into_iter()
@@ -124,7 +124,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         );
 
         // Inject the common blocks into the implementation we need
-        cxx_qt_mod_contents.extend_from_slice(&qobject.cxx_qt_mod_contents);
+        cxx_qt_mod_contents.extend_from_slice(&qobject.blocks.cxx_qt_mod_contents);
         cxx_qt_mod_contents.append(
             &mut cxx_qt_common_blocks(qobject)
                 .into_iter()
@@ -161,7 +161,10 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 mod tests {
     use super::*;
 
-    use crate::{generator::rust::qobject::GeneratedRustQObjectBlocks, tests::tokens_to_syn};
+    use crate::{
+        generator::rust::qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks},
+        tests::tokens_to_syn,
+    };
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
 
@@ -180,38 +183,40 @@ mod tests {
                 use module::Struct;
             })],
             namespace: "cxx_qt::my_object".to_owned(),
-            qobjects: vec![GeneratedRustQObjectBlocks {
-                cxx_mod_contents: vec![
-                    tokens_to_syn(quote! {
-                        unsafe extern "C++" {
-                            #[cxx_name = "MyObject"]
-                            type MyObjectQt;
-                        }
-                    }),
-                    tokens_to_syn(quote! {
-                        extern "Rust" {
-                            #[cxx_name = "MyObjectRust"]
-                            type MyObject;
-                        }
-                    }),
-                ],
-                cxx_qt_mod_contents: vec![
-                    tokens_to_syn(quote! {
-                        #[derive(Default)]
-                        pub struct MyObject;
-                    }),
-                    tokens_to_syn(quote! {
-                        impl MyObject {
-                            fn rust_method(&self) {
-
-                            }
-                        }
-                    }),
-                ],
+            qobjects: vec![GeneratedRustQObject {
                 cpp_struct_ident: format_ident!("MyObjectQt"),
                 cxx_qt_thread_ident: format_ident!("MyObjectCxxQtThread"),
                 namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                 rust_struct_ident: format_ident!("MyObject"),
+                blocks: GeneratedRustQObjectBlocks {
+                    cxx_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            unsafe extern "C++" {
+                                #[cxx_name = "MyObject"]
+                                type MyObjectQt;
+                            }
+                        }),
+                        tokens_to_syn(quote! {
+                            extern "Rust" {
+                                #[cxx_name = "MyObjectRust"]
+                                type MyObject;
+                            }
+                        }),
+                    ],
+                    cxx_qt_mod_contents: vec![
+                        tokens_to_syn(quote! {
+                            #[derive(Default)]
+                            pub struct MyObject;
+                        }),
+                        tokens_to_syn(quote! {
+                            impl MyObject {
+                                fn rust_method(&self) {
+
+                                }
+                            }
+                        }),
+                    ],
+                },
             }],
         }
     }
@@ -232,71 +237,75 @@ mod tests {
             })],
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
-                GeneratedRustQObjectBlocks {
-                    cxx_mod_contents: vec![
-                        tokens_to_syn(quote! {
-                            unsafe extern "C++" {
-                                #[cxx_name = "FirstObject"]
-                                type FirstObjectQt;
-                            }
-                        }),
-                        tokens_to_syn(quote! {
-                            extern "Rust" {
-                                #[cxx_name = "FirstObjectRust"]
-                                type FirstObject;
-                            }
-                        }),
-                    ],
-                    cxx_qt_mod_contents: vec![
-                        tokens_to_syn(quote! {
-                            #[derive(Default)]
-                            pub struct FirstObject;
-                        }),
-                        tokens_to_syn(quote! {
-                            impl FirstObject {
-                                fn rust_method(&self) {
-
-                                }
-                            }
-                        }),
-                    ],
+                GeneratedRustQObject {
                     cpp_struct_ident: format_ident!("FirstObjectQt"),
                     cxx_qt_thread_ident: format_ident!("FirstObjectCxxQtThread"),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     rust_struct_ident: format_ident!("FirstObject"),
-                },
-                GeneratedRustQObjectBlocks {
-                    cxx_mod_contents: vec![
-                        tokens_to_syn(quote! {
-                            unsafe extern "C++" {
-                                #[cxx_name = "SecondObject"]
-                                type SecondObjectQt;
-                            }
-                        }),
-                        tokens_to_syn(quote! {
-                            extern "Rust" {
-                                #[cxx_name = "SecondObjectRust"]
-                                type SecondObject;
-                            }
-                        }),
-                    ],
-                    cxx_qt_mod_contents: vec![
-                        tokens_to_syn(quote! {
-                            #[derive(Default)]
-                            pub struct SecondObject;
-                        }),
-                        tokens_to_syn(quote! {
-                            impl SecondObject {
-                                fn rust_method(&self) {
-
+                    blocks: GeneratedRustQObjectBlocks {
+                        cxx_mod_contents: vec![
+                            tokens_to_syn(quote! {
+                                unsafe extern "C++" {
+                                    #[cxx_name = "FirstObject"]
+                                    type FirstObjectQt;
                                 }
-                            }
-                        }),
-                    ],
+                            }),
+                            tokens_to_syn(quote! {
+                                extern "Rust" {
+                                    #[cxx_name = "FirstObjectRust"]
+                                    type FirstObject;
+                                }
+                            }),
+                        ],
+                        cxx_qt_mod_contents: vec![
+                            tokens_to_syn(quote! {
+                                #[derive(Default)]
+                                pub struct FirstObject;
+                            }),
+                            tokens_to_syn(quote! {
+                                impl FirstObject {
+                                    fn rust_method(&self) {
+
+                                    }
+                                }
+                            }),
+                        ],
+                    },
+                },
+                GeneratedRustQObject {
                     cpp_struct_ident: format_ident!("SecondObjectQt"),
                     cxx_qt_thread_ident: format_ident!("SecondObjectCxxQtThread"),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     rust_struct_ident: format_ident!("SecondObject"),
+                    blocks: GeneratedRustQObjectBlocks {
+                        cxx_mod_contents: vec![
+                            tokens_to_syn(quote! {
+                                unsafe extern "C++" {
+                                    #[cxx_name = "SecondObject"]
+                                    type SecondObjectQt;
+                                }
+                            }),
+                            tokens_to_syn(quote! {
+                                extern "Rust" {
+                                    #[cxx_name = "SecondObjectRust"]
+                                    type SecondObject;
+                                }
+                            }),
+                        ],
+                        cxx_qt_mod_contents: vec![
+                            tokens_to_syn(quote! {
+                                #[derive(Default)]
+                                pub struct SecondObject;
+                            }),
+                            tokens_to_syn(quote! {
+                                impl SecondObject {
+                                    fn rust_method(&self) {
+
+                                    }
+                                }
+                            }),
+                        ],
+                    },
                 },
             ],
         }
