@@ -71,8 +71,8 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         namespace_internals = qobject.namespace_internals,
         base_class = qobject.base_class,
         rust_ident = qobject.rust_ident,
-        methods = qobject.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
-        slots = qobject.slots.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
+        methods = qobject.blocks.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
+        slots = qobject.blocks.slots.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
         }
   }).collect::<Vec<String>>()
 }

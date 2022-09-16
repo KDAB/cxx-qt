@@ -102,10 +102,10 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         namespace_internals = qobject.namespace_internals,
         rust_ident = qobject.rust_ident,
         base_class = qobject.base_class,
-        metaobjects = qobject.metaobjects.join("\n  "),
-        methods = create_block("public", &qobject.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
-        slots = create_block("public Q_SLOTS", &qobject.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
-        signals = create_block("Q_SIGNALS", &qobject.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
+        metaobjects = qobject.blocks.metaobjects.join("\n  "),
+        methods = create_block("public", &qobject.blocks.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
+        slots = create_block("public Q_SLOTS", &qobject.blocks.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
+        signals = create_block("Q_SIGNALS", &qobject.blocks.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
         metatype = if generated.namespace.is_empty() {
             qobject.ident.clone()
         } else {

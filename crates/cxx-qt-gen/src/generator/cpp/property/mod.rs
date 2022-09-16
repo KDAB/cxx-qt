@@ -17,10 +17,10 @@ mod setter;
 mod signal;
 
 pub fn generate_cpp_properties(
-    generated: &mut GeneratedCppQObjectBlocks,
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
-) -> Result<()> {
+) -> Result<GeneratedCppQObjectBlocks> {
+    let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for property in properties {
         // Cache the idents as they are used in multiple places
@@ -40,7 +40,7 @@ pub fn generate_cpp_properties(
             .push(emitter::generate(&idents, &qobject_ident));
     }
 
-    Ok(())
+    Ok(generated)
 }
 
 #[cfg(test)]
@@ -55,7 +55,6 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_properties() {
-        let mut generated = GeneratedCppQObjectBlocks::default();
         let properties = vec![
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
@@ -72,7 +71,7 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        assert!(generate_cpp_properties(&mut generated, &properties, &qobject_idents).is_ok());
+        let generated = generate_cpp_properties(&properties, &qobject_idents).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
