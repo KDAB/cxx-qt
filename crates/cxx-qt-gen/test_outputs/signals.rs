@@ -20,10 +20,24 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
+    }
 
+    extern "Rust" {
+        #[cxx_name = "MyObjectRust"]
+        type MyObject;
+    }
+
+    extern "Rust" {
+        #[cxx_name = "invokableWrapper"]
+        fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
+    }
+
+    unsafe extern "C++" {
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
+    }
 
+    unsafe extern "C++" {
         #[rust_name = "emit_data_changed"]
         fn emitDataChanged(
             self: Pin<&mut MyObjectQt>,
@@ -31,14 +45,6 @@ mod ffi {
             second: UniquePtr<QVariant>,
             third: QPoint,
         );
-    }
-
-    extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
-        type MyObject;
-
-        #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -75,20 +81,11 @@ mod cxx_qt_ffi {
 
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
-    enum MySignals {
-        Ready,
-        DataChanged {
-            first: i32,
-            second: UniquePtr<QVariant>,
-            third: QPoint,
-        },
-    }
-
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {
-        pub fn invokable_wrapper(&mut self, cpp: std::pin::Pin<&mut MyObjectQt>) {
+        pub fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable();
         }
     }
@@ -101,7 +98,18 @@ mod cxx_qt_ffi {
                 third: QPoint::new(1, 2),
             });
         }
+    }
 
+    enum MySignals {
+        Ready,
+        DataChanged {
+            first: i32,
+            second: UniquePtr<QVariant>,
+            third: QPoint,
+        },
+    }
+
+    impl MyObjectQt {
         pub fn emit_queued(self: Pin<&mut Self>, signal: MySignals) {
             match signal {
                 MySignals::Ready {} => self.emit_ready(),
