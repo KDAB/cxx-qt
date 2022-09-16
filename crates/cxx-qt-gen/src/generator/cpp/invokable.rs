@@ -134,10 +134,11 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::tokens_to_syn;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use quote::quote;
+    use quote::{format_ident, quote};
 
     #[test]
     fn test_generate_cpp_invokables() {
@@ -145,11 +146,17 @@ mod tests {
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn void_invokable(&self) {} }),
                 mutable: false,
+                parameters: vec![],
                 return_cxx_type: None,
             },
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: i32) -> i32 {} }),
                 mutable: false,
+                parameters: vec![ParsedFunctionParameter {
+                    ident: format_ident!("param"),
+                    ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                    cxx_type: None,
+                }],
                 return_cxx_type: None,
             },
             ParsedQInvokable {
@@ -157,6 +164,11 @@ mod tests {
                     quote! { fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {} },
                 ),
                 mutable: true,
+                parameters: vec![ParsedFunctionParameter {
+                    ident: format_ident!("param"),
+                    ty: tokens_to_syn::<syn::Type>(quote! { &QColor }),
+                    cxx_type: None,
+                }],
                 return_cxx_type: Some("QColor".to_owned()),
             },
         ];

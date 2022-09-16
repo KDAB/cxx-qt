@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::parameter::ParsedFunctionParameter;
 use syn::ImplItemMethod;
 
 /// Describes a single Q_INVOKABLE for a struct
@@ -13,4 +14,6 @@ pub struct ParsedQInvokable {
     pub mutable: bool,
     /// The name of the C++ type for the return type if one has been specified
     pub return_cxx_type: Option<String>,
+    /// The parameters of the invokable
+    pub parameters: Vec<ParsedFunctionParameter>,
 }

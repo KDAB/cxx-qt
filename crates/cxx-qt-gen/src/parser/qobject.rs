@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    invokable::ParsedQInvokable, property::ParsedQProperty, signals::ParsedSignalsEnum,
+    invokable::ParsedQInvokable, parameter::ParsedFunctionParameter, property::ParsedQProperty,
+    signals::ParsedSignalsEnum,
 };
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map},
@@ -15,6 +16,7 @@ use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
     Result,
 };
+use syn::{FnArg, Pat, PatIdent, PatType};
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
@@ -67,12 +69,49 @@ impl ParsedQObject {
                             .map(|lit_str| lit_str.value());
                     let mutable = is_method_mutable(method);
 
+                    // Read the signal inputs into parameter blocks
+                    let parameters = method
+                        .sig
+                        .inputs
+                        .iter()
+                        .map(|input| {
+                            match input {
+                                FnArg::Typed(PatType { pat, ty, .. }) => {
+                                    let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                                        ident.clone()
+                                    } else {
+                                        return Err(Error::new(
+                                            input.span(),
+                                            "Invalid argument ident format.",
+                                        ));
+                                    };
+
+                                    // Ignore self as a parameter
+                                    if ident == "self" {
+                                        return Ok(None);
+                                    }
+
+                                    Ok(Some(ParsedFunctionParameter {
+                                        ident,
+                                        ty: (**ty).clone(),
+                                        // TODO: later we might support cxx_type for parameters in invokables
+                                        cxx_type: None,
+                                    }))
+                                }
+                                // Ignore self as a parameter
+                                FnArg::Receiver(_) => Ok(None),
+                            }
+                        })
+                        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+                        .collect::<Result<Vec<ParsedFunctionParameter>>>()?;
+
                     // Remove the invokable attribute
                     let mut method = method.clone();
                     method.attrs.remove(index);
                     self.invokables.push(ParsedQInvokable {
                         method,
                         mutable,
+                        parameters,
                         return_cxx_type,
                     });
                 } else {
@@ -127,7 +166,7 @@ mod tests {
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
                 #[qinvokable]
-                fn invokable(&self) {}
+                fn invokable(&self, a: f64, b: f64) {}
 
                 #[qinvokable(return_cxx_type = "f32")]
                 fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
@@ -140,6 +179,11 @@ mod tests {
         assert_eq!(qobject.methods.len(), 1);
         assert!(qobject.invokables[0].return_cxx_type.is_none());
         assert!(!qobject.invokables[0].mutable);
+        assert_eq!(qobject.invokables[0].parameters.len(), 2);
+        assert_eq!(qobject.invokables[0].parameters[0].ident, "a");
+        assert_eq!(qobject.invokables[0].parameters[0].ty, f64_type());
+        assert_eq!(qobject.invokables[0].parameters[1].ident, "b");
+        assert_eq!(qobject.invokables[0].parameters[1].ty, f64_type());
         assert_eq!(
             qobject.invokables[1].return_cxx_type.as_ref().unwrap(),
             "f32"
