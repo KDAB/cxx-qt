@@ -11,6 +11,8 @@ use syn::{Item, ItemMod};
 pub struct GeneratedRustBlocks {
     /// Module for the CXX bridge with passthrough items
     pub cxx_mod: ItemMod,
+    /// Any global extra items for the CXX bridge
+    pub cxx_mod_contents: Vec<Item>,
     /// Any global passthrough items for the implementation
     pub cxx_qt_mod_contents: Vec<Item>,
     /// Ident of the namespace of the QObject

@@ -196,7 +196,6 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<Vec<Item>, TokenStream> {
     let cpp_class_name_rust = qobject_idents.cpp_class.rust;
     let rust_struct_name_cpp = qobject_idents.rust_struct.cpp.to_string();
     let rust_struct_name_rust = qobject_idents.rust_struct.rust;
-    let cxx_stem = naming::module::cxx_stem_from_ident(&obj.original_rust_struct.ident);
 
     // Lists of functions we generate for the CXX bridge
     let mut cpp_functions = Vec::new();
@@ -281,16 +280,11 @@ pub fn generate_qobject_cxx(obj: &QObject) -> Result<Vec<Item>, TokenStream> {
         }
     }
 
-    // Build the import path for the C++ header
-    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", cxx_stem);
-
     // Build the CXX bridge
     Ok(vec![
         syn::parse2::<Item>(
             quote! {
                 unsafe extern "C++" {
-                    include!(#import_path);
-
                     #[cxx_name = #cpp_class_name_cpp]
                     type #cpp_class_name_rust;
 
@@ -605,6 +599,16 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
     })
     .map_err(|err| err.to_compile_error())?;
 
+    // Build the include path for the C++ header
+    let cxx_stem = naming::module::cxx_stem_from_ident(&obj.original_rust_struct.ident);
+    let import_path = format!("cxx-qt-gen/include/{}.cxxqt.h", cxx_stem);
+    let include_line = syn::parse2(quote! {
+        unsafe extern "C++" {
+            include!(#import_path);
+        }
+    })
+    .map_err(|err| err.to_compile_error())?;
+
     let qobjects = vec![GeneratedRustQObjectBlocks {
         cxx_mod_contents,
         cxx_qt_mod_contents: cxx_qt_mod_fake
@@ -619,6 +623,7 @@ pub fn generate_qobject_rs(obj: &QObject) -> Result<TokenStream, TokenStream> {
 
     let generated = GeneratedRustBlocks {
         cxx_mod: obj.original_mod.clone(),
+        cxx_mod_contents: vec![include_line],
         cxx_qt_mod_contents: obj.original_passthrough_decls.clone(),
         namespace: obj.namespace.to_owned(),
         qobjects,

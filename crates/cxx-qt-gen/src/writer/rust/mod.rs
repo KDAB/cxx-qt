@@ -96,11 +96,13 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
+    let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
     let mut cxx_qt_mod_contents = generated.cxx_qt_mod_contents.clone();
     let namespace = &generated.namespace;
 
-    // Add comment includes for all objects
-    cxx_mod.content.as_mut().expect("").1.push(
+    // Add common includes for all objects
+    cxx_mod_contents.insert(
+        0,
         syn::parse2(quote! {
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
@@ -112,10 +114,9 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     );
 
     for qobject in &generated.qobjects {
-        // Inject the common blocks into the bridge which we need
-        let cxx_mod_items = &mut cxx_mod.content.as_mut().expect("").1;
-        cxx_mod_items.extend_from_slice(&qobject.cxx_mod_contents);
-        cxx_mod_items.append(
+        // Add the common blocks into the bridge which we need
+        cxx_mod_contents.extend_from_slice(&qobject.cxx_mod_contents);
+        cxx_mod_contents.append(
             &mut cxx_bridge_common_blocks(qobject)
                 .into_iter()
                 .map(|block| syn::parse2(block).expect("Could not build CXX common block"))
@@ -130,6 +131,13 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 .map(|block| syn::parse2(block).expect("Could not build CXX-Qt common block"))
                 .collect(),
         );
+    }
+
+    // Inject the CXX blocks
+    if let Some((_, items)) = &mut cxx_mod.content {
+        items.extend(cxx_mod_contents.into_iter());
+    } else {
+        cxx_mod.content = Some((syn::token::Brace::default(), cxx_mod_contents));
     }
 
     quote! {
@@ -163,6 +171,11 @@ mod tests {
             cxx_mod: tokens_to_syn(quote! {
                 mod ffi {}
             }),
+            cxx_mod_contents: vec![tokens_to_syn(quote! {
+                unsafe extern "C++" {
+                    include!("myobject.cxxqt.h");
+                }
+            })],
             cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
                 use module::Struct;
             })],
@@ -209,6 +222,11 @@ mod tests {
             cxx_mod: tokens_to_syn(quote! {
                 mod ffi {}
             }),
+            cxx_mod_contents: vec![tokens_to_syn(quote! {
+                unsafe extern "C++" {
+                    include!("multiobject.cxxqt.h");
+                }
+            })],
             cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
                 use module::Struct;
             })],
@@ -296,6 +314,10 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
+                    include!("myobject.cxxqt.h");
+                }
+
+                unsafe extern "C++" {
                     #[cxx_name = "MyObject"]
                     type MyObjectQt;
                 }
@@ -370,6 +392,10 @@ mod tests {
                     include ! (< QtCore / QObject >);
                     include!("cxx-qt-lib/include/convert.h");
                     include!("cxx-qt-lib/include/cxxqt_thread.h");
+                }
+
+                unsafe extern "C++" {
+                    include!("multiobject.cxxqt.h");
                 }
 
                 unsafe extern "C++" {

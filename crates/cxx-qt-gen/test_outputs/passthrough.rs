@@ -67,7 +67,9 @@ pub mod ffi {
 
     unsafe extern "C++" {
         include!("cxx-qt-gen/include/my_object.cxxqt.h");
+    }
 
+    unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
