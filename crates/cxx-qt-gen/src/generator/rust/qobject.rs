@@ -69,7 +69,7 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .cxx_qt_mod_contents
-            .push(syn::Item::Struct(qobject.qobject_struct.clone().unwrap()));
+            .push(syn::Item::Struct(qobject.qobject_struct.clone()));
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_rust_properties(

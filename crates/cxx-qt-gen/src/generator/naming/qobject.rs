@@ -19,7 +19,7 @@ pub struct QObjectName {
 
 impl From<&ParsedQObject> for QObjectName {
     fn from(qobject: &ParsedQObject) -> Self {
-        Self::from(&qobject.qobject_struct.as_ref().unwrap().ident)
+        Self::from(&qobject.qobject_struct.ident)
     }
 }
 
@@ -58,33 +58,15 @@ fn rust_struct_from_ident(ident: &Ident) -> CombinedIdent {
 pub mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ItemStruct;
+    use crate::parser::qobject::tests::create_parsed_qobject;
 
     pub fn create_qobjectname() -> QObjectName {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
-            struct MyObject;
-        });
-        let qobject = ParsedQObject {
-            qobject_struct: Some(qobject_struct),
-            ..Default::default()
-        };
-
-        QObjectName::from(&qobject)
+        QObjectName::from(&create_parsed_qobject())
     }
 
     #[test]
     fn test_parsed_property() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
-            struct MyObject;
-        });
-        let qobject = ParsedQObject {
-            qobject_struct: Some(qobject_struct),
-            ..Default::default()
-        };
-
-        let names = QObjectName::from(&qobject);
+        let names = QObjectName::from(&create_parsed_qobject());
         assert_eq!(names.cpp_class.cpp, format_ident!("MyObject"));
         assert_eq!(names.cpp_class.rust, format_ident!("MyObjectQt"));
         assert_eq!(names.rust_struct.cpp, format_ident!("MyObjectRust"));

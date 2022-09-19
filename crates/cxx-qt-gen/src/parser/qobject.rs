@@ -22,14 +22,11 @@ use syn::{FnArg, Pat, PatIdent, PatType};
 ///
 /// This has initial splitting of [syn::Item]'s into relevant blocks, other phases will
 /// then mutate these [syn::Item]'s for generation purposes.
-#[derive(Default)]
 pub struct ParsedQObject {
     /// The base class of the struct
     pub base_class: Option<String>,
     /// QObject struct that stores the invokables for the QObject
-    //
-    // TODO: this should not be optional
-    pub qobject_struct: Option<ItemStruct>,
+    pub qobject_struct: ItemStruct,
     /// The namespace of the QObject. If one isn't specified for the QObject,
     /// this will be the same as the module
     pub namespace: String,
@@ -53,6 +50,35 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
+    /// Parse a [syn::ItemStruct] into a [ParsedQObject] with the index of the cxx_qt::qobject specified
+    pub fn from_struct(qobject_struct: &ItemStruct, attr_index: usize) -> Result<Self> {
+        // Find if there is any base class
+        let base_class =
+            attribute_tokens_to_map::<Ident, LitStr>(&qobject_struct.attrs[attr_index])?
+                .get(&quote::format_ident!("base"))
+                .map(|base| base.value());
+
+        // Remove the macro from the struct
+        let mut qobject_struct = qobject_struct.clone();
+        qobject_struct.attrs.remove(attr_index);
+
+        // Parse any properties in the struct
+        // and remove the #[qproperty] attribute
+        let properties = Self::parse_struct_fields(&mut qobject_struct.fields)?;
+
+        Ok(Self {
+            base_class,
+            qobject_struct,
+            // TODO: read from the qobject macro later
+            namespace: "".to_owned(),
+            signals: None,
+            invokables: vec![],
+            methods: vec![],
+            properties,
+            others: vec![],
+        })
+    }
+
     /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
     ///
     /// These will have come from a impl cxx_qt::QObject<T> block
@@ -126,7 +152,8 @@ impl ParsedQObject {
     }
 
     /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
-    pub fn parse_struct_fields(&mut self, fields: &mut Fields) -> Result<()> {
+    fn parse_struct_fields(fields: &mut Fields) -> Result<Vec<ParsedQProperty>> {
+        let mut properties = vec![];
         for field in fields_to_named_fields_mut(fields)? {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
@@ -138,7 +165,7 @@ impl ParsedQObject {
                 // Remove the #[qproperty] attribute
                 field.attrs.remove(index);
 
-                self.properties.push(ParsedQProperty {
+                properties.push(ParsedQProperty {
                     ident: field.ident.clone().unwrap(),
                     ty: field.ty.clone(),
                     vis: field.vis.clone(),
@@ -147,12 +174,12 @@ impl ParsedQObject {
             }
         }
 
-        Ok(())
+        Ok(properties)
     }
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
 
     use crate::parser::tests::f64_type;
@@ -160,9 +187,73 @@ mod tests {
     use quote::quote;
     use syn::{ItemImpl, Visibility};
 
+    pub fn create_parsed_qobject() -> ParsedQObject {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject;
+        });
+        ParsedQObject::from_struct(&qobject_struct, 0).unwrap()
+    }
+
+    #[test]
+    fn test_from_struct_no_base_class() {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject;
+        });
+
+        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        assert!(qobject.base_class.is_none());
+    }
+
+    #[test]
+    fn test_from_struct_base_class() {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(base = "QStringListModel")]
+            struct MyObject;
+        });
+
+        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
+    }
+
+    #[test]
+    fn test_from_struct_properties_and_fields() {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject {
+                #[qproperty]
+                int_property: i32,
+
+                #[qproperty]
+                pub public_property: i32,
+
+                field: i32,
+            }
+        });
+
+        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        assert_eq!(qobject.properties.len(), 2);
+        assert_eq!(qobject.qobject_struct.fields.len(), 3);
+    }
+
+    #[test]
+    fn test_from_struct_fields() {
+        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
+            struct MyObject {
+                field: i32,
+            }
+        });
+
+        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        assert_eq!(qobject.properties.len(), 0);
+        assert_eq!(qobject.qobject_struct.fields.len(), 1);
+    }
+
     #[test]
     fn test_parse_impl_items_valid() {
-        let mut qobject = ParsedQObject::default();
+        let mut qobject = create_parsed_qobject();
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
                 #[qinvokable]
@@ -193,7 +284,7 @@ mod tests {
 
     #[test]
     fn test_parse_impl_items_invalid() {
-        let mut qobject = ParsedQObject::default();
+        let mut qobject = create_parsed_qobject();
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
                 const VALUE: i32 = 1;
@@ -213,8 +304,8 @@ mod tests {
 
     #[test]
     fn test_parse_struct_fields_valid() {
-        let mut qobject = ParsedQObject::default();
-        let mut item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
             struct T {
                 #[qproperty]
                 f64_property: f64,
@@ -228,30 +319,30 @@ mod tests {
                 field: f64,
             }
         });
-        assert!(qobject.parse_struct_fields(&mut item.fields).is_ok());
-        assert_eq!(qobject.properties.len(), 3);
-        assert_eq!(qobject.properties[0].ident, "f64_property");
-        assert_eq!(qobject.properties[0].ty, f64_type());
-        assert!(matches!(qobject.properties[0].vis, Visibility::Inherited));
-        assert!(qobject.properties[0].cxx_type.is_none());
+        let properties = ParsedQObject::from_struct(&item, 0).unwrap().properties;
+        assert_eq!(properties.len(), 3);
+        assert_eq!(properties[0].ident, "f64_property");
+        assert_eq!(properties[0].ty, f64_type());
+        assert!(matches!(properties[0].vis, Visibility::Inherited));
+        assert!(properties[0].cxx_type.is_none());
 
-        assert_eq!(qobject.properties[1].ident, "public_property");
-        assert_eq!(qobject.properties[1].ty, f64_type());
-        assert!(matches!(qobject.properties[1].vis, Visibility::Public(_)));
-        assert!(qobject.properties[1].cxx_type.is_none());
+        assert_eq!(properties[1].ident, "public_property");
+        assert_eq!(properties[1].ty, f64_type());
+        assert!(matches!(properties[1].vis, Visibility::Public(_)));
+        assert!(properties[1].cxx_type.is_none());
 
-        assert_eq!(qobject.properties[2].ident, "property_with_cxx_type");
-        assert_eq!(qobject.properties[2].ty, f64_type());
-        assert!(matches!(qobject.properties[2].vis, Visibility::Inherited));
-        assert_eq!(qobject.properties[2].cxx_type.as_ref().unwrap(), "f32");
+        assert_eq!(properties[2].ident, "property_with_cxx_type");
+        assert_eq!(properties[2].ty, f64_type());
+        assert!(matches!(properties[2].vis, Visibility::Inherited));
+        assert_eq!(properties[2].cxx_type.as_ref().unwrap(), "f32");
     }
 
     #[test]
     fn test_parse_struct_fields_invalid() {
-        let mut qobject = ParsedQObject::default();
-        let mut item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject]
             struct T(f64);
         });
-        assert!(qobject.parse_struct_fields(&mut item.fields).is_err());
+        assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }
 }

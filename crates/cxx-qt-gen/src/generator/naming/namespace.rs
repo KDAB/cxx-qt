@@ -14,10 +14,7 @@ pub struct NamespaceName {
 
 impl From<&ParsedQObject> for NamespaceName {
     fn from(qobject: &ParsedQObject) -> Self {
-        NamespaceName::from_pair_str(
-            &qobject.namespace,
-            &qobject.qobject_struct.as_ref().unwrap().ident,
-        )
+        NamespaceName::from_pair_str(&qobject.namespace, &qobject.qobject_struct.ident)
     }
 }
 
@@ -47,36 +44,24 @@ fn namespace_internal_from_pair(base: &str, ident: &Ident) -> String {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ItemStruct;
+    use crate::parser::qobject::tests::create_parsed_qobject;
 
     #[test]
     fn test_namespace_pair() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
-            struct MyObject;
-        });
-        let module = ParsedQObject {
-            namespace: "cxx_qt".to_owned(),
-            qobject_struct: Some(qobject_struct),
-            ..Default::default()
-        };
-        let names = NamespaceName::from(&module);
+        let mut qobject = create_parsed_qobject();
+        qobject.namespace = "cxx_qt".to_owned();
+
+        let names = NamespaceName::from(&qobject);
         assert_eq!(names.internal, "cxx_qt::cxx_qt_my_object");
         assert_eq!(names.namespace, "cxx_qt");
     }
 
     #[test]
     fn test_namespace_pair_empty_base() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
-            struct MyObject;
-        });
-        let module = ParsedQObject {
-            namespace: "".to_owned(),
-            qobject_struct: Some(qobject_struct),
-            ..Default::default()
-        };
-        let names = NamespaceName::from(&module);
+        let mut qobject = create_parsed_qobject();
+        qobject.namespace = "".to_owned();
+
+        let names = NamespaceName::from(&qobject);
         assert_eq!(names.internal, "cxx_qt_my_object");
         assert_eq!(names.namespace, "");
     }
