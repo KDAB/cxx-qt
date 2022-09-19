@@ -53,7 +53,7 @@ impl Parser {
         // Check that there are items in the module
         if let Some(mut items) = module.content {
             // Find any QObject structs
-            cxx_qt_data.find_qobject_keys(&items.1)?;
+            cxx_qt_data.find_qobject_structs(&items.1)?;
 
             // Loop through any qobjects that were found
             if !cxx_qt_data.qobjects.is_empty() {
