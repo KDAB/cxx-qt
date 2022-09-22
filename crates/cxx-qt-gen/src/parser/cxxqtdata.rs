@@ -94,28 +94,29 @@ impl ParsedCxxQtData {
         // If the implementation has a cxx_qt::QObject
         // then this is the block of methods to be implemented on the C++ object
         if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            if path_compare_str(path, &["cxx_qt", "QObject"]) {
-                // Read the T from cxx_qt::QObject<T> and error if it's missing
-                let qobject_path = path_angled_args_to_type_path(path)?;
+            if let Ok(path) = path_to_single_ident(&path) {
                 if let Some(qobject) = self
                     .qobjects
                     // Convert the path to a single ident, and error if it isn't
-                    .get_mut(&path_to_single_ident(&qobject_path)?)
+                    .get_mut(&path)
                 {
-                    // Extract the ImplItem's from each Impl block
-                    qobject.parse_impl_items(&imp.items)?;
-                } else {
-                    return Err(Error::new(
-                        imp.span(),
-                        "No matching QObject found for the given cxx_qt::QObject<T> impl block.",
-                    ));
+                    if imp.trait_.is_none() {
+                        // Extract the ImplItem's from each Impl block
+                        qobject.parse_impl_items(&imp.items)?;
+                    } else {
+                        // It's a block related to the qobject but not invokables
+                        qobject.others.push(Item::Impl(imp));
+                    }
+                    return Ok(None);
                 }
-                return Ok(None);
-            // Find if we are an impl block for a qobject
-            } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
-                qobject.others.push(Item::Impl(imp));
-                return Ok(None);
             }
+
+            // Find if we are an impl block for a qobject
+            // TODO: do we care about impl blocks that could be on the MyObjectRust ?
+            // } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
+            //     qobject.others.push(Item::Impl(imp));
+            //     return Ok(None);
+            // }
         }
 
         Ok(Some(Item::Impl(imp)))
@@ -390,7 +391,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject<MyObject> {
+            impl MyObject {
                 #[qinvokable]
                 fn invokable() {}
 
@@ -422,7 +423,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject<UnknownObj> {
+            impl UnknownObj {
                 #[qinvokable]
                 fn invokable() {}
             }

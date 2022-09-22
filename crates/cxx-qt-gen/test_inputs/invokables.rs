@@ -12,7 +12,7 @@ mod ffi {
     #[derive(Default)]
     pub struct MyObject;
 
-    impl cxx_qt::QObject<MyObject> {
+    impl MyObject {
         #[qinvokable]
         pub fn invokable(&self) {
             println!("invokable");

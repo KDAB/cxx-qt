@@ -14,7 +14,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, ImplItemMethod, Item, Result};
+use syn::{Ident, ImplItemMethod, Item, Result, Type, TypePath};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -57,7 +57,22 @@ impl GeneratedRustQObject {
             rust_struct_ident: qobject_idents.rust_struct.rust.clone(),
             blocks: GeneratedRustQObjectBlocks {
                 cxx_mod_contents: vec![],
-                cxx_qt_mod_contents: qobject.others.clone(),
+                cxx_qt_mod_contents: qobject
+                    .others
+                    .iter()
+                    .map(|item| {
+                        let mut item = item.clone();
+                        // Rename any impl blocks from T to TRust
+                        if let Item::Impl(imp) = &mut item {
+                            if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_mut() {
+                                if let Some(segment) = path.segments.first_mut() {
+                                    segment.ident = qobject_idents.rust_struct.rust.clone();
+                                }
+                            }
+                        }
+                        item
+                    })
+                    .collect(),
             },
         };
 
