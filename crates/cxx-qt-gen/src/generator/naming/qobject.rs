@@ -37,7 +37,7 @@ impl From<&Ident> for QObjectName {
 fn cpp_class_from_ident(ident: &Ident) -> CombinedIdent {
     CombinedIdent {
         cpp: ident.clone(),
-        rust: format_ident!("{}Qt", ident),
+        rust: ident.clone(),
     }
 }
 
@@ -48,9 +48,10 @@ fn cxx_qt_thread_class_from_ident(ident: &Ident) -> Ident {
 
 /// For a given ident generate the Rust and C++ names
 fn rust_struct_from_ident(ident: &Ident) -> CombinedIdent {
+    let ident = format_ident!("{}Rust", ident);
     CombinedIdent {
-        cpp: format_ident!("{}Rust", ident),
-        rust: ident.clone(),
+        cpp: ident.clone(),
+        rust: ident,
     }
 }
 
@@ -86,9 +87,9 @@ pub mod tests {
 
         let names = QObjectName::from(&qobject);
         assert_eq!(names.cpp_class.cpp, format_ident!("MyObject"));
-        assert_eq!(names.cpp_class.rust, format_ident!("MyObjectQt"));
+        assert_eq!(names.cpp_class.rust, format_ident!("MyObject"));
         assert_eq!(names.rust_struct.cpp, format_ident!("MyObjectRust"));
-        assert_eq!(names.rust_struct.rust, format_ident!("MyObject"));
+        assert_eq!(names.rust_struct.rust, format_ident!("MyObjectRust"));
         assert_eq!(
             names.cxx_qt_thread_class,
             format_ident!("MyObjectCxxQtThread")

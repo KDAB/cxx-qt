@@ -66,10 +66,13 @@ impl GeneratedRustQObject {
             .append(&mut generate_qobject_definitions(&qobject_idents)?);
 
         // Add our QObject struct to the implementation blocks
+        // Rename it from T to TRust
+        let mut qobject_struct = qobject.qobject_struct.clone().unwrap();
+        qobject_struct.ident = qobject_idents.rust_struct.rust.clone();
         generated
             .blocks
             .cxx_qt_mod_contents
-            .push(syn::Item::Struct(qobject.qobject_struct.clone().unwrap()));
+            .push(syn::Item::Struct(qobject_struct));
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_rust_properties(
