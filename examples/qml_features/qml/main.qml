@@ -81,6 +81,21 @@ Window {
 
             onClicked: website.fetchTitle()
         }
+
+        Button {
+            text: "Add to model"
+
+            onClicked: myModel.add()
+        }
+
+        Repeater {
+            model: CustomBase {
+                id: myModel
+            }
+            delegate: Label {
+                text: model.id + ": " + model.value
+            }
+        }
     }
 
     Component.onCompleted: myObject.sayHi(myObject.string, myObject.number)

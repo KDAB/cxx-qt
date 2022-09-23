@@ -46,8 +46,13 @@ target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::QuickControls2
 )
 
-add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
+add_executable(${APP_NAME}
+    cpp/main.cpp
+    cpp/qabstractlistmodelcxx.h
+    qml/qml.qrc
+)
 
+target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 qt_import_qml_plugins(${APP_NAME})
 

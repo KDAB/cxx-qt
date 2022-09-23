@@ -9,6 +9,9 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
+        .cc_builder(|cc| {
+            cc.include("../cpp");
+        })
         .file("src/custom_base.rs")
         .file("src/empty.rs")
         .file("src/lib.rs")
