@@ -82,10 +82,11 @@ pub fn generate_cpp_invokables(
             })
             .collect::<Vec<String>>()
             .join(", ");
+        let is_const = if !invokable.mutable { " const" } else { "" };
 
         generated.methods.push(CppFragmentPair {
             header: format!(
-                "Q_INVOKABLE {cxx_ty} {ident}({parameter_types});",
+                "Q_INVOKABLE {cxx_ty} {ident}({parameter_types}){is_const};",
                 cxx_ty = if let Some(cxx_ty) = &cxx_ty {
                     cxx_ty.as_cxx_ty()
                 } else {
@@ -97,7 +98,7 @@ pub fn generate_cpp_invokables(
             source: formatdoc! {
                 r#"
                     {cxx_ty}
-                    {qobject_ident}::{ident}({parameter_types})
+                    {qobject_ident}::{ident}({parameter_types}){is_const}
                     {{
                         {rust_obj_guard}
                         {body};
@@ -109,6 +110,7 @@ pub fn generate_cpp_invokables(
                     "void"
                 },
                 ident = idents.name.cpp,
+                is_const = is_const,
                 parameter_types = parameter_types,
                 qobject_ident = qobject_ident,
                 rust_obj_guard = RUST_OBJ_MUTEX_LOCK_GUARD,
@@ -181,13 +183,13 @@ mod tests {
 
         assert_str_eq!(
             generated.methods[0].header,
-            "Q_INVOKABLE void voidInvokable();"
+            "Q_INVOKABLE void voidInvokable() const;"
         );
         assert_str_eq!(
             generated.methods[0].source,
             indoc! {r#"
             void
-            MyObject::voidInvokable()
+            MyObject::voidInvokable() const
             {
                 const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
                 m_rustObj->voidInvokableWrapper(*this);
@@ -197,13 +199,13 @@ mod tests {
 
         assert_str_eq!(
             generated.methods[1].header,
-            "Q_INVOKABLE qint32 trivialInvokable(qint32 param);"
+            "Q_INVOKABLE qint32 trivialInvokable(qint32 param) const;"
         );
         assert_str_eq!(
             generated.methods[1].source,
             indoc! {r#"
             qint32
-            MyObject::trivialInvokable(qint32 param)
+            MyObject::trivialInvokable(qint32 param) const
             {
                 const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->trivialInvokableWrapper(*this, param));
