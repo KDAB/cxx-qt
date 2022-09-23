@@ -52,6 +52,7 @@ mod tests {
 
     use crate::tests::tokens_to_syn;
     use quote::quote;
+    use std::collections::HashSet;
 
     #[test]
     fn test_from_impl_method() {
@@ -65,6 +66,7 @@ mod tests {
             mutable: false,
             parameters: vec![],
             return_cxx_type: None,
+            specifiers: HashSet::new(),
         };
 
         let invokable = QInvokableName::from(&parsed);

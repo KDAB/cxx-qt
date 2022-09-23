@@ -108,6 +108,7 @@ mod tests {
     use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::{assert_tokens_eq, tokens_to_syn};
     use quote::format_ident;
+    use std::collections::HashSet;
 
     #[test]
     fn test_generate_rust_invokables() {
@@ -117,6 +118,7 @@ mod tests {
                 mutable: false,
                 parameters: vec![],
                 return_cxx_type: None,
+                specifiers: HashSet::new(),
             },
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: i32) -> i32 {} }),
@@ -127,6 +129,7 @@ mod tests {
                     cxx_type: None,
                 }],
                 return_cxx_type: None,
+                specifiers: HashSet::new(),
             },
             ParsedQInvokable {
                 method: tokens_to_syn(
@@ -139,6 +142,7 @@ mod tests {
                     cxx_type: None,
                 }],
                 return_cxx_type: Some("QColor".to_owned()),
+                specifiers: HashSet::new(),
             },
         ];
         let qobject_idents = create_qobjectname();

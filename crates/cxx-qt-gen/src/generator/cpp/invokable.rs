@@ -13,7 +13,7 @@ use crate::{
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
     },
-    parser::invokable::ParsedQInvokable,
+    parser::invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
 };
 use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result, ReturnType};
@@ -86,7 +86,7 @@ pub fn generate_cpp_invokables(
 
         generated.methods.push(CppFragmentPair {
             header: format!(
-                "Q_INVOKABLE {cxx_ty} {ident}({parameter_types}){is_const};",
+                "Q_INVOKABLE {is_virtual}{cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
                 cxx_ty = if let Some(cxx_ty) = &cxx_ty {
                     cxx_ty.as_cxx_ty()
                 } else {
@@ -94,6 +94,21 @@ pub fn generate_cpp_invokables(
                 },
                 ident = idents.name.cpp,
                 parameter_types = parameter_types,
+                is_final = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Final) {
+                    " final"
+                } else {
+                    ""
+                },
+                is_override = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Override) {
+                    " override"
+                } else {
+                    ""
+                },
+                is_virtual = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Virtual) {
+                    "virtual "
+                } else {
+                    ""
+                },
             ),
             source: formatdoc! {
                 r#"
@@ -141,6 +156,7 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::{format_ident, quote};
+    use std::collections::HashSet;
 
     #[test]
     fn test_generate_cpp_invokables() {
@@ -150,6 +166,7 @@ mod tests {
                 mutable: false,
                 parameters: vec![],
                 return_cxx_type: None,
+                specifiers: HashSet::new(),
             },
             ParsedQInvokable {
                 method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: i32) -> i32 {} }),
@@ -160,6 +177,7 @@ mod tests {
                     cxx_type: None,
                 }],
                 return_cxx_type: None,
+                specifiers: HashSet::new(),
             },
             ParsedQInvokable {
                 method: tokens_to_syn(
@@ -172,6 +190,26 @@ mod tests {
                     cxx_type: None,
                 }],
                 return_cxx_type: Some("QColor".to_owned()),
+                specifiers: HashSet::new(),
+            },
+            ParsedQInvokable {
+                method: tokens_to_syn(
+                    quote! { fn specifiers_invokable(&self, param: i32) -> i32 {} },
+                ),
+                mutable: false,
+                parameters: vec![ParsedFunctionParameter {
+                    ident: format_ident!("param"),
+                    ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                    cxx_type: None,
+                }],
+                return_cxx_type: None,
+                specifiers: {
+                    let mut specifiers = HashSet::new();
+                    specifiers.insert(ParsedQInvokableSpecifiers::Final);
+                    specifiers.insert(ParsedQInvokableSpecifiers::Override);
+                    specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
+                    specifiers
+                },
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -179,7 +217,7 @@ mod tests {
         let generated = generate_cpp_invokables(&invokables, &qobject_idents).unwrap();
 
         // methods
-        assert_eq!(generated.methods.len(), 3);
+        assert_eq!(generated.methods.len(), 4);
 
         assert_str_eq!(
             generated.methods[0].header,
@@ -227,6 +265,11 @@ mod tests {
                 return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
             }
             "#}
+        );
+
+        assert_str_eq!(
+            generated.methods[3].header,
+            "Q_INVOKABLE virtual qint32 specifiersInvokable(qint32 param) const final override;"
         );
     }
 }

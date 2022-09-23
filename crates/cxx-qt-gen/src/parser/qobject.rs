@@ -4,16 +4,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    invokable::ParsedQInvokable,
+    invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
     parameter::ParsedFunctionParameter,
     property::{ParsedQProperty, ParsedRustField},
     signals::ParsedSignalsEnum,
 };
 use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_map},
+    attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
     fields::fields_to_named_fields_mut,
     implitemmethod::is_method_mutable,
 };
+use std::collections::HashSet;
 use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
     Result,
@@ -57,10 +58,12 @@ impl ParsedQObject {
     /// Parse a [syn::ItemStruct] into a [ParsedQObject] with the index of the cxx_qt::qobject specified
     pub fn from_struct(qobject_struct: &ItemStruct, attr_index: usize) -> Result<Self> {
         // Find if there is any base class
-        let base_class =
-            attribute_tokens_to_map::<Ident, LitStr>(&qobject_struct.attrs[attr_index])?
-                .get(&quote::format_ident!("base"))
-                .map(|base| base.value());
+        let base_class = attribute_tokens_to_map::<Ident, LitStr>(
+            &qobject_struct.attrs[attr_index],
+            AttributeDefault::None,
+        )?
+        .get(&quote::format_ident!("base"))
+        .map(|base| base.value());
 
         // Remove the macro from the struct
         let mut qobject_struct = qobject_struct.clone();
@@ -94,10 +97,27 @@ impl ParsedQObject {
                 // Determine if this method is an invokable
                 if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"]) {
                     // Parse any return_cxx_type in the qproperty macro
-                    let return_cxx_type =
-                        attribute_tokens_to_map::<Ident, LitStr>(&method.attrs[index])?
-                            .get(&quote::format_ident!("return_cxx_type"))
-                            .map(|lit_str| lit_str.value());
+                    let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
+                        &method.attrs[index],
+                        AttributeDefault::Some(|span| LitStr::new("", span)),
+                    )?;
+                    let return_cxx_type = attrs_map
+                        .get(&quote::format_ident!("return_cxx_type"))
+                        .map(|lit_str| lit_str.value());
+
+                    // Parse any C++ specifiers
+                    let mut specifiers = HashSet::new();
+                    if attrs_map.contains_key(&quote::format_ident!("cxx_final")) {
+                        specifiers.insert(ParsedQInvokableSpecifiers::Final);
+                    }
+                    if attrs_map.contains_key(&quote::format_ident!("cxx_override")) {
+                        specifiers.insert(ParsedQInvokableSpecifiers::Override);
+                    }
+                    if attrs_map.contains_key(&quote::format_ident!("cxx_virtual")) {
+                        specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
+                    }
+
+                    // Determine if the invokable is mutable
                     let mutable = is_method_mutable(method);
 
                     // Read the signal inputs into parameter blocks
@@ -144,6 +164,7 @@ impl ParsedQObject {
                         mutable,
                         parameters,
                         return_cxx_type,
+                        specifiers,
                     });
                 } else {
                     self.methods.push(method.clone());
@@ -166,9 +187,12 @@ impl ParsedQObject {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
                 // Parse any cxx_type in the qproperty macro
-                let cxx_type = attribute_tokens_to_map::<Ident, LitStr>(&field.attrs[index])?
-                    .get(&quote::format_ident!("cxx_type"))
-                    .map(|lit_str| lit_str.value());
+                let cxx_type = attribute_tokens_to_map::<Ident, LitStr>(
+                    &field.attrs[index],
+                    AttributeDefault::None,
+                )?
+                .get(&quote::format_ident!("cxx_type"))
+                .map(|lit_str| lit_str.value());
 
                 // Remove the #[qproperty] attribute
                 field.attrs.remove(index);
@@ -276,11 +300,14 @@ pub mod tests {
                 #[qinvokable(return_cxx_type = "f32")]
                 fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
 
+                #[qinvokable(cxx_final, cxx_override, cxx_virtual)]
+                fn invokable_with_specifiers() -> f64 {}
+
                 fn cpp_context(&self) {}
             }
         });
         assert!(qobject.parse_impl_items(&item.items).is_ok());
-        assert_eq!(qobject.invokables.len(), 2);
+        assert_eq!(qobject.invokables.len(), 3);
         assert_eq!(qobject.methods.len(), 1);
         assert!(qobject.invokables[0].return_cxx_type.is_none());
         assert!(!qobject.invokables[0].mutable);
@@ -294,6 +321,15 @@ pub mod tests {
             "f32"
         );
         assert!(qobject.invokables[1].mutable);
+        assert!(qobject.invokables[2]
+            .specifiers
+            .contains(&ParsedQInvokableSpecifiers::Final));
+        assert!(qobject.invokables[2]
+            .specifiers
+            .contains(&ParsedQInvokableSpecifiers::Override));
+        assert!(qobject.invokables[2]
+            .specifiers
+            .contains(&ParsedQInvokableSpecifiers::Virtual));
     }
 
     #[test]
