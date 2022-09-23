@@ -37,7 +37,7 @@ MyObject::qtThread() const
 }
 
 void
-MyObject::invokable()
+MyObject::invokable() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableWrapper(*this);
@@ -53,7 +53,7 @@ MyObject::invokableMutable()
 void
 MyObject::invokableParameters(const QColor& opaque,
                               const QPoint& trivial,
-                              qint32 primitive)
+                              qint32 primitive) const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);

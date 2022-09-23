@@ -28,11 +28,11 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  Q_INVOKABLE void invokable();
+  Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();
   Q_INVOKABLE void invokableParameters(const QColor& opaque,
                                        const QPoint& trivial,
-                                       qint32 primitive);
+                                       qint32 primitive) const;
   Q_INVOKABLE Value invokableReturnOpaque();
   Q_INVOKABLE QPoint invokableReturnTrivial();
 
