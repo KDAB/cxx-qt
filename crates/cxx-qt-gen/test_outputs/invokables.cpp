@@ -75,6 +75,27 @@ MyObject::invokableReturnTrivial()
     m_rustObj->invokableReturnTrivialWrapper(*this));
 }
 
+void
+MyObject::invokableFinal() const
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->invokableFinalWrapper(*this);
+}
+
+void
+MyObject::invokableOverride() const
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->invokableOverrideWrapper(*this);
+}
+
+void
+MyObject::invokableVirtual() const
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->invokableVirtualWrapper(*this);
+}
+
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {

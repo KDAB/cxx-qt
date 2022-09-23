@@ -44,6 +44,21 @@ mod ffi {
             QPoint::new(1, 2)
         }
 
+        #[qinvokable(cxx_final)]
+        pub fn invokable_final(&self) {
+            println!("Final");
+        }
+
+        #[qinvokable(cxx_override)]
+        pub fn invokable_override(&self) {
+            println!("Override");
+        }
+
+        #[qinvokable(cxx_virtual)]
+        pub fn invokable_virtual(&self) {
+            println!("Virtual");
+        }
+
         pub fn cpp_context_method(&self) {
             println!("C++ context method");
         }

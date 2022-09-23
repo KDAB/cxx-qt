@@ -4,7 +4,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::parameter::ParsedFunctionParameter;
+use std::collections::HashSet;
 use syn::ImplItemMethod;
+
+/// Describes a C++ specifier for the Q_INVOKABLE
+#[derive(Eq, Hash, PartialEq)]
+pub enum ParsedQInvokableSpecifiers {
+    Final,
+    Override,
+    Virtual,
+}
 
 /// Describes a single Q_INVOKABLE for a struct
 pub struct ParsedQInvokable {
@@ -16,4 +25,6 @@ pub struct ParsedQInvokable {
     pub return_cxx_type: Option<String>,
     /// The parameters of the invokable
     pub parameters: Vec<ParsedFunctionParameter>,
+    /// Any specifiers that declared on the invokable
+    pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
 }

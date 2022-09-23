@@ -65,6 +65,21 @@ mod ffi {
         ) -> QPoint;
     }
 
+    extern "Rust" {
+        #[cxx_name = "invokableFinalWrapper"]
+        fn invokable_final_wrapper(self: &MyObject, cpp: &MyObjectQt);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "invokableOverrideWrapper"]
+        fn invokable_override_wrapper(self: &MyObject, cpp: &MyObjectQt);
+    }
+
+    extern "Rust" {
+        #[cxx_name = "invokableVirtualWrapper"]
+        fn invokable_virtual_wrapper(self: &MyObject, cpp: &MyObjectQt);
+    }
+
     unsafe extern "C++" {
         type MyObjectCxxQtThread;
 
@@ -182,6 +197,42 @@ mod cxx_qt_ffi {
     impl MyObjectQt {
         pub fn invokable_return_trivial(self: Pin<&mut Self>) -> QPoint {
             QPoint::new(1, 2)
+        }
+    }
+
+    impl MyObject {
+        pub fn invokable_final_wrapper(self: &MyObject, cpp: &MyObjectQt) {
+            cpp.invokable_final();
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn invokable_final(&self) {
+            println!("Final");
+        }
+    }
+
+    impl MyObject {
+        pub fn invokable_override_wrapper(self: &MyObject, cpp: &MyObjectQt) {
+            cpp.invokable_override();
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn invokable_override(&self) {
+            println!("Override");
+        }
+    }
+
+    impl MyObject {
+        pub fn invokable_virtual_wrapper(self: &MyObject, cpp: &MyObjectQt) {
+            cpp.invokable_virtual();
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn invokable_virtual(&self) {
+            println!("Virtual");
         }
     }
 

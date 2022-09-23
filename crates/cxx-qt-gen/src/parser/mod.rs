@@ -10,7 +10,7 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map};
+use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault};
 use cxxqtdata::ParsedCxxQtData;
 use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
 
@@ -34,9 +34,11 @@ impl Parser {
         // Remove the cxx_qt::bridge attribute
         if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
             // Parse any namespace in the cxx_qt::bridge macro
-            cxx_qt_data.namespace = if let Some(lit_str) =
-                attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[index])?
-                    .get(&quote::format_ident!("namespace"))
+            cxx_qt_data.namespace = if let Some(lit_str) = attribute_tokens_to_map::<Ident, LitStr>(
+                &module.attrs[index],
+                AttributeDefault::None,
+            )?
+            .get(&quote::format_ident!("namespace"))
             {
                 lit_str.value()
             } else {

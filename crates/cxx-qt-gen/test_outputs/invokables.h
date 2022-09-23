@@ -35,6 +35,9 @@ public:
                                        qint32 primitive) const;
   Q_INVOKABLE Value invokableReturnOpaque();
   Q_INVOKABLE QPoint invokableReturnTrivial();
+  Q_INVOKABLE void invokableFinal() const final;
+  Q_INVOKABLE void invokableOverride() const override;
+  Q_INVOKABLE virtual void invokableVirtual() const;
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
