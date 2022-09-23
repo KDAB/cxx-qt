@@ -1,0 +1,56 @@
+// clang-format off
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// clang-format on
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+#pragma once
+
+#include <QtCore/QAbstractListModel>
+
+#include "rust/cxx.h"
+
+class QAbstractListModelCXX : public QAbstractListModel
+{
+public:
+  explicit QAbstractListModelCXX(QObject* parent = nullptr)
+    : QAbstractListModel(parent)
+  {
+  }
+
+  // Define a CXX friendly API
+  virtual rust::Vec<rust::String> roleNamesAsVec() const = 0;
+
+  // Proxy Qt API to more CXX friendly API
+  QHash<int, QByteArray> roleNames() const override
+  {
+    QHash<int, QByteArray> names;
+    int i = 0;
+    for (auto role : roleNamesAsVec()) {
+      names.insert(i++, QByteArray::fromStdString((std::string)role));
+    }
+    return names;
+  }
+
+  // Can't define in CXX as they are protected
+  // so crate public methods that are proxied
+  void beginInsertRows(int first, int last)
+  {
+    QAbstractItemModel::beginInsertRows(QModelIndex(), first, last);
+  }
+
+  void endInsertRows() { QAbstractItemModel::endInsertRows(); }
+};
+
+// Define that a QModelIndex is relocatable and check the size
+//
+// TODO: later this will likely be in cxx-qt-lib
+template<>
+struct rust::IsRelocatable<QModelIndex> : std::true_type
+{
+};
+static_assert(QTypeInfo<QModelIndex>::isRelocatable);
+static_assert(alignof(QModelIndex) <= alignof(std::size_t[3]),
+              "unexpectedly large QModelIndex alignment");
+static_assert(sizeof(QModelIndex) == sizeof(std::size_t[3]),
+              "unexpected QModelIndex size");
