@@ -25,6 +25,7 @@ mod tests {
     use generator::cpp::GeneratedCppBlocks;
     use parser::Parser;
     use pretty_assertions::assert_str_eq;
+    use proc_macro2::TokenStream;
     use quote::ToTokens;
     use writer::cpp::write_cpp;
 
@@ -33,6 +34,11 @@ mod tests {
         // Set the ClangFormatStyle to be Mozilla for our tests
         // so that when they fail the format in the assertions is the same as the files.
         assert!(CLANG_FORMAT_STYLE.set(ClangFormatStyle::Mozilla).is_ok());
+    }
+
+    /// Helper to ensure that a given syn item is the same as the given TokenStream
+    pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
+        assert_str_eq!(item.to_token_stream().to_string(), tokens.to_string());
     }
 
     /// Helper to parse a quote TokenStream into a given syn item
