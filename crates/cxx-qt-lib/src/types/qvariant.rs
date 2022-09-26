@@ -129,7 +129,7 @@ mod ffi {
         #[rust_name = "qvariant_to_qdate"]
         fn qvariantToQDate(qvariant: &QVariant) -> QDate;
         #[rust_name = "qvariant_to_qdatetime"]
-        fn qvariantToQDateTime(qvariant: &QVariant) -> UniquePtr<QDateTime>;
+        fn qvariantToQDateTime(qvariant: &QVariant) -> QDateTime;
         #[rust_name = "qvariant_to_qpoint"]
         fn qvariantToQPoint(qvariant: &QVariant) -> QPoint;
         #[rust_name = "qvariant_to_qpointf"]
@@ -175,7 +175,7 @@ pub enum QVariantValue {
     I32(i32),
     QColor(QColor),
     QDate(QDate),
-    QDateTime(cxx::UniquePtr<QDateTime>),
+    QDateTime(QDateTime),
     QPoint(QPoint),
     QPointF(QPointF),
     QRect(QRect),
@@ -234,7 +234,7 @@ into_qvariant!(i16, ffi::qvariant_init_from_i16);
 into_qvariant!(i32, ffi::qvariant_init_from_i32);
 into_qvariant_ref!(QColor, ffi::qvariant_init_from_qcolor);
 into_qvariant_ref!(QDate, ffi::qvariant_init_from_qdate);
-into_qvariant_opaque_ref!(QDateTime, ffi::qvariant_init_from_qdatetime);
+into_qvariant_ref!(QDateTime, ffi::qvariant_init_from_qdatetime);
 into_qvariant_ref!(QPoint, ffi::qvariant_init_from_qpoint);
 into_qvariant_ref!(QPointF, ffi::qvariant_init_from_qpointf);
 into_qvariant_ref!(QRect, ffi::qvariant_init_from_qrect);

@@ -24,11 +24,6 @@
 #include "cxx-qt-gen/include/ffi.cxx.h"
 
 bool
-test_constructed_qdatetime(const QDateTime& s,
-                           const QDate& date,
-                           const QTime& time);
-
-bool
 test_constructed_qurl(const QUrl& u, const QString& test);
 
 bool

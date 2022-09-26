@@ -97,25 +97,33 @@ TEST_CASE("Can clone a value QColor on the Rust side")
 
 TEST_CASE("Can construct a QDateTime on the Rust side")
 {
-  CHECK(can_construct_qdatetime(QDate(2022, 1, 1), QTime(1, 2, 3, 4)));
-}
-
-bool
-test_constructed_qdatetime(const QDateTime& dt,
-                           const QDate& date,
-                           const QTime& time)
-{
-  return dt.date().year() == 2022 && dt.date().month() == 1 &&
-         dt.date().day() == 1 && dt.time().hour() == 1 &&
-         dt.time().minute() == 2 && dt.time().second() == 3 &&
-         dt.time().msec() == 4;
+  const auto dt = construct_qdatetime(QDate(2022, 1, 1), QTime(1, 2, 3, 4));
+  const auto same = dt.date().year() == 2022 && dt.date().month() == 1 &&
+                    dt.date().day() == 1 && dt.time().hour() == 1 &&
+                    dt.time().minute() == 2 && dt.time().second() == 3 &&
+                    dt.time().msec() == 4;
+  CHECK(same);
 }
 
 TEST_CASE("Can read a QDateTime on the Rust side")
 {
-  CHECK(can_read_qdatetime(QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4)),
-                           QDate(2022, 1, 1),
-                           QTime(1, 2, 3, 4)));
+  CHECK(read_qdatetime(QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4)),
+                       QDate(2022, 1, 1),
+                       QTime(1, 2, 3, 4)));
+}
+
+TEST_CASE("Can clone a QDateTime on the Rust side")
+{
+  const auto dt = QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4));
+  const auto c = clone_qdatetime(dt);
+  CHECK(c == dt);
+}
+
+TEST_CASE("Can clone a value QDateTime on the Rust side")
+{
+  const auto dt = QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4));
+  const auto c = clone_value_qdatetime(dt);
+  CHECK(c == dt);
 }
 
 TEST_CASE("Can construct a QUrl on the Rust side")
