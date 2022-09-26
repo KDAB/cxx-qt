@@ -18,16 +18,18 @@
 TEST_CASE("Can construct a QString on the Rust side")
 {
   // From a slice
-  CHECK(can_construct_qstring(true));
+  CHECK(construct_qstring(true) ==
+        QStringLiteral("String constructed by Rust"));
 
   // From a rust::String
-  CHECK(can_construct_qstring(false));
+  CHECK(construct_qstring(false) ==
+        QStringLiteral("String constructed by Rust"));
 }
 
 TEST_CASE("Can read a QString on the Rust side")
 {
   const auto s = QStringLiteral("String constructed by C++");
-  CHECK(can_read_qstring(s));
+  CHECK(read_qstring(s));
 }
 
 TEST_CASE("Can modify a QString on the Rust side")
@@ -42,19 +44,18 @@ TEST_CASE("Can handle a QString modified on the Rust side")
   CHECK(can_handle_qstring_change());
 }
 
-bool
-test_constructed_qstring(const QString& s)
+TEST_CASE("Can clone a QString on the Rust side")
 {
-  return s == QStringLiteral("String constructed by Rust");
+  auto s = QStringLiteral("String constructed by C++");
+  const auto c = clone_qstring(s);
+  CHECK_EQ(c, QStringLiteral("String constructed by C++"));
 }
 
-void
-assign_to_qstring(QString& s, const QString& v)
+TEST_CASE("Can clone a value QDate on the Rust side")
 {
-  s = v;
-
-  // Force some more activity for valgrind to inspect
-  s.detach();
+  auto s = QStringLiteral("String constructed by C++");
+  const auto c = clone_value_qstring(s);
+  CHECK_EQ(c, QStringLiteral("String constructed by C++"));
 }
 
 TEST_CASE("Can construct a QColor on the Rust side")

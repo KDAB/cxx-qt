@@ -147,34 +147,38 @@ qsizefInit(qreal width, qreal height)
   return QSizeF(width, height);
 }
 
-rust::String
-qstringToRustString(const QString& string)
+void
+qstringDrop(QString& string)
 {
-  // Note that this changes UTF-16 to UTF-8
-  const auto byteArray = string.toUtf8();
-  return rust::String(byteArray.constData(), byteArray.size());
+  string.~QString();
 }
 
 QString
-qstringFromRustString(rust::Str string)
+qstringInitDefault()
+{
+  return QString();
+}
+
+QString
+qstringInitFromRustString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
   return QString::fromUtf8(string.data(), string.size());
 }
 
-std::unique_ptr<QString>
-qstringInitFromRustString(rust::Str string)
-{
-  // Note that rust::Str here is borrowed
-  // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QString>(qstringFromRustString(string));
-}
-
-std::unique_ptr<QString>
+QString
 qstringInitFromQString(const QString& string)
 {
-  return std::make_unique<QString>(string);
+  return QString(string);
+}
+
+rust::String
+qstringToRustString(const QString& string)
+{
+  // Note that this changes UTF-16 to UTF-8
+  const auto byteArray = string.toUtf8();
+  return rust::String(byteArray.constData(), byteArray.size());
 }
 
 QTime
@@ -200,7 +204,7 @@ qurlInitFromString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QUrl>(qstringFromRustString(string));
+  return std::make_unique<QUrl>(qstringInitFromRustString(string));
 }
 
 std::unique_ptr<QUrl>
@@ -344,7 +348,7 @@ CXX_QT_VARIANT_TRIVIAL_VALUE(QRect, QRect)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QRectF, QRectF)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QSize, QSize)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QSizeF, QSizeF)
-CXX_QT_VARIANT_OPAQUE_VALUE(QString, QString)
+CXX_QT_VARIANT_TRIVIAL_VALUE(QString, QString)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QTime, QTime)
 CXX_QT_VARIANT_OPAQUE_VALUE(QUrl, QUrl)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint8, U8)

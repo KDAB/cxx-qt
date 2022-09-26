@@ -24,12 +24,6 @@
 #include "cxx-qt-gen/include/ffi.cxx.h"
 
 bool
-test_constructed_qstring(const QString& s);
-
-void
-assign_to_qstring(QString& s, const QString& v);
-
-bool
 test_constructed_qdatetime(const QDateTime& s,
                            const QDate& date,
                            const QTime& time);

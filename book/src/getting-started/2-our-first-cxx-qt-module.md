@@ -47,7 +47,7 @@ Note that the data types we use here are normal Rust data types.
 CXX-Qt will automatically convert these types to their C++/Qt equivalent.
 In our case that means:
 - `number: i32` -> `int number`
-- `string: UniquePtr<QString>` -> `QString string`\
+- `string: QString` -> `QString string`\
 For more details on the available types, see the [Qt types page](../concepts/types.md).
 
 You might have also noticed the `impl Default for MyObject` here.

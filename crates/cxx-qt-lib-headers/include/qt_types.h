@@ -32,6 +32,12 @@ struct rust::IsRelocatable<QColor> : std::true_type
 };
 static_assert(QTypeInfo<QColor>::isRelocatable);
 
+template<>
+struct rust::IsRelocatable<QString> : std::true_type
+{
+};
+static_assert(QTypeInfo<QString>::isRelocatable);
+
 // Ensure that trivially copy assignable and constructible is correct
 // If this is false then we need to manually implement Clone rather than derive
 
@@ -40,10 +46,13 @@ static_assert(QTypeInfo<QColor>::isRelocatable);
 static_assert(std::is_trivially_copy_assignable<QColor>::value);
 static_assert(std::is_trivially_copy_constructible<QColor>::value);
 #endif
+static_assert(!std::is_trivially_copy_assignable<QString>::value);
+static_assert(!std::is_trivially_copy_constructible<QString>::value);
 
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
 static_assert(std::is_trivially_destructible<QColor>::value);
+static_assert(!std::is_trivially_destructible<QString>::value);
 
 // Ensure that types have the alignment and size we are expecting
 
@@ -56,6 +65,27 @@ static_assert(alignof(QColor) <= alignof(std::size_t[2]),
               "unexpectedly large QColor alignment");
 static_assert(sizeof(QColor) == sizeof(std::size_t[2]),
               "unexpected QColor size");
+
+// The layout has changed between Qt 5 and Qt 6
+//
+// Qt5 QString has one pointer as a member
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/text/qstring.h?h=v5.15.6-lts-lgpl#n979
+//
+// Qt6 QString has one member, which contains two pointers and a size_t
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/text/qstring.h?h=v6.2.4#n1094
+// DataPointer is then a QStringPrivate, which is a QArrayDataPointer<char16_t>
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+static_assert(alignof(QString) <= alignof(std::size_t[3]),
+              "unexpectedly large QString alignment");
+static_assert(sizeof(QString) == sizeof(std::size_t[3]),
+              "unexpected QString size");
+#else
+static_assert(alignof(QString) <= alignof(std::size_t),
+              "unexpectedly large QString alignment");
+static_assert(sizeof(QString) == sizeof(std::size_t),
+              "unexpected QString size");
+#endif
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -144,14 +174,16 @@ qsizefInitDefault();
 QSizeF
 qsizefInit(qreal width, qreal height);
 
+void
+qstringDrop(QString& string);
 QString
-qstringFromRustString(rust::Str string);
+qstringInitDefault();
+QString
+qstringInitFromRustString(rust::Str string);
+QString
+qstringInitFromQString(const QString& string);
 rust::String
 qstringToRustString(const QString& string);
-std::unique_ptr<QString>
-qstringInitFromRustString(rust::Str string);
-std::unique_ptr<QString>
-qstringInitFromQString(const QString& string);
 
 QTime
 qtimeInitDefault();
@@ -249,7 +281,7 @@ QTime
 qvariantToQTime(const QVariant& variant);
 std::unique_ptr<QUrl>
 qvariantToQUrl(const QVariant& variant);
-std::unique_ptr<QString>
+QString
 qvariantToQString(const QVariant& variant);
 quint8
 qvariantToU8(const QVariant& variant);

@@ -24,15 +24,15 @@ mod ffi {
     pub struct MyObject {
         #[qproperty]
         number: i32,
-        #[qproperty(cxx_type = "QString")]
-        string: UniquePtr<QString>,
+        #[qproperty]
+        string: QString,
     }
 
     impl Default for MyObject {
         fn default() -> Self {
             Self {
                 number: 0,
-                string: QString::from_str(""),
+                string: QString::from(""),
             }
         }
     }
