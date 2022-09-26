@@ -90,7 +90,7 @@ mod tests {
             const qint32&
             MyObject::getTrivialProperty() const
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(m_rustObj->getTrivialProperty(*this));
             }
             "#}
@@ -121,7 +121,7 @@ mod tests {
             const QColor&
             MyObject::getOpaqueProperty() const
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<const QColor&, const ::std::unique_ptr<QColor>&>{}(m_rustObj->getOpaqueProperty(*this));
             }
             "#}
@@ -154,7 +154,7 @@ mod tests {
             void
             MyObject::setTrivialProperty(const qint32& value)
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
             }
             "#}
@@ -169,7 +169,7 @@ mod tests {
             void
             MyObject::setOpaqueProperty(const QColor& value)
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 m_rustObj->setOpaqueProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, const QColor&>{}(value));
             }
             "#}

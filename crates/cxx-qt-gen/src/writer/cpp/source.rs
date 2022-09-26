@@ -23,7 +23,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
             {ident}::{ident}(QObject* parent)
               : {base_class}(parent)
               , m_rustObj({namespace_internals}::createRs())
-              , m_rustObjMutex(std::make_shared<std::mutex>())
+              , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
               , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
             {{
             }}

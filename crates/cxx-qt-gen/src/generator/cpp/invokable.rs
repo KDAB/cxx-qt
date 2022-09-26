@@ -191,7 +191,7 @@ mod tests {
             void
             MyObject::voidInvokable() const
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 m_rustObj->voidInvokableWrapper(*this);
             }
             "#}
@@ -207,7 +207,7 @@ mod tests {
             qint32
             MyObject::trivialInvokable(qint32 param) const
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->trivialInvokableWrapper(*this, param));
             }
             "#}
@@ -223,7 +223,7 @@ mod tests {
             QColor
             MyObject::opaqueInvokable(const QColor& param)
             {
-                const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
             }
             "#}
