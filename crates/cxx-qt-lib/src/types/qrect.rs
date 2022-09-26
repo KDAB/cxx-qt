@@ -33,13 +33,14 @@ mod ffi {
         /// Sets the top edge of the rectangle to the given y coordinate. May change the height, but will never change the bottom edge of the rectangle.
         #[rust_name = "set_y"]
         fn setY(self: &mut QRect, y: i32);
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qrect_init_default"]
         fn qrectInitDefault() -> QRect;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qrect_init"]
         fn qrectInit(x: i32, y: i32, width: i32, height: i32) -> QRect;
     }
@@ -76,12 +77,4 @@ impl Default for QRect {
 unsafe impl ExternType for QRect {
     type Id = type_id!("QRect");
     type Kind = cxx::kind::Trivial;
-}
-
-// TODO: once grab_values_from_data has been removed this can be removed
-#[doc(hidden)]
-impl From<&QRect> for QRect {
-    fn from(qrect: &QRect) -> Self {
-        qrect.clone()
-    }
 }

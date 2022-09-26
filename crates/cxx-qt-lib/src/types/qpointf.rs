@@ -24,13 +24,14 @@ mod ffi {
         /// Sets the y coordinate of this point to the given y coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QPointF, y: f64);
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qpointf_init_default"]
         fn qpointfInitDefault() -> QPointF;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qpointf_init"]
         fn qpointfInit(x: f64, y: f64) -> QPointF;
     }
@@ -64,12 +65,4 @@ impl Default for QPointF {
 unsafe impl ExternType for QPointF {
     type Id = type_id!("QPointF");
     type Kind = cxx::kind::Trivial;
-}
-
-// TODO: once grab_values_from_data has been removed this can be removed
-#[doc(hidden)]
-impl From<&QPointF> for QPointF {
-    fn from(qpointf: &QPointF) -> Self {
-        qpointf.clone()
-    }
 }

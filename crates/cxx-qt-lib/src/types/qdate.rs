@@ -25,13 +25,14 @@ mod ffi {
         /// Returns true if the resulting date is valid, otherwise it sets this to represent an invalid date and returns false.
         #[rust_name = "set_date"]
         fn setDate(self: &mut QDate, y: i32, m: i32, d: i32) -> bool;
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qdate_init_default"]
         fn qdateInitDefault() -> QDate;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qdate_init"]
         fn qdateInit(y: i32, m: i32, d: i32) -> QDate;
     }
@@ -64,12 +65,4 @@ impl QDate {
 unsafe impl ExternType for QDate {
     type Id = type_id!("QDate");
     type Kind = cxx::kind::Trivial;
-}
-
-// TODO: once grab_values_from_data has been removed this can be removed
-#[doc(hidden)]
-impl From<&QDate> for QDate {
-    fn from(qdate: &QDate) -> Self {
-        qdate.clone()
-    }
 }
