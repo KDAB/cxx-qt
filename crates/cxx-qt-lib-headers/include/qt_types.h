@@ -33,6 +33,12 @@ struct rust::IsRelocatable<QColor> : std::true_type
 static_assert(QTypeInfo<QColor>::isRelocatable);
 
 template<>
+struct rust::IsRelocatable<QDateTime> : std::true_type
+{
+};
+static_assert(QTypeInfo<QDateTime>::isRelocatable);
+
+template<>
 struct rust::IsRelocatable<QString> : std::true_type
 {
 };
@@ -46,12 +52,15 @@ static_assert(QTypeInfo<QString>::isRelocatable);
 static_assert(std::is_trivially_copy_assignable<QColor>::value);
 static_assert(std::is_trivially_copy_constructible<QColor>::value);
 #endif
+static_assert(!std::is_trivially_copy_assignable<QDateTime>::value);
+static_assert(!std::is_trivially_copy_constructible<QDateTime>::value);
 static_assert(!std::is_trivially_copy_assignable<QString>::value);
 static_assert(!std::is_trivially_copy_constructible<QString>::value);
 
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
 static_assert(std::is_trivially_destructible<QColor>::value);
+static_assert(!std::is_trivially_destructible<QDateTime>::value);
 static_assert(!std::is_trivially_destructible<QString>::value);
 
 // Ensure that types have the alignment and size we are expecting
@@ -65,6 +74,17 @@ static_assert(alignof(QColor) <= alignof(std::size_t[2]),
               "unexpectedly large QColor alignment");
 static_assert(sizeof(QColor) == sizeof(std::size_t[2]),
               "unexpected QColor size");
+
+// QDateTime has a single member, which is a union, with the largest member being a pointer
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n426
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n270
+//
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n394
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n255
+static_assert(alignof(QDateTime) <= alignof(std::size_t),
+              "unexpectedly large QDateTime alignment");
+static_assert(sizeof(QDateTime) == sizeof(std::size_t),
+              "unexpected QDateTime size");
 
 // The layout has changed between Qt 5 and Qt 6
 //
@@ -133,11 +153,13 @@ qdateInitDefault();
 QDate
 qdateInit(int y, int m, int d);
 
-std::unique_ptr<QDateTime>
-qdatetimeInit();
-std::unique_ptr<QDateTime>
+void
+qdatetimeDrop(QDateTime& datetime);
+QDateTime
+qdatetimeInitDefault();
+QDateTime
 qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time);
-std::unique_ptr<QDateTime>
+QDateTime
 qdatetimeInitFromQDateTime(const QDateTime& datetime);
 void
 qdatetimeSetDate(QDateTime& datetime, QDate date);
@@ -263,7 +285,7 @@ QColor
 qvariantToQColor(const QVariant& variant);
 QDate
 qvariantToQDate(const QVariant& variant);
-std::unique_ptr<QDateTime>
+QDateTime
 qvariantToQDateTime(const QVariant& variant);
 QPoint
 qvariantToQPoint(const QVariant& variant);

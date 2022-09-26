@@ -61,8 +61,6 @@ mod ffi {
         type QRect = cxx_qt_lib::QRect;
         type QTime = cxx_qt_lib::QTime;
 
-        fn test_constructed_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
-
         fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
 
         fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
@@ -81,8 +79,10 @@ mod ffi {
         fn clone_qcolor(c: &QColor) -> QColor;
         fn clone_value_qcolor(c: QColor) -> QColor;
 
-        fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool;
-        fn can_read_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
+        fn construct_qdatetime(date: &QDate, time: &QTime) -> QDateTime;
+        fn read_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
+        fn clone_qdatetime(c: &QDateTime) -> QDateTime;
+        fn clone_value_qdatetime(c: QDateTime) -> QDateTime;
 
         fn can_construct_qurl(test: &QString) -> bool;
         fn can_read_qurl(u: &QUrl, test: &QString) -> bool;
@@ -211,12 +211,11 @@ fn clone_value_qcolor(c: QColor) -> QColor {
     c
 }
 
-fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
-    let dt = QDateTime::from_date_and_time(date, time);
-    ffi::test_constructed_qdatetime(&dt, date, time)
+fn construct_qdatetime(date: &QDate, time: &QTime) -> QDateTime {
+    QDateTime::from_date_and_time(date, time)
 }
 
-fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) -> bool {
+fn read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) -> bool {
     dt.date().year() == date.year()
         && dt.date().month() == date.month()
         && dt.date().day() == date.day()
@@ -224,6 +223,14 @@ fn can_read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) ->
         && dt.time().minute() == time.minute()
         && dt.time().second() == time.second()
         && dt.time().msec() == time.msec()
+}
+
+fn clone_qdatetime(dt: &QDateTime) -> QDateTime {
+    dt.clone()
+}
+
+fn clone_value_qdatetime(dt: QDateTime) -> QDateTime {
+    dt
 }
 
 fn can_construct_qurl(test: &cxx_qt_lib::QString) -> bool {
@@ -246,11 +253,10 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::I32 => QVariant::from(123_i32),
         VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)),
         VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)),
-        VariantTest::QDateTime => QVariant::from(
-            QDateTime::from_date_and_time(&QDate::new(2022, 1, 1), &QTime::new(1, 2, 3, 4))
-                .as_ref()
-                .unwrap(),
-        ),
+        VariantTest::QDateTime => QVariant::from(QDateTime::from_date_and_time(
+            &QDate::new(2022, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+        )),
         VariantTest::QPoint => QVariant::from(QPoint::new(1, 3)),
         VariantTest::QPointF => QVariant::from(QPointF::new(1.0, 3.0)),
         VariantTest::QRect => QVariant::from(QRect::new(123, 456, 246, 912)),

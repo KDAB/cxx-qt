@@ -40,8 +40,8 @@ mod ffi {
         color: QColor,
         #[qproperty]
         date: QDate,
-        #[qproperty(cxx_type = "QDateTime")]
-        date_time: UniquePtr<QDateTime>,
+        #[qproperty]
+        date_time: QDateTime,
         #[qproperty]
         point: QPoint,
         #[qproperty]
@@ -136,7 +136,7 @@ mod ffi {
         }
 
         #[qinvokable(return_cxx_type = "QDateTime")]
-        pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> UniquePtr<QDateTime> {
+        pub fn test_date_time_invokable(&self, date_time: &QDateTime) -> QDateTime {
             QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -327,18 +327,15 @@ mod ffi {
                     self.as_mut().set_variant(QVariant::from(date));
                 }
                 QVariantValue::QDateTime(mut date_time) => {
-                    if let Some(mut date_time) = date_time.as_mut() {
-                        date_time.as_mut().set_date(QDate::new(2021, 12, 31));
-                        let new_time = QTime::new(
-                            date_time.time().hour() * 2,
-                            date_time.time().minute() * 3,
-                            date_time.time().second() * 4,
-                            date_time.time().msec() * 5,
-                        );
-                        date_time.as_mut().set_time(new_time);
-                    }
-                    self.as_mut()
-                        .set_variant(QVariant::from(date_time.as_ref().unwrap()));
+                    date_time.set_date(QDate::new(2021, 12, 31));
+                    let new_time = QTime::new(
+                        date_time.time().hour() * 2,
+                        date_time.time().minute() * 3,
+                        date_time.time().second() * 4,
+                        date_time.time().msec() * 5,
+                    );
+                    date_time.set_time(new_time);
+                    self.as_mut().set_variant(QVariant::from(date_time));
                 }
                 QVariantValue::QPoint(point) => {
                     self.as_mut()
@@ -424,17 +421,15 @@ mod ffi {
                     QVariant::from(date)
                 }
                 QVariantValue::QDateTime(mut date_time) => {
-                    if let Some(mut date_time) = date_time.as_mut() {
-                        date_time.as_mut().set_date(QDate::new(2021, 12, 31));
-                        let new_time = QTime::new(
-                            date_time.time().hour() * 2,
-                            date_time.time().minute() * 3,
-                            date_time.time().second() * 4,
-                            date_time.time().msec() * 5,
-                        );
-                        date_time.as_mut().set_time(new_time);
-                    }
-                    QVariant::from(date_time.as_ref().unwrap())
+                    date_time.set_date(QDate::new(2021, 12, 31));
+                    let new_time = QTime::new(
+                        date_time.time().hour() * 2,
+                        date_time.time().minute() * 3,
+                        date_time.time().second() * 4,
+                        date_time.time().msec() * 5,
+                    );
+                    date_time.set_time(new_time);
+                    QVariant::from(date_time)
                 }
                 QVariantValue::QPoint(point) => {
                     QVariant::from(QPoint::new(point.x() * 2, point.y() * 2))

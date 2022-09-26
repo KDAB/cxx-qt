@@ -45,22 +45,28 @@ qdateInit(int y, int m, int d)
   return QDate(y, m, d);
 }
 
-std::unique_ptr<QDateTime>
-qdatetimeInit()
+void
+qdatetimeDrop(QDateTime& datetime)
 {
-  return std::make_unique<QDateTime>();
+  return datetime.~QDateTime();
 }
 
-std::unique_ptr<QDateTime>
+QDateTime
+qdatetimeInitDefault()
+{
+  return QDateTime();
+}
+
+QDateTime
 qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time)
 {
-  return std::make_unique<QDateTime>(date, time);
+  return QDateTime(date, time);
 }
 
-std::unique_ptr<QDateTime>
+QDateTime
 qdatetimeInitFromQDateTime(const QDateTime& datetime)
 {
-  return std::make_unique<QDateTime>(datetime);
+  return QDateTime(datetime);
 }
 
 void
@@ -341,7 +347,7 @@ CXX_QT_VARIANT_TRIVIAL_VALUE(qint16, I16)
 CXX_QT_VARIANT_TRIVIAL_VALUE(qint32, I32)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QColor, QColor)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QDate, QDate)
-CXX_QT_VARIANT_OPAQUE_VALUE(QDateTime, QDateTime)
+CXX_QT_VARIANT_TRIVIAL_VALUE(QDateTime, QDateTime)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QPoint, QPoint)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QPointF, QPointF)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QRect, QRect)
