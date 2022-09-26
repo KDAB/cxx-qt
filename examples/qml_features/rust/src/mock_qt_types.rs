@@ -36,8 +36,8 @@ mod ffi {
 
     #[cxx_qt::qobject]
     pub struct MockQtTypes {
-        #[qproperty(cxx_type = "QColor")]
-        color: UniquePtr<QColor>,
+        #[qproperty]
+        color: QColor,
         #[qproperty]
         date: QDate,
         #[qproperty(cxx_type = "QDateTime")]
@@ -101,8 +101,8 @@ mod ffi {
             self.set_color(QColor::from_rgba(0, 0, 255, 255));
         }
 
-        #[qinvokable(return_cxx_type = "QColor")]
-        pub fn test_color_invokable(&self, _color: &QColor) -> UniquePtr<QColor> {
+        #[qinvokable]
+        pub fn test_color_invokable(&self, _color: &QColor) -> QColor {
             QColor::from_rgba(0, 255, 0, 255)
         }
 
@@ -316,14 +316,11 @@ mod ffi {
                 QVariantValue::I16(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
                 QVariantValue::I32(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
                 QVariantValue::QColor(mut color) => {
-                    if let Some(mut color) = color.as_mut() {
-                        color.as_mut().set_red(0);
-                        color.as_mut().set_green(0);
-                        color.as_mut().set_blue(255);
-                        color.as_mut().set_alpha(255);
-                    }
-                    self.as_mut()
-                        .set_variant(QVariant::from(color.as_ref().unwrap()));
+                    color.set_red(0);
+                    color.set_green(0);
+                    color.set_blue(255);
+                    color.set_alpha(255);
+                    self.as_mut().set_variant(QVariant::from(color));
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
@@ -417,13 +414,11 @@ mod ffi {
                 QVariantValue::I16(i) => QVariant::from(i * 2),
                 QVariantValue::I32(i) => QVariant::from(i * 2),
                 QVariantValue::QColor(mut color) => {
-                    if let Some(mut color) = color.as_mut() {
-                        color.as_mut().set_red(0);
-                        color.as_mut().set_green(255);
-                        color.as_mut().set_blue(0);
-                        color.as_mut().set_alpha(255);
-                    }
-                    QVariant::from(color.as_ref().unwrap())
+                    color.set_red(0);
+                    color.set_green(255);
+                    color.set_blue(0);
+                    color.set_alpha(255);
+                    QVariant::from(color)
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);

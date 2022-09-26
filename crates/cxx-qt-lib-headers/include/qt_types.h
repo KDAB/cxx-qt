@@ -7,6 +7,7 @@
 
 #pragma once
 #include <memory>
+#include <type_traits>
 
 #include <QColor>
 #include <QDate>
@@ -23,6 +24,38 @@
 #include <QVariant>
 
 #include "rust/cxx.h"
+
+// Define which Qt types are relocatable
+template<>
+struct rust::IsRelocatable<QColor> : std::true_type
+{
+};
+static_assert(QTypeInfo<QColor>::isRelocatable);
+
+// Ensure that trivially copy assignable and constructible is correct
+// If this is false then we need to manually implement Clone rather than derive
+
+// QColor still had copy constructors in Qt 5 but they could have been trivial
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+static_assert(std::is_trivially_copy_assignable<QColor>::value);
+static_assert(std::is_trivially_copy_constructible<QColor>::value);
+#endif
+
+// Ensure that trivially destructible is correct
+// If this is false then we need to manually implement Drop rather than derive
+static_assert(std::is_trivially_destructible<QColor>::value);
+
+// Ensure that types have the alignment and size we are expecting
+
+// QColor has an enum with six values and a union with the largest being five
+// ushorts. This results in (5 * std::uint16) + std::uint32_t = 14, then due to
+// compiler padding this results in a sizeof 16 or two pointers.
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v5.15.6-lts-lgpl#n262
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
+static_assert(alignof(QColor) <= alignof(std::size_t[2]),
+              "unexpectedly large QColor alignment");
+static_assert(sizeof(QColor) == sizeof(std::size_t[2]),
+              "unexpected QColor size");
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -57,15 +90,13 @@ enum class QVariantType : uint8_t
 
 } // namespace types
 
-std::unique_ptr<QColor>
-qcolorInit();
-std::unique_ptr<QColor>
+QColor
+qcolorInitDefault();
+QColor
 qcolorInitFromRgba(std::int32_t r,
                    std::int32_t g,
                    std::int32_t b,
                    std::int32_t a);
-std::unique_ptr<QColor>
-qcolorInitFromQColor(const QColor& color);
 
 QDate
 qdateInitDefault();
@@ -196,7 +227,7 @@ qint16
 qvariantToI16(const QVariant& variant);
 qint32
 qvariantToI32(const QVariant& variant);
-std::unique_ptr<QColor>
+QColor
 qvariantToQColor(const QVariant& variant);
 QDate
 qvariantToQDate(const QVariant& variant);

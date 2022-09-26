@@ -64,8 +64,6 @@ mod ffi {
         fn test_constructed_qstring(s: &QString) -> bool;
         fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
 
-        fn test_constructed_qcolor(c: &QColor, test: ColorTest) -> bool;
-
         fn test_constructed_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
 
         fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
@@ -79,9 +77,10 @@ mod ffi {
         fn modify_qstring(s: Pin<&mut QString>);
         fn can_handle_qstring_change() -> bool;
 
-        fn make_color(test: ColorTest) -> UniquePtr<QColor>;
-        fn can_construct_qcolor(test: ColorTest) -> bool;
-        fn can_read_qcolor(c: &QColor, test: ColorTest) -> bool;
+        fn construct_qcolor(test: ColorTest) -> QColor;
+        fn read_qcolor(c: &QColor, test: ColorTest) -> bool;
+        fn clone_qcolor(c: &QColor) -> QColor;
+        fn clone_value_qcolor(c: QColor) -> QColor;
 
         fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool;
         fn can_read_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
@@ -166,7 +165,7 @@ fn can_handle_qstring_change() -> bool {
     short_s_ptr.to_string() == long_s
 }
 
-fn make_color(test: ColorTest) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
+fn construct_qcolor(test: ColorTest) -> QColor {
     match test {
         ColorTest::Rgb_Red => QColor::from_rgba(255, 0, 0, 255),
         ColorTest::Rgb_Green => QColor::from_rgba(0, 255, 0, 255),
@@ -176,12 +175,7 @@ fn make_color(test: ColorTest) -> cxx::UniquePtr<cxx_qt_lib::QColor> {
     }
 }
 
-fn can_construct_qcolor(test: ColorTest) -> bool {
-    let color = make_color(test);
-    ffi::test_constructed_qcolor(&color, test)
-}
-
-fn can_read_qcolor(color: &cxx_qt_lib::QColor, test: ColorTest) -> bool {
+fn read_qcolor(color: &QColor, test: ColorTest) -> bool {
     match test {
         ColorTest::Rgb_Red => {
             color.alpha() == 255 && color.red() == 255 && color.green() == 0 && color.blue() == 0
@@ -197,6 +191,14 @@ fn can_read_qcolor(color: &cxx_qt_lib::QColor, test: ColorTest) -> bool {
         }
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn clone_qcolor(c: &QColor) -> QColor {
+    c.clone()
+}
+
+fn clone_value_qcolor(c: QColor) -> QColor {
+    c
 }
 
 fn can_construct_qdatetime(date: &QDate, time: &QTime) -> bool {
@@ -232,7 +234,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::I8 => QVariant::from(12_i8),
         VariantTest::I16 => QVariant::from(123_i16),
         VariantTest::I32 => QVariant::from(123_i32),
-        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255).as_ref().unwrap()),
+        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)),
         VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)),
         VariantTest::QDateTime => QVariant::from(
             QDateTime::from_date_and_time(&QDate::new(2022, 1, 1), &QTime::new(1, 2, 3, 4))
