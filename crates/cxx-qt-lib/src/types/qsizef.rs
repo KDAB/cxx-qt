@@ -24,13 +24,14 @@ mod ffi {
         /// Sets the width to the given width.
         #[rust_name = "set_width"]
         fn setWidth(self: &mut QSizeF, w: f64);
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qsizef_init_default"]
         fn qsizefInitDefault() -> QSizeF;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qsizef_init"]
         fn qsizefInit(w: f64, h: f64) -> QSizeF;
     }
@@ -64,12 +65,4 @@ impl Default for QSizeF {
 unsafe impl ExternType for QSizeF {
     type Id = type_id!("QSizeF");
     type Kind = cxx::kind::Trivial;
-}
-
-// TODO: once grab_values_from_data has been removed this can be removed
-#[doc(hidden)]
-impl From<&QSizeF> for QSizeF {
-    fn from(sizef: &QSizeF) -> Self {
-        sizef.clone()
-    }
 }

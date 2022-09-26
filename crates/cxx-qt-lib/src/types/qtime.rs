@@ -24,13 +24,14 @@ mod ffi {
         /// Sets the time to hour h, minute m, seconds s and milliseconds ms.
         #[rust_name = "set_hms"]
         fn setHMS(self: &mut QTime, h: i32, m: i32, s: i32, ms: i32) -> bool;
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qtime_init_default"]
         fn qtimeInitDefault() -> QTime;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
         #[rust_name = "qtime_init"]
         fn qtimeInit(h: i32, m: i32, s: i32, ms: i32) -> QTime;
     }
@@ -63,12 +64,4 @@ impl Default for QTime {
 unsafe impl ExternType for QTime {
     type Id = type_id!("QTime");
     type Kind = cxx::kind::Trivial;
-}
-
-// TODO: once grab_values_from_data has been removed this can be removed
-#[doc(hidden)]
-impl From<&QTime> for QTime {
-    fn from(qtime: &QTime) -> Self {
-        qtime.clone()
-    }
 }
