@@ -12,25 +12,25 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-std::unique_ptr<QColor>
-qcolorInit()
+QColor
+qcolorInitDefault()
 {
-  return std::make_unique<QColor>();
+  return QColor();
 }
 
-std::unique_ptr<QColor>
+QColor
 qcolorInitFromRgba(std::int32_t r,
                    std::int32_t g,
                    std::int32_t b,
                    std::int32_t a)
 {
-  return std::make_unique<QColor>(r, g, b, a);
+  return QColor(r, g, b, a);
 }
 
-std::unique_ptr<QColor>
+QColor
 qcolorInitFromQColor(const QColor& color)
 {
-  return std::make_unique<QColor>(color);
+  return QColor(color);
 }
 
 QDate
@@ -335,7 +335,7 @@ CXX_QT_VARIANT_TRIVIAL_VALUE(double, F64)
 CXX_QT_VARIANT_TRIVIAL_VALUE(qint8, I8)
 CXX_QT_VARIANT_TRIVIAL_VALUE(qint16, I16)
 CXX_QT_VARIANT_TRIVIAL_VALUE(qint32, I32)
-CXX_QT_VARIANT_OPAQUE_VALUE(QColor, QColor)
+CXX_QT_VARIANT_TRIVIAL_VALUE(QColor, QColor)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QDate, QDate)
 CXX_QT_VARIANT_OPAQUE_VALUE(QDateTime, QDateTime)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QPoint, QPoint)

@@ -47,7 +47,9 @@ Window {
         Button {
             text: "Say Hi!"
 
-            onClicked: myObject.sayHi(myObject.string, myObject.number)
+            property color red: "red"
+
+            onClicked: myObject.sayHi(myObject.string, myObject.number, red)
         }
     }
 }

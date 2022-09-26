@@ -30,9 +30,6 @@ void
 assign_to_qstring(QString& s, const QString& v);
 
 bool
-test_constructed_qcolor(const QColor& c, ColorTest test);
-
-bool
 test_constructed_qdatetime(const QDateTime& s,
                            const QDate& date,
                            const QTime& time);
