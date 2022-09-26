@@ -54,8 +54,8 @@ mod ffi {
         size: QSize,
         #[qproperty]
         sizef: QSizeF,
-        #[qproperty(cxx_type = "QString")]
-        string: UniquePtr<QString>,
+        #[qproperty]
+        string: QString,
         #[qproperty]
         time: QTime,
         #[qproperty(cxx_type = "QUrl")]
@@ -79,7 +79,7 @@ mod ffi {
                 rectf: QRectF::new(1.0, 2.0, 3.0, 4.0),
                 size: QSize::new(1, 3),
                 sizef: QSizeF::new(1.0, 3.0),
-                string: QString::from_str("KDAB"),
+                string: QString::from("KDAB"),
                 time: QTime::new(1, 2, 3, 4),
                 url: QUrl::from_str("https://github.com/KDAB"),
                 variant: QVariant::from(1_i32),
@@ -262,13 +262,13 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_string_property(self: Pin<&mut Self>) {
-            let string = QString::from_str(&(self.get_string().to_string() + "/cxx-qt"));
+            let string = QString::from(&(self.get_string().to_string() + "/cxx-qt"));
             self.set_string(string);
         }
 
-        #[qinvokable(return_cxx_type = "QString")]
-        pub fn test_string_invokable(&self, string: &QString) -> UniquePtr<QString> {
-            QString::from_str(&(string.to_string() + "/cxx-qt"))
+        #[qinvokable]
+        pub fn test_string_invokable(&self, string: &QString) -> QString {
+            QString::from(&(string.to_string() + "/cxx-qt"))
         }
 
         #[qinvokable]
@@ -379,9 +379,8 @@ mod ffi {
                     )));
                 }
                 QVariantValue::QString(string) => {
-                    let string = QString::from_str(&(string.to_string() + "/cxx-qt"));
-                    self.as_mut()
-                        .set_variant(QVariant::from(string.as_ref().unwrap()));
+                    let string = QString::from(&(string.to_string() + "/cxx-qt"));
+                    self.as_mut().set_variant(QVariant::from(string));
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -462,8 +461,8 @@ mod ffi {
                     QVariant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
                 }
                 QVariantValue::QString(string) => {
-                    let string = QString::from_str(&(string.to_string() + "/cxx-qt"));
-                    QVariant::from(string.as_ref().unwrap())
+                    let string = QString::from(&(string.to_string() + "/cxx-qt"));
+                    QVariant::from(string)
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(

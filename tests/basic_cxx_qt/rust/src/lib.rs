@@ -19,8 +19,8 @@ mod ffi {
     pub struct MyObject {
         #[qproperty]
         number: i32,
-        #[qproperty(cxx_type = "QString")]
-        string: UniquePtr<QString>,
+        #[qproperty]
+        string: QString,
 
         update_call_count: i32,
     }
@@ -29,7 +29,7 @@ mod ffi {
         fn default() -> Self {
             Self {
                 number: 0,
-                string: QString::from_str(""),
+                string: QString::from(""),
                 update_call_count: 0,
             }
         }

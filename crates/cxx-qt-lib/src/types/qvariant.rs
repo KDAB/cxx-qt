@@ -147,7 +147,7 @@ mod ffi {
         #[rust_name = "qvariant_to_qurl"]
         fn qvariantToQUrl(qvariant: &QVariant) -> UniquePtr<QUrl>;
         #[rust_name = "qvariant_to_qstring"]
-        fn qvariantToQString(qvariant: &QVariant) -> UniquePtr<QString>;
+        fn qvariantToQString(qvariant: &QVariant) -> QString;
         #[rust_name = "qvariant_to_u8"]
         fn qvariantToU8(qvariant: &QVariant) -> u8;
         #[rust_name = "qvariant_to_u16"]
@@ -182,7 +182,7 @@ pub enum QVariantValue {
     QRectF(QRectF),
     QSize(QSize),
     QSizeF(QSizeF),
-    QString(cxx::UniquePtr<QString>),
+    QString(QString),
     QTime(QTime),
     QUrl(cxx::UniquePtr<QUrl>),
     U8(u8),
@@ -243,7 +243,7 @@ into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
 into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
 into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
 into_qvariant_opaque_ref!(QUrl, ffi::qvariant_init_from_qurl);
-into_qvariant_opaque_ref!(QString, ffi::qvariant_init_from_qstring);
+into_qvariant_ref!(QString, ffi::qvariant_init_from_qstring);
 into_qvariant!(u8, ffi::qvariant_init_from_u8);
 into_qvariant!(u16, ffi::qvariant_init_from_u16);
 into_qvariant!(u32, ffi::qvariant_init_from_u32);

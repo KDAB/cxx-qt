@@ -37,7 +37,7 @@ mod ffi {
         #[qproperty]
         pub number: i32,
         #[qproperty(cxx_type = "QString")]
-        pub string: UniquePtr<QString>,
+        pub string: QString,
     }
 
     impl Default for MyData {
@@ -52,17 +52,17 @@ mod ffi {
         fn from(value: DataSerde) -> MyData {
             MyData {
                 number: value.number,
-                string: QString::from_str(&value.string),
+                string: QString::from(&value.string),
             }
         }
     }
 
     impl cxx_qt::QObject<MyData> {
-        #[qinvokable(return_cxx_type = "QString")]
-        pub fn as_json_str(&self) -> UniquePtr<QString> {
+        #[qinvokable]
+        pub fn as_json_str(&self) -> QString {
             let data_serde = DataSerde::from(self.rust());
             let data_string = serde_json::to_string(&data_serde).unwrap();
-            QString::from_str(&data_string)
+            QString::from(&data_string)
         }
 
         #[qinvokable]
@@ -70,8 +70,7 @@ mod ffi {
             let string = r#"{"number": 2, "string": "Goodbye!"}"#;
             let data_serde: DataSerde = serde_json::from_str(string).unwrap();
             self.as_mut().set_number(data_serde.number);
-            self.as_mut()
-                .set_string(QString::from_str(&data_serde.string));
+            self.as_mut().set_string(QString::from(&data_serde.string));
         }
     }
 }

@@ -35,10 +35,10 @@ mod ffi {
 
     #[cxx_qt::qobject]
     pub struct Website {
-        #[qproperty(cxx_type = "QString")]
-        url: UniquePtr<QString>,
-        #[qproperty(cxx_type = "QString")]
-        title: UniquePtr<QString>,
+        #[qproperty]
+        url: QString,
+        #[qproperty]
+        title: QString,
 
         event_sender: UnboundedSender<Event>,
         event_queue: UnboundedReceiver<Event>,
@@ -50,8 +50,8 @@ mod ffi {
             let (event_sender, event_queue) = futures::channel::mpsc::unbounded();
 
             Self {
-                url: QString::from_str("known"),
-                title: QString::from_str("Press refresh to get a title..."),
+                url: QString::from("known"),
+                title: QString::from("Press refresh to get a title..."),
 
                 event_sender,
                 event_queue,
@@ -65,7 +65,7 @@ mod ffi {
         pub fn change_url(self: Pin<&mut Self>) {
             let url = self.get_url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
-            self.set_url(QString::from_str(new_url));
+            self.set_url(QString::from(new_url));
         }
 
         #[qinvokable]
@@ -82,7 +82,7 @@ mod ffi {
                 return;
             }
 
-            self.as_mut().set_title(QString::from_str("Loading..."));
+            self.as_mut().set_title(QString::from("Loading..."));
 
             let url = self.get_url().to_string();
             // ANCHOR: book_qt_thread
@@ -118,9 +118,7 @@ mod ffi {
                             if let Some(event) = event {
                                 match event {
                                     Event::TitleArrived(title) => {
-                                        qobject_website
-                                            .as_mut()
-                                            .set_title(QString::from_str(&title));
+                                        qobject_website.as_mut().set_title(QString::from(&title));
                                         qobject_website
                                             .as_mut()
                                             .rust_mut()

@@ -61,9 +61,6 @@ mod ffi {
         type QRect = cxx_qt_lib::QRect;
         type QTime = cxx_qt_lib::QTime;
 
-        fn test_constructed_qstring(s: &QString) -> bool;
-        fn assign_to_qstring(s: Pin<&mut QString>, v: &QString);
-
         fn test_constructed_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
 
         fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
@@ -72,10 +69,12 @@ mod ffi {
     }
 
     extern "Rust" {
-        fn can_construct_qstring(slice: bool) -> bool;
-        fn can_read_qstring(s: &QString) -> bool;
+        fn construct_qstring(slice: bool) -> QString;
+        fn read_qstring(s: &QString) -> bool;
         fn modify_qstring(s: Pin<&mut QString>);
         fn can_handle_qstring_change() -> bool;
+        fn clone_qstring(s: &QString) -> QString;
+        fn clone_value_qstring(s: QString) -> QString;
 
         fn construct_qcolor(test: ColorTest) -> QColor;
         fn read_qcolor(c: &QColor, test: ColorTest) -> bool;
@@ -137,32 +136,43 @@ mod ffi {
 use ffi::ColorTest;
 use ffi::VariantTest;
 
-fn can_construct_qstring(slice: bool) -> bool {
+fn construct_qstring(slice: bool) -> QString {
     if slice {
-        ffi::test_constructed_qstring(&QString::from_str("String constructed by Rust"))
+        QString::from("String constructed by Rust")
     } else {
         let rs_string = "String constructed by Rust".to_owned();
-        ffi::test_constructed_qstring(&QString::from_str(&rs_string))
+        QString::from(&rs_string)
     }
 }
 
-fn can_read_qstring(s: &cxx_qt_lib::QString) -> bool {
+fn read_qstring(s: &cxx_qt_lib::QString) -> bool {
     let rs = s.to_string();
     rs == "String constructed by C++"
 }
 
-fn modify_qstring(s: Pin<&mut cxx_qt_lib::QString>) {
-    ffi::assign_to_qstring(s, &QString::from_str("Updated string value"));
+fn modify_qstring(mut s: Pin<&mut cxx_qt_lib::QString>) {
+    *s = QString::from("Updated string value");
 }
 
 fn can_handle_qstring_change() -> bool {
     let long_s = "Very very long string that is hopefully long enough to allocate and get Valgrind's attention :)";
-    let long_s_ptr = QString::from_str(long_s);
+    let long_s_ptr = QString::from(long_s);
 
-    let mut short_s_ptr = QString::from_str("Short string");
-    ffi::assign_to_qstring(short_s_ptr.pin_mut(), &long_s_ptr);
+    let short_s = "Short string";
+    let mut short_s_ptr = QString::from(short_s);
+    assert!(short_s_ptr.to_string() == short_s);
+
+    short_s_ptr = long_s_ptr;
 
     short_s_ptr.to_string() == long_s
+}
+
+fn clone_qstring(s: &QString) -> QString {
+    s.clone()
+}
+
+fn clone_value_qstring(s: QString) -> QString {
+    s
 }
 
 fn construct_qcolor(test: ColorTest) -> QColor {
@@ -247,7 +257,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)),
         VariantTest::QSize => QVariant::from(QSize::new(1, 3)),
         VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)),
-        VariantTest::QString => QVariant::from(QString::from_str("Rust string").as_ref().unwrap()),
+        VariantTest::QString => QVariant::from(QString::from("Rust string")),
         VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)),
         VariantTest::QUrl => {
             QVariant::from(QUrl::from_str("https://github.com/KDAB").as_ref().unwrap())
