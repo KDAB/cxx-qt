@@ -5,7 +5,7 @@ namespace cxx_qt::my_object {
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-  , m_rustObjMutex(std::make_shared<std::mutex>())
+  , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
   , m_cxxQtThreadObj(
       std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
 {
@@ -39,7 +39,7 @@ MyObject::qtThread() const
 void
 MyObject::invokable()
 {
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableWrapper(*this);
 }
 

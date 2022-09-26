@@ -286,7 +286,7 @@ mod tests {
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
-          std::shared_ptr<std::mutex> m_rustObjMutex;
+          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
@@ -352,7 +352,7 @@ mod tests {
 
         private:
           rust::Box<FirstObjectRust> m_rustObj;
-          std::shared_ptr<std::mutex> m_rustObjMutex;
+          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>> m_cxxQtThreadObj;
         };
 
@@ -390,7 +390,7 @@ mod tests {
 
         private:
           rust::Box<SecondObjectRust> m_rustObj;
-          std::shared_ptr<std::mutex> m_rustObjMutex;
+          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>> m_cxxQtThreadObj;
         };
 
@@ -457,7 +457,7 @@ mod tests {
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
-          std::shared_ptr<std::mutex> m_rustObjMutex;
+          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
           std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
@@ -484,7 +484,7 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }
@@ -572,7 +572,7 @@ mod tests {
         FirstObject::FirstObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_first_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>>(this))
         {
         }
@@ -628,7 +628,7 @@ mod tests {
         SecondObject::SecondObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_second_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(this))
         {
         }
@@ -692,7 +692,7 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt_my_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::mutex>())
+          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
           , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }

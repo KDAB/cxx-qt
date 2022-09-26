@@ -81,7 +81,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             {signals}
             private:
               rust::Box<{rust_ident}> m_rustObj;
-              std::shared_ptr<std::mutex> m_rustObjMutex;
+              std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
               std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
             }};
 

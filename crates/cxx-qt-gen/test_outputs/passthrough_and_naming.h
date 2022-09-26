@@ -42,7 +42,7 @@ Q_SIGNALS:
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
-  std::shared_ptr<std::mutex> m_rustObjMutex;
+  std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
   std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
 };

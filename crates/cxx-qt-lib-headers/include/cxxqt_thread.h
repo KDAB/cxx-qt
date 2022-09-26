@@ -37,7 +37,7 @@ class CxxQtThread
 {
 public:
   CxxQtThread(std::shared_ptr<CxxQtGuardedPointer<T>> obj,
-              std::shared_ptr<std::mutex> rustObjMutex)
+              std::shared_ptr<std::recursive_mutex> rustObjMutex)
     : m_obj(obj)
     , m_rustObjMutex(rustObjMutex)
   {
@@ -63,7 +63,7 @@ public:
       const auto guard = std::shared_lock(obj->mutex);
       if (obj->ptr) {
         // Ensure that the rustObj is locked
-        const std::lock_guard<std::mutex> guardRustObj(*rustObjMutex);
+        const std::lock_guard<std::recursive_mutex> guardRustObj(*rustObjMutex);
         func(*obj->ptr);
       } else {
         qWarning()
@@ -80,7 +80,7 @@ public:
 
 private:
   std::shared_ptr<CxxQtGuardedPointer<T>> m_obj;
-  std::shared_ptr<std::mutex> m_rustObjMutex;
+  std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
 };
 
 } // namespace cxxqtlib1
