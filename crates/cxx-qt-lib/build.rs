@@ -11,6 +11,13 @@ fn main() {
     let qtbuild = qt_build::QtBuild::new(qt_modules).expect("Could not find Qt installation");
     qtbuild.cargo_link_libraries();
 
+    // Find the Qt version and tell the Rust compiler
+    // this allows us to have conditional Rust code
+    println!(
+        "cargo:rustc-cfg=qt_version_major=\"{}\"",
+        qtbuild.version().major
+    );
+
     let bridge_files = [
         "src/types/qcolor.rs",
         "src/types/qdate.rs",
