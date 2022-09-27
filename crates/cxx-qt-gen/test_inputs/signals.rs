@@ -4,7 +4,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QPoint = cxx_qt_lib::QPoint;
-        type QVariant = cxx_qt_lib::QVariant;
     }
 
     #[cxx_qt::signals(MyObject)]
@@ -12,8 +11,9 @@ mod ffi {
         Ready,
         DataChanged {
             first: i32,
-            #[cxx_type = "QVariant"]
-            second: UniquePtr<QVariant>,
+            // Value and Opaque are not real types that would compile; these are only testing the code generation
+            #[cxx_type = "Value"]
+            second: UniquePtr<Opaque>,
             third: QPoint,
         },
     }
@@ -27,7 +27,7 @@ mod ffi {
         pub fn invokable(self: Pin<&mut Self>) {
             self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
-                second: QVariant::from_bool(true),
+                second: Opaque::new(),
                 third: QPoint::new(1, 2),
             });
         }

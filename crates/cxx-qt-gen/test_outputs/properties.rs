@@ -3,7 +3,6 @@ mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
-        type QColor = cxx_qt_lib::QColor;
         type QPoint = cxx_qt_lib::QPoint;
     }
 
@@ -59,12 +58,12 @@ mod ffi {
 
     extern "Rust" {
         #[cxx_name = "getOpaque"]
-        unsafe fn get_opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
+        unsafe fn get_opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque>;
     }
 
     extern "Rust" {
         #[cxx_name = "setOpaque"]
-        fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
+        fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>);
     }
 
     unsafe extern "C++" {
@@ -110,7 +109,7 @@ mod cxx_qt_ffi {
     pub struct MyObject {
         primitive: i32,
         trivial: QPoint,
-        opaque: UniquePtr<QColor>,
+        opaque: UniquePtr<Opaque>,
     }
 
     impl MyObject {
@@ -168,25 +167,25 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
+        pub fn get_opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
             cpp.get_opaque()
         }
     }
 
     impl MyObjectQt {
-        pub fn get_opaque(&self) -> &UniquePtr<QColor> {
+        pub fn get_opaque(&self) -> &UniquePtr<Opaque> {
             &self.rust().opaque
         }
     }
 
     impl MyObject {
-        pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
+        pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>) {
             cpp.set_opaque(value);
         }
     }
 
     impl MyObjectQt {
-        pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
+        pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
             unsafe {
                 self.as_mut().rust_mut().opaque = value;
             }

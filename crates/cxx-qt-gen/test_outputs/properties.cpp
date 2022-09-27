@@ -68,12 +68,12 @@ MyObject::emitTrivialChanged()
   Q_ASSERT(signalSuccess);
 }
 
-const QColor&
+const Value&
 MyObject::getOpaque() const
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const QColor&,
-                                         const ::std::unique_ptr<QColor>&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const Value&,
+                                         const ::std::unique_ptr<Opaque>&>{}(
     m_rustObj->getOpaque(*this));
 }
 
@@ -102,12 +102,12 @@ MyObject::setTrivial(const QPoint& value)
 }
 
 void
-MyObject::setOpaque(const QColor& value)
+MyObject::setOpaque(const Value& value)
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
   m_rustObj->setOpaque(
     *this,
-    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, const QColor&>{}(
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>, const Value&>{}(
       value));
 }
 

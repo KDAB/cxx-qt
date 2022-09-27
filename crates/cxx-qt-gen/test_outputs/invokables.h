@@ -33,9 +33,8 @@ public:
   Q_INVOKABLE void invokableParameters(const QColor& opaque,
                                        const QPoint& trivial,
                                        qint32 primitive);
-  Q_INVOKABLE QColor invokableReturnOpaque();
-  Q_INVOKABLE qint32 invokableReturnPrimitive();
-  Q_INVOKABLE QString invokableReturnStatic();
+  Q_INVOKABLE Value invokableReturnOpaque();
+  Q_INVOKABLE QPoint invokableReturnTrivial();
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
