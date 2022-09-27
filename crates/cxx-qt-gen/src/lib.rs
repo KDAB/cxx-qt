@@ -71,84 +71,54 @@ mod tests {
         syn::parse2(tokens.into_token_stream()).unwrap()
     }
 
-    /// Helper for testing if a given input Rust file generates an expected C++ header and source
-    macro_rules! test_cpp_generation {
+    /// Helper for testing if a given input Rust file generates the expected C++ & Rust code
+    /// This needs to be a macro rather than a function because include_str needs the file path at compile time.
+    macro_rules! test_code_generation {
         ( $file_stem:literal ) => {
             let parser = Parser::from(
                 syn::parse_str(include_str!(concat!("../test_inputs/", $file_stem, ".rs")))
                     .unwrap(),
             )
             .unwrap();
-            let generated = GeneratedCppBlocks::from(&parser).unwrap();
-            let cpp = write_cpp(&generated);
 
-            let expected_header =
+            let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
+            let cpp = write_cpp(&generated_cpp);
+            let expected_cpp_header =
                 clang_format(include_str!(concat!("../test_outputs/", $file_stem, ".h"))).unwrap();
-            let expected_source = clang_format(include_str!(concat!(
+            let expected_cpp_source = clang_format(include_str!(concat!(
                 "../test_outputs/",
                 $file_stem,
                 ".cpp"
             )))
             .unwrap();
-            assert_str_eq!(cpp.header, expected_header);
-            assert_str_eq!(cpp.source, expected_source);
-        };
-    }
+            assert_str_eq!(cpp.header, expected_cpp_header);
+            assert_str_eq!(cpp.source, expected_cpp_source);
 
-    /// Helper for testing if a given input Rust file generates an expected Rust source
-    macro_rules! test_rust_generation {
-        ( $file_stem:literal ) => {
-            let parser = Parser::from(
-                syn::parse_str(include_str!(concat!("../test_inputs/", $file_stem, ".rs")))
-                    .unwrap(),
-            )
-            .unwrap();
-            let generated = GeneratedRustBlocks::from(&parser).unwrap();
-            let rust = format_rs_source(&write_rust(&generated).to_string());
-
-            let expected_output =
+            let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
+            let rust = format_rs_source(&write_rust(&generated_rust).to_string());
+            let expected_rust_output =
                 format_rs_source(include_str!(concat!("../test_outputs/", $file_stem, ".rs")));
-            assert_str_eq!(rust, expected_output);
+            assert_str_eq!(rust, expected_rust_output);
         };
     }
 
     #[test]
-    fn generates_invokables_cpp() {
-        test_cpp_generation!("invokables");
+    fn generates_invokables() {
+        test_code_generation!("invokables");
     }
 
     #[test]
-    fn generates_passthrough_and_naming_cpp() {
-        test_cpp_generation!("passthrough_and_naming");
+    fn generates_passthrough_and_naming() {
+        test_code_generation!("passthrough_and_naming");
     }
 
     #[test]
-    fn generates_properties_cpp() {
-        test_cpp_generation!("properties");
+    fn generates_properties() {
+        test_code_generation!("properties");
     }
 
     #[test]
-    fn generates_signals_cpp() {
-        test_cpp_generation!("signals");
-    }
-
-    #[test]
-    fn generates_invokables_rust() {
-        test_rust_generation!("invokables");
-    }
-
-    #[test]
-    fn generates_passthrough_and_naming_rust() {
-        test_rust_generation!("passthrough_and_naming");
-    }
-
-    #[test]
-    fn generates_properties_rust() {
-        test_rust_generation!("properties");
-    }
-
-    #[test]
-    fn generates_signals_rust() {
-        test_rust_generation!("signals");
+    fn generates_signals() {
+        test_code_generation!("signals");
     }
 }
