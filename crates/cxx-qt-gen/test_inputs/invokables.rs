@@ -5,7 +5,6 @@ mod ffi {
         include!("cxx-qt-lib/include/qt_types.h");
         type QColor = cxx_qt_lib::QColor;
         type QPoint = cxx_qt_lib::QPoint;
-        type QString = cxx_qt_lib::QString;
     }
 
     #[cxx_qt::qobject]
@@ -33,19 +32,15 @@ mod ffi {
             );
         }
 
-        #[qinvokable(return_cxx_type = "QColor")]
-        pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<QColor> {
-            cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
+        // Value and Opaque are not real types that would compile; these are only testing the code generation
+        #[qinvokable(return_cxx_type = "Value")]
+        pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<Opaque> {
+            Opaque::new()
         }
 
         #[qinvokable]
-        pub fn invokable_return_primitive(self: Pin<&mut Self>) -> i32 {
-            2
-        }
-
-        #[qinvokable(return_cxx_type = "QString")]
-        pub fn invokable_return_static(self: Pin<&mut Self>) -> UniquePtr<QString> {
-            QString::from_str("static")
+        pub fn invokable_return_trivial(self: Pin<&mut Self>) -> QPoint {
+            QPoint::new(1, 2)
         }
 
         pub fn cpp_context_method(&self) {
@@ -56,8 +51,8 @@ mod ffi {
             println!("mutable method");
         }
 
-        pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<QColor> {
-            cxx_qt_lib::QColor::from_rgba(255, 0, 0, 0)
+        pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<Opaque> {
+            Opaque::new()
         }
     }
 

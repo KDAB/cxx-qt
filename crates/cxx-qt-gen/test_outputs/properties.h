@@ -23,7 +23,7 @@ class MyObject : public QObject
                primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
-  Q_PROPERTY(QColor opaque READ getOpaque WRITE setOpaque NOTIFY opaqueChanged)
+  Q_PROPERTY(Value opaque READ getOpaque WRITE setOpaque NOTIFY opaqueChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
@@ -37,13 +37,13 @@ public:
   void emitPrimitiveChanged();
   const QPoint& getTrivial() const;
   void emitTrivialChanged();
-  const QColor& getOpaque() const;
+  const Value& getOpaque() const;
   void emitOpaqueChanged();
 
 public Q_SLOTS:
   void setPrimitive(const qint32& value);
   void setTrivial(const QPoint& value);
-  void setOpaque(const QColor& value);
+  void setOpaque(const Value& value);
 
 Q_SIGNALS:
   void primitiveChanged();

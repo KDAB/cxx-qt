@@ -53,7 +53,7 @@ MyObject::emitReady()
 
 void
 MyObject::emitDataChanged(qint32 first,
-                          ::std::unique_ptr<QVariant> second,
+                          ::std::unique_ptr<Opaque> second,
                           QPoint third)
 {
   const auto signalSuccess = QMetaObject::invokeMethod(
@@ -64,8 +64,7 @@ MyObject::emitDataChanged(qint32 first,
      third = std::move(third)]() mutable {
       Q_EMIT dataChanged(
         rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(first)),
-        rust::cxxqtlib1::cxx_qt_convert<QVariant,
-                                        ::std::unique_ptr<QVariant>>{}(
+        rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
           std::move(second)),
         rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(std::move(third)));
     },

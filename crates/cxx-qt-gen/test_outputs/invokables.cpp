@@ -59,28 +59,20 @@ MyObject::invokableParameters(const QColor& opaque,
   m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);
 }
 
-QColor
+Value
 MyObject::invokableReturnOpaque()
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
     m_rustObj->invokableReturnOpaqueWrapper(*this));
 }
 
-qint32
-MyObject::invokableReturnPrimitive()
+QPoint
+MyObject::invokableReturnTrivial()
 {
   const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(
-    m_rustObj->invokableReturnPrimitiveWrapper(*this));
-}
-
-QString
-MyObject::invokableReturnStatic()
-{
-  const std::lock_guard<std::mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QString, ::std::unique_ptr<QString>>{}(
-    m_rustObj->invokableReturnStaticWrapper(*this));
+  return rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
+    m_rustObj->invokableReturnTrivialWrapper(*this));
 }
 
 } // namespace cxx_qt::my_object

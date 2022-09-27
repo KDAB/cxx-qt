@@ -4,7 +4,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
         type QPoint = cxx_qt_lib::QPoint;
-        type QVariant = cxx_qt_lib::QVariant;
     }
 
     unsafe extern "C++" {
@@ -42,7 +41,7 @@ mod ffi {
         fn emitDataChanged(
             self: Pin<&mut MyObjectQt>,
             first: i32,
-            second: UniquePtr<QVariant>,
+            second: UniquePtr<Opaque>,
             third: QPoint,
         );
     }
@@ -94,7 +93,7 @@ mod cxx_qt_ffi {
         pub fn invokable(self: Pin<&mut Self>) {
             self.as_mut().emit_queued(MySignals::DataChanged {
                 first: 1,
-                second: QVariant::from_bool(true),
+                second: Opaque::new(),
                 third: QPoint::new(1, 2),
             });
         }
@@ -104,7 +103,7 @@ mod cxx_qt_ffi {
         Ready,
         DataChanged {
             first: i32,
-            second: UniquePtr<QVariant>,
+            second: UniquePtr<Opaque>,
             third: QPoint,
         },
     }
