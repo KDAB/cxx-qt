@@ -244,22 +244,28 @@ qurlToRustString(const QUrl& url)
   return qstringToRustString(url.toString());
 }
 
-std::unique_ptr<QVariant>
-qvariantInit()
+void
+qvariantDrop(QVariant& variant)
 {
-  return std::make_unique<QVariant>();
+  variant.~QVariant();
+}
+
+QVariant
+qvariantInitDefault()
+{
+  return QVariant();
 }
 
 #define CXX_QT_VARIANT_INIT(typeName, name)                                    \
-  std::unique_ptr<QVariant> qvariantInitFrom##name(typeName value)             \
+  QVariant qvariantInitFrom##name(typeName value)                              \
   {                                                                            \
-    return std::make_unique<QVariant>(value);                                  \
+    return QVariant(value);                                                    \
   }
 
 #define CXX_QT_VARIANT_INIT_REF(typeName, name)                                \
-  std::unique_ptr<QVariant> qvariantInitFrom##name(const typeName& value)      \
+  QVariant qvariantInitFrom##name(const typeName& value)                       \
   {                                                                            \
-    return std::make_unique<QVariant>(value);                                  \
+    return QVariant(value);                                                    \
   }
 
 CXX_QT_VARIANT_INIT_REF(QVariant, QVariant)

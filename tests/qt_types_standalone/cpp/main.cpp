@@ -11,7 +11,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include "bridge.h"
 #include "cxx-qt-gen/include/ffi.cxx.h"
 #include "cxx-qt-lib/include/convert.h"
 
@@ -156,31 +155,6 @@ TEST_CASE("Can clone a value QUrl on the Rust side")
   CHECK(c == u);
 }
 
-TEST_CASE("Can construct a QVariant on the Rust side")
-{
-  CHECK(can_construct_qvariant(VariantTest::Bool));
-  CHECK(can_construct_qvariant(VariantTest::F32));
-  CHECK(can_construct_qvariant(VariantTest::F64));
-  CHECK(can_construct_qvariant(VariantTest::I8));
-  CHECK(can_construct_qvariant(VariantTest::I16));
-  CHECK(can_construct_qvariant(VariantTest::I32));
-  CHECK(can_construct_qvariant(VariantTest::QColor));
-  CHECK(can_construct_qvariant(VariantTest::QDate));
-  CHECK(can_construct_qvariant(VariantTest::QDateTime));
-  CHECK(can_construct_qvariant(VariantTest::QPoint));
-  CHECK(can_construct_qvariant(VariantTest::QPointF));
-  CHECK(can_construct_qvariant(VariantTest::QRect));
-  CHECK(can_construct_qvariant(VariantTest::QRectF));
-  CHECK(can_construct_qvariant(VariantTest::QSize));
-  CHECK(can_construct_qvariant(VariantTest::QSizeF));
-  CHECK(can_construct_qvariant(VariantTest::QString));
-  CHECK(can_construct_qvariant(VariantTest::QTime));
-  CHECK(can_construct_qvariant(VariantTest::QUrl));
-  CHECK(can_construct_qvariant(VariantTest::U8));
-  CHECK(can_construct_qvariant(VariantTest::U16));
-  CHECK(can_construct_qvariant(VariantTest::U32));
-}
-
 bool
 test_constructed_qvariant(const QVariant& v, VariantTest test)
 {
@@ -250,10 +224,10 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
   }
 }
 
-TEST_CASE("Can convert Rust Variant to QVariant")
+TEST_CASE("Can construct a QVariant on the Rust side")
 {
-  const auto runTest = [](auto test) {
-    return test_constructed_qvariant(std::move(*make_variant(test)), test);
+  const auto runTest = [](VariantTest test) {
+    return test_constructed_qvariant(construct_qvariant(test), test);
   };
 
   CHECK(runTest(VariantTest::Bool));
@@ -281,45 +255,59 @@ TEST_CASE("Can convert Rust Variant to QVariant")
 
 TEST_CASE("Can read a QVariant on the Rust side")
 {
-  CHECK(can_read_qvariant(QVariant::fromValue(false), VariantTest::Bool));
-  CHECK(can_read_qvariant(QVariant::fromValue<float>(89.1), VariantTest::F32));
-  CHECK(can_read_qvariant(QVariant::fromValue<double>(89.1), VariantTest::F64));
-  CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
-  CHECK(can_read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
-  CHECK(can_read_qvariant(QVariant::fromValue<qint16>(8910), VariantTest::I16));
-  CHECK(can_read_qvariant(QVariant::fromValue(8910), VariantTest::I32));
-  CHECK(can_read_qvariant(QVariant::fromValue<QColor>(QColor(0, 255, 0, 255)),
-                          VariantTest::QColor));
-  CHECK(can_read_qvariant(QVariant::fromValue<QDate>(QDate(2021, 12, 31)),
-                          VariantTest::QDate));
-  CHECK(can_read_qvariant(QVariant::fromValue<QDateTime>(
-                            QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1))),
-                          VariantTest::QDateTime));
-  CHECK(can_read_qvariant(QVariant::fromValue<QPoint>(QPoint(8, 9)),
-                          VariantTest::QPoint));
-  CHECK(can_read_qvariant(QVariant::fromValue<QPointF>(QPointF(8.0, 9.0)),
-                          VariantTest::QPointF));
-  CHECK(can_read_qvariant(QVariant::fromValue<QRect>(QRect(123, 456, 246, 912)),
-                          VariantTest::QRect));
-  CHECK(can_read_qvariant(
-    QVariant::fromValue<QRectF>(QRectF(1.23, 4.56, 2.46, 9.12)),
-    VariantTest::QRectF));
-  CHECK(can_read_qvariant(QVariant::fromValue<QSize>(QSize(8, 9)),
-                          VariantTest::QSize));
-  CHECK(can_read_qvariant(QVariant::fromValue<QSizeF>(QSizeF(8.0, 9.0)),
-                          VariantTest::QSizeF));
-  CHECK(can_read_qvariant(QVariant::fromValue(QStringLiteral("C++ string")),
-                          VariantTest::QString));
-  CHECK(can_read_qvariant(QVariant::fromValue<QTime>(QTime(4, 3, 2, 1)),
-                          VariantTest::QTime));
-  CHECK(can_read_qvariant(QVariant::fromValue<QUrl>(QUrl(
-                            QStringLiteral("https://github.com/KDAB/cxx-qt"))),
-                          VariantTest::QUrl));
-  CHECK(can_read_qvariant(QVariant::fromValue<quint8>(89), VariantTest::U8));
+  CHECK(read_qvariant(QVariant::fromValue(false), VariantTest::Bool));
+  CHECK(read_qvariant(QVariant::fromValue<float>(89.1), VariantTest::F32));
+  CHECK(read_qvariant(QVariant::fromValue<double>(89.1), VariantTest::F64));
+  CHECK(read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
+  CHECK(read_qvariant(QVariant::fromValue<qint8>(89), VariantTest::I8));
+  CHECK(read_qvariant(QVariant::fromValue<qint16>(8910), VariantTest::I16));
+  CHECK(read_qvariant(QVariant::fromValue(8910), VariantTest::I32));
+  CHECK(read_qvariant(QVariant::fromValue<QColor>(QColor(0, 255, 0, 255)),
+                      VariantTest::QColor));
+  CHECK(read_qvariant(QVariant::fromValue<QDate>(QDate(2021, 12, 31)),
+                      VariantTest::QDate));
+  CHECK(read_qvariant(QVariant::fromValue<QDateTime>(
+                        QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1))),
+                      VariantTest::QDateTime));
+  CHECK(read_qvariant(QVariant::fromValue<QPoint>(QPoint(8, 9)),
+                      VariantTest::QPoint));
+  CHECK(read_qvariant(QVariant::fromValue<QPointF>(QPointF(8.0, 9.0)),
+                      VariantTest::QPointF));
+  CHECK(read_qvariant(QVariant::fromValue<QRect>(QRect(123, 456, 246, 912)),
+                      VariantTest::QRect));
   CHECK(
-    can_read_qvariant(QVariant::fromValue<quint16>(8910), VariantTest::U16));
+    read_qvariant(QVariant::fromValue<QRectF>(QRectF(1.23, 4.56, 2.46, 9.12)),
+                  VariantTest::QRectF));
   CHECK(
-    can_read_qvariant(QVariant::fromValue<quint32>(8910), VariantTest::U32));
+    read_qvariant(QVariant::fromValue<QSize>(QSize(8, 9)), VariantTest::QSize));
+  CHECK(read_qvariant(QVariant::fromValue<QSizeF>(QSizeF(8.0, 9.0)),
+                      VariantTest::QSizeF));
+  CHECK(read_qvariant(QVariant::fromValue(QStringLiteral("C++ string")),
+                      VariantTest::QString));
+  CHECK(read_qvariant(QVariant::fromValue<QTime>(QTime(4, 3, 2, 1)),
+                      VariantTest::QTime));
+  CHECK(read_qvariant(QVariant::fromValue<QUrl>(
+                        QUrl(QStringLiteral("https://github.com/KDAB/cxx-qt"))),
+                      VariantTest::QUrl));
+  CHECK(read_qvariant(QVariant::fromValue<quint8>(89), VariantTest::U8));
+  CHECK(read_qvariant(QVariant::fromValue<quint16>(8910), VariantTest::U16));
+  CHECK(read_qvariant(QVariant::fromValue<quint32>(8910), VariantTest::U32));
+}
+
+TEST_CASE("Can clone a QVariant on the Rust side")
+{
+  const auto v = QVariant::fromValue<QPoint>(QPoint(8, 9));
+  const auto c = clone_qvariant(v);
+  CHECK(c.toPoint().x() == 8);
+  CHECK(c.toPoint().y() == 9);
+}
+
+TEST_CASE("Can clone a value QVariant on the Rust side")
+{
+  const auto v = QVariant::fromValue<QPoint>(QPoint(8, 9));
+  const auto c = clone_value_qvariant(v);
+  CHECK(c.toPoint().x() == 8);
+  CHECK(c.toPoint().y() == 9);
 }
 
 TEST_CASE("Can construct a QPoint on the Rust side")

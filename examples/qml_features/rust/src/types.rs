@@ -15,8 +15,8 @@ mod ffi {
 
     #[cxx_qt::qobject]
     pub struct Types {
-        #[qproperty(cxx_type = "QVariant")]
-        variant: UniquePtr<QVariant>,
+        #[qproperty]
+        variant: QVariant,
     }
 
     impl Default for Types {
@@ -41,8 +41,8 @@ mod ffi {
             }
         }
 
-        #[qinvokable(return_cxx_type = "QVariant")]
-        pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
+        #[qinvokable]
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::I32(i) => QVariant::from(i * 2),

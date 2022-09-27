@@ -16,37 +16,21 @@ pub mod ffi {
     #[cxx_qt::signals(Signals)]
     pub enum Signal {
         Ready,
-        RustDataChanged {
-            data: i32,
-        },
-        TrivialDataChanged {
-            trivial: QPoint,
-        },
-        OpaqueDataChanged {
-            #[cxx_type = "QVariant"]
-            opaque: UniquePtr<QVariant>,
-        },
+        RustDataChanged { data: i32 },
+        TrivialDataChanged { trivial: QPoint },
+        OpaqueDataChanged { opaque: QVariant },
     }
     // ANCHOR_END: book_signals_enum
 
     #[cxx_qt::qobject]
+    #[derive(Default)]
     pub struct Signals {
         #[qproperty]
         data: i32,
         #[qproperty]
         trivial: QPoint,
-        #[qproperty(cxx_type = "QVariant")]
-        opaque: UniquePtr<QVariant>,
-    }
-
-    impl Default for Signals {
-        fn default() -> Self {
-            Self {
-                data: 0,
-                trivial: QPoint::default(),
-                opaque: QVariant::null(),
-            }
-        }
+        #[qproperty]
+        opaque: QVariant,
     }
 
     // ANCHOR: book_rust_obj_impl
@@ -64,7 +48,7 @@ pub mod ffi {
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::OpaqueDataChanged {
-                opaque: QVariant::from_ref(self.get_opaque()),
+                opaque: self.get_opaque().clone(),
             };
             self.as_mut().emit_queued(signal);
         }

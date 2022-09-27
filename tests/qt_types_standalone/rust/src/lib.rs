@@ -45,7 +45,6 @@ mod ffi {
 
     unsafe extern "C++" {
         include!("cxx-qt-lib/include/qt_types.h");
-        include!("bridge.h");
 
         type QColor = cxx_qt_lib::QColor;
         type QDate = cxx_qt_lib::QDate;
@@ -60,8 +59,6 @@ mod ffi {
         type QRectF = cxx_qt_lib::QRectF;
         type QRect = cxx_qt_lib::QRect;
         type QTime = cxx_qt_lib::QTime;
-
-        fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
     }
 
     extern "Rust" {
@@ -87,9 +84,10 @@ mod ffi {
         fn clone_qurl(u: &QUrl) -> QUrl;
         fn clone_value_qurl(u: QUrl) -> QUrl;
 
-        fn make_variant(test: VariantTest) -> UniquePtr<QVariant>;
-        fn can_construct_qvariant(test: VariantTest) -> bool;
-        fn can_read_qvariant(v: &QVariant, test: VariantTest) -> bool;
+        fn construct_qvariant(test: VariantTest) -> QVariant;
+        fn read_qvariant(v: &QVariant, test: VariantTest) -> bool;
+        fn clone_qvariant(v: &QVariant) -> QVariant;
+        fn clone_value_qvariant(v: QVariant) -> QVariant;
 
         fn construct_qdate() -> QDate;
         fn read_qdate(d: &QDate) -> bool;
@@ -249,7 +247,7 @@ fn clone_value_qurl(u: QUrl) -> QUrl {
     u
 }
 
-fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
+fn construct_qvariant(test: VariantTest) -> QVariant {
     match test {
         VariantTest::Bool => QVariant::from(true),
         VariantTest::F32 => QVariant::from(1.23_f32),
@@ -257,21 +255,21 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::I8 => QVariant::from(12_i8),
         VariantTest::I16 => QVariant::from(123_i16),
         VariantTest::I32 => QVariant::from(123_i32),
-        VariantTest::QColor => QVariant::from(QColor::from_rgba(255, 0, 0, 255)),
-        VariantTest::QDate => QVariant::from(QDate::new(2022, 1, 1)),
-        VariantTest::QDateTime => QVariant::from(QDateTime::from_date_and_time(
+        VariantTest::QColor => QVariant::from(&QColor::from_rgba(255, 0, 0, 255)),
+        VariantTest::QDate => QVariant::from(&QDate::new(2022, 1, 1)),
+        VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
         )),
-        VariantTest::QPoint => QVariant::from(QPoint::new(1, 3)),
-        VariantTest::QPointF => QVariant::from(QPointF::new(1.0, 3.0)),
-        VariantTest::QRect => QVariant::from(QRect::new(123, 456, 246, 912)),
-        VariantTest::QRectF => QVariant::from(QRectF::new(1.23, 4.56, 2.46, 9.12)),
-        VariantTest::QSize => QVariant::from(QSize::new(1, 3)),
-        VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)),
-        VariantTest::QString => QVariant::from(QString::from("Rust string")),
-        VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)),
-        VariantTest::QUrl => QVariant::from(QUrl::from("https://github.com/KDAB")),
+        VariantTest::QPoint => QVariant::from(&QPoint::new(1, 3)),
+        VariantTest::QPointF => QVariant::from(&QPointF::new(1.0, 3.0)),
+        VariantTest::QRect => QVariant::from(&QRect::new(123, 456, 246, 912)),
+        VariantTest::QRectF => QVariant::from(&QRectF::new(1.23, 4.56, 2.46, 9.12)),
+        VariantTest::QSize => QVariant::from(&QSize::new(1, 3)),
+        VariantTest::QSizeF => QVariant::from(&QSizeF::new(1.0, 3.0)),
+        VariantTest::QString => QVariant::from(&QString::from("Rust string")),
+        VariantTest::QTime => QVariant::from(&QTime::new(1, 2, 3, 4)),
+        VariantTest::QUrl => QVariant::from(&QUrl::from("https://github.com/KDAB")),
         VariantTest::U8 => QVariant::from(12_u8),
         VariantTest::U16 => QVariant::from(123_u16),
         VariantTest::U32 => QVariant::from(123_u32),
@@ -279,12 +277,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
     }
 }
 
-fn can_construct_qvariant(test: VariantTest) -> bool {
-    let variant = make_variant(test);
-    ffi::test_constructed_qvariant(&variant, test)
-}
-
-fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
+fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
     let variant = v.value();
     match test {
         VariantTest::Bool => match variant {
@@ -397,6 +390,14 @@ fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
         },
         _others => panic!("Unsupported test: {}", test.repr),
     }
+}
+
+fn clone_qvariant(v: &QVariant) -> QVariant {
+    v.clone()
+}
+
+fn clone_value_qvariant(v: QVariant) -> QVariant {
+    v
 }
 
 fn construct_qdate() -> QDate {

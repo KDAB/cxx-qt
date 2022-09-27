@@ -6,10 +6,5 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new()
-        .file("src/lib.rs")
-        .cc_builder(|cc| {
-            cc.include("../cpp");
-        })
-        .build();
+    CxxQtBuilder::new().file("src/lib.rs").build();
 }

@@ -3,6 +3,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use cxx::{type_id, ExternType};
+use std::mem::MaybeUninit;
 
 use crate::{
     QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
@@ -52,7 +54,7 @@ mod ffi {
         type QString = crate::QString;
         type QTime = crate::QTime;
         type QUrl = crate::QUrl;
-        type QVariant;
+        type QVariant = super::QVariant;
 
         #[namespace = "rust::cxxqtlib1::types"]
         type QVariantType;
@@ -60,109 +62,161 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-
+        #[doc(hidden)]
         #[rust_name = "qvariant_get_type"]
         fn qvariantType(qvariant: &QVariant) -> QVariantType;
 
-        #[rust_name = "qvariant_init"]
-        fn qvariantInit() -> UniquePtr<QVariant>;
+        #[doc(hidden)]
+        #[rust_name = "qvariant_drop"]
+        fn qvariantDrop(variant: &mut QVariant);
+        #[doc(hidden)]
+        #[rust_name = "qvariant_init_default"]
+        fn qvariantInitDefault() -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qvariant"]
-        fn qvariantInitFromQVariant(variant: &QVariant) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQVariant(variant: &QVariant) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_bool"]
-        fn qvariantInitFromBool(b: bool) -> UniquePtr<QVariant>;
+        fn qvariantInitFromBool(b: bool) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_f32"]
-        fn qvariantInitFromF32(f: f32) -> UniquePtr<QVariant>;
+        fn qvariantInitFromF32(f: f32) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_f64"]
-        fn qvariantInitFromF64(f: f64) -> UniquePtr<QVariant>;
+        fn qvariantInitFromF64(f: f64) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i8"]
-        fn qvariantInitFromI8(i: i8) -> UniquePtr<QVariant>;
+        fn qvariantInitFromI8(i: i8) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i16"]
-        fn qvariantInitFromI16(i: i16) -> UniquePtr<QVariant>;
+        fn qvariantInitFromI16(i: i16) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i32"]
-        fn qvariantInitFromI32(i: i32) -> UniquePtr<QVariant>;
+        fn qvariantInitFromI32(i: i32) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qcolor"]
-        fn qvariantInitFromQColor(color: &QColor) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQColor(color: &QColor) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qdate"]
-        fn qvariantInitFromQDate(date: &QDate) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQDate(date: &QDate) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qdatetime"]
-        fn qvariantInitFromQDateTime(dateTime: &QDateTime) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQDateTime(dateTime: &QDateTime) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qpoint"]
-        fn qvariantInitFromQPoint(point: &QPoint) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQPoint(point: &QPoint) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qpointf"]
-        fn qvariantInitFromQPointF(pointf: &QPointF) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQPointF(pointf: &QPointF) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qrect"]
-        fn qvariantInitFromQRect(rect: &QRect) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQRect(rect: &QRect) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qrectf"]
-        fn qvariantInitFromQRectF(rectf: &QRectF) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQRectF(rectf: &QRectF) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qsize"]
-        fn qvariantInitFromQSize(size: &QSize) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQSize(size: &QSize) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qsizef"]
-        fn qvariantInitFromQSizeF(sizef: &QSizeF) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQSizeF(sizef: &QSizeF) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qtime"]
-        fn qvariantInitFromQTime(time: &QTime) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQTime(time: &QTime) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qurl"]
-        fn qvariantInitFromQUrl(url: &QUrl) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQUrl(url: &QUrl) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qstring"]
-        fn qvariantInitFromQString(string: &QString) -> UniquePtr<QVariant>;
+        fn qvariantInitFromQString(string: &QString) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u8"]
-        fn qvariantInitFromU8(u: u8) -> UniquePtr<QVariant>;
+        fn qvariantInitFromU8(u: u8) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u16"]
-        fn qvariantInitFromU16(u: u16) -> UniquePtr<QVariant>;
+        fn qvariantInitFromU16(u: u16) -> QVariant;
+        #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u32"]
-        fn qvariantInitFromU32(u: u32) -> UniquePtr<QVariant>;
+        fn qvariantInitFromU32(u: u32) -> QVariant;
 
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_bool"]
         fn qvariantToBool(qvariant: &QVariant) -> bool;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_f32"]
         fn qvariantToF32(qvariant: &QVariant) -> f32;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_f64"]
         fn qvariantToF64(qvariant: &QVariant) -> f64;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_i8"]
         fn qvariantToI8(qvariant: &QVariant) -> i8;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_i16"]
         fn qvariantToI16(qvariant: &QVariant) -> i16;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_i32"]
         fn qvariantToI32(qvariant: &QVariant) -> i32;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qcolor"]
         fn qvariantToQColor(qvariant: &QVariant) -> QColor;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qdate"]
         fn qvariantToQDate(qvariant: &QVariant) -> QDate;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qdatetime"]
         fn qvariantToQDateTime(qvariant: &QVariant) -> QDateTime;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qpoint"]
         fn qvariantToQPoint(qvariant: &QVariant) -> QPoint;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qpointf"]
         fn qvariantToQPointF(qvariant: &QVariant) -> QPointF;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qrect"]
         fn qvariantToQRect(qvariant: &QVariant) -> QRect;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qrectf"]
         fn qvariantToQRectF(qvariant: &QVariant) -> QRectF;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qsize"]
         fn qvariantToQSize(qvariant: &QVariant) -> QSize;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qsizef"]
         fn qvariantToQSizeF(qvariant: &QVariant) -> QSizeF;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qtime"]
         fn qvariantToQTime(qvariant: &QVariant) -> QTime;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qurl"]
         fn qvariantToQUrl(qvariant: &QVariant) -> QUrl;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_qstring"]
         fn qvariantToQString(qvariant: &QVariant) -> QString;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_u8"]
         fn qvariantToU8(qvariant: &QVariant) -> u8;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_u16"]
         fn qvariantToU16(qvariant: &QVariant) -> u16;
+        #[doc(hidden)]
         #[rust_name = "qvariant_to_u32"]
         fn qvariantToU32(qvariant: &QVariant) -> u32;
     }
-
-    impl UniquePtr<QVariant> {}
 }
 
-/// The QVariantCpp class acts like a union for the most common Qt data types.
-///
-/// Note that this is the C++ representation and QVariant should be used in Rust.
-pub type QVariant = ffi::QVariant;
+/// The QVariant class acts like a union for the most common Qt data types.
+#[repr(C)]
+pub struct QVariant {
+    /// The layout has changed between Qt 5 and Qt 6
+    ///
+    /// Qt5 QString has one member, which contains three uints (but they are optimised to a size of 8) and a union
+    /// Qt6 QString has one member, which contains three pointers and a union (pointer largest)
+    #[cfg(qt_version_major = "5")]
+    _space: MaybeUninit<[usize; 2]>,
+    #[cfg(qt_version_major = "6")]
+    _space: MaybeUninit<[usize; 4]>,
+}
 
 /// The Rust inner value of a QVariant
 pub enum QVariantValue {
@@ -190,71 +244,7 @@ pub enum QVariantValue {
     U32(u32),
 }
 
-// Define how we convert from other types into a QVariantCpp
-pub trait IntoQVariant {
-    fn into_qvariant(self) -> cxx::UniquePtr<QVariant>;
-}
-
-macro_rules! into_qvariant {
-    ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for $typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
-                $name(self)
-            }
-        }
-    };
-}
-
-// TODO: should we take by ref or value for trivial types?
-macro_rules! into_qvariant_ref {
-    ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for $typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
-                $name(&self)
-            }
-        }
-    };
-}
-
-into_qvariant!(bool, ffi::qvariant_init_from_bool);
-into_qvariant!(f32, ffi::qvariant_init_from_f32);
-into_qvariant!(f64, ffi::qvariant_init_from_f64);
-into_qvariant!(i8, ffi::qvariant_init_from_i8);
-into_qvariant!(i16, ffi::qvariant_init_from_i16);
-into_qvariant!(i32, ffi::qvariant_init_from_i32);
-into_qvariant_ref!(QColor, ffi::qvariant_init_from_qcolor);
-into_qvariant_ref!(QDate, ffi::qvariant_init_from_qdate);
-into_qvariant_ref!(QDateTime, ffi::qvariant_init_from_qdatetime);
-into_qvariant_ref!(QPoint, ffi::qvariant_init_from_qpoint);
-into_qvariant_ref!(QPointF, ffi::qvariant_init_from_qpointf);
-into_qvariant_ref!(QRect, ffi::qvariant_init_from_qrect);
-into_qvariant_ref!(QRectF, ffi::qvariant_init_from_qrectf);
-into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
-into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
-into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
-into_qvariant_ref!(QUrl, ffi::qvariant_init_from_qurl);
-into_qvariant_ref!(QString, ffi::qvariant_init_from_qstring);
-into_qvariant!(u8, ffi::qvariant_init_from_u8);
-into_qvariant!(u16, ffi::qvariant_init_from_u16);
-into_qvariant!(u32, ffi::qvariant_init_from_u32);
-
 impl QVariant {
-    pub fn from<T>(value: T) -> cxx::UniquePtr<Self>
-    where
-        T: IntoQVariant,
-    {
-        value.into_qvariant()
-    }
-
-    pub fn from_ref(value: &QVariant) -> cxx::UniquePtr<QVariant> {
-        ffi::qvariant_init_from_qvariant(value)
-    }
-
-    /// Constrct a default null QVariant
-    pub fn null() -> cxx::UniquePtr<Self> {
-        ffi::qvariant_init()
-    }
-
     // TODO: add a set_value(&mut self, value: QVariantValue);
 
     /// Returns the value of the QVariant as a Rust enum
@@ -289,8 +279,75 @@ impl QVariant {
     }
 }
 
-impl From<&QVariant> for cxx::UniquePtr<QVariant> {
-    fn from(value: &QVariant) -> cxx::UniquePtr<QVariant> {
-        QVariant::from_ref(value)
+impl Clone for QVariant {
+    /// Constructs a copy of the variant, p, passed as the argument to this constructor.
+    fn clone(&self) -> Self {
+        ffi::qvariant_init_from_qvariant(self)
     }
+}
+
+impl Default for QVariant {
+    /// Constructs an invalid variant.
+    fn default() -> Self {
+        ffi::qvariant_init_default()
+    }
+}
+
+impl Drop for QVariant {
+    /// Destroys the QVariant and the contained object.
+    fn drop(&mut self) {
+        ffi::qvariant_drop(self)
+    }
+}
+
+macro_rules! into_qvariant {
+    ($typeName:ty, $name:expr) => {
+        impl From<$typeName> for QVariant {
+            /// Constructs a QVariant from a value of $typeName
+            fn from(value: $typeName) -> Self {
+                $name(value)
+            }
+        }
+    };
+}
+
+macro_rules! into_qvariant_ref {
+    ($typeName:ty, $name:expr) => {
+        impl From<&$typeName> for QVariant {
+            /// Constructs a QVariant from a reference of $typeName
+            fn from(value: &$typeName) -> Self {
+                $name(value)
+            }
+        }
+    };
+}
+
+into_qvariant!(bool, ffi::qvariant_init_from_bool);
+into_qvariant!(f32, ffi::qvariant_init_from_f32);
+into_qvariant!(f64, ffi::qvariant_init_from_f64);
+into_qvariant!(i8, ffi::qvariant_init_from_i8);
+into_qvariant!(i16, ffi::qvariant_init_from_i16);
+into_qvariant!(i32, ffi::qvariant_init_from_i32);
+into_qvariant_ref!(QColor, ffi::qvariant_init_from_qcolor);
+into_qvariant_ref!(QDate, ffi::qvariant_init_from_qdate);
+into_qvariant_ref!(QDateTime, ffi::qvariant_init_from_qdatetime);
+into_qvariant_ref!(QPoint, ffi::qvariant_init_from_qpoint);
+into_qvariant_ref!(QPointF, ffi::qvariant_init_from_qpointf);
+into_qvariant_ref!(QRect, ffi::qvariant_init_from_qrect);
+into_qvariant_ref!(QRectF, ffi::qvariant_init_from_qrectf);
+into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
+into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
+into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
+into_qvariant_ref!(QUrl, ffi::qvariant_init_from_qurl);
+into_qvariant_ref!(QString, ffi::qvariant_init_from_qstring);
+into_qvariant!(u8, ffi::qvariant_init_from_u8);
+into_qvariant!(u16, ffi::qvariant_init_from_u16);
+into_qvariant!(u32, ffi::qvariant_init_from_u32);
+
+// Safety:
+//
+// Static checks on the C++ side to ensure the size is the same.
+unsafe impl ExternType for QVariant {
+    type Id = type_id!("QVariant");
+    type Kind = cxx::kind::Trivial;
 }
