@@ -61,8 +61,6 @@ mod ffi {
         type QRect = cxx_qt_lib::QRect;
         type QTime = cxx_qt_lib::QTime;
 
-        fn test_constructed_qurl(u: &QUrl, test: &QString) -> bool;
-
         fn test_constructed_qvariant(s: &QVariant, test: VariantTest) -> bool;
     }
 
@@ -84,8 +82,10 @@ mod ffi {
         fn clone_qdatetime(c: &QDateTime) -> QDateTime;
         fn clone_value_qdatetime(c: QDateTime) -> QDateTime;
 
-        fn can_construct_qurl(test: &QString) -> bool;
-        fn can_read_qurl(u: &QUrl, test: &QString) -> bool;
+        fn construct_qurl(test: &QString) -> QUrl;
+        fn read_qurl(u: &QUrl, test: &QString) -> bool;
+        fn clone_qurl(u: &QUrl) -> QUrl;
+        fn clone_value_qurl(u: QUrl) -> QUrl;
 
         fn make_variant(test: VariantTest) -> UniquePtr<QVariant>;
         fn can_construct_qvariant(test: VariantTest) -> bool;
@@ -233,14 +233,20 @@ fn clone_value_qdatetime(dt: QDateTime) -> QDateTime {
     dt
 }
 
-fn can_construct_qurl(test: &cxx_qt_lib::QString) -> bool {
-    let url = QUrl::from_str(&test.to_string());
-
-    ffi::test_constructed_qurl(url.as_ref().unwrap(), test)
+fn construct_qurl(test: &QString) -> QUrl {
+    QUrl::from(test)
 }
 
-fn can_read_qurl(u: &cxx_qt_lib::QUrl, test: &cxx_qt_lib::QString) -> bool {
-    u.string() == test.to_string()
+fn read_qurl(u: &QUrl, test: &QString) -> bool {
+    u.to_string() == test.to_string()
+}
+
+fn clone_qurl(u: &QUrl) -> QUrl {
+    u.clone()
+}
+
+fn clone_value_qurl(u: QUrl) -> QUrl {
+    u
 }
 
 fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
@@ -265,9 +271,7 @@ fn make_variant(test: VariantTest) -> cxx::UniquePtr<cxx_qt_lib::QVariant> {
         VariantTest::QSizeF => QVariant::from(QSizeF::new(1.0, 3.0)),
         VariantTest::QString => QVariant::from(QString::from("Rust string")),
         VariantTest::QTime => QVariant::from(QTime::new(1, 2, 3, 4)),
-        VariantTest::QUrl => {
-            QVariant::from(QUrl::from_str("https://github.com/KDAB").as_ref().unwrap())
-        }
+        VariantTest::QUrl => QVariant::from(QUrl::from("https://github.com/KDAB")),
         VariantTest::U8 => QVariant::from(12_u8),
         VariantTest::U16 => QVariant::from(123_u16),
         VariantTest::U32 => QVariant::from(123_u32),
@@ -376,9 +380,7 @@ fn can_read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             _others => false,
         },
         VariantTest::QUrl => match variant {
-            QVariantValue::QUrl(url) => {
-                url.as_ref().unwrap().string() == "https://github.com/KDAB/cxx-qt"
-            }
+            QVariantValue::QUrl(url) => url.to_string() == "https://github.com/KDAB/cxx-qt",
             _others => false,
         },
         VariantTest::U8 => match variant {

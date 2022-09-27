@@ -44,6 +44,12 @@ struct rust::IsRelocatable<QString> : std::true_type
 };
 static_assert(QTypeInfo<QString>::isRelocatable);
 
+template<>
+struct rust::IsRelocatable<QUrl> : std::true_type
+{
+};
+static_assert(QTypeInfo<QUrl>::isRelocatable);
+
 // Ensure that trivially copy assignable and constructible is correct
 // If this is false then we need to manually implement Clone rather than derive
 
@@ -56,12 +62,15 @@ static_assert(!std::is_trivially_copy_assignable<QDateTime>::value);
 static_assert(!std::is_trivially_copy_constructible<QDateTime>::value);
 static_assert(!std::is_trivially_copy_assignable<QString>::value);
 static_assert(!std::is_trivially_copy_constructible<QString>::value);
+static_assert(!std::is_trivially_copy_assignable<QUrl>::value);
+static_assert(!std::is_trivially_copy_constructible<QUrl>::value);
 
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
 static_assert(std::is_trivially_destructible<QColor>::value);
 static_assert(!std::is_trivially_destructible<QDateTime>::value);
 static_assert(!std::is_trivially_destructible<QString>::value);
+static_assert(!std::is_trivially_destructible<QUrl>::value);
 
 // Ensure that types have the alignment and size we are expecting
 
@@ -106,6 +115,14 @@ static_assert(alignof(QString) <= alignof(std::size_t),
 static_assert(sizeof(QString) == sizeof(std::size_t),
               "unexpected QString size");
 #endif
+
+// QUrl has a single pointer as it's member
+//
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v5.15.6-lts-lgpl#n367
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v6.2.4#n294
+static_assert(alignof(QUrl) <= alignof(std::size_t),
+              "unexpectedly large QUrl alignment");
+static_assert(sizeof(QUrl) == sizeof(std::size_t), "unexpected QUrl size");
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -212,12 +229,18 @@ qtimeInitDefault();
 QTime
 qtimeInit(int h, int m, int s, int ms);
 
-std::unique_ptr<QUrl>
-qurlInit();
-std::unique_ptr<QUrl>
+void
+qurlDrop(QUrl& url);
+QUrl
+qurlInitDefault();
+QUrl
+qurlInitFromQString(const QString& string);
+QUrl
 qurlInitFromString(rust::Str string);
-std::unique_ptr<QUrl>
+QUrl
 qurlInitFromQUrl(const QUrl& url);
+QString
+qurlToQString(const QUrl& url);
 rust::String
 qurlToRustString(const QUrl& url);
 
@@ -301,7 +324,7 @@ QSizeF
 qvariantToQSizeF(const QVariant& variant);
 QTime
 qvariantToQTime(const QVariant& variant);
-std::unique_ptr<QUrl>
+QUrl
 qvariantToQUrl(const QVariant& variant);
 QString
 qvariantToQString(const QVariant& variant);

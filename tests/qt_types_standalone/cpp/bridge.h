@@ -24,7 +24,4 @@
 #include "cxx-qt-gen/include/ffi.cxx.h"
 
 bool
-test_constructed_qurl(const QUrl& u, const QString& test);
-
-bool
 test_constructed_qvariant(const QVariant& s, VariantTest test);
