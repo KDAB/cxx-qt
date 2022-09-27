@@ -50,6 +50,12 @@ struct rust::IsRelocatable<QUrl> : std::true_type
 };
 static_assert(QTypeInfo<QUrl>::isRelocatable);
 
+template<>
+struct rust::IsRelocatable<QVariant> : std::true_type
+{
+};
+static_assert(QTypeInfo<QVariant>::isRelocatable);
+
 // Ensure that trivially copy assignable and constructible is correct
 // If this is false then we need to manually implement Clone rather than derive
 
@@ -64,6 +70,8 @@ static_assert(!std::is_trivially_copy_assignable<QString>::value);
 static_assert(!std::is_trivially_copy_constructible<QString>::value);
 static_assert(!std::is_trivially_copy_assignable<QUrl>::value);
 static_assert(!std::is_trivially_copy_constructible<QUrl>::value);
+static_assert(!std::is_trivially_copy_assignable<QVariant>::value);
+static_assert(!std::is_trivially_copy_constructible<QVariant>::value);
 
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
@@ -71,6 +79,7 @@ static_assert(std::is_trivially_destructible<QColor>::value);
 static_assert(!std::is_trivially_destructible<QDateTime>::value);
 static_assert(!std::is_trivially_destructible<QString>::value);
 static_assert(!std::is_trivially_destructible<QUrl>::value);
+static_assert(!std::is_trivially_destructible<QVariant>::value);
 
 // Ensure that types have the alignment and size we are expecting
 
@@ -84,7 +93,8 @@ static_assert(alignof(QColor) <= alignof(std::size_t[2]),
 static_assert(sizeof(QColor) == sizeof(std::size_t[2]),
               "unexpected QColor size");
 
-// QDateTime has a single member, which is a union, with the largest member being a pointer
+// QDateTime has a single member, which is a union, with the largest member
+// being a pointer
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n426
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n270
 //
@@ -123,6 +133,30 @@ static_assert(sizeof(QString) == sizeof(std::size_t),
 static_assert(alignof(QUrl) <= alignof(std::size_t),
               "unexpectedly large QUrl alignment");
 static_assert(sizeof(QUrl) == sizeof(std::size_t), "unexpected QUrl size");
+
+// The layout has changed between Qt 5 and Qt 6
+//
+// Qt5 QVariant has one member, which contains three uints and a union.
+// The three uints are optimised to a reduced size, resulting in a combined size
+// of two pointers.
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n491
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n411
+//
+// Qt6 QVariant has one member, which contains three pointers and a union
+// (with a pointer as the largest member)
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n540
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n474
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+static_assert(alignof(QVariant) <= alignof(std::size_t[4]),
+              "unexpectedly large QVariant alignment");
+static_assert(sizeof(QVariant) == sizeof(std::size_t[4]),
+              "unexpected QVariant size");
+#else
+static_assert(alignof(QVariant) <= alignof(std::size_t[2]),
+              "unexpectedly large QVariant alignment");
+static_assert(sizeof(QVariant) == sizeof(std::size_t[2]),
+              "unexpected QVariant size");
+#endif
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -244,51 +278,53 @@ qurlToQString(const QUrl& url);
 rust::String
 qurlToRustString(const QUrl& url);
 
-std::unique_ptr<QVariant>
-qvariantInit();
-std::unique_ptr<QVariant>
+void
+qvariantDrop(QVariant& variant);
+QVariant
+qvariantInitDefault();
+QVariant
 qvariantInitFromQVariant(const QVariant& variant);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromBool(bool b);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromF32(float f32);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromF64(double f64);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromI8(qint8 i8);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromI16(qint16 i16);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromI32(qint32 i32);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQColor(const QColor& color);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQDate(const QDate& date);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQDateTime(const QDateTime& dateTime);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQPoint(const QPoint& point);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQPointF(const QPointF& pointf);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQRect(const QRect& rect);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQRectF(const QRectF& rectf);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQSize(const QSize& size);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQSizeF(const QSizeF& sizef);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQTime(const QTime& time);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQUrl(const QUrl& url);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromQString(const QString& string);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromU8(quint8 u8);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromU16(quint16 u16);
-std::unique_ptr<QVariant>
+QVariant
 qvariantInitFromU32(quint32 u32);
 types::QVariantType
 qvariantType(const QVariant& variant);

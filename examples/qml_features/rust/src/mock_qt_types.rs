@@ -28,10 +28,7 @@ mod ffi {
     #[cxx_qt::signals(MockQtTypes)]
     pub enum Signal {
         Ready,
-        DataChanged {
-            #[cxx_type = "QVariant"]
-            variant: UniquePtr<QVariant>,
-        },
+        DataChanged { variant: QVariant },
     }
 
     #[cxx_qt::qobject]
@@ -60,8 +57,8 @@ mod ffi {
         time: QTime,
         #[qproperty]
         url: QUrl,
-        #[qproperty(cxx_type = "QVariant")]
-        variant: UniquePtr<QVariant>,
+        #[qproperty]
+        variant: QVariant,
     }
 
     impl Default for MockQtTypes {
@@ -320,11 +317,11 @@ mod ffi {
                     color.set_green(0);
                     color.set_blue(255);
                     color.set_alpha(255);
-                    self.as_mut().set_variant(QVariant::from(color));
+                    self.as_mut().set_variant(QVariant::from(&color));
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
-                    self.as_mut().set_variant(QVariant::from(date));
+                    self.as_mut().set_variant(QVariant::from(&date));
                 }
                 QVariantValue::QDateTime(mut date_time) => {
                     date_time.set_date(QDate::new(2021, 12, 31));
@@ -335,20 +332,20 @@ mod ffi {
                         date_time.time().msec() * 5,
                     );
                     date_time.set_time(new_time);
-                    self.as_mut().set_variant(QVariant::from(date_time));
+                    self.as_mut().set_variant(QVariant::from(&date_time));
                 }
                 QVariantValue::QPoint(point) => {
                     self.as_mut()
-                        .set_variant(QVariant::from(QPoint::new(point.x() * 2, point.y() * 2)));
+                        .set_variant(QVariant::from(&QPoint::new(point.x() * 2, point.y() * 2)));
                 }
                 QVariantValue::QPointF(pointf) => {
-                    self.as_mut().set_variant(QVariant::from(QPointF::new(
+                    self.as_mut().set_variant(QVariant::from(&QPointF::new(
                         pointf.x() * 2.0,
                         pointf.y() * 2.0,
                     )));
                 }
                 QVariantValue::QRect(rect) => {
-                    self.as_mut().set_variant(QVariant::from(QRect::new(
+                    self.as_mut().set_variant(QVariant::from(&QRect::new(
                         rect.x() * 2,
                         rect.y() * 3,
                         rect.width() * 4,
@@ -356,7 +353,7 @@ mod ffi {
                     )));
                 }
                 QVariantValue::QRectF(rectf) => {
-                    self.as_mut().set_variant(QVariant::from(QRectF::new(
+                    self.as_mut().set_variant(QVariant::from(&QRectF::new(
                         rectf.x() * 2.0,
                         rectf.y() * 3.0,
                         rectf.width() * 4.0,
@@ -364,20 +361,20 @@ mod ffi {
                     )));
                 }
                 QVariantValue::QSize(size) => {
-                    self.as_mut().set_variant(QVariant::from(QSize::new(
+                    self.as_mut().set_variant(QVariant::from(&QSize::new(
                         size.width() * 2,
                         size.height() * 2,
                     )));
                 }
                 QVariantValue::QSizeF(sizef) => {
-                    self.as_mut().set_variant(QVariant::from(QSizeF::new(
+                    self.as_mut().set_variant(QVariant::from(&QSizeF::new(
                         sizef.width() * 2.0,
                         sizef.height() * 2.0,
                     )));
                 }
                 QVariantValue::QString(string) => {
                     let string = QString::from(&(string.to_string() + "/cxx-qt"));
-                    self.as_mut().set_variant(QVariant::from(string));
+                    self.as_mut().set_variant(QVariant::from(&string));
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -386,11 +383,11 @@ mod ffi {
                         time.second() * 4,
                         time.msec() * 5,
                     );
-                    self.as_mut().set_variant(QVariant::from(time));
+                    self.as_mut().set_variant(QVariant::from(&time));
                 }
                 QVariantValue::QUrl(url) => {
                     let url = QUrl::from(&(url.to_string() + "/cxx-qt"));
-                    self.as_mut().set_variant(QVariant::from(url));
+                    self.as_mut().set_variant(QVariant::from(&url));
                 }
                 QVariantValue::U8(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
                 QVariantValue::U16(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
@@ -400,7 +397,7 @@ mod ffi {
         }
 
         #[qinvokable(return_cxx_type = "QVariant")]
-        pub fn test_variant_invokable(&self, variant: &QVariant) -> UniquePtr<QVariant> {
+        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
             match variant.value() {
                 QVariantValue::Bool(b) => QVariant::from(!b),
                 QVariantValue::F32(f) => QVariant::from(f * 2.0),
@@ -413,11 +410,11 @@ mod ffi {
                     color.set_green(255);
                     color.set_blue(0);
                     color.set_alpha(255);
-                    QVariant::from(color)
+                    QVariant::from(&color)
                 }
                 QVariantValue::QDate(mut date) => {
                     date.set_date(2021, 12, 31);
-                    QVariant::from(date)
+                    QVariant::from(&date)
                 }
                 QVariantValue::QDateTime(mut date_time) => {
                     date_time.set_date(QDate::new(2021, 12, 31));
@@ -428,35 +425,35 @@ mod ffi {
                         date_time.time().msec() * 5,
                     );
                     date_time.set_time(new_time);
-                    QVariant::from(date_time)
+                    QVariant::from(&date_time)
                 }
                 QVariantValue::QPoint(point) => {
-                    QVariant::from(QPoint::new(point.x() * 2, point.y() * 2))
+                    QVariant::from(&QPoint::new(point.x() * 2, point.y() * 2))
                 }
                 QVariantValue::QPointF(pointf) => {
-                    QVariant::from(QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
+                    QVariant::from(&QPointF::new(pointf.x() * 2.0, pointf.y() * 2.0))
                 }
-                QVariantValue::QRect(rect) => QVariant::from(QRect::new(
+                QVariantValue::QRect(rect) => QVariant::from(&QRect::new(
                     rect.x() * 2,
                     rect.y() * 3,
                     rect.width() * 4,
                     rect.height() * 5,
                 )),
-                QVariantValue::QRectF(rectf) => QVariant::from(QRectF::new(
+                QVariantValue::QRectF(rectf) => QVariant::from(&QRectF::new(
                     rectf.x() * 2.0,
                     rectf.y() * 3.0,
                     rectf.width() * 4.0,
                     rectf.height() * 5.0,
                 )),
                 QVariantValue::QSize(size) => {
-                    QVariant::from(QSize::new(size.width() * 2, size.height() * 2))
+                    QVariant::from(&QSize::new(size.width() * 2, size.height() * 2))
                 }
                 QVariantValue::QSizeF(sizef) => {
-                    QVariant::from(QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
+                    QVariant::from(&QSizeF::new(sizef.width() * 2.0, sizef.height() * 2.0))
                 }
                 QVariantValue::QString(string) => {
                     let string = QString::from(&(string.to_string() + "/cxx-qt"));
-                    QVariant::from(string)
+                    QVariant::from(&string)
                 }
                 QVariantValue::QTime(mut time) => {
                     time.set_hms(
@@ -465,11 +462,11 @@ mod ffi {
                         time.second() * 4,
                         time.msec() * 5,
                     );
-                    QVariant::from(time)
+                    QVariant::from(&time)
                 }
                 QVariantValue::QUrl(url) => {
                     let url = QUrl::from(&(url.to_string() + "/cxx-qt"));
-                    QVariant::from(url)
+                    QVariant::from(&url)
                 }
                 QVariantValue::U8(i) => QVariant::from(i * 2),
                 QVariantValue::U16(i) => QVariant::from(i * 2),
