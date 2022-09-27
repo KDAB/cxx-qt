@@ -199,24 +199,42 @@ qtimeInit(int h, int m, int s, int ms)
   return QTime(h, m, s, ms);
 }
 
-std::unique_ptr<QUrl>
-qurlInit()
+void
+qurlDrop(QUrl& url)
 {
-  return std::make_unique<QUrl>();
+  url.~QUrl();
 }
 
-std::unique_ptr<QUrl>
+QUrl
+qurlInitDefault()
+{
+  return QUrl();
+}
+
+QUrl
+qurlInitFromQString(const QString& string)
+{
+  return QUrl(string);
+}
+
+QUrl
 qurlInitFromString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
-  return std::make_unique<QUrl>(qstringInitFromRustString(string));
+  return QUrl(qstringInitFromRustString(string));
 }
 
-std::unique_ptr<QUrl>
+QUrl
 qurlInitFromQUrl(const QUrl& url)
 {
-  return std::make_unique<QUrl>(url);
+  return QUrl(url);
+}
+
+QString
+qurlToQString(const QUrl& url)
+{
+  return url.toString();
 }
 
 rust::String
@@ -325,13 +343,6 @@ qvariantType(const QVariant& variant)
   }
 }
 
-#define CXX_QT_VARIANT_OPAQUE_VALUE(typeName, name)                            \
-  std::unique_ptr<typeName> qvariantTo##name(const QVariant& variant)          \
-  {                                                                            \
-    Q_ASSERT(variant.canConvert<typeName>());                                  \
-    return std::make_unique<typeName>(variant.value<typeName>());              \
-  }
-
 #define CXX_QT_VARIANT_TRIVIAL_VALUE(typeName, name)                           \
   typeName qvariantTo##name(const QVariant& variant)                           \
   {                                                                            \
@@ -356,7 +367,7 @@ CXX_QT_VARIANT_TRIVIAL_VALUE(QSize, QSize)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QSizeF, QSizeF)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QString, QString)
 CXX_QT_VARIANT_TRIVIAL_VALUE(QTime, QTime)
-CXX_QT_VARIANT_OPAQUE_VALUE(QUrl, QUrl)
+CXX_QT_VARIANT_TRIVIAL_VALUE(QUrl, QUrl)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint8, U8)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint16, U16)
 CXX_QT_VARIANT_TRIVIAL_VALUE(quint32, U32)

@@ -145,7 +145,7 @@ mod ffi {
         #[rust_name = "qvariant_to_qtime"]
         fn qvariantToQTime(qvariant: &QVariant) -> QTime;
         #[rust_name = "qvariant_to_qurl"]
-        fn qvariantToQUrl(qvariant: &QVariant) -> UniquePtr<QUrl>;
+        fn qvariantToQUrl(qvariant: &QVariant) -> QUrl;
         #[rust_name = "qvariant_to_qstring"]
         fn qvariantToQString(qvariant: &QVariant) -> QString;
         #[rust_name = "qvariant_to_u8"]
@@ -184,7 +184,7 @@ pub enum QVariantValue {
     QSizeF(QSizeF),
     QString(QString),
     QTime(QTime),
-    QUrl(cxx::UniquePtr<QUrl>),
+    QUrl(QUrl),
     U8(u8),
     U16(u16),
     U32(u32),
@@ -216,16 +216,6 @@ macro_rules! into_qvariant_ref {
     };
 }
 
-macro_rules! into_qvariant_opaque_ref {
-    ($typeName:ty, $name:expr) => {
-        impl IntoQVariant for &$typeName {
-            fn into_qvariant(self) -> cxx::UniquePtr<QVariant> {
-                $name(self)
-            }
-        }
-    };
-}
-
 into_qvariant!(bool, ffi::qvariant_init_from_bool);
 into_qvariant!(f32, ffi::qvariant_init_from_f32);
 into_qvariant!(f64, ffi::qvariant_init_from_f64);
@@ -242,7 +232,7 @@ into_qvariant_ref!(QRectF, ffi::qvariant_init_from_qrectf);
 into_qvariant_ref!(QSize, ffi::qvariant_init_from_qsize);
 into_qvariant_ref!(QSizeF, ffi::qvariant_init_from_qsizef);
 into_qvariant_ref!(QTime, ffi::qvariant_init_from_qtime);
-into_qvariant_opaque_ref!(QUrl, ffi::qvariant_init_from_qurl);
+into_qvariant_ref!(QUrl, ffi::qvariant_init_from_qurl);
 into_qvariant_ref!(QString, ffi::qvariant_init_from_qstring);
 into_qvariant!(u8, ffi::qvariant_init_from_u8);
 into_qvariant!(u16, ffi::qvariant_init_from_u16);

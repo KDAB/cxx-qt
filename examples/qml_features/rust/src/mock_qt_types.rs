@@ -58,8 +58,8 @@ mod ffi {
         string: QString,
         #[qproperty]
         time: QTime,
-        #[qproperty(cxx_type = "QUrl")]
-        url: UniquePtr<QUrl>,
+        #[qproperty]
+        url: QUrl,
         #[qproperty(cxx_type = "QVariant")]
         variant: UniquePtr<QVariant>,
     }
@@ -81,7 +81,7 @@ mod ffi {
                 sizef: QSizeF::new(1.0, 3.0),
                 string: QString::from("KDAB"),
                 time: QTime::new(1, 2, 3, 4),
-                url: QUrl::from_str("https://github.com/KDAB"),
+                url: QUrl::from("https://github.com/KDAB"),
                 variant: QVariant::from(1_i32),
             }
         }
@@ -297,13 +297,13 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_url_property(self: Pin<&mut Self>) {
-            let url = QUrl::from_str(&(self.get_url().string() + "/cxx-qt"));
+            let url = QUrl::from(&(self.get_url().to_string() + "/cxx-qt"));
             self.set_url(url);
         }
 
         #[qinvokable(return_cxx_type = "QUrl")]
-        pub fn test_url_invokable(&self, url: &QUrl) -> UniquePtr<QUrl> {
-            QUrl::from_str(&(url.string() + "/cxx-qt"))
+        pub fn test_url_invokable(&self, url: &QUrl) -> QUrl {
+            QUrl::from(&(url.to_string() + "/cxx-qt"))
         }
 
         #[qinvokable]
@@ -389,9 +389,8 @@ mod ffi {
                     self.as_mut().set_variant(QVariant::from(time));
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = QUrl::from_str(&(url.string() + "/cxx-qt"));
-                    self.as_mut()
-                        .set_variant(QVariant::from(url.as_ref().unwrap()));
+                    let url = QUrl::from(&(url.to_string() + "/cxx-qt"));
+                    self.as_mut().set_variant(QVariant::from(url));
                 }
                 QVariantValue::U8(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
                 QVariantValue::U16(i) => self.as_mut().set_variant(QVariant::from(i * 2)),
@@ -469,8 +468,8 @@ mod ffi {
                     QVariant::from(time)
                 }
                 QVariantValue::QUrl(url) => {
-                    let url = QUrl::from_str(&(url.string() + "/cxx-qt"));
-                    QVariant::from(url.as_ref().unwrap())
+                    let url = QUrl::from(&(url.to_string() + "/cxx-qt"));
+                    QVariant::from(url)
                 }
                 QVariantValue::U8(i) => QVariant::from(i * 2),
                 QVariantValue::U16(i) => QVariant::from(i * 2),

@@ -128,22 +128,32 @@ TEST_CASE("Can clone a value QDateTime on the Rust side")
 
 TEST_CASE("Can construct a QUrl on the Rust side")
 {
-  CHECK(can_construct_qurl(QStringLiteral("https://kdab.com/")));
-  CHECK(can_construct_qurl(QStringLiteral("https://github.com/KDAB/cxx-qt/")));
-}
-
-bool
-test_constructed_qurl(const QUrl& c, const QString& test)
-{
-  return c.url() == test;
+  CHECK(construct_qurl(QStringLiteral("https://kdab.com/")) ==
+        QUrl(QStringLiteral("https://kdab.com/")));
+  CHECK(construct_qurl(QStringLiteral("https://github.com/KDAB/cxx-qt/")) ==
+        QUrl(QStringLiteral("https://github.com/KDAB/cxx-qt/")));
 }
 
 TEST_CASE("Can read a QUrl on the Rust side")
 {
-  CHECK(can_read_qurl(QUrl(QStringLiteral("https://github.com/KDAB/cxx-qt/")),
-                      QStringLiteral("https://github.com/KDAB/cxx-qt/")));
-  CHECK(can_read_qurl(QUrl(QStringLiteral("https://kdab.com")),
-                      QStringLiteral("https://kdab.com")));
+  CHECK(read_qurl(QUrl(QStringLiteral("https://github.com/KDAB/cxx-qt/")),
+                  QStringLiteral("https://github.com/KDAB/cxx-qt/")));
+  CHECK(read_qurl(QUrl(QStringLiteral("https://kdab.com")),
+                  QStringLiteral("https://kdab.com")));
+}
+
+TEST_CASE("Can clone a QUrl on the Rust side")
+{
+  const auto u = QUrl(QStringLiteral("https://kdab.com/"));
+  const auto c = clone_qurl(u);
+  CHECK(c == u);
+}
+
+TEST_CASE("Can clone a value QUrl on the Rust side")
+{
+  const auto u = QUrl(QStringLiteral("https://kdab.com/"));
+  const auto c = clone_value_qurl(u);
+  CHECK(c == u);
 }
 
 TEST_CASE("Can construct a QVariant on the Rust side")
