@@ -122,8 +122,8 @@ impl QtBuild {
                         if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
                             let env_version = match env_version.trim().parse::<u32>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
-                                    eprintln!(
-                                        "QT_VERSION_MAJOR environment variable defined but empty"
+                                    println!(
+                                        "cargo:warning=QT_VERSION_MAJOR environment variable defined but empty"
                                     );
                                     return Ok((candidate, qmake_version));
                                 }
@@ -267,8 +267,8 @@ impl QtBuild {
                     }
                 }
                 Err(e) => {
-                    eprintln!(
-                        "Could not open {} file to read libraries to link: {}",
+                    println!(
+                        "cargo:warning=Could not open {} file to read libraries to link: {}",
                         &prl_path, e
                     );
                 }
