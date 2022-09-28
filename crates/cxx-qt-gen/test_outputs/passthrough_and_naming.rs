@@ -177,6 +177,12 @@ mod cxx_qt_ffi {
         }
     }
 
+    impl MyObjectQt {
+        pub unsafe fn property_name_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+            &mut self.rust_mut().get_unchecked_mut().property_name
+        }
+    }
+
     impl MyObject {
         pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
             cpp.set_property_name(value);

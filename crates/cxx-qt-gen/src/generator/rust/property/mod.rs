@@ -85,7 +85,7 @@ mod tests {
 
         // Check that we have the expected number of blocks
         assert_eq!(generated.cxx_mod_contents.len(), 6);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 10);
 
         // Trivial Property
 
@@ -119,6 +119,16 @@ mod tests {
                 }
             })
         );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[2],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub unsafe fn trivial_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+                        &mut self.rust_mut().get_unchecked_mut().trivial_property
+                    }
+                }
+            })
+        );
 
         // Setters
         assert_eq!(
@@ -131,7 +141,7 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[2],
+            generated.cxx_qt_mod_contents[3],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObject {
                     pub fn set_trivial_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
@@ -141,7 +151,7 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[3],
+            generated.cxx_qt_mod_contents[4],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
@@ -178,7 +188,7 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[4],
+            generated.cxx_qt_mod_contents[5],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObject {
                     pub fn opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
@@ -188,11 +198,21 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[5],
+            generated.cxx_qt_mod_contents[6],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn opaque_property(&self) -> &UniquePtr<QColor> {
                         &self.rust().opaque_property
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[7],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub unsafe fn opaque_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
+                        &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
                 }
             })
@@ -209,7 +229,7 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[6],
+            generated.cxx_qt_mod_contents[8],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObject {
                     pub fn set_opaque_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
@@ -219,7 +239,7 @@ mod tests {
             })
         );
         assert_eq!(
-            generated.cxx_qt_mod_contents[7],
+            generated.cxx_qt_mod_contents[9],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
