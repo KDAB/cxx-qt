@@ -83,6 +83,14 @@ static_assert(!std::is_trivially_destructible<QVariant>::value);
 
 // Ensure that types have the alignment and size we are expecting
 
+// Ensure that std::size_t is the size that Rust is expecting.
+// This is the same as CXX does internally
+// https://github.com/dtolnay/cxx/blob/5a7f93bd1361857c1bcd41f203d55f13ad0ccdf9/src/cxx.cc#L391
+static_assert(sizeof(std::size_t) == sizeof(std::uintptr_t),
+              "unsupported size_t size");
+static_assert(alignof(std::size_t) == alignof(std::uintptr_t),
+              "unsupported size_t alignment");
+
 // QColor has an enum with six values and a union with the largest being five
 // ushorts. This results in (5 * std::uint16) + std::uint32_t = 14, then due to
 // compiler padding this results in a sizeof 16 or two pointers.
