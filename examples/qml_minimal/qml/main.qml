@@ -18,6 +18,7 @@ Window {
     title: qsTr("Hello World")
     visible: true
     width: 640
+    color: "white"
 
     MyObject {
         id: myObject
@@ -32,16 +33,21 @@ Window {
 
         Label {
             text: "Number: " + myObject.number
+            color: "black"
         }
 
         Label {
             text: "String: " + myObject.string
+            color: "black"
         }
 
         Button {
             text: "Increment Number"
 
             onClicked: myObject.incrementNumber()
+
+            palette.button: "black"
+            palette.buttonText: "white"
         }
 
         Button {
@@ -50,6 +56,9 @@ Window {
             property color red: "red"
 
             onClicked: myObject.sayHi(myObject.string, myObject.number, red)
+
+            palette.button: "black"
+            palette.buttonText: "white"
         }
     }
 }
