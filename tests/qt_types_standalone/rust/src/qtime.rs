@@ -9,7 +9,7 @@ use cxx_qt_lib::QTime;
 #[cxx::bridge]
 mod qtime_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qtime.h");
 
         type QTime = cxx_qt_lib::QTime;
     }

@@ -18,23 +18,23 @@ fn main() {
         qtbuild.version().major
     );
 
-    let bridge_files = [
-        "src/types/qcolor.rs",
-        "src/types/qdate.rs",
-        "src/types/qdatetime.rs",
-        "src/types/qpoint.rs",
-        "src/types/qpointf.rs",
-        "src/types/qrect.rs",
-        "src/types/qrectf.rs",
-        "src/types/qsize.rs",
-        "src/types/qsizef.rs",
-        "src/types/qstring.rs",
-        "src/types/qtime.rs",
-        "src/types/qurl.rs",
-        "src/types/qvariant.rs",
+    let bridges = [
+        "qcolor",
+        "qdate",
+        "qdatetime",
+        "qpoint",
+        "qpointf",
+        "qrect",
+        "qrectf",
+        "qsize",
+        "qsizef",
+        "qstring",
+        "qtime",
+        "qurl",
+        "qvariant",
     ];
-    for bridge_file in bridge_files {
-        println!("cargo:rerun-if-changed={}", bridge_file);
+    for bridge in bridges {
+        println!("cargo:rerun-if-changed=src/types/{}.rs", bridge);
     }
 
     for include_path in qtbuild.include_paths() {
@@ -43,7 +43,15 @@ fn main() {
             .push(include_path.as_path());
     }
 
-    let mut builder = cxx_build::bridges(&bridge_files);
+    let mut builder = cxx_build::bridges(
+        bridges
+            .iter()
+            .map(|bridge| format!("src/types/{}.rs", bridge)),
+    );
+    for bridge in bridges {
+        builder.file(format!("src/types/{}.cpp", bridge));
+        println!("cargo:rerun-if-changed=src/types/{}.cpp", bridge);
+    }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
 

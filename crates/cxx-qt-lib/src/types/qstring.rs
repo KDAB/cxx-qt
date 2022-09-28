@@ -9,7 +9,7 @@ use std::mem::MaybeUninit;
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qstring.h");
 
         type QString = super::QString;
     }

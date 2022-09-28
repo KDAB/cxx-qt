@@ -9,7 +9,7 @@ use cxx_qt_lib::QPointF;
 #[cxx::bridge]
 mod qpointf_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qpointf.h");
 
         type QPointF = cxx_qt_lib::QPointF;
     }

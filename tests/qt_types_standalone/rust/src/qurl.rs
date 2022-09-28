@@ -9,7 +9,8 @@ use cxx_qt_lib::{QString, QUrl};
 #[cxx::bridge]
 mod qurl_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qstring.h");
+        include!("cxx-qt-lib/include/qurl.h");
 
         type QString = cxx_qt_lib::QString;
         type QUrl = cxx_qt_lib::QUrl;

@@ -10,7 +10,9 @@ use crate::{QDate, QTime};
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qdatetime.h");
+        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/include/qtime.h");
 
         type QDate = crate::QDate;
         type QDateTime = super::QDateTime;

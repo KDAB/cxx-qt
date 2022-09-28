@@ -9,7 +9,9 @@ use cxx_qt_lib::{QDate, QDateTime, QTime};
 #[cxx::bridge]
 mod qdatetime_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/include/qdatetime.h");
+        include!("cxx-qt-lib/include/qtime.h");
 
         type QDate = cxx_qt_lib::QDate;
         type QDateTime = cxx_qt_lib::QDateTime;

@@ -40,20 +40,32 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
-
+        include!("cxx-qt-lib/include/qcolor.h");
         type QColor = crate::QColor;
+        include!("cxx-qt-lib/include/qdate.h");
         type QDate = crate::QDate;
+        include!("cxx-qt-lib/include/qdatetime.h");
         type QDateTime = crate::QDateTime;
+        include!("cxx-qt-lib/include/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/include/qpointf.h");
         type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/include/qrect.h");
         type QRect = crate::QRect;
+        include!("cxx-qt-lib/include/qrectf.h");
         type QRectF = crate::QRectF;
+        include!("cxx-qt-lib/include/qsize.h");
         type QSize = crate::QSize;
+        include!("cxx-qt-lib/include/qsizef.h");
         type QSizeF = crate::QSizeF;
+        include!("cxx-qt-lib/include/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/include/qtime.h");
         type QTime = crate::QTime;
+        include!("cxx-qt-lib/include/qurl.h");
         type QUrl = crate::QUrl;
+
+        include!("cxx-qt-lib/include/qvariant.h");
         type QVariant = super::QVariant;
 
         #[namespace = "rust::cxxqtlib1::types"]

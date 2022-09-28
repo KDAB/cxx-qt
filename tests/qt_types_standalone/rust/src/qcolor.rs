@@ -16,7 +16,7 @@ mod qcolor_cxx {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qcolor.h");
         type QColor = cxx_qt_lib::QColor;
     }
 

@@ -2,7 +2,7 @@
 mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
     }
 
