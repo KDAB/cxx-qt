@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    invokable::ParsedQInvokable, parameter::ParsedFunctionParameter, property::ParsedQProperty,
+    invokable::ParsedQInvokable,
+    parameter::ParsedFunctionParameter,
+    property::{ParsedQProperty, ParsedRustField},
     signals::ParsedSignalsEnum,
 };
 use crate::syntax::{
@@ -44,6 +46,8 @@ pub struct ParsedQObject {
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
+    /// List of Rust fields on the struct that need getters and setters generated
+    pub fields: Vec<ParsedRustField>,
     /// Items that we don't need to generate anything for CXX or C++
     /// eg impls on the Rust object or Default implementations
     pub others: Vec<Item>,
@@ -64,7 +68,7 @@ impl ParsedQObject {
 
         // Parse any properties in the struct
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_struct_fields(&mut qobject_struct.fields)?;
+        let (properties, fields) = Self::parse_struct_fields(&mut qobject_struct.fields)?;
 
         Ok(Self {
             base_class,
@@ -75,6 +79,7 @@ impl ParsedQObject {
             invokables: vec![],
             methods: vec![],
             properties,
+            fields,
             others: vec![],
         })
     }
@@ -152,8 +157,11 @@ impl ParsedQObject {
     }
 
     /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
-    fn parse_struct_fields(fields: &mut Fields) -> Result<Vec<ParsedQProperty>> {
+    fn parse_struct_fields(
+        fields: &mut Fields,
+    ) -> Result<(Vec<ParsedQProperty>, Vec<ParsedRustField>)> {
         let mut properties = vec![];
+        let mut rust_fields = vec![];
         for field in fields_to_named_fields_mut(fields)? {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
@@ -171,10 +179,16 @@ impl ParsedQObject {
                     vis: field.vis.clone(),
                     cxx_type,
                 });
+            } else {
+                rust_fields.push(ParsedRustField {
+                    ident: field.ident.clone().unwrap(),
+                    ty: field.ty.clone(),
+                    vis: field.vis.clone(),
+                })
             }
         }
 
-        Ok(properties)
+        Ok((properties, rust_fields))
     }
 }
 

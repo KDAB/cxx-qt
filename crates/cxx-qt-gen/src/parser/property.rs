@@ -5,6 +5,16 @@
 
 use syn::{Ident, Type, Visibility};
 
+/// Describes a single field for a struct
+pub struct ParsedRustField {
+    /// The [syn::Ident] of the field
+    pub ident: Ident,
+    /// The [syn::Type] of the field
+    pub ty: Type,
+    /// The [syn::Visibility] of the field
+    pub vis: Visibility,
+}
+
 /// Describes a single Q_PROPERTY for a struct
 pub struct ParsedQProperty {
     /// The [syn::Ident] of the property

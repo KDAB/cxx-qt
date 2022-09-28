@@ -110,6 +110,8 @@ mod cxx_qt_ffi {
         primitive: i32,
         trivial: QPoint,
         opaque: UniquePtr<Opaque>,
+        private_rust_field: i32,
+        pub public_rust_field: f64,
     }
 
     impl MyObject {
@@ -208,6 +210,46 @@ mod cxx_qt_ffi {
                 self.as_mut().rust_mut().opaque = value;
             }
             self.as_mut().emit_opaque_changed();
+        }
+    }
+
+    impl MyObjectQt {
+        fn private_rust_field(&self) -> &i32 {
+            &self.rust().private_rust_field
+        }
+    }
+
+    impl MyObjectQt {
+        fn private_rust_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+            unsafe { &mut self.rust_mut().get_unchecked_mut().private_rust_field }
+        }
+    }
+
+    impl MyObjectQt {
+        fn set_private_rust_field(mut self: Pin<&mut Self>, value: i32) {
+            unsafe {
+                self.rust_mut().private_rust_field = value;
+            }
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn public_rust_field(&self) -> &f64 {
+            &self.rust().public_rust_field
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn public_rust_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut f64 {
+            unsafe { &mut self.rust_mut().get_unchecked_mut().public_rust_field }
+        }
+    }
+
+    impl MyObjectQt {
+        pub fn set_public_rust_field(mut self: Pin<&mut Self>, value: f64) {
+            unsafe {
+                self.rust_mut().public_rust_field = value;
+            }
         }
     }
 
