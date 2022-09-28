@@ -61,13 +61,14 @@ Ensure that you have the following installed
   * [CMake v3.16+](https://cmake.org/)
   * [Qt 5 and/or Qt 6](https://www.qt.io/)
   * [Rust toolchain](https://www.rust-lang.org/)
-  * [mold](https://github.com/rui314/mold) or [lld](https://lld.llvm.org/) for Linux (lld is included in the XCode toolchain on macOS)
+  * [mold](https://github.com/rui314/mold), [lld](https://lld.llvm.org/), or GNU ld.gold for Linux (lld is included in the XCode toolchain on macOS)
 
 This repository's build system uses CMake, which calls Cargo under the hood to build all the
 examples and tests. One example can be built and run with Cargo directly without using CMake:
 `cargo run -p qml-minimal-no-cmake` (this example is also built in the CMake build). This
-example does not link with GNU ld; [using mold](https://github.com/rui314/mold#how-to-use) or lld
-is required on Linux.
+example does not link with GNU ld.bfd which is the default linker on most Linux distributions;
+installing [mold](https://github.com/rui314/mold), [lld](https://lld.llvm.org/), or GNU ld.gold
+(from GNU binutils but may be separate package) is required on Linux.
 
 On Windows and macOS, CXX-Qt defaults to installing Qt from vcpkg. Prebuilt packages are
 automatically downloaded from GitHub Packages (this will take several minutes the first time
