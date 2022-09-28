@@ -63,7 +63,7 @@ mod ffi {
     impl cxx_qt::QObject<Website> {
         #[qinvokable]
         pub fn change_url(self: Pin<&mut Self>) {
-            let url = self.get_url().to_string();
+            let url = self.url().to_string();
             let new_url = if url == "known" { "unknown" } else { "known" };
             self.set_url(QString::from(new_url));
         }
@@ -84,7 +84,7 @@ mod ffi {
 
             self.as_mut().set_title(QString::from("Loading..."));
 
-            let url = self.get_url().to_string();
+            let url = self.url().to_string();
             // ANCHOR: book_qt_thread
             let qt_thread = self.qt_thread();
             // ANCHOR_END: book_qt_thread

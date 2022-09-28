@@ -95,7 +95,7 @@ mod tests {
             tokens_to_syn::<syn::Item>(quote! {
                 extern "Rust" {
                     #[cxx_name = "getTrivialProperty"]
-                    unsafe fn get_trivial_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+                    unsafe fn trivial_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
                 }
             })
         );
@@ -103,8 +103,8 @@ mod tests {
             generated.cxx_qt_mod_contents[0],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObject {
-                    pub fn get_trivial_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
-                        cpp.get_trivial_property()
+                    pub fn trivial_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
+                        cpp.trivial_property()
                     }
                 }
             })
@@ -113,7 +113,7 @@ mod tests {
             generated.cxx_qt_mod_contents[1],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
-                    pub fn get_trivial_property(&self) -> &i32 {
+                    pub fn trivial_property(&self) -> &i32 {
                         &self.rust().trivial_property
                     }
                 }
@@ -173,7 +173,7 @@ mod tests {
             tokens_to_syn::<syn::Item>(quote! {
                 extern "Rust" {
                     #[cxx_name = "getOpaqueProperty"]
-                    unsafe fn get_opaque_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
+                    unsafe fn opaque_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
                 }
             })
         );
@@ -181,8 +181,8 @@ mod tests {
             generated.cxx_qt_mod_contents[4],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObject {
-                    pub fn get_opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
-                        cpp.get_opaque_property()
+                    pub fn opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
+                        cpp.opaque_property()
                     }
                 }
             })
@@ -191,7 +191,7 @@ mod tests {
             generated.cxx_qt_mod_contents[5],
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
-                    pub fn get_opaque_property(&self) -> &UniquePtr<QColor> {
+                    pub fn opaque_property(&self) -> &UniquePtr<QColor> {
                         &self.rust().opaque_property
                     }
                 }

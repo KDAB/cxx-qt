@@ -46,10 +46,9 @@ fn emit_from_ident(ident: &Ident) -> CombinedIdent {
 
 /// For a given ident generate the Rust and C++ getter names
 fn getter_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("get_{}", ident);
     CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
+        cpp: format_ident!("get{}", ident.to_string().to_case(Case::Pascal)),
+        rust: ident.clone(),
     }
 }
 
@@ -105,7 +104,7 @@ pub mod tests {
         assert_eq!(names.name.cpp, format_ident!("myProperty"));
         assert_eq!(names.name.rust, format_ident!("my_property"));
         assert_eq!(names.getter.cpp, format_ident!("getMyProperty"));
-        assert_eq!(names.getter.rust, format_ident!("get_my_property"));
+        assert_eq!(names.getter.rust, format_ident!("my_property"));
         assert_eq!(names.setter.cpp, format_ident!("setMyProperty"));
         assert_eq!(names.setter.rust, format_ident!("set_my_property"));
         assert_eq!(names.notify.cpp, format_ident!("myPropertyChanged"));

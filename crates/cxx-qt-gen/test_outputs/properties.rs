@@ -28,7 +28,7 @@ mod ffi {
 
     extern "Rust" {
         #[cxx_name = "getPrimitive"]
-        unsafe fn get_primitive<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+        unsafe fn primitive<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
     }
 
     extern "Rust" {
@@ -43,7 +43,7 @@ mod ffi {
 
     extern "Rust" {
         #[cxx_name = "getTrivial"]
-        unsafe fn get_trivial<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPoint;
+        unsafe fn trivial<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPoint;
     }
 
     extern "Rust" {
@@ -58,7 +58,7 @@ mod ffi {
 
     extern "Rust" {
         #[cxx_name = "getOpaque"]
-        unsafe fn get_opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque>;
+        unsafe fn opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque>;
     }
 
     extern "Rust" {
@@ -113,13 +113,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_primitive<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
-            cpp.get_primitive()
+        pub fn primitive<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
+            cpp.primitive()
         }
     }
 
     impl MyObjectQt {
-        pub fn get_primitive(&self) -> &i32 {
+        pub fn primitive(&self) -> &i32 {
             &self.rust().primitive
         }
     }
@@ -140,13 +140,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_trivial<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
-            cpp.get_trivial()
+        pub fn trivial<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
+            cpp.trivial()
         }
     }
 
     impl MyObjectQt {
-        pub fn get_trivial(&self) -> &QPoint {
+        pub fn trivial(&self) -> &QPoint {
             &self.rust().trivial
         }
     }
@@ -167,13 +167,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
-            cpp.get_opaque()
+        pub fn opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
+            cpp.opaque()
         }
     }
 
     impl MyObjectQt {
-        pub fn get_opaque(&self) -> &UniquePtr<Opaque> {
+        pub fn opaque(&self) -> &UniquePtr<Opaque> {
             &self.rust().opaque
         }
     }
