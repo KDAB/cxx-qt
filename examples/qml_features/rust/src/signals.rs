@@ -39,16 +39,14 @@ pub mod ffi {
         pub fn invokable(mut self: Pin<&mut Self>) {
             self.as_mut().emit_queued(Signal::Ready);
 
-            let signal = Signal::RustDataChanged {
-                data: *self.get_data(),
-            };
+            let signal = Signal::RustDataChanged { data: *self.data() };
             self.as_mut().emit_queued(signal);
             let signal = Signal::TrivialDataChanged {
-                trivial: self.get_trivial().clone(),
+                trivial: self.trivial().clone(),
             };
             self.as_mut().emit_queued(signal);
             let signal = Signal::OpaqueDataChanged {
-                opaque: self.get_opaque().clone(),
+                opaque: self.opaque().clone(),
             };
             self.as_mut().emit_queued(signal);
         }

@@ -105,7 +105,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_date_property(self: Pin<&mut Self>) {
-            let mut date = self.get_date().clone();
+            let mut date = self.date().clone();
             date.set_date(2021, 12, 31);
             self.set_date(date);
         }
@@ -119,7 +119,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_date_time_property(self: Pin<&mut Self>) {
-            let date_time = self.get_date_time();
+            let date_time = self.date_time();
             let new_date_time = QDateTime::from_date_and_time(
                 &QDate::new(2021, 12, 31),
                 &QTime::new(
@@ -147,7 +147,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_point_property(self: Pin<&mut Self>) {
-            let mut point = self.get_point().clone();
+            let mut point = self.point().clone();
             point.set_x(point.x() * 2);
             point.set_y(point.y() * 3);
             self.set_point(point);
@@ -163,7 +163,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_pointf_property(self: Pin<&mut Self>) {
-            let mut point = self.get_pointf().clone();
+            let mut point = self.pointf().clone();
             point.set_x(point.x() * 2.0);
             point.set_y(point.y() * 3.0);
             self.set_pointf(point);
@@ -179,7 +179,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rect_property(self: Pin<&mut Self>) {
-            let mut rect = self.get_rect().clone();
+            let mut rect = self.rect().clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2);
@@ -203,7 +203,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_rectf_property(self: Pin<&mut Self>) {
-            let mut rect = self.get_rectf().clone();
+            let mut rect = self.rectf().clone();
             // Copy width and height, otherwise when we adjust the x and y it affects the width and height
             let (width, height) = (rect.width(), rect.height());
             rect.set_x(rect.x() * 2.0);
@@ -227,7 +227,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_size_property(self: Pin<&mut Self>) {
-            let mut size = self.get_size().clone();
+            let mut size = self.size().clone();
             size.set_width(size.width() * 2);
             size.set_height(size.height() * 3);
             self.set_size(size);
@@ -243,7 +243,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_sizef_property(self: Pin<&mut Self>) {
-            let mut size = self.get_sizef().clone();
+            let mut size = self.sizef().clone();
             size.set_width(size.width() * 2.0);
             size.set_height(size.height() * 3.0);
             self.set_sizef(size);
@@ -259,7 +259,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_string_property(self: Pin<&mut Self>) {
-            let string = QString::from(&(self.get_string().to_string() + "/cxx-qt"));
+            let string = QString::from(&(self.string().to_string() + "/cxx-qt"));
             self.set_string(string);
         }
 
@@ -270,7 +270,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_time_property(self: Pin<&mut Self>) {
-            let mut time = self.get_time().clone();
+            let mut time = self.time().clone();
             time.set_hms(
                 time.hour() * 2,
                 time.minute() * 3,
@@ -294,7 +294,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_url_property(self: Pin<&mut Self>) {
-            let url = QUrl::from(&(self.get_url().to_string() + "/cxx-qt"));
+            let url = QUrl::from(&(self.url().to_string() + "/cxx-qt"));
             self.set_url(url);
         }
 
@@ -305,7 +305,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
-            match self.get_variant().value() {
+            match self.variant().value() {
                 QVariantValue::Bool(b) => self.as_mut().set_variant(QVariant::from(!b)),
                 QVariantValue::F32(f) => self.as_mut().set_variant(QVariant::from(f * 2.0)),
                 QVariantValue::F64(d) => self.as_mut().set_variant(QVariant::from(d * 2.0)),

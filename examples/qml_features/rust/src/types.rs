@@ -30,7 +30,7 @@ mod ffi {
     impl cxx_qt::QObject<Types> {
         #[qinvokable]
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
-            match self.get_variant().value() {
+            match self.variant().value() {
                 QVariantValue::Bool(b) => {
                     self.as_mut().set_variant(QVariant::from(!b));
                 }

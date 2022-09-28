@@ -27,7 +27,7 @@ pub mod ffi {
         // ANCHOR: book_cpp_obj
         #[qinvokable]
         pub fn invokable_mutate_cpp(self: Pin<&mut Self>) {
-            let new_number = self.get_number() * 2;
+            let new_number = self.number() * 2;
             self.set_number(new_number);
         }
         // ANCHOR_END: book_cpp_obj

@@ -85,7 +85,7 @@ pub mod ffi {
 
     extern "Rust" {
         #[cxx_name = "getPropertyName"]
-        unsafe fn get_property_name<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+        unsafe fn property_name<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
     }
 
     extern "Rust" {
@@ -166,13 +166,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        pub fn get_property_name<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
-            cpp.get_property_name()
+        pub fn property_name<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
+            cpp.property_name()
         }
     }
 
     impl MyObjectQt {
-        pub fn get_property_name(&self) -> &i32 {
+        pub fn property_name(&self) -> &i32 {
             &self.rust().property_name
         }
     }
