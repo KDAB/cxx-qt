@@ -267,10 +267,13 @@ impl QtBuild {
                     }
                 }
                 Err(e) => {
-                    println!(
-                        "cargo:warning=Could not open {} file to read libraries to link: {}",
-                        &prl_path, e
-                    );
+                    // In Qt6, there is no prl file for the QtQml library.
+                    if !(qt_module == "Qml" && self.version.major == 6) {
+                        println!(
+                            "cargo:warning=Could not open {} file to read libraries to link: {}",
+                            &prl_path, e
+                        );
+                    }
                 }
             }
         }
