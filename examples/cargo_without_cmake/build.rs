@@ -13,6 +13,7 @@ fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
 }
 
 fn main() {
+    println!("cargo:rerun-if-changed=qml/main.qml");
     CxxQtBuilder::new()
         // Link Qt's Qml and Network libraries. Qt Core and Gui are always
         // linked, so there is no need to specify them here.
