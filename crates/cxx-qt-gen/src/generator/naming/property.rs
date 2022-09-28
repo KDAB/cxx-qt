@@ -12,6 +12,7 @@ use syn::Ident;
 pub struct QPropertyName {
     pub name: CombinedIdent,
     pub getter: CombinedIdent,
+    pub getter_mutable: CombinedIdent,
     pub setter: CombinedIdent,
     pub notify: CombinedIdent,
     pub emit: CombinedIdent,
@@ -22,6 +23,7 @@ impl From<&Ident> for QPropertyName {
         Self {
             name: name_from_ident(ident),
             getter: getter_from_ident(ident),
+            getter_mutable: getter_mutable_from_ident(ident),
             setter: setter_from_ident(ident),
             notify: notify_from_ident(ident),
             emit: emit_from_ident(ident),
@@ -49,6 +51,14 @@ fn getter_from_ident(ident: &Ident) -> CombinedIdent {
     CombinedIdent {
         cpp: format_ident!("get{}", ident.to_string().to_case(Case::Pascal)),
         rust: ident.clone(),
+    }
+}
+
+/// For a given ident generate the Rust and C++ getter mutable names
+fn getter_mutable_from_ident(ident: &Ident) -> CombinedIdent {
+    CombinedIdent {
+        cpp: format_ident!("get{}Mut", ident.to_string().to_case(Case::Pascal)),
+        rust: format_ident!("{}_mut", ident),
     }
 }
 
@@ -105,6 +115,8 @@ pub mod tests {
         assert_eq!(names.name.rust, format_ident!("my_property"));
         assert_eq!(names.getter.cpp, format_ident!("getMyProperty"));
         assert_eq!(names.getter.rust, format_ident!("my_property"));
+        assert_eq!(names.getter_mutable.cpp, format_ident!("getMyPropertyMut"));
+        assert_eq!(names.getter_mutable.rust, format_ident!("my_property_mut"));
         assert_eq!(names.setter.cpp, format_ident!("setMyProperty"));
         assert_eq!(names.setter.rust, format_ident!("set_my_property"));
         assert_eq!(names.notify.cpp, format_ident!("myPropertyChanged"));

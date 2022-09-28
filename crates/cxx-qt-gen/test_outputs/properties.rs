@@ -124,6 +124,12 @@ mod cxx_qt_ffi {
         }
     }
 
+    impl MyObjectQt {
+        pub unsafe fn primitive_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+            &mut self.rust_mut().get_unchecked_mut().primitive
+        }
+    }
+
     impl MyObject {
         pub fn set_primitive(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
             cpp.set_primitive(value);
@@ -151,6 +157,12 @@ mod cxx_qt_ffi {
         }
     }
 
+    impl MyObjectQt {
+        pub unsafe fn trivial_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut QPoint {
+            &mut self.rust_mut().get_unchecked_mut().trivial
+        }
+    }
+
     impl MyObject {
         pub fn set_trivial(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPoint) {
             cpp.set_trivial(value);
@@ -175,6 +187,12 @@ mod cxx_qt_ffi {
     impl MyObjectQt {
         pub fn opaque(&self) -> &UniquePtr<Opaque> {
             &self.rust().opaque
+        }
+    }
+
+    impl MyObjectQt {
+        pub unsafe fn opaque_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<Opaque> {
+            &mut self.rust_mut().get_unchecked_mut().opaque
         }
     }
 

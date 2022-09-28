@@ -44,6 +44,15 @@ pub mod ffi {
             }
             self.rust().rust_only_field
         }
+
+        #[qinvokable]
+        pub fn invokable_mutate_no_signal(mut self: Pin<&mut Self>, factor: i32) -> i32 {
+            // Safety: This does not trigger a signal change for the property
+            unsafe {
+                *self.as_mut().number_mut() *= factor;
+            }
+            *self.number()
+        }
     }
 
     impl RustObjInvokables {
