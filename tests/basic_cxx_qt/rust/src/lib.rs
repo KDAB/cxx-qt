@@ -59,8 +59,8 @@ mod ffi {
         pub fn queue_test(self: Pin<&mut Self>) {
             let qt_thread = self.qt_thread();
             qt_thread
-                .queue(|ctx| unsafe {
-                    ctx.rust_mut().update_call_count += 1;
+                .queue(|ctx| {
+                    *ctx.update_call_count_mut() += 1;
                 })
                 .unwrap();
         }
@@ -75,11 +75,9 @@ mod ffi {
             for _ in 0..N_THREADS {
                 let qt_thread = self.qt_thread();
                 handles.push(std::thread::spawn(move || {
-                    // TODO: for now we use the unsafe rust_mut() API
-                    // later there will be getters and setters for the properties
                     qt_thread
-                        .queue(|ctx| unsafe {
-                            ctx.rust_mut().update_call_count += 1;
+                        .queue(|ctx| {
+                            *ctx.update_call_count_mut() += 1;
                         })
                         .unwrap();
                     N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -98,7 +96,7 @@ mod ffi {
         }
 
         #[qinvokable]
-        pub fn update_call_count(&self) -> i32 {
+        pub fn fetch_update_call_count(&self) -> i32 {
             self.rust().update_call_count
         }
     }

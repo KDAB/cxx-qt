@@ -299,28 +299,18 @@ mod ffi {
 
                             qt_thread
                                 .queue(|mut qobject_energy_usage| {
-                                    // TODO: for now we use the unsafe rust_mut() API
-                                    // later there will be getters and setters for the properties
-                                    unsafe {
-                                        // Process the new data from the background thread
-                                        if let Some(data) = qobject_energy_usage
+                                    // Process the new data from the background thread
+                                    if let Some(data) =
+                                        qobject_energy_usage.as_mut().qt_rx_mut().try_iter().last()
+                                    {
+                                        // Here we have constructed a new Data struct so can consume its values.
+                                        // For other uses, we could have passed an Enum across the channel
+                                        // and then process the required action here
+                                        qobject_energy_usage
                                             .as_mut()
-                                            .rust_mut()
-                                            .qt_rx
-                                            .try_iter()
-                                            .last()
-                                        {
-                                            // Here we have constructed a new Data struct so can consume it's values
-                                            // for other uses we could have passed an Enum across the channel
-                                            // and then process the required action here
-                                            qobject_energy_usage
-                                                .as_mut()
-                                                .set_average_use(data.average_use);
-                                            qobject_energy_usage.as_mut().set_sensors(data.sensors);
-                                            qobject_energy_usage
-                                                .as_mut()
-                                                .set_total_use(data.total_use);
-                                        }
+                                            .set_average_use(data.average_use);
+                                        qobject_energy_usage.as_mut().set_sensors(data.sensors);
+                                        qobject_energy_usage.as_mut().set_total_use(data.total_use);
                                     }
                                 })
                                 .unwrap();
@@ -387,14 +377,12 @@ mod ffi {
             };
 
             // Start our threads
-            unsafe {
-                self.rust_mut().join_handles = Some([
-                    std::thread::spawn(move || block_on(run_timeout)),
-                    std::thread::spawn(move || block_on(run_update)),
-                    std::thread::spawn(move || block_on(run_sensors)),
-                    std::thread::spawn(move || block_on(run_server)),
-                ]);
-            }
+            *self.join_handles_mut() = Some([
+                std::thread::spawn(move || block_on(run_timeout)),
+                std::thread::spawn(move || block_on(run_update)),
+                std::thread::spawn(move || block_on(run_sensors)),
+                std::thread::spawn(move || block_on(run_server)),
+            ]);
         }
     }
 }

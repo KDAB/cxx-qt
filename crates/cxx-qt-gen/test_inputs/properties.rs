@@ -16,5 +16,8 @@ mod ffi {
         // Value and Opaque are not real types that would compile; these are only testing the code generation
         #[qproperty(cxx_type = "Value")]
         opaque: UniquePtr<Opaque>,
+
+        private_rust_field: i32,
+        pub public_rust_field: f64,
     }
 }
