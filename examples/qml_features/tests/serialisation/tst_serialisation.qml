@@ -27,13 +27,13 @@ TestCase {
         }
     }
 
-    function test_deserialise() {
+    function test_default() {
         const serialisation = createTemporaryObject(componentSerialisation, null, {});
         compare(serialisation.number, 4);
         compare(serialisation.string, "Hello World!");
     }
 
-    function test_serialize() {
+    function test_as_json_str() {
         const serialisation = createTemporaryObject(componentSerialisation, null, {});
         const spyNumber = createTemporaryObject(componentSpy, null, {
             signalName: "numberChanged",
@@ -64,13 +64,28 @@ TestCase {
         compare(newData, `{"number":2,"string":"Test!"}`);
     }
 
-    function test_grab_valuess() {
+    function test_from_json_str() {
         const serialisation = createTemporaryObject(componentSerialisation, null, {});
+        const spyNumber = createTemporaryObject(componentSpy, null, {
+            signalName: "numberChanged",
+            target: serialisation,
+        });
+        const spyString = createTemporaryObject(componentSpy, null, {
+            signalName: "stringChanged",
+            target: serialisation,
+        });
+        compare(spyNumber.count, 0);
+        compare(spyString.count, 0);
+
+        // Check the initial values
         compare(serialisation.number, 4);
         compare(serialisation.string, "Hello World!");
 
-        serialisation.grabValues();
+        // Load from a string
+        serialisation.fromJsonStr(`{"number":2,"string":"Goodbye!"}`);
         compare(serialisation.number, 2);
         compare(serialisation.string, "Goodbye!");
+        compare(spyNumber.count, 1);
+        compare(spyString.count, 1);
     }
 }

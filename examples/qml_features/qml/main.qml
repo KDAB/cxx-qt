@@ -5,98 +5,103 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import QtQuick.Window 2.12
 
-import com.kdab.cxx_qt.demo 1.0
-
-Window {
-    height: 480
-    title: qsTr("Hello World")
+ApplicationWindow {
+    id: window
+    minimumHeight: 480
+    minimumWidth: 640
+    title: qsTr("CXX-Qt: QML Features")
     visible: true
-    width: 640
 
-    Serialisation {
-        id: myData
-        number: myObject.number
-        string: myObject.string
+    header: RowLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        Button {
+            flat: true
+            font.pixelSize: 24
+            text: drawer.position == 1.0 ? "✕" : "☰"
+            Layout.preferredWidth: height
+
+            onClicked: {
+                if (drawer.position == 1.0) {
+                    drawer.close();
+                } else {
+                    drawer.open();
+                }
+            }
+        }
+
+        Label {
+            text: drawer.currentItem.text
+            font.pixelSize: 24
+            Layout.fillWidth: true
+        }
     }
 
-    MyObject {
-        id: myObject
-        number: 1
-        string: "My String " + myObject.number
+    Drawer {
+        id: drawer
+
+        readonly property alias currentItem: drawerView.currentItem
+
+        height: window.height - header.height
+        width: Math.min(window.width * 0.66, 200)
+        y: header.height
+
+        ListView {
+            id: drawerView
+            anchors.fill: parent
+            currentIndex: 0
+            delegate: ItemDelegate {
+                highlighted: ListView.isCurrentItem
+                text: model.name
+                width: ListView.view.width
+
+                readonly property string source: model.source
+
+                onClicked: {
+                    ListView.view.currentIndex = index;
+                    drawer.close();
+                }
+            }
+            model: ListModel {
+                ListElement {
+                    name: "Properties"
+                    source: "qrc:/pages/PropertiesPage.qml"
+                }
+                ListElement {
+                    name: "Invokables"
+                    source: "qrc:/pages/InvokablesPage.qml"
+                }
+                ListElement {
+                    name: "Signals"
+                    source: "qrc:/pages/SignalsPage.qml"
+                }
+                ListElement {
+                    name: "Threading"
+                    source: "qrc:/pages/ThreadingPage.qml"
+                }
+                ListElement {
+                    name: "Custom Base Class"
+                    source: "qrc:/pages/CustomBaseClassPage.qml"
+                }
+                ListElement {
+                    name: "Serialisation"
+                    source: "qrc:/pages/SerialisationPage.qml"
+                }
+                ListElement {
+                    name: "Types"
+                    source: "qrc:/pages/TypesPage.qml"
+                }
+            }
+        }
     }
 
-    ThreadingWebsite {
-        id: website
-    }
-
-    Column {
+    Loader {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
-
-        Label {
-            text: "Number: " + myObject.number
-        }
-
-        Label {
-            text: "String: " + myObject.string
-        }
-
-        Button {
-            text: "Increment Number"
-
-            onClicked: myObject.number = myObject.incrementNumber(myObject.number)
-        }
-
-        Button {
-            text: "Increment Number (self)"
-
-            onClicked: myObject.incrementNumberSelf()
-        }
-
-        Button {
-            text: "Print Data"
-
-            onClicked: console.warn(myData.asJsonStr())
-        }
-
-        Text {
-            text: "Url: " + website.url
-        }
-
-        Text {
-            text: "Title: " + website.title
-        }
-
-        Button {
-            text: "Change Url"
-
-            onClicked: website.changeUrl()
-        }
-
-        Button {
-            text: "Fetch Title"
-
-            onClicked: website.fetchTitle()
-        }
-
-        Button {
-            text: "Add to model"
-
-            onClicked: myModel.add()
-        }
-
-        Repeater {
-            model: CustomBase {
-                id: myModel
-            }
-            delegate: Label {
-                text: model.id + ": " + model.value
-            }
-        }
+        asynchronous: true
+        source: drawer.currentItem.source
     }
-
-    Component.onCompleted: myObject.sayHi(myObject.string, myObject.number)
 }

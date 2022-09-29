@@ -7,6 +7,7 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
+        .file("src/empty.rs")
         .file("src/data.rs")
         .file("src/lib.rs")
         .file("src/types.rs")

@@ -8,10 +8,11 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/custom_base.cxxqt.h"
-#include "cxx-qt-gen/my_object.cxxqt.h"
+#include "cxx-qt-gen/custom_base_class.cxxqt.h"
+#include "cxx-qt-gen/rust_invokables.cxxqt.h"
+#include "cxx-qt-gen/rust_properties.cxxqt.h"
+#include "cxx-qt-gen/rust_signals.cxxqt.h"
 #include "cxx-qt-gen/serialisation.cxxqt.h"
-#include "cxx-qt-gen/struct_properties.cxxqt.h"
 #include "cxx-qt-gen/threading_website.cxxqt.h"
 #include "cxx-qt-gen/types.cxxqt.h"
 
@@ -33,10 +34,13 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
-  qmlRegisterType<CustomBase>("com.kdab.cxx_qt.demo", 1, 0, "CustomBase");
-  qmlRegisterType<StructProperties>(
-    "com.kdab.cxx_qt.demo", 1, 0, "StructProperties");
-  qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+  qmlRegisterType<CustomBaseClass>(
+    "com.kdab.cxx_qt.demo", 1, 0, "CustomBaseClass");
+  qmlRegisterType<RustInvokables>(
+    "com.kdab.cxx_qt.demo", 1, 0, "RustInvokables");
+  qmlRegisterType<RustProperties>(
+    "com.kdab.cxx_qt.demo", 1, 0, "RustProperties");
+  qmlRegisterType<RustSignals>("com.kdab.cxx_qt.demo", 1, 0, "RustSignals");
   qmlRegisterType<Serialisation>("com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
   // ANCHOR: book_namespace_register
   qmlRegisterType<cxx_qt::website::ThreadingWebsite>(

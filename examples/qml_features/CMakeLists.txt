@@ -66,6 +66,7 @@ function(add_qml_test TEST_NAME)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
 
     add_executable(${APP_NAME}_${TEST_NAME}_test "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
+    target_include_directories(${APP_NAME}_${TEST_NAME}_test PRIVATE cpp)
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
         ${CRATE}
         Qt${QT_VERSION_MAJOR}::Test
@@ -88,6 +89,10 @@ function(add_qml_test TEST_NAME)
     )
 endfunction()
 
-add_qml_test(myobject)
+add_qml_test(custom_base_class)
+add_qml_test(invokables)
+add_qml_test(properties)
 add_qml_test(serialisation)
-add_qml_test(qttypes)
+add_qml_test(signals)
+add_qml_test(threading)
+add_qml_test(types)
