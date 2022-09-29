@@ -6,5 +6,19 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new().file("src/lib.rs").build();
+    CxxQtBuilder::new()
+        .file("src/qcolor.rs")
+        .file("src/qdate.rs")
+        .file("src/qdatetime.rs")
+        .file("src/qpoint.rs")
+        .file("src/qpointf.rs")
+        .file("src/qrect.rs")
+        .file("src/qrectf.rs")
+        .file("src/qsize.rs")
+        .file("src/qsizef.rs")
+        .file("src/qstring.rs")
+        .file("src/qtime.rs")
+        .file("src/qurl.rs")
+        .file("src/qvariant.rs")
+        .build();
 }
