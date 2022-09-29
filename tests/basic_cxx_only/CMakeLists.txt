@@ -10,6 +10,13 @@ cmake_minimum_required(VERSION 3.16)
 project(tests_basic_cxx_only)
 set(APP_NAME ${PROJECT_NAME})
 
+# TODO: Add a helper function to our CMake module which automatically
+# handles some of this boilerplate for a "typical" Qt application
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
 get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
@@ -27,9 +34,12 @@ target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::Gui
 )
 
-add_executable(${APP_NAME} cpp/main.cpp)
+add_executable(${APP_NAME}
+    cpp/cxx_test.h
+    cpp/main.cpp
+)
 target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME} PRIVATE
-    ${CRATE} doctest
+    ${CRATE}
     Qt${QT_VERSION_MAJOR}::Test
 )
