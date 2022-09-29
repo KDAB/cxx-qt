@@ -191,7 +191,6 @@ add_test_cargo(demo_threading "${CMAKE_CURRENT_SOURCE_DIR}/examples/demo_threadi
 add_test_cargo(qml_features "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_features/rust/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/plugin/rust/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_minimal "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_minimal/rust/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(qml_with_threaded_logic "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_with_threaded_logic/rust/Cargo.toml" DOCTESTS_OFF)
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format
 add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")

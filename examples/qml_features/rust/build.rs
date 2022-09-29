@@ -17,6 +17,7 @@ fn main() {
         .file("src/serialisation.rs")
         .file("src/signals.rs")
         .file("src/struct_properties.rs")
+        .file("src/threading.rs")
         .file("src/types.rs")
         .build();
 }

@@ -14,7 +14,7 @@ TestCase {
     Component {
         id: componentWebsite
 
-        Website {
+        ThreadingWebsite {
             onTitleChanged: newTitleValue()
             onUrlChanged: newUrlValue()
         }

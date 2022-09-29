@@ -14,7 +14,7 @@ Then we have multiple other examples availabe inside the projects
 
   * [Defining properties and invokables](./qml_features/rust/src/rust_obj_invokables.rs)
   * [How to (de)serialise QObjects](./qml_features/rust/src/serialisation.rs)
-  * [Using threaded logic](./qml_with_threaded_logic/rust/src/lib.rs)
+  * [Using threaded logic](./qml_features/rust/src/threading.rs)
   * [Using Qt types such as QVariant](./qml_features/rust/src/types.rs)
   * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/plugin/)
 
