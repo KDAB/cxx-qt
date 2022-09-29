@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/include/website.cxxqt.h"
+#include "cxx-qt-gen/include/threading_website.cxxqt.h"
 
 class Setup : public QObject
 {
@@ -18,11 +18,11 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<cxx_qt::website::Website>(
-      "com.kdab.cxx_qt.demo", 1, 0, "Website");
+    qmlRegisterType<ThreadingWebsite>(
+      "com.kdab.cxx_qt.demo", 1, 0, "ThreadingWebsite");
   }
 };
 
-QUICK_TEST_MAIN_WITH_SETUP(website, Setup)
+QUICK_TEST_MAIN_WITH_SETUP(threading, Setup)
 
-#include "tst_website.moc"
+#include "tst_threading.moc"

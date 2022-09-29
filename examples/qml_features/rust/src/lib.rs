@@ -11,6 +11,7 @@ mod rust_obj_invokables;
 mod serialisation;
 mod signals;
 mod struct_properties;
+mod threading;
 mod types;
 
 #[cxx_qt::bridge]

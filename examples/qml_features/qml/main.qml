@@ -27,6 +27,10 @@ Window {
         string: "My String " + myObject.number
     }
 
+    ThreadingWebsite {
+        id: website
+    }
+
     Column {
         anchors.fill: parent
         anchors.margins: 10
@@ -56,6 +60,26 @@ Window {
             text: "Print Data"
 
             onClicked: console.warn(myData.asJsonStr())
+        }
+
+        Text {
+            text: "Url: " + website.url
+        }
+
+        Text {
+            text: "Title: " + website.title
+        }
+
+        Button {
+            text: "Change Url"
+
+            onClicked: website.changeUrl()
+        }
+
+        Button {
+            text: "Fetch Title"
+
+            onClicked: website.fetchTitle()
         }
     }
 

@@ -12,6 +12,7 @@
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/serialisation.cxxqt.h"
 #include "cxx-qt-gen/include/struct_properties.cxxqt.h"
+#include "cxx-qt-gen/include/threading_website.cxxqt.h"
 #include "cxx-qt-gen/include/types.cxxqt.h"
 
 int
@@ -37,6 +38,10 @@ main(int argc, char* argv[])
     "com.kdab.cxx_qt.demo", 1, 0, "StructProperties");
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
   qmlRegisterType<Serialisation>("com.kdab.cxx_qt.demo", 1, 0, "Serialisation");
+  // ANCHOR: book_namespace_register
+  qmlRegisterType<cxx_qt::website::ThreadingWebsite>(
+    "com.kdab.cxx_qt.demo", 1, 0, "ThreadingWebsite");
+  // ANCHOR_END: book_namespace_register
   qmlRegisterType<Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
 
   engine.load(url);

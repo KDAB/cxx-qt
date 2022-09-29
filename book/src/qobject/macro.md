@@ -22,13 +22,13 @@ Note that the object name needs to be unique to avoid clashes, in the future ful
 The threaded logic example shows how you can use a namespace to segment the generated C++ code.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_namespace_macro}}
+{{#include ../../../examples/qml_features/rust/src/threading.rs:book_namespace_macro}}
 ```
 
 Then when registering the type you use the type with your namespace as usual.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_with_threaded_logic/rust/src/lib.rs:book_namespace_register}}
+{{#include ../../../examples/qml_features/cpp/main.cpp:book_namespace_register}}
 ```
 
 You can also specify the base class by using `#[cxx_qt::qobject(base = "QStringListModel")]`. Note that you need to use CXX to include the header that the base class is declared in.
