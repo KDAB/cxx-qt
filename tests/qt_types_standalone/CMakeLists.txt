@@ -34,11 +34,26 @@ target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::Gui
 )
 
-add_executable(${APP_NAME} cpp/main.cpp)
+add_executable(${APP_NAME}
+    cpp/cxxqtconvert.h
+    cpp/main.cpp
+    cpp/qcolor.h
+    cpp/qdate.h
+    cpp/qdatetime.h
+    cpp/qpoint.h
+    cpp/qpointf.h
+    cpp/qrect.h
+    cpp/qrectf.h
+    cpp/qsize.h
+    cpp/qsizef.h
+    cpp/qstring.h
+    cpp/qtime.h
+    cpp/qurl.h
+    cpp/qvariant.h
+)
 target_include_directories(${APP_NAME} PRIVATE cpp)
 
 target_link_libraries(${APP_NAME} PRIVATE
     ${CRATE}
-    doctest
     Qt${QT_VERSION_MAJOR}::Test
 )

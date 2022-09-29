@@ -85,7 +85,7 @@
    fun:*QLibraryPrivate*load*
 }
 {
-   qt_quick_test_setup_with_platform_offscreen
+   qt_test_setup_with_platform_offscreen
    Memcheck:Leak
    match-leak-kinds: definite
    fun:*
@@ -96,8 +96,7 @@
    fun:*QCoreApplicationPrivate*init*
    fun:*QGuiApplicationPrivate*init*
    fun:*QGuiApplication*
-   fun:*quick_test_main_with_setup*QObject
-   fun:*
+   ...
 }
 {
    qt_6_hash_function_aeshash

@@ -29,5 +29,5 @@ endfunction()
 
 # Add tests for all the acceptance tests
 add_acceptance_tests(basic_cxx_only)
-add_acceptance_tests(qt_types_standalone)
 add_acceptance_tests(basic_cxx_qt)
+add_acceptance_tests(qt_types_standalone)
