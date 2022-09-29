@@ -111,10 +111,6 @@ licenses.
 Contact KDAB at <info@kdab.com> to inquire about additional features or
 services related to this project.
 
-CXX-Qt includes these source files, also available under the terms of the MIT license:
-
-* [doctest.h](https://github.com/onqtam/doctest) - the lightest feature-rich C++ single-header testing framework for unit tests and TDD (C) 2016-2021 Viktor Kirilov <vik.kirilov@gmail.com>
-
 The following CMake source files are available under the BSD-3-Clause
 
 * [cmake/CompilerCaching.cmake](./cmake/CompilerCaching.cmake) - a helper for using sccache
