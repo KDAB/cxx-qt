@@ -7,7 +7,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include "cxx-qt-gen/include/ffi.cxx.h"
-
 int
 get_cpp_number();

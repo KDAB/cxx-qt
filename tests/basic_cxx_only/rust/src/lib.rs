@@ -6,7 +6,7 @@
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("main.h");
+        include!("cxx_test.h");
 
         fn get_cpp_number() -> i32;
     }

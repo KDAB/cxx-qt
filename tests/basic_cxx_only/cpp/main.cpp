@@ -5,10 +5,9 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
+#include <QtTest/QTest>
 
-#include "main.h"
+#include "cxx-qt-gen/include/ffi.cxx.h"
 
 int hidden_num = 100;
 
@@ -18,9 +17,19 @@ get_cpp_number()
   return hidden_num;
 }
 
-TEST_CASE("Clean cxx allows basic interaction between C++ and Rust")
+class CxxTest : public QObject
 {
-  CHECK(get_numbers_sum() == 102);
-  hidden_num = 200;
-  CHECK(get_numbers_sum() == 202);
-}
+  Q_OBJECT
+
+private Q_SLOTS:
+  // Clean cxx allows basic interaction between C++ and Rust
+  void test_cxx_interaction()
+  {
+    QCOMPARE(get_numbers_sum(), 102);
+    hidden_num = 200;
+    QCOMPARE(get_numbers_sum(), 202);
+  }
+};
+
+QTEST_MAIN(CxxTest)
+#include "main.moc"
