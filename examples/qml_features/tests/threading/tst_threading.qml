@@ -15,8 +15,7 @@ TestCase {
         id: componentWebsite
 
         ThreadingWebsite {
-            onTitleChanged: newTitleValue()
-            onUrlChanged: newUrlValue()
+
         }
     }
 
@@ -30,8 +29,8 @@ TestCase {
 
     function test_defaults() {
         const website = createTemporaryObject(componentWebsite, null, {});
-        compare(website.url, "known");
-        compare(website.title, "Press refresh to get a title...");
+        compare(website.url, "https://kdab.com");
+        compare(website.title, "KDAB");
     }
 
     function test_title_refresh() {
@@ -43,50 +42,41 @@ TestCase {
 
         compare(spy.count, 0);
 
-        website.refreshTitle();
+        website.fetchTitle();
 
         spy.wait();
         compare(website.title, "Loading...");
         compare(spy.count, 1);
 
         spy.wait();
-        compare(website.title, "Known website");
+        compare(website.title, "KDAB");
         compare(spy.count, 2);
     }
 
     function test_url_change() {
         const website = createTemporaryObject(componentWebsite, null, {});
-        const spy = createTemporaryObject(componentSpy, null, {
+        const titleSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "titleChanged",
+            target: website,
+        });
+        const urlSpy = createTemporaryObject(componentSpy, null, {
             signalName: "urlChanged",
             target: website,
         });
 
-        compare(spy.count, 0);
-
+        compare(urlSpy.count, 0);
         website.changeUrl();
+        compare(website.url, "https://github.com/kdab/cxx-qt");
+        compare(urlSpy.count, 1);
 
-        spy.wait();
-        compare(website.url, "unknown");
-        compare(spy.count, 1);
-    }
+        website.fetchTitle();
 
-    function test_property_change_detection() {
-        const website = createTemporaryObject(componentWebsite, null, {});
-        const spy = createTemporaryObject(componentSpy, null, {
-            signalName: "titleChanged",
-            target: website,
-        });
-
-        compare(spy.count, 0);
-
-        website.changeUrl();
-
-        spy.wait();
+        titleSpy.wait();
         compare(website.title, "Loading...");
-        compare(spy.count, 1);
+        compare(titleSpy.count, 1);
 
-        spy.wait();
-        compare(website.title, "Unknown website");
-        compare(spy.count, 2);
+        titleSpy.wait();
+        compare(website.title, "GitHub");
+        compare(titleSpy.count, 2);
     }
 }

@@ -9,6 +9,7 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTest>
 
+#include "cxx-qt-gen/empty.cxxqt.h"
 #include "cxx-qt-gen/my_data.cxxqt.h"
 #include "cxx-qt-gen/my_object.cxxqt.h"
 #include "cxx-qt-gen/my_types.cxxqt.h"
@@ -189,6 +190,9 @@ private Q_SLOTS:
     QCOMPARE(uint32Spy.count(), 1);
     QCOMPARE(types.getUint32(), 4);
   }
+
+  // Tests that we can build an empty QObject end to end
+  void testEmpty() { Empty empty; }
 };
 
 QTEST_MAIN(CxxQtTest)

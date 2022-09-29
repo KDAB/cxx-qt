@@ -8,6 +8,8 @@
 
 use serde::{Deserialize, Serialize};
 
+// TODO: once Qt types support serde again, the Serialisation struct can be used
+// https://github.com/KDAB/cxx-qt/issues/292
 #[derive(Deserialize, Serialize)]
 pub struct DataSerde {
     number: i32,
@@ -40,6 +42,11 @@ mod ffi {
         pub string: QString,
     }
 
+    #[cxx_qt::signals(Serialisation)]
+    pub enum Connection {
+        Error { message: QString },
+    }
+
     impl Default for Serialisation {
         fn default() -> Self {
             let string = r#"{"number": 4, "string": "Hello World!"}"#;
@@ -59,19 +66,33 @@ mod ffi {
 
     impl qobject::Serialisation {
         #[qinvokable]
-        pub fn as_json_str(&self) -> QString {
+        pub fn as_json_str(self: Pin<&mut Self>) -> QString {
             let data_serde = DataSerde::from(self.rust());
-            let data_string = serde_json::to_string(&data_serde).unwrap();
-            QString::from(&data_string)
+            match serde_json::to_string(&data_serde) {
+                Ok(data_string) => QString::from(&data_string),
+                Err(err) => {
+                    self.emit(Connection::Error {
+                        message: QString::from(&err.to_string()),
+                    });
+                    QString::default()
+                }
+            }
         }
 
         // ANCHOR: book_grab_values
         #[qinvokable]
-        pub fn grab_values(mut self: Pin<&mut Self>) {
-            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            self.as_mut().set_number(data_serde.number);
-            self.as_mut().set_string(QString::from(&data_serde.string));
+        pub fn from_json_str(mut self: Pin<&mut Self>, string: &QString) {
+            match serde_json::from_str::<DataSerde>(&string.to_string()) {
+                Ok(data_serde) => {
+                    self.as_mut().set_number(data_serde.number);
+                    self.as_mut().set_string(QString::from(&data_serde.string));
+                }
+                Err(err) => {
+                    self.emit(Connection::Error {
+                        message: QString::from(&err.to_string()),
+                    });
+                }
+            }
         }
         // ANCHOR_END: book_grab_values
     }

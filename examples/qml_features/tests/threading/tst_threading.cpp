@@ -18,7 +18,7 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<ThreadingWebsite>(
+    qmlRegisterType<cxx_qt::website::ThreadingWebsite>(
       "com.kdab.cxx_qt.demo", 1, 0, "ThreadingWebsite");
   }
 };

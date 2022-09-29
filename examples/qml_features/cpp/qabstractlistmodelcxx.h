@@ -40,6 +40,17 @@ public:
   }
 
   void endInsertRows() { QAbstractItemModel::endInsertRows(); }
+
+  void beginRemoveRows(int first, int last)
+  {
+    QAbstractItemModel::beginRemoveRows(QModelIndex(), first, last);
+  }
+
+  void endRemoveRows() { QAbstractItemModel::endRemoveRows(); }
+
+  void beginResetModel() { QAbstractItemModel::beginResetModel(); }
+
+  void endResetModel() { QAbstractItemModel::endResetModel(); }
 };
 
 // Define that a QModelIndex is relocatable and check the size

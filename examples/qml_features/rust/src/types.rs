@@ -9,45 +9,50 @@ mod ffi {
     use cxx_qt_lib::QVariantValue;
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qpoint.h");
+        type QPointF = cxx_qt_lib::QPointF;
+        include!("cxx-qt-lib/qurl.h");
+        type QUrl = cxx_qt_lib::QUrl;
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
     }
 
+    // TODO: should we show how to do custom types?
     #[cxx_qt::qobject]
     pub struct Types {
         #[qproperty]
-        variant: QVariant,
+        boolean: bool,
+        #[qproperty]
+        point: QPointF,
+        #[qproperty]
+        url: QUrl,
     }
 
     impl Default for Types {
         fn default() -> Self {
             Self {
-                variant: QVariant::from(1_i32),
+                boolean: false,
+                point: QPointF::new(1.0, 2.0),
+                url: QUrl::from("https://kdab.com"),
             }
         }
     }
 
     impl qobject::Types {
         #[qinvokable]
-        pub fn test_variant_property(mut self: Pin<&mut Self>) {
-            match self.variant().value() {
-                QVariantValue::Bool(b) => {
-                    self.as_mut().set_variant(QVariant::from(!b));
-                }
-                QVariantValue::I32(i) => {
-                    self.as_mut().set_variant(QVariant::from(i * 2));
-                }
-                _ => panic!("Incorrect variant type!"),
+        pub fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
+            match variant.value() {
+                QVariantValue::Bool(boolean) => self.set_boolean(boolean),
+                QVariantValue::QPointF(point) => self.set_point(point),
+                QVariantValue::QUrl(url) => self.set_url(url),
+                _ => println!("Unknown QVariant type to load from"),
             }
         }
 
         #[qinvokable]
-        pub fn test_variant_invokable(&self, variant: &QVariant) -> QVariant {
-            match variant.value() {
-                QVariantValue::Bool(b) => QVariant::from(!b),
-                QVariantValue::I32(i) => QVariant::from(i * 2),
-                _ => panic!("Incorrect variant type!"),
-            }
+        pub fn toggle_boolean(self: Pin<&mut Self>) {
+            let new_boolean = !self.as_ref().boolean();
+            self.set_boolean(new_boolean);
         }
     }
 }

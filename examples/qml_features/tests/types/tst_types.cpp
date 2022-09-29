@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/my_object.cxxqt.h"
+#include "cxx-qt-gen/types.cxxqt.h"
 
 class Setup : public QObject
 {
@@ -18,10 +18,10 @@ class Setup : public QObject
 public:
   Setup()
   {
-    qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
+    qmlRegisterType<Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
   }
 };
 
-QUICK_TEST_MAIN_WITH_SETUP(myobject, Setup)
+QUICK_TEST_MAIN_WITH_SETUP(types, Setup)
 
-#include "tst_myobject.moc"
+#include "tst_types.moc"

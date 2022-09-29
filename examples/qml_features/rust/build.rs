@@ -12,14 +12,11 @@ fn main() {
         .cc_builder(|cc| {
             cc.include("../cpp");
         })
-        .file("src/custom_base.rs")
-        .file("src/empty.rs")
-        .file("src/lib.rs")
-        .file("src/mock_qt_types.rs")
-        .file("src/rust_obj_invokables.rs")
+        .file("src/custom_base_class.rs")
+        .file("src/invokables.rs")
         .file("src/serialisation.rs")
         .file("src/signals.rs")
-        .file("src/struct_properties.rs")
+        .file("src/properties.rs")
         .file("src/threading.rs")
         .file("src/types.rs")
         .build();

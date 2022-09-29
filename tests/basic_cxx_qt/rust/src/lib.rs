@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod data;
+mod empty;
 mod types;
 
 #[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "cxx_qt::my_object")]
