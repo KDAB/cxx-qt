@@ -35,7 +35,6 @@ target_link_libraries(${CRATE} INTERFACE
 
 add_executable(${APP_NAME} cpp/main.cpp)
 target_link_libraries(${APP_NAME} PRIVATE
-    doctest
     ${CRATE}
     Qt${QT_VERSION_MAJOR}::Test
 )

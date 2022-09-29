@@ -5,225 +5,222 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include <QDebug>
-#include <QSignalSpy>
-#include <QTimer>
-
-#define DOCTEST_CONFIG_IMPLEMENT
-#include "doctest.h"
+#include <QtCore/QTimer>
+#include <QtTest/QSignalSpy>
+#include <QtTest/QTest>
 
 #include "cxx-qt-gen/include/my_data.cxxqt.h"
 #include "cxx-qt-gen/include/my_object.cxxqt.h"
 #include "cxx-qt-gen/include/my_types.cxxqt.h"
 
-int
-main(int argc, char** argv)
+class CxxQtTest : public QObject
 {
-  QCoreApplication app{ argc, argv };
+  Q_OBJECT
 
-  QTimer::singleShot(0, [&]() {
-    doctest::Context context;
-    context.applyCommandLine(argc, argv);
-    const auto result = context.run();
-    app.exit(result);
-  });
+private Q_SLOTS:
+  // CXX-Qt allows basic interaction between C++ (with Qt) and Rust
+  void test_basic_interaction()
+  {
+    cxx_qt::my_object::MyObject obj;
 
-  return app.exec();
-}
+    obj.sayHi(QStringLiteral("Hello World!"), 32);
 
-TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust")
-{
-  cxx_qt::my_object::MyObject obj;
+    // Check that an invokable can be called and the return value is correct
+    const auto value = obj.doubleNumber(32);
+    qInfo() << "Double of 32 is:" << value;
+    QCOMPARE(value, 64);
 
-  obj.sayHi(QStringLiteral("Hello World!"), 32);
+    // Track the signal count of numberChanged, stringChanged
+    QSignalSpy numberSpy(&obj, &cxx_qt::my_object::MyObject::numberChanged);
+    QSignalSpy stringSpy(&obj, &cxx_qt::my_object::MyObject::stringChanged);
 
-  // Check that an invokable can be called and the return value is correct
-  const auto value = obj.doubleNumber(32);
-  qInfo() << "Double of 32 is:" << value;
-  CHECK(value == 64);
+    // Check the number property
+    QCOMPARE(obj.getNumber(), 0);
+    QCOMPARE(numberSpy.count(), 0);
+    obj.setNumber(16);
+    QCOMPARE(numberSpy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(numberSpy.count(), 1);
+    QCOMPARE(obj.getNumber(), 16);
 
-  // Track the signal count of numberChanged, stringChanged
-  QSignalSpy numberSpy(&obj, &cxx_qt::my_object::MyObject::numberChanged);
-  QSignalSpy stringSpy(&obj, &cxx_qt::my_object::MyObject::stringChanged);
+    // Check the string property
+    QCOMPARE(obj.getString(), QString());
+    QCOMPARE(stringSpy.count(), 0);
+    obj.setString(QStringLiteral("Hello"));
+    QCOMPARE(stringSpy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(stringSpy.count(), 1);
+    QCOMPARE(obj.getString(), QStringLiteral("Hello"));
 
-  // Check the number property
-  CHECK(obj.getNumber() == 0);
-  CHECK(numberSpy.count() == 0);
-  obj.setNumber(16);
-  CHECK(numberSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(numberSpy.count() == 1);
-  CHECK(obj.getNumber() == 16);
+    // Check the double number self
+    QCOMPARE(obj.getNumber(), 16);
+    QCOMPARE(numberSpy.count(), 1);
+    obj.doubleNumberSelf();
+    QCOMPARE(obj.getNumber(), 32);
+    QCOMPARE(numberSpy.count(), 1);
+    QCoreApplication::processEvents();
+    QCOMPARE(numberSpy.count(), 2);
 
-  // Check the string property
-  CHECK(obj.getString() == QString());
-  CHECK(stringSpy.count() == 0);
-  obj.setString(QStringLiteral("Hello"));
-  CHECK(stringSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(stringSpy.count() == 1);
-  CHECK(obj.getString() == QStringLiteral("Hello"));
+    qInfo() << "Number is:" << obj.getNumber()
+            << "String is:" << obj.getString();
+  }
 
-  // Check the double number self
-  CHECK(obj.getNumber() == 16);
-  CHECK(numberSpy.count() == 1);
-  obj.doubleNumberSelf();
-  CHECK(obj.getNumber() == 32);
-  CHECK(numberSpy.count() == 1);
-  QCoreApplication::processEvents();
-  CHECK(numberSpy.count() == 2);
+  // CXX-Qt allows basic interaction between C++ (with Qt) and Rust using Serde
+  void test_basic_interaction_serde()
+  {
+    cxx_qt::my_data::MyData data;
 
-  qInfo() << "Number is:" << obj.getNumber() << "String is:" << obj.getString();
-}
+    // Track the signal count of numberChanged, stringChanged
+    QSignalSpy numberSpy(&data, &cxx_qt::my_data::MyData::numberChanged);
+    QSignalSpy stringSpy(&data, &cxx_qt::my_data::MyData::stringChanged);
 
-TEST_CASE("CXX-Qt allows basic interaction between C++ (with Qt) and Rust "
-          "using Serde")
-{
-  cxx_qt::my_data::MyData data;
+    // Check that initial value of the deserialised data
+    QCOMPARE(data.getNumber(), 4);
+    QCOMPARE(data.getString(), QStringLiteral("Hello World!"));
 
-  // Track the signal count of numberChanged, stringChanged
-  QSignalSpy numberSpy(&data, &cxx_qt::my_data::MyData::numberChanged);
-  QSignalSpy stringSpy(&data, &cxx_qt::my_data::MyData::stringChanged);
+    // Check the number changed property
+    QCOMPARE(numberSpy.count(), 0);
+    data.setNumber(16);
+    QCOMPARE(numberSpy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(numberSpy.count(), 1);
+    QCOMPARE(data.getNumber(), 16);
 
-  // Check that initial value of the deserialised data
-  CHECK(data.getNumber() == 4);
-  CHECK(data.getString() == QStringLiteral("Hello World!"));
+    // Check the string property
+    QCOMPARE(stringSpy.count(), 0);
+    data.setString(QStringLiteral("Hello"));
+    QCOMPARE(stringSpy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(stringSpy.count(), 1);
+    QCOMPARE(data.getString(), QStringLiteral("Hello"));
 
-  // Check the number changed property
-  CHECK(numberSpy.count() == 0);
-  data.setNumber(16);
-  CHECK(numberSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(numberSpy.count() == 1);
-  CHECK(data.getNumber() == 16);
+    // Check that initial value of the deserialised data
+    QCOMPARE(data.asJsonStr(),
+             QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
+  }
 
-  // Check the string property
-  CHECK(stringSpy.count() == 0);
-  data.setString(QStringLiteral("Hello"));
-  CHECK(stringSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(stringSpy.count() == 1);
-  CHECK(data.getString() == QStringLiteral("Hello"));
+  // CXX-Qt allows Rust code to queue a request
+  void test_queue_request()
+  {
+    cxx_qt::my_object::MyObject obj;
+    QCOMPARE(obj.updateCallCount(), 0);
+    obj.queueTest();
+    QCOMPARE(obj.updateCallCount(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(obj.updateCallCount(), 1);
+  }
 
-  // Check that initial value of the deserialised data
-  CHECK(data.asJsonStr() ==
-        QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
-}
+  // CXX-Qt allows Rust code to queue multiple requests
+  void test_queue_multiple_requests()
+  {
+    cxx_qt::my_object::MyObject obj;
+    QCOMPARE(obj.updateCallCount(), 0);
+    obj.queueTest();
+    obj.queueTest();
+    QCOMPARE(obj.updateCallCount(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(obj.updateCallCount(), 2);
+  }
 
-TEST_CASE("CXX-Qt allows Rust code to queue a request")
-{
-  cxx_qt::my_object::MyObject obj;
-  CHECK(obj.updateCallCount() == 0);
-  obj.queueTest();
-  CHECK(obj.updateCallCount() == 0);
-  QCoreApplication::processEvents();
-  CHECK(obj.updateCallCount() == 1);
-}
+  // CXX-Qt allows Rust code to queue requests in multiple threads
+  void test_queue_requests_multiple_threads()
+  {
+    cxx_qt::my_object::MyObject obj;
+    QCOMPARE(obj.updateCallCount(), 0);
+    obj.queueTestMultiThread();
+    QCOMPARE(obj.updateCallCount(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(obj.updateCallCount(), 100);
+  }
 
-TEST_CASE("CXX-Qt allows Rust code to queue multiple requests")
-{
-  cxx_qt::my_object::MyObject obj;
-  CHECK(obj.updateCallCount() == 0);
-  obj.queueTest();
-  obj.queueTest();
-  CHECK(obj.updateCallCount() == 0);
-  QCoreApplication::processEvents();
-  CHECK(obj.updateCallCount() == 2);
-}
+  // CXX-Qt types are exposed to C++ correctly
+  void test_primitive_types()
+  {
+    cxx_qt::my_types::MyTypes types;
 
-TEST_CASE("CXX-Qt allows Rust code to queue requests in multiple threads")
-{
-  cxx_qt::my_object::MyObject obj;
-  CHECK(obj.updateCallCount() == 0);
-  obj.queueTestMultiThread();
-  CHECK(obj.updateCallCount() == 0);
-  QCoreApplication::processEvents();
-  CHECK(obj.updateCallCount() == 100);
-}
+    QSignalSpy booleanSpy(&types, &cxx_qt::my_types::MyTypes::booleanChanged);
+    QSignalSpy float32Spy(&types, &cxx_qt::my_types::MyTypes::float32Changed);
+    QSignalSpy float64Spy(&types, &cxx_qt::my_types::MyTypes::float64Changed);
+    QSignalSpy int8Spy(&types, &cxx_qt::my_types::MyTypes::int8Changed);
+    QSignalSpy int16Spy(&types, &cxx_qt::my_types::MyTypes::int16Changed);
+    QSignalSpy int32Spy(&types, &cxx_qt::my_types::MyTypes::int32Changed);
+    QSignalSpy uint8Spy(&types, &cxx_qt::my_types::MyTypes::uint8Changed);
+    QSignalSpy uint16Spy(&types, &cxx_qt::my_types::MyTypes::uint16Changed);
+    QSignalSpy uint32Spy(&types, &cxx_qt::my_types::MyTypes::uint32Changed);
 
-TEST_CASE("CXX-Qt types are exposed to C++ correctly")
-{
-  cxx_qt::my_types::MyTypes types;
+    QCOMPARE(types.getBoolean(), false);
+    QCOMPARE(booleanSpy.count(), 0);
+    types.setBoolean(true);
+    QCOMPARE(booleanSpy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(booleanSpy.count(), 1);
+    QCOMPARE(types.getBoolean(), true);
 
-  QSignalSpy booleanSpy(&types, &cxx_qt::my_types::MyTypes::booleanChanged);
-  QSignalSpy float32Spy(&types, &cxx_qt::my_types::MyTypes::float32Changed);
-  QSignalSpy float64Spy(&types, &cxx_qt::my_types::MyTypes::float64Changed);
-  QSignalSpy int8Spy(&types, &cxx_qt::my_types::MyTypes::int8Changed);
-  QSignalSpy int16Spy(&types, &cxx_qt::my_types::MyTypes::int16Changed);
-  QSignalSpy int32Spy(&types, &cxx_qt::my_types::MyTypes::int32Changed);
-  QSignalSpy uint8Spy(&types, &cxx_qt::my_types::MyTypes::uint8Changed);
-  QSignalSpy uint16Spy(&types, &cxx_qt::my_types::MyTypes::uint16Changed);
-  QSignalSpy uint32Spy(&types, &cxx_qt::my_types::MyTypes::uint32Changed);
+    QCOMPARE(types.getFloat32(), 0.0);
+    QCOMPARE(float32Spy.count(), 0);
+    types.setFloat32(0.33f);
+    QCOMPARE(float32Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(float32Spy.count(), 1);
+    QCOMPARE(types.getFloat32(), 0.33f);
 
-  CHECK(types.getBoolean() == false);
-  CHECK(booleanSpy.count() == 0);
-  types.setBoolean(true);
-  CHECK(booleanSpy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(booleanSpy.count() == 1);
-  CHECK(types.getBoolean() == true);
+    QCOMPARE(types.getFloat64(), 0.0);
+    QCOMPARE(float64Spy.count(), 0);
+    types.setFloat64(0.33);
+    QCOMPARE(float64Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(float64Spy.count(), 1);
+    QCOMPARE(types.getFloat64(), 0.33);
 
-  CHECK(types.getFloat32() == 0.0);
-  CHECK(float32Spy.count() == 0);
-  types.setFloat32(0.33f);
-  CHECK(float32Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(float32Spy.count() == 1);
-  CHECK(types.getFloat32() == 0.33f);
+    QCOMPARE(types.getInt8(), 0);
+    QCOMPARE(int8Spy.count(), 0);
+    types.setInt8(4);
+    QCOMPARE(int8Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(int8Spy.count(), 1);
+    QCOMPARE(types.getInt8(), 4);
 
-  CHECK(types.getFloat64() == 0.0);
-  CHECK(float64Spy.count() == 0);
-  types.setFloat64(0.33);
-  CHECK(float64Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(float64Spy.count() == 1);
-  CHECK(types.getFloat64() == 0.33);
+    QCOMPARE(types.getInt16(), 0);
+    QCOMPARE(int16Spy.count(), 0);
+    types.setInt16(4);
+    QCOMPARE(int16Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(int16Spy.count(), 1);
+    QCOMPARE(types.getInt16(), 4);
 
-  CHECK(types.getInt8() == 0);
-  CHECK(int8Spy.count() == 0);
-  types.setInt8(4);
-  CHECK(int8Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(int8Spy.count() == 1);
-  CHECK(types.getInt8() == 4);
+    QCOMPARE(types.getInt32(), 0);
+    QCOMPARE(int32Spy.count(), 0);
+    types.setInt32(4);
+    QCOMPARE(int32Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(int32Spy.count(), 1);
+    QCOMPARE(types.getInt32(), 4);
 
-  CHECK(types.getInt16() == 0);
-  CHECK(int16Spy.count() == 0);
-  types.setInt16(4);
-  CHECK(int16Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(int16Spy.count() == 1);
-  CHECK(types.getInt16() == 4);
+    QCOMPARE(types.getUint8(), 0);
+    QCOMPARE(uint8Spy.count(), 0);
+    types.setUint8(4);
+    QCOMPARE(uint8Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(uint8Spy.count(), 1);
+    QCOMPARE(types.getUint8(), 4);
 
-  CHECK(types.getInt32() == 0);
-  CHECK(int32Spy.count() == 0);
-  types.setInt32(4);
-  CHECK(int32Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(int32Spy.count() == 1);
-  CHECK(types.getInt32() == 4);
+    QCOMPARE(types.getUint16(), 0);
+    QCOMPARE(uint16Spy.count(), 0);
+    types.setUint16(4);
+    QCOMPARE(uint16Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(uint16Spy.count(), 1);
+    QCOMPARE(types.getUint16(), 4);
 
-  CHECK(types.getUint8() == 0);
-  CHECK(uint8Spy.count() == 0);
-  types.setUint8(4);
-  CHECK(uint8Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(uint8Spy.count() == 1);
-  CHECK(types.getUint8() == 4);
+    QCOMPARE(types.getUint32(), 0);
+    QCOMPARE(uint32Spy.count(), 0);
+    types.setUint32(4);
+    QCOMPARE(uint32Spy.count(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(uint32Spy.count(), 1);
+    QCOMPARE(types.getUint32(), 4);
+  }
+};
 
-  CHECK(types.getUint16() == 0);
-  CHECK(uint16Spy.count() == 0);
-  types.setUint16(4);
-  CHECK(uint16Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(uint16Spy.count() == 1);
-  CHECK(types.getUint16() == 4);
-
-  CHECK(types.getUint32() == 0);
-  CHECK(uint32Spy.count() == 0);
-  types.setUint32(4);
-  CHECK(uint32Spy.count() == 0);
-  QCoreApplication::processEvents();
-  CHECK(uint32Spy.count() == 1);
-  CHECK(types.getUint32() == 4);
-}
+QTEST_MAIN(CxxQtTest)
+#include "main.moc"
