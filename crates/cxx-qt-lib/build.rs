@@ -54,6 +54,7 @@ fn main() {
     }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
+    println!("cargo:rerun-if-changed=src/types/assertion_utils.h");
 
     // Write this library's manually written C++ headers to files and add them to include paths
     let out_dir = std::env::var("OUT_DIR").unwrap();

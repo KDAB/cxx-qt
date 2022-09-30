@@ -7,6 +7,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qdatetime.h"
 
+#include "assertion_utils.h"
+
 // QDateTime has a single member, which is a union, with the largest member
 // being a pointer
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n426
@@ -14,14 +16,13 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n394
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n255
-static_assert(alignof(QDateTime) <= alignof(std::size_t),
-              "unexpectedly large QDateTime alignment");
-static_assert(sizeof(QDateTime) == sizeof(std::size_t),
-              "unexpected QDateTime size");
+assert_alignment_and_size(QDateTime, alignof(std::size_t), sizeof(std::size_t));
 
 static_assert(!std::is_trivially_copy_assignable<QDateTime>::value);
 static_assert(!std::is_trivially_copy_constructible<QDateTime>::value);
 static_assert(!std::is_trivially_destructible<QDateTime>::value);
+
+static_assert(QTypeInfo<QDateTime>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

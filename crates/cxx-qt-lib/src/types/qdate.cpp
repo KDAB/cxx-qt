@@ -7,6 +7,19 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qdate.h"
 
+#include "assertion_utils.h"
+
+#include <cstdint>
+
+// QDate has a single 64-Bit integer member
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n176
+//
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n147
+assert_alignment_and_size(QDate, alignof(std::int64_t), sizeof(std::int64_t));
+
+static_assert(std::is_trivially_copyable<QDate>::value,
+              "QDate must be trivially copyable!");
+
 namespace rust {
 namespace cxxqtlib1 {
 

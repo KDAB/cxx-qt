@@ -9,6 +9,8 @@
 
 #include <QMetaObject>
 
+#include "assertion_utils.h"
+
 // The layout has changed between Qt 5 and Qt 6
 //
 // Qt5 QVariant has one member, which contains three uints and a union.
@@ -22,15 +24,13 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n540
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n474
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-static_assert(alignof(QVariant) <= alignof(std::size_t[4]),
-              "unexpectedly large QVariant alignment");
-static_assert(sizeof(QVariant) == sizeof(std::size_t[4]),
-              "unexpected QVariant size");
+assert_alignment_and_size(QVariant,
+                          alignof(std::size_t),
+                          sizeof(std::size_t[4]));
 #else
-static_assert(alignof(QVariant) <= alignof(std::size_t[2]),
-              "unexpectedly large QVariant alignment");
-static_assert(sizeof(QVariant) == sizeof(std::size_t[2]),
-              "unexpected QVariant size");
+assert_alignment_and_size(QVariant,
+                          alignof(std::size_t),
+                          sizeof(std::size_t[2]));
 #endif
 
 static_assert(!std::is_trivially_copy_assignable<QVariant>::value);
@@ -39,6 +39,8 @@ static_assert(!std::is_trivially_copy_constructible<QVariant>::value);
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
 static_assert(!std::is_trivially_destructible<QVariant>::value);
+
+static_assert(QTypeInfo<QVariant>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

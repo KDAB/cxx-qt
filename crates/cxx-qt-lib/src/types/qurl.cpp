@@ -8,18 +8,20 @@
 #include "cxx-qt-lib/include/qurl.h"
 #include "cxx-qt-lib/include/qstring.h"
 
+#include "assertion_utils.h"
+
 // QUrl has a single pointer as it's member
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v5.15.6-lts-lgpl#n367
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v6.2.4#n294
-static_assert(alignof(QUrl) <= alignof(std::size_t),
-              "unexpectedly large QUrl alignment");
-static_assert(sizeof(QUrl) == sizeof(std::size_t), "unexpected QUrl size");
+assert_alignment_and_size(QUrl, alignof(std::size_t), sizeof(std::size_t));
 
 static_assert(!std::is_trivially_copy_assignable<QUrl>::value);
 static_assert(!std::is_trivially_copy_constructible<QUrl>::value);
 
 static_assert(!std::is_trivially_destructible<QUrl>::value);
+
+static_assert(QTypeInfo<QUrl>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {
