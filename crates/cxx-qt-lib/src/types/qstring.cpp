@@ -20,7 +20,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QString,
-                          alignof(std::size_t[3]),
+                          alignof(std::size_t),
                           sizeof(std::size_t[3]));
 #else
 assert_alignment_and_size(QString, alignof(std::size_t), sizeof(std::size_t));
@@ -30,6 +30,8 @@ static_assert(!std::is_trivially_copy_assignable<QString>::value);
 static_assert(!std::is_trivially_copy_constructible<QString>::value);
 
 static_assert(!std::is_trivially_destructible<QString>::value);
+
+static_assert(QTypeInfo<QString>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

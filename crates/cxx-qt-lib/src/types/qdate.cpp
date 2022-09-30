@@ -15,9 +15,9 @@
 // https://codebrowser.dev/qt5/qtbase/src/corelib/time/qdatetime.h.html#QDate::jd
 //
 // https://codebrowser.dev/qt6/qtbase/src/corelib/time/qdatetime.h.html#QDate::jd
-assert_alignment_and_size(QDate, alignof(std::int64_t), sizeof(std::int64_t))
+assert_alignment_and_size(QDate, alignof(std::int64_t), sizeof(std::int64_t));
 
-  static_assert(std::is_trivially_copy_assignable<QDate>::value);
+static_assert(std::is_trivially_copy_assignable<QDate>::value);
 static_assert(std::is_trivially_copy_constructible<QDate>::value);
 
 static_assert(std::is_trivially_destructible<QDate>::value);

@@ -22,6 +22,8 @@ static_assert(!std::is_trivially_copy_assignable<QDateTime>::value);
 static_assert(!std::is_trivially_copy_constructible<QDateTime>::value);
 static_assert(!std::is_trivially_destructible<QDateTime>::value);
 
+static_assert(QTypeInfo<QDateTime>::isRelocatable);
+
 namespace rust {
 namespace cxxqtlib1 {
 

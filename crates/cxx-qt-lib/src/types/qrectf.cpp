@@ -15,6 +15,9 @@
 // https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qrect.h.html#QRectF::xp
 assert_alignment_and_size(QRectF, alignof(double), sizeof(double[4]));
 
+static_assert(std::is_trivially_copyable<QRectF>::value,
+              "QRectF must be trivially copyable");
+
 namespace rust {
 namespace cxxqtlib1 {
 

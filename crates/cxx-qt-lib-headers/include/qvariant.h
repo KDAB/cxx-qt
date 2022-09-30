@@ -9,7 +9,6 @@
 
 #include <QVariant>
 
-// TODO: Make forward declarations
 #include <QColor>
 #include <QDate>
 #include <QDateTime>
@@ -29,7 +28,6 @@ template<>
 struct rust::IsRelocatable<QVariant> : std::true_type
 {
 };
-static_assert(QTypeInfo<QVariant>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

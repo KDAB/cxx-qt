@@ -15,7 +15,6 @@ template<>
 struct rust::IsRelocatable<QDateTime> : std::true_type
 {
 };
-static_assert(QTypeInfo<QDateTime>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

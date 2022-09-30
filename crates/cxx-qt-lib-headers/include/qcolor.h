@@ -11,11 +11,14 @@
 
 #include "rust/cxx.h"
 
+// QColor still had copy & move constructors in Qt 5 but they were basically
+// trivial.
+#if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
 template<>
 struct rust::IsRelocatable<QColor> : std::true_type
 {
 };
-static_assert(QTypeInfo<QColor>::isRelocatable);
+#endif
 
 namespace rust {
 namespace cxxqtlib1 {

@@ -15,7 +15,6 @@ template<>
 struct rust::IsRelocatable<QUrl> : std::true_type
 {
 };
-static_assert(QTypeInfo<QUrl>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {

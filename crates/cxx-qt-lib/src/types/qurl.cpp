@@ -21,6 +21,8 @@ static_assert(!std::is_trivially_copy_constructible<QUrl>::value);
 
 static_assert(!std::is_trivially_destructible<QUrl>::value);
 
+static_assert(QTypeInfo<QUrl>::isRelocatable);
+
 namespace rust {
 namespace cxxqtlib1 {
 

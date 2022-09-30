@@ -40,6 +40,8 @@ static_assert(!std::is_trivially_copy_constructible<QVariant>::value);
 // If this is false then we need to manually implement Drop rather than derive
 static_assert(!std::is_trivially_destructible<QVariant>::value);
 
+static_assert(QTypeInfo<QVariant>::isRelocatable);
+
 namespace rust {
 namespace cxxqtlib1 {
 
