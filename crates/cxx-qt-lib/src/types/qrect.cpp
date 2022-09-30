@@ -13,9 +13,9 @@
 
 // QRect has 4 int members.
 // Rust represents them as 4 32-bit integers
-// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qrect.h.html#QRect::x1
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v5.15.6-lts-lgpl#n161
 //
-// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qrect.h.html#QRect::x1
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v6.2.4#n161
 assert_alignment_and_size(QRect,
                           alignof(std::int32_t),
                           sizeof(std::int32_t[4]));

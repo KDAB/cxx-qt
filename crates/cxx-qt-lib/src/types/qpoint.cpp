@@ -13,9 +13,9 @@
 
 // QPoint has "int" members - xp and yp
 // Rust represents these as 32-bit integer types.
-// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qpoint.h.html#QPoint::xp
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qpoint.h?h=v5.15.6-lts-lgpl#n271
 //
-// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qpoint.h.html#QPoint::xp
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qpoint.h?h=v6.2.4#n313
 assert_alignment_and_size(QPoint,
                           alignof(std::int32_t),
                           sizeof(std::int32_t[2]));

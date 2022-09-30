@@ -10,9 +10,9 @@
 #include "assertion_utils.h"
 
 // QRectF has 4 double members
-// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qrect.h.html#QRectF::xp
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v5.15.6-lts-lgpl#n621
 //
-// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qrect.h.html#QRectF::xp
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v6.2.4#n623
 assert_alignment_and_size(QRectF, alignof(double), sizeof(double[4]));
 
 static_assert(std::is_trivially_copyable<QRectF>::value,

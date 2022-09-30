@@ -10,9 +10,9 @@
 #include "assertion_utils.h"
 
 // QSizeF has two qreal members
-// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qsize.h.html#QSizeF::wd
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v5.15.6-lts-lgpl#n276
 //
-// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qsize.h.html#QSizeF::wd
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v6.2.4#n302
 assert_alignment_and_size(QSizeF, alignof(double), sizeof(double[2]));
 
 static_assert(std::is_trivially_copyable<QSizeF>::value,

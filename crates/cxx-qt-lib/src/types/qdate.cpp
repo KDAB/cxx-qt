@@ -12,15 +12,13 @@
 #include <cstdint>
 
 // QDate has a single 64-Bit integer member
-// https://codebrowser.dev/qt5/qtbase/src/corelib/time/qdatetime.h.html#QDate::jd
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n176
 //
-// https://codebrowser.dev/qt6/qtbase/src/corelib/time/qdatetime.h.html#QDate::jd
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n147
 assert_alignment_and_size(QDate, alignof(std::int64_t), sizeof(std::int64_t));
 
-static_assert(std::is_trivially_copy_assignable<QDate>::value);
-static_assert(std::is_trivially_copy_constructible<QDate>::value);
-
-static_assert(std::is_trivially_destructible<QDate>::value);
+static_assert(std::is_trivially_copyable<QDate>::value,
+              "QDate must be trivially copyable!");
 
 namespace rust {
 namespace cxxqtlib1 {
