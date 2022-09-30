@@ -35,7 +35,7 @@ pub mod ffi {
     }
 
     // ANCHOR: book_rust_obj_impl
-    impl cxx_qt::QObject<Signals> {
+    impl qobject::Signals {
         #[qinvokable]
         pub fn invokable(mut self: Pin<&mut Self>) {
             self.as_mut().emit(Signal::Ready);

@@ -47,7 +47,7 @@ mod ffi {
         vector: Vec<(u32, f64)>,
     }
 
-    impl cxx_qt::QObject<CustomBase> {
+    impl qobject::CustomBase {
         #[qinvokable]
         pub fn add(mut self: Pin<&mut Self>) {
             let count = self.rust().vector.len();
@@ -60,7 +60,7 @@ mod ffi {
     }
 
     // QAbstractListModel implementation
-    impl cxx_qt::QObject<CustomBase> {
+    impl qobject::CustomBase {
         #[qinvokable(cxx_override)]
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
             if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {

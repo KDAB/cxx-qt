@@ -96,7 +96,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<MockQtTypes> {
+    impl qobject::MockQtTypes {
         #[qinvokable]
         pub fn test_signal(mut self: Pin<&mut Self>) {
             self.as_mut().emit(Signal::Ready);

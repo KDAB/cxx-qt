@@ -57,7 +57,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<Serialisation> {
+    impl qobject::Serialisation {
         #[qinvokable]
         pub fn as_json_str(&self) -> QString {
             let data_serde = DataSerde::from(self.rust());

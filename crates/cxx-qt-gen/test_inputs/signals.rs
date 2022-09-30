@@ -22,7 +22,7 @@ mod ffi {
     #[derive(Default)]
     pub struct MyObject;
 
-    impl cxx_qt::QObject<MyObject> {
+    impl qobject::MyObject {
         #[qinvokable]
         pub fn invokable(self: Pin<&mut Self>) {
             self.as_mut().emit(MySignals::DataChanged {
