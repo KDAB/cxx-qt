@@ -259,4 +259,8 @@ mod cxx_qt_ffi {
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
+
+    pub mod qobject {
+        pub type MyObject = super::MyObjectQt;
+    }
 }

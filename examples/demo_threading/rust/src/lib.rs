@@ -218,7 +218,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<EnergyUsage> {
+    impl qobject::EnergyUsage {
         #[qinvokable]
         pub fn start_server(self: Pin<&mut Self>) {
             if self.rust().join_handles.is_some() {

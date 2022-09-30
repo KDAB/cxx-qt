@@ -6,7 +6,7 @@
 use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
-    path::{path_angled_args_to_type_path, path_compare_str, path_to_single_ident},
+    path::path_to_single_ident,
 };
 use std::collections::HashMap;
 use syn::{spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, Result, Type, TypePath};
@@ -93,25 +93,21 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
-        // If the implementation has a cxx_qt::QObject
+        // If the implementation has a qobject::T
         // then this is the block of methods to be implemented on the C++ object
         if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            if path_compare_str(path, &["cxx_qt", "QObject"]) {
-                // Read the T from cxx_qt::QObject<T> and error if it's missing
-                let qobject_path = path_angled_args_to_type_path(path)?;
-                if let Some(qobject) = self
-                    .qobjects
-                    // Convert the path to a single ident, and error if it isn't
-                    .get_mut(&path_to_single_ident(&qobject_path)?)
-                {
+            // Find if we are a impl qobject::T
+            if path.segments.len() == 2 && path.segments[0].ident == "qobject" {
+                if let Some(qobject) = self.qobjects.get_mut(&path.segments[1].ident) {
                     // Extract the ImplItem's from each Impl block
                     qobject.parse_impl_items(&imp.items)?;
                 } else {
                     return Err(Error::new(
                         imp.span(),
-                        "No matching QObject found for the given cxx_qt::QObject<T> impl block.",
+                        "No matching QObject found for the given qobject::T impl block.",
                     ));
                 }
+
                 return Ok(None);
             // Find if we are an impl block for a qobject
             } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
@@ -282,7 +278,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject<MyObject> {
+            impl qobject::MyObject {
                 #[qinvokable]
                 fn invokable() {}
 
@@ -300,7 +296,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject {
+            impl qobject::MyObject::Bad {
                 #[qinvokable]
                 fn invokable() {}
             }
@@ -314,7 +310,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            impl cxx_qt::QObject<UnknownObj> {
+            impl qobject::UnknownObj {
                 #[qinvokable]
                 fn invokable() {}
             }

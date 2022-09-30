@@ -89,7 +89,7 @@ impl ParsedQObject {
 
     /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
     ///
-    /// These will have come from a impl cxx_qt::QObject<T> block
+    /// These will have come from a impl qobject::T block
     pub fn parse_impl_items(&mut self, items: &[ImplItem]) -> Result<()> {
         for item in items {
             // Check if this item is a method

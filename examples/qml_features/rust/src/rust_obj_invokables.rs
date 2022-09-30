@@ -23,7 +23,7 @@ pub mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<RustObjInvokables> {
+    impl qobject::RustObjInvokables {
         // ANCHOR: book_cpp_obj
         #[qinvokable]
         pub fn invokable_mutate_cpp(self: Pin<&mut Self>) {

@@ -22,7 +22,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 ///         property: i32,
 ///     }
 ///
-///     impl cxx_qt::QObject<RustObj> {
+///     impl qobject::RustObj {
 ///         #[qinvokable]
 ///         fn invokable(&self, a: i32, b: i32) -> i32 {
 ///             a + b
@@ -104,37 +104,6 @@ pub fn signals(_args: TokenStream, _input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("cxx_qt::qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
-}
-
-/// A macro which describes that the inner methods should be implemented on the C++ QObject.
-/// This allows for defining C++ methods which are Q_INVOKABLE for QML in Rust.
-///
-/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
-///
-/// # Example
-///
-/// ```ignore
-/// #[cxx_qt::bridge]
-/// mod my_object {
-///     #[cxx_qt::qobject]
-///     #[derive(Default)]
-///     struct RustObj {
-///         #[qproperty]
-///         property: i32,
-///     }
-///
-///     impl cxx_qt::QObject<RustObj> {
-///         #[qinvokable]
-///         fn invokable(&self, a: i32, b: i32) -> i32 {
-///             a + b
-///         }
-///     }
-/// }
-/// ```
-#[proc_macro]
-#[allow(non_snake_case)]
-pub fn QObject(_input: TokenStream) -> TokenStream {
-    unreachable!("cxx_qt::QObject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
 // Take the module and C++ namespace and generate the rust code

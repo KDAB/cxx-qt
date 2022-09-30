@@ -27,7 +27,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<Types> {
+    impl qobject::Types {
         #[qinvokable]
         pub fn test_variant_property(mut self: Pin<&mut Self>) {
             match self.variant().value() {

@@ -21,7 +21,7 @@ The `#[cxx_qt::qobject]` marked struct allows you to define the following items
 
 ## Invokables
 
-A `impl cxx_qt::QObject<T>` is used to define invokables, the `impl cxx_qt::QObject<T>` defines that the methods are implemented onto the C++ QObject `T`.
+A `impl qobject::T` is used to define invokables, the `impl qobject::T` defines that the methods are implemented onto the C++ QObject `T`.
 Therefore they have access to both C++ and Rust methods. Also CXX-Qt adds wrapper code around your invokables to automatically perform any conversion between the [C++ and Rust types](../concepts/types.md).
 
 To mark a method as invokable simply add the `#[qinvokable]` attribute to the Rust method. This then causes `Q_INVOKABLE` to be set on the C++ definition of the method, allowing QML to call the invokable.
@@ -42,6 +42,6 @@ If you want to provide default values for your QObject, then instead of deriving
 
 Fields within the `#[cxx_qt::qobject]` marked struct that aren't tagged are not exposed as properties to Qt. These can be considered as "private to Rust" fields, and are useful for storing channels for threading or internal information for the QObject.
 
-Methods implemented using `impl T` (and not `impl cxx_qt::QObject<T>`) are just normal Rust member methods.
+Methods implemented using `impl T` (and not `impl qobject::T`) are just normal Rust member methods.
 Therefore they do not have access to any C++ or QObject functionality (e.g. emitting Signals, changing properties, etc.)
 You will usually only need to use `impl T` if you want to also use your struct as a normal Rust struct, that is not wrapped in a QObject.

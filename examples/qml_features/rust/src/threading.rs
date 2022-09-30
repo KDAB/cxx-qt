@@ -42,7 +42,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<ThreadingWebsite> {
+    impl qobject::ThreadingWebsite {
         /// Swap the URL between kdab.com and github.com
         #[qinvokable]
         pub fn change_url(self: Pin<&mut Self>) {

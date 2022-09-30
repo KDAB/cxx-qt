@@ -3,10 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{
-    spanned::Spanned, AngleBracketedGenericArguments, Error, GenericArgument, Ident, Path,
-    PathArguments, Result, Type, TypePath,
-};
+use syn::{spanned::Spanned, Error, Ident, Path, Result};
 
 /// Returns whether the [syn::Path] matches a given string slice
 pub fn path_compare_str(path: &Path, string: &[&str]) -> bool {
@@ -35,46 +32,6 @@ pub fn path_to_single_ident(path: &Path) -> Result<Ident> {
     }
 }
 
-/// Internal helper to extract angled brackets from a [syn::Path]
-fn path_angled_to_arguments(path: &'_ Path) -> Option<&'_ AngleBracketedGenericArguments> {
-    if let Some(last) = path.segments.last() {
-        if let PathArguments::AngleBracketed(args) = &last.arguments {
-            return Some(args);
-        }
-    }
-
-    None
-}
-
-/// In std::collections::HashSet<T> extract the T as a [syn::Path]
-///
-/// Error if there isn't a single type path but none or many
-pub fn path_angled_args_to_type_path(path: &Path) -> Result<Path> {
-    let paths = path_angled_args_to_type_path_list(path);
-    if paths.len() == 1 {
-        Ok(paths[0].clone())
-    } else {
-        Err(Error::new(
-            path.span(),
-            "Expected only one Path in the Path's angled bracketed generic arguments",
-        ))
-    }
-}
-
-/// In std::collections::HashMap<K, V> extract the K, V as a Vec of [syn::Path]'s
-pub fn path_angled_args_to_type_path_list(path: &Path) -> Vec<Path> {
-    let mut items = vec![];
-    if let Some(inner) = path_angled_to_arguments(path) {
-        for arg in &inner.args {
-            if let GenericArgument::Type(Type::Path(TypePath { path, .. })) = arg {
-                items.push(path.clone());
-            }
-        }
-    }
-
-    items
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,38 +56,5 @@ mod tests {
         let path: Path = tokens_to_syn(quote! { a });
         let ident = path_to_single_ident(&path).unwrap();
         assert_eq!(ident, "a");
-    }
-
-    #[test]
-    fn test_path_angled_args_to_type_path() {
-        let path: Path = tokens_to_syn(quote! { std::collections::HashSet<a::b::c> });
-        let path = path_angled_args_to_type_path(&path).unwrap();
-        assert!(path_compare_str(&path, &["a", "b", "c"]));
-
-        let path: Path = tokens_to_syn(quote! { std::collections::HashMap<a::b::c, a::b::c> });
-        assert!(path_angled_args_to_type_path(&path).is_err());
-
-        let path: Path = tokens_to_syn(quote! { std::collections::HashMap<> });
-        assert!(path_angled_args_to_type_path(&path).is_err());
-
-        let path: Path = tokens_to_syn(quote! { a::b::c });
-        assert!(path_angled_args_to_type_path(&path).is_err());
-    }
-
-    #[test]
-    fn test_path_angled_args_to_type_path_list() {
-        let path: Path = tokens_to_syn(quote! { std::collections::HashSet<a::b::c> });
-        assert_eq!(path_angled_args_to_type_path_list(&path).len(), 1);
-        let path = &path_angled_args_to_type_path_list(&path)[0];
-        assert!(path_compare_str(path, &["a", "b", "c"]));
-
-        let path: Path = tokens_to_syn(quote! { std::collections::HashMap<a::b::c, a::b::c> });
-        assert_eq!(path_angled_args_to_type_path_list(&path).len(), 2);
-
-        let path: Path = tokens_to_syn(quote! { std::collections::HashMap<> });
-        assert_eq!(path_angled_args_to_type_path_list(&path).len(), 0);
-
-        let path: Path = tokens_to_syn(quote! { a::b::c });
-        assert_eq!(path_angled_args_to_type_path_list(&path).len(), 0);
     }
 }

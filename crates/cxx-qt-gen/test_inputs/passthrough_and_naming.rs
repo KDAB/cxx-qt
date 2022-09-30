@@ -91,7 +91,7 @@ pub mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<MyObject> {
+    impl qobject::MyObject {
         #[qinvokable]
         pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");

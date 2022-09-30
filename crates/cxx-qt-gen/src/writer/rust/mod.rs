@@ -113,6 +113,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         .expect("Could not build CXX common block"),
     );
 
+    let mut qobject_types = vec![];
     for qobject in &generated.qobjects {
         // Add the common blocks into the bridge which we need
         cxx_mod_contents.extend_from_slice(&qobject.blocks.cxx_mod_contents);
@@ -131,7 +132,22 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 .map(|block| syn::parse2(block).expect("Could not build CXX-Qt common block"))
                 .collect(),
         );
+
+        // Add the type alias to the C++ struct
+        let cpp_struct_ident = &qobject.cpp_struct_ident;
+        let rust_struct_ident = &qobject.rust_struct_ident;
+        qobject_types.push(quote! { pub type #rust_struct_ident = super::#cpp_struct_ident; })
     }
+
+    // Create the qobject block for the type alias
+    cxx_qt_mod_contents.push(
+        syn::parse2(quote! {
+            pub mod qobject {
+                #(#qobject_types)*
+            }
+        })
+        .expect("Could not build qobject block"),
+    );
 
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
@@ -386,6 +402,10 @@ mod tests {
                 pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
                     std::default::Default::default()
                 }
+
+                pub mod qobject {
+                    pub type MyObject = super::MyObjectQt;
+                }
             }
         }
         .into_token_stream()
@@ -516,6 +536,11 @@ mod tests {
 
                 pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
                     std::default::Default::default()
+                }
+
+                pub mod qobject {
+                    pub type FirstObject = super::FirstObjectQt;
+                    pub type SecondObject = super::SecondObjectQt;
                 }
             }
         }

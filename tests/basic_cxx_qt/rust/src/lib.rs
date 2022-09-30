@@ -35,7 +35,7 @@ mod ffi {
         }
     }
 
-    impl cxx_qt::QObject<MyObject> {
+    impl qobject::MyObject {
         #[qinvokable]
         pub fn double_number_self(self: Pin<&mut Self>) {
             let value = self.number() * 2;
