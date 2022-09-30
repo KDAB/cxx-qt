@@ -7,6 +7,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qsizef.h"
 
+#include "assertion_utils.h"
+
+// QSizeF has two qreal members
+// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qsize.h.html#QSizeF::wd
+//
+// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qsize.h.html#QSizeF::wd
+assert_alignment_and_size(QSizeF, alignof(double), sizeof(double[2]));
+
+static_assert(std::is_trivially_copyable<QSizeF>::value,
+              "QSizeF must be trivially copyable!");
+
 namespace rust {
 namespace cxxqtlib1 {
 

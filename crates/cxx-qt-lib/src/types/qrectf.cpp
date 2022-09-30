@@ -7,6 +7,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qrectf.h"
 
+#include "assertion_utils.h"
+
+// QRectF has 4 double members
+// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qrect.h.html#QRectF::xp
+//
+// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qrect.h.html#QRectF::xp
+assert_alignment_and_size(QRectF, alignof(double), sizeof(double[4]));
+
 namespace rust {
 namespace cxxqtlib1 {
 

@@ -7,6 +7,21 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qpoint.h"
 
+#include "assertion_utils.h"
+
+#include <cstdint>
+
+// QPoint has "int" members - xp and yp
+// Rust represents these as 32-bit integer types.
+// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qpoint.h.html#QPoint::xp
+//
+// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qpoint.h.html#QPoint::xp
+assert_alignment_and_size(QPoint,
+                          alignof(std::int32_t),
+                          sizeof(std::int32_t[2]));
+
+static_assert(std::is_trivially_copyable<QPoint>::value);
+
 namespace rust {
 namespace cxxqtlib1 {
 

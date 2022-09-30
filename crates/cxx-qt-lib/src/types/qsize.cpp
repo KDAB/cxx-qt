@@ -7,6 +7,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qsize.h"
 
+#include "assertion_utils.h"
+
+#include <cstdint>
+
+// QSize has two "int" members
+// Rust represents these as 32-bit integers.
+// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qsize.h.html#QSize::wd
+//
+// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qsize.h.html#QSize::wd
+assert_alignment_and_size(QSize,
+                          alignof(std::int32_t),
+                          sizeof(std::int32_t[2]));
+
+static_assert(std::is_trivially_copyable<QSize>::value,
+              "QSize must be trivially copyable!");
+
 namespace rust {
 namespace cxxqtlib1 {
 

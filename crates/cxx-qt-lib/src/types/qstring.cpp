@@ -7,6 +7,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qstring.h"
 
+#include "assertion_utils.h"
+
 // The layout has changed between Qt 5 and Qt 6
 //
 // Qt5 QString has one pointer as a member
@@ -17,15 +19,11 @@
 // DataPointer is then a QStringPrivate, which is a QArrayDataPointer<char16_t>
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-static_assert(alignof(QString) <= alignof(std::size_t[3]),
-              "unexpectedly large QString alignment");
-static_assert(sizeof(QString) == sizeof(std::size_t[3]),
-              "unexpected QString size");
+assert_alignment_and_size(QString,
+                          alignof(std::size_t[3]),
+                          sizeof(std::size_t[3]));
 #else
-static_assert(alignof(QString) <= alignof(std::size_t),
-              "unexpectedly large QString alignment");
-static_assert(sizeof(QString) == sizeof(std::size_t),
-              "unexpected QString size");
+assert_alignment_and_size(QString, alignof(std::size_t), sizeof(std::size_t));
 #endif
 
 static_assert(!std::is_trivially_copy_assignable<QString>::value);

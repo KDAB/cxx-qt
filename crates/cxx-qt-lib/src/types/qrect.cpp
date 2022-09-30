@@ -7,6 +7,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/include/qrect.h"
 
+#include "assertion_utils.h"
+
+#include <cstdint>
+
+// QRect has 4 int members.
+// Rust represents them as 4 32-bit integers
+// https://codebrowser.dev/qt5/qtbase/src/corelib/tools/qrect.h.html#QRect::x1
+//
+// https://codebrowser.dev/qt6/qtbase/src/corelib/tools/qrect.h.html#QRect::x1
+assert_alignment_and_size(QRect,
+                          alignof(std::int32_t),
+                          sizeof(std::int32_t[4]));
+
+static_assert(std::is_trivially_copyable<QRect>::value,
+              "QRect must be trivially copyable");
+
 namespace rust {
 namespace cxxqtlib1 {
 
