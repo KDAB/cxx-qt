@@ -9,7 +9,7 @@ mod ffi {
     use cxx_qt_lib::QVariantValue;
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
     }
 

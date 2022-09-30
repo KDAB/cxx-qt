@@ -9,7 +9,7 @@ use cxx_qt_lib::QString;
 #[cxx::bridge]
 mod qstring_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qstring.h");
 
         type QString = cxx_qt_lib::QString;
     }

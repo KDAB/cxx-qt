@@ -11,7 +11,7 @@ mod types;
 mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qstring.h");
         type QString = cxx_qt_lib::QString;
     }
 

@@ -10,7 +10,8 @@ mod ffi {
     // ANCHOR_END: book_namespace_macro
     #[namespace = ""]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qt_types.h");
+        include!("cxx-qt-lib/include/qstring.h");
+        include!("cxx-qt-lib/include/qurl.h");
         type QString = cxx_qt_lib::QString;
         type QUrl = cxx_qt_lib::QUrl;
     }
