@@ -96,8 +96,7 @@ private Q_SLOTS:
     QCOMPARE(obj.fetchUpdateCallCount(), 0);
     obj.queueTest();
     QCOMPARE(obj.fetchUpdateCallCount(), 0);
-    QCoreApplication::processEvents();
-    QCOMPARE(obj.fetchUpdateCallCount(), 1);
+    QTRY_COMPARE(obj.fetchUpdateCallCount(), 1);
   }
 
   // CXX-Qt allows Rust code to queue multiple requests
@@ -108,8 +107,7 @@ private Q_SLOTS:
     obj.queueTest();
     obj.queueTest();
     QCOMPARE(obj.fetchUpdateCallCount(), 0);
-    QCoreApplication::processEvents();
-    QCOMPARE(obj.fetchUpdateCallCount(), 2);
+    QTRY_COMPARE(obj.fetchUpdateCallCount(), 2);
   }
 
   // CXX-Qt allows Rust code to queue requests in multiple threads
@@ -119,8 +117,7 @@ private Q_SLOTS:
     QCOMPARE(obj.fetchUpdateCallCount(), 0);
     obj.queueTestMultiThread();
     QCOMPARE(obj.fetchUpdateCallCount(), 0);
-    QCoreApplication::processEvents();
-    QCOMPARE(obj.fetchUpdateCallCount(), 100);
+    QTRY_COMPARE(obj.fetchUpdateCallCount(), 100);
   }
 
   // CXX-Qt types are exposed to C++ correctly
