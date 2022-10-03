@@ -32,9 +32,9 @@ pub fn generate_rust_signals(
     for signal in &signals_enum.signals {
         let idents = QSignalName::from(signal);
         let signal_ident_rust = idents.enum_name;
-        let queued_ident_cpp = &idents.queued_name.cpp;
-        let queued_ident_rust = &idents.queued_name.rust;
-        let queued_ident_rust_str = idents.queued_name.rust.to_string();
+        let emit_ident_cpp = &idents.emit_name.cpp;
+        let emit_ident_rust = &idents.emit_name.rust;
+        let emit_ident_rust_str = idents.emit_name.rust.to_string();
 
         let parameter_signatures = if signal.parameters.is_empty() {
             quote! { self: Pin<&mut #cpp_class_name_rust> }
@@ -59,14 +59,14 @@ pub fn generate_rust_signals(
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 unsafe extern "C++" {
-                    #[rust_name = #queued_ident_rust_str]
-                    fn #queued_ident_cpp(#parameter_signatures);
+                    #[rust_name = #emit_ident_rust_str]
+                    fn #emit_ident_cpp(#parameter_signatures);
                 }
             }],
             implementation: vec![],
         };
         signal_matches.push(quote! {
-            #signal_enum_ident::#signal_ident_rust { #(#parameter_names),* } => self.#queued_ident_rust(#(#parameter_names),*)
+            #signal_enum_ident::#signal_ident_rust { #(#parameter_names),* } => self.#emit_ident_rust(#(#parameter_names),*)
         });
 
         generated
@@ -80,7 +80,7 @@ pub fn generate_rust_signals(
     // Add the Rust method using the enum to call the methods
     generated.cxx_qt_mod_contents.push(syn::parse2(quote! {
         impl #cpp_class_name_rust {
-            pub fn emit_queued(self: Pin<&mut Self>, signal: #signal_enum_ident) {
+            pub fn emit(self: Pin<&mut Self>, signal: #signal_enum_ident) {
                 match signal {
                     #(#signal_matches),*
                 }
@@ -162,7 +162,7 @@ mod tests {
             &generated.cxx_qt_mod_contents[1],
             quote! {
                 impl MyObjectQt {
-                    pub fn emit_queued(self: Pin<&mut Self>, signal: MySignals) {
+                    pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
                         match signal {
                             MySignals::Ready {} => self.emit_ready(),
                             MySignals::DataChanged { trivial, opaque } => self.emit_data_changed(trivial, opaque)

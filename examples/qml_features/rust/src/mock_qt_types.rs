@@ -99,8 +99,8 @@ mod ffi {
     impl cxx_qt::QObject<MockQtTypes> {
         #[qinvokable]
         pub fn test_signal(mut self: Pin<&mut Self>) {
-            self.as_mut().emit_queued(Signal::Ready);
-            self.as_mut().emit_queued(Signal::DataChanged {
+            self.as_mut().emit(Signal::Ready);
+            self.as_mut().emit(Signal::DataChanged {
                 variant: QVariant::from(true),
             });
         }

@@ -54,11 +54,9 @@ TestCase {
         mock.testSignal();
 
         // Safe signal emission is queued
-        compare(readySpy.count, 0);
-        compare(dataChangedSpy.count, 0);
-        tryCompare(readySpy, "count", 1);
+        compare(readySpy.count, 1);
+        compare(dataChangedSpy.count, 1);
         compare(readySpy.signalArguments[0].length, 0);
-        tryCompare(dataChangedSpy, "count", 1);
         compare(dataChangedSpy.signalArguments[0].length, 1);
         const signalArguments = dataChangedSpy.signalArguments[0];
         compare(signalArguments[0], true);
