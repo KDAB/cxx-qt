@@ -23,6 +23,8 @@ pub struct Parser {
     pub passthrough_module: ItemMod,
     /// Any CXX-Qt data that needs generation later
     pub cxx_qt_data: ParsedCxxQtData,
+    /// The stem of the file that the CXX headers for this module will be generated into
+    pub cxx_file_stem: String,
 }
 
 impl Parser {
@@ -30,20 +32,27 @@ impl Parser {
     pub fn from(mut module: ItemMod) -> Result<Self> {
         let mut cxx_qt_data = ParsedCxxQtData::default();
         let mut others = vec![];
+        let mut cxx_file_stem = module.ident.to_string();
 
         // Remove the cxx_qt::bridge attribute
         if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
-            // Parse any namespace in the cxx_qt::bridge macro
-            cxx_qt_data.namespace = if let Some(lit_str) = attribute_tokens_to_map::<Ident, LitStr>(
+            let attr_map = attribute_tokens_to_map::<Ident, LitStr>(
                 &module.attrs[index],
                 AttributeDefault::None,
-            )?
-            .get(&quote::format_ident!("namespace"))
-            {
-                lit_str.value()
-            } else {
-                "".to_owned()
-            };
+            )?;
+            // Parse any namespace in the cxx_qt::bridge macro
+            cxx_qt_data.namespace =
+                if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
+                    lit_str.value()
+                } else {
+                    "".to_owned()
+                };
+
+            // Parse any custom file stem
+            if let Some(stem) = attr_map.get(&quote::format_ident!("cxx_file_stem")) {
+                cxx_file_stem = stem.value();
+            }
+
             module.attrs.remove(index);
         } else {
             return Err(Error::new(
@@ -87,6 +96,7 @@ impl Parser {
         Ok(Self {
             passthrough_module: module,
             cxx_qt_data,
+            cxx_file_stem,
         })
     }
 }

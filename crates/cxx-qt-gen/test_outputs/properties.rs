@@ -13,7 +13,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-gen/my_object.cxxqt.h");
+        include!("cxx-qt-gen/ffi.cxxqt.h");
     }
 
     unsafe extern "C++" {

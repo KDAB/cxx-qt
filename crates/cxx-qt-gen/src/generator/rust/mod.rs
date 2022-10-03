@@ -10,10 +10,10 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
-use crate::generator::{naming::module::cxx_stem_from_ident, rust::qobject::GeneratedRustQObject};
+use crate::generator::rust::qobject::GeneratedRustQObject;
 use crate::parser::Parser;
 use quote::quote;
-use syn::{spanned::Spanned, Error, Item, ItemMod, Result};
+use syn::{Item, ItemMod, Result};
 
 /// Representation of the generated Rust code for a QObject
 pub struct GeneratedRustBlocks {
@@ -48,17 +48,7 @@ impl GeneratedRustBlocks {
 
 /// Generate the include line for this parsed block
 fn generate_include(parser: &Parser) -> Result<Item> {
-    // TODO: for now the cxx stem comes from the first QObject name
-    // but later this may come from the module or file so would then have
-    // a field on the cxx_qt_data
-    if parser.cxx_qt_data.qobjects.len() != 1 {
-        return Err(Error::new(
-            parser.passthrough_module.span(),
-            "Only one QObject is currently supported in the ItemMod.",
-        ));
-    }
-    let (qt_ident, _) = parser.cxx_qt_data.qobjects.iter().take(1).next().unwrap();
-    let import_path = format!("cxx-qt-gen/{}.cxxqt.h", cxx_stem_from_ident(qt_ident));
+    let import_path = format!("cxx-qt-gen/{}.cxxqt.h", parser.cxx_file_stem);
 
     syn::parse2(quote! {
         unsafe extern "C++" {
@@ -91,7 +81,7 @@ mod tests {
             &rust.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    include!("cxx-qt-gen/my_object.cxxqt.h");
+                    include!("cxx-qt-gen/ffi.cxxqt.h");
                 }
             },
         );
@@ -137,6 +127,33 @@ mod tests {
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_eq!(rust.cxx_qt_mod_contents.len(), 1);
         assert_eq!(rust.namespace, "cxx_qt");
+        assert_eq!(rust.qobjects.len(), 1);
+    }
+
+    #[test]
+    fn test_generated_rust_blocks_cxx_file_stem() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(cxx_file_stem = "my_object")]
+            mod ffi {
+                #[cxx_qt::qobject]
+                struct MyObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let rust = GeneratedRustBlocks::from(&parser).unwrap();
+        assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
+        assert_eq!(rust.cxx_mod_contents.len(), 1);
+        assert_tokens_eq(
+            &rust.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    include!("cxx-qt-gen/my_object.cxxqt.h");
+                }
+            },
+        );
+        assert_eq!(rust.cxx_qt_mod_contents.len(), 0);
+        assert_eq!(rust.namespace, "");
         assert_eq!(rust.qobjects.len(), 1);
     }
 }

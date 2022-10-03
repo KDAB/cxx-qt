@@ -23,7 +23,7 @@ impl From<&Serialisation> for DataSerde {
     }
 }
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(cxx_file_stem = "serialisation")]
 mod ffi {
     use super::DataSerde;
 

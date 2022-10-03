@@ -14,7 +14,7 @@ mod struct_properties;
 mod threading;
 mod types;
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(cxx_file_stem = "my_object")]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");

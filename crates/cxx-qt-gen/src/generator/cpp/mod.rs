@@ -10,10 +10,9 @@ pub mod qobject;
 pub mod signal;
 pub mod types;
 
-use crate::generator::naming;
 use crate::parser::Parser;
 use qobject::GeneratedCppQObject;
-use syn::{spanned::Spanned, Error, Result};
+use syn::Result;
 
 pub const RUST_OBJ_MUTEX_LOCK_GUARD: &str =
     "const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);";
@@ -22,7 +21,7 @@ pub const CXX_QT_CONVERT: &str = "rust::cxxqtlib1::cxx_qt_convert";
 /// Representation of the generated C++ code for a group of QObjects
 pub struct GeneratedCppBlocks {
     /// Stem of the CXX header to include
-    pub cxx_stem: String,
+    pub cxx_file_stem: String,
     /// Ident of the common namespace of the QObjects
     pub namespace: String,
     /// Generated QObjects
@@ -31,18 +30,8 @@ pub struct GeneratedCppBlocks {
 
 impl GeneratedCppBlocks {
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
-        // TODO: for now we use the name of the first and only QObject
-        // later this needs to come from elsewhere
-        if parser.cxx_qt_data.qobjects.len() != 1 {
-            return Err(Error::new(
-                parser.passthrough_module.span(),
-                "Expected one QObject in the ItemMod.",
-            ));
-        }
-        let qt_ident = parser.cxx_qt_data.qobjects.keys().take(1).next().unwrap();
-
         Ok(GeneratedCppBlocks {
-            cxx_stem: naming::module::cxx_stem_from_ident(qt_ident).to_string(),
+            cxx_file_stem: parser.cxx_file_stem.clone(),
             namespace: parser.cxx_qt_data.namespace.clone(),
             qobjects: parser
                 .cxx_qt_data
@@ -75,7 +64,24 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        assert_eq!(cpp.cxx_stem, "my_object");
+        assert_eq!(cpp.cxx_file_stem, "ffi");
+        assert_eq!(cpp.namespace, "");
+        assert_eq!(cpp.qobjects.len(), 1);
+    }
+
+    #[test]
+    fn test_generated_cpp_blocks_cxx_file_stem() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(cxx_file_stem = "my_object")]
+            mod ffi {
+                #[cxx_qt::qobject]
+                struct MyObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let cpp = GeneratedCppBlocks::from(&parser).unwrap();
+        assert_eq!(cpp.cxx_file_stem, "my_object");
         assert_eq!(cpp.namespace, "");
         assert_eq!(cpp.qobjects.len(), 1);
     }

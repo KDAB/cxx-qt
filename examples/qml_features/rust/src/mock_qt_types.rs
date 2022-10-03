@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge]
+#[cxx_qt::bridge(cxx_file_stem = "mock_qt_types")]
 mod ffi {
     use cxx_qt_lib::QVariantValue;
 

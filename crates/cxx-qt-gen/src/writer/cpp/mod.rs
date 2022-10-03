@@ -51,7 +51,7 @@ mod tests {
     /// Helper to create a GeneratedCppBlocks for testing
     pub fn create_generated_cpp() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
-            cxx_stem: "cxx_stem".to_owned(),
+            cxx_file_stem: "cxx_file_stem".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![
                 GeneratedCppQObject {
@@ -149,7 +149,7 @@ mod tests {
     /// Helper to create a GeneratedCppBlocks for testing with multiple qobjects
     pub fn create_generated_cpp_multi_qobjects() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
-            cxx_stem: "cxx_stem".to_owned(),
+            cxx_file_stem: "cxx_file_stem".to_owned(),
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
                 GeneratedCppQObject {
@@ -254,7 +254,7 @@ mod tests {
         using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
         } // namespace cxx_qt::my_object
 
-        #include "cxx-qt-gen/cxx_stem.cxx.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
 
         namespace cxx_qt::my_object {
         class MyObject : public QStringListModel
@@ -326,7 +326,7 @@ mod tests {
         using SecondObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<SecondObject>;
         } // namespace cxx_qt
 
-        #include "cxx-qt-gen/cxx_stem.cxx.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
 
         namespace cxx_qt {
         class FirstObject : public QStringListModel
@@ -425,7 +425,7 @@ mod tests {
         using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
 
 
-        #include "cxx-qt-gen/cxx_stem.cxx.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
 
 
         class MyObject : public QStringListModel
@@ -477,7 +477,7 @@ mod tests {
     /// Helper for the expected source
     pub fn expected_source() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_stem.cxxqt.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
         namespace cxx_qt::my_object {
 
@@ -565,7 +565,7 @@ mod tests {
     /// Helper for the expected source with multiple QObjects
     pub fn expected_source_multi_qobjects() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_stem.cxxqt.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
         namespace cxx_qt {
 
@@ -685,7 +685,7 @@ mod tests {
     /// Helper for the expected header with no namespace
     pub fn expected_source_no_namespace() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_stem.cxxqt.h"
+        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
 
 
