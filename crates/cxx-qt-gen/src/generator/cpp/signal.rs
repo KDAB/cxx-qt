@@ -26,20 +26,18 @@ pub fn generate_cpp_signals(
     for signal in signals {
         // Generate the parameters
         let mut parameter_types = vec![];
-        let mut parameter_types_queued = vec![];
+        let mut parameter_types_emitter = vec![];
         let mut parameter_values = vec![];
-        let mut captures = vec!["this".to_owned()];
 
         for parameter in &signal.parameters {
             let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type)?;
             let ident_str = parameter.ident.to_string();
-            captures.push(format!("{ident} = std::move({ident})", ident = ident_str));
             parameter_types.push(format!(
                 "{cxx_ty} {ident}",
                 ident = parameter.ident,
                 cxx_ty = cxx_ty.as_cxx_ty(),
             ));
-            parameter_types_queued.push(format!(
+            parameter_types_emitter.push(format!(
                 "{rust_ty} {ident}",
                 ident = parameter.ident,
                 rust_ty = cxx_ty.as_rust_ty(),
@@ -55,7 +53,7 @@ pub fn generate_cpp_signals(
 
         // Prepare the idents
         let idents = QSignalName::from(signal);
-        let queued_ident = idents.queued_name.cpp.to_string();
+        let emit_ident = idents.emit_name.cpp.to_string();
         let signal_ident = idents.name.cpp.to_string();
 
         // Generate the Q_SIGNAL
@@ -65,30 +63,25 @@ pub fn generate_cpp_signals(
             parameters = parameter_types.join(", "),
         ));
 
-        // Generate the queued emitters
+        // Generate the emitters
         generated.methods.push(CppFragmentPair {
             header: format!(
                 "void {ident}({parameters});",
-                ident = queued_ident,
-                parameters = parameter_types_queued.join(", "),
+                ident = emit_ident,
+                parameters = parameter_types_emitter.join(", "),
             ),
             source: formatdoc! {
                 r#"
                 void
-                {qobject_ident}::{queued_ident}({parameters})
+                {qobject_ident}::{emit_ident}({parameters})
                 {{
-                    const auto signalSuccess = QMetaObject::invokeMethod(
-                        this, [{captures}]() mutable {{
-                            Q_EMIT {ident}({parameter_values});
-                        }}, Qt::QueuedConnection);
-                    Q_ASSERT(signalSuccess);
+                    Q_EMIT {ident}({parameter_values});
                 }}
                 "#,
-                captures = captures.join(", "),
                 ident = signal_ident,
-                parameters = parameter_types_queued.join(", "),
+                parameters = parameter_types_emitter.join(", "),
                 parameter_values = parameter_values.join(", "),
-                queued_ident = queued_ident,
+                emit_ident = emit_ident,
                 qobject_ident = qobject_ident,
             },
         });
@@ -146,11 +139,7 @@ mod tests {
             void
             MyObject::emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque)
             {
-                const auto signalSuccess = QMetaObject::invokeMethod(
-                    this, [this, trivial = std::move(trivial), opaque = std::move(opaque)]() mutable {
-                        Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
-                    }, Qt::QueuedConnection);
-                Q_ASSERT(signalSuccess);
+                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
             }
             "#}
         );

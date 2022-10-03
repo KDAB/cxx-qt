@@ -12,7 +12,7 @@ use syn::Ident;
 pub struct QSignalName {
     pub enum_name: Ident,
     pub name: CombinedIdent,
-    pub queued_name: CombinedIdent,
+    pub emit_name: CombinedIdent,
 }
 
 impl From<&ParsedSignal> for QSignalName {
@@ -26,7 +26,7 @@ impl From<&Ident> for QSignalName {
         Self {
             enum_name: ident.clone(),
             name: name_from_ident(ident),
-            queued_name: queued_name_from_ident(ident),
+            emit_name: emit_name_from_ident(ident),
         }
     }
 }
@@ -40,8 +40,8 @@ fn name_from_ident(ident: &Ident) -> CombinedIdent {
     }
 }
 
-/// For a given signal ident generate the Rust and C++ queued name
-fn queued_name_from_ident(ident: &Ident) -> CombinedIdent {
+/// For a given signal ident generate the Rust and C++ emit name
+fn emit_name_from_ident(ident: &Ident) -> CombinedIdent {
     // Note that signal names are in camel case so we need to convert to snake first
     let ident = format_ident!("emit_{}", ident.to_string().to_case(Case::Snake));
     CombinedIdent {
@@ -65,7 +65,7 @@ mod tests {
         assert_eq!(names.enum_name, format_ident!("DataChanged"));
         assert_eq!(names.name.cpp, format_ident!("dataChanged"));
         assert_eq!(names.name.rust, format_ident!("data_changed"));
-        assert_eq!(names.queued_name.cpp, format_ident!("emitDataChanged"));
-        assert_eq!(names.queued_name.rust, format_ident!("emit_data_changed"));
+        assert_eq!(names.emit_name.cpp, format_ident!("emitDataChanged"));
+        assert_eq!(names.emit_name.rust, format_ident!("emit_data_changed"));
     }
 }

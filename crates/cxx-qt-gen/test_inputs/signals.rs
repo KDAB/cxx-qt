@@ -25,7 +25,7 @@ mod ffi {
     impl cxx_qt::QObject<MyObject> {
         #[qinvokable]
         pub fn invokable(self: Pin<&mut Self>) {
-            self.as_mut().emit_queued(MySignals::DataChanged {
+            self.as_mut().emit(MySignals::DataChanged {
                 first: 1,
                 second: Opaque::new(),
                 third: QPoint::new(1, 2),

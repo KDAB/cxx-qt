@@ -91,7 +91,7 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn invokable(self: Pin<&mut Self>) {
-            self.as_mut().emit_queued(MySignals::DataChanged {
+            self.as_mut().emit(MySignals::DataChanged {
                 first: 1,
                 second: Opaque::new(),
                 third: QPoint::new(1, 2),
@@ -109,7 +109,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        pub fn emit_queued(self: Pin<&mut Self>, signal: MySignals) {
+        pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
             match signal {
                 MySignals::Ready {} => self.emit_ready(),
                 MySignals::DataChanged {

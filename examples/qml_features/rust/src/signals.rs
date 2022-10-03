@@ -38,18 +38,18 @@ pub mod ffi {
     impl cxx_qt::QObject<Signals> {
         #[qinvokable]
         pub fn invokable(mut self: Pin<&mut Self>) {
-            self.as_mut().emit_queued(Signal::Ready);
+            self.as_mut().emit(Signal::Ready);
 
             let signal = Signal::RustDataChanged { data: *self.data() };
-            self.as_mut().emit_queued(signal);
+            self.as_mut().emit(signal);
             let signal = Signal::TrivialDataChanged {
                 trivial: self.trivial().clone(),
             };
-            self.as_mut().emit_queued(signal);
+            self.as_mut().emit(signal);
             let signal = Signal::OpaqueDataChanged {
                 opaque: self.opaque().clone(),
             };
-            self.as_mut().emit_queued(signal);
+            self.as_mut().emit(signal);
         }
     }
     // ANCHOR_END: book_rust_obj_impl
