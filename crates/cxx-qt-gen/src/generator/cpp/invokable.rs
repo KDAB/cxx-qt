@@ -251,16 +251,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_INVOKABLE qint32 trivialInvokable(qint32 param) const;"
+            "Q_INVOKABLE ::std::int32_t trivialInvokable(::std::int32_t param) const;"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            qint32
-            MyObject::trivialInvokable(qint32 param) const
+            ::std::int32_t
+            MyObject::trivialInvokable(::std::int32_t param) const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->trivialInvokableWrapper(*this, param));
+                return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->trivialInvokableWrapper(*this, param));
             }
             "#}
         );
@@ -293,16 +293,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_INVOKABLE virtual qint32 specifiersInvokable(qint32 param) const final override;"
+            "Q_INVOKABLE virtual ::std::int32_t specifiersInvokable(::std::int32_t param) const final override;"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            qint32
-            MyObject::specifiersInvokable(qint32 param) const
+            ::std::int32_t
+            MyObject::specifiersInvokable(::std::int32_t param) const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
+                return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
             }
             "#}
         );

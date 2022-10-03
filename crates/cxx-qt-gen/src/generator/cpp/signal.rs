@@ -133,7 +133,7 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SIGNAL void dataChanged(qint32 trivial, QColor opaque);"
+            "Q_SIGNAL void dataChanged(::std::int32_t trivial, QColor opaque);"
         );
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
@@ -143,15 +143,15 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "void emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque);"
+            "void emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
             void
-            MyObject::emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque)
+            MyObject::emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)
             {
-                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
+                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
             }
             "#}
         );

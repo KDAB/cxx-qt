@@ -24,8 +24,8 @@ namespace cxx_qt::multi_object {
 class MyObject : public QStringListModel
 {
   Q_OBJECT
-  Q_PROPERTY(qint32 propertyName READ getPropertyName WRITE setPropertyName
-               NOTIFY propertyNameChanged)
+  Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
+               setPropertyName NOTIFY propertyNameChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
@@ -35,8 +35,8 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  const qint32& getPropertyName() const;
-  Q_SLOT void setPropertyName(const qint32& value);
+  const ::std::int32_t& getPropertyName() const;
+  Q_SLOT void setPropertyName(const ::std::int32_t& value);
   Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
@@ -64,8 +64,8 @@ namespace cxx_qt::multi_object {
 class SecondObject : public QObject
 {
   Q_OBJECT
-  Q_PROPERTY(qint32 propertyName READ getPropertyName WRITE setPropertyName
-               NOTIFY propertyNameChanged)
+  Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
+               setPropertyName NOTIFY propertyNameChanged)
 
 public:
   explicit SecondObject(QObject* parent = nullptr);
@@ -75,8 +75,8 @@ public:
   std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
 public:
-  const qint32& getPropertyName() const;
-  Q_SLOT void setPropertyName(const qint32& value);
+  const ::std::int32_t& getPropertyName() const;
+  Q_SLOT void setPropertyName(const ::std::int32_t& value);
   Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();

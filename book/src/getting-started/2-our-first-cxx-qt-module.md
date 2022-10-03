@@ -60,7 +60,7 @@ That means the newly created QObject subclass will have two properties as member
 
 Do note though that any fields marked as `#[qproperty]` must be types that CXX can translate to C++ types.
 In our case that means:
-- `number: i32` -> `qint32 number`
+- `number: i32` -> `::std::int32_t number`
 - `string: QString` -> `QString string`
 
 For `i32`, CXX-Qt already knows how to translate it.
