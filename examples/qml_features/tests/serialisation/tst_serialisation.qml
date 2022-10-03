@@ -56,7 +56,7 @@ TestCase {
 
         compare(serialisation.number, 2);
         compare(serialisation.string, "Test!");
-        tryCompare(spyNumber, "count", 1);
+        compare(spyNumber.count, 1);
         compare(spyString.count, 1);
 
         // Test these new values appear in the serialization

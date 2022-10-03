@@ -20,7 +20,7 @@ pub fn generate(
     let setter_cpp = idents.setter.cpp.to_string();
     let setter_rust = &idents.setter.rust;
     let ident = &idents.name.rust;
-    let emit_ident = &idents.emit.rust;
+    let notify_ident = &idents.notify.rust;
 
     RustFragmentPair {
         cxx_bridge: vec![quote! {
@@ -43,7 +43,7 @@ pub fn generate(
                         unsafe {
                             self.as_mut().rust_mut().#ident = value;
                         }
-                        self.as_mut().#emit_ident();
+                        self.as_mut().#notify_ident();
                     }
                 }
             },

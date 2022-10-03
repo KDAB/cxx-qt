@@ -94,8 +94,8 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
-        #[rust_name = "emit_property_name_changed"]
-        fn emitPropertyNameChanged(self: Pin<&mut MyObjectQt>);
+        #[rust_name = "property_name_changed"]
+        fn propertyNameChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
@@ -194,7 +194,7 @@ mod cxx_qt_ffi {
             unsafe {
                 self.as_mut().rust_mut().property_name = value;
             }
-            self.as_mut().emit_property_name_changed();
+            self.as_mut().property_name_changed();
         }
     }
 

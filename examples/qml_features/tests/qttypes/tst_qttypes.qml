@@ -78,7 +78,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.color = Qt.rgba(1.0, 1.0, 1.0, 1.0);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.color, Qt.rgba(1.0, 1.0, 1.0, 1.0));
     }
 
@@ -102,7 +102,7 @@ TestCase {
         compare(mock.color, Qt.rgba(1.0, 0.0, 0.0, 1.0));
         mock.testColorProperty();
         compare(mock.color, Qt.rgba(0.0, 0.0, 1.0, 1.0));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -122,7 +122,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.date = new Date(2021, 11, 31);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.date.getFullYear(), 2021);
         compare(mock.date.getMonth(), 11);
         compare(mock.date.getDate(), 31);
@@ -154,7 +154,7 @@ TestCase {
         compare(mock.date.getFullYear(), 2021);
         compare(mock.date.getMonth(), 11);
         compare(mock.date.getDate(), 31);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -171,7 +171,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.dateTime = new Date(2021, 11, 31, 4, 3, 2, 1);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.dateTime, new Date(2021, 11, 31, 4, 3, 2, 1));
     }
 
@@ -194,7 +194,7 @@ TestCase {
         compare(mock.dateTime, new Date(2022, 0, 1, 1, 2, 3, 4));
         mock.testDateTimeProperty();
         compare(mock.dateTime, new Date(2021, 11, 31, 2, 6, 12, 20));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -211,7 +211,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.point = Qt.point(10, 30);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.point, Qt.point(10, 30));
     }
 
@@ -235,7 +235,7 @@ TestCase {
         compare(mock.point, Qt.point(1, 3));
         mock.testPointProperty();
         compare(mock.point, Qt.point(2, 9));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -252,7 +252,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.pointf = Qt.point(10, 30);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.pointf, Qt.point(10, 30));
     }
 
@@ -276,7 +276,7 @@ TestCase {
         compare(mock.pointf, Qt.point(1, 3));
         mock.testPointfProperty();
         compare(mock.pointf, Qt.point(2, 9));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -293,7 +293,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.rect = Qt.rect(10, 20, 30, 40);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.rect, Qt.rect(10, 20, 30, 40));
     }
 
@@ -316,7 +316,7 @@ TestCase {
         compare(mock.rect, Qt.rect(1, 2, 3, 4));
         mock.testRectProperty();
         compare(mock.rect, Qt.rect(2, 6, 12, 20));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -333,7 +333,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.rectf = Qt.rect(10, 20, 30, 40);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.rectf, Qt.rect(10, 20, 30, 40));
     }
 
@@ -357,7 +357,7 @@ TestCase {
         compare(mock.rectf, Qt.rect(1, 2, 3, 4));
         mock.testRectfProperty();
         compare(mock.rectf, Qt.rect(2, 6, 12, 20));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -374,7 +374,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.size = Qt.size(10, 30);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.size, Qt.size(10, 30));
     }
 
@@ -397,7 +397,7 @@ TestCase {
         compare(mock.size, Qt.size(1, 3));
         mock.testSizeProperty();
         compare(mock.size, Qt.size(2, 9));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -414,7 +414,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.sizef = Qt.size(10, 30);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.sizef, Qt.size(10, 30));
     }
 
@@ -438,7 +438,7 @@ TestCase {
         compare(mock.sizef, Qt.size(1, 3));
         mock.testSizefProperty();
         compare(mock.sizef, Qt.size(2, 9));
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -455,7 +455,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.string = "KDAB/cxx-qt";
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.string, "KDAB/cxx-qt");
     }
 
@@ -478,7 +478,7 @@ TestCase {
         compare(mock.string, "KDAB");
         mock.testStringProperty();
         compare(mock.string, "KDAB/cxx-qt");
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -498,7 +498,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.time = new Date(0, 0, 0, 4, 3, 2, 1);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.time.getHours(), 4);
         compare(mock.time.getMinutes(), 3);
         compare(mock.time.getSeconds(), 2);
@@ -533,7 +533,7 @@ TestCase {
         compare(mock.time.getMinutes(), 6);
         compare(mock.time.getSeconds(), 12);
         compare(mock.time.getMilliseconds(), 20);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -551,7 +551,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.url = "https://github.com/KDAB/cxx-qt";
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.url, "https://github.com/KDAB/cxx-qt");
     }
 
@@ -574,7 +574,7 @@ TestCase {
         compare(mock.url, "https://github.com/KDAB");
         mock.testUrlProperty();
         compare(mock.url, "https://github.com/KDAB/cxx-qt");
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 
 
@@ -591,7 +591,7 @@ TestCase {
 
         compare(spy.count, 0);
         mock.variant = "string";
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
         compare(mock.variant, "string");
     }
 
@@ -642,11 +642,11 @@ TestCase {
         compare(mock.variant, 1);
         mock.testVariantProperty();
         compare(mock.variant, 2);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
 
         mock.variant = true;
         // wait for signal to occur
-        tryCompare(spy, "count", 2);
+        compare(spy.count, 2);
 
         spy.clear();
 
@@ -654,6 +654,6 @@ TestCase {
         compare(mock.variant, true);
         mock.testVariantProperty();
         compare(mock.variant, false);
-        tryCompare(spy, "count", 1);
+        compare(spy.count, 1);
     }
 }

@@ -38,8 +38,6 @@ private Q_SLOTS:
     QCOMPARE(obj.getNumber(), 0);
     QCOMPARE(numberSpy.count(), 0);
     obj.setNumber(16);
-    QCOMPARE(numberSpy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(numberSpy.count(), 1);
     QCOMPARE(obj.getNumber(), 16);
 
@@ -47,8 +45,6 @@ private Q_SLOTS:
     QCOMPARE(obj.getString(), QString());
     QCOMPARE(stringSpy.count(), 0);
     obj.setString(QStringLiteral("Hello"));
-    QCOMPARE(stringSpy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(stringSpy.count(), 1);
     QCOMPARE(obj.getString(), QStringLiteral("Hello"));
 
@@ -57,8 +53,6 @@ private Q_SLOTS:
     QCOMPARE(numberSpy.count(), 1);
     obj.doubleNumberSelf();
     QCOMPARE(obj.getNumber(), 32);
-    QCOMPARE(numberSpy.count(), 1);
-    QCoreApplication::processEvents();
     QCOMPARE(numberSpy.count(), 2);
 
     qInfo() << "Number is:" << obj.getNumber()
@@ -81,16 +75,12 @@ private Q_SLOTS:
     // Check the number changed property
     QCOMPARE(numberSpy.count(), 0);
     data.setNumber(16);
-    QCOMPARE(numberSpy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(numberSpy.count(), 1);
     QCOMPARE(data.getNumber(), 16);
 
     // Check the string property
     QCOMPARE(stringSpy.count(), 0);
     data.setString(QStringLiteral("Hello"));
-    QCOMPARE(stringSpy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(stringSpy.count(), 1);
     QCOMPARE(data.getString(), QStringLiteral("Hello"));
 
@@ -151,72 +141,54 @@ private Q_SLOTS:
     QCOMPARE(types.getBoolean(), false);
     QCOMPARE(booleanSpy.count(), 0);
     types.setBoolean(true);
-    QCOMPARE(booleanSpy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(booleanSpy.count(), 1);
     QCOMPARE(types.getBoolean(), true);
 
     QCOMPARE(types.getFloat32(), 0.0);
     QCOMPARE(float32Spy.count(), 0);
     types.setFloat32(0.33f);
-    QCOMPARE(float32Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(float32Spy.count(), 1);
     QCOMPARE(types.getFloat32(), 0.33f);
 
     QCOMPARE(types.getFloat64(), 0.0);
     QCOMPARE(float64Spy.count(), 0);
     types.setFloat64(0.33);
-    QCOMPARE(float64Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(float64Spy.count(), 1);
     QCOMPARE(types.getFloat64(), 0.33);
 
     QCOMPARE(types.getInt8(), 0);
     QCOMPARE(int8Spy.count(), 0);
     types.setInt8(4);
-    QCOMPARE(int8Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(int8Spy.count(), 1);
     QCOMPARE(types.getInt8(), 4);
 
     QCOMPARE(types.getInt16(), 0);
     QCOMPARE(int16Spy.count(), 0);
     types.setInt16(4);
-    QCOMPARE(int16Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(int16Spy.count(), 1);
     QCOMPARE(types.getInt16(), 4);
 
     QCOMPARE(types.getInt32(), 0);
     QCOMPARE(int32Spy.count(), 0);
     types.setInt32(4);
-    QCOMPARE(int32Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(int32Spy.count(), 1);
     QCOMPARE(types.getInt32(), 4);
 
     QCOMPARE(types.getUint8(), 0);
     QCOMPARE(uint8Spy.count(), 0);
     types.setUint8(4);
-    QCOMPARE(uint8Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(uint8Spy.count(), 1);
     QCOMPARE(types.getUint8(), 4);
 
     QCOMPARE(types.getUint16(), 0);
     QCOMPARE(uint16Spy.count(), 0);
     types.setUint16(4);
-    QCOMPARE(uint16Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(uint16Spy.count(), 1);
     QCOMPARE(types.getUint16(), 4);
 
     QCOMPARE(types.getUint32(), 0);
     QCOMPARE(uint32Spy.count(), 0);
     types.setUint32(4);
-    QCOMPARE(uint32Spy.count(), 0);
-    QCoreApplication::processEvents();
     QCOMPARE(uint32Spy.count(), 1);
     QCOMPARE(types.getUint32(), 4);
   }

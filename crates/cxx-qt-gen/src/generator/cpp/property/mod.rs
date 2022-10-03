@@ -10,7 +10,6 @@ use crate::generator::{
 use crate::parser::property::ParsedQProperty;
 use syn::Result;
 
-mod emitter;
 mod getter;
 mod meta;
 mod setter;
@@ -35,9 +34,6 @@ pub fn generate_cpp_properties(
             .slots
             .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
         generated.signals.push(signal::generate(&idents));
-        generated
-            .methods
-            .push(emitter::generate(&idents, &qobject_ident));
     }
 
     Ok(generated)
@@ -79,7 +75,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(QColor opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 4);
+        assert_eq!(generated.methods.len(), 2);
         assert_str_eq!(
             generated.methods[0].header,
             "const qint32& getTrivialProperty() const;"
@@ -95,49 +91,19 @@ mod tests {
             }
             "#}
         );
-        assert_str_eq!(
-            generated.methods[1].header,
-            "void emitTrivialPropertyChanged();"
-        );
-        assert_str_eq!(
-            generated.methods[1].source,
-            indoc! {r#"
-            void
-            MyObject::emitTrivialPropertyChanged()
-            {
-                const auto signalSuccess = QMetaObject::invokeMethod(this, "trivialPropertyChanged", Qt::QueuedConnection);
-                Q_ASSERT(signalSuccess);
-            }
-            "#}
-        );
 
         assert_str_eq!(
-            generated.methods[2].header,
+            generated.methods[1].header,
             "const QColor& getOpaqueProperty() const;"
         );
         assert_str_eq!(
-            generated.methods[2].source,
+            generated.methods[1].source,
             indoc! {r#"
             const QColor&
             MyObject::getOpaqueProperty() const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<const QColor&, const ::std::unique_ptr<QColor>&>{}(m_rustObj->getOpaqueProperty(*this));
-            }
-            "#}
-        );
-        assert_str_eq!(
-            generated.methods[3].header,
-            "void emitOpaquePropertyChanged();"
-        );
-        assert_str_eq!(
-            generated.methods[3].source,
-            indoc! {r#"
-            void
-            MyObject::emitOpaquePropertyChanged()
-            {
-                const auto signalSuccess = QMetaObject::invokeMethod(this, "opaquePropertyChanged", Qt::QueuedConnection);
-                Q_ASSERT(signalSuccess);
             }
             "#}
         );

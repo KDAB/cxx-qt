@@ -31,7 +31,6 @@ public:
 
 public:
   const qint32& getPropertyName() const;
-  void emitPropertyNameChanged();
   Q_INVOKABLE void invokableName();
 
 public Q_SLOTS:

@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-pub mod emitter;
 pub mod getter;
 pub mod setter;
+pub mod signal;
 
 use crate::{
     generator::{
@@ -44,13 +44,13 @@ pub fn generate_rust_properties(
             .append(&mut setter.implementation_as_items()?);
 
         // Signals
-        let emitter = emitter::generate(&idents, qobject_idents);
+        let notify = signal::generate(&idents, qobject_idents);
         generated
             .cxx_mod_contents
-            .append(&mut emitter.cxx_bridge_as_items()?);
+            .append(&mut notify.cxx_bridge_as_items()?);
         generated
             .cxx_qt_mod_contents
-            .append(&mut emitter.implementation_as_items()?);
+            .append(&mut notify.implementation_as_items()?);
     }
 
     Ok(generated)
@@ -158,19 +158,19 @@ mod tests {
                         unsafe {
                             self.as_mut().rust_mut().trivial_property = value;
                         }
-                        self.as_mut().emit_trivial_property_changed();
+                        self.as_mut().trivial_property_changed();
                     }
                 }
             })
         );
 
-        // Emitter
+        // Notify
         assert_eq!(
             generated.cxx_mod_contents[2],
             tokens_to_syn::<syn::Item>(quote! {
                 unsafe extern "C++" {
-                    #[rust_name = "emit_trivial_property_changed"]
-                    fn emitTrivialPropertyChanged(self: Pin<&mut MyObjectQt>);
+                    #[rust_name = "trivial_property_changed"]
+                    fn trivialPropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
             })
         );
@@ -246,19 +246,19 @@ mod tests {
                         unsafe {
                             self.as_mut().rust_mut().opaque_property = value;
                         }
-                        self.as_mut().emit_opaque_property_changed();
+                        self.as_mut().opaque_property_changed();
                     }
                 }
             })
         );
 
-        // Emitter
+        // Notify
         assert_eq!(
             generated.cxx_mod_contents[5],
             tokens_to_syn::<syn::Item>(quote! {
                 unsafe extern "C++" {
-                    #[rust_name = "emit_opaque_property_changed"]
-                    fn emitOpaquePropertyChanged(self: Pin<&mut MyObjectQt>);
+                    #[rust_name = "opaque_property_changed"]
+                    fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
             })
         );

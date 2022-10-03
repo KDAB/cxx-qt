@@ -47,13 +47,11 @@ TestCase {
         });
         compare(myObject.number, 1);
         compare(spy.count, 0);
-        // Wait for init value to be set
-        tryCompare(spy, "count", 1);
 
         myObject.number = 2;
 
         compare(myObject.number, 2);
-        tryCompare(spy, "count", 2);
+        compare(spy.count, 1);
     }
 
     function test_string() {
@@ -66,12 +64,10 @@ TestCase {
         });
         compare(myObject.string, "hello");
         compare(spy.count, 0);
-        // Wait for init value to be set
-        tryCompare(spy, "count", 1);
 
         myObject.string = "world";
 
         compare(myObject.string, "world");
-        tryCompare(spy, "count", 2);
+        compare(spy.count, 1);
     }
 }

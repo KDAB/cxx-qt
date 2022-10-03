@@ -37,8 +37,8 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        #[rust_name = "emit_primitive_changed"]
-        fn emitPrimitiveChanged(self: Pin<&mut MyObjectQt>);
+        #[rust_name = "primitive_changed"]
+        fn primitiveChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
@@ -52,8 +52,8 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        #[rust_name = "emit_trivial_changed"]
-        fn emitTrivialChanged(self: Pin<&mut MyObjectQt>);
+        #[rust_name = "trivial_changed"]
+        fn trivialChanged(self: Pin<&mut MyObjectQt>);
     }
 
     extern "Rust" {
@@ -67,8 +67,8 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        #[rust_name = "emit_opaque_changed"]
-        fn emitOpaqueChanged(self: Pin<&mut MyObjectQt>);
+        #[rust_name = "opaque_changed"]
+        fn opaqueChanged(self: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
@@ -143,7 +143,7 @@ mod cxx_qt_ffi {
             unsafe {
                 self.as_mut().rust_mut().primitive = value;
             }
-            self.as_mut().emit_primitive_changed();
+            self.as_mut().primitive_changed();
         }
     }
 
@@ -176,7 +176,7 @@ mod cxx_qt_ffi {
             unsafe {
                 self.as_mut().rust_mut().trivial = value;
             }
-            self.as_mut().emit_trivial_changed();
+            self.as_mut().trivial_changed();
         }
     }
 
@@ -209,7 +209,7 @@ mod cxx_qt_ffi {
             unsafe {
                 self.as_mut().rust_mut().opaque = value;
             }
-            self.as_mut().emit_opaque_changed();
+            self.as_mut().opaque_changed();
         }
     }
 
