@@ -5,7 +5,7 @@
 
 // ANCHOR: book_macro_code
 // ANCHOR: book_namespace_macro
-#[cxx_qt::bridge(namespace = "cxx_qt::website")]
+#[cxx_qt::bridge(cxx_file_stem = "threading_website", namespace = "cxx_qt::website")]
 mod ffi {
     // ANCHOR_END: book_namespace_macro
     #[namespace = ""]

@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge(namespace = "cxx_qt::my_types")]
+#[cxx_qt::bridge(cxx_file_stem = "my_types", namespace = "cxx_qt::my_types")]
 mod ffi {
     #[cxx_qt::qobject]
     #[derive(Default)]

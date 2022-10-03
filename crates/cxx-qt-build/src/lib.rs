@@ -91,21 +91,7 @@ impl GeneratedCpp {
 
                     let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
                     let rust_tokens = write_rust(&generated_rust);
-                    // Use the qobject ident as the output file name?
-                    //
-                    // TODO: for now we use the qobject name but in the future this will come from elswhere
-                    if parser.cxx_qt_data.qobjects.len() != 1 {
-                        panic!("Expected one QObject in the ItemMod.");
-                    }
-                    file_ident = parser
-                        .cxx_qt_data
-                        .qobjects
-                        .keys()
-                        .take(1)
-                        .next()
-                        .unwrap()
-                        .to_string()
-                        .to_case(Case::Snake);
+                    file_ident = parser.cxx_file_stem.clone();
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.

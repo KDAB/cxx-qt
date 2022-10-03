@@ -117,7 +117,7 @@ struct QtData {
     total_use: f64,
 }
 
-#[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
+#[cxx_qt::bridge(cxx_file_stem = "energy_usage", namespace = "cxx_qt::energy_usage")]
 mod ffi {
     use super::{NetworkChannel, QtData, Request, RequestCommand, Response, SensorData, Status};
     use async_std::{
