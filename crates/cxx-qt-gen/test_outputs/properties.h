@@ -19,8 +19,8 @@ namespace cxx_qt::my_object {
 class MyObject : public QObject
 {
   Q_OBJECT
-  Q_PROPERTY(qint32 primitive READ getPrimitive WRITE setPrimitive NOTIFY
-               primitiveChanged)
+  Q_PROPERTY(::std::int32_t primitive READ getPrimitive WRITE setPrimitive
+               NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
   Q_PROPERTY(Value opaque READ getOpaque WRITE setOpaque NOTIFY opaqueChanged)
@@ -33,8 +33,8 @@ public:
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  const qint32& getPrimitive() const;
-  Q_SLOT void setPrimitive(const qint32& value);
+  const ::std::int32_t& getPrimitive() const;
+  Q_SLOT void setPrimitive(const ::std::int32_t& value);
   Q_SIGNAL void primitiveChanged();
   const QPoint& getTrivial() const;
   Q_SLOT void setTrivial(const QPoint& value);

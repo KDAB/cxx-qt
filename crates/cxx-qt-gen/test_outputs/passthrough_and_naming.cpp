@@ -36,20 +36,23 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-const qint32&
+const ::std::int32_t&
 MyObject::getPropertyName() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const ::std::int32_t&,
+                                         const ::std::int32_t&>{}(
     m_rustObj->getPropertyName(*this));
 }
 
 void
-MyObject::setPropertyName(const qint32& value)
+MyObject::setPropertyName(const ::std::int32_t& value)
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setPropertyName(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, const ::std::int32_t&>{}(
+      value));
 }
 
 void
@@ -112,20 +115,23 @@ SecondObject::qtThread() const
                                                    m_rustObjMutex);
 }
 
-const qint32&
+const ::std::int32_t&
 SecondObject::getPropertyName() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<const ::std::int32_t&,
+                                         const ::std::int32_t&>{}(
     m_rustObj->getPropertyName(*this));
 }
 
 void
-SecondObject::setPropertyName(const qint32& value)
+SecondObject::setPropertyName(const ::std::int32_t& value)
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setPropertyName(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+    *this,
+    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, const ::std::int32_t&>{}(
+      value));
 }
 
 void

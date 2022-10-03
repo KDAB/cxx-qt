@@ -53,7 +53,7 @@ MyObject::invokableMutable()
 void
 MyObject::invokableParameters(const QColor& opaque,
                               const QPoint& trivial,
-                              qint32 primitive) const
+                              ::std::int32_t primitive) const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);

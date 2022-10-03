@@ -75,7 +75,7 @@ mod tests {
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
-        assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(qint32 trivialProperty READ getTrivialProperty WRITE setTrivialProperty NOTIFY trivialPropertyChanged)");
+        assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(::std::int32_t trivialProperty READ getTrivialProperty WRITE setTrivialProperty NOTIFY trivialPropertyChanged)");
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(QColor opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
@@ -85,15 +85,15 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "const qint32& getTrivialProperty() const;");
+        assert_str_eq!(header, "const ::std::int32_t& getTrivialProperty() const;");
         assert_str_eq!(
             source,
             indoc! {r#"
-            const qint32&
+            const ::std::int32_t&
             MyObject::getTrivialProperty() const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<const qint32&, const qint32&>{}(m_rustObj->getTrivialProperty(*this));
+                return rust::cxxqtlib1::cxx_qt_convert<const ::std::int32_t&, const ::std::int32_t&>{}(m_rustObj->getTrivialProperty(*this));
             }
             "#}
         );
@@ -105,16 +105,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SLOT void setTrivialProperty(const qint32& value);"
+            "Q_SLOT void setTrivialProperty(const ::std::int32_t& value);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
                 void
-                MyObject::setTrivialProperty(const qint32& value)
+                MyObject::setTrivialProperty(const ::std::int32_t& value)
                 {
                     const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                    m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+                    m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, const ::std::int32_t&>{}(value));
                 }
                 "#}
         );

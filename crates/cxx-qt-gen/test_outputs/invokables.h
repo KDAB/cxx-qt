@@ -32,7 +32,7 @@ public:
   Q_INVOKABLE void invokableMutable();
   Q_INVOKABLE void invokableParameters(const QColor& opaque,
                                        const QPoint& trivial,
-                                       qint32 primitive) const;
+                                       ::std::int32_t primitive) const;
   Q_INVOKABLE Value invokableReturnOpaque();
   Q_INVOKABLE QPoint invokableReturnTrivial();
   Q_INVOKABLE void invokableFinal() const final;

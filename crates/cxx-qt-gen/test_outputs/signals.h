@@ -31,11 +31,11 @@ public:
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
   void emitReady();
-  Q_SIGNAL void dataChanged(qint32 first,
+  Q_SIGNAL void dataChanged(::std::int32_t first,
                             Value second,
                             QPoint third,
                             const QPoint& fourth);
-  void emitDataChanged(qint32 first,
+  void emitDataChanged(::std::int32_t first,
                        ::std::unique_ptr<Opaque> second,
                        QPoint third,
                        const QPoint& fourth);

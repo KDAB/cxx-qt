@@ -27,11 +27,11 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
     case VariantTest::F64:
       return qFuzzyCompare(v.value<double>(), 1.23);
     case VariantTest::I8:
-      return v.value<qint8>() == 12;
+      return v.value<::std::int8_t>() == 12;
     case VariantTest::I16:
-      return v.value<qint16>() == 123;
+      return v.value<::std::int16_t>() == 123;
     case VariantTest::I32:
-      return v.value<qint32>() == 123;
+      return v.value<::std::int32_t>() == 123;
     case VariantTest::QColor:
       return v.value<QColor>().alpha() == 255 &&
              v.value<QColor>().red() == 255 && v.value<QColor>().green() == 0 &&
@@ -74,11 +74,11 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
       return v.value<QUrl>().toString() ==
              QStringLiteral("https://github.com/KDAB");
     case VariantTest::U8:
-      return v.value<quint8>() == 12;
+      return v.value<::std::uint8_t>() == 12;
     case VariantTest::U16:
-      return v.value<quint16>() == 123;
+      return v.value<::std::uint16_t>() == 123;
     case VariantTest::U32:
-      return v.value<quint32>() == 123;
+      return v.value<::std::uint32_t>() == 123;
 
     default:
       return false;
@@ -144,8 +144,9 @@ private Q_SLOTS:
                          << VariantTest::F32;
     QTest::newRow("F64") << QVariant::fromValue<double>(89.1)
                          << VariantTest::F64;
-    QTest::newRow("I8") << QVariant::fromValue<qint8>(89) << VariantTest::I8;
-    QTest::newRow("I16") << QVariant::fromValue<qint16>(8910)
+    QTest::newRow("I8") << QVariant::fromValue<::std::int8_t>(89)
+                        << VariantTest::I8;
+    QTest::newRow("I16") << QVariant::fromValue<::std::int16_t>(8910)
                          << VariantTest::I16;
     QTest::newRow("I32") << QVariant::fromValue(8910) << VariantTest::I32;
     QTest::newRow("QColor")
@@ -178,10 +179,11 @@ private Q_SLOTS:
     QTest::newRow("QUrl") << QVariant::fromValue<QUrl>(QUrl(QStringLiteral(
                                "https://github.com/KDAB/cxx-qt")))
                           << VariantTest::QUrl;
-    QTest::newRow("U8") << QVariant::fromValue<quint8>(89) << VariantTest::U8;
-    QTest::newRow("U16") << QVariant::fromValue<quint16>(8910)
+    QTest::newRow("U8") << QVariant::fromValue<::std::uint8_t>(89)
+                        << VariantTest::U8;
+    QTest::newRow("U16") << QVariant::fromValue<::std::uint16_t>(8910)
                          << VariantTest::U16;
-    QTest::newRow("U32") << QVariant::fromValue<quint32>(8910)
+    QTest::newRow("U32") << QVariant::fromValue<::std::uint32_t>(8910)
                          << VariantTest::U32;
   }
 

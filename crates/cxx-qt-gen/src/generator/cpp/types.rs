@@ -156,14 +156,16 @@ fn possible_built_in(ty: &str) -> String {
     match ty {
         "bool" => "bool",
         "c_char" => "char",
-        "u8" => "quint8",   // ::std::uint8_t
-        "u16" => "quint16", // ::std::uint16_t
-        "u32" => "quint32", // ::std::uint32_t
+        "u8" => "::std::uint8_t",
+        "u16" => "::std::uint16_t",
+        "u32" => "::std::uint32_t",
+        // TODO: https://github.com/KDAB/cxx-qt/issues/36
         // "u64" => "quint64",
         "usize" => "::std::size_t",
-        "i8" => "qint8",   // ::std::int8_t
-        "i16" => "qint16", // ::std::int16_t
-        "i32" => "qint32", // // ::std::int32_t
+        "i8" => "::std::int8_t",
+        "i16" => "::std::int16_t",
+        "i32" => "::std::int32_t",
+        // TODO: https://github.com/KDAB/cxx-qt/issues/36
         // "i64" => "qint64",
         "isize" => "::rust::isize",
         "f32" => "float",
@@ -253,7 +255,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { i32 });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "qint32"
+            "::std::int32_t"
         );
     }
 
