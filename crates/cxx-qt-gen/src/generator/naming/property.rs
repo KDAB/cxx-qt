@@ -15,7 +15,6 @@ pub struct QPropertyName {
     pub getter_mutable: CombinedIdent,
     pub setter: CombinedIdent,
     pub notify: CombinedIdent,
-    pub emit: CombinedIdent,
 }
 
 impl From<&Ident> for QPropertyName {
@@ -26,7 +25,6 @@ impl From<&Ident> for QPropertyName {
             getter_mutable: getter_mutable_from_ident(ident),
             setter: setter_from_ident(ident),
             notify: notify_from_ident(ident),
-            emit: emit_from_ident(ident),
         }
     }
 }
@@ -34,15 +32,6 @@ impl From<&Ident> for QPropertyName {
 impl From<&ParsedQProperty> for QPropertyName {
     fn from(property: &ParsedQProperty) -> Self {
         Self::from(&property.ident)
-    }
-}
-
-/// For a given ident generate the Rust and C++ emit names
-fn emit_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("emit_{}_changed", ident);
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
     }
 }
 
@@ -109,8 +98,6 @@ pub mod tests {
     #[test]
     fn test_parsed_property() {
         let names = create_i32_qpropertyname();
-        assert_eq!(names.emit.cpp, format_ident!("emitMyPropertyChanged"));
-        assert_eq!(names.emit.rust, format_ident!("emit_my_property_changed"));
         assert_eq!(names.name.cpp, format_ident!("myProperty"));
         assert_eq!(names.name.rust, format_ident!("my_property"));
         assert_eq!(names.getter.cpp, format_ident!("getMyProperty"));

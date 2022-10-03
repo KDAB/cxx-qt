@@ -44,28 +44,12 @@ MyObject::getPrimitive() const
     m_rustObj->getPrimitive(*this));
 }
 
-void
-MyObject::emitPrimitiveChanged()
-{
-  const auto signalSuccess =
-    QMetaObject::invokeMethod(this, "primitiveChanged", Qt::QueuedConnection);
-  Q_ASSERT(signalSuccess);
-}
-
 const QPoint&
 MyObject::getTrivial() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
     m_rustObj->getTrivial(*this));
-}
-
-void
-MyObject::emitTrivialChanged()
-{
-  const auto signalSuccess =
-    QMetaObject::invokeMethod(this, "trivialChanged", Qt::QueuedConnection);
-  Q_ASSERT(signalSuccess);
 }
 
 const Value&
@@ -75,14 +59,6 @@ MyObject::getOpaque() const
   return rust::cxxqtlib1::cxx_qt_convert<const Value&,
                                          const ::std::unique_ptr<Opaque>&>{}(
     m_rustObj->getOpaque(*this));
-}
-
-void
-MyObject::emitOpaqueChanged()
-{
-  const auto signalSuccess =
-    QMetaObject::invokeMethod(this, "opaqueChanged", Qt::QueuedConnection);
-  Q_ASSERT(signalSuccess);
 }
 
 void

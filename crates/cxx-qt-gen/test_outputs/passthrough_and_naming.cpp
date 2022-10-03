@@ -45,14 +45,6 @@ MyObject::getPropertyName() const
 }
 
 void
-MyObject::emitPropertyNameChanged()
-{
-  const auto signalSuccess = QMetaObject::invokeMethod(
-    this, "propertyNameChanged", Qt::QueuedConnection);
-  Q_ASSERT(signalSuccess);
-}
-
-void
 MyObject::invokableName()
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);

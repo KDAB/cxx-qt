@@ -34,11 +34,8 @@ public:
 
 public:
   const qint32& getPrimitive() const;
-  void emitPrimitiveChanged();
   const QPoint& getTrivial() const;
-  void emitTrivialChanged();
   const Value& getOpaque() const;
-  void emitOpaqueChanged();
 
 public Q_SLOTS:
   void setPrimitive(const qint32& value);
