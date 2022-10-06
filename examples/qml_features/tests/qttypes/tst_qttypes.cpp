@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/include/mock_qt_types.cxxqt.h"
+#include "cxx-qt-gen/mock_qt_types.cxxqt.h"
 
 class Setup : public QObject
 {

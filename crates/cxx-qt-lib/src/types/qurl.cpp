@@ -5,8 +5,8 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "cxx-qt-lib/include/qurl.h"
-#include "cxx-qt-lib/include/qstring.h"
+#include "cxx-qt-lib/qurl.h"
+#include "cxx-qt-lib/qstring.h"
 
 #include "assertion_utils.h"
 

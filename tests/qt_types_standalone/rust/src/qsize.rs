@@ -9,7 +9,7 @@ use cxx_qt_lib::QSize;
 #[cxx::bridge]
 mod qsize_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qsize.h");
+        include!("cxx-qt-lib/qsize.h");
 
         type QSize = cxx_qt_lib::QSize;
     }

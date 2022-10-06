@@ -9,31 +9,31 @@ mod ffi {
     use cxx_qt_lib::QVariantValue;
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qcolor.h");
+        include!("cxx-qt-lib/qcolor.h");
         type QColor = cxx_qt_lib::QColor;
-        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/qdate.h");
         type QDate = cxx_qt_lib::QDate;
-        include!("cxx-qt-lib/include/qdatetime.h");
+        include!("cxx-qt-lib/qdatetime.h");
         type QDateTime = cxx_qt_lib::QDateTime;
-        include!("cxx-qt-lib/include/qpoint.h");
+        include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
-        include!("cxx-qt-lib/include/qpointf.h");
+        include!("cxx-qt-lib/qpointf.h");
         type QPointF = cxx_qt_lib::QPointF;
-        include!("cxx-qt-lib/include/qrect.h");
+        include!("cxx-qt-lib/qrect.h");
         type QRect = cxx_qt_lib::QRect;
-        include!("cxx-qt-lib/include/qrectf.h");
+        include!("cxx-qt-lib/qrectf.h");
         type QRectF = cxx_qt_lib::QRectF;
-        include!("cxx-qt-lib/include/qsize.h");
+        include!("cxx-qt-lib/qsize.h");
         type QSize = cxx_qt_lib::QSize;
-        include!("cxx-qt-lib/include/qsizef.h");
+        include!("cxx-qt-lib/qsizef.h");
         type QSizeF = cxx_qt_lib::QSizeF;
-        include!("cxx-qt-lib/include/qstring.h");
+        include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
-        include!("cxx-qt-lib/include/qtime.h");
+        include!("cxx-qt-lib/qtime.h");
         type QTime = cxx_qt_lib::QTime;
-        include!("cxx-qt-lib/include/qurl.h");
+        include!("cxx-qt-lib/qurl.h");
         type QUrl = cxx_qt_lib::QUrl;
-        include!("cxx-qt-lib/include/qvariant.h");
+        include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
     }
 

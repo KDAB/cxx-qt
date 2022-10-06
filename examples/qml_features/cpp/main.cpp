@@ -8,12 +8,12 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/include/custom_base.cxxqt.h"
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
-#include "cxx-qt-gen/include/serialisation.cxxqt.h"
-#include "cxx-qt-gen/include/struct_properties.cxxqt.h"
-#include "cxx-qt-gen/include/threading_website.cxxqt.h"
-#include "cxx-qt-gen/include/types.cxxqt.h"
+#include "cxx-qt-gen/custom_base.cxxqt.h"
+#include "cxx-qt-gen/my_object.cxxqt.h"
+#include "cxx-qt-gen/serialisation.cxxqt.h"
+#include "cxx-qt-gen/struct_properties.cxxqt.h"
+#include "cxx-qt-gen/threading_website.cxxqt.h"
+#include "cxx-qt-gen/types.cxxqt.h"
 
 int
 main(int argc, char* argv[])

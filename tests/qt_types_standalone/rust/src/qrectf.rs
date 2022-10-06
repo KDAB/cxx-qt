@@ -9,7 +9,7 @@ use cxx_qt_lib::QRectF;
 #[cxx::bridge]
 mod qrectf_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qrectf.h");
+        include!("cxx-qt-lib/qrectf.h");
 
         type QRectF = cxx_qt_lib::QRectF;
     }

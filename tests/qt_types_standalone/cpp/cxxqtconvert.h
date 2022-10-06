@@ -9,7 +9,7 @@
 #include <QtGui/QColor>
 #include <QtTest/QTest>
 
-#include "cxx-qt-lib/include/convert.h"
+#include "cxx-qt-lib/convert.h"
 
 class CxxQtConvertTest : public QObject
 {

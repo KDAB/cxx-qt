@@ -8,7 +8,7 @@ use cxx::{type_id, ExternType};
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/qdate.h");
 
         type QDate = super::QDate;
 

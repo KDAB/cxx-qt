@@ -9,7 +9,7 @@ use cxx_qt_lib::QDate;
 #[cxx::bridge]
 mod qdate_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/qdate.h");
         type QDate = cxx_qt_lib::QDate;
     }
 

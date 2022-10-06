@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/include/ffi.cxx.h"
+#include "cxx-qt-gen/ffi.cxx.h"
 
 int hidden_num = 100;
 

@@ -369,9 +369,9 @@ impl CxxQtBuilder {
             Err(_) => env::var("OUT_DIR").unwrap(),
         };
         self.cc_builder.include(&header_root);
-        let generated_header_dir = format!("{}/cxx-qt-gen/include", header_root);
+        let generated_header_dir = format!("{}/cxx-qt-gen", header_root);
 
-        cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib/include", header_root));
+        cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib", header_root));
 
         // Write cxx header
         std::fs::create_dir_all(&format!("{}/rust", header_root))
