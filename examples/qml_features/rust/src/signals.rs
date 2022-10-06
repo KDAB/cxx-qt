@@ -15,11 +15,12 @@ pub mod ffi {
 
     // ANCHOR: book_signals_enum
     #[cxx_qt::signals(Signals)]
-    pub enum Signal {
+    pub enum Signal<'a> {
         Ready,
         RustDataChanged { data: i32 },
         TrivialDataChanged { trivial: QPoint },
         OpaqueDataChanged { opaque: QVariant },
+        ReferenceDataChanged { reference: &'a QPoint },
     }
     // ANCHOR_END: book_signals_enum
 
@@ -50,6 +51,10 @@ pub mod ffi {
                 opaque: self.opaque().clone(),
             };
             self.as_mut().emit(signal);
+
+            let point = QPoint::new(1, 2);
+            self.as_mut()
+                .emit(Signal::ReferenceDataChanged { reference: &point });
         }
     }
     // ANCHOR_END: book_rust_obj_impl

@@ -12,7 +12,7 @@ use crate::{
 };
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Result};
+use syn::{Ident, Result, Type};
 
 pub fn generate_rust_signals(
     signals_enum: &ParsedSignalsEnum,
@@ -44,7 +44,13 @@ pub fn generate_rust_signals(
                 .iter()
                 .map(|parameter| {
                     let ident = &parameter.ident;
-                    let ty = &parameter.ty;
+                    let mut ty = parameter.ty.clone();
+                    // Remove any lifetime from the signal, as this will be related
+                    // to the enum. For the CXX methods these can just be
+                    // normal references with inferred lifetimes.
+                    if let Type::Reference(ty) = &mut ty {
+                        ty.lifetime = None;
+                    }
                     quote! { #ident: #ty }
                 })
                 .collect::<Vec<TokenStream>>();

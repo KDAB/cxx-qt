@@ -7,7 +7,7 @@ mod ffi {
     }
 
     #[cxx_qt::signals(MyObject)]
-    enum MySignals {
+    enum MySignals<'a> {
         Ready,
         DataChanged {
             first: i32,
@@ -15,6 +15,7 @@ mod ffi {
             #[cxx_type = "Value"]
             second: UniquePtr<Opaque>,
             third: QPoint,
+            fourth: &'a QPoint,
         },
     }
 
@@ -29,6 +30,7 @@ mod ffi {
                 first: 1,
                 second: Opaque::new(),
                 third: QPoint::new(1, 2),
+                fourth: &QPoint::new(1, 2),
             });
         }
     }

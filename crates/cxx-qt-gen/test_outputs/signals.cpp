@@ -52,13 +52,16 @@ MyObject::emitReady()
 void
 MyObject::emitDataChanged(qint32 first,
                           ::std::unique_ptr<Opaque> second,
-                          QPoint third)
+                          QPoint third,
+                          const QPoint& fourth)
 {
   Q_EMIT dataChanged(
     rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(first)),
     rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
       std::move(second)),
-    rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(std::move(third)));
+    rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(std::move(third)),
+    rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
+      std::move(fourth)));
 }
 
 } // namespace cxx_qt::my_object
