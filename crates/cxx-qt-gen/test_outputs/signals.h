@@ -32,11 +32,15 @@ public:
   void emitReady();
   void emitDataChanged(qint32 first,
                        ::std::unique_ptr<Opaque> second,
-                       QPoint third);
+                       QPoint third,
+                       const QPoint& fourth);
 
 Q_SIGNALS:
   void ready();
-  void dataChanged(qint32 first, Value second, QPoint third);
+  void dataChanged(qint32 first,
+                   Value second,
+                   QPoint third,
+                   const QPoint& fourth);
 
 private:
   rust::Box<MyObjectRust> m_rustObj;

@@ -43,6 +43,7 @@ mod ffi {
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
+            fourth: &QPoint,
         );
     }
 
@@ -95,16 +96,18 @@ mod cxx_qt_ffi {
                 first: 1,
                 second: Opaque::new(),
                 third: QPoint::new(1, 2),
+                fourth: &QPoint::new(1, 2),
             });
         }
     }
 
-    enum MySignals {
+    enum MySignals<'a> {
         Ready,
         DataChanged {
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
+            fourth: &'a QPoint,
         },
     }
 
@@ -116,7 +119,8 @@ mod cxx_qt_ffi {
                     first,
                     second,
                     third,
-                } => self.emit_data_changed(first, second, third),
+                    fourth,
+                } => self.emit_data_changed(first, second, third, fourth),
             }
         }
     }
