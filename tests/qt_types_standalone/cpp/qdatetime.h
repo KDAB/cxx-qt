@@ -9,7 +9,7 @@
 #include <QtCore/QDateTime>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/include/qdatetime_cxx.cxx.h"
+#include "cxx-qt-gen/qdatetime_cxx.cxx.h"
 
 class QDateTimeTest : public QObject
 {

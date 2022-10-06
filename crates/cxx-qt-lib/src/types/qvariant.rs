@@ -40,32 +40,32 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qcolor.h");
+        include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
-        include!("cxx-qt-lib/include/qdate.h");
+        include!("cxx-qt-lib/qdate.h");
         type QDate = crate::QDate;
-        include!("cxx-qt-lib/include/qdatetime.h");
+        include!("cxx-qt-lib/qdatetime.h");
         type QDateTime = crate::QDateTime;
-        include!("cxx-qt-lib/include/qpoint.h");
+        include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
-        include!("cxx-qt-lib/include/qpointf.h");
+        include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
-        include!("cxx-qt-lib/include/qrect.h");
+        include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
-        include!("cxx-qt-lib/include/qrectf.h");
+        include!("cxx-qt-lib/qrectf.h");
         type QRectF = crate::QRectF;
-        include!("cxx-qt-lib/include/qsize.h");
+        include!("cxx-qt-lib/qsize.h");
         type QSize = crate::QSize;
-        include!("cxx-qt-lib/include/qsizef.h");
+        include!("cxx-qt-lib/qsizef.h");
         type QSizeF = crate::QSizeF;
-        include!("cxx-qt-lib/include/qstring.h");
+        include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-        include!("cxx-qt-lib/include/qtime.h");
+        include!("cxx-qt-lib/qtime.h");
         type QTime = crate::QTime;
-        include!("cxx-qt-lib/include/qurl.h");
+        include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
-        include!("cxx-qt-lib/include/qvariant.h");
+        include!("cxx-qt-lib/qvariant.h");
         type QVariant = super::QVariant;
 
         #[namespace = "rust::cxxqtlib1::types"]

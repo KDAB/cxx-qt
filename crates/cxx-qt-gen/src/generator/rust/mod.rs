@@ -58,10 +58,7 @@ fn generate_include(parser: &Parser) -> Result<Item> {
         ));
     }
     let (qt_ident, _) = parser.cxx_qt_data.qobjects.iter().take(1).next().unwrap();
-    let import_path = format!(
-        "cxx-qt-gen/include/{}.cxxqt.h",
-        cxx_stem_from_ident(qt_ident)
-    );
+    let import_path = format!("cxx-qt-gen/{}.cxxqt.h", cxx_stem_from_ident(qt_ident));
 
     syn::parse2(quote! {
         unsafe extern "C++" {
@@ -94,7 +91,7 @@ mod tests {
             &rust.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    include!("cxx-qt-gen/include/my_object.cxxqt.h");
+                    include!("cxx-qt-gen/my_object.cxxqt.h");
                 }
             },
         );

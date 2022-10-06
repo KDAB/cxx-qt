@@ -9,7 +9,7 @@ use cxx::{type_id, ExternType};
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qsizef.h");
+        include!("cxx-qt-lib/qsizef.h");
 
         type QSizeF = super::QSizeF;
 

@@ -7,9 +7,9 @@
 #[cxx_qt::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qpoint.h");
+        include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
-        include!("cxx-qt-lib/include/qvariant.h");
+        include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
     }
 

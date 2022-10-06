@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/include/threading_website.cxxqt.h"
+#include "cxx-qt-gen/threading_website.cxxqt.h"
 
 class Setup : public QObject
 {

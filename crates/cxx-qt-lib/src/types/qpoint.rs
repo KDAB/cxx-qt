@@ -8,7 +8,7 @@ use cxx::{type_id, ExternType};
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qpoint.h");
+        include!("cxx-qt-lib/qpoint.h");
 
         type QPoint = super::QPoint;
 

@@ -5,7 +5,7 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "cxx-qt-lib/include/qdatetime.h"
+#include "cxx-qt-lib/qdatetime.h"
 
 #include "assertion_utils.h"
 

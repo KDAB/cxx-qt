@@ -129,7 +129,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         }}
 
         {forward_declare}
-        #include "cxx-qt-gen/include/{cxx_stem}.cxx.h"
+        #include "cxx-qt-gen/{cxx_stem}.cxx.h"
 
         {qobjects}
     "#,

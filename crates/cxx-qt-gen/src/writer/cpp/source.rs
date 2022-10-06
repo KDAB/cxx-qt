@@ -80,7 +80,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
 /// For a given GeneratedCppBlocks write this into a C++ source
 pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     formatdoc! {r#"
-        #include "cxx-qt-gen/include/{cxx_stem}.cxxqt.h"
+        #include "cxx-qt-gen/{cxx_stem}.cxxqt.h"
 
         {qobjects}
     "#,

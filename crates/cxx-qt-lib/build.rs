@@ -58,7 +58,7 @@ fn main() {
 
     // Write this library's manually written C++ headers to files and add them to include paths
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib/include", out_dir));
+    cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib", out_dir));
     builder.include(out_dir);
 
     // MSVC

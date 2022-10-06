@@ -9,9 +9,9 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/include/my_data.cxxqt.h"
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
-#include "cxx-qt-gen/include/my_types.cxxqt.h"
+#include "cxx-qt-gen/my_data.cxxqt.h"
+#include "cxx-qt-gen/my_object.cxxqt.h"
+#include "cxx-qt-gen/my_types.cxxqt.h"
 
 class CxxQtTest : public QObject
 {

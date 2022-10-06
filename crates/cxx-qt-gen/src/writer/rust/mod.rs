@@ -106,8 +106,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         syn::parse2(quote! {
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
-                include!("cxx-qt-lib/include/convert.h");
-                include!("cxx-qt-lib/include/cxxqt_thread.h");
+                include!("cxx-qt-lib/convert.h");
+                include!("cxx-qt-lib/cxxqt_thread.h");
             }
         })
         .expect("Could not build CXX common block"),
@@ -318,8 +318,8 @@ mod tests {
             mod ffi {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
-                    include!("cxx-qt-lib/include/convert.h");
-                    include!("cxx-qt-lib/include/cxxqt_thread.h");
+                    include!("cxx-qt-lib/convert.h");
+                    include!("cxx-qt-lib/cxxqt_thread.h");
                 }
 
                 unsafe extern "C++" {
@@ -399,8 +399,8 @@ mod tests {
             mod ffi {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
-                    include!("cxx-qt-lib/include/convert.h");
-                    include!("cxx-qt-lib/include/cxxqt_thread.h");
+                    include!("cxx-qt-lib/convert.h");
+                    include!("cxx-qt-lib/cxxqt_thread.h");
                 }
 
                 unsafe extern "C++" {

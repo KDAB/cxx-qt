@@ -9,7 +9,7 @@ use cxx_qt_lib::QSizeF;
 #[cxx::bridge]
 mod qsizef_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qsizef.h");
+        include!("cxx-qt-lib/qsizef.h");
 
         type QSizeF = cxx_qt_lib::QSizeF;
     }

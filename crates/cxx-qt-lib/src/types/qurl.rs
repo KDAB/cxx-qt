@@ -10,8 +10,8 @@ use crate::QString;
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qurl.h");
-        include!("cxx-qt-lib/include/qstring.h");
+        include!("cxx-qt-lib/qurl.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QString = crate::QString;
         type QUrl = super::QUrl;

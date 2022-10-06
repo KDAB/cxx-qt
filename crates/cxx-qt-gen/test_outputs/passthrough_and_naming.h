@@ -13,7 +13,7 @@ class MyObject;
 using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
 } // namespace cxx_qt::my_object
 
-#include "cxx-qt-gen/include/my_object.cxx.h"
+#include "cxx-qt-gen/my_object.cxx.h"
 
 namespace cxx_qt::my_object {
 class MyObject : public QStringListModel

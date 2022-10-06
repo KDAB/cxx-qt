@@ -35,7 +35,7 @@ mod qvariant_cxx {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/include/qvariant.h");
+        include!("cxx-qt-lib/qvariant.h");
 
         type QVariant = cxx_qt_lib::QVariant;
     }

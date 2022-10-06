@@ -13,3 +13,6 @@ cargo/*
 **/mdbook-linkcheck/*
 pip3/*
 rustup/*
+
+# clangd
+compile_commands.json

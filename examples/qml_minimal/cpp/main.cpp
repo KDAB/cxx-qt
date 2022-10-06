@@ -11,7 +11,7 @@
 #include <QtQml/QQmlApplicationEngine>
 
 // ANCHOR: book_cpp_include
-#include "cxx-qt-gen/include/my_object.cxxqt.h"
+#include "cxx-qt-gen/my_object.cxxqt.h"
 // ANCHOR_END: book_cpp_include
 
 int
