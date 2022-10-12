@@ -60,39 +60,39 @@ qt_import_qml_plugins(${APP_NAME})
 # Unit test
 #
 
-function(add_qml_test TEST_NAME)
-    # Copy QML unit test to build folder
-    # this is so that our tst_${TEST_NAME} executable can find the QML files
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
-
-    add_executable(${APP_NAME}_${TEST_NAME}_test "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
-    target_include_directories(${APP_NAME}_${TEST_NAME}_test PRIVATE cpp)
-    target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
-        ${CRATE}
-        Qt${QT_VERSION_MAJOR}::Test
-        Qt${QT_VERSION_MAJOR}::QuickTest
-    )
-    qt_import_qml_plugins(${APP_NAME}_${TEST_NAME}_test)
-
-    if(WIN32)
-        set(EXE_SUFFIX ".exe")
-    else()
-        set(EXE_SUFFIX "")
-    endif()
-
-    add_test(NAME ${APP_NAME}_${TEST_NAME}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
-
-    add_valgrind_test(${APP_NAME}_${TEST_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
-
-    set_target_properties(${APP_NAME}_${TEST_NAME}_test PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
-    )
+# Copy QML unit test to build folder
+# this is so that our test executable can find the QML files in the same folder
+function(copy_qml_test TEST_NAME)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/tests/tst_${TEST_NAME}.qml COPYONLY)
 endfunction()
 
-add_qml_test(custom_base_class)
-add_qml_test(invokables)
-add_qml_test(properties)
-add_qml_test(serialisation)
-add_qml_test(signals)
-add_qml_test(threading)
-add_qml_test(types)
+copy_qml_test(custom_base_class)
+copy_qml_test(invokables)
+copy_qml_test(properties)
+copy_qml_test(serialisation)
+copy_qml_test(signals)
+copy_qml_test(threading)
+copy_qml_test(types)
+
+add_executable(${APP_NAME}_test "tests/main.cpp")
+target_include_directories(${APP_NAME}_test PRIVATE cpp)
+target_link_libraries(${APP_NAME}_test PRIVATE
+    ${CRATE}
+    Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::QuickTest
+)
+qt_import_qml_plugins(${APP_NAME}_test)
+
+if(WIN32)
+    set(EXE_SUFFIX ".exe")
+else()
+    set(EXE_SUFFIX "")
+endif()
+
+add_test(NAME ${APP_NAME}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/${APP_NAME}_test${EXE_SUFFIX} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
+add_valgrind_test(${APP_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/tests/${APP_NAME}_test${EXE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
+set_target_properties(${APP_NAME}_test PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
+)
