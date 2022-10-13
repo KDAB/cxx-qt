@@ -37,6 +37,12 @@ if(VCPKG)
     set(VCPKG_FEATURE_FLAGS "-compilertracking")
     set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
 
+    # vcpkg defaults to dynamic linking on Windows, which gets messy because
+    # Cargo does not set rpaths https://github.com/rust-lang/cargo/issues/5077
+    if(WIN32)
+        set(VCPKG_TARGET_TRIPLET "x64-windows-static")
+    endif()
+
     if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
         if(WIN32)
             set(COMMAND_PREIFX "")
