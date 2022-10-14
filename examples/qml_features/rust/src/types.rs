@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
+// ANCHOR: book_cxx_file_stem
 #[cxx_qt::bridge(cxx_file_stem = "types")]
 mod ffi {
+    // ANCHOR_END: book_cxx_file_stem
     use cxx_qt_lib::QVariantValue;
 
     unsafe extern "C++" {

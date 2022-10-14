@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_properties")]
 mod ffi {
     unsafe extern "C++" {
@@ -13,6 +12,7 @@ mod ffi {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
+    // ANCHOR: book_macro_code
     #[cxx_qt::qobject]
     pub struct RustProperties {
         #[qproperty]
@@ -38,6 +38,7 @@ mod ffi {
             }
         }
     }
+    // ANCHOR_END: book_macro_code
 
     impl qobject::RustProperties {
         #[qinvokable]
@@ -75,4 +76,3 @@ mod ffi {
         }
     }
 }
-// ANCHOR_END: book_macro_code
