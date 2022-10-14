@@ -12,7 +12,7 @@ authors = [
   "Gerhard de Clercq <gerhard.declercq@kdab.com>",
   "Leon Matthes <leon.matthes@kdab.com>"
 ]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 # This will instruct Cargo to create a static
@@ -26,7 +26,9 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx = "1.0.75"
 cxx-qt = { path = "../../../crates/cxx-qt" }
+# Use `cxx-qt = "0.4"` here instead!
 cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
+# Use `cxx-qt-lib = "0.4"` here instead!
 # ANCHOR_END: book_dependencies
 
 # cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
@@ -34,6 +36,7 @@ cxx-qt-lib = { path = "../../../crates/cxx-qt-lib" }
 # ANCHOR: book_build_dependencies
 [build-dependencies]
 cxx-qt-build = { path = "../../../crates/cxx-qt-build" }
+# Use `cxx-qt-build = "0.4"` here instead!
 # ANCHOR_END: book_build_dependencies
 
 # ANCHOR_END: book_all

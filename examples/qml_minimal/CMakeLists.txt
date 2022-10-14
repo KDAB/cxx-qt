@@ -42,7 +42,7 @@ endif()
 
 # ANCHOR: book_cmake_use_corrosion
 set(CRATE qml-minimal)
-# Corrosion crates a CMake target with the same name as the crate.
+# Corrosion creates a CMake target with the same name as the crate.
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 
 # The Rust library's build script needs to be told where to output the

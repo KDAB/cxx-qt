@@ -30,4 +30,4 @@ If you are new to CXX-Qt, we recommend you visit our [Getting Started Guide](./g
 To get detailed information on which features of a QObject are available in CXX-Qt, see the [QObject chapter](./qobject/index.md).
 Should you be interested in a deeper dive into the concepts of CXX-Qt, take a look at the [concepts chapter](./concepts/index.md), which explains the concepts CXX-Qt introduces in detail.
 
-Note we only support 64-bit x86 Linux, but we plan on adding arm 64-bit, macOS, and Windows support in the future.
+**Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86). It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
