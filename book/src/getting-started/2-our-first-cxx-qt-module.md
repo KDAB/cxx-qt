@@ -51,12 +51,12 @@ That means the newly created QObject subclass will have two properties as member
 
 Do note though that any fields marked as `#[qproperty]` must be types that CXX can translate to C++ types.
 In our case that means:
-- `number: i32` -> `int number`
+- `number: i32` -> `qint32 number`
 - `string: QString` -> `QString string`
 
-For `i32`, CXX already knows how to translate it.
+For `i32`, CXX-Qt already knows how to translate it.
 A `QString` however is unknown to CXX.
-Luckily, the `cxx_qt_lib` crate already wraps many Qt types for us.
+Luckily, the [`cxx_qt_lib`](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) crate already wraps many Qt types for us.
 We can just import them like any other CXX type:
 ``` rust, ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_qstring_import}}
@@ -64,8 +64,8 @@ We can just import them like any other CXX type:
 For more details on the available types, see the [Qt types page](../concepts/types.md).
 
 CXX-Qt will then automatically generate a new QObject subclass for our `MyObject` struct and expose it as an [`extern "C++"` opaque type](https://cxx.rs/extern-c++.html#opaque-c-types) to Rust.
-For any Rust struct `T` that is marked with `#[cxx_qt::qobject]`, CXX-Qt will expose its QObject wrapper under `qobject::T`.
-In our case, this means we can refer to the QObject wrapper for our `MyObject` struct, as `qobject::MyObject`.
+For any Rust struct `T` that is marked with `#[cxx_qt::qobject]`, CXX-Qt will expose the corresponding C++ QObject under `qobject::T`.
+In our case, this means we can refer to the C++ QObject for our `MyObject` struct, as `qobject::MyObject`.
 
 This type can be used like any other CXX opaque type.
 Additionally, CXX-Qt allows us to add functionality to this QObject by using `impl qobject::MyObject` together with `#[qinvokable]`.
@@ -81,8 +81,14 @@ In our case, we define two new functions:
     - Prints a provided number and string.
     - The name will be converted to `sayHello` in C++.
 
-Apart from functions marked with the `#[qinvokable]` macro, you can also define normal helper functions on this struct that won't be exposed to QML.
-These functions may still be called from Rust and can be defined by omitting the `#[qinvokable]` macro.
+Because we are implementing on the `qobject::MyObject` type instead of the `MyObject` type, `self` here is the C++ QObject that is generated from our `MyObject` struct.
+As this type is a CXX Opaque type, we can't actually instantiate it.
+Qt/C++ takes care of this.
+However, we can still define Rust functions on this type.
+They will just be normal Rust functions, but will be executed on a C++ type.
+CXX-Qt will already generate getters and setters for all fields of your struct this way.
+If you additionally mark any of these functions with `#[qinvokable]`, they will also be callable from C++ and QML.
+In this case, the types of the arguments also need to convertable to C++, like with any `#[qproperty]`.
 
 And that's it. We've defined our first QObject subclass in Rust. That wasn't so hard, was it?
 

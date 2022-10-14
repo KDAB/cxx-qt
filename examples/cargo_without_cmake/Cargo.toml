@@ -19,12 +19,12 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 cxx = "1.0.75"
-cxx-qt = { path = "../../crates/cxx-qt" }
 # Use `cxx-qt = "0.4"` here instead!
-cxx-qt-lib = { path = "../../crates/cxx-qt-lib" }
+cxx-qt = { path = "../../crates/cxx-qt" }
 # Use `cxx-qt-lib = "0.4"` here instead!
+cxx-qt-lib = { path = "../../crates/cxx-qt-lib" }
 
 [build-dependencies]
-cxx-qt-build = { path = "../../crates/cxx-qt-build" }
 # Use `cxx-qt-build = "0.4"` here instead!
+cxx-qt-build = { path = "../../crates/cxx-qt-build" }
 # ANCHOR_END: book_cargo_toml_no_cmake

@@ -27,7 +27,7 @@ Therefore it is an ideal candidate to replace C++ for writing the back-end busin
 
 However, C++ as well as QML still have their place in Qt applications.
 For that reason Rust, C++, and QML should all be able to be used to complement each other.
-CXX-Qt aims to make it easy to integrate all three languages with each other, through the use of Qt's [meta object system](https://doc.qt.io/qt-5/metaobjects.html) and [CXX](https://cxx.rs).
+CXX-Qt aims to make it easy to integrate all three languages with each other, through the use of Qt's [meta object system](https://doc.qt.io/qt-6/metaobjects.html) and [CXX](https://cxx.rs).
 
 As CXX-Qt is largely an expansion on top of CXX, you should make yourself familiar with CXX first.
 You can read their excellent documentation here:
@@ -38,16 +38,16 @@ CXX-Qt builds on this foundation, to allow you to define Qt-specific concepts in
 
 These concepts include:
 - Custom QObject classes
-- Properties
+    - Properties
+    - Invokables/Slots
 - Signals
-- Invokables/Slots
 
 As with CXX, to use these features you mark a Rust module with an attribute macro (`#[cxx_qt::bridge]`).
 Then you can use the afformentioned features with the help of more macros.
 - `#[cxx_qt::qobject]` - Expose a Rust struct to Qt as a QObject subclass.
     - `#[qproperty]` - Expose a field of the Rust struct to QML/C++ as a [`Q_PROPERTY`](https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html#exposing-properties).
     - `#[qinvokable]` - Expose a function on the QObject to QML and C++ as a [`Q_INVOKABLE`](https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html#exposing-methods-including-qt-slots).
-- `#[cxx_qt::signals(T)]` - Use an enum to define the Signals of a QObject T.
+- `#[cxx_qt::qsignals(T)]` - Use an enum to define the [Signals](https://doc.qt.io/qt-6/signalsandslots.html#signals) of a QObject T.
 
 CXX-Qt will then expand this Rust module into two separate parts:
 - C++ files that define a QObject subclass for each `#[cxx_qt::qobject]` marked struct.
@@ -67,7 +67,7 @@ These classes are made up of the actual QObject subclass instance that C++ inter
 When such a QObject is instantiated, it will always also construct an instance of the Rust struct as well.
 The lifetime of the Rust struct will be bound to that of the QObject.
 If the QObject is deleted, the Rust struct will be deleted as well.
-Typically this will be instantiated by QML and the lifetime will be directly associated with the corresponding QML widget.
+Typically this will be instantiated by QML and the lifetime will be directly associated with the corresponding QML item.
 
 The generated QObject subclass will then defer to the Rust struct for any behavior, which is then defined in Rust.
 For example, using the `#[qinvokable]` attribute, we can define functions that will be exposed to C++, but will execute Rust code.
