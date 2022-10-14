@@ -10,6 +10,7 @@ members = [
     "crates/cxx-qt-gen",
     "crates/cxx-qt-lib",
     "crates/cxx-qt-lib-headers",
+    "crates/qt-build-utils",
 
     "examples/cargo_without_cmake",
     "examples/demo_threading/rust",

@@ -55,7 +55,7 @@ pub enum QtBuildError {
 ///     .iter()
 ///     .map(|m| String::from(*m))
 ///     .collect();
-/// let qtbuild = qt_build::QtBuild::new(qt_modules).expect("Could not find Qt installation");
+/// let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
 /// ```
 pub struct QtBuild {
     version: SemVer,
