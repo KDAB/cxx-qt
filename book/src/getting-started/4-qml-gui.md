@@ -11,7 +11,7 @@ As noted in the [QObjects in Rust](./1-qobjects-in-rust.md) chapter, we always w
 For a small modern GUI in Qt, that definitely means using QML.
 It's powerful, flexible, declarative, and allows us to iterate very quickly.
 
-So let's add a `main.qml` next to our two other files in the `src` folder:
+So let's add a `main.qml` file in a `qml` folder:
 ```qml,ignore
 {{#include ../../../examples/qml_minimal/qml/main.qml:book_main_qml}}
 ```

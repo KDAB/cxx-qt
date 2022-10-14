@@ -17,11 +17,13 @@ in the cxx-qt repository.
 
 
 ## Cargo setup
-The Cargo.toml file requires the same dependencies. However, we are not building a `staticlib` this time:
+The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build` as in our [CMake example](./5-cmake-integration.md). However, we are not building a `staticlib` this time:
 
 ```toml,ignore
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 ```
+
+Note that instead of the `{ path = "..." }` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
 
 The `build.rs` script is similar. However, without CMake, CxxQtBuilder needs to do a bit more work:
 

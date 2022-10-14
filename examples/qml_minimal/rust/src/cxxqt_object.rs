@@ -9,13 +9,15 @@
 // ANCHOR: book_bridge_macro
 
 #[cxx_qt::bridge]
-mod ffi {
+mod my_object {
     // ANCHOR_END: book_bridge_macro
 
+    // ANCHOR: book_qstring_import
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
     }
+    // ANCHOR_END: book_qstring_import
 
     // ANCHOR: book_rustobj_struct
     #[cxx_qt::qobject]

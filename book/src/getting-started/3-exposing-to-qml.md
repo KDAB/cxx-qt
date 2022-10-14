@@ -26,16 +26,22 @@ There are two notable changes compared to a normal Qt application though:
 {{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_register}}
 ```
 
-For every QObject subclass that we define in Rust, CXX-Qt will generate a corresponding C++ class.
-This class is included by the first code snippet.
-They will always be in the `cxx-qt-gen/include/` include path and use the snake_case naming convention.
+For every `#[cxx_qt::bridge]` that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
+This file is included by the first code snippet.
+They will always be in the `cxx-qt-gen/` include path and use the snake_case naming convention.
+The name of the header file will be the name of the Rust module of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
+So in our case: `my_object.cxxqt.h`
 
-The second code snippet then exports the class to QML.
+The second code snippet then exports our `MyObject` class to QML.
 This works the same as it would for any other QObject subclass, as that is exactly what `MyObject` is, as far as Qt is concerned.
 
 As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file in the `qml` folder as well:
 ```qrc,ignore
 {{#include ../../../examples/qml_minimal/qml/qml.qrc:book_rcc_block}}
+```
+You can also omit this, but then you should change the url of the `main.qml` file, so that Qt can find it on your hard drive.
+``` cpp, ignore
+{{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_url}}
 ```
 
 And that's it. We can now [use our cool new class from QML](./4-qml-gui.md).

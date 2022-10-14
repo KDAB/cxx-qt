@@ -11,7 +11,7 @@
 #include <QtQml/QQmlApplicationEngine>
 
 // ANCHOR: book_cpp_include
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "cxx-qt-gen/my_object.cxxqt.h"
 // ANCHOR_END: book_cpp_include
 
 int
@@ -21,7 +21,9 @@ main(int argc, char* argv[])
 
   QQmlApplicationEngine engine;
 
+  // ANCHOR: book_qml_url
   const QUrl url(QStringLiteral("qrc:/main.qml"));
+  // ANCHOR_END: book_qml_url
   QObject::connect(
     &engine,
     &QQmlApplicationEngine::objectCreated,

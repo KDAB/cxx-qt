@@ -1,49 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
-<svg width="30cm" height="11cm" viewBox="459 199 585 215" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g id="Background">
-    <g>
-      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="680" y="200" width="147.1" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="753.55" y="221.881">
-        <tspan x="753.55" y="221.881">CXX-Qt Macro</tspan>
-        <tspan x="753.55" y="237.881">QObject description</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="880" y="360" width="162.35" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="961.175" y="381.881">
-        <tspan x="961.175" y="381.881">struct RustObj</tspan>
-        <tspan x="961.175" y="397.881">Rust-Side data &amp; code</tspan>
-      </text>
-    </g>
-    <g>
-      <rect style="fill: #0077c8; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0077c8" x="460" y="360" width="163.95" height="52" rx="10" ry="10"/>
-      <text font-size="12.8" style="fill: #ffffff; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="541.975" y="381.881">
-        <tspan x="541.975" y="381.881">QObject subclass</tspan>
-        <tspan x="541.975" y="397.881">Qt-side representation</tspan>
-      </text>
-    </g>
-    <g>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke-dasharray: 20; stroke: #000000" points="635.955,386 752.478,386 752.478,386 870.264,386 "/>
-      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="635.955,381 625.955,386 635.955,391 "/>
-      <polygon style="fill: #000000; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="877.764,386 867.764,391 870.264,386 867.764,381 "/>
-    </g>
-    <g>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,252 753.55,320 961.175,320 961.175,355.528 "/>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="956.175,347.764 961.175,357.764 966.175,347.764 "/>
-    </g>
-    <g>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="753.55,253 753.55,320 541.975,320 541.975,355.528 "/>
-      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #000000" points="536.975,347.764 541.975,357.764 546.975,347.764 "/>
-    </g>
-    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="680" y="400">
-      <tspan x="680" y="400">Safe Interop using CXX</tspan>
-    </text>
-    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="820" y="300">
-      <tspan x="820" y="300">Macro expansion</tspan>
-    </text>
-    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="580" y="300">
-      <tspan x="580" y="300">Code generation</tspan>
+<svg width="29cm" height="10cm" viewBox="459 225 561 188" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #0077c8" x="655.614" y="226.068" width="198.3" height="52" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0077c8" x="655.614" y="226.068" width="198.3" height="52" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #ffffff;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="754.764" y="249.751">
+      <tspan x="754.764" y="249.751">CXX-Qt Bridge</tspan>
+      <tspan x="754.764" y="265.751">Qt/Rust boundary description</tspan>
     </text>
   </g>
+  <g>
+    <rect style="fill: #0077c8" x="872.432" y="367.988" width="145.95" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0077c8" x="872.432" y="367.988" width="145.95" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #ffffff;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="945.407" y="391.672">
+      <tspan x="945.407" y="391.672">Rust implementation</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #0077c8" x="460" y="360" width="155.5" height="52" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0077c8" x="460" y="360" width="155.5" height="52" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #ffffff;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="537.75" y="383.683">
+      <tspan x="537.75" y="383.683">QObject subclasses</tspan>
+      <tspan x="537.75" y="399.683">Qt-side representation</tspan>
+    </text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20; stroke: #000000" points="627.51,386 744.471,386 744.471,385.988 862.696,385.988 "/>
+    <polygon style="fill: #000000" points="627.51,381 617.51,386 627.51,391 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="627.51,381 617.51,386 627.51,391 "/>
+    <polygon style="fill: #000000" points="870.196,385.988 860.196,390.988 862.696,385.988 860.196,380.988 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="870.196,385.988 860.196,390.988 862.696,385.988 860.196,380.988 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="754.764,278.068 754.764,320 945.407,320 945.407,363.516 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="940.407,355.752 945.407,365.752 950.407,355.752 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="754.764,279.035 754.764,320 537.75,320 537.75,355.528 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="532.75,347.764 537.75,357.764 542.75,347.764 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="681.682" y="407.988">
+    <tspan x="681.682" y="407.988">Safe Interop using CXX</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="820.42" y="309.67">
+    <tspan x="820.42" y="309.67">Macro expansion</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="577.477" y="309.67">
+    <tspan x="577.477" y="309.67">Code generation</tspan>
+  </text>
+  <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="754.764" y="252.068">
+    <tspan x="754.764" y="252.068"></tspan>
+  </text>
 </svg>

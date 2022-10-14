@@ -10,6 +10,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 In this example, we will demonstrate how to integrate cxx-qt code into a C++ application. Cargo builds the cxx-qt code
 as a static library, then CMake links it into a C++ executable.
 
+> If you don't want to use CMake, and only want to use Cargo to build your project, you can [skip to the next chapter](./6-cargo-executable.md).
+> Note that using CMake is currently still easier!
+
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
 If you've generated your project with the `cargo new --lib` command, your `Cargo.toml` likely looks something like this:
@@ -95,6 +98,6 @@ You should now see the two Labels that display the state of our `MyObject`, as w
 ## Success   🥳
 
 For further reading, you can take a look at the [QObject chapter](../qobject/index.md) which goes into detail about all features that CXX-Qt exposes to new QObject subclasses.
-As well as the [Concepts chapter](../concepts/index.md), which explains the under concepts underlying CXX-Qt.
+As well as the [Concepts chapter](../concepts/index.md), which explains the concepts underlying CXX-Qt.
 
-In the next chapter, we will show how to build the same QML application with Cargo without needing CMake.
+In the next, optional chapter, we will show how to build the same QML application with Cargo without needing CMake.
