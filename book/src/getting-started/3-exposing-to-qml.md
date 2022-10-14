@@ -15,7 +15,7 @@ The easiest way to do this is to add a `main.cpp` file in a `cpp` folder to clea
 ```
 
 This C++ file creates a basic Qt application and executes it.
-If you're unfamiliar with this, I recommend you take a look at the [Qt documentation](https://doc.qt.io/qt-5/gettingstarted.html).
+If you're unfamiliar with this, I recommend you take a look at the [Qt documentation](https://doc.qt.io/qt-6/gettingstarted.html).
 
 There are two notable changes compared to a normal Qt application though:
 ```cpp,ignore
@@ -33,9 +33,13 @@ The name of the header file will be the name of the Rust module of your `#[cxx_q
 So in our case: `my_object.cxxqt.h`
 
 The second code snippet then exports our `MyObject` class to QML.
-This works the same as it would for any other QObject subclass, as that is exactly what `MyObject` is, as far as Qt is concerned.
+This works the same as it would for any other QObject subclass, as that is exactly what `MyObject` is - a normal C++ class.
+That means you can also use it like any other C++ class.
+Derive from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
+That's the power of CXX-Qt.
 
-As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-5/resources.html), we'll have to add a `qml.qrc` file in the `qml` folder as well:
+
+As we later want to include our QML GUI in a `main.qml` file inside the [Qt resource system](https://doc.qt.io/qt-6/resources.html), we'll have to add a `qml.qrc` file in the `qml` folder as well:
 ```qrc,ignore
 {{#include ../../../examples/qml_minimal/qml/qml.qrc:book_rcc_block}}
 ```

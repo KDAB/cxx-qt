@@ -16,13 +16,13 @@ So let's add a `main.qml` file in a `qml` folder:
 {{#include ../../../examples/qml_minimal/qml/main.qml:book_main_qml}}
 ```
 
-If you're not familiar with QML, I recommend you take a look at the [Qt QML intro](https://doc.qt.io/qt-5/qmlapplications.html).
+If you're not familiar with QML, I recommend you take a look at the [Qt QML intro](https://doc.qt.io/qt-6/qmlapplications.html).
 
 This code will create a pretty simple GUI that consists of two Labels and two Buttons.
 The important part here is the use of the `MyObject` type.
 As you can see, the class we defined earlier is now usable in QML.
 
-As it is just another QObject subclass, it can be used in Qts property binding system, as is done with the `myObject.string`, which is bound to `myObject.number`.
+As it is just another QObject subclass, it can be used in Qt's property binding system, as is done with the `myObject.string`, which is bound to `myObject.number`.
 
 The labels then simply display the data defined in the `MyObject` class.
 We can use the two buttons to interact with the `MyObject` instance.

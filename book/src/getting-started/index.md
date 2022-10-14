@@ -18,11 +18,11 @@ However, a few things you should make sure you're familiar with before attemptin
 First of all, you should be familiar with Rust. There are many great resources for learning Rust, like [the book](https://doc.rust-lang.org/book/).
 
 As CXX-Qt aims to integrate Rust into the existing Qt ecosystem, you should have basic knowledge of Qt and QML.
-If you're not familiar with Qt/QML yet, take a look at the [Qt Getting started guide](https://doc.qt.io/qt-5/gettingstarted.html) or the [QML intro](https://doc.qt.io/qt-5/qmlapplications.html) respectively.
+If you're not familiar with Qt/QML yet, take a look at the [Qt Getting started guide](https://doc.qt.io/qt-6/gettingstarted.html) or the [QML intro](https://doc.qt.io/qt-6/qmlapplications.html) respectively.
 
 CXX-Qt (as the name suggests) is built on top of [CXX](https://cxx.rs).
 You should have a basic idea of how CXX works before attempting to follow this guide.
-Take a look at the CXX documentation here: [https://cxx.rs/index.html](https://cxx.rs/index.html)
+Take a look at the CXX documentation here: [https://cxx.rs/](https://cxx.rs/)
 
 ### What this guide covers
 

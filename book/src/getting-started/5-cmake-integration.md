@@ -12,6 +12,7 @@ as a static library, then CMake links it into a C++ executable.
 
 > If you don't want to use CMake, and only want to use Cargo to build your project, you can [skip to the next chapter](./6-cargo-executable.md).
 > Note that using CMake is currently still easier!
+> It also allows you to integrate Rust into existing Qt projects and tooling.
 
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
