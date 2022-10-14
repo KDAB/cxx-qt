@@ -71,8 +71,8 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemEnum] into the qobjects if it's a CXX-Qt signal
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_enum(&mut self, item_enum: ItemEnum) -> Result<Option<Item>> {
-        // Check if the enum has cxx_qt::signals(T)
-        if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "signals"]) {
+        // Check if the enum has cxx_qt::qsignals(T)
+        if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "qsignals"]) {
             let ident = attribute_tokens_to_ident(&item_enum.attrs[index])?;
             // Find the matching QObject for the enum
             if let Some(qobject) = self.qobjects.get_mut(&ident) {
@@ -81,7 +81,7 @@ impl ParsedCxxQtData {
             } else {
                 return Err(Error::new(
                     item_enum.span(),
-                    "No matching QObject found for the given cxx_qt::signals<T> enum.",
+                    "No matching QObject found for the given cxx_qt::qsignals<T> enum.",
                 ));
             }
         }
@@ -198,7 +198,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
             }
@@ -214,7 +214,7 @@ mod tests {
 
         // Valid signals enum but missing QObject
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::signals(UnknownObj)]
+            #[cxx_qt::qsignals(UnknownObj)]
             enum MySignals {
                 Ready,
             }
@@ -241,7 +241,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::signals]
+            #[cxx_qt::qsignals]
             enum MySignals {
                 Ready,
             }

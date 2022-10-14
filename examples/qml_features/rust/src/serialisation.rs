@@ -42,7 +42,7 @@ mod ffi {
         pub string: QString,
     }
 
-    #[cxx_qt::signals(Serialisation)]
+    #[cxx_qt::qsignals(Serialisation)]
     pub enum Connection {
         Error { message: QString },
     }

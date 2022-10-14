@@ -6,7 +6,7 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
-    #[cxx_qt::signals(MyObject)]
+    #[cxx_qt::qsignals(MyObject)]
     enum MySignals<'a> {
         Ready,
         DataChanged {

@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_parsed_signals_from_empty() {
         let e: ItemEnum = tokens_to_syn(quote! {
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             enum MySignals {}
         });
         let signals = ParsedSignalsEnum::from(&e, 0).unwrap();
@@ -113,7 +113,7 @@ mod tests {
     fn test_parsed_signals_from_empty_attrs() {
         let e: ItemEnum = tokens_to_syn(quote! {
             #[before]
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             #[after]
             enum MySignals {}
         });
@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn test_parsed_signals_from_named() {
         let e: ItemEnum = tokens_to_syn(quote! {
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
                 PointChanged {
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_parsed_signals_from_unnamed() {
         let e: ItemEnum = tokens_to_syn(quote! {
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
                 PointChanged(f64, f64),
