@@ -145,7 +145,7 @@ endfunction()
 add_subdirectory(book)
 add_subdirectory(examples)
 
-# QMAKE environment variable is needed by qt-build to ensure that Cargo
+# QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
@@ -186,7 +186,7 @@ add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TE
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
 
 # QML example has add_test in it's CMakeLists, so just add the cargo tests here
-add_test_cargo(qt-build "${CMAKE_CURRENT_SOURCE_DIR}/crates/qt-build/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(qt-build-utils "${CMAKE_CURRENT_SOURCE_DIR}/crates/qt-build-utils/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(demo_threading "${CMAKE_CURRENT_SOURCE_DIR}/examples/demo_threading/rust/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_features "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_features/rust/Cargo.toml" DOCTESTS_OFF)
 add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/plugin/rust/Cargo.toml" DOCTESTS_OFF)

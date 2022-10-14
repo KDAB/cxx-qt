@@ -341,7 +341,7 @@ impl CxxQtBuilder {
         // GCC + Clang
         self.cc_builder.flag_if_supported("-std=c++17");
 
-        let mut qtbuild = qt_build::QtBuild::new(self.qt_modules.into_iter().collect())
+        let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries();
         for include_dir in qtbuild.include_paths() {

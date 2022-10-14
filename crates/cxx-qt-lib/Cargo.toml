@@ -21,4 +21,4 @@ cxx = "1.0.75"
 [build-dependencies]
 cxx-build = { version = "1.0", features = [ "parallel" ] }
 cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.3" }
-qt-build = { path = "../qt-build" }
+qt-build-utils = { path = "../qt-build-utils" }
