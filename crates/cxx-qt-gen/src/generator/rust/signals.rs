@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn test_generate_rust_signals() {
         let e: ItemEnum = tokens_to_syn(quote! {
-            #[cxx_qt::signals(MyObject)]
+            #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
                 DataChanged {

@@ -14,7 +14,7 @@ pub mod ffi {
     }
 
     // ANCHOR: book_signals_enum
-    #[cxx_qt::signals(RustSignals)]
+    #[cxx_qt::qsignals(RustSignals)]
     pub enum Connection<'a> {
         Connected { url: &'a QUrl },
         Disconnected,

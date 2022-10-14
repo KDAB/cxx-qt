@@ -61,7 +61,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```ignore
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod my_object {
-///     #[cxx_qt::signals(MyObject)]
+///     #[cxx_qt::qsignals(MyObject)]
 ///     enum MySignals {
 ///         Ready,
 ///     }
@@ -69,7 +69,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn signals(_args: TokenStream, _input: TokenStream) -> TokenStream {
-    unreachable!("cxx_qt::signals should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
+    unreachable!("cxx_qt::qsignals should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
 /// A macro which describes that a struct should be made into a QObject.

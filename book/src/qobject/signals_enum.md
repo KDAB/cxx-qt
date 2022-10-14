@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Signals enum
 
-The `cxx_qt::signals(T)` attribute is used on an enum to define which signals should exist on the QObject `T`. It allows you to define the signal name and the parameters of the signal.
+The `cxx_qt::qsignals(T)` attribute is used on an enum to define which signals should exist on the QObject `T`. It allows you to define the signal name and the parameters of the signal.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_enum}}

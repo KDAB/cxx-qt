@@ -161,7 +161,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 struct MyObject;
 
-                #[cxx_qt::signals(MyObject)]
+                #[cxx_qt::qsignals(MyObject)]
                 enum MySignals {
                     Ready,
                 }
@@ -186,7 +186,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 struct MyObject;
 
-                #[cxx_qt::signals(MyObject)]
+                #[cxx_qt::qsignals(MyObject)]
                 enum MySignals {
                     Ready,
                 }
@@ -215,7 +215,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 struct MyObject;
 
-                #[cxx_qt::signals(UnknownObj)]
+                #[cxx_qt::qsignals(UnknownObj)]
                 enum MySignals {
                     Ready,
                 }
