@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Be Wilson <be.wilson@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[target.x86_64-pc-windows-msvc]
+# vcpkg links the C runtime statically
+# Rust links the C runtime dynamically by default on Windows
+# cc uses this to determine whether to link the C runtime statically
+# with the C++ code it compiles.
+# Without this, the C++ code fails to link to the libraries from vcpkg.
+rustflags = [ "-C", "target-feature=+crt-static" ]
