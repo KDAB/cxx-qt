@@ -27,6 +27,10 @@ corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
     "QMAKE=${QMAKE}"
 )
+# Hack around https://github.com/corrosion-rs/corrosion/issues/230
+if(WIN32 AND VCPKG)
+    corrosion_add_target_rustflags(${CRATE} "-C target-feature=+crt-static")
+endif()
 target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 target_link_libraries(${CRATE} INTERFACE
     Qt${QT_VERSION_MAJOR}::Core

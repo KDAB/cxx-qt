@@ -32,3 +32,7 @@ endif()
 set(CRATE qml-minimal-no-cmake)
 corrosion_import_crate(MANIFEST_PATH Cargo.toml CRATES ${CRATE})
 corrosion_set_env_vars(${CRATE} "QMAKE=${QMAKE}")
+# Hack around https://github.com/corrosion-rs/corrosion/issues/230
+if(WIN32 AND VCPKG)
+    corrosion_add_target_rustflags(${CRATE} "-C target-feature=+crt-static")
+endif()
