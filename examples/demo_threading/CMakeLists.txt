@@ -49,6 +49,13 @@ target_link_libraries(${CRATE} INTERFACE
     Qt::QuickControls2
 )
 
+# Qt Graphical Effects imports changed in Qt 6 so provide proxies
+if(QT_VERSION LESS 6.0.0)
+    set(QML_COMPAT_RESOURCES qml/compat/compat_qt5.qrc)
+else()
+    set(QML_COMPAT_RESOURCES qml/compat/compat_qt6.qrc)
+endif()
+
 add_executable(${APP_NAME}
     cpp/helpers/energyusageproxymodel.h
     cpp/helpers/energyusageproxymodel.cpp
@@ -57,6 +64,7 @@ add_executable(${APP_NAME}
     cpp/helpers/sensor.cpp
     images/images.qrc
     qml/qml.qrc
+    ${QML_COMPAT_RESOURCES}
 )
 
 target_link_libraries(${APP_NAME} PRIVATE

@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
 import QtQuick.Window 2.12
+
 import com.kdab.energy 1.0
-import QtGraphicalEffects 1.10
 
 Window {
     id: root

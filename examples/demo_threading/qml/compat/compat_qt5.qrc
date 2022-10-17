@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/compat">
+        <file alias="ConicalGradient">ConicalGradientQt5.qml</file>
+        <file alias="OpacityMask">OpacityMaskQt5.qml</file>
+    </qresource>
+</RCC>

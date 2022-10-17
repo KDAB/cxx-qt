@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import QtQuick 2.12
-import QtGraphicalEffects 1.10
+
+import "qrc:/compat" as Compat
 
 Item {
     id: sensorUI
@@ -53,7 +54,7 @@ Item {
         }
     }
 
-    ConicalGradient {
+    Compat.ConicalGradient {
         id: angle
         anchors.margins: -15
         anchors.fill: parent
@@ -67,7 +68,7 @@ Item {
         visible: false
     }
 
-    OpacityMask {
+    Compat.OpacityMask {
         anchors.fill: efect
         maskSource: efect
         source: angle
