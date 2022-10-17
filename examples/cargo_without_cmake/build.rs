@@ -6,8 +6,9 @@
 // ANCHOR: book_cargo_executable_build_rs
 use cxx_qt_build::CxxQtBuilder;
 
-use std::{env, process::Command, str};
+use std::{process::Command, str};
 
+#[cfg(unix)]
 fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
     Command::new(command).args(["--help"]).output()
 }
@@ -33,7 +34,7 @@ fn main() {
     // This fails to link with GNU ld.bfd, which is the default on most Linux distributions, so use GNU ld.gold, lld, or mold instead.
     #[cfg(unix)]
     {
-        let flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
+        let flags = std::env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
         // Don't override custom flags
         if !flags.contains("-fuse-ld") {
             // ld is the system default linker. On Linux, this is usually GNU ld.bfd, but it may be symlinked to another
