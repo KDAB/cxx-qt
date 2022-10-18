@@ -23,20 +23,15 @@ mod ffi {
         #[qproperty]
         url: QUrl,
 
-        tx: std::sync::mpsc::SyncSender<String>,
-        rx: std::sync::mpsc::Receiver<String>,
         loading: std::sync::atomic::AtomicBool,
     }
 
     impl Default for ThreadingWebsite {
         fn default() -> Self {
-            let (tx, rx) = std::sync::mpsc::sync_channel(32);
             Self {
                 url: QUrl::from("https://kdab.com"),
                 title: QString::from("KDAB"),
 
-                tx,
-                rx,
                 loading: std::sync::atomic::AtomicBool::new(false),
             }
         }
@@ -80,7 +75,6 @@ mod ffi {
             // ANCHOR: book_qt_thread
             let qt_thread = self.qt_thread();
             // ANCHOR_END: book_qt_thread
-            let tx = self.rust().tx.clone();
             let url = self.url().to_string();
 
             // Spawn a Rust thread to simulate the slow network request
@@ -88,30 +82,26 @@ mod ffi {
                 // Wait for 1 second
                 std::thread::sleep(std::time::Duration::from_secs(1));
 
-                // Build the new title and add to the Rust channel
+                // Build the new title
                 let title = if url == "https://kdab.com" {
-                    "KDAB"
+                    "KDAB".to_owned()
                 } else {
-                    "GitHub"
+                    "GitHub".to_owned()
                 };
-                tx.send(title.to_owned()).unwrap();
 
                 // ANCHOR: book_qt_thread_queue
-                // Queue a Rust function pointer o the Qt thread
+                // Queue a Rust closure to the Qt thread
                 qt_thread
-                    .queue(|mut qobject_website| {
-                        // Retrieve the latest item in the Rust channel
-                        if let Some(title) = qobject_website.as_ref().rust().rx.try_iter().last() {
-                            // Update the title property of the QObject
-                            qobject_website.as_mut().set_title(QString::from(&title));
+                    .queue(move |mut qobject_website| {
+                        // Update the title property of the QObject
+                        qobject_website.as_mut().set_title(QString::from(&title));
 
-                            // Indicate that we have finished loading the title
-                            qobject_website
-                                .as_ref()
-                                .rust()
-                                .loading
-                                .store(false, std::sync::atomic::Ordering::Relaxed);
-                        }
+                        // Indicate that we have finished loading the title
+                        qobject_website
+                            .as_ref()
+                            .rust()
+                            .loading
+                            .store(false, std::sync::atomic::Ordering::Relaxed);
                     })
                     .unwrap();
                 // ANCHOR_END: book_qt_thread_queue
