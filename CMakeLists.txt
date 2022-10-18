@@ -14,8 +14,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(QT_DEFAULT_MAJOR_VERSION "Major version of Qt to use (6 or 5)" 6)
-
+option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
 if(WIN32 OR APPLE)
     option(VCPKG "Use vcpkg for dependencies" ON)
 else()
@@ -23,13 +22,11 @@ else()
 endif()
 
 if(VCPKG)
-    # Explicitly setting QT_DEFAULT_MAJOR_VERSION can fail on systems that have both Qt6
-    # and Qt5 installed, so only set it automatically when using vcpkg.
-    if((NOT QT_DEFAULT_MAJOR_VERSION EQUAL 5) AND (NOT QT_DEFAULT_MAJOR_VERSION EQUAL 6))
-        set(QT_DEFAULT_MAJOR_VERSION 6)
+    if(USE_QT5)
+        set(VCPKG_MANIFEST_FEATURES "qt5")
+    else()
+        set(VCPKG_MANIFEST_FEATURES "qt6")
     endif()
-
-    set(VCPKG_MANIFEST_FEATURES "qt${QT_DEFAULT_MAJOR_VERSION}")
 
     include(InitializeVcpkg)
 

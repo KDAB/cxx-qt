@@ -76,8 +76,7 @@ you run CMake). If you already have Qt installed, you can disable this by adding
 `-D VCPKG=OFF` to the CMake configure step (the first call to `cmake`).
 
 CXX-Qt defaults to building with Qt6. If you want to build with Qt5 when both are installed,
-or you want to tell vcpkg to use Qt5, add `-D QT_DEFAULT_MAJOR_VERSION=5` to the CMake
-configure step.
+or you want to tell vcpkg to use Qt5, add `-D USE_QT5=ON` to the CMake configure step.
 
 ```bash
 cmake -S . -B build
