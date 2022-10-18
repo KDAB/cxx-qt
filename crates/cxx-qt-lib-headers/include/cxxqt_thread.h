@@ -43,7 +43,9 @@ public:
   {
   }
 
-  void queue(rust::Fn<void(T& self)> func) const
+  template<typename A>
+  void queue(rust::Fn<void(T& self, rust::Box<A> arg)> func,
+             rust::Box<A> arg) const
   {
     // Ensure that we can read the pointer and it's not being written to
     const auto guard = std::shared_lock(m_obj->mutex);
@@ -58,13 +60,14 @@ public:
     auto rustObjMutex = m_rustObjMutex;
     auto lambda = [obj = std::move(obj),
                    rustObjMutex = std::move(rustObjMutex),
-                   func = std::move(func)]() {
+                   func = std::move(func),
+                   arg = std::move(arg)]() mutable {
       // Ensure that we can read the pointer and it's not being written to
       const auto guard = std::shared_lock(obj->mutex);
       if (obj->ptr) {
         // Ensure that the rustObj is locked
         const std::lock_guard<std::recursive_mutex> guardRustObj(*rustObjMutex);
-        func(*obj->ptr);
+        func(*obj->ptr, std::move(arg));
       } else {
         qWarning()
           << "Could not call the function pointer as object has been destroyed";
@@ -72,7 +75,8 @@ public:
     };
 
     // Add the lambda to the queue
-    if (!QMetaObject::invokeMethod(m_obj->ptr, lambda, Qt::QueuedConnection)) {
+    if (!QMetaObject::invokeMethod(
+          m_obj->ptr, std::move(lambda), Qt::QueuedConnection)) {
       throw std::runtime_error(
         "Cannot queue function pointer as invokeMethod on object failed");
     }
