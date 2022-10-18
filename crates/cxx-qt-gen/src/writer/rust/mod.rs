@@ -26,6 +26,7 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
     let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
     let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
+    let cxx_qt_thread_queued_fn_ident = &qobject.cxx_qt_thread_queued_fn_ident;
     let namespace_internals = &qobject.namespace_internals;
 
     let new_cpp_obj_str = mangle("new_cpp_object", cpp_struct_ident).to_string();
@@ -62,6 +63,9 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
         },
         quote! {
             extern "Rust" {
+                #[namespace = #namespace_internals]
+                type #cxx_qt_thread_queued_fn_ident;
+
                 #[cxx_name = "createRs"]
                 #[namespace = #namespace_internals]
                 fn #create_rs_ident() -> Box<#rust_struct_ident>;
@@ -72,13 +76,22 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
 
 /// Return common blocks for CXX-Qt implementation which the C++ writer adds as well
 fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
+    let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
     let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
+    let cxx_qt_thread_queued_fn_ident = &qobject.cxx_qt_thread_queued_fn_ident;
     let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
     vec![
         quote! {
             unsafe impl Send for #cxx_qt_thread_ident {}
+        },
+        quote! {
+            pub struct #cxx_qt_thread_queued_fn_ident {
+                // An opaque Rust type is required to be Sized.
+                // https://github.com/dtolnay/cxx/issues/665
+                inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut #cpp_struct_ident>) + Send>,
+            }
         },
         quote! {
             pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
@@ -202,6 +215,7 @@ mod tests {
             qobjects: vec![GeneratedRustQObject {
                 cpp_struct_ident: format_ident!("MyObjectQt"),
                 cxx_qt_thread_ident: format_ident!("MyObjectCxxQtThread"),
+                cxx_qt_thread_queued_fn_ident: format_ident!("MyObjectCxxQtThreadQueuedFn"),
                 namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                 rust_struct_ident: format_ident!("MyObject"),
                 blocks: GeneratedRustQObjectBlocks {
@@ -256,6 +270,7 @@ mod tests {
                 GeneratedRustQObject {
                     cpp_struct_ident: format_ident!("FirstObjectQt"),
                     cxx_qt_thread_ident: format_ident!("FirstObjectCxxQtThread"),
+                    cxx_qt_thread_queued_fn_ident: format_ident!("FirstObjectCxxQtThreadQueuedFn"),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     rust_struct_ident: format_ident!("FirstObject"),
                     blocks: GeneratedRustQObjectBlocks {
@@ -291,6 +306,7 @@ mod tests {
                 GeneratedRustQObject {
                     cpp_struct_ident: format_ident!("SecondObjectQt"),
                     cxx_qt_thread_ident: format_ident!("SecondObjectCxxQtThread"),
+                    cxx_qt_thread_queued_fn_ident: format_ident!("SecondObjectCxxQtThreadQueuedFn"),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     rust_struct_ident: format_ident!("SecondObject"),
                     blocks: GeneratedRustQObjectBlocks {
@@ -373,6 +389,9 @@ mod tests {
                 }
 
                 extern "Rust" {
+                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+                    type MyObjectCxxQtThreadQueuedFn;
+
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
                     fn create_rs_my_object() -> Box<MyObject>;
@@ -398,6 +417,10 @@ mod tests {
                 }
 
                 unsafe impl Send for MyObjectCxxQtThread {}
+
+                pub struct MyObjectCxxQtThreadQueuedFn {
+                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
+                }
 
                 pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
                     std::default::Default::default()
@@ -458,6 +481,9 @@ mod tests {
                 }
 
                 extern "Rust" {
+                    #[namespace = "cxx_qt::cxx_qt_first_object"]
+                    type FirstObjectCxxQtThreadQueuedFn;
+
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_first_object"]
                     fn create_rs_first_object() -> Box<FirstObject>;
@@ -493,6 +519,9 @@ mod tests {
                 }
 
                 extern "Rust" {
+                    #[namespace = "cxx_qt::cxx_qt_second_object"]
+                    type SecondObjectCxxQtThreadQueuedFn;
+
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_second_object"]
                     fn create_rs_second_object() -> Box<SecondObject>;
@@ -519,6 +548,10 @@ mod tests {
 
                 unsafe impl Send for FirstObjectCxxQtThread {}
 
+                pub struct FirstObjectCxxQtThreadQueuedFn {
+                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut FirstObjectQt>) + Send>,
+                }
+
                 pub fn create_rs_first_object() -> std::boxed::Box<FirstObject> {
                     std::default::Default::default()
                 }
@@ -533,6 +566,10 @@ mod tests {
                 }
 
                 unsafe impl Send for SecondObjectCxxQtThread {}
+
+                pub struct SecondObjectCxxQtThreadQueuedFn {
+                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut SecondObjectQt>) + Send>,
+                }
 
                 pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
                     std::default::Default::default()
