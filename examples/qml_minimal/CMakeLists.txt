@@ -16,8 +16,15 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+if(NOT USE_QT5)
+    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+endif()
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+else()
+    find_package(Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+    set(QT_VERSION_MAJOR 5)
+endif()
 # ANCHOR_END: book_cmake_setup
 
 # ANCHOR: book_cmake_find_qmake
@@ -85,7 +92,6 @@ target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 # Unit test
 #
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS QuickTest Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS QuickTest Test REQUIRED)
 
 function(add_qml_test TEST_NAME)

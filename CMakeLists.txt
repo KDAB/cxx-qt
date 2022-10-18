@@ -144,8 +144,15 @@ add_subdirectory(examples)
 
 # QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Test REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Test REQUIRED)
+if(NOT USE_QT5)
+    find_package(Qt6 COMPONENTS Core Gui Test)
+endif()
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+else()
+    find_package(Qt5 COMPONENTS Core Gui Test REQUIRED)
+    set(QT_VERSION_MAJOR 5)
+endif()
 get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 set(CARGO_ENV "QMAKE=${QMAKE}")
 
