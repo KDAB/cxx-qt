@@ -101,6 +101,9 @@ mod ffi {
     }
 
     extern "Rust" {
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        type MyObjectCxxQtThreadQueuedFn;
+
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs_my_object() -> Box<MyObject>;
@@ -255,6 +258,10 @@ mod cxx_qt_ffi {
     }
 
     unsafe impl Send for MyObjectCxxQtThread {}
+
+    pub struct MyObjectCxxQtThreadQueuedFn {
+        inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
+    }
 
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()

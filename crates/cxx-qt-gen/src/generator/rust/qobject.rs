@@ -38,6 +38,8 @@ pub struct GeneratedRustQObject {
     pub cpp_struct_ident: Ident,
     /// Ident of the CxxQtThread object
     pub cxx_qt_thread_ident: Ident,
+    /// Ident of the Rust closure wrapper to be passed in to CxxQtThread
+    pub cxx_qt_thread_queued_fn_ident: Ident,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
     /// Ident of the Rust name for the Rust object
@@ -54,6 +56,7 @@ impl GeneratedRustQObject {
         let mut generated = GeneratedRustQObject {
             cpp_struct_ident: qobject_idents.cpp_class.rust.clone(),
             cxx_qt_thread_ident: qobject_idents.cxx_qt_thread_class.clone(),
+            cxx_qt_thread_queued_fn_ident: qobject_idents.cxx_qt_thread_queued_fn_struct.clone(),
             namespace_internals: namespace_idents.internal,
             rust_struct_ident: qobject_idents.rust_struct.rust.clone(),
             blocks: GeneratedRustQObjectBlocks {
@@ -179,6 +182,10 @@ mod tests {
             .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObjectQt");
         assert_eq!(rust.cxx_qt_thread_ident, "MyObjectCxxQtThread");
+        assert_eq!(
+            rust.cxx_qt_thread_queued_fn_ident,
+            "MyObjectCxxQtThreadQueuedFn"
+        );
         assert_eq!(rust.namespace_internals, "cxx_qt_my_object");
         assert_eq!(rust.rust_struct_ident, "MyObject");
     }
@@ -198,6 +205,10 @@ mod tests {
             .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObjectQt");
         assert_eq!(rust.cxx_qt_thread_ident, "MyObjectCxxQtThread");
+        assert_eq!(
+            rust.cxx_qt_thread_queued_fn_ident,
+            "MyObjectCxxQtThreadQueuedFn"
+        );
         assert_eq!(rust.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(rust.rust_struct_ident, "MyObject");
     }

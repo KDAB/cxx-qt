@@ -15,6 +15,8 @@ pub struct QObjectName {
     pub rust_struct: CombinedIdent,
     /// The name of the CxxQtThread
     pub cxx_qt_thread_class: Ident,
+    /// The name of the Rust closure wrapper to be passed in to CxxQtThread
+    pub cxx_qt_thread_queued_fn_struct: Ident,
 }
 
 impl From<&ParsedQObject> for QObjectName {
@@ -29,6 +31,7 @@ impl From<&Ident> for QObjectName {
             cpp_class: cpp_class_from_ident(ident),
             rust_struct: rust_struct_from_ident(ident),
             cxx_qt_thread_class: cxx_qt_thread_class_from_ident(ident),
+            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(ident),
         }
     }
 }
@@ -44,6 +47,11 @@ fn cpp_class_from_ident(ident: &Ident) -> CombinedIdent {
 /// For a given ident generate the CxxQtThread ident
 fn cxx_qt_thread_class_from_ident(ident: &Ident) -> Ident {
     format_ident!("{}CxxQtThread", ident)
+}
+
+/// For a given ident generate the CxxQtThreadQueuedFn ident
+fn cxx_qt_thread_queued_fn_struct_from_ident(ident: &Ident) -> Ident {
+    format_ident!("{}CxxQtThreadQueuedFn", ident)
 }
 
 /// For a given ident generate the Rust and C++ names
@@ -74,6 +82,10 @@ pub mod tests {
         assert_eq!(
             names.cxx_qt_thread_class,
             format_ident!("MyObjectCxxQtThread")
+        );
+        assert_eq!(
+            names.cxx_qt_thread_queued_fn_struct,
+            format_ident!("MyObjectCxxQtThreadQueuedFn")
         );
     }
 }
