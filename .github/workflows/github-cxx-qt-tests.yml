@@ -198,7 +198,7 @@ jobs:
     - name: "Configure"
       run: >-
         cmake
-        -D QT_DEFAULT_MAJOR_VERSION=${{ matrix.qt_version }}
+        -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
         -G Ninja
         -S . -B build
