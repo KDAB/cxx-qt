@@ -39,10 +39,10 @@ set_target_properties(core_qmlplugin PROPERTIES
 # Link to Rust library and Qt
 target_link_libraries(core_qmlplugin PRIVATE
     ${CRATE}
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Qml
-    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2
 )
 
 # Install the qmldir file into the plugin folder
