@@ -11,8 +11,15 @@
 #
 # from any directory in this repository to build this crate without using CMake at all.
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+if(NOT USE_QT5)
+    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+endif()
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+else()
+    find_package(Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+    set(QT_VERSION_MAJOR 5)
+endif()
 get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
 
 # Use Corrosion to create a target for the crate that can be built without CMake.
