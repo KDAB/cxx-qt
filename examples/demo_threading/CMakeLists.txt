@@ -17,13 +17,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(NOT USE_QT5)
     find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test)
 endif()
-if(Qt6_FOUND)
-    set(QT_VERSION_MAJOR 6)
-else()
-    find_package(Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
-    set(QT_VERSION_MAJOR 5)
+if(NOT Qt6_FOUND)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
 endif()
-get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
 find_package(Corrosion QUIET)
 if(NOT Corrosion_FOUND)
@@ -46,16 +43,16 @@ corrosion_set_env_vars(${CRATE}
 )
 target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 target_link_libraries(${CRATE} INTERFACE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Qml
-    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2
 )
 
 add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
 
 target_link_libraries(${APP_NAME} PRIVATE
     ${CRATE}
-    Qt${QT_VERSION_MAJOR}::Test
+    Qt::Test
 )
 qt_import_qml_plugins(${APP_NAME})

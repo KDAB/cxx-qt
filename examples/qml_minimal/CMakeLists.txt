@@ -19,18 +19,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(NOT USE_QT5)
     find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
 endif()
-if(Qt6_FOUND)
-    set(QT_VERSION_MAJOR 6)
-else()
-    find_package(Qt5 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
-    set(QT_VERSION_MAJOR 5)
+if(NOT Qt6_FOUND)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 endif()
 # ANCHOR_END: book_cmake_setup
 
 # ANCHOR: book_cmake_find_qmake
 # The path to the qmake executable path needs to be passed to the Rust
 # library's build script to ensure it uses the same installation of Qt as CMake.
-get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 # ANCHOR_END: book_cmake_find_qmake
 
 # ANCHOR: book_cmake_find_corrosion
@@ -73,10 +70,10 @@ target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 # rather than the main executable. This way, CMake targets besides the main
 # executable which link the Rust library, for example tests, will also link Qt.
 target_link_libraries(${CRATE} INTERFACE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Qml
-    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2
 )
 # ANCHOR_END: book_cmake_use_corrosion
 
@@ -92,7 +89,11 @@ target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 # Unit test
 #
 
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS QuickTest Test REQUIRED)
+if(TARGET Qt6::Core)
+    find_package(Qt6 COMPONENTS QuickTest Test REQUIRED)
+else()
+    find_package(Qt5 COMPONENTS QuickTest Test REQUIRED)
+endif()
 
 function(add_qml_test TEST_NAME)
     # Copy QML unit test to build folder
@@ -102,7 +103,7 @@ function(add_qml_test TEST_NAME)
     add_executable("${APP_NAME}_${TEST_NAME}_test" "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
     target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
         ${CRATE}
-        Qt${QT_VERSION_MAJOR}::QuickTest
+        Qt::QuickTest
     )
     qt_import_qml_plugins(${APP_NAME}_${TEST_NAME}_test)
 

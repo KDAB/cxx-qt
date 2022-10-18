@@ -84,12 +84,14 @@ impl QtBuild {
     /// However, when building a Rust staticlib that gets linked to C++ code by a C++ build
     /// system, it is best to use the `QMAKE` environment variable to ensure that the Rust
     /// staticlib is linked to the same installation of Qt that the C++ build system has
-    /// detected. With CMake, you can get this from the `Qt${QT_VERSION_MAJOR}::qmake`
-    /// target's `IMPORTED_LOCATION` property, for example:
+    /// detected. With CMake, you can get this from the `Qt::qmake` target's `IMPORTED_LOCATION`
+    /// property, for example:
     /// ```cmake
-    /// find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-    /// find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
-    /// get_target_property(QMAKE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+    /// find_package(Qt6 COMPONENTS Core)
+    /// if(NOT Qt6_FOUND)
+    ///     find_package(Qt5 5.15 COMPONENTS Core REQUIRED)
+    /// endif()
+    /// get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
     ///
     /// execute_process(
     ///     COMMAND cmake -E env
