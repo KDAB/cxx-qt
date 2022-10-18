@@ -11,8 +11,6 @@ use uuid::Uuid;
 
 /// The size of the network thread to update thread queue
 const CHANNEL_NETWORK_COUNT: usize = 1_024;
-/// The size of the update thread to Qt queue
-const CHANNEL_QT_COUNT: usize = 250;
 /// After how many milliseconds should a sensor be disconnected and considered missing
 const SENSOR_TIMEOUT: Duration = Duration::from_millis(10_000);
 /// How often should the timeout thread poll sensors
@@ -131,7 +129,7 @@ mod ffi {
         collections::HashMap,
         sync::{
             atomic::{AtomicBool, Ordering},
-            mpsc::{sync_channel, Receiver, SyncSender},
+            mpsc::{sync_channel, SyncSender},
             Arc,
         },
         thread::JoinHandle,
@@ -148,21 +146,16 @@ mod ffi {
         #[qproperty]
         total_use: f64,
 
-        qt_rx: Receiver<QtData>,
-        qt_tx: SyncSender<QtData>,
         join_handles: Option<[JoinHandle<()>; 4]>,
     }
 
     impl Default for EnergyUsage {
         fn default() -> Self {
-            let (qt_tx, qt_rx) = sync_channel(super::CHANNEL_QT_COUNT);
             Self {
                 average_use: 0.0,
                 sensors: 0,
                 total_use: 0.0,
 
-                qt_rx,
-                qt_tx,
                 join_handles: None,
             }
         }
@@ -265,7 +258,6 @@ mod ffi {
             // Prepare our update thread
             //
             // When values change this then requests an update to Qt
-            let qt_tx = self.rust().qt_tx.clone();
             let update_network_tx = network_tx.clone();
             let qt_thread = self.qt_thread();
             let update_sensors_changed = sensors_changed.clone();
@@ -289,29 +281,23 @@ mod ffi {
                                 0.0
                             };
 
-                            qt_tx
-                                .send(QtData {
-                                    average_use,
-                                    sensors,
-                                    total_use,
-                                })
-                                .unwrap();
+                            let data = QtData {
+                                average_use,
+                                sensors,
+                                total_use,
+                            };
 
                             qt_thread
-                                .queue(|mut qobject_energy_usage| {
+                                .queue(move |mut qobject_energy_usage| {
                                     // Process the new data from the background thread
-                                    if let Some(data) =
-                                        qobject_energy_usage.as_mut().qt_rx_mut().try_iter().last()
-                                    {
-                                        // Here we have constructed a new Data struct so can consume its values.
-                                        // For other uses, we could have passed an Enum across the channel
-                                        // and then process the required action here
-                                        qobject_energy_usage
-                                            .as_mut()
-                                            .set_average_use(data.average_use);
-                                        qobject_energy_usage.as_mut().set_sensors(data.sensors);
-                                        qobject_energy_usage.as_mut().set_total_use(data.total_use);
-                                    }
+                                    // Here we have constructed a new Data struct so can consume its values.
+                                    // For other uses, we could have passed an Enum across the channel
+                                    // and then process the required action here
+                                    qobject_energy_usage
+                                        .as_mut()
+                                        .set_average_use(data.average_use);
+                                    qobject_energy_usage.as_mut().set_sensors(data.sensors);
+                                    qobject_energy_usage.as_mut().set_total_use(data.total_use);
                                 })
                                 .unwrap();
                         }
