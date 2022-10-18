@@ -1,0 +1,314 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "common",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}"
+        },
+        {
+            "name": "build-debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "build-release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "ninja",
+            "hidden": true,
+            "generator": "Ninja"
+        },
+        {
+            "name": "sscache",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
+            },
+            "environment": {
+                "RUSTC_WRAPPER": "sccache"
+            }
+        },
+        {
+            "name": "qt5",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_QT5": true
+            }
+        },
+        {
+            "name": "vcpkg",
+            "hidden": true,
+            "cacheVariables": {
+                "VCPKG": true
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-ninja-sscache",
+            "inherits": ["common", "build-debug", "ninja", "sscache"]
+        },
+        {
+            "name": "debug-qt5",
+            "inherits": ["common", "build-debug", "qt5"]
+        },
+        {
+            "name": "debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug", "ninja", "qt5", "sscache"]
+        },
+        {
+            "name": "vcpkg-debug",
+            "inherits": ["common", "build-debug", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-debug-ninja-sscache",
+            "inherits": ["common", "build-debug", "ninja", "sscache", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-debug-qt5",
+            "inherits": ["common", "build-debug", "qt5", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug", "ninja", "qt5", "sscache", "vcpkg"]
+        },
+        {
+            "name": "release",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-ninja-sscache",
+            "inherits": ["common", "build-release", "ninja", "sscache"]
+        },
+        {
+            "name": "release-qt5",
+            "inherits": ["common", "build-release", "qt5"]
+        },
+        {
+            "name": "release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release", "ninja", "qt5", "sscache"]
+        },
+        {
+            "name": "vcpkg-release",
+            "inherits": ["common", "build-release", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-release-ninja-sscache",
+            "inherits": ["common", "build-release", "ninja", "sscache", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-release-qt5",
+            "inherits": ["common", "build-release", "qt5", "vcpkg"]
+        },
+        {
+            "name": "vcpkg-release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release", "ninja", "qt5", "sscache", "vcpkg"]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-debug",
+            "configuration": "Debug",
+            "hidden": true
+        },
+        {
+            "name": "build-release",
+            "configuration": "Release",
+            "hidden": true
+        },
+        {
+            "name": "common",
+            "hidden": true,
+            "inheritConfigureEnvironment": true
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-ninja-sscache",
+            "configurePreset": "debug-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-qt5",
+            "configurePreset": "debug-qt5",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-qt5-ninja-sscache",
+            "configurePreset": "debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug",
+            "configurePreset": "vcpkg-debug",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-ninja-sscache",
+            "configurePreset": "vcpkg-debug-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-qt5",
+            "configurePreset": "vcpkg-debug-qt5",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-qt5-ninja-sscache",
+            "configurePreset": "vcpkg-debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-ninja-sscache",
+            "configurePreset": "release-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-qt5",
+            "configurePreset": "release-qt5",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-qt5-ninja-sscache",
+            "configurePreset": "release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release",
+            "configurePreset": "vcpkg-release",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-ninja-sscache",
+            "configurePreset": "vcpkg-release-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-qt5",
+            "configurePreset": "vcpkg-release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-qt5-ninja-sscache",
+            "configurePreset": "vcpkg-release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "build-debug",
+            "configuration": "Debug",
+            "hidden": true
+        },
+        {
+            "name": "build-release",
+            "configuration": "Release",
+            "hidden": true
+        },
+        {
+            "name": "common",
+            "hidden": true,
+            "inheritConfigureEnvironment": true,
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-ninja-sscache",
+            "configurePreset": "debug-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-qt5",
+            "configurePreset": "debug-qt5",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "debug-qt5-ninja-sscache",
+            "configurePreset": "debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug",
+            "configurePreset": "vcpkg-debug",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-ninja-sscache",
+            "configurePreset": "vcpkg-debug-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-qt5",
+            "configurePreset": "vcpkg-debug-qt5",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "vcpkg-debug-qt5-ninja-sscache",
+            "configurePreset": "vcpkg-debug-qt5-ninja-sscache",
+            "inherits": ["common", "build-debug"]
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-ninja-sscache",
+            "configurePreset": "release-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-qt5",
+            "configurePreset": "release-qt5",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "release-qt5-ninja-sscache",
+            "configurePreset": "release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release",
+            "configurePreset": "vcpkg-release",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-ninja-sscache",
+            "configurePreset": "vcpkg-release-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-qt5",
+            "configurePreset": "vcpkg-release-qt5",
+            "inherits": ["common", "build-release"]
+        },
+        {
+            "name": "vcpkg-release-qt5-ninja-sscache",
+            "configurePreset": "vcpkg-release-qt5-ninja-sscache",
+            "inherits": ["common", "build-release"]
+        }
+    ]
+}
