@@ -7,11 +7,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # `#[cxx_qt::bridge]` Macro
 
-The `#[cxx_qt::bridge]` macro functions very similarly to the `#[cxx::bridge]` macro.
-See [the CXX overview](https://docs.rs/cxx/latest/cxx/index.html) and [`#[cxx::bridge]` macro](https://docs.rs/cxx/latest/cxx/attr.bridge.html) documentation.
-
-The macro needs to be added in front of a Rust module.
-This Rust module will then function like a normal CXX bridge, whilst also supporting the additional features added by CXX-Qt.
+The `#[cxx_qt::bridge]` macro functions very similarly to the [`#[cxx::bridge]`](https://docs.rs/cxx/latest/cxx/attr.bridge.html). This macro needs to be written above a Rust module definition.
+This Rust module will then function like a normal CXX bridge, whilst also supporting the additional features added by CXX-Qt. Refer to the [the CXX documentation](https://cxx.rs/) for details on how to describe the language boundary.
 Also don't forget to add the Rust source file to the CxxQtBuilder in your build.rs script.
 For instructions see the [Getting-started guide](../getting-started/5-cmake-integration.md) or the [corresponding "Concepts" page](../concepts/build_rs_and_cargo.md).
 
@@ -29,7 +26,7 @@ The following example results in a header file named: `types.cxxqt.h`.
 }
 ```
 
-Also note that currently cxx-qt-gen by default emits all generated header files in a single folder.
+Currently, cxx-qt-gen writes all generated header files into a single folder.
 Therefore you need to be careful to not produce two header files with the same filename.
 In future we plan to use the entire module path to disambiguate this.
 Progress on this can be tracked in [#19](https://github.com/KDAB/cxx-qt/issues/19).
@@ -44,7 +41,7 @@ Just like on a `#[cxx::bridge]`, the C++ namespace of the bridge can be changed 
 ```
 This will generate a header file named `threading_webiste.cxxqt.h` with all C++ items included in the `cxx_qt::website` namespace.
 
-Then when registering a type from this module you use the type with your namespace as usual.
+When accessing a type from the bridge module in C++, access it through the C++ namespace:
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/cpp/main.cpp:book_namespace_register}}
 ```
