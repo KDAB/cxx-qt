@@ -45,6 +45,7 @@ mod ffi {
         #[cxx_name = "endRemoveRows"]
         fn end_remove_rows(self: Pin<&mut CustomBaseClassQt>);
 
+        // TODO: mark these are protected so they need friend generation
         #[cxx_name = "beginResetModel"]
         fn begin_reset_model(self: Pin<&mut CustomBaseClassQt>);
         #[cxx_name = "endResetModel"]

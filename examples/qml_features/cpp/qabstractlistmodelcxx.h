@@ -10,6 +10,17 @@
 
 #include "rust/cxx.h"
 
+class CustomBaseClass;
+
+// TODO: this would be generated into the CustomBaseClass C++
+extern "C"
+{
+  void cxxbridge1$CustomBaseClass$begin_reset_model(
+    ::CustomBaseClass& self) noexcept;
+  void cxxbridge1$CustomBaseClass$end_reset_model(
+    ::CustomBaseClass& self) noexcept;
+}
+
 class QAbstractListModelCXX : public QAbstractListModel
 {
 public:
@@ -48,9 +59,12 @@ public:
 
   void endRemoveRows() { QAbstractItemModel::endRemoveRows(); }
 
-  void beginResetModel() { QAbstractItemModel::beginResetModel(); }
-
-  void endResetModel() { QAbstractItemModel::endResetModel(); }
+protected:
+  // TODO: this would be generated into the CustomBaseClass C++
+  friend void cxxbridge1$CustomBaseClass$begin_reset_model(
+    ::CustomBaseClass& self) noexcept;
+  friend void cxxbridge1$CustomBaseClass$end_reset_model(
+    ::CustomBaseClass& self) noexcept;
 };
 
 // Define that a QModelIndex is relocatable and check the size
