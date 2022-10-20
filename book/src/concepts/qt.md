@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Qt
 
+The main purpose of CXX-Qt is to expose Qt's extensions to the C++ language to CXX.
+
 ## Invokables
 
 Invokables can be defined using the [QObject Struct](../qobject/qobject_struct.md), these will be exposed as methods on the C++ class with `Q_INVOKABLE` so that they are accessible for QML too.

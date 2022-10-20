@@ -7,11 +7,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # C++ Registering QML types
 
-There are two options for registering the generated QML types, either as a [QQmlExtensionPlugin](./qqmlextensionplugin.md) or registering the types to the engine.
+There are two options for registering the generated QML types, either as a plugin or registering the types to the engine.
 
 ## Registering to the engine
 
-If you are registering the types to the engine, firstly you include the generated objects (determined by the name of the Rust module).
+If you are registering the types to the engine, firstly you include the generated objects.
 
 ```cpp,ignore
 {{#include ../../../examples/qml_minimal/cpp/main.cpp:book_cpp_include}}
@@ -23,15 +23,11 @@ Then you register the QML Type in the normal way.
 {{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_register}}
 ```
 
-Note in the future there may be a helper to call which could register all the types even when not using a plugin ( [https://github.com/KDAB/cxx-qt/issues/33](https://github.com/KDAB/cxx-qt/issues/33) ).
+## Using a plugin
 
-## Using QQmlExtensionPlugin
+If you are [creating a plugin for QML](https://doc.qt.io/qt-6/qtqml-modules-cppplugins.html) then ensure any of the normal changes to a CMake projects to build the plugin as a library, add the `qmldir`, have a C++ file which derives from `QQmlExtensionPlugin` and registers the types, and ensure that the generated library is in the import path.
 
-If you are using a [QQmlExtensionPlugin](./qqmlextensionplugin.md) then ensure the generated library is in the import path.
-
-```cpp,ignore
-{{#include ../../../examples/qml_extension_plugin/cpp/main.cpp:book_extension_plugin_register}}
-```
+An example of using CXX-Qt with `QQmlExtensionPlugin` can be found in the [`examples/qml_extension_plugin`](https://github.com/KDAB/cxx-qt/tree/main/examples/qml_extension_plugin) folder.
 
 ## QML
 

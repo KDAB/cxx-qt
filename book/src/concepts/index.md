@@ -15,10 +15,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 ## Build tooling
 
-  * [Build.rs and Cargo.toml file](./build_rs_and_cargo.md)
-  * [CMake integration](./cmake.md)
+  * [Build Systems](./build_systems.md)
   * [Register Types](./register_types.md)
-  * [Exposing Rust objects as a QQmlExtensionPlugin](./qqmlextensionplugin.md)
 
 ## Advanced Concepts
 
