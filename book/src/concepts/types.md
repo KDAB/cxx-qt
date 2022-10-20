@@ -7,73 +7,67 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Types
 
-## Primitive Trivial Types
+CXX-Qt supports most types supported by CXX. These can be used in properties, invokables, and signals.
 
-These types can be used for properties, parameters or return types in invokables, and parameters in signals without any conversion.
+Note that there is currently missing support for a few CXX types in CXX-Qt, which is tracked in [this issue](https://github.com/KDAB/cxx-qt/issues/328).
 
-They appear as their normal types on both the C++ and Rust sides of the bridge.
+## `cxx-qt-lib` Types
 
-| Rust Type | C++ Type |
-|-----------|----------|
-| bool      | bool     |
-| f32       | float    |
-| f64       | double   |
-| i8        | qint8    |
-| i16       | qint16   |
-| i32       | qint32   |
-| u8        | quint8   |
-| u16       | quint16  |
-| u32       | quint32  |
+The `cxx-qt-lib` crate provides CXX bindings for common Qt types.
 
-TODO: Note that u64 / quint64 is not supported currently ( [https://github.com/KDAB/cxx-qt/issues/36](https://github.com/KDAB/cxx-qt/issues/36) ).
+Use the [`cxx-qt-lib` Docs](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) to explore the available types.
 
-## Custom Types
+## Defining a Custom Type
 
-These types are custom and require special treatment when traversing the bridge, to assist with traversing the bridge we have provided helper types in the cxx_qt_lib crate.
+Any types that are valid CXX types should be usable with CXX-Qt as well.
 
-Within these custom types there are two kinds to consider
+Note that the same rules apply as CXX, so a type must be [trivial](https://cxx.rs/extern-c++.html?highlight=trivial#integrating-with-bindgen-generated-or-handwritten-unsafe-bindings) to pass by value.
+If they are opaque, references or pointers must be used.
 
-  * Trivial
-  * Opaque
+For examples of how to wrap Qt objects, explore the [`cxx-qt-lib` source code](https://github.com/KDAB/cxx-qt/tree/main/crates/cxx-qt-lib).
 
-### Custom Trivial Types
+## Opaque Type Conversions
 
-Custom trivial types, like primitive trival types, can be used for properties, parameters or return types in invokables, and parameters in signals without any conversion.
+If your type can't be marked as trivial for CXX, but the Qt API needs to take the type by value (eg `T` rather than `const T&` or `::std::unique_ptr<T>`),
+then you can define [type conversions](type-conversions.md) in C++ that convert between pointers / references and values.
+Then when using properties, invokables, or signals an attribute in the macro can be used.
 
-On the rust side they appear as the cxx_qt_lib helper type.
+### Properties
 
-Note that when they are used as a parameter type in invokables they should be passed as a reference, eg `pointf: &QPointF`, and when they are a property or return type they should be a value, eg `QPointF`.
+In the following example using `cxx_type` means that `OpaqueExampleType` will be the type of the `Q_PROPERTY`, getter, and setter in C++.
+On the Rust side `cxx::UniquePtr<OpaqueExampleType>` will be the type and CXX-Qt will perform the conversions between.
 
-| Rust Type | C++ Type |
-|-----------|----------|
-| cxx_qt_lib::QDate | QDate |
-| cxx_qt_lib::QPoint | QPoint |
-| cxx_qt_lib::QPointF | QPointF |
-| cxx_qt_lib::QRect | QRect |
-| cxx_qt_lib::QRectF | QRectF |
-| cxx_qt_lib::QTime | QTime |
-
-### Custom Opaque Types
-
-Custom [opaque types](https://en.wikipedia.org/wiki/Opaque_data_type) represent an opaque C++ type, they can be used for properties, parameters or return types in invokables, and parameters in signals. However when the object is being passed from Rust to C++ (eg properties, return types, or signals) they must be `UniquePtr<T>`, and for other use cases they must be by reference (either `&T` or `Pin<&mut T>`).
-
-Note that when they are used as a parameter type in invokables they should be passed as a reference, eg `color: &QColor`, and when they are a property, return type, or signal they should be a `UniquePtr`, eg `UniquePtr<QColor>`.
-
-| Rust Type | C++ Type |
-|-----------|----------|
-| cxx_qt_lib::QColor | QColor |
-| cxx_qt_lib::QDateTime | QDateTime |
-| cxx_qt_lib::QString | QString |
-| cxx_qt_lib::QUrl | QUrl |
-| cxx_qt_lib::QVariant | QVariant |
-
-An example of a QVariant as a parameter, return type, and property is shown below.
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/types.rs:book_macro_code}}
+```rust,ignore
+#[cxx_qt::qobject]
+struct MyStruct {
+  #[qproperty(cxx_type = "OpaqueExampleType")]
+  my_property: cxx::UniquePtr<OpaqueExampleType>
+}
 ```
 
-## Future possible types
+### Invokables
 
-  * Enums
-  * Lists
+In the following example using `return_cxx_type` means that `OpaqueExampleType` will be the return type of the `Q_INVOKABLE` in C++.
+On the Rust side `cxx::UniquePtr<OpaqueExampleType>` will be the return type and CXX-Qt will perform the conversion between.
+
+```rust,ignore
+impl qobject::MyStruct {
+  #[qinvokable(return_cxx_type = "OpaqueExampleType")]
+  pub fn invokable(&self) -> cxx::UniquePtr<OpaqueExampleType> {
+    ...
+  }
+}
+```
+
+### Signals
+
+In the following example using `cxx_type` means that `OpaqueExampleType` will be the parameter type of the `Q_SIGNAL` in C++.
+On the Rust side `cxx::UniquePtr<OpaqueExampleType>` will be the type in the enum and CXX-Qt will perform the conversion between.
+
+```rust,ignore
+#[cxx_qt::qsignals(MyStruct)]
+pub enum Signals {
+  #[cxx_type = "OpaqueExampleType"]
+  NewData { value: cxx::UniquePtr<OpaqueExampleType> },
+}
+```

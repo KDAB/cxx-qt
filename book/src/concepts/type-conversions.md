@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 As the primary use for CXX-Qt is to describe a Qt API in Rust, this means that for technical reasons the required Qt API will sometimes be slightly different from the Rust API.
 
-For example, when dealing with [opaque types](./types.html#custom-opaque-types), these can never be passed by-value from/to Rust.
+For example, when dealing with [opaque types](./types.html#opaque-type-conversions), these can never be passed by-value from/to Rust.
 In most cases, you'll therefore use a UniquePtr in Rust when you need ownership of such an object.
 
 However, Qt often requires values to be returned by-value, especially when compatibility with QML is required.
