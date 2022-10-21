@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 - [QObject](./qobject/index.md)
     - [`#[cxx_qt::bridge]` - Bridge Macro](./qobject/bridge-macro.md)
     - [`#[cxx_qt::qobject]` - Defining QObjects](./qobject/qobject_struct.md)
-    - [`#[cxx_qt::signals]` - Signals enum](./qobject/signals_enum.md)
+    - [`#[cxx_qt::qsignals]` - Signals enum](./qobject/signals_enum.md)
     - [`qobject::T` - The generated QObject](./qobject/generated-qobject.md)
     - [CxxQtThread](./qobject/cxxqtthread.md)
 - [Concepts](./concepts/index.md)

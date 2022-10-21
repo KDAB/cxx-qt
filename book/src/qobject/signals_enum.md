@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Signals enum
 
-The `cxx_qt::signals(T)` attribute is used on an [enum](https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html) to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the QObject `T`.
+The `cxx_qt::qsignals(T)` attribute is used on an [enum](https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html) to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the QObject `T`.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_enum}}

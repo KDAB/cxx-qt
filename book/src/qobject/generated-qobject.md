@@ -54,7 +54,7 @@ Progress can be tracked in [#299](https://github.com/KDAB/cxx-qt/issues/299).
 
 ## `impl qobject::T`
 As mentioned before, the C++ QObject is exposed to Rust as an opaque CXX type.
-A side-effect of this is that you can actually extend this type with your own functionality by using normal `impl` blocks.
+This allows you to implement methods for it in Rust using normal `impl` blocks.
 Because `qobject::T` is an opaque C++ type, the same rules as with normal CXX opaque types apply.
 Most importantly this means that the type may never be accessed by value or by mutable self reference directly.
 Rather, all methods must use either `&self` or `self: Pin<&mut Self>` as the self types.
@@ -73,7 +73,7 @@ Every `qobject::T` struct provides the following methods:
 ``` rust,ignore,noplayground
 fn qt_thread(&self) -> UniquePtr<CxxQtThread>
 ```
-This function provides you with a handle to the Qt thread the QObject resides in.
+This function provides you with a handle to the Qt thread that the QObject resides in.
 This is helpful as the QObject itself is neither Send, nor Sync.
 The CxxQtThread however is Send and can therefore be moved into a different thread.
 By using the `queue` function on the CxxQtThread, you may then queue a Rust lambda onto the Qt thread again.
@@ -90,7 +90,7 @@ If there is a [Signals enum](./signals_enum.md) defined, CXX-Qt will generate th
 See the [Signals enum page](./signals_enum.md) for more details.
 
 ### Access to internal Rust struct
-For every field in the Rust struct, CXX-Qt will generate appropriate getters and setters, depending on whether the field is marked as `#[qproperty]` or not.
+For every field in the Rust struct, CXX-Qt will generate appropriate getters and setters for every field in the Rust struct.
 See the [QObject page](./qobject_struct.md#properties) for details.
 
 There is also an advanced way to access the data in the internal Rust struct:
@@ -108,3 +108,5 @@ Modifying a field that corresponds to a `#[qproperty]` without calling the appro
 Therefore all direct access to a struct that is wrapped in a QObject is unsafe!
 
 You may modify the struct and then manually call the required changed signals.
+
+For safe access, prefer using the generated accessor methods for both [properties](./qobject_struct.md#properties), as well as [normal fields](./qobject_struct.md#private-methods-and-fields).

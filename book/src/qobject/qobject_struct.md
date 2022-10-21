@@ -31,7 +31,7 @@ The macro does multiple other things for you though:
 
 ### `base` attribute
 Use the `base` attribute to specify a C++ class that the C++ QObject will inherit from.
-The base class must be a QObject!
+The base class must inherit from QObject (directly or indirectly).
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qobject_base}}
@@ -71,11 +71,7 @@ where `<Property>` is the name of the property.
 These setters and getters assure that the changed signal is called every time the property is edited.
 
 Any field that's not marked as `#[qproperty]` won't be accessible from C++.
-Therefore they also don't have any special type requirements and can be any Rust type.
-For convenience, CXX-Qt generates getters and setters on the `qobject::T` for these fields.
-
-These use the convention:
-- setter: `set_<Property>` - getter: `<Property>` - mutable accessor: `<Property>_mut`.
+See the [Private fields section](#private-methods-and-fields)
 
 *Note:* Instead of implementing `Default` by hand, you can of course also use `#[derive(Default)]`.
 
@@ -139,6 +135,14 @@ Therefore, they aren't restricted to CXX-compatible types.
 ## Private Methods and Fields
 
 Fields within your `#[cxx_qt::qobject]` struct that aren't tagged as `#[qproperty]` are not exposed as properties to Qt. These can be considered as "private to Rust" fields, and are useful for storing channels for threading or internal information for the QObject.
+Because they aren't available from C++, they also don't have any special type requirements and can be any Rust type.
+For convenience, CXX-Qt generates getters and setters on the `qobject::T` for these fields.
+
+These use the convention:
+- setter: `set_<Property>` - getter: `<Property>` - mutable accessor: `<Property>_mut`.
+
+In comparison to properties, CXX-Qt generates a mutable accessor to the field.
+Because the field doesn't correspond to a property, no changed signal has to be emitted and therefore the field can be mutated freely.
 
 Methods implemented using `impl T` (and not `impl qobject::T`) are just normal Rust member methods.
 Therefore they do not have access to any C++ or QObject functionality (e.g. emitting Signals, changing properties, etc.)
