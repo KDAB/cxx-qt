@@ -21,7 +21,7 @@ The Signal parameters are generated in order of appearance in the enum variant.
 
 ## Emitting a signal
 
-For every generated QObject [`qobject::T`](./cpp_object.md) that has a signals enum CXX-Qt will generate an `emit` function:
+For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum CXX-Qt will generate an `emit` function:
 ``` rust,ignore,noplayground
 fn emit(self: Pin<&mut Self>, signal: /*Signals enum*/)
 ```

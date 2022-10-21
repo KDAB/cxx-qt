@@ -16,7 +16,7 @@ QObject Features and Parts:
   * [`#[cxx_qt::bridge]` - The macro around the module](./bridge-macro.md)
   * [`#[cxx_qt::qobject]` - Marking a Rust struct as a QObject](./qobject_struct.md)
   * [`#[cxx_qt::qsignals(T)]` - A Signals enum for defining signals](./signals_enum.md)
-  * [`qobject:T` - The generated QObject](./cpp_object.md)
+  * [`qobject:T` - The generated QObject](./generated-qobject.md)
   * [`CxxQtThread` - Queueing function pointers onto the Qt thread](./cxxqtthread.md)
 
 

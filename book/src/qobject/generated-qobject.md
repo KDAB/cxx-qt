@@ -70,7 +70,7 @@ See the [QObject page](./qobject_struct.md#invokables) for more details.
 Every `qobject::T` struct provides the following methods:
 
 ### Access to the Qt thread
-``` rust
+``` rust,ignore,noplayground
 fn qt_thread(&self) -> UniquePtr<CxxQtThread>
 ```
 This function provides you with a handle to the Qt thread the QObject resides in.
@@ -82,7 +82,7 @@ The lambda also takes a pinned mutable reference to the QObject, so that it can 
 See the [CxxQtThread page](./cxxqtthread.md) for more details.
 
 ### Signal emission
-``` rust
+``` rust,ignore,noplayground
 fn emit(self: Pin<&mut Self>, signal: /*Your Signals enum goes here*/)
 ```
 If there is a [Signals enum](./signals_enum.md) defined, CXX-Qt will generate the appropriate `emit` function to allow you to emit signals.
@@ -94,7 +94,7 @@ For every field in the Rust struct, CXX-Qt will generate appropriate getters and
 See the [QObject page](./qobject_struct.md#properties) for details.
 
 There is also an advanced way to access the data in the internal Rust struct:
-``` rust
+``` rust,ignore,noplayground
 fn rust(&self) -> &T
 unsafe fn rust_mut(self: Pin<&mut Self>) -> &mut T
 ```

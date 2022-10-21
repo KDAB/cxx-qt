@@ -19,7 +19,7 @@ A nested object is referred to by it's path relative to `crate`, the second last
 
 To use this as a property in another object write `secondary_object: crate::mymod::cxx_qt_secondary_object::CppObj` as the property.
 
-For use as a parameter in an invokable write `secondary_object: &mut crate::mymod::cxx_qt_secondary_object::CppObj` as the parameter. Then the `secondary_object` parameter can be used via the normal [`CppObj`](../qobject/cpp_object.md) methods.
+For use as a parameter in an invokable write `secondary_object: &mut crate::mymod::cxx_qt_secondary_object::CppObj` as the parameter. Then the `secondary_object` parameter can be used via the normal [`CppObj`](../qobject/generated-qobject.md) methods.
 
 The following example shows a nested object as a property and parameter.
 

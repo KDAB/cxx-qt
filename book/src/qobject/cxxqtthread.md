@@ -15,7 +15,7 @@ Therefore they may not be passed between threads.
 This handle is `Send` and can therefore be moved into other threads.
 It allows you to queue events from a different thread to occur on the thread of the `qobject::T` by using the Qt Event Loop.
 
-To access the `CxxQtThread<T>` use the `qt_thread(&self)` method on a [`qobject::T`](./cpp_object.md).
+To access the `CxxQtThread<T>` use the `qt_thread(&self)` method on a [`qobject::T`](./generated-qobject.md).
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/threading.rs:book_qt_thread}}
