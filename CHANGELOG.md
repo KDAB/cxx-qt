@@ -12,8 +12,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
+
+## [0.4.0] - 2022-10-28
 
 ### Added
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rewrite of build system, removal of custom cmake file, corrosion is used for CMake and support for building with only Cargo
 - Refactor of internal generation code so it's split into stages and removal of pattern matching for types, so arbritary CXX types can be supported
 - Mark Qt relocatable types as trivial to CXX
+- Use Rust closures to queue tasks onto the Qt thread
 
 ### Removed
 
@@ -70,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for QColor, QPointF, QSizeF, QString, QVariant
 - Support for nested objects
 
-[Unreleased]: https://github.com/KDAB/cxx-qt/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/KDAB/cxx-qt/compare/v0.4.0...HEAD
+[0.3.0]: https://github.com/KDAB/cxx-qt/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/KDAB/cxx-qt/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/KDAB/cxx-qt/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/KDAB/cxx-qt/compare/v0.1.0...v0.2.0
