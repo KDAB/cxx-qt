@@ -1,6 +1,6 @@
 {
   "name": "cxx-qt",
-  "version": "0.3",
+  "version": "0.4",
   "description": "Rust bindings for Qt using CXX",
   "homepage": "https://kdab.github.io/cxx-qt/book/",
   "license": "MIT OR Apache-2.0",

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt-build"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -15,8 +15,8 @@ repository = "https://github.com/KDAB/cxx-qt/"
 [dependencies]
 cc = "1.0.73"
 cxx-gen = "0.7"
-cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.3" }
-cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.3" }
+cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.4" }
+cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.4" }
 proc-macro2 = "1.0"
 quote = "1.0"
 convert_case = "0.4"

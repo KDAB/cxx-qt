@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -20,6 +20,6 @@ categories = ["api-bindings", "gui"]
 proc-macro = true
 
 [dependencies]
-cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.3" }
+cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.4" }
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
