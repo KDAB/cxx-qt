@@ -14,7 +14,7 @@ repository = "https://github.com/KDAB/cxx-qt/"
 
 [dependencies]
 versions = "4.1.0"
-pkg-config = { git = "https://github.com/Be-ing/pkg-config-rs.git", branch = "library_pub" }
+pkg-config = "0.3.26"
 regex = "1.6.0"
 lazy_static = "1.0"
 thiserror = "1.0"
