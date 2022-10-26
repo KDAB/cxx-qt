@@ -11,6 +11,8 @@
 //! [cxx_build](https://docs.rs/cxx-build/latest/cxx_build/), or
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
 
+mod parse_cflags;
+
 use std::{
     env,
     path::{Path, PathBuf},
@@ -228,22 +230,19 @@ impl QtBuild {
 
     /// Tell Cargo to link each Qt module.
     pub fn cargo_link_libraries(&self) {
-        lazy_static::lazy_static! {
-            static ref QMAKE_PRL_LIBS: regex::Regex = regex::RegexBuilder::new(r"^QMAKE_PRL_LIBS = (.*)$").multi_line(true).build().unwrap();
-        }
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={}", lib_path);
 
-        // The needed information is in qmake's .prl files, so using pkgconfig is not necessary.
-        // There is no guarantee that pkgconfig is installed if Qt is installed, particularly on
-        // Windows. However, the pkg_config crate provides a useful function for parsing the
-        // information from the .prl files into linking instructions for Cargo.
-        let pkg_config = pkg_config::Config::new();
-
-        #[cfg(windows)]
-        let prefix = "";
-        #[cfg(not(windows))]
-        let prefix = "lib";
+        let prefix = match env::var("TARGET") {
+            Ok(target) => {
+                if target.contains("msvc") {
+                    ""
+                } else {
+                    "lib"
+                }
+            }
+            Err(_) => "lib",
+        };
 
         for qt_module in &self.qt_modules {
             println!("cargo:rustc-link-lib=Qt{}{}", self.version.major, qt_module);
@@ -253,19 +252,15 @@ impl QtBuild {
             );
             match std::fs::read_to_string(&prl_path) {
                 Ok(prl) => {
-                    if let Some(captures) = QMAKE_PRL_LIBS.captures(&prl) {
-                        let link_args = captures
-                            .get(1)
-                            .unwrap()
-                            .as_str()
-                            .replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
-                            .replace(r"$$[QT_INSTALL_PREFIX]", &lib_path);
-                        let mut lib = pkg_config::Library::new();
-                        lib.parse_libs_cflags(
-                            &format!("Qt{}{}", self.version.major, qt_module),
-                            link_args.as_bytes(),
-                            &pkg_config,
-                        );
+                    for line in prl.lines() {
+                        if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
+                            parse_cflags::parse_libs_cflags(
+                                &format!("Qt{}{}", self.version.major, qt_module),
+                                line.replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
+                                    .replace(r"$$[QT_INSTALL_PREFIX]", &lib_path)
+                                    .as_bytes(),
+                            );
+                        }
                     }
                 }
                 Err(e) => {
