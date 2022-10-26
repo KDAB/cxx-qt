@@ -68,7 +68,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn signals(_args: TokenStream, _input: TokenStream) -> TokenStream {
+pub fn qsignals(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("cxx_qt::qsignals should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
