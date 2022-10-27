@@ -77,7 +77,11 @@ These setters and getters assure that the changed signal is emitted every time t
 Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
-Then `Default` needs to be implemented for the struct either by hand or you can of course also use `#[derive(Default)]`.
+## Default
+
+The `Default` needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using derive `#[derive(Default)]`.
+
+This needs to provide default values for every [`#[qproperty]`](#properties) and [private field](#private-methods-and-fields)
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_default}}
