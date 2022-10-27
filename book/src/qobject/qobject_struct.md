@@ -63,10 +63,12 @@ For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a
 On The C++ side:
   * setter: `set<Property>`
   * getter: `get<Property>`
+  * changed: `<Property>Changed`
 
 On the Rust side:
   * setter: `set_<Property>`
   * getter: `<Property>`
+  * changed: `<Property>_changed`
 
 where `<Property>` is the name of the property.
 
