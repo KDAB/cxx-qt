@@ -11,9 +11,9 @@ One of the key features of CXX-Qt is the ability to create your own QObjects fro
 This is what the [`#[cxx_qt::qobject]` macro](./qobject_struct.md) is for.
 This page serves to document the details of what is generated and how to interact with the generated QObject from Rust.
 
-The `#[cxx_qt::qobject]` macro generates a qobject for a given Rust struct.
+The `#[cxx_qt::qobject]` macro generates a QObject for a given Rust struct.
 Whilst this QObject is a C++ type, CXX-Qt will automatically wrap it as a [CXX Opaque Type](https://cxx.rs/extern-c++.html#opaque-c-types).
-These generated QObjects are accessible in a generated module with the name `qobject`. Each struct `T`'s generated QObject is accessible to Rust as `qobject::T`.
+These generated QObjects are accessible to Rust in a generated module with the name `qobject`. Each struct `T`'s generated QObject is accessible as `qobject::T`.
 
 ## Anatomy
 
@@ -58,7 +58,7 @@ Because `qobject::T` is an opaque C++ type, the same rules as with normal CXX op
 Most importantly this means that the type may never be accessed by value or by mutable self reference directly.
 Rather, all methods must use either `&self` or `self: Pin<&mut Self>` as the self types. This prevents Rust from moving the data in memory, which would invalidate C++ pointers to it.
 
-For more information about pinning, refer to the [pin documentation](https://doc.rust-lang.org/std/pin/). 
+For more information about pinning, refer to the [pin documentation](https://doc.rust-lang.org/std/pin/).
 
 In addition to methods that extend the Rust interface of a `qobject::T`, you may also mark methods within an `impl qobject::T` block with the `#[qinvokable]` attribute.
 These methods will be exposed to the C++ QObject and can be called by C++ or QML.
@@ -75,7 +75,7 @@ fn qt_thread(&self) -> UniquePtr<CxxQtThread>
 This function provides you with a handle to the Qt thread that the QObject resides in.
 This is helpful as the QObject itself does not implement [Send](https://doc.rust-lang.org/std/marker/trait.Send.html) nor [Sync](https://doc.rust-lang.org/std/marker/trait.Sync.html).
 The CxxQtThread however is Send and can therefore be moved into a different thread.
-By using the `queue` function on the CxxQtThread, you may then queue a Rust lambda onto the Qt thread again.
+By using the CxxQtThread's `queue` method, you may then queue a Rust lambda onto the Qt thread again.
 The lambda also takes a pinned mutable reference to the QObject, so that it can modify it.
 
 See the [CxxQtThread page](./cxxqtthread.md) for more details.
@@ -89,7 +89,7 @@ If there is a [Signals enum](./signals_enum.md) defined, CXX-Qt will generate th
 See the [Signals enum page](./signals_enum.md) for more details.
 
 ### Access to internal Rust struct
-For every field in the Rust struct, CXX-Qt will generate appropriate getters and setters for every field in the Rust struct.
+For every field in the Rust struct, CXX-Qt will generate appropriate getters and setters.
 See the [QObject page](./qobject_struct.md#properties) for details.
 
 There is also an advanced way to access the data in the internal Rust struct:
