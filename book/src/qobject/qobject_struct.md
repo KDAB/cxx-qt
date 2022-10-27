@@ -52,7 +52,7 @@ Use the CXX `include!` macro to include the appropriate C++ header for the base 
 Fields within the `#[cxx_qt::qobject]` marked struct can be tagged with `#[qproperty]` to be exposed as [`Q_PROPERTY`s](https://doc.qt.io/qt-6/properties.html) on the generated QObject:
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_macro_code}}
+{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_struct}}
 ```
 
 Any type that CXX supports may be marked as a `#[qproperty]`.
@@ -73,7 +73,11 @@ These setters and getters assure that the changed signal is emitted every time t
 Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
-*Note:* Instead of implementing `Default` by hand, you can of course also use `#[derive(Default)]`.
+Then `Default` needs to be implemented for the struct either by hand or you can of course also use `#[derive(Default)]`.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_default}}
+```
 
 [Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/properties.rs)
 
