@@ -60,7 +60,7 @@ See the [Types page](../concepts/types.md) for a list of supported types.
 
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
 
-On The C++ side:
+On the C++ side:
   * setter: `set<Property>`
   * getter: `get<Property>`
   * changed: `<Property>Changed`
