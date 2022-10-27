@@ -152,7 +152,7 @@ For convenience, CXX-Qt generates getters and setters on the `qobject::T` for th
 These use the convention:
   * setter: `set_<Property>`
   * getter: `<Property>`
-  * mutable accessor: `<Property>_mut`.
+  * mutable accessor: `<Property>_mut`
 
 In comparison to properties, CXX-Qt generates a mutable accessor to the field.
 Because the field doesn't correspond to a property, no changed signal has to be emitted and therefore the field can be mutated freely.
