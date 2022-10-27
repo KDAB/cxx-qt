@@ -94,7 +94,7 @@ struct MyStruct {
   my_property: cxx::UniquePtr<OpaqueExampleType>
 }
 ```
-In this case, CXX-Qt will automatically convert any references to the `std::unique_ptr<OpaqueExampleType>` to references to `OpaqueExampleType`.
+In this case, CXX-Qt will automatically convert the `std::unique_ptr<OpaqueExampleType>` to `OpaqueExampleType`.
 
 For details, see the [page on type conversions](../concepts/type-conversions.md).
 
@@ -132,7 +132,7 @@ To mark a method as invokable, simply add the `#[qinvokable]` attribute to the R
 {{#include ../../../examples/qml_features/rust/src/invokables.rs:book_impl_qobject}}
 ```
 
-Note that an Invokable may only use `self: Pin<&mut Self>` or `&self` as self types.
+Note that an invokable may only use `self: Pin<&mut Self>` or `&self` as self types.
 It is not possible to have a `self`, or `&mut self` invokable, as that may move the QObject in memory, which would invalidate C++ pointers and references to the QObject.
 Furthermore, invokables are restricted to only use types that are compatible with CXX.
 
