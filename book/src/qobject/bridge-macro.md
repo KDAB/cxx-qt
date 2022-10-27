@@ -10,10 +10,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 The `#[cxx_qt::bridge]` macro functions very similarly to the [`#[cxx::bridge]`](https://docs.rs/cxx/latest/cxx/attr.bridge.html). This macro needs to be written above a Rust module definition.
 This Rust module will then function like a normal CXX bridge, whilst also supporting the additional features added by CXX-Qt. Refer to the [the CXX documentation](https://cxx.rs/) for details on how to describe the language boundary.
 Also don't forget to add the Rust source file to the CxxQtBuilder in your build.rs script.
-For instructions see the [Getting-started guide](../getting-started/5-cmake-integration.md) or the [corresponding "Concepts" page](../concepts/build_systems.md).
+For instructions, see the [Getting-started guide](../getting-started/5-cmake-integration.md).
 
 ## Filename
-If correctly added to CxxQtBuilder, every `#[cxx_qt::bridge]` will generate a resulting header file.
+A C++ header file will be generated for every Rust file with a `#[cxx_qt::bridge]` module listed with [`CxxQtBuilder::file`](https://docs.rs/cxx-qt-build/latest/cxx_qt_build/struct.CxxQtBuilder.html#method.file).
 
 By default, the name of the generated C++ header file will be the name of the module, followed by `.cxxqt.h`.
 Our plan is to change this to use the Rust file name instead. Progress on this can be tracked in [#200](https://github.com/KDAB/cxx-qt/pull/200).
@@ -39,7 +39,7 @@ Just like on a `#[cxx::bridge]`, the C++ namespace of the bridge can be changed 
   // ...
 }
 ```
-This will generate a header file named `threading_webiste.cxxqt.h` with all C++ items included in the `cxx_qt::website` namespace.
+This will generate a header file named `threading_website.cxxqt.h` with all C++ items included in the `cxx_qt::website` namespace.
 
 When accessing a type from the bridge module in C++, access it through the C++ namespace:
 ```rust,ignore,noplayground

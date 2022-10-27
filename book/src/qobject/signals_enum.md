@@ -17,17 +17,18 @@ For every enum variant CXX-Qt will generate a signal on the corresponding QObjec
 If the enum variant has members, they will become the parameters for the corresponding signal.
 
 Because CXX-Qt needs to know the names of each parameter, only enum variants with named members are supported.
-The Signal parameters are generated in order of appearance in the enum variant.
+The signal parameters are generated in order of appearance in the enum variant.
 
 ## Emitting a signal
 
-For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum CXX-Qt will generate an `emit` function:
+For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum, CXX-Qt will generate an `emit` function:
 ``` rust,ignore,noplayground
 fn emit(self: Pin<&mut Self>, signal: /*Signals enum*/)
 ```
 `emit` can therefore be called from any mutable `#[qinvokable]`.
 
-The `emit` function will immediately emit the signal and call any connected slots.
+The `emit` function will immediately emit the signal.
+Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
 To queue the call to `emit` until the next Event loop cycle, you can use the [`CxxQtThread`](./cxxqtthread.md).
 
 ### [Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs)

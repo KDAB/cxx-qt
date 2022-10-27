@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 A QObject defined by CXX-Qt supports many features and is made up of quite a few parts.
 
-This section goes into details on these.
+This chapter goes into details on these.
 For a simpler introduction, take a look at our [Getting-Started guide](../getting-started/index.md).
 
 QObject Features and Parts:
@@ -17,6 +17,6 @@ QObject Features and Parts:
   * [`#[cxx_qt::qobject]` - Marking a Rust struct as a QObject](./qobject_struct.md)
   * [`#[cxx_qt::qsignals(T)]` - A Signals enum for defining signals](./signals_enum.md)
   * [`qobject:T` - The generated QObject](./generated-qobject.md)
-  * [`CxxQtThread` - Queueing function pointers onto the Qt thread](./cxxqtthread.md)
+  * [`CxxQtThread` - Queueing closures onto the Qt event loop](./cxxqtthread.md)
 
 

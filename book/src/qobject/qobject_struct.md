@@ -68,9 +68,9 @@ On the Rust side:
 
 where `<Property>` is the name of the property.
 
-These setters and getters assure that the changed signal is called every time the property is edited.
+These setters and getters assure that the changed signal is emitted every time the property is edited.
 
-Any field that's not marked as `#[qproperty]` won't be accessible from C++.
+Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
 *Note:* Instead of implementing `Default` by hand, you can of course also use `#[derive(Default)]`.
@@ -113,20 +113,20 @@ For details on this, see the [`qobject::T` page](./generated-qobject.md).
 The important part for invokables is that they need to be implemented on the `qobject::T`, not `T`.
 Therefore they have access to both C++ and Rust methods. CXX-Qt adds wrapper code around your invokables to automatically convert between the [C++ and Rust types](../concepts/types.md).
 
-To mark a method as invokable simply add the `#[qinvokable]` attribute to the Rust method. This then causes the method to be exposed on the C++ class.
-`Q_INVOKABLE` will also be added to the definition of the method, allowing QML to call the invokable.
+To mark a method as invokable, simply add the `#[qinvokable]` attribute to the Rust method. This tells CXX-Qt to expose the method on the generated C++ class.
+`Q_INVOKABLE` will be added to the C++ definition of the method, allowing QML to call the invokable.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/invokables.rs:book_impl_qobject}}
 ```
 
 Note that an Invokable may only use `self: Pin<&mut Self>` or `&self` as self types.
-It is not possible to have a `self`, or `&mut self` invokable, as that may move around the QObject, which C++ can't handle.
+It is not possible to have a `self`, or `&mut self` invokable, as that may move the QObject in memory, which C++ can't handle.
 Furthermore, invokables are restricted to only use types that are compatible with CXX.
 
 It is also possible to define methods in the `impl qobject::T` block that are *not* marked as `#[qinvokable]`.
 These methods won't be available from C++ or QML.
-But as they still use the QObject as the self type they can still access the QObject features like emitting signals, changing properties, etc.
+But they can still access the QObject features like emitting signals and changing properties by accessing `Pin <&mut Self>`.
 However, they are still normal Rust functions.
 Therefore, they aren't restricted to CXX-compatible types.
 
@@ -145,5 +145,5 @@ In comparison to properties, CXX-Qt generates a mutable accessor to the field.
 Because the field doesn't correspond to a property, no changed signal has to be emitted and therefore the field can be mutated freely.
 
 Methods implemented using `impl T` (and not `impl qobject::T`) are just normal Rust member methods.
-Therefore they do not have access to any C++ or QObject functionality (e.g. emitting Signals, changing properties, etc.)
+Therefore they do not have access to any C++ or QObject functionality (e.g. emitting signals, changing properties, etc.)
 You will usually only need to use `impl T` if you want to also use your struct as a normal Rust struct, that is not wrapped in a QObject.
