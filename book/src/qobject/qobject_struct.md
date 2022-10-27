@@ -79,7 +79,7 @@ See the [Private fields section](#private-methods-and-fields)
 
 ## Default
 
-The `Default` needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using derive `#[derive(Default)]`.
+The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`.
 
 This needs to provide default values for every [`#[qproperty]`](#properties) and [private field](#private-methods-and-fields)
 
