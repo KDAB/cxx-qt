@@ -61,10 +61,12 @@ See the [Types page](../concepts/types.md) for a list of supported types.
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
 
 On The C++ side:
-- setter: `set<Property>` - getter: `get<Property>`
+  * setter: `set<Property>`
+  * getter: `get<Property>`
 
 On the Rust side:
-- setter: `set_<Property>` - getter: `<Property>`
+  * setter: `set_<Property>`
+  * getter: `<Property>`
 
 where `<Property>` is the name of the property.
 
