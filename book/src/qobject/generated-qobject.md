@@ -103,7 +103,7 @@ This allows you to directly manipulate the internal Rust struct without having t
 
 You may notice that the mutable version of this is `unsafe` to call.
 This is by design.
-Modifying a field that corresponds to a `#[qproperty]` without calling the appropriate changed signal may cause undefined behavior.
+Modifying a field that corresponds to a `#[qproperty]` without calling the appropriate changed signal may cause a logic error.
 Therefore all direct access to a struct that is wrapped in a QObject is unsafe!
 
 You may modify the struct and then manually call the required changed signals.
