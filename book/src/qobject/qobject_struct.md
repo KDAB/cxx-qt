@@ -13,7 +13,7 @@ Therefore `#[cxx_qt::qobject]` can be considered the most important macro in CXX
 ## Requirements
 - Like most other CXX-Qt macros, it can only be used from within a [`#[cxx_qt::bridge]`](./bridge-macro.md).
 - The `#[cxx_qt::qobject]` macro must be placed on a Rust struct.
-- The struct must `impl Default`, so that it can be constructed as part of a QObject.
+- The struct must [`impl Default`](#default), so that it can be constructed as part of a QObject.
 
 ## Effects
 Adding the macro to a Rust struct `MyObject` has a few effects.
@@ -29,7 +29,7 @@ The macro does multiple other things for you though:
 - Generate `Q_PROPERTY`s for all fields that are marked as `#[qproperty]`.
 - Generate signals if paired with a [`#[cxx_qt::qsignals]` enum](./signals_enum.md).
 
-### `base` attribute
+## `base` attribute
 Use the `base` attribute to specify a C++ class that the C++ QObject will inherit from.
 The base class must inherit from QObject (directly or indirectly).
 
@@ -77,18 +77,6 @@ These setters and getters assure that the changed signal is emitted every time t
 Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
-## Default
-
-The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`.
-
-This needs to provide default values for every [`#[qproperty]`](#properties) and [private field](#private-methods-and-fields)
-
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_default}}
-```
-
-[Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/properties.rs)
-
 ### `cxx_type`
 
 You can change the C++ type that your property uses by adding the `cxx_type` attribute to the `#[qproperty]` macro.
@@ -109,6 +97,18 @@ struct MyStruct {
 In this case, CXX-Qt will automatically convert any references to the `std::unique_ptr<OpaqueExampleType>` to references to `OpaqueExampleType`.
 
 For details, see the [page on type conversions](../concepts/type-conversions.md).
+
+## Default
+
+The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`.
+
+This needs to provide default values for every [`#[qproperty]`](#properties) and [private field](#private-methods-and-fields)
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_default}}
+```
+
+[Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/properties.rs)
 
 ## Invokables
 
