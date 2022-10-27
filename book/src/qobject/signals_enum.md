@@ -29,7 +29,7 @@ fn emit(self: Pin<&mut Self>, signal: /*Signals enum*/)
 
 The `emit` function will immediately emit the signal.
 Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
-To queue the call to `emit` until the next Event loop cycle, you can use the [`CxxQtThread`](./cxxqtthread.md).
+To queue the call to `emit` until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](./cxxqtthread.md).
 
 ### [Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs)
 ```rust,ignore,noplayground
