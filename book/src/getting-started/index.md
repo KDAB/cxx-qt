@@ -26,7 +26,7 @@ Take a look at the CXX documentation here: [https://cxx.rs/](https://cxx.rs/)
 
 ### What this guide covers
 
-During this getting-started guide we'll first take a look at how CXX-Qt integrates with Qt's object system to allow the [definition of QObjects in Rust](./1-qobjects-in-rust.md).
+During this getting started guide we'll first take a look at how CXX-Qt integrates with Qt's object system to allow the [definition of QObjects in Rust](./1-qobjects-in-rust.md).
 Then we'll dive straight into practice and define our first [QObject in Rust](./2-our-first-cxx-qt-module.md).
 Once we've done that, its time to [expose the defined QObject to QML](./3-exposing-to-qml.md).
 Followed by actually [defining our GUI using QML](./4-qml-gui.md).

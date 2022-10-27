@@ -25,8 +25,10 @@ unsafe impl ExternType for QModelIndex {
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "custom_base_class")]
 mod ffi {
+    // ANCHOR: book_base_include
     unsafe extern "C++" {
         include!("qabstractlistmodelcxx.h");
+        // ANCHOR_END: book_base_include
 
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
@@ -51,9 +53,11 @@ mod ffi {
         fn end_reset_model(self: Pin<&mut CustomBaseClassQt>);
     }
 
+    // ANCHOR: book_qobject_base
     #[cxx_qt::qobject(base = "QAbstractListModelCXX")]
     #[derive(Default)]
     pub struct CustomBaseClass {
+        // ANCHOR_END: book_qobject_base
         id: u32,
         vector: Vec<(u32, f64)>,
     }

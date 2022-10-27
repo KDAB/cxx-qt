@@ -22,9 +22,11 @@ pub mod ffi {
     }
     // ANCHOR_END: book_signals_enum
 
+    // ANCHOR: book_signals_struct
     #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct RustSignals;
+    // ANCHOR: book_signals_struct
 
     // ANCHOR: book_rust_obj_impl
     impl qobject::RustSignals {

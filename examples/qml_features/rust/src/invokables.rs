@@ -28,6 +28,7 @@ pub mod ffi {
         }
     }
 
+    // ANCHOR: book_impl_qobject
     impl qobject::RustInvokables {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
@@ -54,6 +55,7 @@ pub mod ffi {
             self.as_mut().set_blue(blue);
         }
     }
+    // ANCHOR_END: book_impl_qobject
 
     impl RustInvokables {
         /// Immutable Rust context method that returns the QColor
