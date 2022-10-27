@@ -31,7 +31,7 @@ The macro does multiple other things for you though:
 
 ## `base` attribute
 Use the `base` attribute to specify a C++ class that the C++ QObject will inherit from.
-The base class must inherit from QObject (directly or indirectly).
+The base class must inherit from QObject (directly or indirectly). If you do not specify a base attribute, it will inherit directly from QObject.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qobject_base}}
@@ -133,14 +133,13 @@ To mark a method as invokable, simply add the `#[qinvokable]` attribute to the R
 ```
 
 Note that an Invokable may only use `self: Pin<&mut Self>` or `&self` as self types.
-It is not possible to have a `self`, or `&mut self` invokable, as that may move the QObject in memory, which C++ can't handle.
+It is not possible to have a `self`, or `&mut self` invokable, as that may move the QObject in memory, which would invalidate C++ pointers and references to the QObject.
 Furthermore, invokables are restricted to only use types that are compatible with CXX.
 
 It is also possible to define methods in the `impl qobject::T` block that are *not* marked as `#[qinvokable]`.
 These methods won't be available from C++ or QML.
 But they can still access the QObject features like emitting signals and changing properties by accessing `Pin <&mut Self>`.
-However, they are still normal Rust functions.
-Therefore, they aren't restricted to CXX-compatible types.
+These are normal Rust methods, so they aren't restricted to CXX-compatible types.
 
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/invokables.rs)
 
@@ -151,11 +150,13 @@ Because they aren't available from C++, they also don't have any special type re
 For convenience, CXX-Qt generates getters and setters on the `qobject::T` for these fields.
 
 These use the convention:
-- setter: `set_<Property>` - getter: `<Property>` - mutable accessor: `<Property>_mut`.
+  * setter: `set_<Property>`
+  * getter: `<Property>`
+  * mutable accessor: `<Property>_mut`.
 
 In comparison to properties, CXX-Qt generates a mutable accessor to the field.
 Because the field doesn't correspond to a property, no changed signal has to be emitted and therefore the field can be mutated freely.
 
 Methods implemented using `impl T` (and not `impl qobject::T`) are just normal Rust member methods.
 Therefore they do not have access to any C++ or QObject functionality (e.g. emitting signals, changing properties, etc.)
-You will usually only need to use `impl T` if you want to also use your struct as a normal Rust struct, that is not wrapped in a QObject.
+You will usually only need to use `impl T` if you want to also use your struct as a normal Rust struct that is not wrapped in a QObject.

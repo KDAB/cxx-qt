@@ -13,7 +13,7 @@ The `cxx_qt::qsignals(T)` attribute is used on an [enum](https://doc.rust-lang.o
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_enum}}
 ```
 
-For every enum variant CXX-Qt will generate a signal on the corresponding QObject.
+For every enum variant, CXX-Qt will generate a signal on the corresponding QObject.
 If the enum variant has members, they will become the parameters for the corresponding signal.
 
 Because CXX-Qt needs to know the names of each parameter, only enum variants with named members are supported.
