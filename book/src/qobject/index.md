@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 A QObject defined by CXX-Qt supports many features and is made up of quite a few parts.
 
 This chapter goes into details on these.
-For a simpler introduction, take a look at our [Getting-Started guide](../getting-started/index.md).
+For a simpler introduction, take a look at our [Getting Started guide](../getting-started/index.md).
 
 QObject Features and Parts:
   * [`#[cxx_qt::bridge]` - The macro around the module](./bridge-macro.md)

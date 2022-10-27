@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 ---
 
-- [Getting-Started](./getting-started/index.md)
+- [Getting Started](./getting-started/index.md)
     - [QObjects in Rust](./getting-started/1-qobjects-in-rust.md)
     - [Our first CXX-Qt module](./getting-started/2-our-first-cxx-qt-module.md)
     - [Exposing to QML](./getting-started/3-exposing-to-qml.md)
