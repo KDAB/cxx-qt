@@ -75,8 +75,8 @@ fn qt_thread(&self) -> UniquePtr<CxxQtThread>
 This function provides you with a handle to the Qt thread that the QObject resides in.
 This is helpful as the QObject itself does not implement [Send](https://doc.rust-lang.org/std/marker/trait.Send.html) nor [Sync](https://doc.rust-lang.org/std/marker/trait.Sync.html).
 The CxxQtThread however is Send and can therefore be moved into a different thread.
-By using the CxxQtThread's `queue` method, you may then queue a Rust lambda onto the Qt thread again.
-The lambda also takes a pinned mutable reference to the QObject, so that it can modify it.
+By using the CxxQtThread's `queue` method, you may then queue a Rust closure onto the Qt thread again.
+The closure also takes a pinned mutable reference to the QObject, so that it can modify it.
 
 See the [CxxQtThread page](./cxxqtthread.md) for more details.
 
