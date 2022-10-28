@@ -5,12 +5,12 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt-build"
-version = "0.4.0"
+version.workspace = true
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
+edition.workspace = true
+license.workspace = true
 description = "Helpers for integrating `cxx-qt` crate into a Cargo build"
-repository = "https://github.com/KDAB/cxx-qt/"
+repository.workspace = true
 
 [dependencies]
 cc = "1.0.73"

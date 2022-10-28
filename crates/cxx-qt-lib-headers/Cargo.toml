@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt-lib-headers"
-version = "0.4.0"
+version.workspace = true
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Be Wilson <be.wilson@kdab.com>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
+edition.workspace = true
+license.workspace = true
 description = "A small crate for cxx-qt-lib and cxx-qt-build to share cxx-qt-lib's C++ headers"
-repository = "https://github.com/KDAB/cxx-qt/"
+repository.workspace = true

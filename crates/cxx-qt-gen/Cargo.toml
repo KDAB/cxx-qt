@@ -5,12 +5,12 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
 name = "cxx-qt-gen"
-version = "0.4.0"
+version.workspace = true
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
+edition.workspace = true
+license.workspace = true
 description = "Code generation for integrating `cxx-qt` into higher level tools"
-repository = "https://github.com/KDAB/cxx-qt/"
+repository.workspace = true
 
 [dependencies]
 clang-format = "0.1"
