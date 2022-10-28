@@ -9,7 +9,7 @@
 #include <QtCore/QSize>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qsize_cxx.cxx.h"
+#include "qt-types-standalone/qsize_cxx.cxx.h"
 
 class QSizeTest : public QObject
 {

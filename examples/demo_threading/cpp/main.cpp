@@ -7,7 +7,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/energy_usage.cxxqt.h"
+#include "demo-threading/energy_usage.cxxqt.h"
 #include "helpers/energyusageproxymodel.h"
 #include "helpers/sensor.h"
 

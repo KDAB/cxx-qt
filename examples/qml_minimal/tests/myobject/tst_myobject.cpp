@@ -9,7 +9,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/my_object.cxxqt.h"
+#include "qml-minimal/my_object.cxxqt.h"
 
 class Setup : public QObject
 {

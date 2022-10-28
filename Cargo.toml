@@ -22,3 +22,7 @@ members = [
     "tests/basic_cxx_qt/rust",
     "tests/qt_types_standalone/rust",
 ]
+
+[patch.crates-io]
+cxx = { git = "https://github.com/Be-ing/cxx.git", branch = "cxxbuild_output_var" }
+cxx-build = { git = "https://github.com/Be-ing/cxx.git", branch = "cxxbuild_output_var" }

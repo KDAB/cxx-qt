@@ -129,12 +129,13 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         }}
 
         {forward_declare}
-        #include "cxx-qt-gen/{cxx_file_stem}.cxx.h"
+        #include "{crate_name}/{cxx_file_stem}.cxx.h"
 
         {qobjects}
     "#,
     cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
+    crate_name = std::env::var("CARGO_PKG_NAME").unwrap(),
     qobjects = qobjects_header(generated).join("\n"),
     }
 }

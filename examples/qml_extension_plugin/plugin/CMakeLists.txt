@@ -10,8 +10,8 @@ if(NOT Corrosion_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.2.1
+        GIT_REPOSITORY https://github.com/Be-ing/corrosion.git
+        GIT_TAG code_generators
     )
 
     FetchContent_MakeAvailable(Corrosion)
@@ -19,12 +19,8 @@ endif()
 
 set(CRATE qml-extension-plugin)
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
-corrosion_set_env_vars(${CRATE}
-    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
-    "QMAKE=${QMAKE}"
-)
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+corrosion_add_target_generated_headers(${CRATE})
+corrosion_set_env_vars(${CRATE} "QMAKE=${QMAKE}")
 
 set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/../qml)
 set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)

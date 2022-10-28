@@ -80,10 +80,11 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
 /// For a given GeneratedCppBlocks write this into a C++ source
 pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     formatdoc! {r#"
-        #include "cxx-qt-gen/{cxx_file_stem}.cxxqt.h"
+        #include "{crate_name}/{cxx_file_stem}.cxxqt.h"
 
         {qobjects}
     "#,
+    crate_name = std::env::var("CARGO_PKG_NAME").unwrap(),
     cxx_file_stem = generated.cxx_file_stem,
     qobjects = qobjects_source(generated).join("\n"),
     }

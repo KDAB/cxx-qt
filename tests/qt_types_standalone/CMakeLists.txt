@@ -27,12 +27,8 @@ get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
 set(CRATE qt-types-standalone)
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
-corrosion_set_env_vars(${CRATE}
-    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
-    "QMAKE=${QMAKE}"
-)
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+corrosion_add_target_generated_headers(${CRATE})
+corrosion_set_env_vars(${CRATE} "QMAKE=${QMAKE}")
 target_link_libraries(${CRATE} INTERFACE
     Qt::Core
     Qt::Gui

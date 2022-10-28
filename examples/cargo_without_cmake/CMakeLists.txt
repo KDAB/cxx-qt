@@ -26,8 +26,8 @@ if(NOT Corrosion_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.2.1
+        GIT_REPOSITORY https://github.com/Be-ing/corrosion.git
+        GIT_TAG code_generators
     )
 
     FetchContent_MakeAvailable(Corrosion)

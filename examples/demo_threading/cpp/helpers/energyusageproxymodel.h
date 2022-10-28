@@ -12,7 +12,7 @@
 #include <QAbstractListModel>
 #include <QVector>
 
-#include "cxx-qt-gen/energy_usage.cxxqt.h"
+#include "demo-threading/energy_usage.cxxqt.h"
 
 class EnergyUsageProxyModel : public QAbstractListModel
 {

@@ -8,13 +8,13 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "cxx-qt-gen/custom_base_class.cxxqt.h"
-#include "cxx-qt-gen/rust_invokables.cxxqt.h"
-#include "cxx-qt-gen/rust_properties.cxxqt.h"
-#include "cxx-qt-gen/rust_signals.cxxqt.h"
-#include "cxx-qt-gen/serialisation.cxxqt.h"
-#include "cxx-qt-gen/threading_website.cxxqt.h"
-#include "cxx-qt-gen/types.cxxqt.h"
+#include "qml-features/custom_base_class.cxxqt.h"
+#include "qml-features/rust_invokables.cxxqt.h"
+#include "qml-features/rust_properties.cxxqt.h"
+#include "qml-features/rust_signals.cxxqt.h"
+#include "qml-features/serialisation.cxxqt.h"
+#include "qml-features/threading_website.cxxqt.h"
+#include "qml-features/types.cxxqt.h"
 
 int
 main(int argc, char* argv[])
