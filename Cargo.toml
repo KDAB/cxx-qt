@@ -22,3 +22,9 @@ members = [
     "tests/basic_cxx_qt/rust",
     "tests/qt_types_standalone/rust",
 ]
+
+[workspace.package]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/KDAB/cxx-qt/"
+version = "0.4.0"

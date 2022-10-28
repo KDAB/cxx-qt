@@ -5,12 +5,12 @@
 
 [package]
 name = "qt-build-utils"
-version = "0.4.0"
-edition = "2018"
+version.workspace = true
+edition.workspace = true
 authors = ["Be Wilson <be.wilson@kdab.com>"]
-license = "MIT OR Apache-2.0"
+license.workspace = true
 description = "Build script helper for linking Qt libraries and using moc code generator. Intended to be used together with cc, cpp_build, or cxx_build"
-repository = "https://github.com/KDAB/cxx-qt/"
+repository.workspace = true
 
 [dependencies]
 versions = "4.1.0"
