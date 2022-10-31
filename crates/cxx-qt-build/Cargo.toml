@@ -19,5 +19,5 @@ cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.4" }
 cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.4" }
 proc-macro2 = "1.0"
 quote = "1.0"
-convert_case = "0.4"
+convert_case = "0.6"
 qt-build-utils = { path = "../qt-build-utils", version = "0.4" }
