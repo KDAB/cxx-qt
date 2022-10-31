@@ -14,7 +14,7 @@ repository.workspace = true
 
 [dependencies]
 clang-format = "0.1"
-convert_case = "0.4"
+convert_case = "0.6"
 indoc = "1.0"
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
