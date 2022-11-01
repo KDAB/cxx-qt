@@ -50,7 +50,7 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 # Qt Graphical Effects imports changed in Qt 6 so provide proxies
-if(QT_VERSION LESS 6.0.0)
+if(NOT Qt6_FOUND)
     set(QML_COMPAT_RESOURCES qml/compat/compat_qt5.qrc)
 else()
     set(QML_COMPAT_RESOURCES qml/compat/compat_qt6.qrc)
