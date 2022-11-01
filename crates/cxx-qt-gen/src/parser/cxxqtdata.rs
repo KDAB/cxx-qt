@@ -8,13 +8,16 @@ use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::path_to_single_ident,
 };
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use syn::{spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, Result, Type, TypePath};
 
 #[derive(Default)]
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
-    pub qobjects: HashMap<Ident, ParsedQObject>,
+    //
+    // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
+    // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
+    pub qobjects: BTreeMap<Ident, ParsedQObject>,
     /// The namespace of the CXX-Qt module
     pub namespace: String,
     /// Any `use` statements end up in the CXX-Qt generated module
@@ -22,7 +25,7 @@ pub struct ParsedCxxQtData {
 }
 
 impl ParsedCxxQtData {
-    /// Find the QObjects within the module and add into the qobjects HashMap
+    /// Find the QObjects within the module and add into the qobjects BTreeMap
     pub fn find_qobject_structs(&mut self, items: &[Item]) -> Result<()> {
         for item in items {
             if let Item::Struct(qobject_struct) = item {
@@ -51,7 +54,7 @@ impl ParsedCxxQtData {
     }
 
     /// Determine if the given [syn::Item] is a CXX-Qt related item
-    /// If it is then add the [syn::Item] into qobjects HashMap
+    /// If it is then add the [syn::Item] into qobjects BTreeMap
     /// Otherwise return the [syn::Item] to pass through to CXX
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
         match item {
