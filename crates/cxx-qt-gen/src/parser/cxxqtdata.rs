@@ -32,14 +32,6 @@ impl ParsedCxxQtData {
                 if let Some(index) =
                     attribute_find_path(&qobject_struct.attrs, &["cxx_qt", "qobject"])
                 {
-                    // TODO: for now we only support one qobject per block
-                    if !self.qobjects.is_empty() {
-                        return Err(Error::new(
-                            qobject_struct.span(),
-                            "Only one #[cxx_qt::qobject] struct is supported per mod",
-                        ));
-                    }
-
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
                     self.qobjects.insert(
@@ -165,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_qobjects_duplicate_qobject() {
+    fn test_find_qobjects_multiple_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
         let module: ItemMod = tokens_to_syn(quote! {
@@ -174,11 +166,16 @@ mod tests {
                 #[cxx_qt::qobject]
                 struct MyObject;
                 #[cxx_qt::qobject]
-                struct MyObject;
+                struct SecondObject;
             }
         });
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
-        assert!(result.is_err());
+        assert!(result.is_ok());
+        assert_eq!(cxx_qt_data.qobjects.len(), 2);
+        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
+        assert!(cxx_qt_data
+            .qobjects
+            .contains_key(&format_ident!("SecondObject")));
     }
 
     #[test]

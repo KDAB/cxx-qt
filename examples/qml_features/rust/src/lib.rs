@@ -6,6 +6,7 @@
 
 mod custom_base_class;
 mod invokables;
+mod multiple_qobjects;
 mod properties;
 mod serialisation;
 mod signals;

@@ -1,5 +1,5 @@
 #[attrA]
-#[cxx_qt::bridge(namespace = "cxx_qt::my_object", cxx_file_stem = "my_object")]
+#[cxx_qt::bridge(namespace = "cxx_qt::multi_object", cxx_file_stem = "multi_object")]
 #[attrB]
 pub mod ffi {
     // ItemConst
@@ -91,6 +91,11 @@ pub mod ffi {
         }
     }
 
+    #[cxx_qt::qsignals(MyObject)]
+    pub enum MySignals {
+        Ready,
+    }
+
     impl qobject::MyObject {
         #[qinvokable]
         pub fn invokable_name(self: Pin<&mut Self>) {
@@ -112,6 +117,31 @@ pub mod ffi {
     impl MyTrait for MyObject {
         fn my_func() -> String {
             "Hello".to_owned()
+        }
+    }
+
+    #[cxx_qt::qobject]
+    pub struct SecondObject {
+        #[qproperty]
+        property_name: i32,
+    }
+
+    impl Default for SecondObject {
+        fn default() -> Self {
+            Self { property_name: 32 }
+        }
+    }
+
+    #[cxx_qt::qsignals(SecondObject)]
+    pub enum SecondSignals {
+        Ready,
+    }
+
+    impl qobject::SecondObject {
+        #[qinvokable]
+        pub fn invokable_name(self: Pin<&mut Self>) {
+            println!("Bye from second Rust!");
+            self.as_mut().set_property_name(5);
         }
     }
 }
