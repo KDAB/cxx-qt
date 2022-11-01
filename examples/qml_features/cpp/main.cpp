@@ -9,6 +9,7 @@
 #include <QtQml/QQmlApplicationEngine>
 
 #include "cxx-qt-gen/custom_base_class.cxxqt.h"
+#include "cxx-qt-gen/multiple_qobjects.cxxqt.h"
 #include "cxx-qt-gen/rust_invokables.cxxqt.h"
 #include "cxx-qt-gen/rust_properties.cxxqt.h"
 #include "cxx-qt-gen/rust_signals.cxxqt.h"
@@ -36,6 +37,8 @@ main(int argc, char* argv[])
 
   qmlRegisterType<CustomBaseClass>(
     "com.kdab.cxx_qt.demo", 1, 0, "CustomBaseClass");
+  qmlRegisterType<FirstObject>("com.kdab.cxx_qt.demo", 1, 0, "FirstObject");
+  qmlRegisterType<SecondObject>("com.kdab.cxx_qt.demo", 1, 0, "SecondObject");
   qmlRegisterType<RustInvokables>(
     "com.kdab.cxx_qt.demo", 1, 0, "RustInvokables");
   qmlRegisterType<RustProperties>(

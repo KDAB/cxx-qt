@@ -95,6 +95,10 @@ ApplicationWindow {
                     name: "Types"
                     source: "qrc:/pages/TypesPage.qml"
                 }
+                ListElement {
+                    name: "Multiple QObjects"
+                    source: "qrc:/pages/MultipleQObjectsPage.qml"
+                }
             }
         }
     }

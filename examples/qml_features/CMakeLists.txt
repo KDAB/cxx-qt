@@ -72,6 +72,7 @@ endfunction()
 
 copy_qml_test(custom_base_class)
 copy_qml_test(invokables)
+copy_qml_test(multiple_qobjects)
 copy_qml_test(properties)
 copy_qml_test(serialisation)
 copy_qml_test(signals)
