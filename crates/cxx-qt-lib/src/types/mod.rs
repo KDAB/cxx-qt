@@ -18,6 +18,9 @@ pub use qrect::QRect;
 mod qrectf;
 pub use qrectf::QRectF;
 
+mod qset;
+pub use qset::{QSet, QSetElement};
+
 mod qsize;
 pub use qsize::QSize;
 

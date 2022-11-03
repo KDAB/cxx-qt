@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Multiple QObjects can be defined in one bridge
+- Support for container types: `QSet<T>`
 
 ### Fixed
 

@@ -11,6 +11,7 @@ mod qpoint;
 mod qpointf;
 mod qrect;
 mod qrectf;
+mod qset;
 mod qsize;
 mod qsizef;
 mod qstring;

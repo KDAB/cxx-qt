@@ -15,6 +15,7 @@
 #include "qpointf.h"
 #include "qrect.h"
 #include "qrectf.h"
+#include "qset.h"
 #include "qsize.h"
 #include "qsizef.h"
 #include "qstring.h"
@@ -42,6 +43,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QPointFTest));
   runTest(QScopedPointer<QObject>(new QRectTest));
   runTest(QScopedPointer<QObject>(new QRectFTest));
+  runTest(QScopedPointer<QObject>(new QSetTest));
   runTest(QScopedPointer<QObject>(new QSizeTest));
   runTest(QScopedPointer<QObject>(new QSizeFTest));
   runTest(QScopedPointer<QObject>(new QStringTest));
