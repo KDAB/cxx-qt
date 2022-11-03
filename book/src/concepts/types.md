@@ -17,6 +17,19 @@ The `cxx-qt-lib` crate provides CXX bindings for common Qt types.
 
 Use the [`cxx-qt-lib` Docs](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) to explore the available types.
 
+### Container Types
+
+The `cxx-qt-lib` crate has containers types, such as `QSet<T>`.
+
+To use these define a templated type in the CXX bridge, but note that the type
+name must be `QSet_T` as this needs to match the name in C++ code.
+
+So for `QSet<i32>` the type name should be `QSet_i32`.
+
+```rust,ignore
+{{#include ../../../tests/qt_types_standalone/rust/src/qset.rs:book_qset}}
+```
+
 ## Defining a Custom Type
 
 Any types that are valid CXX types should be usable with CXX-Qt as well.

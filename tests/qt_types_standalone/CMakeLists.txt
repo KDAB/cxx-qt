@@ -48,6 +48,7 @@ add_executable(${APP_NAME}
     cpp/qpointf.h
     cpp/qrect.h
     cpp/qrectf.h
+    cpp/qset.h
     cpp/qsize.h
     cpp/qsizef.h
     cpp/qstring.h

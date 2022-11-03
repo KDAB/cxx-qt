@@ -18,7 +18,7 @@ fn main() {
         qtbuild.version().major
     );
 
-    let bridges = [
+    let rust_bridges = [
         "qcolor",
         "qdate",
         "qdatetime",
@@ -26,6 +26,20 @@ fn main() {
         "qpointf",
         "qrect",
         "qrectf",
+        "qset/qset_bool",
+        "qset/qset_f32",
+        "qset/qset_f64",
+        "qset/qset_i8",
+        "qset/qset_i16",
+        "qset/qset_i32",
+        "qset/qset_qdate",
+        "qset/qset_qdatetime",
+        "qset/qset_qstring",
+        "qset/qset_qtime",
+        "qset/qset_qurl",
+        "qset/qset_u8",
+        "qset/qset_u16",
+        "qset/qset_u32",
         "qsize",
         "qsizef",
         "qstring",
@@ -33,7 +47,7 @@ fn main() {
         "qurl",
         "qvariant",
     ];
-    for bridge in bridges {
+    for bridge in rust_bridges {
         println!("cargo:rerun-if-changed=src/types/{}.rs", bridge);
     }
 
@@ -44,13 +58,30 @@ fn main() {
     }
 
     let mut builder = cxx_build::bridges(
-        bridges
+        rust_bridges
             .iter()
             .map(|bridge| format!("src/types/{}.rs", bridge)),
     );
-    for bridge in bridges {
-        builder.file(format!("src/types/{}.cpp", bridge));
-        println!("cargo:rerun-if-changed=src/types/{}.cpp", bridge);
+
+    let cpp_files = [
+        "qcolor",
+        "qdate",
+        "qdatetime",
+        "qpoint",
+        "qpointf",
+        "qrect",
+        "qrectf",
+        "qset/qset",
+        "qsize",
+        "qsizef",
+        "qstring",
+        "qtime",
+        "qurl",
+        "qvariant",
+    ];
+    for cpp_file in cpp_files {
+        builder.file(format!("src/types/{}.cpp", cpp_file));
+        println!("cargo:rerun-if-changed=src/types/{}.cpp", cpp_file);
     }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");

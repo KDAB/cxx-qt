@@ -14,6 +14,7 @@ fn main() {
         .file("src/qpointf.rs")
         .file("src/qrect.rs")
         .file("src/qrectf.rs")
+        .file("src/qset.rs")
         .file("src/qsize.rs")
         .file("src/qsizef.rs")
         .file("src/qstring.rs")
