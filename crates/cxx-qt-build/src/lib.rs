@@ -123,7 +123,7 @@ impl GeneratedCpp {
         let cpp_directory = cpp_directory.as_ref();
         let header_directory = header_directory.as_ref();
         for directory in [cpp_directory, header_directory] {
-            std::fs::create_dir_all(&directory)
+            std::fs::create_dir_all(directory)
                 .expect("Could not create directory to write cxx-qt generated files");
         }
 

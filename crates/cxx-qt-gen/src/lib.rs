@@ -46,7 +46,7 @@ mod tests {
         // NOTE: this error handling is pretty rough so should only used for tests
         let mut command = std::process::Command::new("rustfmt");
         let mut child = command
-            .args(&["--emit", "stdout"])
+            .args(["--emit", "stdout"])
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .spawn()

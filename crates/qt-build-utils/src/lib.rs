@@ -110,8 +110,8 @@ impl QtBuild {
         println!("cargo:rerun-if-env-changed=QMAKE");
         println!("cargo:rerun-if-env-changed=QT_VERSION_MAJOR");
         fn verify_candidate(candidate: &str) -> Result<(&str, versions::SemVer), QtBuildError> {
-            match Command::new(&candidate)
-                .args(&["-query", "QT_VERSION"])
+            match Command::new(candidate)
+                .args(["-query", "QT_VERSION"])
                 .output()
             {
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => Err(QtBuildError::QtMissing),
@@ -218,7 +218,7 @@ impl QtBuild {
     pub fn qmake_query(&self, var_name: &str) -> String {
         std::str::from_utf8(
             &Command::new(&self.qmake_executable)
-                .args(&["-query", var_name])
+                .args(["-query", var_name])
                 .output()
                 .unwrap()
                 .stdout,
@@ -300,7 +300,7 @@ impl QtBuild {
             "QT_INSTALL_BINS",
         ] {
             let executable_path = format!("{}/{}", self.qmake_query(qmake_query_var), tool_name);
-            match Command::new(&executable_path).args(&["-help"]).output() {
+            match Command::new(&executable_path).args(["-help"]).output() {
                 Ok(_) => return Ok(executable_path),
                 Err(_) => continue,
             }
@@ -323,7 +323,7 @@ impl QtBuild {
         ));
 
         let _ = Command::new(self.moc_executable.as_ref().unwrap())
-            .args(&[
+            .args([
                 input_path.to_str().unwrap(),
                 "-o",
                 output_path.to_str().unwrap(),
@@ -349,7 +349,7 @@ impl QtBuild {
         ));
 
         let _ = Command::new(self.rcc_executable.as_ref().unwrap())
-            .args(&[
+            .args([
                 input_path.to_str().unwrap(),
                 "-o",
                 output_path.to_str().unwrap(),
