@@ -86,34 +86,47 @@ fn generic_argument_to_string(generic: &GenericArgument) -> Result<String> {
 }
 
 /// Convert the arguments for a path to C++, eg this is the whole <T> block
-fn path_argument_to_string(args: &PathArguments) -> Result<String> {
+fn path_argument_to_string(args: &PathArguments) -> Result<Option<Vec<String>>> {
     match args {
-        PathArguments::AngleBracketed(angled) => Ok(format!(
-            "<{generic_ty}>",
-            generic_ty = angled
+        PathArguments::AngleBracketed(angled) => Ok(Some(
+            angled
                 .args
                 .iter()
                 .map(generic_argument_to_string)
-                .collect::<Result<Vec<String>>>()?
-                .join(", ")
+                .collect::<Result<Vec<String>>>()?,
         )),
         PathArguments::Parenthesized(_) => Err(Error::new(
             args.span(),
             "Parenthesized arguments are unsupported",
         )),
-        PathArguments::None => Ok("".to_owned()),
+        PathArguments::None => Ok(None),
     }
 }
 
 /// Convert a segment of a path to C++
 fn path_segment_to_string(segment: &PathSegment) -> Result<String> {
-    let args = path_argument_to_string(&segment.arguments)?;
     let mut ident = segment.ident.to_string();
+
+    // If we are a Pin<T> then for C++ it becomes just T
+    let args = if ident == "Pin" {
+        ident = path_argument_to_string(&segment.arguments)?
+            .map_or_else(|| "".to_owned(), |values| values.join(", "));
+
+        None
+    } else {
+        path_argument_to_string(&segment.arguments)?.map(|values| values.join(", "))
+    };
+
     // If there are template args check that we aren't a recognised A of A<B>
-    if !args.is_empty() {
+    if args.is_some() {
         ident = possible_built_in_template_base(&ident);
     }
-    Ok(format!("{ident}{args}", ident = ident, args = args))
+
+    Ok(format!(
+        "{ident}{args}",
+        ident = ident,
+        args = args.map_or_else(|| "".to_owned(), |arg| format!("<{arg}>"))
+    ))
 }
 
 /// Convert any built in types to known C++ equivalents
@@ -238,5 +251,41 @@ mod tests {
     fn test_to_cpp_string_templated_unknown_ref_mut() {
         let ty = tokens_to_syn(quote! { &mut UniquePtr<QColor> });
         assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<QColor>&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin() {
+        let ty = tokens_to_syn(quote! { Pin<T> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "T");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin_ref() {
+        let ty = tokens_to_syn(quote! { Pin<&T> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "const T&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin_ref_mut() {
+        let ty = tokens_to_syn(quote! { Pin<&mut T> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "T&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin_template() {
+        let ty = tokens_to_syn(quote! { Pin<UniquePtr<T>> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<T>");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin_template_ref() {
+        let ty = tokens_to_syn(quote! { Pin<&UniquePtr<T>> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "const ::std::unique_ptr<T>&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_pin_template_ref_mut() {
+        let ty = tokens_to_syn(quote! { Pin<&mut UniquePtr<T>> });
+        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<T>&");
     }
 }
