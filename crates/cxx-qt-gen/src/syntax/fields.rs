@@ -21,14 +21,9 @@ pub fn fields_to_named_fields_mut(fields: &mut Fields) -> Result<Vec<&mut Field>
 mod tests {
     use super::*;
 
-    use crate::tests::utils::tokens_to_syn;
+    use crate::tests::{rust::common::f64_type, utils::tokens_to_syn};
     use quote::quote;
-    use syn::{ItemStruct, Type, Variant};
-
-    /// Helper which returns a f64 as a [syn::Type]
-    fn f64_type() -> Type {
-        tokens_to_syn(quote! { f64 })
-    }
+    use syn::{ItemStruct, Variant};
 
     #[test]
     fn test_fields_to_named_fields_enum_variant_named() {

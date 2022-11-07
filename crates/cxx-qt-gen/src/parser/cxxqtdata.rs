@@ -121,21 +121,16 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
     use crate::tests::utils::tokens_to_syn;
-    use quote::{format_ident, quote};
+    use quote::quote;
     use syn::ItemMod;
-
-    /// The QObject ident used in these tests as the ident that already
-    /// has been found.
-    fn qobject_ident() -> Ident {
-        format_ident!("MyObject")
-    }
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
     fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::default();
-        cxx_qt_data
-            .qobjects
-            .insert(qobject_ident(), create_parsed_qobject());
+        cxx_qt_data.qobjects.insert(
+            crate::tests::rust::cxx_qt::struct_qobject_ident(),
+            create_parsed_qobject(),
+        );
         cxx_qt_data
     }
 
@@ -143,52 +138,65 @@ mod tests {
     fn test_find_qobjects_one_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
-            mod module {
-                struct Other;
-                #[cxx_qt::qobject]
-                struct MyObject;
-            }
-        });
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let struct_other = crate::tests::rust::common::struct_other();
+        let input: ItemMod = tokens_to_syn(crate::tests::rust::cxx::module_wrap(quote! {
+            #struct_other
+
+            #macro_qobject
+            #struct_qobject
+        }));
+
+        let result = cxx_qt_data.find_qobject_structs(&input.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 1);
-        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
+        assert!(cxx_qt_data
+            .qobjects
+            .contains_key(&crate::tests::rust::cxx_qt::struct_qobject_ident()));
     }
 
     #[test]
     fn test_find_qobjects_multiple_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
-            mod module {
-                struct Other;
-                #[cxx_qt::qobject]
-                struct MyObject;
-                #[cxx_qt::qobject]
-                struct SecondObject;
-            }
-        });
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let struct_qobject_second = crate::tests::rust::cxx_qt::struct_qobject_second();
+        let struct_other = crate::tests::rust::common::struct_other();
+        let input: ItemMod = tokens_to_syn(crate::tests::rust::cxx::module_wrap(quote! {
+            #struct_other
+
+            #macro_qobject
+            #struct_qobject
+
+            #macro_qobject
+            #struct_qobject_second
+        }));
+
+        let result = cxx_qt_data.find_qobject_structs(&input.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 2);
-        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
         assert!(cxx_qt_data
             .qobjects
-            .contains_key(&format_ident!("SecondObject")));
+            .contains_key(&crate::tests::rust::cxx_qt::struct_qobject_ident()));
+        assert!(cxx_qt_data
+            .qobjects
+            .contains_key(&crate::tests::rust::cxx_qt::struct_qobject_second_ident()));
     }
 
     #[test]
     fn test_find_qobjects_no_macro() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
-            mod module {
-                struct Other;
-                struct MyObject;
-            }
-        });
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let struct_other = crate::tests::rust::common::struct_other();
+        let input: ItemMod = tokens_to_syn(crate::tests::rust::cxx::module_wrap(quote! {
+            #struct_other
+            #struct_qobject
+        }));
+
+        let result = cxx_qt_data.find_qobject_structs(&input.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 0);
     }
@@ -197,15 +205,20 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_valid_signals() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
+        let macro_qsignals = crate::tests::rust::cxx_qt::macro_qsignals();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::qsignals(MyObject)]
-            enum MySignals {
-                Ready,
-            }
+            #macro_qsignals
+            #enum_qobjects
         });
+
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].signals.is_some());
+        assert!(
+            cxx_qt_data.qobjects[&crate::tests::rust::cxx_qt::struct_qobject_ident()]
+                .signals
+                .is_some()
+        );
     }
 
     #[test]
@@ -213,11 +226,12 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         // Valid signals enum but missing QObject
+        let macro_qsignals_unknown_qobject =
+            crate::tests::rust::cxx_qt::macro_qsignals_unknown_qobject();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::qsignals(UnknownObj)]
-            enum MySignals {
-                Ready,
-            }
+            #macro_qsignals_unknown_qobject
+            #enum_qobjects
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
@@ -227,11 +241,7 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            enum MySignals {
-                Ready,
-            }
-        });
+        let item: Item = tokens_to_syn(crate::tests::rust::cxx_qt::enum_qsignals());
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }
@@ -240,11 +250,11 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_error() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
+        let macro_qsignals_no_qobject = crate::tests::rust::cxx_qt::macro_qsignals_no_qobject();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::qsignals]
-            enum MySignals {
-                Ready,
-            }
+            #macro_qsignals_no_qobject
+            #enum_qobjects
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
@@ -254,9 +264,11 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_struct_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
         let item: Item = tokens_to_syn(quote! {
-            #[cxx_qt::qobject]
-            struct MyObject;
+            #macro_qobject
+            #struct_qobject
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
@@ -266,9 +278,7 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_struct_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            struct Unknown;
-        });
+        let item: Item = tokens_to_syn(crate::tests::rust::common::struct_other());
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }
@@ -277,30 +287,47 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_valid_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            impl qobject::MyObject {
-                #[qinvokable]
-                fn invokable() {}
+        let macro_qinvokable = crate::tests::rust::cxx_qt::macro_qinvokable();
+        let method_invokable = crate::tests::rust::cxx_qt::method_invokable();
+        let method_cpp_context = crate::tests::rust::cxx_qt::method_cpp_context();
+        let item: Item = tokens_to_syn(crate::tests::rust::common::impl_wrap(
+            crate::tests::rust::cxx_qt::impl_qobject_ident(),
+            quote! {
+                #macro_qinvokable
+                #method_invokable
 
-                fn cpp_context() {}
-            }
-        });
+                #method_cpp_context
+            },
+        ));
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 1);
+        assert_eq!(
+            cxx_qt_data.qobjects[&crate::tests::rust::cxx_qt::struct_qobject_ident()]
+                .invokables
+                .len(),
+            1
+        );
+        assert_eq!(
+            cxx_qt_data.qobjects[&crate::tests::rust::cxx_qt::struct_qobject_ident()]
+                .methods
+                .len(),
+            1
+        );
     }
 
     #[test]
     fn test_find_and_merge_cxx_qt_item_impl_invalid_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            impl qobject::MyObject::Bad {
-                #[qinvokable]
-                fn invokable() {}
-            }
-        });
+        let macro_qinvokable = crate::tests::rust::cxx_qt::macro_qinvokable();
+        let method_invokable = crate::tests::rust::cxx_qt::method_invokable();
+        let item: Item = tokens_to_syn(crate::tests::rust::common::impl_wrap(
+            crate::tests::rust::cxx_qt::impl_qobject_invalid_ident(),
+            quote! {
+                #macro_qinvokable
+                #method_invokable
+            },
+        ));
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -309,12 +336,15 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_unknown_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            impl qobject::UnknownObj {
-                #[qinvokable]
-                fn invokable() {}
-            }
-        });
+        let macro_qinvokable = crate::tests::rust::cxx_qt::macro_qinvokable();
+        let method_invokable = crate::tests::rust::cxx_qt::method_invokable();
+        let item: Item = tokens_to_syn(crate::tests::rust::common::impl_wrap(
+            crate::tests::rust::cxx_qt::impl_qobject_unknown_ident(),
+            quote! {
+                #macro_qinvokable
+                #method_invokable
+            },
+        ));
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -323,23 +353,26 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_valid_rustobj() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            impl MyObject {
-                fn method() {}
-            }
-        });
+        let struct_qobject_ident = crate::tests::rust::cxx_qt::struct_qobject_ident();
+        let item: Item = tokens_to_syn(crate::tests::rust::common::impl_wrap(
+            quote! { #struct_qobject_ident },
+            crate::tests::rust::common::method(),
+        ));
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
+        assert_eq!(
+            cxx_qt_data.qobjects[&crate::tests::rust::cxx_qt::struct_qobject_ident()]
+                .others
+                .len(),
+            1
+        );
     }
 
     #[test]
     fn test_find_and_merge_cxx_qt_item_uses() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            use std::collections::HashMap;
-        });
+        let item: Item = tokens_to_syn(crate::tests::rust::common::use_std_type());
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.uses.len(), 1);
@@ -349,11 +382,7 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
-            extern "Rust" {
-                fn test();
-            }
-        });
+        let item: Item = tokens_to_syn(crate::tests::rust::cxx::extern_rust());
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }

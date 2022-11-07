@@ -108,68 +108,67 @@ mod tests {
     use crate::tests::utils::tokens_to_syn;
     use quote::quote;
     use syn::ItemMod;
-    use syn::Type;
-
-    /// Helper which returns a f64 as a [syn::Type]
-    pub fn f64_type() -> Type {
-        tokens_to_syn(quote! { f64 })
-    }
 
     #[test]
     fn test_parser_from_empty_module() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge]
-            mod ffi {}
+        let macro_bridge = crate::tests::rust::cxx_qt::macro_bridge();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {});
+        let input: ItemMod = tokens_to_syn(quote! {
+            #macro_bridge
+            #module
         });
-        let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = tokens_to_syn(quote! {
-            mod ffi {}
+        let output: ItemMod = tokens_to_syn(quote! {
+            #module
         });
-        assert_eq!(parser.passthrough_module, expected_module);
+
+        let parser = Parser::from(input).unwrap();
+        assert_eq!(parser.passthrough_module, output);
         assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
     #[test]
     fn test_parser_from_cxx_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
+        let macro_bridge = crate::tests::rust::cxx_qt::macro_bridge();
+        let extern_rust = crate::tests::rust::cxx::extern_rust();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {
+            #extern_rust
         });
-        let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = tokens_to_syn(quote! {
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
+        let input: ItemMod = tokens_to_syn(quote! {
+            #macro_bridge
+            #module
         });
-        assert_eq!(parser.passthrough_module, expected_module);
+        let output: ItemMod = tokens_to_syn(quote! {
+            #module
+        });
+
+        let parser = Parser::from(input).unwrap();
+        assert_eq!(parser.passthrough_module, output);
         assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
     #[test]
     fn test_parser_from_cxx_qt_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge(namespace = "cxx_qt")]
-            mod ffi {
-                #[cxx_qt::qobject]
-                struct MyObject;
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let macro_qsignals = crate::tests::rust::cxx_qt::macro_qsignals();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {
+            #macro_qobject
+            #struct_qobject
 
-                #[cxx_qt::qsignals(MyObject)]
-                enum MySignals {
-                    Ready,
-                }
-            }
+            #macro_qsignals
+            #enum_qobjects
         });
-        let parser = Parser::from(module.clone()).unwrap();
+        let macro_bridge = crate::tests::rust::cxx_qt::macro_bridge_with_namespace();
+        let input: ItemMod = tokens_to_syn(quote! {
+            #macro_bridge
+            #module
+        });
 
-        assert_ne!(parser.passthrough_module, module);
+        let parser = Parser::from(input.clone()).unwrap();
+        assert_ne!(parser.passthrough_module, input);
 
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
@@ -180,25 +179,28 @@ mod tests {
 
     #[test]
     fn test_parser_from_cxx_and_cxx_qt_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                #[cxx_qt::qobject]
-                struct MyObject;
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let macro_qsignals = crate::tests::rust::cxx_qt::macro_qsignals();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
+        let cxx_extern_rust = crate::tests::rust::cxx::extern_rust();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {
+            #macro_qobject
+            #struct_qobject
 
-                #[cxx_qt::qsignals(MyObject)]
-                enum MySignals {
-                    Ready,
-                }
+            #macro_qsignals
+            #enum_qobjects
 
-                extern "Rust" {
-                    fn test();
-                }
-            }
+            #cxx_extern_rust
         });
-        let parser = Parser::from(module.clone()).unwrap();
+        let macro_bridge = crate::tests::rust::cxx_qt::macro_bridge();
+        let input: ItemMod = tokens_to_syn(quote! {
+            #macro_bridge
+            #module
+        });
 
-        assert_ne!(parser.passthrough_module, module);
+        let parser = Parser::from(input.clone()).unwrap();
+        assert_ne!(parser.passthrough_module, input);
 
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
@@ -209,32 +211,39 @@ mod tests {
 
     #[test]
     fn test_parser_from_error() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                #[cxx_qt::qobject]
-                struct MyObject;
+        let macro_qobject = crate::tests::rust::cxx_qt::macro_qobject();
+        let struct_qobject = crate::tests::rust::cxx_qt::struct_qobject();
+        let macro_qsignals_unknown_qobject =
+            crate::tests::rust::cxx_qt::macro_qsignals_unknown_qobject();
+        let enum_qobjects = crate::tests::rust::cxx_qt::enum_qsignals();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {
+            #macro_qobject
+            #struct_qobject
 
-                #[cxx_qt::qsignals(UnknownObj)]
-                enum MySignals {
-                    Ready,
-                }
-            }
+            #macro_qsignals_unknown_qobject
+            #enum_qobjects
         });
-        let parser = Parser::from(module);
+        let macro_bridge = crate::tests::rust::cxx_qt::macro_bridge_with_namespace();
+        let input: ItemMod = tokens_to_syn(quote! {
+            #macro_bridge
+            #module
+        });
+
+        let parser = Parser::from(input);
         assert!(parser.is_err());
     }
 
     #[test]
     fn test_parser_from_error_no_attribute() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
+        let extern_rust = crate::tests::rust::cxx::extern_rust();
+        let module = crate::tests::rust::cxx::module_wrap(quote! {
+            #extern_rust
         });
-        let parser = Parser::from(module);
+        let input: ItemMod = tokens_to_syn(quote! {
+            #module
+        });
+
+        let parser = Parser::from(input);
         assert!(parser.is_err());
     }
 }

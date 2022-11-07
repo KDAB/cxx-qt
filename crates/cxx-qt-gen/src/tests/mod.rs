@@ -11,6 +11,7 @@ use parser::Parser;
 use pretty_assertions::assert_str_eq;
 use writer::{cpp::write_cpp, rust::write_rust};
 
+pub mod rust;
 pub mod utils;
 
 #[ctor::ctor]

@@ -92,9 +92,8 @@ impl ParsedSignalsEnum {
 mod tests {
     use super::*;
 
-    use crate::parser::tests::f64_type;
     use crate::syntax::path::path_compare_str;
-    use crate::tests::utils::tokens_to_syn;
+    use crate::tests::{rust::common::f64_type, utils::tokens_to_syn};
     use quote::quote;
 
     #[test]
