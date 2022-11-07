@@ -147,7 +147,7 @@ pub fn attribute_tokens_to_value<V: Parse>(attr: &Attribute) -> Result<V> {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::{format_ident, quote};
     use syn::{Ident, ItemMod, LitStr};
 

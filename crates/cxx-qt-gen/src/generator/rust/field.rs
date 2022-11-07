@@ -72,7 +72,7 @@ mod tests {
 
     use crate::{
         generator::naming::qobject::tests::create_qobjectname,
-        tests::{assert_tokens_eq, tokens_to_syn},
+        tests::utils::{assert_tokens_eq, tokens_to_syn},
     };
     use quote::{format_ident, quote};
 

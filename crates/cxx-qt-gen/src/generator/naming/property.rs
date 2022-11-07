@@ -81,7 +81,7 @@ fn setter_from_ident(ident: &Ident) -> CombinedIdent {
 pub mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
 
     pub fn create_i32_qpropertyname() -> QPropertyName {

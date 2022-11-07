@@ -120,7 +120,7 @@ mod tests {
     use super::*;
 
     use crate::parser::qobject::tests::create_parsed_qobject;
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::{format_ident, quote};
     use syn::ItemMod;
 

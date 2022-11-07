@@ -223,7 +223,7 @@ mod tests {
 
     use crate::{
         generator::rust::qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks},
-        tests::tokens_to_syn,
+        tests::utils::tokens_to_syn,
     };
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;

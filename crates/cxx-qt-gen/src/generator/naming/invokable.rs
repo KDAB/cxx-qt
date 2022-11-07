@@ -50,7 +50,7 @@ fn wrapper_from_ident(ident: &Ident) -> CombinedIdent {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
     use std::collections::HashSet;
 

@@ -61,7 +61,7 @@ fn generate_include(parser: &Parser) -> Result<Item> {
 mod tests {
     use super::*;
 
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::utils::{assert_tokens_eq, tokens_to_syn};
 
     #[test]
     fn test_generated_rust_blocks() {

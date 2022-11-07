@@ -21,7 +21,7 @@ pub fn fields_to_named_fields_mut(fields: &mut Fields) -> Result<Vec<&mut Field>
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
     use syn::{ItemStruct, Type, Variant};
 

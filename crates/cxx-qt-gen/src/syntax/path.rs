@@ -36,7 +36,7 @@ pub fn path_to_single_ident(path: &Path) -> Result<Ident> {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
 
     #[test]

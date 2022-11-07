@@ -44,7 +44,7 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::{format_ident, quote};
