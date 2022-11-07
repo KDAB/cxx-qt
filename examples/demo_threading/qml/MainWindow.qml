@@ -291,6 +291,26 @@ Window {
         uuid: "3e3f1174-6aaf-4357-93ac-b3d9285d7af8"
     }
 
+    Column {
+        spacing: 20
+        height: 720 - 40
+        width: 200
+        x: 1280 - width - 20
+        y: 20
+
+        Image {
+            fillMode: Image.PreserveAspectFit
+            source: "./images/qt-logo.png"
+            width: parent.width
+        }
+
+        Image {
+            fillMode: Image.PreserveAspectFit
+            source: "./images/rust-logo-white.png"
+            width: parent.width
+        }
+    }
+
     Row {
         id: levelsUI
         x: 160
@@ -427,4 +447,3 @@ Window {
         }
     }
 }
-

@@ -24,5 +24,7 @@
         <file>panel.png</file>
         <file>kdabLogo.png</file>
         <file>RLogolarge.png</file>
+        <file>qt-logo.png</file>
+        <file>rust-logo-white.png</file>
     </qresource>
 </RCC>
