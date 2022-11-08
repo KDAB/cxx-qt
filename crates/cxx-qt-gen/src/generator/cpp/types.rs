@@ -173,7 +173,7 @@ fn possible_built_in_template_base(ty: &str) -> String {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
 
     #[test]

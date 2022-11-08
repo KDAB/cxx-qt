@@ -60,7 +60,9 @@ pub fn generate_rust_properties(
 mod tests {
     use super::*;
 
-    use crate::{generator::naming::qobject::tests::create_qobjectname, tests::tokens_to_syn};
+    use crate::{
+        generator::naming::qobject::tests::create_qobjectname, tests::utils::tokens_to_syn,
+    };
     use quote::{format_ident, quote};
 
     #[test]

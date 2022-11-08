@@ -57,7 +57,7 @@ pub fn is_method_mutable(method: &ImplItemMethod) -> bool {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use quote::quote;
 
     #[test]

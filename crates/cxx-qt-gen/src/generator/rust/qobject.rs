@@ -164,7 +164,7 @@ mod tests {
     use super::*;
 
     use crate::parser::Parser;
-    use crate::tests::tokens_to_syn;
+    use crate::tests::utils::tokens_to_syn;
     use syn::ItemMod;
 
     #[test]

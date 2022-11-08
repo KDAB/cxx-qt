@@ -101,7 +101,7 @@ pub fn generate_rust_signals(
 mod tests {
     use super::*;
 
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::utils::{assert_tokens_eq, tokens_to_syn};
     use crate::{
         generator::naming::qobject::tests::create_qobjectname, parser::signals::ParsedSignalsEnum,
     };

@@ -106,7 +106,7 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::utils::{assert_tokens_eq, tokens_to_syn};
     use quote::format_ident;
     use std::collections::HashSet;
 
