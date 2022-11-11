@@ -10,13 +10,14 @@
 
 use std::{fs::File, io::Write, path::Path};
 
-static HEADERS: [(&str, &str); 17] = [
+static HEADERS: [(&str, &str); 18] = [
     (include_str!("../include/common.h"), "common.h"),
     (include_str!("../include/convert.h"), "convert.h"),
     (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
     (include_str!("../include/qcolor.h"), "qcolor.h"),
     (include_str!("../include/qdate.h"), "qdate.h"),
     (include_str!("../include/qdatetime.h"), "qdatetime.h"),
+    (include_str!("../include/qhash.h"), "qhash.h"),
     (include_str!("../include/qpoint.h"), "qpoint.h"),
     (include_str!("../include/qpointf.h"), "qpointf.h"),
     (include_str!("../include/qrect.h"), "qrect.h"),

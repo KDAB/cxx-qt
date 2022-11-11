@@ -14,9 +14,9 @@ Page {
             anchors.fill: parent
 
             ToolButton {
-                text: qsTr("Insert")
+                text: qsTr("Reset")
 
-                onClicked: rustContainers.insert(spinBox.value)
+                onClicked: rustContainers.reset()
             }
 
             Item {
@@ -41,20 +41,42 @@ Page {
             wrapMode: Text.Wrap
         }
 
-        Label {
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            text: qsTr("QSet<i32> values: %1").arg(rustContainers.stringSet)
-            wrapMode: Text.Wrap
-            visible: rustContainers.stringSet !== ""
-        }
-
         SpinBox {
             id: spinBox
             Layout.alignment: Qt.AlignHCenter
             from: 0
             to: 100
             value: 10
+        }
+
+        RowLayout {
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("QHash<QString, QVariant> values: %1").arg(rustContainers.stringHash || "Empty")
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                text: qsTr("Insert")
+
+                onClicked: rustContainers.insertHash("Key" + spinBox.value, spinBox.value)
+            }
+        }
+
+        RowLayout {
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("QSet<i32> values: %1").arg(rustContainers.stringSet || "Empty")
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                text: qsTr("Insert")
+
+                onClicked: rustContainers.insertSet(spinBox.value)
+            }
         }
     }
 }
