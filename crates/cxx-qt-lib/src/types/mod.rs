@@ -12,6 +12,9 @@ pub use qdate::QDate;
 mod qdatetime;
 pub use qdatetime::QDateTime;
 
+mod qhash;
+pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant};
+
 mod qrect;
 pub use qrect::QRect;
 

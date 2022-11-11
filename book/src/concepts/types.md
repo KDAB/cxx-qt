@@ -30,6 +30,19 @@ So for `QSet<i32>` the type name should be `QSet_i32`.
 {{#include ../../../tests/qt_types_standalone/rust/src/qset.rs:book_qset}}
 ```
 
+To use key-value based container types such as `QHash<K, V>` an intermediate type on the Rust side
+is defined to implement a trait on the key-value combination.
+
+As with other container types, the type name must be `QHash_K_V` as this needs
+to match the name in the C++ code.
+
+So for `QHash<QString, QVariant>`, define an intermediate type called `QHashPair_QString_QVariant`.
+Then the type name `QHash_QString_QVariant` is used to match the C++ side.
+
+```rust,ignore
+{{#include ../../../tests/qt_types_standalone/rust/src/qhash.rs:book_qhash}}
+```
+
 ## Defining a Custom Type
 
 Any types that are valid CXX types should be usable with CXX-Qt as well.

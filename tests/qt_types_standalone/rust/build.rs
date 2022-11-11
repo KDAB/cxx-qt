@@ -10,6 +10,7 @@ fn main() {
         .file("src/qcolor.rs")
         .file("src/qdate.rs")
         .file("src/qdatetime.rs")
+        .file("src/qhash.rs")
         .file("src/qpoint.rs")
         .file("src/qpointf.rs")
         .file("src/qrect.rs")
