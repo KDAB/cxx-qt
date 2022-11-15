@@ -31,9 +31,9 @@ pub fn generate_cpp_properties(
             .methods
             .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
         generated
-            .slots
+            .methods
             .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated.signals.push(signal::generate(&idents));
+        generated.methods.push(signal::generate(&idents));
     }
 
     Ok(generated)
@@ -45,6 +45,7 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::tests::tokens_to_syn;
+    use crate::CppFragment;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::{format_ident, quote};
@@ -75,13 +76,15 @@ mod tests {
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(QColor opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 2);
+        assert_eq!(generated.methods.len(), 6);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+        assert_str_eq!(header, "const qint32& getTrivialProperty() const;");
         assert_str_eq!(
-            generated.methods[0].header,
-            "const qint32& getTrivialProperty() const;"
-        );
-        assert_str_eq!(
-            generated.methods[0].source,
+            source,
             indoc! {r#"
             const qint32&
             MyObject::getTrivialProperty() const
@@ -92,12 +95,40 @@ mod tests {
             "#}
         );
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
         assert_str_eq!(
-            generated.methods[1].header,
-            "const QColor& getOpaqueProperty() const;"
+            header,
+            "Q_SLOT void setTrivialProperty(const qint32& value);"
         );
         assert_str_eq!(
-            generated.methods[1].source,
+            source,
+            indoc! {r#"
+                void
+                MyObject::setTrivialProperty(const qint32& value)
+                {
+                    const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                    m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+                }
+                "#}
+        );
+        let header = if let CppFragment::Header(header) = &generated.methods[2] {
+            header
+        } else {
+            panic!("Expected header!")
+        };
+        assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+        assert_str_eq!(header, "const QColor& getOpaqueProperty() const;");
+        assert_str_eq!(
+            source,
             indoc! {r#"
             const QColor&
             MyObject::getOpaqueProperty() const
@@ -108,29 +139,17 @@ mod tests {
             "#}
         );
 
-        // slots
-        assert_eq!(generated.slots.len(), 2);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
         assert_str_eq!(
-            generated.slots[0].header,
-            "void setTrivialProperty(const qint32& value);"
+            header,
+            "Q_SLOT void setOpaqueProperty(const QColor& value);"
         );
         assert_str_eq!(
-            generated.slots[0].source,
-            indoc! {r#"
-            void
-            MyObject::setTrivialProperty(const qint32& value)
-            {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
-            }
-            "#}
-        );
-        assert_str_eq!(
-            generated.slots[1].header,
-            "void setOpaqueProperty(const QColor& value);"
-        );
-        assert_str_eq!(
-            generated.slots[1].source,
+            source,
             indoc! {r#"
             void
             MyObject::setOpaqueProperty(const QColor& value)
@@ -141,9 +160,11 @@ mod tests {
             "#}
         );
 
-        // signals
-        assert_eq!(generated.signals.len(), 2);
-        assert_str_eq!(generated.signals[0], "void trivialPropertyChanged();");
-        assert_str_eq!(generated.signals[1], "void opaquePropertyChanged();");
+        let header = if let CppFragment::Header(header) = &generated.methods[5] {
+            header
+        } else {
+            panic!("Expected header!")
+        };
+        assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
     }
 }

@@ -45,6 +45,14 @@ MyObject::getPropertyName() const
 }
 
 void
+MyObject::setPropertyName(const qint32& value)
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPropertyName(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+}
+
+void
 MyObject::invokableName()
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
@@ -55,14 +63,6 @@ void
 MyObject::emitReady()
 {
   Q_EMIT ready();
-}
-
-void
-MyObject::setPropertyName(const qint32& value)
-{
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 } // namespace cxx_qt::multi_object
@@ -121,6 +121,14 @@ SecondObject::getPropertyName() const
 }
 
 void
+SecondObject::setPropertyName(const qint32& value)
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPropertyName(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+}
+
+void
 SecondObject::invokableName()
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
@@ -131,14 +139,6 @@ void
 SecondObject::emitReady()
 {
   Q_EMIT ready();
-}
-
-void
-SecondObject::setPropertyName(const qint32& value)
-{
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
 }
 
 } // namespace cxx_qt::multi_object

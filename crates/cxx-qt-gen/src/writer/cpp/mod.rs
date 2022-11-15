@@ -6,7 +6,7 @@
 pub mod header;
 pub mod source;
 
-use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use clang_format::clang_format;
 use header::write_cpp_header;
 use source::write_cpp_source;
@@ -30,11 +30,11 @@ pub fn namespace_pair(generated: &GeneratedCppBlocks) -> (String, String) {
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ header and source pair
-pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragmentPair {
+pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragment {
     let header = write_cpp_header(generated);
     let source = write_cpp_source(generated);
 
-    CppFragmentPair {
+    CppFragment::Pair {
         header: clang_format(&header).unwrap_or(header),
         source: clang_format(&source).unwrap_or(source),
     }
@@ -67,7 +67,7 @@ mod tests {
                                 .to_owned(),
                         ],
                         methods: vec![
-                            CppFragmentPair {
+                            CppFragment::Pair {
                                 header: "int count() const;".to_owned(),
                                 source: indoc! {r#"
                                     int
@@ -78,7 +78,7 @@ mod tests {
                                 "#}
                                 .to_owned(),
                             },
-                            CppFragmentPair {
+                            CppFragment::Pair {
                                 header: "bool toggle() const;".to_owned(),
                                 source: indoc! {r#"
                                     bool
@@ -89,7 +89,7 @@ mod tests {
                                 "#}
                                 .to_owned(),
                             },
-                            CppFragmentPair {
+                            CppFragment::Pair {
                                 header: "Q_INVOKABLE void invokable();".to_owned(),
                                 source: indoc! {r#"
                                     void
@@ -100,7 +100,7 @@ mod tests {
                                 "#}
                                 .to_owned(),
                             },
-                            CppFragmentPair {
+                            CppFragment::Pair {
                                 header: "void cppMethod();".to_owned(),
                                 source: indoc! {r#"
                                     void
@@ -111,34 +111,34 @@ mod tests {
                                 "#}
                                 .to_owned(),
                             },
-                        ],
-                        slots: vec![
-                            CppFragmentPair {
-                                header: "void setCount(int count);".to_owned(),
+                            CppFragment::Pair {
+                                header: "Q_SLOT void setCount(int count);".to_owned(),
                                 source: indoc! {r#"
                                     void
                                     MyObject::setCount(int count) const
                                     {
                                       // setter
                                     }
-                                "#}
+                                    "#}
                                 .to_owned(),
                             },
-                            CppFragmentPair {
-                                header: "void setToggle(bool toggle);".to_owned(),
+                            CppFragment::Pair {
+                                header: "Q_SLOT void setToggle(bool toggle);".to_owned(),
                                 source: indoc! {r#"
                                     void
                                     MyObject::setToggle(bool toggle) const
                                     {
                                       // setter
                                     }
-                                "#}
+                                    "#}
                                 .to_owned(),
                             },
-                        ],
-                        signals: vec![
-                            "void countChanged();".to_owned(),
-                            "void toggleChanged();".to_owned(),
+                            CppFragment::Header (
+                                "Q_SIGNAL void countChanged();".to_owned(),
+                            ),
+                            CppFragment::Header (
+                                "Q_SIGNAL void toggleChanged();".to_owned(),
+                            ),
                         ],
                     }
                 }
@@ -163,7 +163,7 @@ mod tests {
                             "Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
                         ],
-                        methods: vec![CppFragmentPair {
+                        methods: vec![CppFragment::Pair {
                             header: "int count() const;".to_owned(),
                             source: indoc! {r#"
                                     int
@@ -173,9 +173,9 @@ mod tests {
                                     }
                                 "#}
                             .to_owned(),
-                        }],
-                        slots: vec![CppFragmentPair {
-                            header: "void setCount(int count);".to_owned(),
+                        },
+                        CppFragment::Pair {
+                            header: "Q_SLOT void setCount(int count);".to_owned(),
                             source: indoc! {r#"
                                     void
                                     FirstObject::setCount(int count) const
@@ -184,8 +184,9 @@ mod tests {
                                     }
                                 "#}
                             .to_owned(),
-                        }],
-                        signals: vec!["void countChanged();".to_owned()],
+                        },
+                        CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
+                        ],
                     }
                 },
                 GeneratedCppQObject {
@@ -199,7 +200,7 @@ mod tests {
                             "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
                         ],
-                        methods: vec![CppFragmentPair {
+                        methods: vec![CppFragment::Pair {
                             header: "int count() const;".to_owned(),
                             source: indoc! {r#"
                                     int
@@ -209,22 +210,23 @@ mod tests {
                                     }
                                 "#}
                             .to_owned(),
-                        }],
-                        slots: vec![CppFragmentPair {
-                            header: "void setCount(int count);".to_owned(),
+                        },
+                        CppFragment::Pair {
+                            header: "Q_SLOT void setCount(int count);".to_owned(),
                             source: indoc! {r#"
-                                    void
-                                    SecondObject::setCount(int count) const
-                                    {
-                                      // setter
-                                    }
+                                void
+                                SecondObject::setCount(int count) const
+                                {
+                                  // setter
+                                }
                                 "#}
                             .to_owned(),
-                        }],
-                        signals: vec!["void countChanged();".to_owned()],
-                    }
-                },
-            ],
+                        },
+                        CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
+                        ],
+                    },
+                }
+            ]
         }
     }
 
@@ -275,14 +277,10 @@ mod tests {
           bool toggle() const;
           Q_INVOKABLE void invokable();
           void cppMethod();
-
-        public Q_SLOTS:
-          void setCount(int count);
-          void setToggle(bool toggle);
-
-        Q_SIGNALS:
-          void countChanged();
-          void toggleChanged();
+          Q_SLOT void setCount(int count);
+          Q_SLOT void setToggle(bool toggle);
+          Q_SIGNAL void countChanged();
+          Q_SIGNAL void toggleChanged();
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
@@ -343,12 +341,8 @@ mod tests {
 
         public:
           int count() const;
-
-        public Q_SLOTS:
-          void setCount(int count);
-
-        Q_SIGNALS:
-          void countChanged();
+          Q_SLOT void setCount(int count);
+          Q_SIGNAL void countChanged();
 
         private:
           rust::Box<FirstObjectRust> m_rustObj;
@@ -381,12 +375,8 @@ mod tests {
 
         public:
           int count() const;
-
-        public Q_SLOTS:
-          void setCount(int count);
-
-        Q_SIGNALS:
-          void countChanged();
+          Q_SLOT void setCount(int count);
+          Q_SIGNAL void countChanged();
 
         private:
           rust::Box<SecondObjectRust> m_rustObj;
@@ -446,14 +436,10 @@ mod tests {
           bool toggle() const;
           Q_INVOKABLE void invokable();
           void cppMethod();
-
-        public Q_SLOTS:
-          void setCount(int count);
-          void setToggle(bool toggle);
-
-        Q_SIGNALS:
-          void countChanged();
-          void toggleChanged();
+          Q_SLOT void setCount(int count);
+          Q_SLOT void setToggle(bool toggle);
+          Q_SIGNAL void countChanged();
+          Q_SIGNAL void toggleChanged();
 
         private:
           rust::Box<MyObjectRust> m_rustObj;
@@ -773,21 +759,29 @@ mod tests {
     #[test]
     fn test_write_cpp() {
         let generated = create_generated_cpp();
-        let result = write_cpp(&generated);
-        assert_str_eq!(result.header, clang_format(expected_header()).unwrap());
-        assert_str_eq!(result.source, clang_format(expected_source()).unwrap());
+        let (header, source) = if let CppFragment::Pair { header, source } = write_cpp(&generated) {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, clang_format(expected_header()).unwrap());
+        assert_str_eq!(source, clang_format(expected_source()).unwrap());
     }
 
     #[test]
     fn test_write_cpp_multi_qobjects() {
         let generated = create_generated_cpp_multi_qobjects();
-        let result = write_cpp(&generated);
+        let (header, source) = if let CppFragment::Pair { header, source } = write_cpp(&generated) {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
         assert_str_eq!(
-            result.header,
+            header,
             clang_format(expected_header_multi_qobjects()).unwrap()
         );
         assert_str_eq!(
-            result.source,
+            source,
             clang_format(expected_source_multi_qobjects()).unwrap()
         );
     }
@@ -795,13 +789,17 @@ mod tests {
     #[test]
     fn test_write_cpp_no_namespace() {
         let generated = create_generated_cpp_no_namespace();
-        let result = write_cpp(&generated);
+        let (header, source) = if let CppFragment::Pair { header, source } = write_cpp(&generated) {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
         assert_str_eq!(
-            result.header,
+            header,
             clang_format(expected_header_no_namespace()).unwrap()
         );
         assert_str_eq!(
-            result.source,
+            source,
             clang_format(expected_source_no_namespace()).unwrap()
         );
     }
