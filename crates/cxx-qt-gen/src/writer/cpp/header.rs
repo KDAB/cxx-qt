@@ -3,13 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespace_pair;
 use indoc::formatdoc;
 
-/// Extract the header from a given CppFragmentPair
-fn pair_as_header(pair: &CppFragmentPair) -> &str {
-    &pair.header
+/// Extract the header from a given CppFragment
+fn pair_as_header(pair: &CppFragment) -> Option<&str> {
+    match pair {
+        CppFragment::Pair { header, source: _ } => Some(header),
+        CppFragment::Header(header) => Some(header),
+        CppFragment::Source(_) => None,
+    }
 }
 
 /// With a given block name, join the given items and add them under the block
@@ -77,8 +81,6 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
               std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
 
             {methods}
-            {slots}
-            {signals}
             private:
               rust::Box<{rust_ident}> m_rustObj;
               std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
@@ -103,9 +105,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         rust_ident = qobject.rust_ident,
         base_class = qobject.base_class,
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
-        methods = create_block("public", &qobject.blocks.methods.iter().map(pair_as_header).collect::<Vec<&str>>()),
-        slots = create_block("public Q_SLOTS", &qobject.blocks.slots.iter().map(pair_as_header).collect::<Vec<&str>>()),
-        signals = create_block("Q_SIGNALS", &qobject.blocks.signals.iter().map(AsRef::as_ref).collect::<Vec<&str>>()),
+        methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<&str>>()),
         metatype = if generated.namespace.is_empty() {
             qobject.ident.clone()
         } else {

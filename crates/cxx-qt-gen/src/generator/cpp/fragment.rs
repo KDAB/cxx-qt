@@ -5,10 +5,19 @@
 
 use crate::generator::cpp::types::CppType;
 
-/// A generic C++ header and source pairing
-pub struct CppFragmentPair {
-    pub header: String,
-    pub source: String,
+pub enum CppFragment {
+    Pair { header: String, source: String },
+    Header(String),
+    Source(String),
+}
+
+impl Default for CppFragment {
+    fn default() -> Self {
+        CppFragment::Pair {
+            header: String::new(),
+            source: String::new(),
+        }
+    }
 }
 
 pub struct CppNamedType {

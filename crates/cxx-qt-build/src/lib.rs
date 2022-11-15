@@ -15,7 +15,7 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    parse_qt_file, write_cpp, write_rust, CppFragmentPair, CxxQtItem, GeneratedCppBlocks,
+    parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks,
     GeneratedRustBlocks, Parser,
 };
 
@@ -34,7 +34,7 @@ struct GeneratedCppFilePaths {
 }
 
 struct GeneratedCpp {
-    cxx_qt: Option<CppFragmentPair>,
+    cxx_qt: Option<CppFragment>,
     cxx: cxx_gen::GeneratedCode,
     file_ident: String,
 }
@@ -140,8 +140,13 @@ impl GeneratedCpp {
             ));
             let mut header =
                 File::create(&header_path).expect("Could not create cxx-qt header file");
+            let header_generated = match cxx_qt_generated {
+                CppFragment::Pair { header, source: _ } => header,
+                CppFragment::Header(header) => header,
+                CppFragment::Source(_) => panic!("Unexpected call for source fragment."),
+            };
             header
-                .write_all(cxx_qt_generated.header.as_bytes())
+                .write_all(header_generated.as_bytes())
                 .expect("Could not write cxx-qt header file");
             cpp_file_paths.qobject_header = Some(header_path);
 
@@ -151,7 +156,12 @@ impl GeneratedCpp {
                 self.file_ident
             ));
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
-            cpp.write_all(cxx_qt_generated.source.as_bytes())
+            let source_generated = match cxx_qt_generated {
+                CppFragment::Pair { header: _, source } => source,
+                CppFragment::Header(_) => panic!("Unexpected call for header fragment."),
+                CppFragment::Source(source) => source,
+            };
+            cpp.write_all(source_generated.as_bytes())
                 .expect("Could not write cxx-qt source file");
             cpp_file_paths.qobject = Some(cpp_path);
         }
@@ -161,7 +171,7 @@ impl GeneratedCpp {
             header_directory.display(),
             self.file_ident
         ));
-        let mut header = File::create(&header_path).expect("Could not create cxx header file");
+        let mut header = File::create(header_path).expect("Could not create cxx header file");
         header
             .write_all(&self.cxx.header)
             .expect("Could not write cxx header file");
@@ -186,15 +196,15 @@ fn generate_cxxqt_cpp_files(
     header_dir: impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
+        let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
         let path = format!("{}/{}", manifest_dir, rs_path.display());
         println!("cargo:rerun-if-changed={}", path);
 
         let generated_code = GeneratedCpp::new(&path);
-        generated_file_paths.push(generated_code.write_to_directories(&cpp_directory, &header_dir));
+        generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
     }
 
     generated_file_paths
@@ -357,21 +367,21 @@ impl CxxQtBuilder {
         self.cc_builder.include(&header_root);
         let generated_header_dir = format!("{}/cxx-qt-gen", header_root);
 
-        cxx_qt_lib_headers::write_headers(&format!("{}/cxx-qt-lib", header_root));
+        cxx_qt_lib_headers::write_headers(format!("{}/cxx-qt-lib", header_root));
 
         // Write cxx header
-        std::fs::create_dir_all(&format!("{}/rust", header_root))
+        std::fs::create_dir_all(format!("{}/rust", header_root))
             .expect("Could not create cxx header directory");
         let h_path = format!("{}/rust/cxx.h", header_root);
         // Wrap the File in a block scope so the file is closed before the compiler is run.
         // Otherwise MSVC fails to open cxx.h because the process for this build script already has it open.
         {
-            let mut header = File::create(&h_path).expect("Could not create cxx.h");
+            let mut header = File::create(h_path).expect("Could not create cxx.h");
             write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
         }
 
         // Generate files
-        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
+        for files in generate_cxxqt_cpp_files(&self.rust_sources, generated_header_dir) {
             self.cc_builder.file(files.plain_cpp);
             if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
                 self.cc_builder.file(&qobject);

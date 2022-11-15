@@ -34,18 +34,14 @@ public:
 
 public:
   const qint32& getPrimitive() const;
+  Q_SLOT void setPrimitive(const qint32& value);
+  Q_SIGNAL void primitiveChanged();
   const QPoint& getTrivial() const;
+  Q_SLOT void setTrivial(const QPoint& value);
+  Q_SIGNAL void trivialChanged();
   const Value& getOpaque() const;
-
-public Q_SLOTS:
-  void setPrimitive(const qint32& value);
-  void setTrivial(const QPoint& value);
-  void setOpaque(const Value& value);
-
-Q_SIGNALS:
-  void primitiveChanged();
-  void trivialChanged();
-  void opaqueChanged();
+  Q_SLOT void setOpaque(const Value& value);
+  Q_SIGNAL void opaqueChanged();
 
 private:
   rust::Box<MyObjectRust> m_rustObj;

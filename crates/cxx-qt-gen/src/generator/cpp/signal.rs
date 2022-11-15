@@ -6,7 +6,7 @@
 use crate::{
     generator::{
         cpp::{
-            fragment::CppFragmentPair, qobject::GeneratedCppQObjectBlocks, types::CppType,
+            fragment::CppFragment, qobject::GeneratedCppQObjectBlocks, types::CppType,
             CXX_QT_CONVERT,
         },
         naming::{qobject::QObjectName, signals::QSignalName},
@@ -57,14 +57,14 @@ pub fn generate_cpp_signals(
         let signal_ident = idents.name.cpp.to_string();
 
         // Generate the Q_SIGNAL
-        generated.signals.push(format!(
-            "void {ident}({parameters});",
+        generated.methods.push(CppFragment::Header(format!(
+            "Q_SIGNAL void {ident}({parameters});",
             ident = signal_ident,
             parameters = parameter_types.join(", "),
-        ));
+        )));
 
         // Generate the emitters
-        generated.methods.push(CppFragmentPair {
+        generated.methods.push(CppFragment::Pair {
             header: format!(
                 "void {ident}({parameters});",
                 ident = emit_ident,
@@ -122,19 +122,28 @@ mod tests {
 
         let generated = generate_cpp_signals(&signals, &qobject_idents).unwrap();
 
-        assert_eq!(generated.signals.len(), 1);
+        assert_eq!(generated.methods.len(), 2);
+        let header = if let CppFragment::Header(header) = &generated.methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
         assert_str_eq!(
-            generated.signals[0],
-            "void dataChanged(qint32 trivial, QColor opaque);"
+            header,
+            "Q_SIGNAL void dataChanged(qint32 trivial, QColor opaque);"
         );
 
-        assert_eq!(generated.methods.len(), 1);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
         assert_str_eq!(
-            generated.methods[0].header,
+            header,
             "void emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque);"
         );
         assert_str_eq!(
-            generated.methods[0].source,
+            source,
             indoc! {r#"
             void
             MyObject::emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque)

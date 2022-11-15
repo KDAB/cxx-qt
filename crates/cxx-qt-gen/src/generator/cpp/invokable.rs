@@ -6,7 +6,7 @@
 use crate::{
     generator::{
         cpp::{
-            fragment::{CppFragmentPair, CppNamedType},
+            fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
             types::CppType,
             CXX_QT_CONVERT, RUST_OBJ_MUTEX_LOCK_GUARD,
@@ -84,7 +84,7 @@ pub fn generate_cpp_invokables(
             .join(", ");
         let is_const = if !invokable.mutable { " const" } else { "" };
 
-        generated.methods.push(CppFragmentPair {
+        generated.methods.push(CppFragment::Pair {
             header: format!(
                 "Q_INVOKABLE {is_virtual}{cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
                 cxx_ty = if let Some(cxx_ty) = &cxx_ty {
@@ -219,12 +219,14 @@ mod tests {
         // methods
         assert_eq!(generated.methods.len(), 4);
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
+        assert_str_eq!(header, "Q_INVOKABLE void voidInvokable() const;");
         assert_str_eq!(
-            generated.methods[0].header,
-            "Q_INVOKABLE void voidInvokable() const;"
-        );
-        assert_str_eq!(
-            generated.methods[0].source,
+            source,
             indoc! {r#"
             void
             MyObject::voidInvokable() const
@@ -235,12 +237,17 @@ mod tests {
             "#}
         );
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
         assert_str_eq!(
-            generated.methods[1].header,
+            header,
             "Q_INVOKABLE qint32 trivialInvokable(qint32 param) const;"
         );
         assert_str_eq!(
-            generated.methods[1].source,
+            source,
             indoc! {r#"
             qint32
             MyObject::trivialInvokable(qint32 param) const
@@ -251,12 +258,17 @@ mod tests {
             "#}
         );
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
         assert_str_eq!(
-            generated.methods[2].header,
+            header,
             "Q_INVOKABLE QColor opaqueInvokable(const QColor& param);"
         );
         assert_str_eq!(
-            generated.methods[2].source,
+            source,
             indoc! {r#"
             QColor
             MyObject::opaqueInvokable(const QColor& param)
@@ -267,9 +279,25 @@ mod tests {
             "#}
         );
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
         assert_str_eq!(
-            generated.methods[3].header,
+            header,
             "Q_INVOKABLE virtual qint32 specifiersInvokable(qint32 param) const final override;"
+        );
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            qint32
+            MyObject::specifiersInvokable(qint32 param) const
+            {
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
+            }
+            "#}
         );
     }
 }

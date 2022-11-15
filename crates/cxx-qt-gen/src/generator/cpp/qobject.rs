@@ -5,7 +5,7 @@
 
 use crate::generator::{
     cpp::{
-        fragment::CppFragmentPair, invokable::generate_cpp_invokables,
+        fragment::CppFragment, invokable::generate_cpp_invokables,
         property::generate_cpp_properties, signal::generate_cpp_signals,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -18,19 +18,13 @@ pub struct GeneratedCppQObjectBlocks {
     /// List of Qt Meta Object items (eg Q_PROPERTY)
     pub metaobjects: Vec<String>,
     /// List of public methods for the QObject
-    pub methods: Vec<CppFragmentPair>,
-    /// List of public Q_SLOTS for the QObject
-    pub slots: Vec<CppFragmentPair>,
-    /// List of public Q_SIGNALS for the QObject
-    pub signals: Vec<String>,
+    pub methods: Vec<CppFragment>,
 }
 
 impl GeneratedCppQObjectBlocks {
     pub fn append(&mut self, other: &mut Self) {
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
-        self.slots.append(&mut other.slots);
-        self.signals.append(&mut other.signals);
     }
 }
 

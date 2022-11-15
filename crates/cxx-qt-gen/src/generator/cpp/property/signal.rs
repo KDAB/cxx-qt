@@ -4,7 +4,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::naming::property::QPropertyName;
+use crate::CppFragment;
 
-pub fn generate(idents: &QPropertyName) -> String {
-    format!("void {ident_notify}();", ident_notify = idents.notify.cpp)
+pub fn generate(idents: &QPropertyName) -> CppFragment {
+    CppFragment::Header(format!(
+        "Q_SIGNAL void {ident_notify}();",
+        ident_notify = idents.notify.cpp
+    ))
 }

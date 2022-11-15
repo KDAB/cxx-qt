@@ -29,18 +29,16 @@ public:
 
 public:
   Q_INVOKABLE void invokable();
+  Q_SIGNAL void ready();
   void emitReady();
+  Q_SIGNAL void dataChanged(qint32 first,
+                            Value second,
+                            QPoint third,
+                            const QPoint& fourth);
   void emitDataChanged(qint32 first,
                        ::std::unique_ptr<Opaque> second,
                        QPoint third,
                        const QPoint& fourth);
-
-Q_SIGNALS:
-  void ready();
-  void dataChanged(qint32 first,
-                   Value second,
-                   QPoint third,
-                   const QPoint& fourth);
 
 private:
   rust::Box<MyObjectRust> m_rustObj;

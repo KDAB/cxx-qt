@@ -36,15 +36,11 @@ public:
 
 public:
   const qint32& getPropertyName() const;
+  Q_SLOT void setPropertyName(const qint32& value);
+  Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
+  Q_SIGNAL void ready();
   void emitReady();
-
-public Q_SLOTS:
-  void setPropertyName(const qint32& value);
-
-Q_SIGNALS:
-  void propertyNameChanged();
-  void ready();
 
 private:
   rust::Box<MyObjectRust> m_rustObj;
@@ -80,15 +76,11 @@ public:
 
 public:
   const qint32& getPropertyName() const;
+  Q_SLOT void setPropertyName(const qint32& value);
+  Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
+  Q_SIGNAL void ready();
   void emitReady();
-
-public Q_SLOTS:
-  void setPropertyName(const qint32& value);
-
-Q_SIGNALS:
-  void propertyNameChanged();
-  void ready();
 
 private:
   rust::Box<SecondObjectRust> m_rustObj;

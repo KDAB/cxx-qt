@@ -9,7 +9,7 @@ mod syntax;
 mod writer;
 
 pub use generator::{
-    cpp::{fragment::CppFragmentPair, GeneratedCppBlocks},
+    cpp::{fragment::CppFragment, GeneratedCppBlocks},
     rust::GeneratedRustBlocks,
 };
 pub use parser::Parser;
@@ -82,7 +82,12 @@ mod tests {
             .unwrap();
 
             let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
-            let cpp = write_cpp(&generated_cpp);
+            let (header, source) =
+                if let CppFragment::Pair { header, source } = write_cpp(&generated_cpp) {
+                    (header, source)
+                } else {
+                    panic!("Expected CppFragment::Pair")
+                };
             let expected_cpp_header =
                 clang_format(include_str!(concat!("../test_outputs/", $file_stem, ".h"))).unwrap();
             let expected_cpp_source = clang_format(include_str!(concat!(
@@ -91,8 +96,8 @@ mod tests {
                 ".cpp"
             )))
             .unwrap();
-            assert_str_eq!(cpp.header, expected_cpp_header);
-            assert_str_eq!(cpp.source, expected_cpp_source);
+            assert_str_eq!(header, expected_cpp_header);
+            assert_str_eq!(source, expected_cpp_source);
 
             let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
             let rust = format_rs_source(&write_rust(&generated_rust).to_string());

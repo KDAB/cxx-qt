@@ -3,13 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::cpp::{fragment::CppFragmentPair, GeneratedCppBlocks};
+use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespace_pair;
 use indoc::formatdoc;
 
-/// Extract the source from a given CppFragmentPair
-fn pair_as_source(pair: &CppFragmentPair) -> String {
-    pair.source.clone()
+/// Extract the source from a given CppFragment
+fn pair_as_source(pair: &CppFragment) -> Option<String> {
+    match pair {
+        CppFragment::Pair { header: _, source } => Some(source.clone()),
+        CppFragment::Header(_) => None,
+        CppFragment::Source(source) => Some(source.clone()),
+    }
 }
 
 /// For a given GeneratedCppBlocks write the implementations
@@ -53,7 +57,6 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
             }}
 
             {methods}
-            {slots}
             {namespace_end}
 
             namespace {namespace_internals} {{
@@ -71,8 +74,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         namespace_internals = qobject.namespace_internals,
         base_class = qobject.base_class,
         rust_ident = qobject.rust_ident,
-        methods = qobject.blocks.methods.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
-        slots = qobject.blocks.slots.iter().map(pair_as_source).collect::<Vec<String>>().join("\n"),
+        methods = qobject.blocks.methods.iter().filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
         }
   }).collect::<Vec<String>>()
 }

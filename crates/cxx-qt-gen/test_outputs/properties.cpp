@@ -44,12 +44,28 @@ MyObject::getPrimitive() const
     m_rustObj->getPrimitive(*this));
 }
 
+void
+MyObject::setPrimitive(const qint32& value)
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->setPrimitive(
+    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
+}
+
 const QPoint&
 MyObject::getTrivial() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   return rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
     m_rustObj->getTrivial(*this));
+}
+
+void
+MyObject::setTrivial(const QPoint& value)
+{
+  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->setTrivial(
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
 }
 
 const Value&
@@ -59,22 +75,6 @@ MyObject::getOpaque() const
   return rust::cxxqtlib1::cxx_qt_convert<const Value&,
                                          const ::std::unique_ptr<Opaque>&>{}(
     m_rustObj->getOpaque(*this));
-}
-
-void
-MyObject::setPrimitive(const qint32& value)
-{
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPrimitive(
-    *this, rust::cxxqtlib1::cxx_qt_convert<qint32, const qint32&>{}(value));
-}
-
-void
-MyObject::setTrivial(const QPoint& value)
-{
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setTrivial(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
 }
 
 void

@@ -34,7 +34,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt-lib header directory");
     for (file_contents, file_name) in HEADERS {
         let h_path = format!("{}/{}", directory.display(), file_name);
-        let mut header = File::create(&h_path).expect("Could not create cxx-qt-lib header");
+        let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
         write!(header, "{}", file_contents).expect("Could not write cxx-qt-lib header");
     }
 }

@@ -4,15 +4,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{
-    cpp::{fragment::CppFragmentPair, types::CppType, CXX_QT_CONVERT, RUST_OBJ_MUTEX_LOCK_GUARD},
+    cpp::{fragment::CppFragment, types::CppType, CXX_QT_CONVERT, RUST_OBJ_MUTEX_LOCK_GUARD},
     naming::property::QPropertyName,
 };
 use indoc::formatdoc;
 
-pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &CppType) -> CppFragmentPair {
-    CppFragmentPair {
+pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &CppType) -> CppFragment {
+    CppFragment::Pair {
         header: format!(
-            "void {ident_setter}(const {cxx_ty}& value);",
+            "Q_SLOT void {ident_setter}(const {cxx_ty}& value);",
             cxx_ty = cxx_ty.as_cxx_ty(),
             ident_setter = idents.setter.cpp,
         ),
