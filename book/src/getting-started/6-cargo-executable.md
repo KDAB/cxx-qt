@@ -12,6 +12,8 @@ previous example, but without using CMake or another C++ build system. Cargo wil
 just like a typical Rust application. Because cxx-qt does not bind the entire Qt API, we will still
 need to write a bit of C++ code. However, we'll use the cxx-qt-build crate to compile it instead of CMake.
 
+Note that the folder structure of this example is different to the CMake tutorial, this is because the `Cargo.toml` is now in the root. So there isn't a `rust` folder, instead just a `src` folder and the `.rs` files have moved up one folder.
+
 The complete example code is available in [`examples/cargo_without_cmake`](https://github.com/KDAB/cxx-qt/tree/main/examples/cargo_without_cmake)
 in the cxx-qt repository.
 
@@ -23,7 +25,8 @@ The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib`
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 ```
 
-Note that instead of the `{ path = "..." }` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
+> Note that instead of the `{ path = "..." }` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
+> As described in the code comment above each dependency.
 
 The `build.rs` script is similar. However, without CMake, CxxQtBuilder needs to do a bit more work:
 
@@ -43,26 +46,26 @@ First, we need to include Qt headers, the C++ header generated from `src/cxxqt_o
 from the `qml.qrc` file:
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/src/cpp/run.cpp:book_cargo_cpp_includes}}
+{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_cpp_includes}}
 ```
 
 Instead of the `main` function in a typical C++ application, write an `extern "C"` function which we will call
 from Rust:
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/src/cpp/run.cpp:book_cargo_run_cpp}}
+{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_run_cpp}}
 ```
 
 In this function, we need to initialize the Qt resource system:
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/src/cpp/run.cpp:book_cargo_init_qrc}}
+{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_init_qrc}}
 ```
 
 Then, register the QML type and run the QML file just like a C++ program:
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/src/cpp/run.cpp:book_cargo_run_qml}}
+{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_run_qml}}
 ```
 
 ## Rust executable

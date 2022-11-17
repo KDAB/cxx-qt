@@ -26,8 +26,8 @@ fn main() {
         // Tell CxxQtBuilder's internal cc::Build struct to compile the manually
         // written C++ file in addition to the generated C++.
         .cc_builder(|cc| {
-            cc.file("src/cpp/run.cpp");
-            println!("cargo:rerun-if-changed=src/cpp/run.cpp");
+            cc.file("cpp/run.cpp");
+            println!("cargo:rerun-if-changed=cpp/run.cpp");
         })
         .build();
 
