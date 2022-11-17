@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Multiple QObjects can be defined in one bridge
 
+### Fixed
+
+- Fixed linking Qt with macOS frameworks. This allows using Qt from Homebrew.
+
 ## [0.4.0](https://github.com/KDAB/cxx-qt/compare/v0.3.0...v0.4.0) - 2022-10-28
 
 ### Added

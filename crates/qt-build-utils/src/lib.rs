@@ -233,7 +233,8 @@ impl QtBuild {
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={}", lib_path);
 
-        let prefix = match env::var("TARGET") {
+        let target = env::var("TARGET");
+        let prefix = match &target {
             Ok(target) => {
                 if target.contains("msvc") {
                     ""
@@ -245,11 +246,37 @@ impl QtBuild {
         };
 
         for qt_module in &self.qt_modules {
-            println!("cargo:rustc-link-lib=Qt{}{}", self.version.major, qt_module);
-            let prl_path = format!(
-                "{}/{}Qt{}{}.prl",
-                lib_path, prefix, self.version.major, qt_module
-            );
+            let framework = match &target {
+                Ok(target) => {
+                    if target.contains("apple") {
+                        Path::new(&format!("{}/Qt{}.framework", lib_path, qt_module)).exists()
+                    } else {
+                        false
+                    }
+                }
+                Err(_) => false,
+            };
+
+            let (link_lib, prl_path) = if framework {
+                (
+                    format!("framework=Qt{}", qt_module),
+                    format!(
+                        "{}/Qt{}.framework/Resources/Qt{}.prl",
+                        lib_path, qt_module, qt_module
+                    ),
+                )
+            } else {
+                (
+                    format!("Qt{}{}", self.version.major, qt_module),
+                    format!(
+                        "{}/{}Qt{}{}.prl",
+                        lib_path, prefix, self.version.major, qt_module
+                    ),
+                )
+            };
+
+            println!("cargo:rustc-link-lib={}", link_lib);
+
             match std::fs::read_to_string(&prl_path) {
                 Ok(prl) => {
                     for line in prl.lines() {
