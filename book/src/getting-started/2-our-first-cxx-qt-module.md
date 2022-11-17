@@ -7,21 +7,30 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Our first CXX-Qt module
 
-As with all things Rust, we'll first want to create a cargo project.
+We first need to create a folder structure to add the different parts of our project.
+
+```ignore
+tutorial
+  - cpp
+  - qml
+  - rust
+```
+
+As with all things Rust, we'll want to create a cargo project, run the following command inside the `tutorial` folder to initialise the Rust part of the project.
 ```bash
-cargo new --lib qml-minimal
+cargo init --lib rust
 ```
 Note the `--lib` option here. For this example, we will create a static library in Rust and use CMake to
 link this into a C++ executable. We'll discuss details of this later, when we [integrate our Rust project with CMake](./5-cmake-integration.md).
 
 As outlined in the previous section, to define a new QObject subclass, we'll create a Rust module within this library crate.
-First, in the `src/lib.rs`, we tell Cargo about the module we're about to create:
+First, in the `rust/src/lib.rs`, we tell Cargo about the module we're about to create:
 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/lib.rs:book_mod_statement}}
 ```
 
-Now, we need to create a file `src/cxxqt_object.rs` for that module.
+Now, we need to create a file `rust/src/cxxqt_object.rs` for that module.
 It will include our `#[cxx_qt::bridge]` that allows us to create our own qobjects in Rust:
 
 ```rust,ignore

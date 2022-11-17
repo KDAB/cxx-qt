@@ -16,7 +16,7 @@ as a static library, then CMake links it into a C++ executable.
 
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
-If you've generated your project with the `cargo new --lib` command, your `Cargo.toml` likely looks something like this:
+If you've generated your project with the `cargo new --lib` or `cargo init --lib folder` command, your `Cargo.toml` likely looks something like this:
 ```toml,ignore
 [package]
 name = "qml-minimal"
@@ -31,11 +31,14 @@ We'll have to do multiple things:
 - Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies
 - Add `cxx-qt-build` as a build dependency
 
-In the end, your `Cargo.toml` should look similar to this (note that `path` for the dependencies is only
-needed for the example within the cxx-qt repository; in your project you'd use the version from crates.io):
+In the end, your `Cargo.toml` should look similar to this.
+
 ```toml,ignore
 {{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_all}}
 ```
+
+> Note that instead of the `{ path = "..." }` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
+> As described in the code comment above each dependency.
 
 We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
 ```rust,ignore
@@ -49,7 +52,7 @@ In our case, this is only the `src/cxxqt_object.rs` file.
 
 ## CMake setup
 
-Start the CMakeLists.txt file like any other C++ project using Qt. For this example, we are [supporting both
+Now add a `CMakeLists.txt` file in the root of the `tutorial` folder. Start the `CMakeLists.txt` file like any other C++ project using Qt. For this example, we are [supporting both
 Qt5 and Qt6 with CMake](https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.html):
 
 ```cmake,ignore
