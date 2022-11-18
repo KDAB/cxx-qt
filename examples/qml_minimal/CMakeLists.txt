@@ -83,6 +83,9 @@ add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
 
 # Link to the Rust library
 target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
+
+# If we are using a statically linked Qt then we need to import any qml plugins
+qt_import_qml_plugins(${APP_NAME})
 # ANCHOR_END: book_cmake_executable
 
 #
