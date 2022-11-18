@@ -15,10 +15,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test)
+    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
@@ -66,9 +66,5 @@ add_executable(${APP_NAME}
     qml/qml.qrc
     ${QML_COMPAT_RESOURCES}
 )
-
-target_link_libraries(${APP_NAME} PRIVATE
-    ${CRATE}
-    Qt::Test
-)
+target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
 qt_import_qml_plugins(${APP_NAME})
