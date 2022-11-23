@@ -19,20 +19,44 @@ pub mod ffi {
         fn remove(self: &mut QSet_bool, _: &bool) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_bool"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_bool(_: &QSet_bool) -> QSet_bool;
-        #[rust_name = "default"]
-        fn qset_default_bool() -> QSet_bool;
-        #[rust_name = "drop"]
-        fn qset_drop_bool(_: &mut QSet_bool);
-        #[rust_name = "get_unchecked"]
+        #[rust_name = "clone_bool"]
+        fn qset_clone(_: &QSet_bool) -> QSet_bool;
+        #[rust_name = "default_bool"]
+        fn qset_default() -> QSet_bool;
+        #[rust_name = "drop_bool"]
+        fn qset_drop(_: &mut QSet_bool);
+        #[rust_name = "get_unchecked_bool"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked_bool<'a>(set: &'a QSet_bool, pos: usize) -> &'a bool;
-        #[rust_name = "insert"]
-        fn qset_insert_bool(_: &mut QSet_bool, _: &bool);
-        #[rust_name = "len"]
-        fn qset_len_bool(_: &QSet_bool) -> usize;
+        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_bool, pos: usize) -> &'a bool;
+        #[rust_name = "insert_bool"]
+        fn qset_insert(_: &mut QSet_bool, _: &bool);
+        #[rust_name = "len_bool"]
+        fn qset_len(_: &QSet_bool) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_bool) -> ffi::QSet_bool {
+    ffi::clone_bool(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_bool {
+    ffi::default_bool()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_bool) {
+    ffi::drop_bool(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_bool, pos: usize) -> &bool {
+    ffi::get_unchecked_bool(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_bool, value: &bool) {
+    ffi::insert_bool(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_bool) -> usize {
+    ffi::len_bool(s)
 }

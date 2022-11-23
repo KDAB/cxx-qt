@@ -21,61 +21,17 @@
   static_assert(std::is_copy_assignable<typeName>::value);                     \
   static_assert(std::is_copy_constructible<typeName>::value);
 
-#define CXX_QT_QSET_METHODS_IMPL(typeName, name)                               \
-  CXX_QT_QSET_ASSERTS(typeName, name);                                         \
-                                                                               \
-  namespace rust {                                                             \
-  namespace cxxqtlib1 {                                                        \
-  namespace qset_##name                                                        \
-  {                                                                            \
-    QSet_##name qset_clone_##name(const QSet_##name& s) noexcept               \
-    {                                                                          \
-      return QSet(s);                                                          \
-    }                                                                          \
-                                                                               \
-    QSet_##name qset_default_##name() noexcept                                 \
-    {                                                                          \
-      return QSet_##name();                                                    \
-    }                                                                          \
-                                                                               \
-    void qset_drop_##name(QSet_##name& s) noexcept                             \
-    {                                                                          \
-      s.~QSet_##name();                                                        \
-    }                                                                          \
-                                                                               \
-    const typeName& qset_get_unchecked_##name(const QSet_##name& s,            \
-                                              ::std::size_t pos) noexcept      \
-    {                                                                          \
-      Q_ASSERT(pos < static_cast<::std::size_t>(s.size()));                    \
-      auto it = s.cbegin();                                                    \
-      std::advance(it, pos);                                                   \
-      return *it;                                                              \
-    }                                                                          \
-                                                                               \
-    void qset_insert_##name(QSet_##name& s, const typeName& value) noexcept    \
-    {                                                                          \
-      s.insert(value);                                                         \
-    }                                                                          \
-                                                                               \
-    ::std::size_t qset_len_##name(const QSet_##name& s) noexcept               \
-    {                                                                          \
-      return static_cast<::std ::size_t>(s.size());                            \
-    }                                                                          \
-  }                                                                            \
-  }                                                                            \
-  }
-
-CXX_QT_QSET_METHODS_IMPL(bool, bool);
-CXX_QT_QSET_METHODS_IMPL(float, f32);
-CXX_QT_QSET_METHODS_IMPL(double, f64);
-CXX_QT_QSET_METHODS_IMPL(::qint8, i8);
-CXX_QT_QSET_METHODS_IMPL(::qint16, i16);
-CXX_QT_QSET_METHODS_IMPL(::qint32, i32);
-CXX_QT_QSET_METHODS_IMPL(::QDate, QDate);
-CXX_QT_QSET_METHODS_IMPL(::QDateTime, QDateTime);
-CXX_QT_QSET_METHODS_IMPL(::QString, QString);
-CXX_QT_QSET_METHODS_IMPL(::QTime, QTime);
-CXX_QT_QSET_METHODS_IMPL(::QUrl, QUrl);
-CXX_QT_QSET_METHODS_IMPL(::quint8, u8);
-CXX_QT_QSET_METHODS_IMPL(::quint16, u16);
-CXX_QT_QSET_METHODS_IMPL(::quint32, u32);
+CXX_QT_QSET_ASSERTS(bool, bool);
+CXX_QT_QSET_ASSERTS(float, f32);
+CXX_QT_QSET_ASSERTS(double, f64);
+CXX_QT_QSET_ASSERTS(::qint8, i8);
+CXX_QT_QSET_ASSERTS(::qint16, i16);
+CXX_QT_QSET_ASSERTS(::qint32, i32);
+CXX_QT_QSET_ASSERTS(::QDate, QDate);
+CXX_QT_QSET_ASSERTS(::QDateTime, QDateTime);
+CXX_QT_QSET_ASSERTS(::QString, QString);
+CXX_QT_QSET_ASSERTS(::QTime, QTime);
+CXX_QT_QSET_ASSERTS(::QUrl, QUrl);
+CXX_QT_QSET_ASSERTS(::quint8, u8);
+CXX_QT_QSET_ASSERTS(::quint16, u16);
+CXX_QT_QSET_ASSERTS(::quint32, u32);

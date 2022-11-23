@@ -22,38 +22,74 @@ struct rust::IsRelocatable<QSet<T>> : std::true_type
 {
 };
 
-// Note on the Rust side we rename the methods to "len" etc
-// so we need to put each set in it's own namespace otherwise the generated
-// CXX code collides.
-#define CXX_QT_QSET_METHODS(typeName, name)                                    \
-  using QSet_##name = QSet<typeName>;                                          \
-                                                                               \
-  namespace rust {                                                             \
-  namespace cxxqtlib1 {                                                        \
-  namespace qset_##name                                                        \
-  {                                                                            \
-    QSet_##name qset_clone_##name(const QSet_##name& s) noexcept;              \
-    QSet_##name qset_default_##name() noexcept;                                \
-    void qset_drop_##name(QSet_##name& s) noexcept;                            \
-    const typeName& qset_get_unchecked_##name(const QSet_##name& s,            \
-                                              ::std::size_t pos) noexcept;     \
-    void qset_insert_##name(QSet_##name& s, const typeName& value) noexcept;   \
-    ::std::size_t qset_len_##name(const QSet_##name& s) noexcept;              \
-  }                                                                            \
-  }                                                                            \
-  }
+namespace rust {
+namespace cxxqtlib1 {
 
-CXX_QT_QSET_METHODS(bool, bool);
-CXX_QT_QSET_METHODS(float, f32);
-CXX_QT_QSET_METHODS(double, f64);
-CXX_QT_QSET_METHODS(::qint8, i8);
-CXX_QT_QSET_METHODS(::qint16, i16);
-CXX_QT_QSET_METHODS(::qint32, i32);
-CXX_QT_QSET_METHODS(::QDate, QDate);
-CXX_QT_QSET_METHODS(::QDateTime, QDateTime);
-CXX_QT_QSET_METHODS(::QString, QString);
-CXX_QT_QSET_METHODS(::QTime, QTime);
-CXX_QT_QSET_METHODS(::QUrl, QUrl);
-CXX_QT_QSET_METHODS(::quint8, u8);
-CXX_QT_QSET_METHODS(::quint16, u16);
-CXX_QT_QSET_METHODS(::quint32, u32);
+template<typename T>
+QSet<T>
+qset_clone(const QSet<T>& s) noexcept
+{
+  return QSet(s);
+}
+
+template<typename T>
+QSet<T>
+qset_default() noexcept
+{
+  return QSet<T>();
+}
+
+template<typename T>
+void
+qset_drop(QSet<T>& s) noexcept
+{
+  s.~QSet<T>();
+}
+
+template<typename T>
+const T&
+qset_get_unchecked(const QSet<T>& s, ::std::size_t pos) noexcept
+{
+  Q_ASSERT(pos < static_cast<::std::size_t>(s.size()));
+  auto it = s.cbegin();
+  std::advance(it, pos);
+  return *it;
+}
+
+template<typename T>
+void
+qset_insert(QSet<T>& s, const T& value) noexcept
+{
+  s.insert(value);
+}
+
+template<typename T>
+::std::size_t
+qset_len(const QSet<T>& s) noexcept
+{
+  // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
+  // is the same for CXX
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return s.size();
+#else
+  return static_cast<::std ::size_t>(s.size());
+#endif
+}
+
+}
+}
+
+using QSet_bool = QSet<bool>;
+using QSet_f32 = QSet<float>;
+using QSet_f64 = QSet<double>;
+using QSet_i8 = QSet<::qint8>;
+using QSet_i16 = QSet<::qint16>;
+using QSet_i32 = QSet<::qint32>;
+using QSet_QDate = QSet<::QDate>;
+using QSet_QDateTime = QSet<::QDateTime>;
+using QSet_QString = QSet<::QString>;
+using QSet_QTime = QSet<::QTime>;
+using QSet_QUrl = QSet<::QUrl>;
+using QSet_u8 = QSet<::quint8>;
+using QSet_u16 = QSet<::quint16>;
+using QSet_u32 = QSet<::quint32>;
