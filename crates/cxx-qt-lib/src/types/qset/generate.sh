@@ -33,22 +33,46 @@ pub mod ffi {
         fn remove(self: &mut QSet_$1, _: &$1) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_$1"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_$1(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "default"]
-        fn qset_default_$1() -> QSet_$1;
-        #[rust_name = "drop"]
-        fn qset_drop_$1(_: &mut QSet_$1);
-        #[rust_name = "get_unchecked"]
+        #[rust_name = "clone_$1"]
+        fn qset_clone(_: &QSet_$1) -> QSet_$1;
+        #[rust_name = "default_$1"]
+        fn qset_default() -> QSet_$1;
+        #[rust_name = "drop_$1"]
+        fn qset_drop(_: &mut QSet_$1);
+        #[rust_name = "get_unchecked_$1"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked_$1<'a>(set: &'a QSet_$1, pos: usize) -> &'a $1;
-        #[rust_name = "insert"]
-        fn qset_insert_$1(_: &mut QSet_$1, _: &$1);
-        #[rust_name = "len"]
-        fn qset_len_$1(_: &QSet_$1) -> usize;
+        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_$1, pos: usize) -> &'a $1;
+        #[rust_name = "insert_$1"]
+        fn qset_insert(_: &mut QSet_$1, _: &$1);
+        #[rust_name = "len_$1"]
+        fn qset_len(_: &QSet_$1) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {
+    ffi::clone_$1(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_$1 {
+    ffi::default_$1()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_$1) {
+    ffi::drop_$1(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: usize) -> &$1 {
+    ffi::get_unchecked_$1(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &$1) {
+    ffi::insert_$1(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_$1) -> usize {
+    ffi::len_$1(s)
 }
 EOF
     rustfmt "$SCRIPTPATH/qset_$1.rs"
@@ -80,21 +104,45 @@ pub mod ffi {
         fn remove(self: &mut QSet_$1, _: &$1) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_$1"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_$1(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "default"]
-        fn qset_default_$1() -> QSet_$1;
-        #[rust_name = "drop"]
-        fn qset_drop_$1(_: &mut QSet_$1);
-        #[rust_name = "get_unchecked"]
-        unsafe fn qset_get_unchecked_$1(set: &QSet_$1, pos: usize) -> &$1;
-        #[rust_name = "insert"]
-        fn qset_insert_$1(_: &mut QSet_$1, _: &$1);
-        #[rust_name = "len"]
-        fn qset_len_$1(_: &QSet_$1) -> usize;
+        #[rust_name = "clone_$1"]
+        fn qset_clone(_: &QSet_$1) -> QSet_$1;
+        #[rust_name = "default_$1"]
+        fn qset_default() -> QSet_$1;
+        #[rust_name = "drop_$1"]
+        fn qset_drop(_: &mut QSet_$1);
+        #[rust_name = "get_unchecked_$1"]
+        unsafe fn qset_get_unchecked(set: &QSet_$1, pos: usize) -> &$1;
+        #[rust_name = "insert_$1"]
+        fn qset_insert(_: &mut QSet_$1, _: &$1);
+        #[rust_name = "len_$1"]
+        fn qset_len(_: &QSet_$1) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {
+    ffi::clone_$1(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_$1 {
+    ffi::default_$1()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_$1) {
+    ffi::drop_$1(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: usize) -> &ffi::$1 {
+    ffi::get_unchecked_$1(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &ffi::$1) {
+    ffi::insert_$1(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_$1) -> usize {
+    ffi::len_$1(s)
 }
 EOF
     rustfmt "$SCRIPTPATH/qset_$2.rs"

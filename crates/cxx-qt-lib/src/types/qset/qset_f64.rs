@@ -19,20 +19,44 @@ pub mod ffi {
         fn remove(self: &mut QSet_f64, _: &f64) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_f64"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_f64(_: &QSet_f64) -> QSet_f64;
-        #[rust_name = "default"]
-        fn qset_default_f64() -> QSet_f64;
-        #[rust_name = "drop"]
-        fn qset_drop_f64(_: &mut QSet_f64);
-        #[rust_name = "get_unchecked"]
+        #[rust_name = "clone_f64"]
+        fn qset_clone(_: &QSet_f64) -> QSet_f64;
+        #[rust_name = "default_f64"]
+        fn qset_default() -> QSet_f64;
+        #[rust_name = "drop_f64"]
+        fn qset_drop(_: &mut QSet_f64);
+        #[rust_name = "get_unchecked_f64"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked_f64<'a>(set: &'a QSet_f64, pos: usize) -> &'a f64;
-        #[rust_name = "insert"]
-        fn qset_insert_f64(_: &mut QSet_f64, _: &f64);
-        #[rust_name = "len"]
-        fn qset_len_f64(_: &QSet_f64) -> usize;
+        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_f64, pos: usize) -> &'a f64;
+        #[rust_name = "insert_f64"]
+        fn qset_insert(_: &mut QSet_f64, _: &f64);
+        #[rust_name = "len_f64"]
+        fn qset_len(_: &QSet_f64) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_f64) -> ffi::QSet_f64 {
+    ffi::clone_f64(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_f64 {
+    ffi::default_f64()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_f64) {
+    ffi::drop_f64(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_f64, pos: usize) -> &f64 {
+    ffi::get_unchecked_f64(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_f64, value: &f64) {
+    ffi::insert_f64(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_f64) -> usize {
+    ffi::len_f64(s)
 }

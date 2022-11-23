@@ -22,19 +22,43 @@ pub mod ffi {
         fn remove(self: &mut QSet_QUrl, _: &QUrl) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_QUrl"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_QUrl(_: &QSet_QUrl) -> QSet_QUrl;
-        #[rust_name = "default"]
-        fn qset_default_QUrl() -> QSet_QUrl;
-        #[rust_name = "drop"]
-        fn qset_drop_QUrl(_: &mut QSet_QUrl);
-        #[rust_name = "get_unchecked"]
-        unsafe fn qset_get_unchecked_QUrl(set: &QSet_QUrl, pos: usize) -> &QUrl;
-        #[rust_name = "insert"]
-        fn qset_insert_QUrl(_: &mut QSet_QUrl, _: &QUrl);
-        #[rust_name = "len"]
-        fn qset_len_QUrl(_: &QSet_QUrl) -> usize;
+        #[rust_name = "clone_QUrl"]
+        fn qset_clone(_: &QSet_QUrl) -> QSet_QUrl;
+        #[rust_name = "default_QUrl"]
+        fn qset_default() -> QSet_QUrl;
+        #[rust_name = "drop_QUrl"]
+        fn qset_drop(_: &mut QSet_QUrl);
+        #[rust_name = "get_unchecked_QUrl"]
+        unsafe fn qset_get_unchecked(set: &QSet_QUrl, pos: usize) -> &QUrl;
+        #[rust_name = "insert_QUrl"]
+        fn qset_insert(_: &mut QSet_QUrl, _: &QUrl);
+        #[rust_name = "len_QUrl"]
+        fn qset_len(_: &QSet_QUrl) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_QUrl) -> ffi::QSet_QUrl {
+    ffi::clone_QUrl(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_QUrl {
+    ffi::default_QUrl()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_QUrl) {
+    ffi::drop_QUrl(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QUrl, pos: usize) -> &ffi::QUrl {
+    ffi::get_unchecked_QUrl(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_QUrl, value: &ffi::QUrl) {
+    ffi::insert_QUrl(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_QUrl) -> usize {
+    ffi::len_QUrl(s)
 }

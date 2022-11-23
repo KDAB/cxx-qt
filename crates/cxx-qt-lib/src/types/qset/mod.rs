@@ -204,7 +204,7 @@ macro_rules! impl_qset_element {
             }
 
             fn clone(set: &QSet<Self>) -> QSet<Self> {
-                $module::ffi::clone(set)
+                $module::clone(set)
             }
 
             fn contains(set: &QSet<Self>, value: &Self) -> bool {
@@ -212,27 +212,27 @@ macro_rules! impl_qset_element {
             }
 
             fn default() -> QSet<Self> {
-                $module::ffi::default()
+                $module::default()
             }
 
             fn drop(set: &mut QSet<Self>) {
-                $module::ffi::drop(set);
+                $module::drop(set);
             }
 
             unsafe fn get_unchecked(set: &QSet<Self>, pos: usize) -> &Self {
-                $module::ffi::get_unchecked(set, pos)
+                $module::get_unchecked(set, pos)
             }
 
             fn insert(set: &mut QSet<Self>, value: Self) {
-                $module::ffi::insert(set, &value);
+                $module::insert(set, &value);
             }
 
             fn insert_clone(set: &mut QSet<Self>, value: &Self) {
-                $module::ffi::insert(set, value);
+                $module::insert(set, value);
             }
 
             fn len(set: &QSet<Self>) -> usize {
-                $module::ffi::len(set) as usize
+                $module::len(set)
             }
 
             fn remove(set: &mut QSet<Self>, value: &Self) -> bool {

@@ -22,19 +22,43 @@ pub mod ffi {
         fn remove(self: &mut QSet_QString, _: &QString) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_QString"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_QString(_: &QSet_QString) -> QSet_QString;
-        #[rust_name = "default"]
-        fn qset_default_QString() -> QSet_QString;
-        #[rust_name = "drop"]
-        fn qset_drop_QString(_: &mut QSet_QString);
-        #[rust_name = "get_unchecked"]
-        unsafe fn qset_get_unchecked_QString(set: &QSet_QString, pos: usize) -> &QString;
-        #[rust_name = "insert"]
-        fn qset_insert_QString(_: &mut QSet_QString, _: &QString);
-        #[rust_name = "len"]
-        fn qset_len_QString(_: &QSet_QString) -> usize;
+        #[rust_name = "clone_QString"]
+        fn qset_clone(_: &QSet_QString) -> QSet_QString;
+        #[rust_name = "default_QString"]
+        fn qset_default() -> QSet_QString;
+        #[rust_name = "drop_QString"]
+        fn qset_drop(_: &mut QSet_QString);
+        #[rust_name = "get_unchecked_QString"]
+        unsafe fn qset_get_unchecked(set: &QSet_QString, pos: usize) -> &QString;
+        #[rust_name = "insert_QString"]
+        fn qset_insert(_: &mut QSet_QString, _: &QString);
+        #[rust_name = "len_QString"]
+        fn qset_len(_: &QSet_QString) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_QString) -> ffi::QSet_QString {
+    ffi::clone_QString(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_QString {
+    ffi::default_QString()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_QString) {
+    ffi::drop_QString(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QString, pos: usize) -> &ffi::QString {
+    ffi::get_unchecked_QString(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_QString, value: &ffi::QString) {
+    ffi::insert_QString(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_QString) -> usize {
+    ffi::len_QString(s)
 }

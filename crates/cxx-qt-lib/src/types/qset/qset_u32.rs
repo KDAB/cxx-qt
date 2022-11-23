@@ -19,20 +19,44 @@ pub mod ffi {
         fn remove(self: &mut QSet_u32, _: &u32) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_u32"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_u32(_: &QSet_u32) -> QSet_u32;
-        #[rust_name = "default"]
-        fn qset_default_u32() -> QSet_u32;
-        #[rust_name = "drop"]
-        fn qset_drop_u32(_: &mut QSet_u32);
-        #[rust_name = "get_unchecked"]
+        #[rust_name = "clone_u32"]
+        fn qset_clone(_: &QSet_u32) -> QSet_u32;
+        #[rust_name = "default_u32"]
+        fn qset_default() -> QSet_u32;
+        #[rust_name = "drop_u32"]
+        fn qset_drop(_: &mut QSet_u32);
+        #[rust_name = "get_unchecked_u32"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked_u32<'a>(set: &'a QSet_u32, pos: usize) -> &'a u32;
-        #[rust_name = "insert"]
-        fn qset_insert_u32(_: &mut QSet_u32, _: &u32);
-        #[rust_name = "len"]
-        fn qset_len_u32(_: &QSet_u32) -> usize;
+        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_u32, pos: usize) -> &'a u32;
+        #[rust_name = "insert_u32"]
+        fn qset_insert(_: &mut QSet_u32, _: &u32);
+        #[rust_name = "len_u32"]
+        fn qset_len(_: &QSet_u32) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_u32) -> ffi::QSet_u32 {
+    ffi::clone_u32(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_u32 {
+    ffi::default_u32()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_u32) {
+    ffi::drop_u32(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_u32, pos: usize) -> &u32 {
+    ffi::get_unchecked_u32(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_u32, value: &u32) {
+    ffi::insert_u32(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_u32) -> usize {
+    ffi::len_u32(s)
 }

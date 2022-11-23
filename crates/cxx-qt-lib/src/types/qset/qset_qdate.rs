@@ -22,19 +22,43 @@ pub mod ffi {
         fn remove(self: &mut QSet_QDate, _: &QDate) -> bool;
     }
 
-    #[namespace = "rust::cxxqtlib1::qset_QDate"]
+    #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[rust_name = "clone"]
-        fn qset_clone_QDate(_: &QSet_QDate) -> QSet_QDate;
-        #[rust_name = "default"]
-        fn qset_default_QDate() -> QSet_QDate;
-        #[rust_name = "drop"]
-        fn qset_drop_QDate(_: &mut QSet_QDate);
-        #[rust_name = "get_unchecked"]
-        unsafe fn qset_get_unchecked_QDate(set: &QSet_QDate, pos: usize) -> &QDate;
-        #[rust_name = "insert"]
-        fn qset_insert_QDate(_: &mut QSet_QDate, _: &QDate);
-        #[rust_name = "len"]
-        fn qset_len_QDate(_: &QSet_QDate) -> usize;
+        #[rust_name = "clone_QDate"]
+        fn qset_clone(_: &QSet_QDate) -> QSet_QDate;
+        #[rust_name = "default_QDate"]
+        fn qset_default() -> QSet_QDate;
+        #[rust_name = "drop_QDate"]
+        fn qset_drop(_: &mut QSet_QDate);
+        #[rust_name = "get_unchecked_QDate"]
+        unsafe fn qset_get_unchecked(set: &QSet_QDate, pos: usize) -> &QDate;
+        #[rust_name = "insert_QDate"]
+        fn qset_insert(_: &mut QSet_QDate, _: &QDate);
+        #[rust_name = "len_QDate"]
+        fn qset_len(_: &QSet_QDate) -> usize;
     }
+}
+
+pub(crate) fn clone(s: &ffi::QSet_QDate) -> ffi::QSet_QDate {
+    ffi::clone_QDate(s)
+}
+
+pub(crate) fn default() -> ffi::QSet_QDate {
+    ffi::default_QDate()
+}
+
+pub(crate) fn drop(s: &mut ffi::QSet_QDate) {
+    ffi::drop_QDate(s);
+}
+
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDate, pos: usize) -> &ffi::QDate {
+    ffi::get_unchecked_QDate(s, pos)
+}
+
+pub(crate) fn insert(s: &mut ffi::QSet_QDate, value: &ffi::QDate) {
+    ffi::insert_QDate(s, value);
+}
+
+pub(crate) fn len(s: &ffi::QSet_QDate) -> usize {
+    ffi::len_QDate(s)
 }
