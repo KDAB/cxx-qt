@@ -10,14 +10,19 @@ pub mod ffi {
         type QSet_bool = crate::QSet<bool>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_bool);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_bool, _: &bool) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_bool, _: &bool) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_bool"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_bool(_: &mut QSet_bool);
         #[rust_name = "clone"]
         fn qset_clone_bool(_: &QSet_bool) -> QSet_bool;
-        #[rust_name = "contains"]
-        fn qset_contains_bool(_: &QSet_bool, _: &bool) -> bool;
         #[rust_name = "default"]
         fn qset_default_bool() -> QSet_bool;
         #[rust_name = "drop"]
@@ -29,7 +34,5 @@ pub mod ffi {
         fn qset_insert_bool(_: &mut QSet_bool, _: &bool);
         #[rust_name = "len"]
         fn qset_len_bool(_: &QSet_bool) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_bool(_: &mut QSet_bool, _: &bool) -> bool;
     }
 }

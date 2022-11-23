@@ -22,7 +22,7 @@ struct rust::IsRelocatable<QSet<T>> : std::true_type
 {
 };
 
-// Note on the Rust side we rename the methods to "clear" or "len" etc
+// Note on the Rust side we rename the methods to "len" etc
 // so we need to put each set in it's own namespace otherwise the generated
 // CXX code collides.
 #define CXX_QT_QSET_METHODS(typeName, name)                                    \
@@ -32,17 +32,13 @@ struct rust::IsRelocatable<QSet<T>> : std::true_type
   namespace cxxqtlib1 {                                                        \
   namespace qset_##name                                                        \
   {                                                                            \
-    void qset_clear_##name(QSet_##name& s) noexcept;                           \
     QSet_##name qset_clone_##name(const QSet_##name& s) noexcept;              \
-    bool qset_contains_##name(const QSet_##name& s,                            \
-                              const typeName& value) noexcept;                 \
     QSet_##name qset_default_##name() noexcept;                                \
     void qset_drop_##name(QSet_##name& s) noexcept;                            \
     const typeName& qset_get_unchecked_##name(const QSet_##name& s,            \
                                               ::std::size_t pos) noexcept;     \
     void qset_insert_##name(QSet_##name& s, const typeName& value) noexcept;   \
-    std::size_t qset_len_##name(const QSet_##name& s) noexcept;                \
-    bool qset_remove_##name(QSet_##name& s, const typeName& value) noexcept;   \
+    ::std::size_t qset_len_##name(const QSet_##name& s) noexcept;              \
   }                                                                            \
   }                                                                            \
   }

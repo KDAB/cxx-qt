@@ -24,14 +24,19 @@ pub mod ffi {
         type QSet_$1 = crate::QSet<$1>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_$1);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_$1, _: &$1) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_$1, _: &$1) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_$1"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_$1(_: &mut QSet_$1);
         #[rust_name = "clone"]
         fn qset_clone_$1(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "contains"]
-        fn qset_contains_$1(_: &QSet_$1, _: &$1) -> bool;
         #[rust_name = "default"]
         fn qset_default_$1() -> QSet_$1;
         #[rust_name = "drop"]
@@ -43,8 +48,6 @@ pub mod ffi {
         fn qset_insert_$1(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len"]
         fn qset_len_$1(_: &QSet_$1) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_$1(_: &mut QSet_$1, _: &$1) -> bool;
     }
 }
 EOF
@@ -68,14 +71,19 @@ pub mod ffi {
         type QSet_$1 = crate::QSet<$1>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_$1);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_$1, _: &$1) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_$1, _: &$1) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_$1"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_$1(_: &mut QSet_$1);
         #[rust_name = "clone"]
         fn qset_clone_$1(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "contains"]
-        fn qset_contains_$1(_: &QSet_$1, _: &$1) -> bool;
         #[rust_name = "default"]
         fn qset_default_$1() -> QSet_$1;
         #[rust_name = "drop"]
@@ -86,8 +94,6 @@ pub mod ffi {
         fn qset_insert_$1(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len"]
         fn qset_len_$1(_: &QSet_$1) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_$1(_: &mut QSet_$1, _: &$1) -> bool;
     }
 }
 EOF
