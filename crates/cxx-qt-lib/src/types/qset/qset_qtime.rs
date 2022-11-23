@@ -13,14 +13,19 @@ pub mod ffi {
         type QSet_QTime = crate::QSet<QTime>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_QTime);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_QTime, _: &QTime) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_QTime, _: &QTime) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_QTime"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_QTime(_: &mut QSet_QTime);
         #[rust_name = "clone"]
         fn qset_clone_QTime(_: &QSet_QTime) -> QSet_QTime;
-        #[rust_name = "contains"]
-        fn qset_contains_QTime(_: &QSet_QTime, _: &QTime) -> bool;
         #[rust_name = "default"]
         fn qset_default_QTime() -> QSet_QTime;
         #[rust_name = "drop"]
@@ -31,7 +36,5 @@ pub mod ffi {
         fn qset_insert_QTime(_: &mut QSet_QTime, _: &QTime);
         #[rust_name = "len"]
         fn qset_len_QTime(_: &QSet_QTime) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_QTime(_: &mut QSet_QTime, _: &QTime) -> bool;
     }
 }

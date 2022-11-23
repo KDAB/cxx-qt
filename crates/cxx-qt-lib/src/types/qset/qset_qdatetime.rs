@@ -13,14 +13,19 @@ pub mod ffi {
         type QSet_QDateTime = crate::QSet<QDateTime>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_QDateTime);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_QDateTime, _: &QDateTime) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_QDateTime, _: &QDateTime) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_QDateTime"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_QDateTime(_: &mut QSet_QDateTime);
         #[rust_name = "clone"]
         fn qset_clone_QDateTime(_: &QSet_QDateTime) -> QSet_QDateTime;
-        #[rust_name = "contains"]
-        fn qset_contains_QDateTime(_: &QSet_QDateTime, _: &QDateTime) -> bool;
         #[rust_name = "default"]
         fn qset_default_QDateTime() -> QSet_QDateTime;
         #[rust_name = "drop"]
@@ -31,7 +36,5 @@ pub mod ffi {
         fn qset_insert_QDateTime(_: &mut QSet_QDateTime, _: &QDateTime);
         #[rust_name = "len"]
         fn qset_len_QDateTime(_: &QSet_QDateTime) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_QDateTime(_: &mut QSet_QDateTime, _: &QDateTime) -> bool;
     }
 }

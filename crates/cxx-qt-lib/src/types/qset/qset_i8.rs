@@ -10,14 +10,19 @@ pub mod ffi {
         type QSet_i8 = crate::QSet<i8>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_i8);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_i8, _: &i8) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_i8, _: &i8) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_i8"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_i8(_: &mut QSet_i8);
         #[rust_name = "clone"]
         fn qset_clone_i8(_: &QSet_i8) -> QSet_i8;
-        #[rust_name = "contains"]
-        fn qset_contains_i8(_: &QSet_i8, _: &i8) -> bool;
         #[rust_name = "default"]
         fn qset_default_i8() -> QSet_i8;
         #[rust_name = "drop"]
@@ -29,7 +34,5 @@ pub mod ffi {
         fn qset_insert_i8(_: &mut QSet_i8, _: &i8);
         #[rust_name = "len"]
         fn qset_len_i8(_: &QSet_i8) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_i8(_: &mut QSet_i8, _: &i8) -> bool;
     }
 }

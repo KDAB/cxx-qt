@@ -10,14 +10,19 @@ pub mod ffi {
         type QSet_u32 = crate::QSet<u32>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_u32);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_u32, _: &u32) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_u32, _: &u32) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_u32"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_u32(_: &mut QSet_u32);
         #[rust_name = "clone"]
         fn qset_clone_u32(_: &QSet_u32) -> QSet_u32;
-        #[rust_name = "contains"]
-        fn qset_contains_u32(_: &QSet_u32, _: &u32) -> bool;
         #[rust_name = "default"]
         fn qset_default_u32() -> QSet_u32;
         #[rust_name = "drop"]
@@ -29,7 +34,5 @@ pub mod ffi {
         fn qset_insert_u32(_: &mut QSet_u32, _: &u32);
         #[rust_name = "len"]
         fn qset_len_u32(_: &QSet_u32) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_u32(_: &mut QSet_u32, _: &u32) -> bool;
     }
 }

@@ -28,20 +28,9 @@
   namespace cxxqtlib1 {                                                        \
   namespace qset_##name                                                        \
   {                                                                            \
-    void qset_clear_##name(QSet_##name& s) noexcept                            \
-    {                                                                          \
-      s.clear();                                                               \
-    }                                                                          \
-                                                                               \
     QSet_##name qset_clone_##name(const QSet_##name& s) noexcept               \
     {                                                                          \
       return QSet(s);                                                          \
-    }                                                                          \
-                                                                               \
-    bool qset_contains_##name(const QSet_##name& s,                            \
-                              const typeName& value) noexcept                  \
-    {                                                                          \
-      return s.contains(value);                                                \
     }                                                                          \
                                                                                \
     QSet_##name qset_default_##name() noexcept                                 \
@@ -70,12 +59,7 @@
                                                                                \
     ::std::size_t qset_len_##name(const QSet_##name& s) noexcept               \
     {                                                                          \
-      return static_cast<::std::size_t>(s.size());                             \
-    }                                                                          \
-                                                                               \
-    bool qset_remove_##name(QSet_##name& s, const typeName& value) noexcept    \
-    {                                                                          \
-      return s.remove(value);                                                  \
+      return static_cast<::std ::size_t>(s.size());                            \
     }                                                                          \
   }                                                                            \
   }                                                                            \

@@ -10,14 +10,19 @@ pub mod ffi {
         type QSet_u16 = crate::QSet<u16>;
     }
 
+    unsafe extern "C++" {
+        #[rust_name = "cxx_clear"]
+        fn clear(self: &mut QSet_u16);
+        #[rust_name = "cxx_contains"]
+        fn contains(self: &QSet_u16, _: &u16) -> bool;
+        #[rust_name = "cxx_remove"]
+        fn remove(self: &mut QSet_u16, _: &u16) -> bool;
+    }
+
     #[namespace = "rust::cxxqtlib1::qset_u16"]
     unsafe extern "C++" {
-        #[rust_name = "clear"]
-        fn qset_clear_u16(_: &mut QSet_u16);
         #[rust_name = "clone"]
         fn qset_clone_u16(_: &QSet_u16) -> QSet_u16;
-        #[rust_name = "contains"]
-        fn qset_contains_u16(_: &QSet_u16, _: &u16) -> bool;
         #[rust_name = "default"]
         fn qset_default_u16() -> QSet_u16;
         #[rust_name = "drop"]
@@ -29,7 +34,5 @@ pub mod ffi {
         fn qset_insert_u16(_: &mut QSet_u16, _: &u16);
         #[rust_name = "len"]
         fn qset_len_u16(_: &QSet_u16) -> usize;
-        #[rust_name = "remove"]
-        fn qset_remove_u16(_: &mut QSet_u16, _: &u16) -> bool;
     }
 }
