@@ -8,6 +8,8 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
+use convert_case::{Case, Casing};
+use quote::format_ident;
 use syn::Ident;
 
 /// Describes an ident which potentially has a different name in C++ and Rust
@@ -16,4 +18,13 @@ pub struct CombinedIdent {
     pub cpp: Ident,
     /// The ident for rust
     pub rust: Ident,
+}
+
+impl From<Ident> for CombinedIdent {
+    fn from(ident: Ident) -> Self {
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
+    }
 }

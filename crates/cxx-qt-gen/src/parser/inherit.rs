@@ -1,9 +1,16 @@
 use crate::{
-    parser::parameter::ParsedFunctionParameter, syntax::implitemmethod::is_method_mutable,
+    generator::naming::CombinedIdent,
+    parser::parameter::ParsedFunctionParameter,
+    syntax::{
+        attribute::{attribute_tokens_to_ident, attribute_tokens_to_value},
+        implitemmethod::is_method_mutable,
+    },
 };
+use quote::format_ident;
 use syn::{
     parse::{Parse, ParseStream},
-    ForeignItemFn, Result,
+    spanned::Spanned,
+    Error, ForeignItemFn, LitStr, Result,
 };
 
 /// This type is used when parsing the `cxx_qt::inherit!` macro contents into raw ForeignItemFn items
@@ -29,6 +36,8 @@ pub struct ParsedInheritedMethod {
     pub mutable: bool,
     /// the parameters of the method, without the `self` argument
     pub parameters: Vec<ParsedFunctionParameter>,
+    /// the name of the function in Rust, as well as C++
+    pub ident: CombinedIdent,
 }
 
 impl ParsedInheritedMethod {
@@ -37,10 +46,26 @@ impl ParsedInheritedMethod {
 
         let parameters = ParsedFunctionParameter::parse_all_without_receiver(&method.sig)?;
 
+        let mut ident = CombinedIdent::from(method.sig.ident.clone());
+        for attribute in &method.attrs {
+            if !attribute.path.is_ident(&format_ident!("cxx_name")) {
+                return Err(Error::new(
+                    attribute.span(),
+                    "Unsupported attribute in cxx_qt::inherit!",
+                ));
+            }
+
+            let name = attribute_tokens_to_value::<LitStr>(attribute)?;
+
+            ident.cpp = format_ident!("{}", name.value());
+        }
+        ident.cpp = format_ident!("{}_cxxqt_inherit", &ident.cpp);
+
         Ok(Self {
             method,
             mutable,
             parameters,
+            ident,
         })
     }
 }

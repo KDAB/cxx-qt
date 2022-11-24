@@ -23,17 +23,9 @@ impl From<&ImplItemMethod> for QInvokableName {
     fn from(method: &ImplItemMethod) -> Self {
         let ident = &method.sig.ident;
         Self {
-            name: name_from_ident(ident),
+            name: ident.clone().into(),
             wrapper: wrapper_from_ident(ident),
         }
-    }
-}
-
-/// For a given ident generate the Rust and C++ names
-fn name_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident.clone(),
     }
 }
 

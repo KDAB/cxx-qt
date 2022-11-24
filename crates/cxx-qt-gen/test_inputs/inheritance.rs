@@ -20,7 +20,7 @@ mod inheritance {
         }
 
         cxx_qt::inherit! {
-            fn buddy(&self, index: &QModelIndex) -> QModelIndex;
+            fn fetch_more(self: Pin<&mut Self>, index: &QModelIndex);
 
             #[cxx_name="hasChildren"]
             fn has_children_super(&self, parent: &QModelIndex) -> bool;

@@ -17,6 +17,7 @@ mod inheritance {
     unsafe extern "C++" {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
+
     }
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
@@ -34,6 +35,14 @@ mod inheritance {
     extern "Rust" {
         #[cxx_name = "hasChildrenWrapper"]
         fn has_children_wrapper(self: &MyObject, cpp: &MyObjectQt, _parent: &QModelIndex) -> bool;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "fetchMore_cxxqt_inherit"]
+        fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "hasChildren_cxxqt_inherit"]
+        fn has_children_super(self: &MyObjectQt, parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
         type MyObjectCxxQtThread;

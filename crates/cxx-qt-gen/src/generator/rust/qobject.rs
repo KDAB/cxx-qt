@@ -12,9 +12,11 @@ use crate::{
             signals::generate_rust_signals,
         },
     },
-    parser::qobject::ParsedQObject,
+    parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject},
 };
-use quote::quote;
+use convert_case::{Case, Casing};
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote, TokenStreamExt};
 use syn::{Ident, ImplItemMethod, Item, Result};
 
 #[derive(Default)]
@@ -90,6 +92,10 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
+        generated.blocks.append(&mut generate_inherited_methods(
+            &qobject_idents,
+            &*qobject.inherited_methods,
+        )?);
 
         if let Some(signals_enum) = &qobject.signals {
             generated
@@ -140,6 +146,46 @@ pub fn generate_methods(
             .collect::<Result<Vec<Item>>>()?,
     );
 
+    Ok(blocks)
+}
+
+fn generate_inherited_methods(
+    qobject_ident: &QObjectName,
+    methods: &[ParsedInheritedMethod],
+) -> Result<GeneratedRustQObjectBlocks> {
+    let mut blocks = GeneratedRustQObjectBlocks::default();
+    let qobject_name = &qobject_ident.cpp_class.rust;
+
+    let mut bridges = methods
+        .iter()
+        .map(|method| {
+            let parameters = method
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let ident = &parameter.ident;
+                    let ty = &parameter.ty;
+                    quote! { #ident: #ty }
+                })
+                .collect::<Vec<TokenStream>>();
+            let ident = &method.method.sig.ident;
+            let cxx_name_string = &method.ident.cpp.to_string();
+            let self_param = if method.mutable {
+                quote! { self: Pin<&mut #qobject_name> }
+            } else {
+                quote! { self: &#qobject_name }
+            };
+            let return_type = &method.method.sig.output;
+            syn::parse2(quote! {
+                unsafe extern "C++" {
+                    #[cxx_name=#cxx_name_string]
+                    fn #ident(#self_param, #(#parameters),*) #return_type;
+                }
+            })
+        })
+        .collect::<Result<Vec<Item>>>()?;
+
+    blocks.cxx_mod_contents.append(&mut bridges);
     Ok(blocks)
 }
 
