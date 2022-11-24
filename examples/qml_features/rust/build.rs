@@ -12,6 +12,7 @@ fn main() {
         .cc_builder(|cc| {
             cc.include("../cpp");
         })
+        .file("src/containers.rs")
         .file("src/custom_base_class.rs")
         .file("src/invokables.rs")
         .file("src/multiple_qobjects.rs")

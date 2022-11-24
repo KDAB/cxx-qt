@@ -96,6 +96,10 @@ ApplicationWindow {
                     source: "qrc:/pages/TypesPage.qml"
                 }
                 ListElement {
+                    name: "Containers"
+                    source: "qrc:/pages/ContainersPage.qml"
+                }
+                ListElement {
                     name: "Multiple QObjects"
                     source: "qrc:/pages/MultipleQObjectsPage.qml"
                 }
