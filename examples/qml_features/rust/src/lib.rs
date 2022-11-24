@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod containers;
 mod custom_base_class;
 mod invokables;
 mod multiple_qobjects;
