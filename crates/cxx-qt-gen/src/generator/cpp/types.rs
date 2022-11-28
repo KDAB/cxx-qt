@@ -6,7 +6,7 @@
 use std::collections::BTreeMap;
 use syn::{
     spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
-    ReturnType, Type, TypeArray, TypeBareFn, TypeReference, TypeSlice,
+    ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
 };
 
 /// A helper for describing a C++ type
@@ -111,6 +111,13 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
                 Ok(ty_strings.join("::"))
             }
         }
+        Type::Ptr(TypePtr {
+            const_token, elem, ..
+        }) => Ok(format!(
+            "{is_const}{ty}*",
+            is_const = if const_token.is_some() { "const " } else { "" },
+            ty = to_cpp_string(elem, cxx_names_map)?
+        )),
         Type::Reference(TypeReference {
             mutability, elem, ..
         }) => {
@@ -343,6 +350,54 @@ mod tests {
     }
 
     #[test]
+    fn test_to_cpp_string_ref_const_ptr_mut_one_part() {
+        let ty = tokens_to_syn(quote! { &*mut T });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "T* const&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_ref_const_ptr_const_one_part() {
+        let ty = tokens_to_syn(quote! { &*const T });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const T* const&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_ref_mut_ptr_mut_one_part() {
+        let ty = tokens_to_syn(quote! { &mut *mut T });
+        assert_eq!(to_cpp_string(&ty, &cxx_names_map_default()).unwrap(), "T*&");
+    }
+
+    #[test]
+    fn test_to_cpp_string_ref_mut_ptr_const_one_part() {
+        let ty = tokens_to_syn(quote! { &mut *const T });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const T*&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_ptr_mut_one_part() {
+        let ty = tokens_to_syn(quote! { *mut T });
+        assert_eq!(to_cpp_string(&ty, &cxx_names_map_default()).unwrap(), "T*");
+    }
+
+    #[test]
+    fn test_to_cpp_string_ptr_const_one_part() {
+        let ty = tokens_to_syn(quote! { *const T });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const T*"
+        );
+    }
+
+    #[test]
     fn test_to_cpp_string_templated_built_in() {
         let ty = tokens_to_syn(quote! { Vec<f64> });
         assert_eq!(
@@ -370,11 +425,47 @@ mod tests {
     }
 
     #[test]
+    fn test_to_cpp_string_templated_built_in_ptr_mut() {
+        let ty = tokens_to_syn(quote! { &Vec<*mut T> });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Vec<T*> const&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_templated_built_in_ptr_const() {
+        let ty = tokens_to_syn(quote! { &Vec<*const T> });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Vec<const T*> const&"
+        );
+    }
+
+    #[test]
     fn test_to_cpp_string_templated_unknown_ref_mut() {
         let ty = tokens_to_syn(quote! { &mut UniquePtr<QColor> });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
             "::std::unique_ptr<QColor>&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_templated_unknown_ptr_mut() {
+        let ty = tokens_to_syn(quote! { &mut UniquePtr<*mut T> });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<T*>&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_templated_unknown_ptr_const() {
+        let ty = tokens_to_syn(quote! { &mut UniquePtr<*const T> });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<const T*>&"
         );
     }
 

@@ -8,6 +8,7 @@ mod containers;
 mod custom_base_class;
 mod invokables;
 mod multiple_qobjects;
+mod nested_qobjects;
 mod properties;
 mod serialisation;
 mod signals;
