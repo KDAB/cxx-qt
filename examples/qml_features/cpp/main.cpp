@@ -10,6 +10,7 @@
 
 #include "cxx-qt-gen/custom_base_class.cxxqt.h"
 #include "cxx-qt-gen/multiple_qobjects.cxxqt.h"
+#include "cxx-qt-gen/nested_qobjects.cxxqt.h"
 #include "cxx-qt-gen/rust_containers.cxxqt.h"
 #include "cxx-qt-gen/rust_invokables.cxxqt.h"
 #include "cxx-qt-gen/rust_properties.cxxqt.h"
@@ -57,6 +58,8 @@ main(int argc, char* argv[])
     "com.kdab.cxx_qt.demo", 1, 0, "ThreadingWebsite");
   // ANCHOR_END: book_namespace_register
   qmlRegisterType<Types>("com.kdab.cxx_qt.demo", 1, 0, "Types");
+  qmlRegisterType<InnerObject>("com.kdab.cxx_qt.demo", 1, 0, "InnerObject");
+  qmlRegisterType<OuterObject>("com.kdab.cxx_qt.demo", 1, 0, "OuterObject");
 
   engine.load(url);
 

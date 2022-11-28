@@ -19,6 +19,7 @@ Then we have multiple other examples available inside the projects
   * [How to (de)serialise QObjects](./qml_features/rust/src/serialisation.rs)
   * [Using Qt types such as QVariant](./qml_features/rust/src/types.rs)
   * [Defining multiple QObjects in a single bridge](./qml_features/rust/src/multiple_qobjects.rs)
+  * [Nested objects](./qml_features/rust/src/nested_qobjects.rs)
   * [Exposing the Rust objects via a QQmlExtensionPlugin](./qml_extension_plugin/plugin/)
 
 For documentation on how to use these features please visit our Book [https://kdab.github.io/cxx-qt/book/](https://kdab.github.io/cxx-qt/book/).

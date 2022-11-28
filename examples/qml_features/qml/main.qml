@@ -103,6 +103,10 @@ ApplicationWindow {
                     name: "Multiple QObjects"
                     source: "qrc:/pages/MultipleQObjectsPage.qml"
                 }
+                ListElement {
+                    name: "Nested QObjects"
+                    source: "qrc:/pages/NestedQObjectsPage.qml"
+                }
             }
         }
     }

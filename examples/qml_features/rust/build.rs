@@ -16,6 +16,7 @@ fn main() {
         .file("src/custom_base_class.rs")
         .file("src/invokables.rs")
         .file("src/multiple_qobjects.rs")
+        .file("src/nested_qobjects.rs")
         .file("src/serialisation.rs")
         .file("src/signals.rs")
         .file("src/properties.rs")
