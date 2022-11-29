@@ -128,4 +128,9 @@ mod tests {
     fn generates_signals() {
         test_code_generation!("signals");
     }
+
+    #[test]
+    fn generates_inheritance() {
+        test_code_generation!("inheritance");
+    }
 }

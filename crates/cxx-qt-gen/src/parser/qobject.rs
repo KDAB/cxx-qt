@@ -3,18 +3,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    invokable::ParsedQInvokable,
-    property::{ParsedQProperty, ParsedRustField},
-    signals::ParsedSignalsEnum,
-};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
     fields::fields_to_named_fields_mut,
 };
+use crate::{
+    parser::{
+        inherit::*,
+        invokable::ParsedQInvokable,
+        property::{ParsedQProperty, ParsedRustField},
+        signals::ParsedSignalsEnum,
+    },
+    syntax,
+};
 use syn::{
-    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
-    Result,
+    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMacro, ImplItemMethod, Item,
+    ItemStruct, LitStr, Result,
 };
 
 /// Metadata for registering QML element
@@ -46,6 +50,8 @@ pub struct ParsedQObject {
     ///
     /// These will also be exposed as Q_INVOKABLE on the C++ object
     pub invokables: Vec<ParsedQInvokable>,
+    /// List of inherited methods
+    pub inherited_methods: Vec<ParsedInheritedMethod>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// Note that they will only be visible on the Rust side
@@ -97,6 +103,7 @@ impl ParsedQObject {
             namespace,
             signals: None,
             invokables: vec![],
+            inherited_methods: vec![],
             methods: vec![],
             properties,
             fields,
@@ -182,6 +189,17 @@ impl ParsedQObject {
         Ok(())
     }
 
+    fn parse_impl_inherit(&mut self, mac: &ImplItemMacro) -> Result<()> {
+        let inherited: InheritMethods = mac.mac.parse_body()?;
+
+        for method in inherited.base_functions.into_iter() {
+            self.inherited_methods
+                .push(ParsedInheritedMethod::parse(method)?);
+        }
+
+        Ok(())
+    }
+
     /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
     ///
     /// These will have come from a impl qobject::T block
@@ -191,6 +209,11 @@ impl ParsedQObject {
             match item {
                 ImplItem::Method(method) => {
                     self.parse_impl_method(method)?;
+                }
+                ImplItem::Macro(mac) => {
+                    if syntax::path::path_compare_str(&mac.mac.path, &["cxx_qt", "inherit"]) {
+                        self.parse_impl_inherit(mac)?;
+                    }
                 }
                 _ => {
                     return Err(Error::new(item.span(), "Only methods are supported."));
@@ -355,6 +378,35 @@ pub mod tests {
         assert!(qobject.invokables[2]
             .specifiers
             .contains(&ParsedQInvokableSpecifiers::Virtual));
+    }
+
+    #[test]
+    fn test_parse_inherited_methods() {
+        let mut qobject = create_parsed_qobject();
+        let item: ItemImpl = tokens_to_syn(quote! {
+            impl T {
+                cxx_qt::inherit! {
+                    fn test(&self);
+
+                    fn with_args(&self, arg: i32);
+
+                    #[cxx_name="withRename"]
+                    fn with_rename(self: Pin<&mut Self>, arg: i32);
+                }
+            }
+        });
+        assert!(qobject.parse_impl_items(&item.items).is_ok());
+
+        let inherited = &qobject.inherited_methods;
+        assert_eq!(inherited.len(), 3);
+        assert_eq!(inherited[0].mutable, false);
+        assert_eq!(inherited[1].mutable, false);
+        assert_eq!(inherited[2].mutable, true);
+        assert_eq!(inherited[0].parameters.len(), 0);
+        assert_eq!(inherited[1].parameters.len(), 1);
+        assert_eq!(inherited[1].parameters[0].ident, "arg");
+        assert_eq!(inherited[2].parameters.len(), 1);
+        assert_eq!(inherited[2].parameters[0].ident, "arg");
     }
 
     #[test]
