@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use syn::{
-    FnArg, GenericArgument, ImplItemMethod, Pat, PatIdent, PatType, PathArguments, Receiver, Type,
+    FnArg, GenericArgument, Pat, PatIdent, PatType, PathArguments, Receiver, Signature, Type,
     TypePath, TypeReference,
 };
 
@@ -12,8 +12,8 @@ use syn::{
 //
 // Note that self: Box<Self> is parsed as FnArg::Typed not FnArg::Receiver so will be false
 // but we don't use this case with CXX, so this can be ignored.
-pub fn is_method_mutable(method: &ImplItemMethod) -> bool {
-    match method.sig.inputs.first() {
+pub fn is_method_mutable(signature: &Signature) -> bool {
+    match signature.inputs.first() {
         Some(FnArg::Receiver(Receiver { mutability, .. })) => mutability.is_some(),
         Some(FnArg::Typed(PatType { ty, pat, .. })) => {
             // Check if the parameter name is self, if it isn't then ignore
@@ -59,30 +59,46 @@ mod tests {
 
     use crate::tests::tokens_to_syn;
     use quote::quote;
+    use syn::ImplItemMethod;
 
     #[test]
     fn test_is_method_mutable_self() {
-        assert!(!is_method_mutable(&tokens_to_syn(quote! {
-            fn invokable(&self) {}
-        })));
+        assert!(!is_method_mutable(
+            &tokens_to_syn::<ImplItemMethod>(quote! {
+                fn invokable(&self) {}
+            })
+            .sig
+        ));
 
-        assert!(is_method_mutable(&tokens_to_syn(quote! {
-            fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
-        })));
+        assert!(is_method_mutable(
+            &tokens_to_syn::<ImplItemMethod>(quote! {
+                fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
+            })
+            .sig
+        ));
     }
 
     #[test]
     fn test_is_method_mutable_value() {
-        assert!(!is_method_mutable(&tokens_to_syn(quote! {
-            fn invokable(value: T) {}
-        })));
+        assert!(!is_method_mutable(
+            &tokens_to_syn::<ImplItemMethod>(quote! {
+                fn invokable(value: T) {}
+            })
+            .sig
+        ));
 
-        assert!(!is_method_mutable(&tokens_to_syn(quote! {
-            fn invokable_with_return_cxx_type(value: Pin<&mut T>) -> f64 {}
-        })));
+        assert!(!is_method_mutable(
+            &tokens_to_syn::<ImplItemMethod>(quote! {
+                fn invokable_with_return_cxx_type(value: Pin<&mut T>) -> f64 {}
+            })
+            .sig
+        ));
 
-        assert!(!is_method_mutable(&tokens_to_syn(quote! {
-            fn invokable_with_return_cxx_type(mut value: T) -> f64 {}
-        })));
+        assert!(!is_method_mutable(
+            &tokens_to_syn::<ImplItemMethod>(quote! {
+                fn invokable_with_return_cxx_type(mut value: T) -> f64 {}
+            })
+            .sig
+        ));
     }
 }
