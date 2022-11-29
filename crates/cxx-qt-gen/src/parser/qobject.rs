@@ -4,22 +4,18 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
-    parameter::ParsedFunctionParameter,
+    invokable::ParsedQInvokable,
     property::{ParsedQProperty, ParsedRustField},
     signals::ParsedSignalsEnum,
 };
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
     fields::fields_to_named_fields_mut,
-    implitemmethod::is_method_mutable,
 };
-use std::collections::HashSet;
 use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
     Result,
 };
-use syn::{FnArg, Pat, PatIdent, PatType};
 
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
@@ -87,91 +83,29 @@ impl ParsedQObject {
         })
     }
 
+    fn parse_impl_method(&mut self, method: &ImplItemMethod) -> Result<()> {
+        if let Some(invokable) = ParsedQInvokable::try_parse(method)? {
+            self.invokables.push(invokable);
+        } else {
+            self.methods.push(method.clone());
+        }
+        Ok(())
+    }
+
     /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
     ///
     /// These will have come from a impl qobject::T block
     pub fn parse_impl_items(&mut self, items: &[ImplItem]) -> Result<()> {
         for item in items {
             // Check if this item is a method
-            if let ImplItem::Method(method) = item {
-                // Determine if this method is an invokable
-                if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"]) {
-                    // Parse any return_cxx_type in the qproperty macro
-                    let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-                        &method.attrs[index],
-                        AttributeDefault::Some(|span| LitStr::new("", span)),
-                    )?;
-                    let return_cxx_type = attrs_map
-                        .get(&quote::format_ident!("return_cxx_type"))
-                        .map(|lit_str| lit_str.value());
-
-                    // Parse any C++ specifiers
-                    let mut specifiers = HashSet::new();
-                    if attrs_map.contains_key(&quote::format_ident!("cxx_final")) {
-                        specifiers.insert(ParsedQInvokableSpecifiers::Final);
-                    }
-                    if attrs_map.contains_key(&quote::format_ident!("cxx_override")) {
-                        specifiers.insert(ParsedQInvokableSpecifiers::Override);
-                    }
-                    if attrs_map.contains_key(&quote::format_ident!("cxx_virtual")) {
-                        specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
-                    }
-
-                    // Determine if the invokable is mutable
-                    let mutable = is_method_mutable(method);
-
-                    // Read the signal inputs into parameter blocks
-                    let parameters = method
-                        .sig
-                        .inputs
-                        .iter()
-                        .map(|input| {
-                            match input {
-                                FnArg::Typed(PatType { pat, ty, .. }) => {
-                                    let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                                        ident.clone()
-                                    } else {
-                                        return Err(Error::new(
-                                            input.span(),
-                                            "Invalid argument ident format.",
-                                        ));
-                                    };
-
-                                    // Ignore self as a parameter
-                                    if ident == "self" {
-                                        return Ok(None);
-                                    }
-
-                                    Ok(Some(ParsedFunctionParameter {
-                                        ident,
-                                        ty: (**ty).clone(),
-                                        // TODO: later we might support cxx_type for parameters in invokables
-                                        cxx_type: None,
-                                    }))
-                                }
-                                // Ignore self as a parameter
-                                FnArg::Receiver(_) => Ok(None),
-                            }
-                        })
-                        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
-                        .collect::<Result<Vec<ParsedFunctionParameter>>>()?;
-
-                    // Remove the invokable attribute
-                    let mut method = method.clone();
-                    method.attrs.remove(index);
-                    self.invokables.push(ParsedQInvokable {
-                        method,
-                        mutable,
-                        parameters,
-                        return_cxx_type,
-                        specifiers,
-                    });
-                } else {
-                    self.methods.push(method.clone());
+            match item {
+                ImplItem::Method(method) => {
+                    self.parse_impl_method(method)?;
                 }
-            } else {
-                return Err(Error::new(item.span(), "Only methods are supported."));
-            };
+                _ => {
+                    return Err(Error::new(item.span(), "Only methods are supported."));
+                }
+            }
         }
 
         Ok(())
@@ -220,7 +154,7 @@ impl ParsedQObject {
 pub mod tests {
     use super::*;
 
-    use crate::parser::tests::f64_type;
+    use crate::parser::{invokable::ParsedQInvokableSpecifiers, tests::f64_type};
     use crate::tests::tokens_to_syn;
     use quote::quote;
     use syn::{ItemImpl, Visibility};
