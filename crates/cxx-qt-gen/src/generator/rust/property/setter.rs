@@ -5,7 +5,7 @@
 
 use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
-    rust::fragment::RustFragmentPair,
+    rust::{fragment::RustFragmentPair, types::is_unsafe_cxx_type},
 };
 use quote::quote;
 use syn::Type;
@@ -22,11 +22,18 @@ pub fn generate(
     let ident = &idents.name.rust;
     let notify_ident = &idents.notify.rust;
 
+    // Determine if unsafe is required due to an unsafe type
+    let has_unsafe = if is_unsafe_cxx_type(ty) {
+        quote! { unsafe }
+    } else {
+        quote! {}
+    };
+
     RustFragmentPair {
         cxx_bridge: vec![quote! {
             extern "Rust" {
                 #[cxx_name = #setter_cpp]
-                fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty);
+                #has_unsafe fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty);
             }
         }],
         implementation: vec![

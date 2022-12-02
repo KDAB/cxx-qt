@@ -78,14 +78,20 @@ mod tests {
                 vis: tokens_to_syn::<syn::Visibility>(quote! { pub }),
                 cxx_type: Some("QColor".to_owned()),
             },
+            ParsedQProperty {
+                ident: format_ident!("unsafe_property"),
+                ty: tokens_to_syn::<syn::Type>(quote! { *mut T }),
+                vis: syn::Visibility::Inherited,
+                cxx_type: None,
+            },
         ];
         let qobject_idents = create_qobjectname();
 
         let generated = generate_rust_properties(&properties, &qobject_idents).unwrap();
 
         // Check that we have the expected number of blocks
-        assert_eq!(generated.cxx_mod_contents.len(), 6);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 10);
+        assert_eq!(generated.cxx_mod_contents.len(), 9);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 15);
 
         // Trivial Property
 
@@ -259,6 +265,94 @@ mod tests {
                 unsafe extern "C++" {
                     #[rust_name = "opaque_property_changed"]
                     fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>);
+                }
+            })
+        );
+
+        // Unsafe Property
+
+        // Getter
+        assert_eq!(
+            generated.cxx_mod_contents[6],
+            tokens_to_syn::<syn::Item>(quote! {
+                extern "Rust" {
+                    #[cxx_name = "getUnsafeProperty"]
+                    unsafe fn unsafe_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a *mut T;
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[10],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObject {
+                    pub fn unsafe_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a *mut T {
+                        cpp.unsafe_property()
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[11],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub fn unsafe_property(&self) -> &*mut T {
+                        &self.rust().unsafe_property
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[12],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub unsafe fn unsafe_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut *mut T {
+                        &mut self.rust_mut().get_unchecked_mut().unsafe_property
+                    }
+                }
+            })
+        );
+
+        // Setters
+        assert_eq!(
+            generated.cxx_mod_contents[7],
+            tokens_to_syn::<syn::Item>(quote! {
+                extern "Rust" {
+                    #[cxx_name = "setUnsafeProperty"]
+                    unsafe fn set_unsafe_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: *mut T);
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[13],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObject {
+                    pub fn set_unsafe_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: *mut T) {
+                        cpp.set_unsafe_property(value);
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[14],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
+                        unsafe {
+                            self.as_mut().rust_mut().unsafe_property = value;
+                        }
+                        self.as_mut().unsafe_property_changed();
+                    }
+                }
+            })
+        );
+
+        // Notify
+        assert_eq!(
+            generated.cxx_mod_contents[8],
+            tokens_to_syn::<syn::Item>(quote! {
+                unsafe extern "C++" {
+                    #[rust_name = "unsafe_property_changed"]
+                    fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
             })
         );
