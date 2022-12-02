@@ -63,6 +63,8 @@ impl Parser {
 
         // Check that there are items in the module
         if let Some(mut items) = module.content {
+            let bridge_namespace = cxx_qt_data.namespace.clone();
+
             // Find any QObject structs
             cxx_qt_data.find_qobject_structs(&items.1)?;
 
@@ -79,11 +81,19 @@ impl Parser {
                     // Try to find any CXX-Qt items, if found add them to the relevant
                     // qobject. Otherwise return them to be added to other
                     if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
+                        // Load any CXX name mappings
+                        cxx_qt_data.parse_cxx_names_map(&other, &bridge_namespace)?;
+
                         // Unknown item so add to the other list
                         others.push(other);
                     }
                 }
             } else {
+                // Load any CXX name mappings
+                for item in &items.1 {
+                    cxx_qt_data.parse_cxx_names_map(item, &bridge_namespace)?;
+                }
+
                 // No qobjects found so pass everything through
                 others.extend(items.1);
             }

@@ -14,11 +14,13 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 use indoc::formatdoc;
+use std::collections::BTreeMap;
 use syn::Result;
 
 pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
+    cxx_names_map: &BTreeMap<String, String>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -30,7 +32,7 @@ pub fn generate_cpp_signals(
         let mut parameter_values = vec![];
 
         for parameter in &signal.parameters {
-            let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type)?;
+            let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type, cxx_names_map)?;
             let ident_str = parameter.ident.to_string();
             parameter_types.push(format!(
                 "{cxx_ty} {ident}",
@@ -120,7 +122,8 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents).unwrap();
+        let generated =
+            generate_cpp_signals(&signals, &qobject_idents, &BTreeMap::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -149,6 +152,49 @@ mod tests {
             MyObject::emitDataChanged(qint32 trivial, ::std::unique_ptr<QColor> opaque)
             {
                 Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
+            }
+            "#}
+        );
+    }
+
+    #[test]
+    fn test_generate_cpp_signals_cxx_names_mapped() {
+        let signals = vec![ParsedSignal {
+            ident: format_ident!("data_changed"),
+            parameters: vec![ParsedFunctionParameter {
+                ident: format_ident!("mapped"),
+                ty: tokens_to_syn(quote! { A1 }),
+                cxx_type: None,
+            }],
+        }];
+        let qobject_idents = create_qobjectname();
+
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_names_map).unwrap();
+
+        assert_eq!(generated.methods.len(), 2);
+        let header = if let CppFragment::Header(header) = &generated.methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(header, "Q_SIGNAL void dataChanged(A1 mapped);");
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, "void emitDataChanged(A1 mapped);");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::emitDataChanged(A1 mapped)
+            {
+                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(std::move(mapped)));
             }
             "#}
         );
