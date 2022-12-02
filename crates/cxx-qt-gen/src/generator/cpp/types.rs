@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeMap;
 use syn::{
     spanned::Spanned, Error, GenericArgument, PathArguments, PathSegment, Result, Type,
     TypeReference,
@@ -36,26 +37,34 @@ impl CppType {
     }
 
     /// Construct a [CppType] from a given [syn::Type] and the contents of the cxx_type attribute
-    pub fn from(ty: &Type, cxx_type: &Option<String>) -> Result<CppType> {
+    pub fn from(
+        ty: &Type,
+        cxx_type: &Option<String>,
+        cxx_names_map: &BTreeMap<String, String>,
+    ) -> Result<CppType> {
         Ok(CppType {
             cxx_type: cxx_type.clone(),
-            ty: to_cpp_string(ty)?,
+            ty: to_cpp_string(ty, cxx_names_map)?,
         })
     }
 }
 
 /// For a given Rust type attempt to generate a C++ string
-fn to_cpp_string(ty: &Type) -> Result<String> {
+fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<String> {
     match ty {
         Type::Path(ty_path) => {
             let ty_strings = ty_path
                 .path
                 .segments
                 .iter()
-                .map(path_segment_to_string)
+                .map(|generic| path_segment_to_string(generic, cxx_names_map))
                 .collect::<Result<Vec<String>>>()?;
             if ty_strings.len() == 1 {
-                Ok(possible_built_in(ty_strings.first().unwrap()))
+                let first = ty_strings.first().unwrap();
+                Ok(cxx_names_map
+                    .get(first)
+                    .cloned()
+                    .unwrap_or_else(|| possible_built_in(first)))
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -65,7 +74,7 @@ fn to_cpp_string(ty: &Type) -> Result<String> {
         }) => Ok(format!(
             "{is_const}{ty}&",
             is_const = if mutability.is_some() { "" } else { "const " },
-            ty = to_cpp_string(elem)?
+            ty = to_cpp_string(elem, cxx_names_map)?
         )),
         _others => Err(Error::new(
             ty.span(),
@@ -75,9 +84,12 @@ fn to_cpp_string(ty: &Type) -> Result<String> {
 }
 
 /// Convert any generic arguments to C++, eg A and B in Ty<A, B>
-fn generic_argument_to_string(generic: &GenericArgument) -> Result<String> {
+fn generic_argument_to_string(
+    generic: &GenericArgument,
+    cxx_names_map: &BTreeMap<String, String>,
+) -> Result<String> {
     match generic {
-        GenericArgument::Type(ty) => to_cpp_string(ty),
+        GenericArgument::Type(ty) => to_cpp_string(ty, cxx_names_map),
         _others => Err(Error::new(
             generic.span(),
             "Unsupported GenericArgument type",
@@ -86,13 +98,16 @@ fn generic_argument_to_string(generic: &GenericArgument) -> Result<String> {
 }
 
 /// Convert the arguments for a path to C++, eg this is the whole <T> block
-fn path_argument_to_string(args: &PathArguments) -> Result<Option<Vec<String>>> {
+fn path_argument_to_string(
+    args: &PathArguments,
+    cxx_names_map: &BTreeMap<String, String>,
+) -> Result<Option<Vec<String>>> {
     match args {
         PathArguments::AngleBracketed(angled) => Ok(Some(
             angled
                 .args
                 .iter()
-                .map(generic_argument_to_string)
+                .map(|generic| generic_argument_to_string(generic, cxx_names_map))
                 .collect::<Result<Vec<String>>>()?,
         )),
         PathArguments::Parenthesized(_) => Err(Error::new(
@@ -104,17 +119,20 @@ fn path_argument_to_string(args: &PathArguments) -> Result<Option<Vec<String>>> 
 }
 
 /// Convert a segment of a path to C++
-fn path_segment_to_string(segment: &PathSegment) -> Result<String> {
+fn path_segment_to_string(
+    segment: &PathSegment,
+    cxx_names_map: &BTreeMap<String, String>,
+) -> Result<String> {
     let mut ident = segment.ident.to_string();
 
     // If we are a Pin<T> then for C++ it becomes just T
     let args = if ident == "Pin" {
-        ident = path_argument_to_string(&segment.arguments)?
+        ident = path_argument_to_string(&segment.arguments, cxx_names_map)?
             .map_or_else(|| "".to_owned(), |values| values.join(", "));
 
         None
     } else {
-        path_argument_to_string(&segment.arguments)?.map(|values| values.join(", "))
+        path_argument_to_string(&segment.arguments, cxx_names_map)?.map(|values| values.join(", "))
     };
 
     // If there are template args check that we aren't a recognised A of A<B>
@@ -189,10 +207,15 @@ mod tests {
     use crate::tests::tokens_to_syn;
     use quote::quote;
 
+    fn cxx_names_map_default() -> BTreeMap<String, String> {
+        BTreeMap::default()
+    }
+
     #[test]
     fn test_cxx_type_with_attribute() {
         let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
-        let cxx_ty = CppType::from(&ty, &Some("QColor".to_owned())).unwrap();
+        let cxx_ty =
+            CppType::from(&ty, &Some("QColor".to_owned()), &cxx_names_map_default()).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "QColor");
         assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
     }
@@ -200,92 +223,156 @@ mod tests {
     #[test]
     fn test_cxx_type_without_attribute() {
         let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
-        let cxx_ty = CppType::from(&ty, &None).unwrap();
+        let cxx_ty = CppType::from(&ty, &None, &cxx_names_map_default()).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "::std::unique_ptr<QColor>");
         assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
     }
 
     #[test]
+    fn test_cxx_type_mapped() {
+        let ty = tokens_to_syn(quote! { A });
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        let cxx_ty = CppType::from(&ty, &None, &cxx_names_map).unwrap();
+        assert_eq!(cxx_ty.as_cxx_ty(), "A1");
+        assert_eq!(cxx_ty.as_rust_ty(), "A1");
+    }
+
+    #[test]
+    fn test_cxx_type_mapped_with_attribute() {
+        let ty = tokens_to_syn(quote! { A });
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        let cxx_ty = CppType::from(&ty, &Some("B1".to_owned()), &cxx_names_map).unwrap();
+        assert_eq!(cxx_ty.as_cxx_ty(), "B1");
+        assert_eq!(cxx_ty.as_rust_ty(), "A1");
+    }
+
+    #[test]
     fn test_to_cpp_string_built_in_one_part() {
         let ty = tokens_to_syn(quote! { i32 });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "qint32");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "qint32"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_unknown_one_part() {
         let ty = tokens_to_syn(quote! { QPoint });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "QPoint");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "QPoint"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_ref_const_one_part() {
         let ty = tokens_to_syn(quote! { &QPoint });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "const QPoint&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const QPoint&"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_ref_mut_one_part() {
         let ty = tokens_to_syn(quote! { &mut QPoint });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "QPoint&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "QPoint&"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_templated_built_in() {
         let ty = tokens_to_syn(quote! { Vec<f64> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "::rust::Vec<double>");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Vec<double>"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_templated_unknown() {
         let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<QColor>");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<QColor>"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_templated_built_in_ref_const() {
         let ty = tokens_to_syn(quote! { &Vec<f64> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "const ::rust::Vec<double>&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const ::rust::Vec<double>&"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_templated_unknown_ref_mut() {
         let ty = tokens_to_syn(quote! { &mut UniquePtr<QColor> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<QColor>&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<QColor>&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_mapped() {
+        let ty = tokens_to_syn(quote! { A });
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        assert_eq!(to_cpp_string(&ty, &cxx_names_map).unwrap(), "A1");
     }
 
     #[test]
     fn test_to_cpp_string_pin() {
         let ty = tokens_to_syn(quote! { Pin<T> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "T");
+        assert_eq!(to_cpp_string(&ty, &cxx_names_map_default()).unwrap(), "T");
     }
 
     #[test]
     fn test_to_cpp_string_pin_ref() {
         let ty = tokens_to_syn(quote! { Pin<&T> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "const T&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const T&"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_pin_ref_mut() {
         let ty = tokens_to_syn(quote! { Pin<&mut T> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "T&");
+        assert_eq!(to_cpp_string(&ty, &cxx_names_map_default()).unwrap(), "T&");
     }
 
     #[test]
     fn test_to_cpp_string_pin_template() {
         let ty = tokens_to_syn(quote! { Pin<UniquePtr<T>> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<T>");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<T>"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_pin_template_ref() {
         let ty = tokens_to_syn(quote! { Pin<&UniquePtr<T>> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "const ::std::unique_ptr<T>&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "const ::std::unique_ptr<T>&"
+        );
     }
 
     #[test]
     fn test_to_cpp_string_pin_template_ref_mut() {
         let ty = tokens_to_syn(quote! { Pin<&mut UniquePtr<T>> });
-        assert_eq!(to_cpp_string(&ty).unwrap(), "::std::unique_ptr<T>&");
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::unique_ptr<T>&"
+        );
     }
 }

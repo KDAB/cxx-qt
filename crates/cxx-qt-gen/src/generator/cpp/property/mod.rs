@@ -8,6 +8,7 @@ use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
 };
 use crate::parser::property::ParsedQProperty;
+use std::collections::BTreeMap;
 use syn::Result;
 
 mod getter;
@@ -18,13 +19,14 @@ mod signal;
 pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
+    cxx_names_map: &BTreeMap<String, String>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for property in properties {
         // Cache the idents as they are used in multiple places
         let idents = QPropertyName::from(property);
-        let cxx_ty = CppType::from(&property.ty, &property.cxx_type)?;
+        let cxx_ty = CppType::from(&property.ty, &property.cxx_type, cxx_names_map)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
         generated
@@ -68,7 +70,8 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_properties(&properties, &qobject_idents).unwrap();
+        let generated =
+            generate_cpp_properties(&properties, &qobject_idents, &BTreeMap::default()).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -166,5 +169,70 @@ mod tests {
             panic!("Expected header!")
         };
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
+    }
+
+    #[test]
+    fn test_generate_cpp_properties_cxx_names_mapped() {
+        let properties = vec![ParsedQProperty {
+            ident: format_ident!("mapped_property"),
+            ty: tokens_to_syn(quote! { A1 }),
+            vis: syn::Visibility::Inherited,
+            cxx_type: None,
+        }];
+        let qobject_idents = create_qobjectname();
+
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+
+        let generated =
+            generate_cpp_properties(&properties, &qobject_idents, &cxx_names_map).unwrap();
+
+        // metaobjects
+        assert_eq!(generated.metaobjects.len(), 1);
+        assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(A1 mappedProperty READ getMappedProperty WRITE setMappedProperty NOTIFY mappedPropertyChanged)");
+
+        // methods
+        assert_eq!(generated.methods.len(), 3);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+        assert_str_eq!(header, "const A1& getMappedProperty() const;");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            const A1&
+            MyObject::getMappedProperty() const
+            {
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                return rust::cxxqtlib1::cxx_qt_convert<const A1&, const A1&>{}(m_rustObj->getMappedProperty(*this));
+            }
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+        assert_str_eq!(header, "Q_SLOT void setMappedProperty(const A1& value);");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+                void
+                MyObject::setMappedProperty(const A1& value)
+                {
+                    const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                    m_rustObj->setMappedProperty(*this, rust::cxxqtlib1::cxx_qt_convert<A1, const A1&>{}(value));
+                }
+                "#}
+        );
+        let header = if let CppFragment::Header(header) = &generated.methods[2] {
+            header
+        } else {
+            panic!("Expected header!")
+        };
+        assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
     }
 }

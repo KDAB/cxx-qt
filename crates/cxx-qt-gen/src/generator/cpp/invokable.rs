@@ -16,18 +16,24 @@ use crate::{
     parser::invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
 };
 use indoc::formatdoc;
+use std::collections::BTreeMap;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result, ReturnType};
 
 pub fn generate_cpp_invokables(
     invokables: &Vec<ParsedQInvokable>,
     qobject_idents: &QObjectName,
+    cxx_names_map: &BTreeMap<String, String>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
         let cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
-            Some(CppType::from(ty, &invokable.return_cxx_type)?)
+            Some(CppType::from(
+                ty,
+                &invokable.return_cxx_type,
+                cxx_names_map,
+            )?)
         } else {
             None
         };
@@ -52,7 +58,7 @@ pub fn generate_cpp_invokables(
                     } else {
                         Ok(Some(CppNamedType {
                             ident: ident.to_string(),
-                            ty: CppType::from(ty, &None)?,
+                            ty: CppType::from(ty, &None, cxx_names_map)?,
                         }))
                     }
                 } else {
@@ -214,7 +220,8 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_invokables(&invokables, &qobject_idents).unwrap();
+        let generated =
+            generate_cpp_invokables(&invokables, &qobject_idents, &BTreeMap::default()).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 4);
@@ -296,6 +303,50 @@ mod tests {
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<qint32, qint32>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
+            }
+            "#}
+        );
+    }
+
+    #[test]
+    fn test_generate_cpp_invokables_cxx_names_mapped() {
+        let invokables = vec![ParsedQInvokable {
+            method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: A) -> B {} }),
+            mutable: false,
+            parameters: vec![ParsedFunctionParameter {
+                ident: format_ident!("param"),
+                ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                cxx_type: None,
+            }],
+            return_cxx_type: None,
+            specifiers: HashSet::new(),
+        }];
+        let qobject_idents = create_qobjectname();
+
+        let mut cxx_names_map = BTreeMap::new();
+        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        cxx_names_map.insert("B".to_owned(), "B2".to_owned());
+
+        let generated =
+            generate_cpp_invokables(&invokables, &qobject_idents, &cxx_names_map).unwrap();
+
+        // methods
+        assert_eq!(generated.methods.len(), 1);
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
+        assert_str_eq!(header, "Q_INVOKABLE B2 trivialInvokable(A1 param) const;");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            B2
+            MyObject::trivialInvokable(A1 param) const
+            {
+                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                return rust::cxxqtlib1::cxx_qt_convert<B2, B2>{}(m_rustObj->trivialInvokableWrapper(*this, param));
             }
             "#}
         );

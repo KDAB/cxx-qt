@@ -4,15 +4,23 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
+use crate::syntax::attribute::attribute_tokens_to_value;
+use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::path_to_single_ident,
 };
 use std::collections::BTreeMap;
-use syn::{spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, Result, Type, TypePath};
+use syn::{
+    spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, LitStr, Result, Type, TypePath,
+};
 
 #[derive(Default)]
 pub struct ParsedCxxQtData {
+    /// Map of the cxx_name of any types defined in CXX extern blocks
+    ///
+    /// This is used in the C++ generation to map the Rust type name to the C++ name
+    pub cxx_names_map: BTreeMap<String, String>,
     /// Map of the QObjects defined in the module that will be used for code generation
     //
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
@@ -37,6 +45,69 @@ impl ParsedCxxQtData {
                     self.qobjects.insert(
                         qobject_struct.ident.clone(),
                         ParsedQObject::from_struct(qobject_struct, index)?,
+                    );
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Search any ForeignMod's and look for a cxx_name attribute on a type
+    ///
+    /// We need to know this as it affects the type name used in the C++ generation
+    pub fn parse_cxx_names_map(&mut self, item: &Item, bridge_namespace: &str) -> Result<()> {
+        // Extract the foreign mod (extern "ABI" { ... })
+        let foreign_mod = match item {
+            Item::ForeignMod(foreign_mod) => Some(foreign_mod.clone()),
+            // Could be Verbatim TokenStream when it's an unsafe block, the remainder of the blocks are a normal ForeignMod though
+            Item::Verbatim(tokens) => verbatim_to_foreign_mod(tokens)?,
+            _others => None,
+        };
+
+        // If there is a foreign mod then process it
+        if let Some(foreign_mod) = &foreign_mod {
+            // Retrieve a namespace from the mod or the bridge
+            let block_namespace =
+                if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
+                    attribute_tokens_to_value::<LitStr>(&foreign_mod.attrs[index])?.value()
+                } else {
+                    bridge_namespace.to_owned()
+                };
+
+            // Read each of the types in the mod (type A;)
+            for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
+                // Retrieve the namespace for the type itself if there is one
+                let namespace =
+                    if let Some(index) = attribute_find_path(&foreign_type.attrs, &["namespace"]) {
+                        attribute_tokens_to_value::<LitStr>(&foreign_type.attrs[index])?.value()
+                    } else {
+                        block_namespace.clone()
+                    };
+
+                let type_with_namespace = |ty: String, namespace: &str| {
+                    if namespace.is_empty() {
+                        ty
+                    } else {
+                        format!("::{}::{}", namespace, ty)
+                    }
+                };
+
+                // There is a cxx_name attribute
+                if let Some(index) = attribute_find_path(&foreign_type.attrs, &["cxx_name"]) {
+                    self.cxx_names_map.insert(
+                        foreign_type.ident.to_string(),
+                        type_with_namespace(
+                            attribute_tokens_to_value::<LitStr>(&foreign_type.attrs[index])?
+                                .value(),
+                            &namespace,
+                        ),
+                    );
+                // There is a namespace
+                } else if !namespace.is_empty() {
+                    self.cxx_names_map.insert(
+                        foreign_type.ident.to_string(),
+                        type_with_namespace(foreign_type.ident.to_string(), &namespace),
                     );
                 }
             }
@@ -356,5 +427,127 @@ mod tests {
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
+    }
+
+    #[test]
+    fn test_cxx_names_map_empty() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            extern "C++" {
+                type A;
+            }
+        });
+        assert!(cxx_qt_data.parse_cxx_names_map(&item, "").is_ok());
+        assert!(cxx_qt_data.cxx_names_map.is_empty());
+    }
+
+    #[test]
+    fn test_cxx_names_map_normal() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            extern "C++" {
+                #[cxx_name = "B"]
+                type A;
+            }
+        });
+        assert!(cxx_qt_data.parse_cxx_names_map(&item, "").is_ok());
+        assert_eq!(cxx_qt_data.cxx_names_map.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_names_map.get("A").unwrap(), "B");
+    }
+
+    #[test]
+    fn test_cxx_names_map_verbatim() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            unsafe extern "C++" {
+                #[cxx_name = "B"]
+                type A = C;
+            }
+        });
+        assert!(cxx_qt_data.parse_cxx_names_map(&item, "").is_ok());
+        assert_eq!(cxx_qt_data.cxx_names_map.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_names_map.get("A").unwrap(), "B");
+    }
+
+    #[test]
+    fn test_cxx_names_map_namespace_bridge() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            extern "C++" {
+                type A;
+
+                #[cxx_name = "C"]
+                type B;
+            }
+        });
+        assert!(cxx_qt_data
+            .parse_cxx_names_map(&item, "bridge_namespace")
+            .is_ok());
+        assert_eq!(cxx_qt_data.cxx_names_map.len(), 2);
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("A").unwrap(),
+            "::bridge_namespace::A"
+        );
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("B").unwrap(),
+            "::bridge_namespace::C"
+        );
+    }
+
+    #[test]
+    fn test_cxx_names_map_namespace_items() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[namespace = "extern_namespace"]
+            extern "C++" {
+                type A;
+
+                #[namespace = "type_namespace"]
+                type B;
+            }
+        });
+        // Also ensure item namespace is chosen instead of bridge namespace
+        assert!(cxx_qt_data.parse_cxx_names_map(&item, "namespace").is_ok());
+        assert_eq!(cxx_qt_data.cxx_names_map.len(), 2);
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("A").unwrap(),
+            "::extern_namespace::A"
+        );
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("B").unwrap(),
+            "::type_namespace::B"
+        );
+    }
+
+    #[test]
+    fn test_cxx_names_map_normal_namespace_cxx_name() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[namespace = "extern_namespace"]
+            extern "C++" {
+                #[cxx_name = "B"]
+                #[namespace = "type_namespace"]
+                type A;
+
+                #[cxx_name = "D"]
+                type C;
+            }
+        });
+        assert!(cxx_qt_data.parse_cxx_names_map(&item, "").is_ok());
+        assert_eq!(cxx_qt_data.cxx_names_map.len(), 2);
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("A").unwrap(),
+            "::type_namespace::B"
+        );
+        assert_eq!(
+            cxx_qt_data.cxx_names_map.get("C").unwrap(),
+            "::extern_namespace::D"
+        );
     }
 }
