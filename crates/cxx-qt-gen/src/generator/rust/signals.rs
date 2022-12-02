@@ -6,7 +6,10 @@
 use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
-        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
+        rust::{
+            fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks,
+            types::is_unsafe_cxx_type,
+        },
     },
     parser::signals::ParsedSignalsEnum,
 };
@@ -62,17 +65,28 @@ pub fn generate_rust_signals(
             .map(|parameter| parameter.ident.clone())
             .collect::<Vec<Ident>>();
 
+        // Determine if unsafe is required due to an unsafe parameter
+        let has_unsafe = if signal
+            .parameters
+            .iter()
+            .any(|parameter| is_unsafe_cxx_type(&parameter.ty))
+        {
+            quote! { unsafe }
+        } else {
+            quote! {}
+        };
+
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 unsafe extern "C++" {
                     #[rust_name = #emit_ident_rust_str]
-                    fn #emit_ident_cpp(#parameter_signatures);
+                    #has_unsafe fn #emit_ident_cpp(#parameter_signatures);
                 }
             }],
             implementation: vec![],
         };
         signal_matches.push(quote! {
-            #signal_enum_ident::#signal_ident_rust { #(#parameter_names),* } => self.#emit_ident_rust(#(#parameter_names),*)
+            #signal_enum_ident::#signal_ident_rust { #(#parameter_names),* } => #has_unsafe { self.#emit_ident_rust(#(#parameter_names),*) }
         });
 
         generated
@@ -119,6 +133,9 @@ mod tests {
                     #[cxx_type = "QColor"]
                     opaque: UniquePtr<QColor>
                 },
+                UnsafeSignal {
+                    param: *mut T,
+                },
             }
         });
         let signals_enum = ParsedSignalsEnum::from(&e, 0).unwrap();
@@ -126,7 +143,7 @@ mod tests {
 
         let generated = generate_rust_signals(&signals_enum, &qobject_idents).unwrap();
 
-        assert_eq!(generated.cxx_mod_contents.len(), 2);
+        assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
 
         // Ready
@@ -151,6 +168,17 @@ mod tests {
             },
         );
 
+        // UnsafeSignal
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[2],
+            quote! {
+                unsafe extern "C++" {
+                    #[rust_name = "emit_unsafe_signal"]
+                    unsafe fn emitUnsafeSignal(self: Pin<&mut MyObjectQt>, param: *mut T);
+                }
+            },
+        );
+
         // enum
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
@@ -161,6 +189,9 @@ mod tests {
                         trivial: i32,
                         opaque: UniquePtr<QColor>
                     },
+                    UnsafeSignal {
+                        param: *mut T,
+                    },
                 }
             },
         );
@@ -170,8 +201,9 @@ mod tests {
                 impl MyObjectQt {
                     pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
                         match signal {
-                            MySignals::Ready {} => self.emit_ready(),
-                            MySignals::DataChanged { trivial, opaque } => self.emit_data_changed(trivial, opaque)
+                            MySignals::Ready {} => { self.emit_ready() },
+                            MySignals::DataChanged { trivial, opaque } => { self.emit_data_changed(trivial, opaque) },
+                            MySignals::UnsafeSignal { param } => unsafe { self.emit_unsafe_signal(param) }
                         }
                     }
                 }

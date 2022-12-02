@@ -9,6 +9,7 @@ pub mod invokable;
 pub mod property;
 pub mod qobject;
 pub mod signals;
+pub mod types;
 
 use crate::generator::rust::qobject::GeneratedRustQObject;
 use crate::parser::Parser;
