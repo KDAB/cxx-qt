@@ -17,7 +17,7 @@ MyObject::~MyObject()
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
-const MyObjectRust&
+MyObjectRust const&
 MyObject::unsafeRust() const
 {
   return *m_rustObj;
@@ -36,57 +36,57 @@ MyObject::qtThread() const
                                                m_rustObjMutex);
 }
 
-const ::std::int32_t&
+::std::int32_t const&
 MyObject::getPrimitive() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const ::std::int32_t&,
-                                         const ::std::int32_t&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
+                                         ::std::int32_t const&>{}(
     m_rustObj->getPrimitive(*this));
 }
 
 void
-MyObject::setPrimitive(const ::std::int32_t& value)
+MyObject::setPrimitive(::std::int32_t const& value)
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setPrimitive(
     *this,
-    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, const ::std::int32_t&>{}(
+    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
       value));
 }
 
-const QPoint&
+QPoint const&
 MyObject::getTrivial() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
     m_rustObj->getTrivial(*this));
 }
 
 void
-MyObject::setTrivial(const QPoint& value)
+MyObject::setTrivial(QPoint const& value)
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setTrivial(
-    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, const QPoint&>{}(value));
+    *this, rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint const&>{}(value));
 }
 
-const Value&
+Value const&
 MyObject::getOpaque() const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<const Value&,
-                                         const ::std::unique_ptr<Opaque>&>{}(
+  return rust::cxxqtlib1::cxx_qt_convert<Value const&,
+                                         ::std::unique_ptr<Opaque> const&>{}(
     m_rustObj->getOpaque(*this));
 }
 
 void
-MyObject::setOpaque(const Value& value)
+MyObject::setOpaque(Value const& value)
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setOpaque(
     *this,
-    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>, const Value&>{}(
+    rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>, Value const&>{}(
       value));
 }
 

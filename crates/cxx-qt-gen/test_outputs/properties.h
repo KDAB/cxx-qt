@@ -28,19 +28,19 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
-  const MyObjectRust& unsafeRust() const;
+  MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  const ::std::int32_t& getPrimitive() const;
-  Q_SLOT void setPrimitive(const ::std::int32_t& value);
+  ::std::int32_t const& getPrimitive() const;
+  Q_SLOT void setPrimitive(::std::int32_t const& value);
   Q_SIGNAL void primitiveChanged();
-  const QPoint& getTrivial() const;
-  Q_SLOT void setTrivial(const QPoint& value);
+  QPoint const& getTrivial() const;
+  Q_SLOT void setTrivial(QPoint const& value);
   Q_SIGNAL void trivialChanged();
-  const Value& getOpaque() const;
-  Q_SLOT void setOpaque(const Value& value);
+  Value const& getOpaque() const;
+  Q_SLOT void setOpaque(Value const& value);
   Q_SIGNAL void opaqueChanged();
 
 private:

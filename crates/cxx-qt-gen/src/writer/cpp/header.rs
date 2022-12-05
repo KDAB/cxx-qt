@@ -76,7 +76,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             public:
               explicit {ident}(QObject* parent = nullptr);
               ~{ident}();
-              const {rust_ident}& unsafeRust() const;
+              {rust_ident} const& unsafeRust() const;
               {rust_ident}& unsafeRustMut();
               std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
 

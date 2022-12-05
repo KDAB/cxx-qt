@@ -23,15 +23,15 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
-  const MyObjectRust& unsafeRust() const;
+  MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();
-  Q_INVOKABLE void invokableParameters(const QColor& opaque,
-                                       const QPoint& trivial,
+  Q_INVOKABLE void invokableParameters(QColor const& opaque,
+                                       QPoint const& trivial,
                                        ::std::int32_t primitive) const;
   Q_INVOKABLE Value invokableReturnOpaque();
   Q_INVOKABLE QPoint invokableReturnTrivial();

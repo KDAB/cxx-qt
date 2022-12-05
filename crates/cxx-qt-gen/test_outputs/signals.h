@@ -23,7 +23,7 @@ class MyObject : public QObject
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
-  const MyObjectRust& unsafeRust() const;
+  MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
@@ -34,11 +34,11 @@ public:
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             Value second,
                             QPoint third,
-                            const QPoint& fourth);
+                            QPoint const& fourth);
   void emitDataChanged(::std::int32_t first,
                        ::std::unique_ptr<Opaque> second,
                        QPoint third,
-                       const QPoint& fourth);
+                       QPoint const& fourth);
 
 private:
   rust::Box<MyObjectRust> m_rustObj;

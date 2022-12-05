@@ -268,7 +268,7 @@ mod tests {
         public:
           explicit MyObject(QObject* parent = nullptr);
           ~MyObject();
-          const MyObjectRust& unsafeRust() const;
+          MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
           std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
@@ -335,7 +335,7 @@ mod tests {
         public:
           explicit FirstObject(QObject* parent = nullptr);
           ~FirstObject();
-          const FirstObjectRust& unsafeRust() const;
+          FirstObjectRust const& unsafeRust() const;
           FirstObjectRust& unsafeRustMut();
           std::unique_ptr<FirstObjectCxxQtThread> qtThread() const;
 
@@ -369,7 +369,7 @@ mod tests {
         public:
           explicit SecondObject(QObject* parent = nullptr);
           ~SecondObject();
-          const SecondObjectRust& unsafeRust() const;
+          SecondObjectRust const& unsafeRust() const;
           SecondObjectRust& unsafeRustMut();
           std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
@@ -427,7 +427,7 @@ mod tests {
         public:
           explicit MyObject(QObject* parent = nullptr);
           ~MyObject();
-          const MyObjectRust& unsafeRust() const;
+          MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
           std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
@@ -481,7 +481,7 @@ mod tests {
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
-        const MyObjectRust&
+        MyObjectRust const&
         MyObject::unsafeRust() const
         {
           return *m_rustObj;
@@ -569,7 +569,7 @@ mod tests {
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
-        const FirstObjectRust&
+        FirstObjectRust const&
         FirstObject::unsafeRust() const
         {
           return *m_rustObj;
@@ -625,7 +625,7 @@ mod tests {
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
-        const SecondObjectRust&
+        SecondObjectRust const&
         SecondObject::unsafeRust() const
         {
           return *m_rustObj;
@@ -689,7 +689,7 @@ mod tests {
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
-        const MyObjectRust&
+        MyObjectRust const&
         MyObject::unsafeRust() const
         {
           return *m_rustObj;

@@ -38,7 +38,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
               m_cxxQtThreadObj->ptr = nullptr;
             }}
 
-            const {rust_ident}&
+            {rust_ident} const&
             {ident}::unsafeRust() const
             {{
               return *m_rustObj;

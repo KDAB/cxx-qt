@@ -12,17 +12,17 @@ use indoc::formatdoc;
 pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &CppType) -> CppFragment {
     CppFragment::Pair {
         header: format!(
-            "Q_SLOT void {ident_setter}(const {cxx_ty}& value);",
+            "Q_SLOT void {ident_setter}({cxx_ty} const& value);",
             cxx_ty = cxx_ty.as_cxx_ty(),
             ident_setter = idents.setter.cpp,
         ),
         source: formatdoc! {
             r#"
             void
-            {qobject_ident}::{ident_setter}(const {cxx_ty}& value)
+            {qobject_ident}::{ident_setter}({cxx_ty} const& value)
             {{
                 {rust_obj_guard}
-                m_rustObj->{ident_setter}(*this, {convert}<{rust_ty}, const {cxx_ty}&>{{}}(value));
+                m_rustObj->{ident_setter}(*this, {convert}<{rust_ty}, {cxx_ty} const&>{{}}(value));
             }}
             "#,
             convert = CXX_QT_CONVERT,

@@ -272,13 +272,13 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_INVOKABLE QColor opaqueInvokable(const QColor& param);"
+            "Q_INVOKABLE QColor opaqueInvokable(QColor const& param);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
             QColor
-            MyObject::opaqueInvokable(const QColor& param)
+            MyObject::opaqueInvokable(QColor const& param)
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
                 return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
