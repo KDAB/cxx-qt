@@ -18,6 +18,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+# Use `cxx = "1.0.83"` here instead!
 cxx.workspace = true
 # Use `cxx-qt = "0.4"` here instead!
 cxx-qt.workspace = true

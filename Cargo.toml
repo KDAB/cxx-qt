@@ -37,9 +37,12 @@ cxx-qt-lib = { path = "crates/cxx-qt-lib" }
 cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers" }
 qt-build-utils = { path = "crates/qt-build-utils" }
 
-cxx = "1.0.75"
-cxx-build = { version = "1.0.75", features = [ "parallel" ] }
-cxx-gen = "0.7"
+# Ensure that the example comments are kept in sync
+# examples/cargo_without_cmake/Cargo.toml
+# examples/qml_minimal/rust/Cargo.toml
+cxx = "1.0.83"
+cxx-build = { version = "1.0.83", features = [ "parallel" ] }
+cxx-gen = "0.7.83"
 convert_case = "0.6"
 proc-macro2 = "1.0"
 syn = { version = "1.0", features = ["extra-traits", "full"] }
