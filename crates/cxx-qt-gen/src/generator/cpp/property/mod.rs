@@ -85,15 +85,15 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "const ::std::int32_t& getTrivialProperty() const;");
+        assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
         assert_str_eq!(
             source,
             indoc! {r#"
-            const ::std::int32_t&
+            ::std::int32_t const&
             MyObject::getTrivialProperty() const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<const ::std::int32_t&, const ::std::int32_t&>{}(m_rustObj->getTrivialProperty(*this));
+                return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&, ::std::int32_t const&>{}(m_rustObj->getTrivialProperty(*this));
             }
             "#}
         );
@@ -105,16 +105,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SLOT void setTrivialProperty(const ::std::int32_t& value);"
+            "Q_SLOT void setTrivialProperty(::std::int32_t const& value);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
                 void
-                MyObject::setTrivialProperty(const ::std::int32_t& value)
+                MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
                     const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                    m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, const ::std::int32_t&>{}(value));
+                    m_rustObj->setTrivialProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(value));
                 }
                 "#}
         );
@@ -129,15 +129,15 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "const QColor& getOpaqueProperty() const;");
+        assert_str_eq!(header, "QColor const& getOpaqueProperty() const;");
         assert_str_eq!(
             source,
             indoc! {r#"
-            const QColor&
+            QColor const&
             MyObject::getOpaqueProperty() const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<const QColor&, const ::std::unique_ptr<QColor>&>{}(m_rustObj->getOpaqueProperty(*this));
+                return rust::cxxqtlib1::cxx_qt_convert<QColor const&, ::std::unique_ptr<QColor> const&>{}(m_rustObj->getOpaqueProperty(*this));
             }
             "#}
         );
@@ -149,16 +149,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SLOT void setOpaqueProperty(const QColor& value);"
+            "Q_SLOT void setOpaqueProperty(QColor const& value);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
             void
-            MyObject::setOpaqueProperty(const QColor& value)
+            MyObject::setOpaqueProperty(QColor const& value)
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                m_rustObj->setOpaqueProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, const QColor&>{}(value));
+                m_rustObj->setOpaqueProperty(*this, rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, QColor const&>{}(value));
             }
             "#}
         );
@@ -198,15 +198,15 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "const A1& getMappedProperty() const;");
+        assert_str_eq!(header, "A1 const& getMappedProperty() const;");
         assert_str_eq!(
             source,
             indoc! {r#"
-            const A1&
+            A1 const&
             MyObject::getMappedProperty() const
             {
                 const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<const A1&, const A1&>{}(m_rustObj->getMappedProperty(*this));
+                return rust::cxxqtlib1::cxx_qt_convert<A1 const&, A1 const&>{}(m_rustObj->getMappedProperty(*this));
             }
             "#}
         );
@@ -216,15 +216,15 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "Q_SLOT void setMappedProperty(const A1& value);");
+        assert_str_eq!(header, "Q_SLOT void setMappedProperty(A1 const& value);");
         assert_str_eq!(
             source,
             indoc! {r#"
                 void
-                MyObject::setMappedProperty(const A1& value)
+                MyObject::setMappedProperty(A1 const& value)
                 {
                     const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                    m_rustObj->setMappedProperty(*this, rust::cxxqtlib1::cxx_qt_convert<A1, const A1&>{}(value));
+                    m_rustObj->setMappedProperty(*this, rust::cxxqtlib1::cxx_qt_convert<A1, A1 const&>{}(value));
                 }
                 "#}
         );

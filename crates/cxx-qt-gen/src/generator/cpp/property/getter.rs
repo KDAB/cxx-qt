@@ -12,17 +12,17 @@ use indoc::formatdoc;
 pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &CppType) -> CppFragment {
     CppFragment::Pair {
         header: format!(
-            "const {cxx_ty}& {ident_getter}() const;",
+            "{cxx_ty} const& {ident_getter}() const;",
             cxx_ty = cxx_ty.as_cxx_ty(),
             ident_getter = idents.getter.cpp
         ),
         source: formatdoc!(
             r#"
-            const {cxx_ty}&
+            {cxx_ty} const&
             {qobject_ident}::{ident_getter}() const
             {{
                 {rust_obj_guard}
-                return {convert}<const {cxx_ty}&, const {rust_ty}&>{{}}(m_rustObj->{ident_getter}(*this));
+                return {convert}<{cxx_ty} const&, {rust_ty} const&>{{}}(m_rustObj->{ident_getter}(*this));
             }}
             "#,
             convert = CXX_QT_CONVERT,

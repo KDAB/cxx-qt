@@ -17,7 +17,7 @@ MyObject::~MyObject()
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
-const MyObjectRust&
+MyObjectRust const&
 MyObject::unsafeRust() const
 {
   return *m_rustObj;
@@ -53,7 +53,7 @@ void
 MyObject::emitDataChanged(::std::int32_t first,
                           ::std::unique_ptr<Opaque> second,
                           QPoint third,
-                          const QPoint& fourth)
+                          QPoint const& fourth)
 {
   Q_EMIT dataChanged(
     rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
@@ -61,7 +61,7 @@ MyObject::emitDataChanged(::std::int32_t first,
     rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
       std::move(second)),
     rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(std::move(third)),
-    rust::cxxqtlib1::cxx_qt_convert<const QPoint&, const QPoint&>{}(
+    rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
       std::move(fourth)));
 }
 

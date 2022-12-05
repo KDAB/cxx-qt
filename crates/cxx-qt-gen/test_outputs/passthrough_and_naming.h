@@ -30,13 +30,13 @@ class MyObject : public QStringListModel
 public:
   explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
-  const MyObjectRust& unsafeRust() const;
+  MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
   std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
-  const ::std::int32_t& getPropertyName() const;
-  Q_SLOT void setPropertyName(const ::std::int32_t& value);
+  ::std::int32_t const& getPropertyName() const;
+  Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
@@ -70,13 +70,13 @@ class SecondObject : public QObject
 public:
   explicit SecondObject(QObject* parent = nullptr);
   ~SecondObject();
-  const SecondObjectRust& unsafeRust() const;
+  SecondObjectRust const& unsafeRust() const;
   SecondObjectRust& unsafeRustMut();
   std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
 public:
-  const ::std::int32_t& getPropertyName() const;
-  Q_SLOT void setPropertyName(const ::std::int32_t& value);
+  ::std::int32_t const& getPropertyName() const;
+  Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();

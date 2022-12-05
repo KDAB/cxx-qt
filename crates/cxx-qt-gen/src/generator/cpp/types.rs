@@ -114,12 +114,12 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
         Type::Reference(TypeReference {
             mutability, elem, ..
         }) => {
-            let is_const = if mutability.is_some() { "" } else { "const " };
+            let is_const = if mutability.is_some() { "" } else { " const" };
             match &**elem {
                 // Slice is a special type only available as a reference
                 // We need to map &[T] to rust::Slice<const T> and &mut [T] without the const
                 Type::Slice(TypeSlice { elem, .. }) => Ok(format!(
-                    "::rust::Slice<{is_const}{ty}>",
+                    "::rust::Slice<{ty}{is_const}>",
                     is_const = is_const,
                     ty = to_cpp_string(elem, cxx_names_map)?
                 )),
@@ -129,7 +129,7 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
                 Type::Path(ty_path) if ty_path.path.is_ident("str") => Ok("::rust::Str".to_owned()),
                 // Other types pass through as normal
                 _others => Ok(format!(
-                    "{is_const}{ty}&",
+                    "{ty}{is_const}&",
                     is_const = is_const,
                     ty = to_cpp_string(elem, cxx_names_map)?
                 )),
@@ -329,7 +329,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { &QPoint });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "const QPoint&"
+            "QPoint const&"
         );
     }
 
@@ -365,7 +365,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { &Vec<f64> });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "const ::rust::Vec<double>&"
+            "::rust::Vec<double> const&"
         );
     }
 
@@ -397,7 +397,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { Pin<&T> });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "const T&"
+            "T const&"
         );
     }
 
@@ -421,7 +421,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { Pin<&UniquePtr<T>> });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "const ::std::unique_ptr<T>&"
+            "::std::unique_ptr<T> const&"
         );
     }
 
@@ -439,7 +439,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { &[i32] });
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
-            "::rust::Slice<const ::std::int32_t>"
+            "::rust::Slice<::std::int32_t const>"
         );
     }
 

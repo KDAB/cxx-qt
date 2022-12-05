@@ -17,7 +17,7 @@ MyObject::~MyObject()
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
-const MyObjectRust&
+MyObjectRust const&
 MyObject::unsafeRust() const
 {
   return *m_rustObj;
@@ -51,8 +51,8 @@ MyObject::invokableMutable()
 }
 
 void
-MyObject::invokableParameters(const QColor& opaque,
-                              const QPoint& trivial,
+MyObject::invokableParameters(QColor const& opaque,
+                              QPoint const& trivial,
                               ::std::int32_t primitive) const
 {
   const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
