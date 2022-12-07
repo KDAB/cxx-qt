@@ -46,7 +46,7 @@ impl ParsedInheritedMethod {
 
         let parameters = ParsedFunctionParameter::parse_all_without_receiver(&method.sig)?;
 
-        let mut ident = CombinedIdent::from(method.sig.ident.clone());
+        let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
         for attribute in &method.attrs {
             if !attribute.path.is_ident(&format_ident!("cxx_name")) {
                 return Err(Error::new(

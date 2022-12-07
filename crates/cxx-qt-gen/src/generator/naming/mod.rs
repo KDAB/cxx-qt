@@ -20,8 +20,8 @@ pub struct CombinedIdent {
     pub rust: Ident,
 }
 
-impl From<Ident> for CombinedIdent {
-    fn from(ident: Ident) -> Self {
+impl CombinedIdent {
+    pub fn from_rust_function(ident: Ident) -> Self {
         Self {
             cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
             rust: ident,

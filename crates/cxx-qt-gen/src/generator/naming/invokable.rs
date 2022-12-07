@@ -23,7 +23,7 @@ impl From<&ImplItemMethod> for QInvokableName {
     fn from(method: &ImplItemMethod) -> Self {
         let ident = &method.sig.ident;
         Self {
-            name: ident.clone().into(),
+            name: CombinedIdent::from_rust_function(ident.clone()),
             wrapper: wrapper_from_ident(ident),
         }
     }
