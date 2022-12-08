@@ -19,17 +19,3 @@ struct rust::IsRelocatable<QColor> : std::true_type
 {
 };
 #endif
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QColor
-qcolorInitDefault();
-QColor
-qcolorInitFromRgba(std::int32_t r,
-                   std::int32_t g,
-                   std::int32_t b,
-                   std::int32_t a);
-
-}
-}

@@ -27,12 +27,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qsize_init_default"]
-        fn qsizeInitDefault() -> QSize;
+        fn construct() -> QSize;
         #[doc(hidden)]
         #[rust_name = "qsize_init"]
-        fn qsizeInit(w: i32, h: i32) -> QSize;
+        fn construct(w: i32, h: i32) -> QSize;
     }
 }
 

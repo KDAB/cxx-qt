@@ -8,14 +8,3 @@
 #pragma once
 
 #include <QSize>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QSize
-qsizeInitDefault();
-QSize
-qsizeInit(int width, int height);
-
-}
-}

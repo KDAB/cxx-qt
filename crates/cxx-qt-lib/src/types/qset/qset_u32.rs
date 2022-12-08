@@ -21,19 +21,21 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_u32"]
-        fn qset_clone(_: &QSet_u32) -> QSet_u32;
+        fn construct(_: &QSet_u32) -> QSet_u32;
         #[rust_name = "default_u32"]
-        fn qset_default() -> QSet_u32;
+        fn construct() -> QSet_u32;
         #[rust_name = "drop_u32"]
-        fn qset_drop(_: &mut QSet_u32);
+        fn drop(_: &mut QSet_u32);
         #[rust_name = "get_unchecked_u32"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_u32, pos: usize) -> &'a u32;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_u32, pos: usize) -> &'a u32;
         #[rust_name = "insert_u32"]
-        fn qset_insert(_: &mut QSet_u32, _: &u32);
+        fn qsetInsert(_: &mut QSet_u32, _: &u32);
         #[rust_name = "len_u32"]
-        fn qset_len(_: &QSet_u32) -> usize;
+        fn qsetLen(_: &QSet_u32) -> usize;
     }
 }
 

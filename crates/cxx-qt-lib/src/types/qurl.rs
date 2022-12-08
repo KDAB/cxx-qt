@@ -19,22 +19,24 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qurl_drop"]
-        fn qurlDrop(url: &mut QUrl);
+        fn drop(url: &mut QUrl);
 
         #[doc(hidden)]
         #[rust_name = "qurl_init_default"]
-        fn qurlInitDefault() -> QUrl;
+        fn construct() -> QUrl;
         #[doc(hidden)]
         #[rust_name = "qurl_init_from_qstring"]
-        fn qurlInitFromQString(string: &QString) -> QUrl;
+        fn construct(string: &QString) -> QUrl;
         #[doc(hidden)]
         #[rust_name = "qurl_init_from_string"]
         fn qurlInitFromString(string: &str) -> QUrl;
         #[doc(hidden)]
         #[rust_name = "qurl_init_from_qurl"]
-        fn qurlInitFromQUrl(url: &QUrl) -> QUrl;
+        fn construct(url: &QUrl) -> QUrl;
 
         #[doc(hidden)]
         #[rust_name = "qurl_to_rust_string"]

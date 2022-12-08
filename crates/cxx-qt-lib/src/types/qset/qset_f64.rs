@@ -21,19 +21,21 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_f64"]
-        fn qset_clone(_: &QSet_f64) -> QSet_f64;
+        fn construct(_: &QSet_f64) -> QSet_f64;
         #[rust_name = "default_f64"]
-        fn qset_default() -> QSet_f64;
+        fn construct() -> QSet_f64;
         #[rust_name = "drop_f64"]
-        fn qset_drop(_: &mut QSet_f64);
+        fn drop(_: &mut QSet_f64);
         #[rust_name = "get_unchecked_f64"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_f64, pos: usize) -> &'a f64;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_f64, pos: usize) -> &'a f64;
         #[rust_name = "insert_f64"]
-        fn qset_insert(_: &mut QSet_f64, _: &f64);
+        fn qsetInsert(_: &mut QSet_f64, _: &f64);
         #[rust_name = "len_f64"]
-        fn qset_len(_: &QSet_f64) -> usize;
+        fn qsetLen(_: &QSet_f64) -> usize;
     }
 }
 

@@ -5,17 +5,6 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#pragma once
+
 #include <QDate>
-
-#include "rust/cxx.h"
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QDate
-qdateInitDefault();
-QDate
-qdateInit(int y, int m, int d);
-
-}
-}

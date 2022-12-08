@@ -45,18 +45,6 @@ static_assert(QTypeInfo<QVariant>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qvariantDrop(QVariant& variant)
-{
-  variant.~QVariant();
-}
-
-QVariant
-qvariantInitDefault()
-{
-  return QVariant();
-}
-
 #define CXX_QT_VARIANT_INIT(typeName, name)                                    \
   QVariant qvariantInitFrom##name(typeName value)                              \
   {                                                                            \
@@ -69,7 +57,6 @@ qvariantInitDefault()
     return QVariant(value);                                                    \
   }
 
-CXX_QT_VARIANT_INIT_REF(QVariant, QVariant)
 CXX_QT_VARIANT_INIT(bool, Bool)
 CXX_QT_VARIANT_INIT(float, F32)
 CXX_QT_VARIANT_INIT(double, F64)

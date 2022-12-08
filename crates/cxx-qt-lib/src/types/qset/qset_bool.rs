@@ -21,19 +21,21 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_bool"]
-        fn qset_clone(_: &QSet_bool) -> QSet_bool;
+        fn construct(_: &QSet_bool) -> QSet_bool;
         #[rust_name = "default_bool"]
-        fn qset_default() -> QSet_bool;
+        fn construct() -> QSet_bool;
         #[rust_name = "drop_bool"]
-        fn qset_drop(_: &mut QSet_bool);
+        fn drop(_: &mut QSet_bool);
         #[rust_name = "get_unchecked_bool"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_bool, pos: usize) -> &'a bool;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_bool, pos: usize) -> &'a bool;
         #[rust_name = "insert_bool"]
-        fn qset_insert(_: &mut QSet_bool, _: &bool);
+        fn qsetInsert(_: &mut QSet_bool, _: &bool);
         #[rust_name = "len_bool"]
-        fn qset_len(_: &QSet_bool) -> usize;
+        fn qsetLen(_: &QSet_bool) -> usize;
     }
 }
 

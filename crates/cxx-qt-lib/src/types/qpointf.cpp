@@ -17,21 +17,3 @@ assert_alignment_and_size(QPointF, alignof(double), sizeof(double[2]));
 
 static_assert(std::is_trivially_copyable<QPointF>::value,
               "QPointF should be trivially copyable");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QPointF
-qpointfInitDefault()
-{
-  return QPointF();
-}
-
-QPointF
-qpointfInit(qreal x, qreal y)
-{
-  return QPointF(x, y);
-}
-
-}
-}

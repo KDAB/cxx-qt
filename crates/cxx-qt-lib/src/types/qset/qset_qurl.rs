@@ -24,18 +24,20 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_QUrl"]
-        fn qset_clone(_: &QSet_QUrl) -> QSet_QUrl;
+        fn construct(_: &QSet_QUrl) -> QSet_QUrl;
         #[rust_name = "default_QUrl"]
-        fn qset_default() -> QSet_QUrl;
+        fn construct() -> QSet_QUrl;
         #[rust_name = "drop_QUrl"]
-        fn qset_drop(_: &mut QSet_QUrl);
+        fn drop(_: &mut QSet_QUrl);
         #[rust_name = "get_unchecked_QUrl"]
-        unsafe fn qset_get_unchecked(set: &QSet_QUrl, pos: usize) -> &QUrl;
+        unsafe fn qsetGetUnchecked(set: &QSet_QUrl, pos: usize) -> &QUrl;
         #[rust_name = "insert_QUrl"]
-        fn qset_insert(_: &mut QSet_QUrl, _: &QUrl);
+        fn qsetInsert(_: &mut QSet_QUrl, _: &QUrl);
         #[rust_name = "len_QUrl"]
-        fn qset_len(_: &QSet_QUrl) -> usize;
+        fn qsetLen(_: &QSet_QUrl) -> usize;
     }
 }
 

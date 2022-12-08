@@ -19,16 +19,8 @@ struct rust::IsRelocatable<QUrl> : std::true_type
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qurlDrop(QUrl& url);
-QUrl
-qurlInitDefault();
-QUrl
-qurlInitFromQString(const QString& string);
 QUrl
 qurlInitFromString(rust::Str string);
-QUrl
-qurlInitFromQUrl(const QUrl& url);
 QString
 qurlToQString(const QUrl& url);
 rust::String

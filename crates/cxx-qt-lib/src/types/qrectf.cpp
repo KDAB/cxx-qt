@@ -17,21 +17,3 @@ assert_alignment_and_size(QRectF, alignof(double), sizeof(double[4]));
 
 static_assert(std::is_trivially_copyable<QRectF>::value,
               "QRectF must be trivially copyable");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QRectF
-qrectfInitDefault()
-{
-  return QRectF();
-}
-
-QRectF
-qrectfInit(qreal x, qreal y, qreal w, qreal h)
-{
-  return QRectF(x, y, w, h);
-}
-
-}
-}

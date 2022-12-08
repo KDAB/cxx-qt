@@ -8,14 +8,3 @@
 #pragma once
 
 #include <QRect>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QRect
-qrectInitDefault();
-QRect
-qrectInit(int x, int y, int w, int h);
-
-}
-}

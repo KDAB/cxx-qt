@@ -37,12 +37,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qrect_init_default"]
-        fn qrectInitDefault() -> QRect;
+        fn construct() -> QRect;
         #[doc(hidden)]
         #[rust_name = "qrect_init"]
-        fn qrectInit(x: i32, y: i32, width: i32, height: i32) -> QRect;
+        fn construct(x: i32, y: i32, width: i32, height: i32) -> QRect;
     }
 }
 

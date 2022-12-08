@@ -27,12 +27,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qpoint_init_default"]
-        fn qpointInitDefault() -> QPoint;
+        fn construct() -> QPoint;
         #[doc(hidden)]
         #[rust_name = "qpoint_init"]
-        fn qpointInit(x: i32, y: i32) -> QPoint;
+        fn construct(x: i32, y: i32) -> QPoint;
     }
 }
 

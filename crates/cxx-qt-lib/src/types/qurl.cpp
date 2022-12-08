@@ -26,36 +26,12 @@ static_assert(QTypeInfo<QUrl>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qurlDrop(QUrl& url)
-{
-  url.~QUrl();
-}
-
-QUrl
-qurlInitDefault()
-{
-  return QUrl();
-}
-
-QUrl
-qurlInitFromQString(const QString& string)
-{
-  return QUrl(string);
-}
-
 QUrl
 qurlInitFromString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
   return QUrl(qstringInitFromRustString(string));
-}
-
-QUrl
-qurlInitFromQUrl(const QUrl& url)
-{
-  return QUrl(url);
 }
 
 QString

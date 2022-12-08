@@ -19,21 +19,3 @@ assert_alignment_and_size(QDate, alignof(std::int64_t), sizeof(std::int64_t));
 
 static_assert(std::is_trivially_copyable<QDate>::value,
               "QDate must be trivially copyable!");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QDate
-qdateInitDefault()
-{
-  return QDate();
-}
-
-QDate
-qdateInit(int y, int m, int d)
-{
-  return QDate(y, m, d);
-}
-
-}
-}

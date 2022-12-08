@@ -16,19 +16,21 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qstring_drop"]
-        fn qstringDrop(string: &mut QString);
+        fn drop(string: &mut QString);
 
         #[doc(hidden)]
         #[rust_name = "qstring_init_default"]
-        fn qstringInitDefault() -> QString;
+        fn construct() -> QString;
         #[doc(hidden)]
         #[rust_name = "qstring_init_from_rust_string"]
         fn qstringInitFromRustString(string: &str) -> QString;
         #[doc(hidden)]
         #[rust_name = "qstring_init_from_qstring"]
-        fn qstringInitFromQString(string: &QString) -> QString;
+        fn construct(string: &QString) -> QString;
 
         #[doc(hidden)]
         #[rust_name = "qstring_to_rust_string"]

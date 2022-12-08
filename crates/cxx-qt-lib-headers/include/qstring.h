@@ -19,14 +19,8 @@ struct rust::IsRelocatable<QString> : std::true_type
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qstringDrop(QString& string);
-QString
-qstringInitDefault();
 QString
 qstringInitFromRustString(rust::Str string);
-QString
-qstringInitFromQString(const QString& string);
 rust::String
 qstringToRustString(const QString& string);
 
