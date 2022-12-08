@@ -49,6 +49,28 @@ TestCase {
         compare(obj.stringHash, "");
     }
 
+    function test_container_map() {
+        const obj = createTemporaryObject(componentContainers, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "stringMapChanged",
+            target: obj,
+        });
+        compare(spy.count, 0);
+        compare(obj.stringMap, "");
+
+        obj.insertMap("A1", 1);
+        obj.insertMap("A1", 1);
+        obj.insertMap("A3", 3);
+        obj.insertMap("A3", 3);
+
+        compare(spy.count, 4);
+        compare(obj.stringMap, "A1 => 1, A3 => 3");
+
+        obj.reset();
+        compare(spy.count, 5);
+        compare(obj.stringMap, "");
+    }
+
     function test_container_set() {
         const obj = createTemporaryObject(componentContainers, null, {});
         const spy = createTemporaryObject(componentSpy, null, {

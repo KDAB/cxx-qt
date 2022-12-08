@@ -45,6 +45,7 @@ add_executable(${APP_NAME}
     cpp/qdate.h
     cpp/qdatetime.h
     cpp/qhash.h
+    cpp/qmap.h
     cpp/qmodelindex.h
     cpp/qpersistentmodelindex.h
     cpp/qpoint.h

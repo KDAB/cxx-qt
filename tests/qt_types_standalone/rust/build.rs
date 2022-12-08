@@ -11,6 +11,7 @@ fn main() {
         .file("src/qdate.rs")
         .file("src/qdatetime.rs")
         .file("src/qhash.rs")
+        .file("src/qmap.rs")
         .file("src/qmodelindex.rs")
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")

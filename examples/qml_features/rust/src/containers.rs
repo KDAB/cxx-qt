@@ -10,6 +10,8 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         type QHash_QString_QVariant = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_QString_QVariant>;
+        include!("cxx-qt-lib/qmap.h");
+        type QMap_QString_QVariant = cxx_qt_lib::QMap<cxx_qt_lib::QMapPair_QString_QVariant>;
         include!("cxx-qt-lib/qset.h");
         type QSet_i32 = cxx_qt_lib::QSet<i32>;
         include!("cxx-qt-lib/qstring.h");
@@ -26,11 +28,14 @@ mod ffi {
         #[qproperty]
         string_hash: QString,
         #[qproperty]
+        string_map: QString,
+        #[qproperty]
         string_set: QString,
         #[qproperty]
         string_vector: QString,
 
         hash: QHash_QString_QVariant,
+        map: QMap_QString_QVariant,
         set: QSet_i32,
         vector: QVector_i32,
     }
@@ -39,6 +44,7 @@ mod ffi {
         #[qinvokable]
         pub fn reset(mut self: Pin<&mut Self>) {
             self.as_mut().set_hash(QHash_QString_QVariant::default());
+            self.as_mut().set_map(QMap_QString_QVariant::default());
             self.as_mut().set_set(QSet_i32::default());
             self.as_mut().set_vector(QVector_i32::default());
 
@@ -66,6 +72,13 @@ mod ffi {
             self.update_strings();
         }
 
+        #[qinvokable]
+        pub fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
+            self.as_mut().map_mut().insert(key, value);
+
+            self.update_strings();
+        }
+
         pub fn update_strings(mut self: Pin<&mut Self>) {
             let hash_items = self
                 .as_ref()
@@ -81,6 +94,21 @@ mod ffi {
                 .collect::<Vec<String>>()
                 .join(", ");
             self.as_mut().set_string_hash(QString::from(&hash_items));
+
+            let map_items = self
+                .as_ref()
+                .map()
+                .iter()
+                .map(|(key, value)| {
+                    let value = match value.value() {
+                        QVariantValue::I32(value) => value,
+                        _others => 0,
+                    };
+                    format!("{} => {}", key, value)
+                })
+                .collect::<Vec<String>>()
+                .join(", ");
+            self.as_mut().set_string_map(QString::from(&map_items));
 
             let set_items = self
                 .as_ref()
