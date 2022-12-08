@@ -349,7 +349,7 @@ pub mod tests {
                 fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
 
                 #[qinvokable(cxx_final, cxx_override, cxx_virtual)]
-                fn invokable_with_specifiers() -> f64 {}
+                fn invokable_with_specifiers(&self) -> f64 {}
 
                 fn cpp_context(&self) {}
             }
@@ -395,13 +395,14 @@ pub mod tests {
                 }
             }
         });
-        assert!(qobject.parse_impl_items(&item.items).is_ok());
+
+        qobject.parse_impl_items(&item.items).unwrap();
 
         let inherited = &qobject.inherited_methods;
         assert_eq!(inherited.len(), 3);
-        assert_eq!(inherited[0].mutable, false);
-        assert_eq!(inherited[1].mutable, false);
-        assert_eq!(inherited[2].mutable, true);
+        assert!(!inherited[0].mutable);
+        assert!(!inherited[1].mutable);
+        assert!(inherited[2].mutable);
         assert_eq!(inherited[0].parameters.len(), 0);
         assert_eq!(inherited[1].parameters.len(), 1);
         assert_eq!(inherited[1].parameters[0].ident, "arg");

@@ -10,6 +10,7 @@ mod inheritance {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
+        include!("cxx-qt-lib/std_types.h");
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/inheritance.cxxqt.h");

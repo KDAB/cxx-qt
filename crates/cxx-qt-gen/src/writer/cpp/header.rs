@@ -117,6 +117,9 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
 /// For a given GeneratedCppBlocks write this into a C++ header
 pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
+    // Headers included:
+    // <memory> - unique_ptr to the Rust object.
+    // <mutex> - used for mutex locking the rust object.
     formatdoc! {r#"
         #pragma once
 

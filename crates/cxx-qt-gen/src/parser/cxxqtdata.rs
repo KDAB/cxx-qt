@@ -442,7 +442,7 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             impl qobject::MyObject {
                 #[qinvokable]
-                fn invokable() {}
+                fn invokable(&self) {}
 
                 fn cpp_context() {}
             }

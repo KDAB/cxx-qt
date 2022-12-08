@@ -1,16 +1,18 @@
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use crate::{
     generator::naming::CombinedIdent,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{
-        attribute::{attribute_tokens_to_ident, attribute_tokens_to_value},
-        implitemmethod::is_method_mutable,
-    },
+    syntax::{attribute::attribute_tokens_to_value, implitemmethod::is_method_mutable},
 };
 use quote::format_ident;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Error, ForeignItemFn, LitStr, Result,
+    Error, ForeignItemFn, Ident, LitStr, Result,
 };
 
 /// This type is used when parsing the `cxx_qt::inherit!` macro contents into raw ForeignItemFn items
@@ -38,6 +40,7 @@ pub struct ParsedInheritedMethod {
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
     pub ident: CombinedIdent,
+    pub wrapper_ident: Ident,
 }
 
 impl ParsedInheritedMethod {
@@ -59,13 +62,14 @@ impl ParsedInheritedMethod {
 
             ident.cpp = format_ident!("{}", name.value());
         }
-        ident.cpp = format_ident!("{}_cxxqt_inherit", &ident.cpp);
+        let wrapper_ident = format_ident!("{}_cxxqt_inherit", &ident.cpp);
 
         Ok(Self {
             method,
             mutable,
             parameters,
             ident,
+            wrapper_ident,
         })
     }
 }

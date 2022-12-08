@@ -14,9 +14,8 @@ use crate::{
     },
     parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject},
 };
-use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote, TokenStreamExt};
+use quote::quote;
 use syn::{Ident, ImplItemMethod, Item, Result};
 
 #[derive(Default)]
@@ -94,7 +93,7 @@ impl GeneratedRustQObject {
             .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
         generated.blocks.append(&mut generate_inherited_methods(
             &qobject_idents,
-            &*qobject.inherited_methods,
+            &qobject.inherited_methods,
         )?);
 
         if let Some(signals_enum) = &qobject.signals {
@@ -169,7 +168,7 @@ fn generate_inherited_methods(
                 })
                 .collect::<Vec<TokenStream>>();
             let ident = &method.method.sig.ident;
-            let cxx_name_string = &method.ident.cpp.to_string();
+            let cxx_name_string = &method.wrapper_ident.to_string();
             let self_param = if method.mutable {
                 quote! { self: Pin<&mut #qobject_name> }
             } else {
