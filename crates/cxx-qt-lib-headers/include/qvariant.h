@@ -62,92 +62,23 @@ enum class QVariantType : uint8_t
 
 } // namespace types
 
+template<typename T>
 QVariant
-qvariantInitFromBool(bool b);
-QVariant
-qvariantInitFromF32(float f32);
-QVariant
-qvariantInitFromF64(double f64);
-QVariant
-qvariantInitFromI8(qint8 i8);
-QVariant
-qvariantInitFromI16(qint16 i16);
-QVariant
-qvariantInitFromI32(qint32 i32);
-QVariant
-qvariantInitFromQColor(const QColor& color);
-QVariant
-qvariantInitFromQDate(const QDate& date);
-QVariant
-qvariantInitFromQDateTime(const QDateTime& dateTime);
-QVariant
-qvariantInitFromQPoint(const QPoint& point);
-QVariant
-qvariantInitFromQPointF(const QPointF& pointf);
-QVariant
-qvariantInitFromQRect(const QRect& rect);
-QVariant
-qvariantInitFromQRectF(const QRectF& rectf);
-QVariant
-qvariantInitFromQSize(const QSize& size);
-QVariant
-qvariantInitFromQSizeF(const QSizeF& sizef);
-QVariant
-qvariantInitFromQTime(const QTime& time);
-QVariant
-qvariantInitFromQUrl(const QUrl& url);
-QVariant
-qvariantInitFromQString(const QString& string);
-QVariant
-qvariantInitFromU8(quint8 u8);
-QVariant
-qvariantInitFromU16(quint16 u16);
-QVariant
-qvariantInitFromU32(quint32 u32);
+qvariantInitFromT(T value)
+{
+  return QVariant::fromValue(value);
+}
+
 types::QVariantType
 qvariantType(const QVariant& variant);
-bool
-qvariantToBool(const QVariant& variant);
-float
-qvariantToF32(const QVariant& variant);
-double
-qvariantToF64(const QVariant& variant);
-qint8
-qvariantToI8(const QVariant& variant);
-qint16
-qvariantToI16(const QVariant& variant);
-qint32
-qvariantToI32(const QVariant& variant);
-QColor
-qvariantToQColor(const QVariant& variant);
-QDate
-qvariantToQDate(const QVariant& variant);
-QDateTime
-qvariantToQDateTime(const QVariant& variant);
-QPoint
-qvariantToQPoint(const QVariant& variant);
-QPointF
-qvariantToQPointF(const QVariant& variant);
-QRect
-qvariantToQRect(const QVariant& variant);
-QRectF
-qvariantToQRectF(const QVariant& variant);
-QSize
-qvariantToQSize(const QVariant& variant);
-QSizeF
-qvariantToQSizeF(const QVariant& variant);
-QTime
-qvariantToQTime(const QVariant& variant);
-QUrl
-qvariantToQUrl(const QVariant& variant);
-QString
-qvariantToQString(const QVariant& variant);
-quint8
-qvariantToU8(const QVariant& variant);
-quint16
-qvariantToU16(const QVariant& variant);
-quint32
-qvariantToU32(const QVariant& variant);
+
+template<typename T>
+T
+qvariantToT(const QVariant& variant)
+{
+  Q_ASSERT(variant.canConvert<T>());
+  return variant.value<T>();
+}
 
 }
 }
