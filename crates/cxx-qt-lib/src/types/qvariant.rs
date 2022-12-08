@@ -91,131 +91,131 @@ mod ffi {
         fn construct(variant: &QVariant) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_bool"]
-        fn qvariantInitFromBool(b: bool) -> QVariant;
+        fn qvariantInitFromT(b: bool) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_f32"]
-        fn qvariantInitFromF32(f: f32) -> QVariant;
+        fn qvariantInitFromT(f: f32) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_f64"]
-        fn qvariantInitFromF64(f: f64) -> QVariant;
+        fn qvariantInitFromT(f: f64) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i8"]
-        fn qvariantInitFromI8(i: i8) -> QVariant;
+        fn qvariantInitFromT(i: i8) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i16"]
-        fn qvariantInitFromI16(i: i16) -> QVariant;
+        fn qvariantInitFromT(i: i16) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_i32"]
-        fn qvariantInitFromI32(i: i32) -> QVariant;
+        fn qvariantInitFromT(i: i32) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qcolor"]
-        fn qvariantInitFromQColor(color: &QColor) -> QVariant;
+        fn qvariantInitFromT(color: &QColor) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qdate"]
-        fn qvariantInitFromQDate(date: &QDate) -> QVariant;
+        fn qvariantInitFromT(date: &QDate) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qdatetime"]
-        fn qvariantInitFromQDateTime(dateTime: &QDateTime) -> QVariant;
+        fn qvariantInitFromT(dateTime: &QDateTime) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qpoint"]
-        fn qvariantInitFromQPoint(point: &QPoint) -> QVariant;
+        fn qvariantInitFromT(point: &QPoint) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qpointf"]
-        fn qvariantInitFromQPointF(pointf: &QPointF) -> QVariant;
+        fn qvariantInitFromT(pointf: &QPointF) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qrect"]
-        fn qvariantInitFromQRect(rect: &QRect) -> QVariant;
+        fn qvariantInitFromT(rect: &QRect) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qrectf"]
-        fn qvariantInitFromQRectF(rectf: &QRectF) -> QVariant;
+        fn qvariantInitFromT(rectf: &QRectF) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qsize"]
-        fn qvariantInitFromQSize(size: &QSize) -> QVariant;
+        fn qvariantInitFromT(size: &QSize) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qsizef"]
-        fn qvariantInitFromQSizeF(sizef: &QSizeF) -> QVariant;
+        fn qvariantInitFromT(sizef: &QSizeF) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qtime"]
-        fn qvariantInitFromQTime(time: &QTime) -> QVariant;
+        fn qvariantInitFromT(time: &QTime) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qurl"]
-        fn qvariantInitFromQUrl(url: &QUrl) -> QVariant;
+        fn qvariantInitFromT(url: &QUrl) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qstring"]
-        fn qvariantInitFromQString(string: &QString) -> QVariant;
+        fn qvariantInitFromT(string: &QString) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u8"]
-        fn qvariantInitFromU8(u: u8) -> QVariant;
+        fn qvariantInitFromT(u: u8) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u16"]
-        fn qvariantInitFromU16(u: u16) -> QVariant;
+        fn qvariantInitFromT(u: u16) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_u32"]
-        fn qvariantInitFromU32(u: u32) -> QVariant;
+        fn qvariantInitFromT(u: u32) -> QVariant;
 
         #[doc(hidden)]
         #[rust_name = "qvariant_to_bool"]
-        fn qvariantToBool(qvariant: &QVariant) -> bool;
+        fn qvariantToT(qvariant: &QVariant) -> bool;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_f32"]
-        fn qvariantToF32(qvariant: &QVariant) -> f32;
+        fn qvariantToT(qvariant: &QVariant) -> f32;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_f64"]
-        fn qvariantToF64(qvariant: &QVariant) -> f64;
+        fn qvariantToT(qvariant: &QVariant) -> f64;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_i8"]
-        fn qvariantToI8(qvariant: &QVariant) -> i8;
+        fn qvariantToT(qvariant: &QVariant) -> i8;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_i16"]
-        fn qvariantToI16(qvariant: &QVariant) -> i16;
+        fn qvariantToT(qvariant: &QVariant) -> i16;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_i32"]
-        fn qvariantToI32(qvariant: &QVariant) -> i32;
+        fn qvariantToT(qvariant: &QVariant) -> i32;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qcolor"]
-        fn qvariantToQColor(qvariant: &QVariant) -> QColor;
+        fn qvariantToT(qvariant: &QVariant) -> QColor;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qdate"]
-        fn qvariantToQDate(qvariant: &QVariant) -> QDate;
+        fn qvariantToT(qvariant: &QVariant) -> QDate;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qdatetime"]
-        fn qvariantToQDateTime(qvariant: &QVariant) -> QDateTime;
+        fn qvariantToT(qvariant: &QVariant) -> QDateTime;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qpoint"]
-        fn qvariantToQPoint(qvariant: &QVariant) -> QPoint;
+        fn qvariantToT(qvariant: &QVariant) -> QPoint;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qpointf"]
-        fn qvariantToQPointF(qvariant: &QVariant) -> QPointF;
+        fn qvariantToT(qvariant: &QVariant) -> QPointF;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qrect"]
-        fn qvariantToQRect(qvariant: &QVariant) -> QRect;
+        fn qvariantToT(qvariant: &QVariant) -> QRect;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qrectf"]
-        fn qvariantToQRectF(qvariant: &QVariant) -> QRectF;
+        fn qvariantToT(qvariant: &QVariant) -> QRectF;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qsize"]
-        fn qvariantToQSize(qvariant: &QVariant) -> QSize;
+        fn qvariantToT(qvariant: &QVariant) -> QSize;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qsizef"]
-        fn qvariantToQSizeF(qvariant: &QVariant) -> QSizeF;
+        fn qvariantToT(qvariant: &QVariant) -> QSizeF;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qtime"]
-        fn qvariantToQTime(qvariant: &QVariant) -> QTime;
+        fn qvariantToT(qvariant: &QVariant) -> QTime;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qurl"]
-        fn qvariantToQUrl(qvariant: &QVariant) -> QUrl;
+        fn qvariantToT(qvariant: &QVariant) -> QUrl;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_qstring"]
-        fn qvariantToQString(qvariant: &QVariant) -> QString;
+        fn qvariantToT(qvariant: &QVariant) -> QString;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_u8"]
-        fn qvariantToU8(qvariant: &QVariant) -> u8;
+        fn qvariantToT(qvariant: &QVariant) -> u8;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_u16"]
-        fn qvariantToU16(qvariant: &QVariant) -> u16;
+        fn qvariantToT(qvariant: &QVariant) -> u16;
         #[doc(hidden)]
         #[rust_name = "qvariant_to_u32"]
-        fn qvariantToU32(qvariant: &QVariant) -> u32;
+        fn qvariantToT(qvariant: &QVariant) -> u32;
     }
 }
 

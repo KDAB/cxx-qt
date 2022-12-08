@@ -45,40 +45,6 @@ static_assert(QTypeInfo<QVariant>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-#define CXX_QT_VARIANT_INIT(typeName, name)                                    \
-  QVariant qvariantInitFrom##name(typeName value)                              \
-  {                                                                            \
-    return QVariant(value);                                                    \
-  }
-
-#define CXX_QT_VARIANT_INIT_REF(typeName, name)                                \
-  QVariant qvariantInitFrom##name(const typeName& value)                       \
-  {                                                                            \
-    return QVariant(value);                                                    \
-  }
-
-CXX_QT_VARIANT_INIT(bool, Bool)
-CXX_QT_VARIANT_INIT(float, F32)
-CXX_QT_VARIANT_INIT(double, F64)
-CXX_QT_VARIANT_INIT(qint8, I8)
-CXX_QT_VARIANT_INIT(qint16, I16)
-CXX_QT_VARIANT_INIT(qint32, I32)
-CXX_QT_VARIANT_INIT_REF(QColor, QColor)
-CXX_QT_VARIANT_INIT_REF(QDate, QDate)
-CXX_QT_VARIANT_INIT_REF(QDateTime, QDateTime)
-CXX_QT_VARIANT_INIT_REF(QPoint, QPoint)
-CXX_QT_VARIANT_INIT_REF(QPointF, QPointF)
-CXX_QT_VARIANT_INIT_REF(QRect, QRect)
-CXX_QT_VARIANT_INIT_REF(QRectF, QRectF)
-CXX_QT_VARIANT_INIT_REF(QSize, QSize)
-CXX_QT_VARIANT_INIT_REF(QSizeF, QSizeF)
-CXX_QT_VARIANT_INIT_REF(QString, QString)
-CXX_QT_VARIANT_INIT_REF(QTime, QTime)
-CXX_QT_VARIANT_INIT_REF(QUrl, QUrl)
-CXX_QT_VARIANT_INIT(quint8, U8)
-CXX_QT_VARIANT_INIT(quint16, U16)
-CXX_QT_VARIANT_INIT(quint32, U32)
-
 types::QVariantType
 qvariantType(const QVariant& variant)
 {
@@ -136,35 +102,6 @@ qvariantType(const QVariant& variant)
       return types::QVariantType::Unsupported;
   }
 }
-
-#define CXX_QT_VARIANT_TRIVIAL_VALUE(typeName, name)                           \
-  typeName qvariantTo##name(const QVariant& variant)                           \
-  {                                                                            \
-    Q_ASSERT(variant.canConvert<typeName>());                                  \
-    return variant.value<typeName>();                                          \
-  }
-
-CXX_QT_VARIANT_TRIVIAL_VALUE(bool, Bool)
-CXX_QT_VARIANT_TRIVIAL_VALUE(float, F32)
-CXX_QT_VARIANT_TRIVIAL_VALUE(double, F64)
-CXX_QT_VARIANT_TRIVIAL_VALUE(qint8, I8)
-CXX_QT_VARIANT_TRIVIAL_VALUE(qint16, I16)
-CXX_QT_VARIANT_TRIVIAL_VALUE(qint32, I32)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QColor, QColor)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QDate, QDate)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QDateTime, QDateTime)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QPoint, QPoint)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QPointF, QPointF)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QRect, QRect)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QRectF, QRectF)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QSize, QSize)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QSizeF, QSizeF)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QString, QString)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QTime, QTime)
-CXX_QT_VARIANT_TRIVIAL_VALUE(QUrl, QUrl)
-CXX_QT_VARIANT_TRIVIAL_VALUE(quint8, U8)
-CXX_QT_VARIANT_TRIVIAL_VALUE(quint16, U16)
-CXX_QT_VARIANT_TRIVIAL_VALUE(quint32, U32)
 
 } // namespace cxxqtlib1
 } // namespace rust
