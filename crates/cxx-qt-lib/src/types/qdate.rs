@@ -29,12 +29,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qdate_init_default"]
-        fn qdateInitDefault() -> QDate;
+        fn construct() -> QDate;
         #[doc(hidden)]
         #[rust_name = "qdate_init"]
-        fn qdateInit(y: i32, m: i32, d: i32) -> QDate;
+        fn construct(y: i32, m: i32, d: i32) -> QDate;
     }
 }
 

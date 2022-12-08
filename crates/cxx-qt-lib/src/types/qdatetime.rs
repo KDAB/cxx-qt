@@ -26,18 +26,20 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qdatetime_drop"]
-        fn qdatetimeDrop(datetime: &mut QDateTime);
+        fn drop(datetime: &mut QDateTime);
         #[doc(hidden)]
         #[rust_name = "qdatetime_init_default"]
-        fn qdatetimeInitDefault() -> QDateTime;
+        fn construct() -> QDateTime;
         #[doc(hidden)]
         #[rust_name = "qdatetime_init_from_date_and_time"]
-        fn qdatetimeInitFromDateAndTime(date: &QDate, time: &QTime) -> QDateTime;
+        fn construct(date: &QDate, time: &QTime) -> QDateTime;
         #[doc(hidden)]
         #[rust_name = "qdatetime_init_from_qdatetime"]
-        fn qdatetimeInitFromQDateTime(datetime: &QDateTime) -> QDateTime;
+        fn construct(datetime: &QDateTime) -> QDateTime;
 
         // Note that Qt 5 takes const-ref and Qt 6 takes by-value
         // for QDateTime::setDate and QDateTime::setTime

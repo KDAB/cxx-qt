@@ -22,21 +22,3 @@ assert_alignment_and_size(QSize,
 
 static_assert(std::is_trivially_copyable<QSize>::value,
               "QSize must be trivially copyable!");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QSize
-qsizeInitDefault()
-{
-  return QSize();
-}
-
-QSize
-qsizeInit(int width, int height)
-{
-  return QSize(width, height);
-}
-
-}
-}

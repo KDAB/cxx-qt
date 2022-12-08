@@ -36,30 +36,12 @@ static_assert(QTypeInfo<QString>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qstringDrop(QString& string)
-{
-  string.~QString();
-}
-
-QString
-qstringInitDefault()
-{
-  return QString();
-}
-
 QString
 qstringInitFromRustString(rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
   return QString::fromUtf8(string.data(), string.size());
-}
-
-QString
-qstringInitFromQString(const QString& string)
-{
-  return QString(string);
 }
 
 rust::String

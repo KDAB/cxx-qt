@@ -24,18 +24,20 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_QDate"]
-        fn qset_clone(_: &QSet_QDate) -> QSet_QDate;
+        fn construct(_: &QSet_QDate) -> QSet_QDate;
         #[rust_name = "default_QDate"]
-        fn qset_default() -> QSet_QDate;
+        fn construct() -> QSet_QDate;
         #[rust_name = "drop_QDate"]
-        fn qset_drop(_: &mut QSet_QDate);
+        fn drop(_: &mut QSet_QDate);
         #[rust_name = "get_unchecked_QDate"]
-        unsafe fn qset_get_unchecked(set: &QSet_QDate, pos: usize) -> &QDate;
+        unsafe fn qsetGetUnchecked(set: &QSet_QDate, pos: usize) -> &QDate;
         #[rust_name = "insert_QDate"]
-        fn qset_insert(_: &mut QSet_QDate, _: &QDate);
+        fn qsetInsert(_: &mut QSet_QDate, _: &QDate);
         #[rust_name = "len_QDate"]
-        fn qset_len(_: &QSet_QDate) -> usize;
+        fn qsetLen(_: &QSet_QDate) -> usize;
     }
 }
 

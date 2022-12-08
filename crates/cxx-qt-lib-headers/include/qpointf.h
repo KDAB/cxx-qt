@@ -8,14 +8,3 @@
 #pragma once
 
 #include <QPointF>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QPointF
-qpointfInitDefault();
-QPointF
-qpointfInit(qreal x, qreal y);
-
-}
-}

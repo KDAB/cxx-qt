@@ -8,14 +8,3 @@
 #pragma once
 
 #include <QRectF>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QRectF
-qrectfInitDefault();
-QRectF
-qrectfInit(qreal x, qreal y, qreal w, qreal h);
-
-}
-}

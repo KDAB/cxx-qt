@@ -18,21 +18,3 @@ assert_alignment_and_size(QTime, alignof(std::int32_t), sizeof(std::int32_t));
 
 static_assert(std::is_trivially_copyable<QTime>::value,
               "QTime must be trivially copyable!");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QTime
-qtimeInitDefault()
-{
-  return QTime();
-}
-
-QTime
-qtimeInit(int h, int m, int s, int ms)
-{
-  return QTime(h, m, s, ms);
-}
-
-}
-}

@@ -35,19 +35,21 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_$1"]
-        fn qset_clone(_: &QSet_$1) -> QSet_$1;
+        fn construct(_: &QSet_$1) -> QSet_$1;
         #[rust_name = "default_$1"]
-        fn qset_default() -> QSet_$1;
+        fn construct() -> QSet_$1;
         #[rust_name = "drop_$1"]
-        fn qset_drop(_: &mut QSet_$1);
+        fn drop(_: &mut QSet_$1);
         #[rust_name = "get_unchecked_$1"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qset_get_unchecked<'a>(set: &'a QSet_$1, pos: usize) -> &'a $1;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_$1, pos: usize) -> &'a $1;
         #[rust_name = "insert_$1"]
-        fn qset_insert(_: &mut QSet_$1, _: &$1);
+        fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
-        fn qset_len(_: &QSet_$1) -> usize;
+        fn qsetLen(_: &QSet_$1) -> usize;
     }
 }
 
@@ -106,18 +108,20 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[rust_name = "clone_$1"]
-        fn qset_clone(_: &QSet_$1) -> QSet_$1;
+        fn construct(_: &QSet_$1) -> QSet_$1;
         #[rust_name = "default_$1"]
-        fn qset_default() -> QSet_$1;
+        fn construct() -> QSet_$1;
         #[rust_name = "drop_$1"]
-        fn qset_drop(_: &mut QSet_$1);
+        fn drop(_: &mut QSet_$1);
         #[rust_name = "get_unchecked_$1"]
-        unsafe fn qset_get_unchecked(set: &QSet_$1, pos: usize) -> &$1;
+        unsafe fn qsetGetUnchecked(set: &QSet_$1, pos: usize) -> &$1;
         #[rust_name = "insert_$1"]
-        fn qset_insert(_: &mut QSet_$1, _: &$1);
+        fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
-        fn qset_len(_: &QSet_$1) -> usize;
+        fn qsetLen(_: &QSet_$1) -> usize;
     }
 }
 

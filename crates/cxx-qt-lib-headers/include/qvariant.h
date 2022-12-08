@@ -62,12 +62,6 @@ enum class QVariantType : uint8_t
 
 } // namespace types
 
-void
-qvariantDrop(QVariant& variant);
-QVariant
-qvariantInitDefault();
-QVariant
-qvariantInitFromQVariant(const QVariant& variant);
 QVariant
 qvariantInitFromBool(bool b);
 QVariant

@@ -25,31 +25,3 @@ static_assert(QTypeInfo<QColor>::isRelocatable);
 #endif
 
 static_assert(std::is_trivially_destructible<QColor>::value);
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QColor
-qcolorInitDefault()
-{
-  return QColor();
-}
-
-QColor
-qcolorInitFromRgba(std::int32_t r,
-                   std::int32_t g,
-                   std::int32_t b,
-                   std::int32_t a)
-{
-  return QColor(r, g, b, a);
-}
-
-QColor
-qcolorInitFromQColor(const QColor& color)
-{
-  return QColor(color);
-}
-
-}
-
-}

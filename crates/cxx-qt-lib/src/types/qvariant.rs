@@ -74,19 +74,21 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qvariant_get_type"]
         fn qvariantType(qvariant: &QVariant) -> QVariantType;
 
         #[doc(hidden)]
         #[rust_name = "qvariant_drop"]
-        fn qvariantDrop(variant: &mut QVariant);
+        fn drop(variant: &mut QVariant);
         #[doc(hidden)]
         #[rust_name = "qvariant_init_default"]
-        fn qvariantInitDefault() -> QVariant;
+        fn construct() -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_qvariant"]
-        fn qvariantInitFromQVariant(variant: &QVariant) -> QVariant;
+        fn construct(variant: &QVariant) -> QVariant;
         #[doc(hidden)]
         #[rust_name = "qvariant_init_from_bool"]
         fn qvariantInitFromBool(b: bool) -> QVariant;

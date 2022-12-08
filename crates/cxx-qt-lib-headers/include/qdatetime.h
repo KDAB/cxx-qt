@@ -20,14 +20,6 @@ namespace rust {
 namespace cxxqtlib1 {
 
 void
-qdatetimeDrop(QDateTime& datetime);
-QDateTime
-qdatetimeInitDefault();
-QDateTime
-qdatetimeInitFromDateAndTime(const QDate& date, const QTime& time);
-QDateTime
-qdatetimeInitFromQDateTime(const QDateTime& datetime);
-void
 qdatetimeSetDate(QDateTime& datetime, QDate date);
 void
 qdatetimeSetTime(QDateTime& datetime, QTime time);

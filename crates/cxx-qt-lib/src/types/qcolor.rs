@@ -37,12 +37,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qcolor_init_default"]
-        fn qcolorInitDefault() -> QColor;
+        fn construct() -> QColor;
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_rgba"]
-        fn qcolorInitFromRgba(red: i32, green: i32, blue: i32, alpha: i32) -> QColor;
+        fn construct(red: i32, green: i32, blue: i32, alpha: i32) -> QColor;
     }
 }
 

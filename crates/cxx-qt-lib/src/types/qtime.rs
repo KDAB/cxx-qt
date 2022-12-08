@@ -28,12 +28,14 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
         #[doc(hidden)]
         #[rust_name = "qtime_init_default"]
-        fn qtimeInitDefault() -> QTime;
+        fn construct() -> QTime;
         #[doc(hidden)]
         #[rust_name = "qtime_init"]
-        fn qtimeInit(h: i32, m: i32, s: i32, ms: i32) -> QTime;
+        fn construct(h: i32, m: i32, s: i32, ms: i32) -> QTime;
     }
 }
 

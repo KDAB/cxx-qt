@@ -8,14 +8,3 @@
 #pragma once
 
 #include <QTime>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QTime
-qtimeInitDefault();
-QTime
-qtimeInit(int h, int m, int s, int ms);
-
-}
-}

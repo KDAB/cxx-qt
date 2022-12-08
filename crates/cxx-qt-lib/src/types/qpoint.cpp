@@ -21,21 +21,3 @@ assert_alignment_and_size(QPoint,
                           sizeof(std::int32_t[2]));
 
 static_assert(std::is_trivially_copyable<QPoint>::value);
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QPoint
-qpointInitDefault()
-{
-  return QPoint();
-}
-
-QPoint
-qpointInit(int x, int y)
-{
-  return QPoint(x, y);
-}
-
-}
-}

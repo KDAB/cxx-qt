@@ -22,21 +22,3 @@ assert_alignment_and_size(QRect,
 
 static_assert(std::is_trivially_copyable<QRect>::value,
               "QRect must be trivially copyable");
-
-namespace rust {
-namespace cxxqtlib1 {
-
-QRect
-qrectInitDefault()
-{
-  return QRect();
-}
-
-QRect
-qrectInit(int x, int y, int w, int h)
-{
-  return QRect(x, y, w, h);
-}
-
-}
-}
