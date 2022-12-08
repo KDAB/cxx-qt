@@ -15,6 +15,9 @@ pub use qdatetime::QDateTime;
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant};
 
+mod qmap;
+pub use qmap::{QMap, QMapPair, QMapPair_QString_QVariant};
+
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 

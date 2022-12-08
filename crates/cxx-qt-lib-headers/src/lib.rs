@@ -10,7 +10,7 @@
 
 use std::{fs::File, io::Write, path::Path};
 
-static HEADERS: [(&str, &str); 22] = [
+static HEADERS: [(&str, &str); 23] = [
     (include_str!("../include/common.h"), "common.h"),
     (include_str!("../include/convert.h"), "convert.h"),
     (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
@@ -18,6 +18,7 @@ static HEADERS: [(&str, &str); 22] = [
     (include_str!("../include/qdate.h"), "qdate.h"),
     (include_str!("../include/qdatetime.h"), "qdatetime.h"),
     (include_str!("../include/qhash.h"), "qhash.h"),
+    (include_str!("../include/qmap.h"), "qmap.h"),
     (include_str!("../include/qmodelindex.h"), "qmodelindex.h"),
     (include_str!("../include/qpersistentmodelindex.h"), "qpersistentmodelindex.h"),
     (include_str!("../include/qpoint.h"), "qpoint.h"),
