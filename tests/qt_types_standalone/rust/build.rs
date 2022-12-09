@@ -23,5 +23,6 @@ fn main() {
         .file("src/qtime.rs")
         .file("src/qurl.rs")
         .file("src/qvariant.rs")
+        .file("src/qvector.rs")
         .build();
 }

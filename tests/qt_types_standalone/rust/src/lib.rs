@@ -20,3 +20,4 @@ mod qstring;
 mod qtime;
 mod qurl;
 mod qvariant;
+mod qvector;

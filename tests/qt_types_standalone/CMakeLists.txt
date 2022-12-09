@@ -57,6 +57,7 @@ add_executable(${APP_NAME}
     cpp/qtime.h
     cpp/qurl.h
     cpp/qvariant.h
+    cpp/qvector.h
 )
 target_include_directories(${APP_NAME} PRIVATE cpp)
 

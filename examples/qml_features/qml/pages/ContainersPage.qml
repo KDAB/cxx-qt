@@ -78,5 +78,20 @@ Page {
                 onClicked: rustContainers.insertSet(spinBox.value)
             }
         }
+
+        RowLayout {
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("QVector<i32> values: %1").arg(rustContainers.stringVector || "Empty")
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                text: qsTr("Append")
+
+                onClicked: rustContainers.appendVector(spinBox.value)
+            }
+        }
     }
 }

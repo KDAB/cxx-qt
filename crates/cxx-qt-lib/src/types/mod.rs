@@ -50,3 +50,6 @@ pub use qurl::QUrl;
 
 mod qvariant;
 pub use qvariant::{QVariant, QVariantValue};
+
+mod qvector;
+pub use qvector::{QVector, QVectorElement};

@@ -24,6 +24,7 @@
 #include "qtime.h"
 #include "qurl.h"
 #include "qvariant.h"
+#include "qvector.h"
 
 int
 main(int argc, char* argv[])
@@ -54,6 +55,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QTimeTest));
   runTest(QScopedPointer<QObject>(new QUrlTest));
   runTest(QScopedPointer<QObject>(new QVariantTest));
+  runTest(QScopedPointer<QObject>(new QVectorTest));
 
   return status;
 }
