@@ -50,6 +50,30 @@ fn main() {
         "qtime",
         "qurl",
         "qvariant",
+        "qvector/qvector_bool",
+        "qvector/qvector_f32",
+        "qvector/qvector_f64",
+        "qvector/qvector_i8",
+        "qvector/qvector_i16",
+        "qvector/qvector_i32",
+        "qvector/qvector_i64",
+        "qvector/qvector_qcolor",
+        "qvector/qvector_qdate",
+        "qvector/qvector_qdatetime",
+        "qvector/qvector_qpoint",
+        "qvector/qvector_qpointf",
+        "qvector/qvector_qrect",
+        "qvector/qvector_qrectf",
+        "qvector/qvector_qsize",
+        "qvector/qvector_qsizef",
+        "qvector/qvector_qstring",
+        "qvector/qvector_qtime",
+        "qvector/qvector_qurl",
+        "qvector/qvector_qvariant",
+        "qvector/qvector_u8",
+        "qvector/qvector_u16",
+        "qvector/qvector_u32",
+        "qvector/qvector_u64",
     ];
     for bridge in rust_bridges {
         println!("cargo:rerun-if-changed=src/types/{}.rs", bridge);
@@ -84,6 +108,7 @@ fn main() {
         "qtime",
         "qurl",
         "qvariant",
+        "qvector/qvector",
     ];
     for cpp_file in cpp_files {
         builder.file(format!("src/types/{}.cpp", cpp_file));

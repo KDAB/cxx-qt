@@ -71,4 +71,26 @@ TestCase {
         compare(spy.count, 5);
         compare(obj.stringSet, "");
     }
+
+    function test_container_vector() {
+        const obj = createTemporaryObject(componentContainers, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "stringVectorChanged",
+            target: obj,
+        });
+        compare(spy.count, 0);
+        compare(obj.stringVector, "");
+
+        obj.appendVector(1);
+        obj.appendVector(1);
+        obj.appendVector(3);
+        obj.appendVector(3);
+
+        compare(spy.count, 4);
+        compare(obj.stringVector, "1, 1, 3, 3");
+
+        obj.reset();
+        compare(spy.count, 5);
+        compare(obj.stringVector, "");
+    }
 }

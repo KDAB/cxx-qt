@@ -16,6 +16,8 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
     #[cxx_qt::qobject]
@@ -25,9 +27,12 @@ mod ffi {
         string_hash: QString,
         #[qproperty]
         string_set: QString,
+        #[qproperty]
+        string_vector: QString,
 
         hash: QHash_QString_QVariant,
         set: QSet_i32,
+        vector: QVector_i32,
     }
 
     impl qobject::RustContainers {
@@ -35,6 +40,14 @@ mod ffi {
         pub fn reset(mut self: Pin<&mut Self>) {
             self.as_mut().set_hash(QHash_QString_QVariant::default());
             self.as_mut().set_set(QSet_i32::default());
+            self.as_mut().set_vector(QVector_i32::default());
+
+            self.update_strings();
+        }
+
+        #[qinvokable]
+        pub fn append_vector(mut self: Pin<&mut Self>, value: i32) {
+            self.as_mut().vector_mut().append(value);
 
             self.update_strings();
         }
@@ -76,7 +89,16 @@ mod ffi {
                 .map(|value| value.to_string())
                 .collect::<Vec<String>>()
                 .join(", ");
-            self.set_string_set(QString::from(&set_items));
+            self.as_mut().set_string_set(QString::from(&set_items));
+
+            let vector_items = self
+                .as_ref()
+                .vector()
+                .iter()
+                .map(|value| value.to_string())
+                .collect::<Vec<String>>()
+                .join(", ");
+            self.set_string_vector(QString::from(&vector_items));
         }
     }
 }
