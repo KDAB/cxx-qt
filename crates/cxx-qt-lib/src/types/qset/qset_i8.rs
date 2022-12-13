@@ -31,11 +31,11 @@ pub mod ffi {
         fn drop(_: &mut QSet_i8);
         #[rust_name = "get_unchecked_i8"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_i8, pos: usize) -> &'a i8;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_i8, pos: isize) -> &'a i8;
         #[rust_name = "insert_i8"]
         fn qsetInsert(_: &mut QSet_i8, _: &i8);
         #[rust_name = "len_i8"]
-        fn qsetLen(_: &QSet_i8) -> usize;
+        fn qsetLen(_: &QSet_i8) -> isize;
     }
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_i8) {
     ffi::drop_i8(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_i8, pos: usize) -> &i8 {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_i8, pos: isize) -> &i8 {
     ffi::get_unchecked_i8(s, pos)
 }
 
@@ -59,6 +59,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_i8, value: &i8) {
     ffi::insert_i8(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_i8) -> usize {
+pub(crate) fn len(s: &ffi::QSet_i8) -> isize {
     ffi::len_i8(s)
 }

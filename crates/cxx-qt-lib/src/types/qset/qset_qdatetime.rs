@@ -33,11 +33,11 @@ pub mod ffi {
         #[rust_name = "drop_QDateTime"]
         fn drop(_: &mut QSet_QDateTime);
         #[rust_name = "get_unchecked_QDateTime"]
-        unsafe fn qsetGetUnchecked(set: &QSet_QDateTime, pos: usize) -> &QDateTime;
+        unsafe fn qsetGetUnchecked(set: &QSet_QDateTime, pos: isize) -> &QDateTime;
         #[rust_name = "insert_QDateTime"]
         fn qsetInsert(_: &mut QSet_QDateTime, _: &QDateTime);
         #[rust_name = "len_QDateTime"]
-        fn qsetLen(_: &QSet_QDateTime) -> usize;
+        fn qsetLen(_: &QSet_QDateTime) -> isize;
     }
 }
 
@@ -53,7 +53,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_QDateTime) {
     ffi::drop_QDateTime(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDateTime, pos: usize) -> &ffi::QDateTime {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDateTime, pos: isize) -> &ffi::QDateTime {
     ffi::get_unchecked_QDateTime(s, pos)
 }
 
@@ -61,6 +61,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_QDateTime, value: &ffi::QDateTime) {
     ffi::insert_QDateTime(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_QDateTime) -> usize {
+pub(crate) fn len(s: &ffi::QSet_QDateTime) -> isize {
     ffi::len_QDateTime(s)
 }

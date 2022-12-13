@@ -28,10 +28,15 @@ namespace rust {
 namespace cxxqtlib1 {
 
 template<typename T>
+::rust::isize
+qsetLen(const QSet<T>& s) noexcept;
+
+template<typename T>
 const T&
-qsetGetUnchecked(const QSet<T>& s, ::std::size_t pos) noexcept
+qsetGetUnchecked(const QSet<T>& s, ::rust::isize pos) noexcept
 {
-  Q_ASSERT(pos < static_cast<::std::size_t>(s.size()));
+  Q_ASSERT(pos < qsetLen(s));
+  Q_ASSERT(pos >= 0);
   auto it = s.cbegin();
   std::advance(it, pos);
   return *it;
@@ -45,16 +50,12 @@ qsetInsert(QSet<T>& s, const T& value) noexcept
 }
 
 template<typename T>
-::std::size_t
+::rust::isize
 qsetLen(const QSet<T>& s) noexcept
 {
   // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
   // is the same for CXX
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return s.size();
-#else
-  return static_cast<::std ::size_t>(s.size());
-#endif
+  return static_cast<::rust::isize>(s.size());
 }
 
 }

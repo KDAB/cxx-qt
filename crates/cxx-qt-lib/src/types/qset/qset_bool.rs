@@ -31,11 +31,11 @@ pub mod ffi {
         fn drop(_: &mut QSet_bool);
         #[rust_name = "get_unchecked_bool"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_bool, pos: usize) -> &'a bool;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_bool, pos: isize) -> &'a bool;
         #[rust_name = "insert_bool"]
         fn qsetInsert(_: &mut QSet_bool, _: &bool);
         #[rust_name = "len_bool"]
-        fn qsetLen(_: &QSet_bool) -> usize;
+        fn qsetLen(_: &QSet_bool) -> isize;
     }
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_bool) {
     ffi::drop_bool(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_bool, pos: usize) -> &bool {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_bool, pos: isize) -> &bool {
     ffi::get_unchecked_bool(s, pos)
 }
 
@@ -59,6 +59,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_bool, value: &bool) {
     ffi::insert_bool(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_bool) -> usize {
+pub(crate) fn len(s: &ffi::QSet_bool) -> isize {
     ffi::len_bool(s)
 }

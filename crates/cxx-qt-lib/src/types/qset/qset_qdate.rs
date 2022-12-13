@@ -33,11 +33,11 @@ pub mod ffi {
         #[rust_name = "drop_QDate"]
         fn drop(_: &mut QSet_QDate);
         #[rust_name = "get_unchecked_QDate"]
-        unsafe fn qsetGetUnchecked(set: &QSet_QDate, pos: usize) -> &QDate;
+        unsafe fn qsetGetUnchecked(set: &QSet_QDate, pos: isize) -> &QDate;
         #[rust_name = "insert_QDate"]
         fn qsetInsert(_: &mut QSet_QDate, _: &QDate);
         #[rust_name = "len_QDate"]
-        fn qsetLen(_: &QSet_QDate) -> usize;
+        fn qsetLen(_: &QSet_QDate) -> isize;
     }
 }
 
@@ -53,7 +53,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_QDate) {
     ffi::drop_QDate(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDate, pos: usize) -> &ffi::QDate {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDate, pos: isize) -> &ffi::QDate {
     ffi::get_unchecked_QDate(s, pos)
 }
 
@@ -61,6 +61,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_QDate, value: &ffi::QDate) {
     ffi::insert_QDate(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_QDate) -> usize {
+pub(crate) fn len(s: &ffi::QSet_QDate) -> isize {
     ffi::len_QDate(s)
 }

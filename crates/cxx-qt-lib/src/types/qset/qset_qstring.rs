@@ -33,11 +33,11 @@ pub mod ffi {
         #[rust_name = "drop_QString"]
         fn drop(_: &mut QSet_QString);
         #[rust_name = "get_unchecked_QString"]
-        unsafe fn qsetGetUnchecked(set: &QSet_QString, pos: usize) -> &QString;
+        unsafe fn qsetGetUnchecked(set: &QSet_QString, pos: isize) -> &QString;
         #[rust_name = "insert_QString"]
         fn qsetInsert(_: &mut QSet_QString, _: &QString);
         #[rust_name = "len_QString"]
-        fn qsetLen(_: &QSet_QString) -> usize;
+        fn qsetLen(_: &QSet_QString) -> isize;
     }
 }
 
@@ -53,7 +53,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_QString) {
     ffi::drop_QString(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QString, pos: usize) -> &ffi::QString {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QString, pos: isize) -> &ffi::QString {
     ffi::get_unchecked_QString(s, pos)
 }
 
@@ -61,6 +61,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_QString, value: &ffi::QString) {
     ffi::insert_QString(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_QString) -> usize {
+pub(crate) fn len(s: &ffi::QSet_QString) -> isize {
     ffi::len_QString(s)
 }

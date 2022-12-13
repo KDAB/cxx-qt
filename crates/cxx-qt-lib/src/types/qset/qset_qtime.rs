@@ -33,11 +33,11 @@ pub mod ffi {
         #[rust_name = "drop_QTime"]
         fn drop(_: &mut QSet_QTime);
         #[rust_name = "get_unchecked_QTime"]
-        unsafe fn qsetGetUnchecked(set: &QSet_QTime, pos: usize) -> &QTime;
+        unsafe fn qsetGetUnchecked(set: &QSet_QTime, pos: isize) -> &QTime;
         #[rust_name = "insert_QTime"]
         fn qsetInsert(_: &mut QSet_QTime, _: &QTime);
         #[rust_name = "len_QTime"]
-        fn qsetLen(_: &QSet_QTime) -> usize;
+        fn qsetLen(_: &QSet_QTime) -> isize;
     }
 }
 
@@ -53,7 +53,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_QTime) {
     ffi::drop_QTime(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QTime, pos: usize) -> &ffi::QTime {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QTime, pos: isize) -> &ffi::QTime {
     ffi::get_unchecked_QTime(s, pos)
 }
 
@@ -61,6 +61,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_QTime, value: &ffi::QTime) {
     ffi::insert_QTime(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_QTime) -> usize {
+pub(crate) fn len(s: &ffi::QSet_QTime) -> isize {
     ffi::len_QTime(s)
 }
