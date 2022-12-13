@@ -33,11 +33,11 @@ pub mod ffi {
         #[rust_name = "drop_QUrl"]
         fn drop(_: &mut QSet_QUrl);
         #[rust_name = "get_unchecked_QUrl"]
-        unsafe fn qsetGetUnchecked(set: &QSet_QUrl, pos: usize) -> &QUrl;
+        unsafe fn qsetGetUnchecked(set: &QSet_QUrl, pos: isize) -> &QUrl;
         #[rust_name = "insert_QUrl"]
         fn qsetInsert(_: &mut QSet_QUrl, _: &QUrl);
         #[rust_name = "len_QUrl"]
-        fn qsetLen(_: &QSet_QUrl) -> usize;
+        fn qsetLen(_: &QSet_QUrl) -> isize;
     }
 }
 
@@ -53,7 +53,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_QUrl) {
     ffi::drop_QUrl(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QUrl, pos: usize) -> &ffi::QUrl {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QUrl, pos: isize) -> &ffi::QUrl {
     ffi::get_unchecked_QUrl(s, pos)
 }
 
@@ -61,6 +61,6 @@ pub(crate) fn insert(s: &mut ffi::QSet_QUrl, value: &ffi::QUrl) {
     ffi::insert_QUrl(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_QUrl) -> usize {
+pub(crate) fn len(s: &ffi::QSet_QUrl) -> isize {
     ffi::len_QUrl(s)
 }

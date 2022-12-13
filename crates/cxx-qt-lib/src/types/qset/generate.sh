@@ -45,11 +45,11 @@ pub mod ffi {
         fn drop(_: &mut QSet_$1);
         #[rust_name = "get_unchecked_$1"]
         #[allow(clippy::needless_lifetimes)]
-        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_$1, pos: usize) -> &'a $1;
+        unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_$1, pos: isize) -> &'a $1;
         #[rust_name = "insert_$1"]
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
-        fn qsetLen(_: &QSet_$1) -> usize;
+        fn qsetLen(_: &QSet_$1) -> isize;
     }
 }
 
@@ -65,7 +65,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_$1) {
     ffi::drop_$1(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: usize) -> &$1 {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: isize) -> &$1 {
     ffi::get_unchecked_$1(s, pos)
 }
 
@@ -73,7 +73,7 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &$1) {
     ffi::insert_$1(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_$1) -> usize {
+pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
 }
 EOF
@@ -117,11 +117,11 @@ pub mod ffi {
         #[rust_name = "drop_$1"]
         fn drop(_: &mut QSet_$1);
         #[rust_name = "get_unchecked_$1"]
-        unsafe fn qsetGetUnchecked(set: &QSet_$1, pos: usize) -> &$1;
+        unsafe fn qsetGetUnchecked(set: &QSet_$1, pos: isize) -> &$1;
         #[rust_name = "insert_$1"]
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
-        fn qsetLen(_: &QSet_$1) -> usize;
+        fn qsetLen(_: &QSet_$1) -> isize;
     }
 }
 
@@ -137,7 +137,7 @@ pub(crate) fn drop(s: &mut ffi::QSet_$1) {
     ffi::drop_$1(s);
 }
 
-pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: usize) -> &ffi::$1 {
+pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: isize) -> &ffi::$1 {
     ffi::get_unchecked_$1(s, pos)
 }
 
@@ -145,7 +145,7 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &ffi::$1) {
     ffi::insert_$1(s, value);
 }
 
-pub(crate) fn len(s: &ffi::QSet_$1) -> usize {
+pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
 }
 EOF

@@ -105,7 +105,7 @@ where
     }
 
     /// Returns the number of items in the set.
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> isize {
         T::len(self)
     }
 
@@ -140,7 +140,7 @@ where
     T: QSetElement,
 {
     set: &'a QSet<T>,
-    index: usize,
+    index: isize,
 }
 
 impl<'a, T> Iterator for Iter<'a, T>
@@ -170,7 +170,7 @@ where
     T: QSetElement,
 {
     fn len(&self) -> usize {
-        self.set.len() - self.index
+        (self.set.len() - self.index) as usize
     }
 }
 
@@ -187,12 +187,12 @@ pub trait QSetElement: Sized {
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
     /// even if the resulting reference is not used.
-    unsafe fn get_unchecked(set: &QSet<Self>, pos: usize) -> &Self;
+    unsafe fn get_unchecked(set: &QSet<Self>, pos: isize) -> &Self;
     fn insert(set: &mut QSet<Self>, value: Self)
     where
         Self: ExternType<Kind = cxx::kind::Trivial>;
     fn insert_clone(set: &mut QSet<Self>, value: &Self);
-    fn len(set: &QSet<Self>) -> usize;
+    fn len(set: &QSet<Self>) -> isize;
     fn remove(set: &mut QSet<Self>, value: &Self) -> bool;
 }
 
@@ -221,7 +221,7 @@ macro_rules! impl_qset_element {
                 $module::drop(set);
             }
 
-            unsafe fn get_unchecked(set: &QSet<Self>, pos: usize) -> &Self {
+            unsafe fn get_unchecked(set: &QSet<Self>, pos: isize) -> &Self {
                 $module::get_unchecked(set, pos)
             }
 
@@ -233,7 +233,7 @@ macro_rules! impl_qset_element {
                 $module::insert(set, value);
             }
 
-            fn len(set: &QSet<Self>) -> usize {
+            fn len(set: &QSet<Self>) -> isize {
                 $module::len(set)
             }
 
