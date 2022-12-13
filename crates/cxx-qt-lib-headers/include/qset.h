@@ -26,6 +26,7 @@ struct rust::IsRelocatable<QSet<T>> : std::true_type
 
 namespace rust {
 namespace cxxqtlib1 {
+namespace qset {
 
 template<typename T>
 ::rust::isize
@@ -58,6 +59,7 @@ qsetLen(const QSet<T>& s) noexcept
   return static_cast<::rust::isize>(s.size());
 }
 
+}
 }
 }
 

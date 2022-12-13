@@ -23,12 +23,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_i8"]
+        #[rust_name = "qset_clone_i8"]
         fn construct(_: &QSet_i8) -> QSet_i8;
-        #[rust_name = "default_i8"]
+        #[rust_name = "qset_default_i8"]
         fn construct() -> QSet_i8;
-        #[rust_name = "drop_i8"]
+        #[rust_name = "qset_drop_i8"]
         fn drop(_: &mut QSet_i8);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_i8"]
         #[allow(clippy::needless_lifetimes)]
         unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_i8, pos: isize) -> &'a i8;
@@ -40,15 +44,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_i8) -> ffi::QSet_i8 {
-    ffi::clone_i8(s)
+    ffi::qset_clone_i8(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_i8 {
-    ffi::default_i8()
+    ffi::qset_default_i8()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_i8) {
-    ffi::drop_i8(s);
+    ffi::qset_drop_i8(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_i8, pos: isize) -> &i8 {

@@ -26,12 +26,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_QDate"]
+        #[rust_name = "qset_clone_QDate"]
         fn construct(_: &QSet_QDate) -> QSet_QDate;
-        #[rust_name = "default_QDate"]
+        #[rust_name = "qset_default_QDate"]
         fn construct() -> QSet_QDate;
-        #[rust_name = "drop_QDate"]
+        #[rust_name = "qset_drop_QDate"]
         fn drop(_: &mut QSet_QDate);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_QDate"]
         unsafe fn qsetGetUnchecked(set: &QSet_QDate, pos: isize) -> &QDate;
         #[rust_name = "insert_QDate"]
@@ -42,15 +46,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QDate) -> ffi::QSet_QDate {
-    ffi::clone_QDate(s)
+    ffi::qset_clone_QDate(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_QDate {
-    ffi::default_QDate()
+    ffi::qset_default_QDate()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_QDate) {
-    ffi::drop_QDate(s);
+    ffi::qset_drop_QDate(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QDate, pos: isize) -> &ffi::QDate {

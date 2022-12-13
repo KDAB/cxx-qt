@@ -26,12 +26,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_QUrl"]
+        #[rust_name = "qset_clone_QUrl"]
         fn construct(_: &QSet_QUrl) -> QSet_QUrl;
-        #[rust_name = "default_QUrl"]
+        #[rust_name = "qset_default_QUrl"]
         fn construct() -> QSet_QUrl;
-        #[rust_name = "drop_QUrl"]
+        #[rust_name = "qset_drop_QUrl"]
         fn drop(_: &mut QSet_QUrl);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_QUrl"]
         unsafe fn qsetGetUnchecked(set: &QSet_QUrl, pos: isize) -> &QUrl;
         #[rust_name = "insert_QUrl"]
@@ -42,15 +46,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QUrl) -> ffi::QSet_QUrl {
-    ffi::clone_QUrl(s)
+    ffi::qset_clone_QUrl(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_QUrl {
-    ffi::default_QUrl()
+    ffi::qset_default_QUrl()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_QUrl) {
-    ffi::drop_QUrl(s);
+    ffi::qset_drop_QUrl(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QUrl, pos: isize) -> &ffi::QUrl {

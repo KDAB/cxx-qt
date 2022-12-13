@@ -37,12 +37,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_$1"]
+        #[rust_name = "qset_clone_$1"]
         fn construct(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "default_$1"]
+        #[rust_name = "qset_default_$1"]
         fn construct() -> QSet_$1;
-        #[rust_name = "drop_$1"]
+        #[rust_name = "qset_drop_$1"]
         fn drop(_: &mut QSet_$1);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_$1"]
         #[allow(clippy::needless_lifetimes)]
         unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_$1, pos: isize) -> &'a $1;
@@ -54,15 +58,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {
-    ffi::clone_$1(s)
+    ffi::qset_clone_$1(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_$1 {
-    ffi::default_$1()
+    ffi::qset_default_$1()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_$1) {
-    ffi::drop_$1(s);
+    ffi::qset_drop_$1(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: isize) -> &$1 {
@@ -110,12 +114,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_$1"]
+        #[rust_name = "qset_clone_$1"]
         fn construct(_: &QSet_$1) -> QSet_$1;
-        #[rust_name = "default_$1"]
+        #[rust_name = "qset_default_$1"]
         fn construct() -> QSet_$1;
-        #[rust_name = "drop_$1"]
+        #[rust_name = "qset_drop_$1"]
         fn drop(_: &mut QSet_$1);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_$1"]
         unsafe fn qsetGetUnchecked(set: &QSet_$1, pos: isize) -> &$1;
         #[rust_name = "insert_$1"]
@@ -126,15 +134,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {
-    ffi::clone_$1(s)
+    ffi::qset_clone_$1(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_$1 {
-    ffi::default_$1()
+    ffi::qset_default_$1()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_$1) {
-    ffi::drop_$1(s);
+    ffi::qset_drop_$1(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_$1, pos: isize) -> &ffi::$1 {
