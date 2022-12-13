@@ -23,12 +23,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_bool"]
+        #[rust_name = "qset_clone_bool"]
         fn construct(_: &QSet_bool) -> QSet_bool;
-        #[rust_name = "default_bool"]
+        #[rust_name = "qset_default_bool"]
         fn construct() -> QSet_bool;
-        #[rust_name = "drop_bool"]
+        #[rust_name = "qset_drop_bool"]
         fn drop(_: &mut QSet_bool);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_bool"]
         #[allow(clippy::needless_lifetimes)]
         unsafe fn qsetGetUnchecked<'a>(set: &'a QSet_bool, pos: isize) -> &'a bool;
@@ -40,15 +44,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_bool) -> ffi::QSet_bool {
-    ffi::clone_bool(s)
+    ffi::qset_clone_bool(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_bool {
-    ffi::default_bool()
+    ffi::qset_default_bool()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_bool) {
-    ffi::drop_bool(s);
+    ffi::qset_drop_bool(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_bool, pos: isize) -> &bool {

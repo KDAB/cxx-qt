@@ -26,12 +26,16 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
-        #[rust_name = "clone_QTime"]
+        #[rust_name = "qset_clone_QTime"]
         fn construct(_: &QSet_QTime) -> QSet_QTime;
-        #[rust_name = "default_QTime"]
+        #[rust_name = "qset_default_QTime"]
         fn construct() -> QSet_QTime;
-        #[rust_name = "drop_QTime"]
+        #[rust_name = "qset_drop_QTime"]
         fn drop(_: &mut QSet_QTime);
+    }
+
+    #[namespace = "rust::cxxqtlib1::qset"]
+    unsafe extern "C++" {
         #[rust_name = "get_unchecked_QTime"]
         unsafe fn qsetGetUnchecked(set: &QSet_QTime, pos: isize) -> &QTime;
         #[rust_name = "insert_QTime"]
@@ -42,15 +46,15 @@ pub mod ffi {
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QTime) -> ffi::QSet_QTime {
-    ffi::clone_QTime(s)
+    ffi::qset_clone_QTime(s)
 }
 
 pub(crate) fn default() -> ffi::QSet_QTime {
-    ffi::default_QTime()
+    ffi::qset_default_QTime()
 }
 
 pub(crate) fn drop(s: &mut ffi::QSet_QTime) {
-    ffi::drop_QTime(s);
+    ffi::qset_drop_QTime(s);
 }
 
 pub(crate) unsafe fn get_unchecked(s: &ffi::QSet_QTime, pos: isize) -> &ffi::QTime {
