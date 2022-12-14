@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtQuick.Dialogs 1.1
 import QtQuick.Window 2.12
 
 // ANCHOR: book_qml_import
@@ -50,17 +49,11 @@ Window {
         Button {
             text: "Serialize"
 
-            onClicked: {
-                serializedMessageDialog.text = myObject.serialize();
-                serializedMessageDialog.open();
-            }
+            onClicked: seralizedLabel.text = myObject.serialize()
         }
-    }
 
-    MessageDialog {
-        id: serializedMessageDialog
-        title: qsTr("Serialized Object")
-
-        onAccepted: close()
+        Label {
+            id: seralizedLabel
+        }
     }
 }
