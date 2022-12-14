@@ -35,39 +35,6 @@
    fun:dl_open_worker
 }
 {
-   nvidia_gl_leak_calloc
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:calloc
-   obj:*/libnvidia-glcore.so.470.*
-   ...
-   obj:*/libGLX_nvidia.so.470.*
-   ...
-}
-{
-   nvidia_gl_leak_realloc
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:realloc
-   obj:*/libnvidia-glcore.so.470.*
-   ...
-   obj:*/libGLX_nvidia.so.470.*
-   ...
-}
-{
-   nvidia_gl_leak_sendmsg
-   Memcheck:Param
-   sendmsg(msg.msg_iov[0])
-   fun:__libc_sendmsg
-   fun:sendmsg
-   obj:*/libxcb.so.*
-   ...
-   fun:xcb_flush
-   ...
-   obj:*/libGLX_nvidia.so.470.*
-   obj:*/libnvidia-glcore.so.470.*
-}
-{
    qt_core_qlibraryprivate_load
    Memcheck:Leak
    match-leak-kinds: definite
