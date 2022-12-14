@@ -6,7 +6,7 @@
 use std::collections::BTreeMap;
 use syn::{
     spanned::Spanned, Error, GenericArgument, PathArguments, PathSegment, Result, Type,
-    TypeReference,
+    TypeReference, TypeSlice,
 };
 
 /// A helper for describing a C++ type
@@ -71,11 +71,24 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
         }
         Type::Reference(TypeReference {
             mutability, elem, ..
-        }) => Ok(format!(
-            "{is_const}{ty}&",
-            is_const = if mutability.is_some() { "" } else { "const " },
-            ty = to_cpp_string(elem, cxx_names_map)?
-        )),
+        }) => {
+            let is_const = if mutability.is_some() { "" } else { "const " };
+            match &**elem {
+                // Slice is a special type only available as a reference
+                // We need to map &[T] to rust::Slice<const T> and &mut [T] without the const
+                Type::Slice(TypeSlice { elem, .. }) => Ok(format!(
+                    "::rust::Slice<{is_const}{ty}>",
+                    is_const = is_const,
+                    ty = to_cpp_string(elem, cxx_names_map)?
+                )),
+                // Other types pass through as normal
+                _others => Ok(format!(
+                    "{is_const}{ty}&",
+                    is_const = is_const,
+                    ty = to_cpp_string(elem, cxx_names_map)?
+                )),
+            }
+        }
         _others => Err(Error::new(
             ty.span(),
             format!("Unsupported type, needs to be a TypePath: {:?}", _others),
@@ -373,6 +386,24 @@ mod tests {
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
             "::std::unique_ptr<T>&"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_slice() {
+        let ty = tokens_to_syn(quote! { &[i32] });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Slice<const ::std::int32_t>"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_slice_mut() {
+        let ty = tokens_to_syn(quote! { &mut [i32] });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Slice<::std::int32_t>"
         );
     }
 }
