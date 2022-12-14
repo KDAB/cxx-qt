@@ -9,6 +9,7 @@ mod qcolor;
 mod qdate;
 mod qdatetime;
 mod qhash;
+mod qlist;
 mod qmap;
 mod qmodelindex;
 mod qpersistentmodelindex;

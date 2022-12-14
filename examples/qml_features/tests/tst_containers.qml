@@ -49,6 +49,28 @@ TestCase {
         compare(obj.stringHash, "");
     }
 
+    function test_container_list() {
+        const obj = createTemporaryObject(componentContainers, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "stringListChanged",
+            target: obj,
+        });
+        compare(spy.count, 0);
+        compare(obj.stringList, "");
+
+        obj.appendList(1);
+        obj.appendList(1);
+        obj.appendList(3);
+        obj.appendList(3);
+
+        compare(spy.count, 4);
+        compare(obj.stringList, "1, 1, 3, 3");
+
+        obj.reset();
+        compare(spy.count, 5);
+        compare(obj.stringList, "");
+    }
+
     function test_container_map() {
         const obj = createTemporaryObject(componentContainers, null, {});
         const spy = createTemporaryObject(componentSpy, null, {

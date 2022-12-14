@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-#include <QtCore/QVector>
+#include <QtCore/QList>
 
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
@@ -33,22 +33,22 @@
 #else
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
-struct rust::IsRelocatable<QVector<T>> : std::true_type
+struct rust::IsRelocatable<QList<T>> : std::true_type
 {
 };
 #endif
 
 namespace rust {
 namespace cxxqtlib1 {
-namespace qvector {
+namespace qlist {
 
 template<typename T>
 ::rust::isize
-qvectorLen(const QVector<T>& v) noexcept;
+qlistLen(const QList<T>& v) noexcept;
 
 template<typename T>
 void
-qvectorAppend(QVector<T>& v, const T& value) noexcept
+qlistAppend(QList<T>& v, const T& value) noexcept
 {
   // Qt 5 has const T& Qt 6 has QList<T>::rvalue_ref or QList<T>::parameter_type
   v.append(value);
@@ -56,9 +56,9 @@ qvectorAppend(QVector<T>& v, const T& value) noexcept
 
 template<typename T>
 const T&
-qvectorGetUnchecked(const QVector<T>& v, ::rust::isize pos) noexcept
+qlistGetUnchecked(const QList<T>& v, ::rust::isize pos) noexcept
 {
-  Q_ASSERT(pos < qvectorLen(v));
+  Q_ASSERT(pos < qlistLen(v));
   Q_ASSERT(pos >= 0);
   // Qt has an int Qt 6 has a qsizetype
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
@@ -70,7 +70,7 @@ qvectorGetUnchecked(const QVector<T>& v, ::rust::isize pos) noexcept
 
 template<typename T>
 ::rust::isize
-qvectorIndexOf(const QVector<T>& v, const T& value) noexcept
+qlistIndexOf(const QList<T>& v, const T& value) noexcept
 {
   // Qt 5 has an int Qt 6 has a qsizetype
   return static_cast<::rust::isize>(v.indexOf(value));
@@ -78,7 +78,7 @@ qvectorIndexOf(const QVector<T>& v, const T& value) noexcept
 
 template<typename T>
 void
-qvectorInsert(QVector<T>& v, ::rust::isize pos, const T& value) noexcept
+qlistInsert(QList<T>& v, ::rust::isize pos, const T& value) noexcept
 {
   Q_ASSERT(pos >= 0);
   // Qt 5 has an int Qt 6 has a qsizetype
@@ -91,7 +91,7 @@ qvectorInsert(QVector<T>& v, ::rust::isize pos, const T& value) noexcept
 
 template<typename T>
 ::rust::isize
-qvectorLen(const QVector<T>& v) noexcept
+qlistLen(const QList<T>& v) noexcept
 {
   // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
   // is the same for CXX
@@ -100,12 +100,13 @@ qvectorLen(const QVector<T>& v) noexcept
 
 template<typename T>
 void
-qvectorRemove(QVector<T>& v, ::rust::isize pos) noexcept
+qlistRemove(QList<T>& v, ::rust::isize pos) noexcept
 {
   Q_ASSERT(pos >= 0);
   // Qt 5 has an int Qt 6 has a qsizetype
+  // Qt 5 only has removeAt Qt 6 has remove or removeAt
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  v.removeAt(static_cast<qsizetype>(pos));
+  v.remove(static_cast<qsizetype>(pos));
 #else
   v.removeAt(static_cast<int>(pos));
 #endif
@@ -115,27 +116,27 @@ qvectorRemove(QVector<T>& v, ::rust::isize pos) noexcept
 }
 }
 
-using QVector_bool = QVector<bool>;
-using QVector_f32 = QVector<float>;
-using QVector_f64 = QVector<double>;
-using QVector_i8 = QVector<::std::int8_t>;
-using QVector_i16 = QVector<::std::int16_t>;
-using QVector_i32 = QVector<::std::int32_t>;
-using QVector_i64 = QVector<::std::int64_t>;
-using QVector_QColor = QVector<::QColor>;
-using QVector_QDate = QVector<::QDate>;
-using QVector_QDateTime = QVector<::QDateTime>;
-using QVector_QPoint = QVector<::QPoint>;
-using QVector_QPointF = QVector<::QPointF>;
-using QVector_QRect = QVector<::QRect>;
-using QVector_QRectF = QVector<::QRectF>;
-using QVector_QSize = QVector<::QSize>;
-using QVector_QSizeF = QVector<::QSizeF>;
-using QVector_QString = QVector<::QString>;
-using QVector_QTime = QVector<::QTime>;
-using QVector_QUrl = QVector<::QUrl>;
-using QVector_QVariant = QVector<::QVariant>;
-using QVector_u8 = QVector<::std::uint8_t>;
-using QVector_u16 = QVector<::std::uint16_t>;
-using QVector_u32 = QVector<::std::uint32_t>;
-using QVector_u64 = QVector<::std::uint64_t>;
+using QList_bool = QList<bool>;
+using QList_f32 = QList<float>;
+using QList_f64 = QList<double>;
+using QList_i8 = QList<::std::int8_t>;
+using QList_i16 = QList<::std::int16_t>;
+using QList_i32 = QList<::std::int32_t>;
+using QList_i64 = QList<::std::int64_t>;
+using QList_QColor = QList<::QColor>;
+using QList_QDate = QList<::QDate>;
+using QList_QDateTime = QList<::QDateTime>;
+using QList_QPoint = QList<::QPoint>;
+using QList_QPointF = QList<::QPointF>;
+using QList_QRect = QList<::QRect>;
+using QList_QRectF = QList<::QRectF>;
+using QList_QSize = QList<::QSize>;
+using QList_QSizeF = QList<::QSizeF>;
+using QList_QString = QList<::QString>;
+using QList_QTime = QList<::QTime>;
+using QList_QUrl = QList<::QUrl>;
+using QList_QVariant = QList<::QVariant>;
+using QList_u8 = QList<::std::uint8_t>;
+using QList_u16 = QList<::std::uint16_t>;
+using QList_u32 = QList<::std::uint32_t>;
+using QList_u64 = QList<::std::uint64_t>;
