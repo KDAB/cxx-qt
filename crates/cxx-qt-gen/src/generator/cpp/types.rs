@@ -81,6 +81,10 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
                     is_const = is_const,
                     ty = to_cpp_string(elem, cxx_names_map)?
                 )),
+                // str is a special type only available as a reference
+                // We need to map &str to rust::Str
+                // Note that CXX does not support &mut str
+                Type::Path(ty_path) if ty_path.path.is_ident("str") => Ok("::rust::Str".to_owned()),
                 // Other types pass through as normal
                 _others => Ok(format!(
                     "{is_const}{ty}&",
@@ -183,10 +187,7 @@ fn possible_built_in(ty: &str) -> String {
         "f64" => "double",
         "CxxString" => "::std::string",
         "String" => "::rust::String",
-        // TODO: handle reference
         // TODO: handle pointer
-        // TODO: need to handle Type::Reference for &str ?
-        "str" => "::rust::Str",
         others => others,
     }
     .to_owned()
@@ -204,7 +205,6 @@ fn possible_built_in_template_base(ty: &str) -> String {
         "SharedPtr" => "::std::shared_ptr",
         "WeakPtr" => "::std::weak_ptr",
         "CxxVector" => "::std::vector",
-        // TODO: handle Slice
         // TODO: handle Fn pointer
         // TODO: handle Array
         others => others,
@@ -404,6 +404,24 @@ mod tests {
         assert_eq!(
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
             "::rust::Slice<::std::int32_t>"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_str() {
+        let ty = tokens_to_syn(quote! { &str });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Str"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_str_template() {
+        let ty = tokens_to_syn(quote! { Vec<&str> });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Vec<::rust::Str>"
         );
     }
 }
