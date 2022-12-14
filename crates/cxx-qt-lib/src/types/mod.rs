@@ -18,6 +18,9 @@ pub use qdatetime::QDateTime;
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
+mod qlist;
+pub use qlist::{QList, QListElement};
+
 mod qmap;
 pub use qmap::{QMap, QMapPair, QMapPair_QString_QVariant};
 

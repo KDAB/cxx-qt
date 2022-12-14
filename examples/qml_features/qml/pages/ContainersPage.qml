@@ -68,6 +68,21 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                text: qsTr("QList<i32> values: %1").arg(rustContainers.stringList || "Empty")
+                wrapMode: Text.Wrap
+            }
+
+            Button {
+                text: qsTr("Append")
+
+                onClicked: rustContainers.appendList(spinBox.value)
+            }
+        }
+
+        RowLayout {
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
                 text: qsTr("QMap<QString, QVariant> values: %1").arg(rustContainers.stringMap || "Empty")
                 wrapMode: Text.Wrap
             }
