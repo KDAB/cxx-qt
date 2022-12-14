@@ -70,6 +70,7 @@ function(copy_qml_test TEST_NAME)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/tests/tst_${TEST_NAME}.qml COPYONLY)
 endfunction()
 
+copy_qml_test(containers)
 copy_qml_test(custom_base_class)
 copy_qml_test(invokables)
 copy_qml_test(multiple_qobjects)
