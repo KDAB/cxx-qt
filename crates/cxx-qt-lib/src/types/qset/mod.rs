@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QDate, QDateTime, QString, QTime, QUrl};
+use crate::{QByteArray, QDate, QDateTime, QString, QTime, QUrl};
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
@@ -13,6 +13,7 @@ mod qset_i16;
 mod qset_i32;
 mod qset_i64;
 mod qset_i8;
+mod qset_qbytearray;
 mod qset_qdate;
 mod qset_qdatetime;
 mod qset_qstring;
@@ -251,6 +252,7 @@ impl_qset_element!(i8, qset_i8, "QSet_i8");
 impl_qset_element!(i16, qset_i16, "QSet_i16");
 impl_qset_element!(i32, qset_i32, "QSet_i32");
 impl_qset_element!(i64, qset_i64, "QSet_i64");
+impl_qset_element!(QByteArray, qset_qbytearray, "QSet_QByteArray");
 impl_qset_element!(QDate, qset_qdate, "QSet_QDate");
 impl_qset_element!(QDateTime, qset_qdatetime, "QSet_QDateTime");
 impl_qset_element!(QString, qset_qstring, "QSet_QString");

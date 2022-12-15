@@ -39,6 +39,7 @@ fn main() {
         "qset/qset_i16",
         "qset/qset_i32",
         "qset/qset_i64",
+        "qset/qset_qbytearray",
         "qset/qset_qdate",
         "qset/qset_qdatetime",
         "qset/qset_qstring",
