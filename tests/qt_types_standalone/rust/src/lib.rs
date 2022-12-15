@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod qbytearray;
 mod qcolor;
 mod qdate;
 mod qdatetime;
