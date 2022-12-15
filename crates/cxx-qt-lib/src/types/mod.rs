@@ -18,6 +18,9 @@ pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant};
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 
+mod qpersistentmodelindex;
+pub use qpersistentmodelindex::QPersistentModelIndex;
+
 mod qrect;
 pub use qrect::QRect;
 

@@ -13,6 +13,7 @@
 #include "qdatetime.h"
 #include "qhash.h"
 #include "qmodelindex.h"
+#include "qpersistentmodelindex.h"
 #include "qpoint.h"
 #include "qpointf.h"
 #include "qrect.h"
@@ -44,6 +45,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QDateTimeTest));
   runTest(QScopedPointer<QObject>(new QHashTest));
   runTest(QScopedPointer<QObject>(new QModelIndexTest));
+  runTest(QScopedPointer<QObject>(new QPersistentModelIndexTest));
   runTest(QScopedPointer<QObject>(new QPointTest));
   runTest(QScopedPointer<QObject>(new QPointFTest));
   runTest(QScopedPointer<QObject>(new QRectTest));

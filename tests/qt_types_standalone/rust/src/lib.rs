@@ -9,6 +9,7 @@ mod qdate;
 mod qdatetime;
 mod qhash;
 mod qmodelindex;
+mod qpersistentmodelindex;
 mod qpoint;
 mod qpointf;
 mod qrect;
