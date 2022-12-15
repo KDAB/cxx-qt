@@ -23,6 +23,7 @@ fn main() {
         "qcolor",
         "qdate",
         "qdatetime",
+        "qhash/qhash_i32_qbytearray",
         "qhash/qhash_qstring_qvariant",
         "qmap/qmap_qstring_qvariant",
         "qmodelindex",

@@ -6,8 +6,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
+
 #include <QtCore/QHash>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QString>
 #include <QtCore/QVariant>
 
@@ -89,4 +92,5 @@ qhashValue(const QHash<K, V>& h, const K& key) noexcept
 }
 }
 
+using QHash_i32_QByteArray = QHash<::std::int32_t, QByteArray>;
 using QHash_QString_QVariant = QHash<QString, QVariant>;

@@ -5,6 +5,9 @@
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
+mod qhash_i32_qbytearray;
+pub use qhash_i32_qbytearray::QHashPair_i32_QByteArray;
+
 mod qhash_qstring_qvariant;
 pub use qhash_qstring_qvariant::QHashPair_QString_QVariant;
 
@@ -271,4 +274,12 @@ impl_qhash_pair!(
     qhash_qstring_qvariant,
     QHashPair_QString_QVariant,
     "QHash_QString_QVariant"
+);
+// QHash<int, QByteArray> which is used for QAbstractItemModel::roleNames
+impl_qhash_pair!(
+    i32,
+    crate::QByteArray,
+    qhash_i32_qbytearray,
+    QHashPair_i32_QByteArray,
+    "QHash_i32_QByteArray"
 );
