@@ -13,27 +13,25 @@ use crate::{
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
     },
-    parser::invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
+    parser::{
+        cxxqtdata::ParsedCxxMappings,
+        invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
+    },
 };
 use indoc::formatdoc;
-use std::collections::BTreeMap;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result, ReturnType};
 
 pub fn generate_cpp_invokables(
     invokables: &Vec<ParsedQInvokable>,
     qobject_idents: &QObjectName,
-    cxx_names_map: &BTreeMap<String, String>,
+    cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
         let cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
-            Some(CppType::from(
-                ty,
-                &invokable.return_cxx_type,
-                cxx_names_map,
-            )?)
+            Some(CppType::from(ty, &invokable.return_cxx_type, cxx_mappings)?)
         } else {
             None
         };
@@ -58,7 +56,7 @@ pub fn generate_cpp_invokables(
                     } else {
                         Ok(Some(CppNamedType {
                             ident: ident.to_string(),
-                            ty: CppType::from(ty, &None, cxx_names_map)?,
+                            ty: CppType::from(ty, &None, cxx_mappings)?,
                         }))
                     }
                 } else {
@@ -221,7 +219,8 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_invokables(&invokables, &qobject_idents, &BTreeMap::default()).unwrap();
+            generate_cpp_invokables(&invokables, &qobject_idents, &ParsedCxxMappings::default())
+                .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 4);
@@ -309,7 +308,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_cpp_invokables_cxx_names_mapped() {
+    fn test_generate_cpp_invokables_mapped_cxx_name() {
         let invokables = vec![ParsedQInvokable {
             method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: A) -> B {} }),
             mutable: false,
@@ -323,12 +322,16 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut cxx_names_map = BTreeMap::new();
-        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
-        cxx_names_map.insert("B".to_owned(), "B2".to_owned());
+        let mut cxx_mappings = ParsedCxxMappings::default();
+        cxx_mappings
+            .cxx_name
+            .insert("A".to_owned(), "A1".to_owned());
+        cxx_mappings
+            .cxx_name
+            .insert("B".to_owned(), "B2".to_owned());
 
         let generated =
-            generate_cpp_invokables(&invokables, &qobject_idents, &cxx_names_map).unwrap();
+            generate_cpp_invokables(&invokables, &qobject_idents, &cxx_mappings).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);

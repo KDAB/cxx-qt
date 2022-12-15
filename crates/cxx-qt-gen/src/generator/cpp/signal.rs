@@ -11,16 +11,15 @@ use crate::{
         },
         naming::{qobject::QObjectName, signals::QSignalName},
     },
-    parser::signals::ParsedSignal,
+    parser::{cxxqtdata::ParsedCxxMappings, signals::ParsedSignal},
 };
 use indoc::formatdoc;
-use std::collections::BTreeMap;
 use syn::Result;
 
 pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
-    cxx_names_map: &BTreeMap<String, String>,
+    cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -32,7 +31,7 @@ pub fn generate_cpp_signals(
         let mut parameter_values = vec![];
 
         for parameter in &signal.parameters {
-            let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type, cxx_names_map)?;
+            let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type, cxx_mappings)?;
             let ident_str = parameter.ident.to_string();
             parameter_types.push(format!(
                 "{cxx_ty} {ident}",
@@ -123,7 +122,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &BTreeMap::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -158,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_cpp_signals_cxx_names_mapped() {
+    fn test_generate_cpp_signals_mapped_cxx_name() {
         let signals = vec![ParsedSignal {
             ident: format_ident!("data_changed"),
             parameters: vec![ParsedFunctionParameter {
@@ -169,10 +168,12 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut cxx_names_map = BTreeMap::new();
-        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        let mut cxx_mappings = ParsedCxxMappings::default();
+        cxx_mappings
+            .cxx_name
+            .insert("A".to_owned(), "A1".to_owned());
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_names_map).unwrap();
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_mappings).unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
