@@ -159,14 +159,12 @@ fn possible_built_in(ty: &str) -> String {
         "u8" => "::std::uint8_t",
         "u16" => "::std::uint16_t",
         "u32" => "::std::uint32_t",
-        // TODO: https://github.com/KDAB/cxx-qt/issues/36
-        // "u64" => "quint64",
+        "u64" => "::std::uint64_t",
         "usize" => "::std::size_t",
         "i8" => "::std::int8_t",
         "i16" => "::std::int16_t",
         "i32" => "::std::int32_t",
-        // TODO: https://github.com/KDAB/cxx-qt/issues/36
-        // "i64" => "qint64",
+        "i64" => "::std::int64_t",
         "isize" => "::rust::isize",
         "f32" => "float",
         "f64" => "double",
