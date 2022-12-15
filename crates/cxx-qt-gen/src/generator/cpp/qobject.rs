@@ -10,8 +10,7 @@ use crate::generator::{
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
-use crate::parser::qobject::ParsedQObject;
-use std::collections::BTreeMap;
+use crate::parser::{cxxqtdata::ParsedCxxMappings, qobject::ParsedQObject};
 use syn::Result;
 
 #[derive(Default)]
@@ -48,7 +47,7 @@ pub struct GeneratedCppQObject {
 impl GeneratedCppQObject {
     pub fn from(
         qobject: &ParsedQObject,
-        cxx_names_map: &BTreeMap<String, String>,
+        cxx_mappings: &ParsedCxxMappings,
     ) -> Result<GeneratedCppQObject> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
@@ -69,18 +68,18 @@ impl GeneratedCppQObject {
         generated.blocks.append(&mut generate_cpp_properties(
             &qobject.properties,
             &qobject_idents,
-            cxx_names_map,
+            cxx_mappings,
         )?);
         generated.blocks.append(&mut generate_cpp_invokables(
             &qobject.invokables,
             &qobject_idents,
-            cxx_names_map,
+            cxx_mappings,
         )?);
         if let Some(signals_enum) = &qobject.signals {
             generated.blocks.append(&mut generate_cpp_signals(
                 &signals_enum.signals,
                 &qobject_idents,
-                cxx_names_map,
+                cxx_mappings,
             )?);
         }
 
@@ -110,7 +109,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
         assert_eq!(cpp.ident, "MyObject");
@@ -133,7 +132,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");

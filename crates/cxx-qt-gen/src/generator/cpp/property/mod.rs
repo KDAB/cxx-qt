@@ -7,8 +7,7 @@ use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, types::CppType},
     naming::{property::QPropertyName, qobject::QObjectName},
 };
-use crate::parser::property::ParsedQProperty;
-use std::collections::BTreeMap;
+use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
 use syn::Result;
 
 mod getter;
@@ -19,14 +18,14 @@ mod signal;
 pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
-    cxx_names_map: &BTreeMap<String, String>,
+    cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for property in properties {
         // Cache the idents as they are used in multiple places
         let idents = QPropertyName::from(property);
-        let cxx_ty = CppType::from(&property.ty, &property.cxx_type, cxx_names_map)?;
+        let cxx_ty = CppType::from(&property.ty, &property.cxx_type, cxx_mappings)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
         generated
@@ -71,7 +70,8 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &BTreeMap::default()).unwrap();
+            generate_cpp_properties(&properties, &qobject_idents, &ParsedCxxMappings::default())
+                .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -172,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_cpp_properties_cxx_names_mapped() {
+    fn test_generate_cpp_properties_mapped_cxx_name() {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
             ty: tokens_to_syn(quote! { A1 }),
@@ -181,11 +181,11 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut cxx_names_map = BTreeMap::new();
-        cxx_names_map.insert("A".to_owned(), "A1".to_owned());
+        let mut cxx_mapping = ParsedCxxMappings::default();
+        cxx_mapping.cxx_name.insert("A".to_owned(), "A1".to_owned());
 
         let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &cxx_names_map).unwrap();
+            generate_cpp_properties(&properties, &qobject_idents, &cxx_mapping).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 1);

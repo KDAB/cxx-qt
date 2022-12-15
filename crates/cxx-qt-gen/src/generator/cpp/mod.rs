@@ -37,9 +37,7 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qobjects
                 .values()
-                .map(|qobject| {
-                    GeneratedCppQObject::from(qobject, &parser.cxx_qt_data.cxx_names_map)
-                })
+                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.cxx_qt_data.cxx_mappings))
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
         })
     }
