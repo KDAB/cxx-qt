@@ -50,6 +50,9 @@ impl CppType {
 }
 
 /// For a given Rust type attempt to generate a C++ string
+///
+/// This is similar to the parsing in CXX
+/// https://github.com/dtolnay/cxx/blob/a6e1cd1e8d9d6df20e88e7443963dc4c5c8c4875/syntax/parse.rs#L1134
 fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<String> {
     match ty {
         Type::Array(TypeArray { elem, len, .. }) => {
@@ -132,9 +135,15 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
                 )),
             }
         }
+        // TODO: consider Type::Tuple with an empty tuple mapping to void
+        //
+        // TODO: handling Result<T> is tricky, as we need Result<T> in the CXX bridge
+        // but potentially Result<T, E> on the method. Then we need to detect that we have
+        // Result<()> and notice that that is a void return, otherwise we try to convert
+        // void which fails in C++
         _others => Err(Error::new(
             ty.span(),
-            format!("Unsupported type, needs to be a TypePath: {:?}", _others),
+            format!("Unsupported type: {:?}", _others),
         )),
     }
 }
@@ -245,7 +254,6 @@ fn possible_built_in_template_base(ty: &str) -> String {
         "WeakPtr" => "::std::weak_ptr",
         "CxxVector" => "::std::vector",
         others => others,
-        // TODO: what happens with Result<T> ?
     }
     .to_owned()
 }
