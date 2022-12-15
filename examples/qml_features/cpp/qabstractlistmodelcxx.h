@@ -18,20 +18,6 @@ public:
   {
   }
 
-  // Define a CXX friendly API
-  virtual rust::Vec<rust::String> roleNamesAsVec() const = 0;
-
-  // Proxy Qt API to more CXX friendly API
-  QHash<int, QByteArray> roleNames() const override
-  {
-    QHash<int, QByteArray> names;
-    int i = 0;
-    for (auto role : roleNamesAsVec()) {
-      names.insert(i++, QByteArray::fromStdString((std::string)role));
-    }
-    return names;
-  }
-
   // Can't define in CXX as they are protected
   // so crate public methods that are proxied
   void beginInsertRows(int first, int last)
