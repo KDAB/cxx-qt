@@ -5,8 +5,8 @@
 
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result, Type,
-    TypeArray, TypeReference, TypeSlice,
+    spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
+    ReturnType, Type, TypeArray, TypeBareFn, TypeReference, TypeSlice,
 };
 
 /// A helper for describing a C++ type
@@ -71,6 +71,24 @@ fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<
                 "::std::array<{ty}, {len}>",
                 ty = to_cpp_string(elem, cxx_names_map)?,
                 len = len
+            ))
+        }
+        Type::BareFn(TypeBareFn { inputs, output, .. }) => {
+            let ret = if let ReturnType::Type(_, ty) = output {
+                to_cpp_string(ty, cxx_names_map)?
+            } else {
+                "void".to_owned()
+            };
+
+            let args = inputs
+                .iter()
+                .map(|arg| to_cpp_string(&arg.ty, cxx_names_map))
+                .collect::<Result<Vec<String>>>()?;
+
+            Ok(format!(
+                "::rust::Fn<{ret}, ({args})>",
+                ret = ret,
+                args = args.join(", ")
             ))
         }
         Type::Path(ty_path) => {
@@ -226,7 +244,6 @@ fn possible_built_in_template_base(ty: &str) -> String {
         "SharedPtr" => "::std::shared_ptr",
         "WeakPtr" => "::std::weak_ptr",
         "CxxVector" => "::std::vector",
-        // TODO: handle Fn pointer
         others => others,
         // TODO: what happens with Result<T> ?
     }
@@ -464,5 +481,23 @@ mod tests {
     fn test_to_cpp_string_array_length_invalid() {
         let ty = tokens_to_syn(quote! { [i32; String] });
         assert!(to_cpp_string(&ty, &cxx_names_map_default()).is_err());
+    }
+
+    #[test]
+    fn test_to_cpp_string_fn() {
+        let ty = tokens_to_syn(quote! { fn(i32, i32) -> bool });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Fn<bool, (::std::int32_t, ::std::int32_t)>"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_fn_void() {
+        let ty = tokens_to_syn(quote! { fn() });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::rust::Fn<void, ()>"
+        );
     }
 }
