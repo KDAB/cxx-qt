@@ -5,8 +5,8 @@
 
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Error, GenericArgument, PathArguments, PathSegment, Result, Type,
-    TypeReference, TypeSlice,
+    spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result, Type,
+    TypeArray, TypeReference, TypeSlice,
 };
 
 /// A helper for describing a C++ type
@@ -52,6 +52,27 @@ impl CppType {
 /// For a given Rust type attempt to generate a C++ string
 fn to_cpp_string(ty: &Type, cxx_names_map: &BTreeMap<String, String>) -> Result<String> {
     match ty {
+        Type::Array(TypeArray { elem, len, .. }) => {
+            let len = if let Expr::Lit(len) = &len {
+                if let Lit::Int(len) = &len.lit {
+                    len.base10_parse::<usize>()?
+                } else {
+                    return Err(Error::new(ty.span(), "Array length must be a integer"));
+                }
+            } else {
+                return Err(Error::new(ty.span(), "Array length must be a integer"));
+            };
+
+            if len == 0 {
+                return Err(Error::new(ty.span(), "Array length must be > 0"));
+            }
+
+            Ok(format!(
+                "::std::array<{ty}, {len}>",
+                ty = to_cpp_string(elem, cxx_names_map)?,
+                len = len
+            ))
+        }
         Type::Path(ty_path) => {
             let ty_strings = ty_path
                 .path
@@ -206,7 +227,6 @@ fn possible_built_in_template_base(ty: &str) -> String {
         "WeakPtr" => "::std::weak_ptr",
         "CxxVector" => "::std::vector",
         // TODO: handle Fn pointer
-        // TODO: handle Array
         others => others,
         // TODO: what happens with Result<T> ?
     }
@@ -423,5 +443,26 @@ mod tests {
             to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
             "::rust::Vec<::rust::Str>"
         );
+    }
+
+    #[test]
+    fn test_to_cpp_string_array() {
+        let ty = tokens_to_syn(quote! { [i32; 10] });
+        assert_eq!(
+            to_cpp_string(&ty, &cxx_names_map_default()).unwrap(),
+            "::std::array<::std::int32_t, 10>"
+        );
+    }
+
+    #[test]
+    fn test_to_cpp_string_array_length_zero() {
+        let ty = tokens_to_syn(quote! { [i32; 0] });
+        assert!(to_cpp_string(&ty, &cxx_names_map_default()).is_err());
+    }
+
+    #[test]
+    fn test_to_cpp_string_array_length_invalid() {
+        let ty = tokens_to_syn(quote! { [i32; String] });
+        assert!(to_cpp_string(&ty, &cxx_names_map_default()).is_err());
     }
 }
