@@ -26,3 +26,4 @@
   static_assert(std::is_copy_constructible<valueTypeName>::value);
 
 CXX_QT_QHASH_ASSERTS(QString, QVariant, QString_QVariant);
+CXX_QT_QHASH_ASSERTS(::std::int32_t, QByteArray, i32_QByteArray);
