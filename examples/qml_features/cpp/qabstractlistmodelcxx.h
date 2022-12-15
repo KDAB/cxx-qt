@@ -52,16 +52,3 @@ public:
 
   void endResetModel() { QAbstractItemModel::endResetModel(); }
 };
-
-// Define that a QModelIndex is relocatable and check the size
-//
-// TODO: later this will likely be in cxx-qt-lib
-template<>
-struct rust::IsRelocatable<QModelIndex> : std::true_type
-{
-};
-static_assert(QTypeInfo<QModelIndex>::isRelocatable);
-static_assert(alignof(QModelIndex) <= alignof(std::size_t[3]),
-              "unexpectedly large QModelIndex alignment");
-static_assert(sizeof(QModelIndex) == sizeof(std::size_t[3]),
-              "unexpected QModelIndex size");

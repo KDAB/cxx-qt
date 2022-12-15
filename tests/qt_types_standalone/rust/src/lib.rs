@@ -8,6 +8,7 @@ mod qcolor;
 mod qdate;
 mod qdatetime;
 mod qhash;
+mod qmodelindex;
 mod qpoint;
 mod qpointf;
 mod qrect;
