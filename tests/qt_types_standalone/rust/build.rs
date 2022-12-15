@@ -7,6 +7,7 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
+        .file("src/qbytearray.rs")
         .file("src/qcolor.rs")
         .file("src/qdate.rs")
         .file("src/qdatetime.rs")

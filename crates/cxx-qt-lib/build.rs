@@ -19,6 +19,7 @@ fn main() {
     );
 
     let rust_bridges = [
+        "qbytearray",
         "qcolor",
         "qdate",
         "qdatetime",
@@ -117,6 +118,7 @@ fn main() {
     );
 
     let cpp_files = [
+        "qbytearray",
         "qcolor",
         "qdate",
         "qdatetime",
