@@ -28,6 +28,7 @@ CXX_QT_QSET_ASSERTS(::std::int8_t, i8);
 CXX_QT_QSET_ASSERTS(::std::int16_t, i16);
 CXX_QT_QSET_ASSERTS(::std::int32_t, i32);
 CXX_QT_QSET_ASSERTS(::std::int64_t, i64);
+CXX_QT_QSET_ASSERTS(::QByteArray, QByteArray);
 CXX_QT_QSET_ASSERTS(::QDate, QDate);
 CXX_QT_QSET_ASSERTS(::QDateTime, QDateTime);
 CXX_QT_QSET_ASSERTS(::QString, QString);
