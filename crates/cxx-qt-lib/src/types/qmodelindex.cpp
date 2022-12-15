@@ -1,0 +1,20 @@
+// clang-format off
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// clang-format on
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+#include "cxx-qt-lib/qmodelindex.h"
+
+#include "assertion_utils.h"
+
+// QModelIndex has two ints, a uint pointer, and a pointer.
+// This results in 4 + 4 + 4 + 8 = 20, then due to compiler padding this results
+// in size of 24 or three pointers.
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v5.15.6-lts-lgpl#n93
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v6.2.4#n195
+assert_alignment_and_size(QModelIndex,
+                          alignof(std::size_t),
+                          sizeof(std::size_t[3]));
+
+static_assert(std::is_trivially_copyable<QModelIndex>::value);

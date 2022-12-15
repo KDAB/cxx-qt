@@ -2,25 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
-
-/// Define a QModelIndex that is trivial for CXX
-///
-/// TODO: later this will likely be in cxx-qt-lib
-#[repr(C)]
-pub struct QModelIndex {
-    _space: MaybeUninit<[usize; 3]>,
-}
-
-// Safety:
-//
-// Static checks on the C++ side to ensure the size is the same.
-// TODO: later this will likely be in cxx-qt-lib
-unsafe impl ExternType for QModelIndex {
-    type Id = type_id!("QModelIndex");
-    type Kind = cxx::kind::Trivial;
-}
 
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "custom_base_class")]
@@ -33,9 +14,8 @@ mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
 
-        // Define the interface of the QModelIndex
-        type QModelIndex = super::QModelIndex;
-        fn row(self: &QModelIndex) -> i32;
+        include!("cxx-qt-lib/qmodelindex.h");
+        type QModelIndex = cxx_qt_lib::QModelIndex;
 
         #[cxx_name = "beginInsertRows"]
         fn begin_insert_rows(self: Pin<&mut CustomBaseClassQt>, first: i32, last: i32);
