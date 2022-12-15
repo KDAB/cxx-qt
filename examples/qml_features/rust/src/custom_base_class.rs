@@ -11,6 +11,9 @@ mod ffi {
         include!("qabstractlistmodelcxx.h");
         // ANCHOR_END: book_base_include
 
+        include!("cxx-qt-lib/qhash.h");
+        type QHash_i32_QByteArray = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_i32_QByteArray>;
+
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
 
@@ -113,8 +116,11 @@ mod ffi {
         }
 
         #[qinvokable(cxx_override)]
-        pub fn role_names_as_vec(&self) -> Vec<String> {
-            vec!["id".to_owned(), "value".to_owned()]
+        pub fn role_names(&self) -> QHash_i32_QByteArray {
+            let mut roles = QHash_i32_QByteArray::default();
+            roles.insert(0, cxx_qt_lib::QByteArray::from("id"));
+            roles.insert(1, cxx_qt_lib::QByteArray::from("value"));
+            roles
         }
 
         #[qinvokable(cxx_override)]
