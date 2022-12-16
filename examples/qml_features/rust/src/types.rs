@@ -8,8 +8,6 @@
 #[cxx_qt::bridge(cxx_file_stem = "types")]
 mod ffi {
     // ANCHOR_END: book_cxx_file_stem
-    use cxx_qt_lib::QVariantValue;
-
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPointF = cxx_qt_lib::QPointF;
@@ -43,11 +41,14 @@ mod ffi {
     impl qobject::Types {
         #[qinvokable]
         pub fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
-            match variant.value() {
-                QVariantValue::Bool(boolean) => self.set_boolean(boolean),
-                QVariantValue::QPointF(point) => self.set_point(point),
-                QVariantValue::QUrl(url) => self.set_url(url),
-                _ => println!("Unknown QVariant type to load from"),
+            if let Some(boolean) = variant.try_value::<bool>() {
+                self.set_boolean(boolean);
+            } else if let Some(point) = variant.try_value::<QPointF>() {
+                self.set_point(point);
+            } else if let Some(url) = variant.try_value::<QUrl>() {
+                self.set_url(url);
+            } else {
+                println!("Unknown QVariant type to load from");
             }
         }
 

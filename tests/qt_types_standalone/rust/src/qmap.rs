@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::{QMap, QMapPair_QString_QVariant, QString, QVariant, QVariantValue};
+use cxx_qt_lib::{QMap, QMapPair_QString_QVariant, QString, QVariant};
 
 #[cxx::bridge]
 mod qmap_cxx {
@@ -23,7 +23,7 @@ mod qmap_cxx {
 
 fn construct_qmap_qstring_qvariant() -> QMap<QMapPair_QString_QVariant> {
     let mut h = QMap::<QMapPair_QString_QVariant>::default();
-    h.insert(QString::from("kdab"), QVariant::from(10));
+    h.insert(QString::from("kdab"), QVariant::from(&10));
     h.insert(QString::from("Qt"), QVariant::from(&QString::from("Rust")));
     h
 }
@@ -35,14 +35,14 @@ fn read_qmap_qstring_qvariant(h: &QMap<QMapPair_QString_QVariant>) -> bool {
     }
 
     // Check that that contains and value method works
-    let value_kdab = match h.value(&QString::from("kdab")).value() {
-        QVariantValue::I32(value) => value == 10,
-        _ => false,
-    };
-    let value_qt = match h.value(&QString::from("Qt")).value() {
-        QVariantValue::QString(value) => value.to_string() == "Rust",
-        _ => false,
-    };
+    let value_kdab = h
+        .value(&QString::from("kdab"))
+        .try_value::<i32>()
+        .map_or_else(|| false, |value| value == 10);
+    let value_qt = h
+        .value(&QString::from("Qt"))
+        .try_value::<QString>()
+        .map_or_else(|| false, |value| value.to_string() == "Rust");
 
     h.contains(&QString::from("kdab"))
         && value_kdab

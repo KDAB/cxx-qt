@@ -7,6 +7,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
+
 #include <QVariant>
 
 #include <QColor>
@@ -31,54 +33,51 @@ struct rust::IsRelocatable<QVariant> : std::true_type
 
 namespace rust {
 namespace cxxqtlib1 {
-
-namespace types {
-
-enum class QVariantType : uint8_t
-{
-  Unsupported = 0,
-  Bool = 1,
-  F32 = 2,
-  F64 = 3,
-  I8 = 4,
-  I16 = 5,
-  I32 = 6,
-  QColor = 7,
-  QDate = 8,
-  QDateTime = 9,
-  QPoint = 10,
-  QPointF = 11,
-  QRect = 12,
-  QRectF = 13,
-  QSize = 14,
-  QSizeF = 15,
-  QString = 16,
-  QTime = 17,
-  QUrl = 18,
-  U8 = 19,
-  U16 = 20,
-  U32 = 21,
-};
-
-} // namespace types
+namespace qvariant {
 
 template<typename T>
 QVariant
-qvariantInitFromT(T value)
+qvariantConstruct(const T& value) noexcept
 {
-  return QVariant::fromValue(value);
+  return QVariant::fromValue<T>(value);
 }
-
-types::QVariantType
-qvariantType(const QVariant& variant);
 
 template<typename T>
 T
-qvariantToT(const QVariant& variant)
+qvariantValue(const QVariant& variant) noexcept
 {
-  Q_ASSERT(variant.canConvert<T>());
   return variant.value<T>();
 }
 
+// Need to use a macro here as we can't template because the types
+// are always QVariant and bool. So then CXX can't decide which to use.
+#define CXX_QT_QVARIANT_CAN_CONVERT(name)                                      \
+  bool qvariantCanConvert##name(const QVariant& variant);
+
+CXX_QT_QVARIANT_CAN_CONVERT(Bool)
+CXX_QT_QVARIANT_CAN_CONVERT(F32)
+CXX_QT_QVARIANT_CAN_CONVERT(F64)
+CXX_QT_QVARIANT_CAN_CONVERT(I8)
+CXX_QT_QVARIANT_CAN_CONVERT(I16)
+CXX_QT_QVARIANT_CAN_CONVERT(I32)
+CXX_QT_QVARIANT_CAN_CONVERT(I64)
+CXX_QT_QVARIANT_CAN_CONVERT(QColor)
+CXX_QT_QVARIANT_CAN_CONVERT(QDate)
+CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)
+CXX_QT_QVARIANT_CAN_CONVERT(QPoint)
+CXX_QT_QVARIANT_CAN_CONVERT(QPointF)
+CXX_QT_QVARIANT_CAN_CONVERT(QRect)
+CXX_QT_QVARIANT_CAN_CONVERT(QRectF)
+CXX_QT_QVARIANT_CAN_CONVERT(QSize)
+CXX_QT_QVARIANT_CAN_CONVERT(QSizeF)
+CXX_QT_QVARIANT_CAN_CONVERT(QString)
+CXX_QT_QVARIANT_CAN_CONVERT(QTime)
+CXX_QT_QVARIANT_CAN_CONVERT(QUrl)
+CXX_QT_QVARIANT_CAN_CONVERT(U8)
+CXX_QT_QVARIANT_CAN_CONVERT(U16)
+CXX_QT_QVARIANT_CAN_CONVERT(U32)
+CXX_QT_QVARIANT_CAN_CONVERT(U64)
+
+}
 }
 }
