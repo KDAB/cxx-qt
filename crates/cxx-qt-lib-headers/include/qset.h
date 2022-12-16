@@ -6,6 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
+
 #include <QtCore/QSet>
 
 #include <QtCore/QDate>
@@ -61,14 +63,16 @@ qsetLen(const QSet<T>& s) noexcept
 using QSet_bool = QSet<bool>;
 using QSet_f32 = QSet<float>;
 using QSet_f64 = QSet<double>;
-using QSet_i8 = QSet<::qint8>;
-using QSet_i16 = QSet<::qint16>;
-using QSet_i32 = QSet<::qint32>;
+using QSet_i8 = QSet<::std::int8_t>;
+using QSet_i16 = QSet<::std::int16_t>;
+using QSet_i32 = QSet<::std::int32_t>;
+using QSet_i64 = QSet<::std::int64_t>;
 using QSet_QDate = QSet<::QDate>;
 using QSet_QDateTime = QSet<::QDateTime>;
 using QSet_QString = QSet<::QString>;
 using QSet_QTime = QSet<::QTime>;
 using QSet_QUrl = QSet<::QUrl>;
-using QSet_u8 = QSet<::quint8>;
-using QSet_u16 = QSet<::quint16>;
-using QSet_u32 = QSet<::quint32>;
+using QSet_u8 = QSet<::std::uint8_t>;
+using QSet_u16 = QSet<::std::uint16_t>;
+using QSet_u32 = QSet<::std::uint32_t>;
+using QSet_u64 = QSet<::std::uint64_t>;

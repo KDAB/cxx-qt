@@ -11,6 +11,7 @@ mod qset_f32;
 mod qset_f64;
 mod qset_i16;
 mod qset_i32;
+mod qset_i64;
 mod qset_i8;
 mod qset_qdate;
 mod qset_qdatetime;
@@ -19,6 +20,7 @@ mod qset_qtime;
 mod qset_qurl;
 mod qset_u16;
 mod qset_u32;
+mod qset_u64;
 mod qset_u8;
 
 /// The QSet class is a template class that provides a hash-table-based set.
@@ -248,6 +250,7 @@ impl_qset_element!(f64, qset_f64, "QSet_f64");
 impl_qset_element!(i8, qset_i8, "QSet_i8");
 impl_qset_element!(i16, qset_i16, "QSet_i16");
 impl_qset_element!(i32, qset_i32, "QSet_i32");
+impl_qset_element!(i64, qset_i64, "QSet_i64");
 impl_qset_element!(QDate, qset_qdate, "QSet_QDate");
 impl_qset_element!(QDateTime, qset_qdatetime, "QSet_QDateTime");
 impl_qset_element!(QString, qset_qstring, "QSet_QString");
@@ -256,3 +259,4 @@ impl_qset_element!(QUrl, qset_qurl, "QSet_QUrl");
 impl_qset_element!(u8, qset_u8, "QSet_u8");
 impl_qset_element!(u16, qset_u16, "QSet_u16");
 impl_qset_element!(u32, qset_u32, "QSet_u32");
+impl_qset_element!(u64, qset_u64, "QSet_u64");
