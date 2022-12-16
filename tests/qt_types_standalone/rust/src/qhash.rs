@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::{QHash, QHashPair_QString_QVariant, QString, QVariant, QVariantValue};
+use cxx_qt_lib::{QHash, QHashPair_QString_QVariant, QString, QVariant};
 
 #[cxx::bridge]
 mod qhash_cxx {
@@ -23,7 +23,7 @@ mod qhash_cxx {
 
 fn construct_qhash_qstring_qvariant() -> QHash<QHashPair_QString_QVariant> {
     let mut h = QHash::<QHashPair_QString_QVariant>::default();
-    h.insert(QString::from("kdab"), QVariant::from(10));
+    h.insert(QString::from("kdab"), QVariant::from(&10));
     h.insert(QString::from("Qt"), QVariant::from(&QString::from("Rust")));
     h
 }
@@ -35,12 +35,12 @@ fn read_qhash_qstring_qvariant(h: &QHash<QHashPair_QString_QVariant>) -> bool {
     }
 
     // Check that value method works
-    let value_kdab = match h.value(&QString::from("kdab")).value() {
-        QVariantValue::I32(value) => value == 10,
-        _ => false,
+    let value_kdab = match h.value(&QString::from("kdab")).try_value::<i32>() {
+        Some(value) => value == 10,
+        None => false,
     };
-    let value_qt = match h.value(&QString::from("Qt")).value() {
-        QVariantValue::QString(value) => value.to_string() == "Rust",
+    let value_qt = match h.value(&QString::from("Qt")).try_value::<QString>() {
+        Some(value) => value.to_string() == "Rust",
         _ => false,
     };
 

@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for container types: `QSet<T>`, `QHash<K, V>`, `QMap<K, V>`, `QVector<T>`
 - Support for further types: `QModelIndex`, `QPersistentModelIndex`
 
+### Changed
+
+- `QVariant` now has a uses a `QVariantValue` trait for supported types, allowing custom types to be used with QVariant
+
 ### Fixed
 
 - Support for generating correct C++ code for `Pin<T>` Rust types

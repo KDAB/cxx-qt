@@ -103,8 +103,8 @@ mod ffi {
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
             if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {
                 return match role {
-                    0 => QVariant::from(*id),
-                    1 => QVariant::from(*value),
+                    0 => QVariant::from(id),
+                    1 => QVariant::from(value),
                     _ => QVariant::default(),
                 };
             }

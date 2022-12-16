@@ -5,8 +5,6 @@
 
 #[cxx_qt::bridge(cxx_file_stem = "rust_containers")]
 mod ffi {
-    use cxx_qt_lib::{QVariant, QVariantValue};
-
     unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         type QHash_QString_QVariant = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_QString_QVariant>;
@@ -85,10 +83,7 @@ mod ffi {
                 .hash()
                 .iter()
                 .map(|(key, value)| {
-                    let value = match value.value() {
-                        QVariantValue::I32(value) => value,
-                        _others => 0,
-                    };
+                    let value = value.try_value::<i32>().unwrap_or(0);
                     format!("{} => {}", key, value)
                 })
                 .collect::<Vec<String>>()
@@ -100,10 +95,7 @@ mod ffi {
                 .map()
                 .iter()
                 .map(|(key, value)| {
-                    let value = match value.value() {
-                        QVariantValue::I32(value) => value,
-                        _others => 0,
-                    };
+                    let value = value.try_value::<i32>().unwrap_or(0);
                     format!("{} => {}", key, value)
                 })
                 .collect::<Vec<String>>()
