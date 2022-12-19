@@ -13,7 +13,6 @@
 #include "qdate.h"
 #include "qdatetime.h"
 #include "qhash.h"
-#include "qlist.h"
 #include "qmap.h"
 #include "qmodelindex.h"
 #include "qpersistentmodelindex.h"
@@ -29,6 +28,11 @@
 #include "qurl.h"
 #include "qvariant.h"
 #include "qvector.h"
+
+// Qt 5 has a different QList<T>
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include "qt5list.h"
+#endif
 
 int
 main(int argc, char* argv[])
@@ -48,7 +52,6 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QDateTest));
   runTest(QScopedPointer<QObject>(new QDateTimeTest));
   runTest(QScopedPointer<QObject>(new QHashTest));
-  runTest(QScopedPointer<QObject>(new QListTest));
   runTest(QScopedPointer<QObject>(new QMapTest));
   runTest(QScopedPointer<QObject>(new QModelIndexTest));
   runTest(QScopedPointer<QObject>(new QPersistentModelIndexTest));
@@ -64,6 +67,11 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QUrlTest));
   runTest(QScopedPointer<QObject>(new QVariantTest));
   runTest(QScopedPointer<QObject>(new QVectorTest));
+
+// Qt 5 has a different QList<T>
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+  runTest(QScopedPointer<QObject>(new Qt5ListTest));
+#endif
 
   return status;
 }

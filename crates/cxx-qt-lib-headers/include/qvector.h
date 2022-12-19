@@ -26,17 +26,11 @@
 
 #include "rust/cxx.h"
 
-// In Qt 6 QList and QVector are the same, so we only need IsRelocatable defined
-// once
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-#include "qlist_qvector.h"
-#else
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
 struct rust::IsRelocatable<QVector<T>> : std::true_type
 {
 };
-#endif
 
 namespace rust {
 namespace cxxqtlib1 {
