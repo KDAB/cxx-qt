@@ -6,13 +6,22 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new()
+    let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
+        .expect("Could not find Qt installation");
+
+    // Find the Qt version and tell the Rust compiler
+    // this allows us to have conditional Rust code
+    println!(
+        "cargo:rustc-cfg=qt_version_major=\"{}\"",
+        qtbuild.version().major
+    );
+
+    let mut builder = CxxQtBuilder::new()
         .file("src/qbytearray.rs")
         .file("src/qcolor.rs")
         .file("src/qdate.rs")
         .file("src/qdatetime.rs")
         .file("src/qhash.rs")
-        .file("src/qlist.rs")
         .file("src/qmap.rs")
         .file("src/qmodelindex.rs")
         .file("src/qpersistentmodelindex.rs")
@@ -27,6 +36,12 @@ fn main() {
         .file("src/qtime.rs")
         .file("src/qurl.rs")
         .file("src/qvariant.rs")
-        .file("src/qvector.rs")
-        .build();
+        .file("src/qvector.rs");
+
+    // Qt 5 has a different QList<T>
+    if qtbuild.version().major == 5 {
+        builder = builder.file("src/qt5list.rs");
+    }
+
+    builder.build();
 }

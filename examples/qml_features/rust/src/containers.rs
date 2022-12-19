@@ -8,8 +8,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         type QHash_QString_QVariant = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_QString_QVariant>;
-        include!("cxx-qt-lib/qlist.h");
-        type QList_i32 = cxx_qt_lib::QList<i32>;
         include!("cxx-qt-lib/qmap.h");
         type QMap_QString_QVariant = cxx_qt_lib::QMap<cxx_qt_lib::QMapPair_QString_QVariant>;
         include!("cxx-qt-lib/qset.h");
@@ -28,8 +26,6 @@ mod ffi {
         #[qproperty]
         string_hash: QString,
         #[qproperty]
-        string_list: QString,
-        #[qproperty]
         string_map: QString,
         #[qproperty]
         string_set: QString,
@@ -37,7 +33,6 @@ mod ffi {
         string_vector: QString,
 
         hash: QHash_QString_QVariant,
-        list: QList_i32,
         map: QMap_QString_QVariant,
         set: QSet_i32,
         vector: QVector_i32,
@@ -47,7 +42,6 @@ mod ffi {
         #[qinvokable]
         pub fn reset(mut self: Pin<&mut Self>) {
             self.as_mut().set_hash(QHash_QString_QVariant::default());
-            self.as_mut().set_list(QList_i32::default());
             self.as_mut().set_map(QMap_QString_QVariant::default());
             self.as_mut().set_set(QSet_i32::default());
             self.as_mut().set_vector(QVector_i32::default());
@@ -58,13 +52,6 @@ mod ffi {
         #[qinvokable]
         pub fn append_vector(mut self: Pin<&mut Self>, value: i32) {
             self.as_mut().vector_mut().append(value);
-
-            self.update_strings();
-        }
-
-        #[qinvokable]
-        pub fn append_list(mut self: Pin<&mut Self>, value: i32) {
-            self.as_mut().list_mut().append(value);
 
             self.update_strings();
         }
@@ -102,15 +89,6 @@ mod ffi {
                 .collect::<Vec<String>>()
                 .join(", ");
             self.as_mut().set_string_hash(QString::from(&hash_items));
-
-            let list_items = self
-                .as_ref()
-                .list()
-                .iter()
-                .map(|value| value.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.as_mut().set_string_list(QString::from(&list_items));
 
             let map_items = self
                 .as_ref()

@@ -9,7 +9,6 @@ mod qcolor;
 mod qdate;
 mod qdatetime;
 mod qhash;
-mod qlist;
 mod qmap;
 mod qmodelindex;
 mod qpersistentmodelindex;
@@ -25,3 +24,7 @@ mod qtime;
 mod qurl;
 mod qvariant;
 mod qvector;
+
+// Qt 5 has a different QList<T>
+#[cfg(qt_version_major = "5")]
+mod qt5list;

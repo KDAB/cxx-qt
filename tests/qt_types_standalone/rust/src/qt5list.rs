@@ -3,24 +3,24 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::QList;
+use cxx_qt_lib::Qt5List;
 
 #[cxx::bridge]
-mod qlist_cxx {
+mod qt5list_cxx {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist.h");
-        type QList_i32 = cxx_qt_lib::QList<i32>;
+        include!("cxx-qt-lib/qt5list.h");
+        type Qt5List_i32 = cxx_qt_lib::Qt5List<i32>;
     }
 
     extern "Rust" {
-        fn construct_qlist_i32() -> QList_i32;
-        fn read_qlist_i32(v: &QList_i32) -> bool;
-        fn clone_qlist_i32(v: &QList_i32) -> QList_i32;
+        fn construct_qt5list_i32() -> Qt5List_i32;
+        fn read_qt5list_i32(v: &Qt5List_i32) -> bool;
+        fn clone_qt5list_i32(v: &Qt5List_i32) -> Qt5List_i32;
     }
 }
 
-fn construct_qlist_i32() -> QList<i32> {
-    let mut v = QList::<i32>::default();
+fn construct_qt5list_i32() -> Qt5List<i32> {
+    let mut v = Qt5List::<i32>::default();
     v.append(1);
     v.append(1);
     v.append(3);
@@ -28,13 +28,13 @@ fn construct_qlist_i32() -> QList<i32> {
     v
 }
 
-fn read_qlist_i32(v: &QList<i32>) -> bool {
+fn read_qt5list_i32(v: &Qt5List<i32>) -> bool {
     // Ensure that the iterator works by building a vector from it
     let vec = v.iter().cloned().collect::<Vec<i32>>();
 
     vec == vec![1, 1, 3, 3]
 }
 
-fn clone_qlist_i32(v: &QList<i32>) -> QList<i32> {
+fn clone_qt5list_i32(v: &Qt5List<i32>) -> Qt5List<i32> {
     v.clone()
 }
