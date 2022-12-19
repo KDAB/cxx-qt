@@ -90,7 +90,7 @@ where
     }
 
     /// Returns the number of items in the hash.
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> isize {
         T::len(self)
     }
 
@@ -132,7 +132,7 @@ where
     T: QHashPair,
 {
     hash: &'a QHash<T>,
-    index: usize,
+    index: isize,
 }
 
 impl<'a, T> Iterator for Iter<'a, T>
@@ -167,7 +167,7 @@ where
     T: QHashPair,
 {
     fn len(&self) -> usize {
-        self.hash.len() - self.index
+        (self.hash.len() - self.index) as usize
     }
 }
 
@@ -186,18 +186,18 @@ pub trait QHashPair: Sized {
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
     /// even if the resulting reference is not used.
-    unsafe fn get_unchecked_key(hash: &QHash<Self>, pos: usize) -> &Self::Key;
+    unsafe fn get_unchecked_key(hash: &QHash<Self>, pos: isize) -> &Self::Key;
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
     /// even if the resulting reference is not used.
-    unsafe fn get_unchecked_value(hash: &QHash<Self>, pos: usize) -> &Self::Value;
+    unsafe fn get_unchecked_value(hash: &QHash<Self>, pos: isize) -> &Self::Value;
     fn insert(hash: &mut QHash<Self>, key: Self::Key, value: Self::Value)
     where
         Self::Key: ExternType<Kind = cxx::kind::Trivial>,
         Self::Value: ExternType<Kind = cxx::kind::Trivial>;
     fn insert_clone(hash: &mut QHash<Self>, key: &Self::Key, value: &Self::Value);
-    fn len(hash: &QHash<Self>) -> usize;
+    fn len(hash: &QHash<Self>) -> isize;
     fn remove(hash: &mut QHash<Self>, key: &Self::Key) -> bool;
     fn value(hash: &QHash<Self>, key: &Self::Key) -> Self::Value;
 }
@@ -229,12 +229,12 @@ macro_rules! impl_qhash_pair {
                 $module::drop(hash);
             }
 
-            unsafe fn get_unchecked_key(hash: &QHash<Self>, pos: usize) -> &$keyTypeName {
-                $module::get_unchecked_key(hash, pos as isize)
+            unsafe fn get_unchecked_key(hash: &QHash<Self>, pos: isize) -> &$keyTypeName {
+                $module::get_unchecked_key(hash, pos)
             }
 
-            unsafe fn get_unchecked_value(hash: &QHash<Self>, pos: usize) -> &$valueTypeName {
-                $module::get_unchecked_value(hash, pos as isize)
+            unsafe fn get_unchecked_value(hash: &QHash<Self>, pos: isize) -> &$valueTypeName {
+                $module::get_unchecked_value(hash, pos)
             }
 
             fn insert(hash: &mut QHash<Self>, key: $keyTypeName, value: $valueTypeName) {
@@ -245,8 +245,8 @@ macro_rules! impl_qhash_pair {
                 $module::insert(hash, key, value);
             }
 
-            fn len(hash: &QHash<Self>) -> usize {
-                $module::len(hash) as usize
+            fn len(hash: &QHash<Self>) -> isize {
+                $module::len(hash)
             }
 
             fn remove(hash: &mut QHash<Self>, key: &$keyTypeName) -> bool {
