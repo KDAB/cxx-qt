@@ -4,6 +4,32 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_macro_code
+#[repr(C)]
+pub struct CustomStruct {
+    value: i32,
+}
+
+unsafe impl cxx::ExternType for CustomStruct {
+    type Id = cxx::type_id!("CustomStruct");
+    type Kind = cxx::kind::Trivial;
+}
+
+// ANCHOR: book_qvariantvalue_impl
+impl cxx_qt_lib::QVariantValue for ffi::CustomStruct {
+    fn can_convert(variant: &cxx_qt_lib::QVariant) -> bool {
+        ffi::qvariant_can_convert_custom_type(variant)
+    }
+
+    fn construct(value: &Self) -> cxx_qt_lib::QVariant {
+        ffi::qvariant_construct_custom_type(value)
+    }
+
+    fn value(variant: &cxx_qt_lib::QVariant) -> Self {
+        ffi::qvariant_value_custom_type(variant)
+    }
+}
+// ANCHOR_END: book_qvariantvalue_impl
+
 // ANCHOR: book_cxx_file_stem
 #[cxx_qt::bridge(cxx_file_stem = "types")]
 mod ffi {
@@ -17,7 +43,25 @@ mod ffi {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    // TODO: should we show how to do custom types?
+    unsafe extern "C++" {
+        include!("custom_object.h");
+        type CustomStruct = super::CustomStruct;
+
+        #[rust_name = "qvariant_can_convert_custom_type"]
+        fn qvariantCanConvertCustomStruct(variant: &QVariant) -> bool;
+    }
+
+    // We can reuse the templates from cxx-qt-lib for the construct and value
+    #[namespace = "rust::cxxqtlib1::qvariant"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qvariant.h");
+
+        #[rust_name = "qvariant_construct_custom_type"]
+        fn qvariantConstruct(value: &CustomStruct) -> QVariant;
+        #[rust_name = "qvariant_value_custom_type"]
+        fn qvariantValue(variant: &QVariant) -> CustomStruct;
+    }
+
     #[cxx_qt::qobject]
     pub struct Types {
         #[qproperty]
@@ -26,6 +70,8 @@ mod ffi {
         point: QPointF,
         #[qproperty]
         url: QUrl,
+        #[qproperty]
+        custom_value: i32,
     }
 
     impl Default for Types {
@@ -34,6 +80,7 @@ mod ffi {
                 boolean: false,
                 point: QPointF::new(1.0, 2.0),
                 url: QUrl::from("https://kdab.com"),
+                custom_value: 0,
             }
         }
     }
@@ -47,6 +94,8 @@ mod ffi {
                 self.set_point(point);
             } else if let Some(url) = variant.try_value::<QUrl>() {
                 self.set_url(url);
+            } else if let Some(custom) = variant.try_value::<CustomStruct>() {
+                self.set_custom_value(custom.value);
             } else {
                 println!("Unknown QVariant type to load from");
             }

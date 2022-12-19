@@ -23,6 +23,14 @@ TestCase {
     }
 
     Component {
+        id: componentCustomObject
+
+        CustomObject {
+
+        }
+    }
+
+    Component {
         id: componentSpy
 
         SignalSpy {
@@ -85,5 +93,21 @@ TestCase {
         obj.toggleBoolean();
         compare(obj.boolean, true);
         compare(spy.count, 1);
+    }
+
+    function test_variant_custom_type() {
+        const obj = createTemporaryObject(componentTypes, null, {});
+        const customObject = createTemporaryObject(componentCustomObject, null, {
+            value: 1,
+        });
+        const customValueSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "customValueChanged",
+            target: obj,
+        });
+
+        compare(obj.customValue, 0);
+        obj.loadFromVariant(customObject.asStruct());
+        compare(obj.customValue, 1);
+        compare(customValueSpy.count, 1);
     }
 }

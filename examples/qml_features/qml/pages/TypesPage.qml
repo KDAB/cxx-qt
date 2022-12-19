@@ -26,6 +26,9 @@ Page {
                 property var booleanVariant: types.boolean
                 property var pointVariant: types.point
                 property url url: types.url
+                property CustomObject customObject: CustomObject {
+                    value: 0
+                }
                 readonly property var urlVariant: url
 
                 onClicked: {
@@ -40,12 +43,15 @@ Page {
                             case 2:
                                 url = types.url == "https://kdab.com" ? "https://github.com/kdab/cxx-qt" : "https://kdab.com"
                                 return urlVariant;
+                            case 3:
+                                customObject.value += 1;
+                                return customObject.asStruct();
                             default:
                                 return null;
                         }
                     })());
 
-                    counter = (counter + 1) % 3;
+                    counter = (counter + 1) % 4;
                 }
             }
 
@@ -82,6 +88,13 @@ Page {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             text: qsTr("QUrl: %1").arg(types.url)
+            wrapMode: Text.Wrap
+        }
+
+        Label {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr("CustomValue: %1").arg(types.customValue)
             wrapMode: Text.Wrap
         }
     }
