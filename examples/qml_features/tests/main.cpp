@@ -18,6 +18,8 @@
 #include "cxx-qt-gen/threading_website.cxxqt.h"
 #include "cxx-qt-gen/types.cxxqt.h"
 
+#include "custom_object.h"
+
 class Setup : public QObject
 {
   Q_OBJECT
@@ -25,6 +27,9 @@ class Setup : public QObject
 public:
   Setup()
   {
+    qRegisterMetaType<CustomStruct>("CustomStruct");
+    qmlRegisterType<CustomObject>("com.kdab.cxx_qt.demo", 1, 0, "CustomObject");
+
     qmlRegisterType<CustomBaseClass>(
       "com.kdab.cxx_qt.demo", 1, 0, "CustomBaseClass");
     qmlRegisterType<FirstObject>("com.kdab.cxx_qt.demo", 1, 0, "FirstObject");

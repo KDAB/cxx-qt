@@ -18,6 +18,8 @@
 #include "cxx-qt-gen/threading_website.cxxqt.h"
 #include "cxx-qt-gen/types.cxxqt.h"
 
+#include "custom_object.h"
+
 int
 main(int argc, char* argv[])
 {
@@ -36,6 +38,8 @@ main(int argc, char* argv[])
     },
     Qt::QueuedConnection);
 
+  qRegisterMetaType<CustomStruct>("CustomStruct");
+  qmlRegisterType<CustomObject>("com.kdab.cxx_qt.demo", 1, 0, "CustomObject");
   qmlRegisterType<RustContainers>(
     "com.kdab.cxx_qt.demo", 1, 0, "RustContainers");
   qmlRegisterType<CustomBaseClass>(

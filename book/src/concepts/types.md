@@ -52,6 +52,20 @@ If they are opaque, references or pointers must be used.
 
 For examples of how to wrap Qt objects, explore the [`cxx-qt-lib` source code](https://github.com/KDAB/cxx-qt/tree/main/crates/cxx-qt-lib).
 
+### Using a Custom Type with Containers or QVariant
+
+To use a custom type with containers find the trait that the container uses, eg for `QSet<T>` there is a `QSetElement` trait and for `QHash<K, V>` there is a `QHashPair` trait.
+
+Implement the trait for your custom type and then you can use the containers as described above.
+
+To use a custom type with `QVariant` implement the `QVariantValue` trait for your custom type, as seen below, then it can be used as normal.
+
+```rust,ignore
+{{#include ../../../examples/qml_features/rust/types.rs:book_qvariantvalue_impl}}
+```
+
+A full example of implementing a custom struct with `QVariant` is shown in the [qml_features types example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/types.rs).
+
 ## Opaque Type Conversions
 
 If your type can't be marked as trivial for CXX, but the Qt API needs to take the type by value (eg `T` rather than `const T&` or `::std::unique_ptr<T>`),

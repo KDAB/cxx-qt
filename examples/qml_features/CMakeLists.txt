@@ -51,6 +51,8 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 add_executable(${APP_NAME}
+    cpp/custom_object.h
+    cpp/custom_object.cpp
     cpp/main.cpp
     cpp/qabstractlistmodelcxx.h
     qml/qml.qrc
@@ -80,7 +82,12 @@ copy_qml_test(signals)
 copy_qml_test(threading)
 copy_qml_test(types)
 
-add_executable(${APP_NAME}_test "tests/main.cpp")
+add_executable(${APP_NAME}_test
+    cpp/custom_object.h
+    cpp/custom_object.cpp
+    cpp/qabstractlistmodelcxx.h
+    tests/main.cpp
+)
 target_include_directories(${APP_NAME}_test PRIVATE cpp)
 target_link_libraries(${APP_NAME}_test PRIVATE
     ${CRATE}
