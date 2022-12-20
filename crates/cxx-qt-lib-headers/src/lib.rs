@@ -10,37 +10,38 @@
 
 use std::{fs::File, io::Write, path::Path};
 
-static HEADERS: [(&str, &str); 23] = [
-    (include_str!("../include/common.h"), "common.h"),
-    (include_str!("../include/convert.h"), "convert.h"),
-    (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
-    (include_str!("../include/qcolor.h"), "qcolor.h"),
-    (include_str!("../include/qdate.h"), "qdate.h"),
-    (include_str!("../include/qdatetime.h"), "qdatetime.h"),
-    (include_str!("../include/qhash.h"), "qhash.h"),
-    (include_str!("../include/qmap.h"), "qmap.h"),
-    (include_str!("../include/qmodelindex.h"), "qmodelindex.h"),
-    (include_str!("../include/qpersistentmodelindex.h"), "qpersistentmodelindex.h"),
-    (include_str!("../include/qpoint.h"), "qpoint.h"),
-    (include_str!("../include/qpointf.h"), "qpointf.h"),
-    (include_str!("../include/qrect.h"), "qrect.h"),
-    (include_str!("../include/qrectf.h"), "qrectf.h"),
-    (include_str!("../include/qset.h"), "qset.h"),
-    (include_str!("../include/qsize.h"), "qsize.h"),
-    (include_str!("../include/qsizef.h"), "qsizef.h"),
-    (include_str!("../include/qstring.h"), "qstring.h"),
-    (include_str!("../include/qtime.h"), "qtime.h"),
-    (include_str!("../include/qurl.h"), "qurl.h"),
-    (include_str!("../include/qvariant.h"), "qvariant.h"),
-    (include_str!("../include/qvector.h"), "qvector.h"),
-    (include_str!("../include/std_types.h"), "std_types.h"),
-];
-
 /// Write the cxx-qt-lib headers to the specified directory.
 pub fn write_headers(directory: impl AsRef<Path>) {
     let directory = directory.as_ref();
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt-lib header directory");
-    for (file_contents, file_name) in HEADERS {
+    for (file_contents, file_name) in [
+        (include_str!("../include/common.h"), "common.h"),
+        (include_str!("../include/convert.h"), "convert.h"),
+        (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
+        (include_str!("../include/qcolor.h"), "qcolor.h"),
+        (include_str!("../include/qdate.h"), "qdate.h"),
+        (include_str!("../include/qdatetime.h"), "qdatetime.h"),
+        (include_str!("../include/qhash.h"), "qhash.h"),
+        (include_str!("../include/qmap.h"), "qmap.h"),
+        (include_str!("../include/qmodelindex.h"), "qmodelindex.h"),
+        (
+            include_str!("../include/qpersistentmodelindex.h"),
+            "qpersistentmodelindex.h",
+        ),
+        (include_str!("../include/qpoint.h"), "qpoint.h"),
+        (include_str!("../include/qpointf.h"), "qpointf.h"),
+        (include_str!("../include/qrect.h"), "qrect.h"),
+        (include_str!("../include/qrectf.h"), "qrectf.h"),
+        (include_str!("../include/qset.h"), "qset.h"),
+        (include_str!("../include/qsize.h"), "qsize.h"),
+        (include_str!("../include/qsizef.h"), "qsizef.h"),
+        (include_str!("../include/qstring.h"), "qstring.h"),
+        (include_str!("../include/qtime.h"), "qtime.h"),
+        (include_str!("../include/qurl.h"), "qurl.h"),
+        (include_str!("../include/qvariant.h"), "qvariant.h"),
+        (include_str!("../include/qvector.h"), "qvector.h"),
+        (include_str!("../include/std_types.h"), "std_types.h"),
+    ] {
         let h_path = format!("{}/{}", directory.display(), file_name);
         let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
         write!(header, "{}", file_contents).expect("Could not write cxx-qt-lib header");
