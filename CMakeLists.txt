@@ -179,6 +179,7 @@ add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt/Cargo.toml" DOC
 add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
 add_test_cargo(cxx_qt_lib "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-lib/Cargo.toml" DOCTESTS_ON)
+add_test_cargo(cxx_qt_lib_headers "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-lib-headers/Cargo.toml" DOCTESTS_ON)
 
 # Ensure test inputs and outputs are formatted
 file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_inputs/*.rs)
