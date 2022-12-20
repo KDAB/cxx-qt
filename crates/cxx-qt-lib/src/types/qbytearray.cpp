@@ -38,16 +38,44 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QByteArray
-qbytearrayFromRustString(rust::Str string)
+qbytearrayFromSliceU8(::rust::Slice<const ::std::uint8_t> slice)
 {
-  // Note that rust::Str here is borrowed
-  return QByteArray(string.data(), string.size());
+  // Note that rust::Slice here is borrowed
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return QByteArray(reinterpret_cast<const char*>(slice.data()),
+                    static_cast<qsizetype>(slice.size()));
+#else
+  return QByteArray(reinterpret_cast<const char*>(slice.data()),
+                    static_cast<int>(slice.size()));
+#endif
 }
 
-rust::String
-qbytearrayToRustString(const QByteArray& byteArray)
+::rust::Vec<::std::uint8_t>
+qbytearrayToVecU8(const QByteArray& byteArray)
 {
-  return rust::String(byteArray.constData(), byteArray.size());
+  ::rust::Vec<::std::uint8_t> vec;
+  std::copy(byteArray.cbegin(), byteArray.cend(), std::back_inserter(vec));
+  return vec;
+}
+
+QByteArray
+qbytearrayFromRawData(::rust::Slice<const ::std::uint8_t> slice)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return QByteArray::fromRawData(reinterpret_cast<const char*>(slice.data()),
+                                 static_cast<qsizetype>(slice.size()));
+#else
+  return QByteArray::fromRawData(reinterpret_cast<const char*>(slice.data()),
+                                 static_cast<int>(slice.size()));
+#endif
+}
+
+::rust::Slice<const ::std::uint8_t>
+qbytearrayAsSlice(const QByteArray& byteArray)
+{
+  return ::rust::Slice<const ::std::uint8_t>(
+    reinterpret_cast<const std::uint8_t*>(byteArray.data()),
+    static_cast<::std::size_t>(byteArray.size()));
 }
 
 }

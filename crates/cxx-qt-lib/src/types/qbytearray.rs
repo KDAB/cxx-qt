@@ -19,21 +19,28 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qbytearray_drop"]
-        fn drop(string: &mut QByteArray);
+        fn drop(bytearray: &mut QByteArray);
 
         #[doc(hidden)]
         #[rust_name = "qbytearray_default"]
         fn construct() -> QByteArray;
         #[doc(hidden)]
-        #[rust_name = "qbytearray_from_rust_string"]
-        fn qbytearrayFromRustString(string: &str) -> QByteArray;
-        #[doc(hidden)]
         #[rust_name = "qbytearray_clone"]
-        fn construct(string: &QByteArray) -> QByteArray;
+        fn construct(bytearray: &QByteArray) -> QByteArray;
 
         #[doc(hidden)]
-        #[rust_name = "qbytearray_to_rust_string"]
-        fn qbytearrayToRustString(string: &QByteArray) -> String;
+        #[rust_name = "qbytearray_from_slice_u8"]
+        fn qbytearrayFromSliceU8(slice: &[u8]) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_to_vec_u8"]
+        fn qbytearrayToVecU8(string: &QByteArray) -> Vec<u8>;
+
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_from_raw_data"]
+        fn qbytearrayFromRawData(slice: &[u8]) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_as_slice"]
+        fn qbytearrayAsSlice(bytearray: &QByteArray) -> &[u8];
     }
 }
 
@@ -49,10 +56,17 @@ pub struct QByteArray {
     _space: MaybeUninit<[usize; 3]>,
 }
 
+impl AsRef<[u8]> for QByteArray {
+    /// Construct a slice of u8 from a QByteArray
+    fn as_ref(&self) -> &[u8] {
+        self.as_slice()
+    }
+}
+
 impl Clone for QByteArray {
     /// Constructs a copy of other.
     ///
-    /// This operation takes constant time, because QByteArray is implicitly shared.
+    /// This operation takes constant time, because QByteArray is implicitly shared similar to a [std::borrow::Cow].
     /// This makes returning a QByteArray from a function very fast.
     /// If a shared instance is modified, it will be copied (copy-on-write), and that takes linear time.
     fn clone(&self) -> Self {
@@ -70,7 +84,11 @@ impl Default for QByteArray {
 impl std::fmt::Display for QByteArray {
     /// Convert the QByteArray to a Rust string
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", <&QByteArray as Into<String>>::into(self))
+        if let Ok(string) = String::from_utf8(self.into()) {
+            write!(f, "{}", string)
+        } else {
+            write!(f, "{:?}", self.as_slice())
+        }
     }
 }
 
@@ -82,23 +100,46 @@ impl Drop for QByteArray {
 }
 
 impl From<&str> for QByteArray {
-    /// Constructs a QByteArray from a Rust string
+    /// Constructs a QByteArray from a Rust string slice. This makes a deep copy of the data.
     fn from(str: &str) -> Self {
-        ffi::qbytearray_from_rust_string(str)
+        ffi::qbytearray_from_slice_u8(str.as_bytes())
     }
 }
 
 impl From<&String> for QByteArray {
-    /// Constructs a QByteArray from a Rust string
+    /// Constructs a QByteArray from a Rust string. This makes a deep copy of the data.
     fn from(str: &String) -> Self {
-        ffi::qbytearray_from_rust_string(str)
+        ffi::qbytearray_from_slice_u8(str.as_bytes())
     }
 }
 
-impl From<&QByteArray> for String {
-    /// Convert the QByteArray to a Rust string
-    fn from(qbytearray: &QByteArray) -> Self {
-        ffi::qbytearray_to_rust_string(qbytearray)
+impl From<&[u8]> for QByteArray {
+    /// Constructs a QByteArray from a `&[u8]`. This makes a deep copy of the data.
+    fn from(bytes: &[u8]) -> Self {
+        ffi::qbytearray_from_slice_u8(bytes)
+    }
+}
+
+impl From<&QByteArray> for Vec<u8> {
+    /// Convert the QByteArray to a `Vec<u8>`. This makes a deep copy of the data.
+    fn from(bytearray: &QByteArray) -> Self {
+        ffi::qbytearray_to_vec_u8(bytearray)
+    }
+}
+
+impl QByteArray {
+    /// Construct a slice of u8 from a QByteArray
+    pub fn as_slice(&self) -> &[u8] {
+        ffi::qbytearray_as_slice(self)
+    }
+
+    /// Construct a QByteArray from a `&[u8]` without a deep copy
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the original slice outlives the QByteArray
+    pub unsafe fn from_raw_data(bytes: &[u8]) -> QByteArray {
+        ffi::qbytearray_from_raw_data(bytes)
     }
 }
 

@@ -52,4 +52,6 @@ private Q_SLOTS:
     modify_qbytearray(s);
     QCOMPARE(s, QByteArrayLiteral("Updated string value"));
   }
+
+  void can_use_as_slice_cpp() { QVERIFY(can_use_as_slice()); }
 };
