@@ -6,6 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
+
 #include <QByteArray>
 
 #include "rust/cxx.h"
@@ -19,9 +21,14 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QByteArray
-qbytearrayFromRustString(rust::Str string);
-rust::String
-qbytearrayToRustString(const QByteArray& string);
+qbytearrayFromSliceU8(::rust::Slice<const ::std::uint8_t> slice);
+::rust::Vec<::std::uint8_t>
+qbytearrayToVecU8(const QByteArray& byteArray);
+
+QByteArray
+qbytearrayFromRawData(::rust::Slice<const ::std::uint8_t> slice);
+::rust::Slice<const ::std::uint8_t>
+qbytearrayAsSlice(const QByteArray& byteArray);
 
 }
 }

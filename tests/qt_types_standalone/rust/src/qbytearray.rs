@@ -20,6 +20,7 @@ mod qbytearray_cxx {
         fn modify_qbytearray(s: Pin<&mut QByteArray>);
         fn can_handle_qbytearray_change() -> bool;
         fn clone_qbytearray(s: &QByteArray) -> QByteArray;
+        fn can_use_as_slice() -> bool;
     }
 }
 
@@ -56,4 +57,11 @@ fn can_handle_qbytearray_change() -> bool {
 
 fn clone_qbytearray(s: &QByteArray) -> QByteArray {
     s.clone()
+}
+
+fn can_use_as_slice() -> bool {
+    let string = "String slice";
+    let slice = unsafe { QByteArray::from_raw_data(string.as_bytes()) };
+
+    slice.as_slice() == string.as_bytes()
 }
