@@ -39,7 +39,7 @@ fn name_from_ident(ident: &Ident) -> CombinedIdent {
 
 /// For a given ident generate the Rust and C++ wrapper names
 fn wrapper_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("{}_wrapper", ident);
+    let ident = format_ident!("{ident}_wrapper");
     CombinedIdent {
         cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
         rust: ident,

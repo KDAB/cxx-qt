@@ -52,7 +52,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/qvector4d.h"), "qvector4d.h"),
         (include_str!("../include/std_types.h"), "std_types.h"),
     ] {
-        let h_path = format!("{}/{}", directory.display(), file_name);
+        let h_path = format!("{}/{file_name}", directory.display());
         let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
         write!(header, "{}", file_contents).expect("Could not write cxx-qt-lib header");
     }

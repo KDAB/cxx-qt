@@ -302,7 +302,7 @@ impl QtBuild {
             let framework = match &target {
                 Ok(target) => {
                     if target.contains("apple") {
-                        Path::new(&format!("{}/Qt{}.framework", lib_path, qt_module)).exists()
+                        Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
                     } else {
                         false
                     }
@@ -312,7 +312,7 @@ impl QtBuild {
 
             let (link_lib, prl_path) = if framework {
                 (
-                    format!("framework=Qt{}", qt_module),
+                    format!("framework=Qt{qt_module}"),
                     format!(
                         "{}/Qt{}.framework/Resources/Qt{}.prl",
                         lib_path, qt_module, qt_module
@@ -320,7 +320,7 @@ impl QtBuild {
                 )
             } else {
                 (
-                    format!("Qt{}{}", self.version.major, qt_module),
+                    format!("Qt{}{qt_module}", self.version.major),
                     format!(
                         "{}/{}Qt{}{}.prl",
                         lib_path, prefix, self.version.major, qt_module
@@ -335,7 +335,7 @@ impl QtBuild {
                     for line in prl.lines() {
                         if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
                             parse_cflags::parse_libs_cflags(
-                                &format!("Qt{}{}", self.version.major, qt_module),
+                                &format!("Qt{}{qt_module}", self.version.major),
                                 line.replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
                                     .replace(r"$$[QT_INSTALL_PREFIX]", &lib_path)
                                     .as_bytes(),
@@ -359,7 +359,7 @@ impl QtBuild {
         let root_path = self.qmake_query("QT_INSTALL_HEADERS");
         let mut paths = Vec::new();
         for qt_module in &self.qt_modules {
-            paths.push(format!("{}/Qt{}", root_path, qt_module));
+            paths.push(format!("{root_path}/Qt{qt_module}"));
         }
         paths.push(root_path);
         paths.iter().map(PathBuf::from).collect()
@@ -379,7 +379,7 @@ impl QtBuild {
             "QT_INSTALL_LIBEXECS",
             "QT_INSTALL_BINS",
         ] {
-            let executable_path = format!("{}/{}", self.qmake_query(qmake_query_var), tool_name);
+            let executable_path = format!("{}/{tool_name}", self.qmake_query(qmake_query_var));
             match Command::new(&executable_path).args(["-help"]).output() {
                 Ok(_) => return Ok(executable_path),
                 Err(_) => continue,

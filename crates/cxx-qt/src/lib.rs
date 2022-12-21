@@ -44,7 +44,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     //
     // To keep the inputs to the parser consistent for all code paths,
     // add the attribute to the module before giving it to the parser.
-    let args_input = format!("#[cxx_qt::bridge({})] mod dummy;", args);
+    let args_input = format!("#[cxx_qt::bridge({args})] mod dummy;");
     let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
     module.attrs = attrs.into_iter().chain(module.attrs.into_iter()).collect();
 
