@@ -14,7 +14,7 @@ authors = [
   "Gerhard de Clercq <gerhard.declercq@kdab.com>",
   "Leon Matthes <leon.matthes@kdab.com>"
 ]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
