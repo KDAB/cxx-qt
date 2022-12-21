@@ -200,7 +200,7 @@ fn generate_cxxqt_cpp_files(
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
         let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
-        let path = format!("{}/{}", manifest_dir, rs_path.display());
+        let path = format!("{manifest_dir}/{}", rs_path.display());
         println!("cargo:rerun-if-changed={path}");
 
         let generated_code = GeneratedCpp::new(&path);
@@ -367,18 +367,18 @@ impl CxxQtBuilder {
         // The include directory needs to be namespaced by crate name when exporting for a C++ build system,
         // but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
         let header_root = match env::var("CXXQT_EXPORT_DIR") {
-            Ok(export_dir) => format!("{}/{}", export_dir, env::var("CARGO_PKG_NAME").unwrap()),
+            Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
             Err(_) => env::var("OUT_DIR").unwrap(),
         };
         self.cc_builder.include(&header_root);
-        let generated_header_dir = format!("{}/cxx-qt-gen", header_root);
+        let generated_header_dir = format!("{header_root}/cxx-qt-gen");
 
-        cxx_qt_lib_headers::write_headers(format!("{}/cxx-qt-lib", header_root));
+        cxx_qt_lib_headers::write_headers(format!("{header_root}/cxx-qt-lib"));
 
         // Write cxx header
-        std::fs::create_dir_all(format!("{}/rust", header_root))
+        std::fs::create_dir_all(format!("{header_root}/rust"))
             .expect("Could not create cxx header directory");
-        let h_path = format!("{}/rust/cxx.h", header_root);
+        let h_path = format!("{header_root}/rust/cxx.h");
         // Wrap the File in a block scope so the file is closed before the compiler is run.
         // Otherwise MSVC fails to open cxx.h because the process for this build script already has it open.
         {

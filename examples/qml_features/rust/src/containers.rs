@@ -97,7 +97,7 @@ mod ffi {
                 .iter()
                 .map(|(key, value)| {
                     let value = value.value::<i32>().unwrap_or(0);
-                    format!("{} => {}", key, value)
+                    format!("{key} => {value}")
                 })
                 .collect::<Vec<String>>()
                 .join(", ");
@@ -118,7 +118,7 @@ mod ffi {
                 .iter()
                 .map(|(key, value)| {
                     let value = value.value::<i32>().unwrap_or(0);
-                    format!("{} => {}", key, value)
+                    format!("{key} => {value}")
                 })
                 .collect::<Vec<String>>()
                 .join(", ");

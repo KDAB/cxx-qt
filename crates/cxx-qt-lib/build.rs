@@ -146,7 +146,7 @@ fn main() {
     let mut builder = cxx_build::bridges(
         rust_bridges
             .iter()
-            .map(|bridge| format!("src/types/{}.rs", bridge)),
+            .map(|bridge| format!("src/types/{bridge}.rs")),
     );
 
     let cpp_files = [
@@ -177,7 +177,7 @@ fn main() {
         "qvector4d",
     ];
     for cpp_file in cpp_files {
-        builder.file(format!("src/types/{}.cpp", cpp_file));
+        builder.file(format!("src/types/{cpp_file}.cpp"));
         println!("cargo:rerun-if-changed=src/types/{cpp_file}.cpp");
     }
     builder.file("src/qt_types.cpp");
@@ -186,7 +186,7 @@ fn main() {
 
     // Write this library's manually written C++ headers to files and add them to include paths
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    cxx_qt_lib_headers::write_headers(format!("{}/cxx-qt-lib", out_dir));
+    cxx_qt_lib_headers::write_headers(format!("{out_dir}/cxx-qt-lib"));
     builder.include(out_dir);
 
     // MSVC

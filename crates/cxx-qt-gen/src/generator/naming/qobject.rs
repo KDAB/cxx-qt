@@ -40,24 +40,24 @@ impl From<&Ident> for QObjectName {
 fn cpp_class_from_ident(ident: &Ident) -> CombinedIdent {
     CombinedIdent {
         cpp: ident.clone(),
-        rust: format_ident!("{}Qt", ident),
+        rust: format_ident!("{ident}Qt"),
     }
 }
 
 /// For a given ident generate the CxxQtThread ident
 fn cxx_qt_thread_class_from_ident(ident: &Ident) -> Ident {
-    format_ident!("{}CxxQtThread", ident)
+    format_ident!("{ident}CxxQtThread")
 }
 
 /// For a given ident generate the CxxQtThreadQueuedFn ident
 fn cxx_qt_thread_queued_fn_struct_from_ident(ident: &Ident) -> Ident {
-    format_ident!("{}CxxQtThreadQueuedFn", ident)
+    format_ident!("{ident}CxxQtThreadQueuedFn")
 }
 
 /// For a given ident generate the Rust and C++ names
 fn rust_struct_from_ident(ident: &Ident) -> CombinedIdent {
     CombinedIdent {
-        cpp: format_ident!("{}Rust", ident),
+        cpp: format_ident!("{ident}Rust"),
         rust: ident.clone(),
     }
 }

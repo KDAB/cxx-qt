@@ -47,7 +47,7 @@ fn getter_from_ident(ident: &Ident) -> CombinedIdent {
 fn getter_mutable_from_ident(ident: &Ident) -> CombinedIdent {
     CombinedIdent {
         cpp: format_ident!("get{}Mut", ident.to_string().to_case(Case::Pascal)),
-        rust: format_ident!("{}_mut", ident),
+        rust: format_ident!("{ident}_mut"),
     }
 }
 
@@ -61,7 +61,7 @@ fn name_from_ident(ident: &Ident) -> CombinedIdent {
 
 /// For a given ident generate the Rust and C++ notify names
 fn notify_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("{}_changed", ident);
+    let ident = format_ident!("{ident}_changed");
     CombinedIdent {
         cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
         rust: ident,
@@ -70,7 +70,7 @@ fn notify_from_ident(ident: &Ident) -> CombinedIdent {
 
 /// For a given ident generate the Rust and C++ setter names
 fn setter_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("set_{}", ident);
+    let ident = format_ident!("set_{ident}");
     CombinedIdent {
         cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
         rust: ident,
