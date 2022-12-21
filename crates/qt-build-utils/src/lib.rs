@@ -231,7 +231,7 @@ impl QtBuild {
     /// Tell Cargo to link each Qt module.
     pub fn cargo_link_libraries(&self) {
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
-        println!("cargo:rustc-link-search={}", lib_path);
+        println!("cargo:rustc-link-search={lib_path}");
 
         let target = env::var("TARGET");
         let prefix = match &target {
@@ -275,7 +275,7 @@ impl QtBuild {
                 )
             };
 
-            println!("cargo:rustc-link-lib={}", link_lib);
+            println!("cargo:rustc-link-lib={link_lib}");
 
             match std::fs::read_to_string(&prl_path) {
                 Ok(prl) => {

@@ -122,10 +122,10 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
     for (flag, val) in parts {
         match flag {
             "-L" => {
-                println!("cargo:rustc-link-search=native={}", val);
+                println!("cargo:rustc-link-search=native={val}");
             }
             "-F" => {
-                println!("cargo:rustc-link-search=framework={}", val);
+                println!("cargo:rustc-link-search=framework={val}");
             }
             "-I" => (),
             "-l" => {
@@ -134,7 +134,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
                     continue;
                 }
 
-                println!("cargo:rustc-link-lib={}", val);
+                println!("cargo:rustc-link-lib={val}");
             }
             "-D" => (),
             _ => {}
@@ -153,7 +153,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
         match part {
             "-framework" => {
                 if let Some(lib) = iter.next() {
-                    println!("cargo:rustc-link-lib=framework={}", lib);
+                    println!("cargo:rustc-link-lib=framework={lib}");
                 }
             }
             "-isystem" | "-iquote" | "-idirafter" => {}
@@ -170,10 +170,10 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
                         match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
                             Some(lib_basename) => {
                                 println!("cargo:rustc-link-search={}", dir.display());
-                                println!("cargo:rustc-link-lib={}", lib_basename);
+                                println!("cargo:rustc-link-lib={lib_basename}");
                             }
                             None => {
-                                println!("cargo:warning=File path {} found in .prl file for {}, but could not extract library base name to pass to linker command line", path.display(), name);
+                                println!("cargo:warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
                             }
                         }
                     }

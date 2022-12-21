@@ -101,7 +101,7 @@ fn main() {
         "qvector/qvector_u64",
     ];
     for bridge in rust_bridges {
-        println!("cargo:rerun-if-changed=src/types/{}.rs", bridge);
+        println!("cargo:rerun-if-changed=src/types/{bridge}.rs");
     }
 
     for include_path in qtbuild.include_paths() {
@@ -139,7 +139,7 @@ fn main() {
     ];
     for cpp_file in cpp_files {
         builder.file(format!("src/types/{}.cpp", cpp_file));
-        println!("cargo:rerun-if-changed=src/types/{}.cpp", cpp_file);
+        println!("cargo:rerun-if-changed=src/types/{cpp_file}.cpp");
     }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
