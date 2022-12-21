@@ -201,7 +201,7 @@ fn generate_cxxqt_cpp_files(
     for rs_path in rs_source {
         let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
         let path = format!("{}/{}", manifest_dir, rs_path.display());
-        println!("cargo:rerun-if-changed={}", path);
+        println!("cargo:rerun-if-changed={path}");
 
         let generated_code = GeneratedCpp::new(&path);
         generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
