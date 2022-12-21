@@ -14,7 +14,7 @@ license = "MIT OR Apache-2.0"
 crate-type = ["staticlib"]
 
 [dependencies]
-cxx = "1.0.75"
+cxx.workspace = true
 
 [build-dependencies]
-cxx-qt-build = { path = "../../../crates/cxx-qt-build" }
+cxx-qt-build.workspace = true

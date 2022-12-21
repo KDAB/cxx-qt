@@ -14,10 +14,10 @@ repository.workspace = true
 
 [dependencies]
 cc = "1.0.73"
-cxx-gen = "0.7"
-cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.4" }
-cxx-qt-gen = { path = "../cxx-qt-gen", version = "0.4" }
-proc-macro2 = "1.0"
-quote = "1.0"
-convert_case = "0.6"
-qt-build-utils = { path = "../qt-build-utils", version = "0.4" }
+convert_case.workspace = true
+cxx-gen.workspace = true
+cxx-qt-lib-headers.workspace = true
+cxx-qt-gen.workspace = true
+proc-macro2.workspace = true
+quote.workspace = true
+qt-build-utils.workspace = true

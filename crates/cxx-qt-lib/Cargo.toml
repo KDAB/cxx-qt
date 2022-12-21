@@ -16,9 +16,9 @@ repository.workspace = true
 links = "cxx-qt-lib"
 
 [dependencies]
-cxx = "1.0.75"
+cxx.workspace = true
 
 [build-dependencies]
-cxx-build = { version = "1.0", features = [ "parallel" ] }
-cxx-qt-lib-headers = { path = "../cxx-qt-lib-headers", version = "0.4" }
-qt-build-utils = { path = "../qt-build-utils", version = "0.4" }
+cxx-build.workspace = true
+cxx-qt-lib-headers.workspace = true
+qt-build-utils.workspace = true

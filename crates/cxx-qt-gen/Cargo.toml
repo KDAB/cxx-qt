@@ -13,12 +13,12 @@ description = "Code generation for integrating `cxx-qt` into higher level tools"
 repository.workspace = true
 
 [dependencies]
+proc-macro2.workspace = true
+syn.workspace = true
+quote.workspace = true
+convert_case.workspace = true
 clang-format = "0.1"
-convert_case = "0.6"
 indoc = "1.0"
-proc-macro2 = "1.0"
-syn = { version = "1.0", features = ["extra-traits", "full"] }
-quote = "1.0"
 
 [dev-dependencies]
 ctor = "0.1"
