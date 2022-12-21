@@ -18,13 +18,13 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cxx = "1.0.75"
+cxx.workspace = true
 # Use `cxx-qt = "0.4"` here instead!
-cxx-qt = { path = "../../crates/cxx-qt" }
+cxx-qt.workspace = true
 # Use `cxx-qt-lib = "0.4"` here instead!
-cxx-qt-lib = { path = "../../crates/cxx-qt-lib" }
+cxx-qt-lib.workspace = true
 
 [build-dependencies]
 # Use `cxx-qt-build = "0.4"` here instead!
-cxx-qt-build = { path = "../../crates/cxx-qt-build" }
+cxx-qt-build.workspace = true
 # ANCHOR_END: book_cargo_toml_no_cmake
