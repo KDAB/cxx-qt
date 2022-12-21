@@ -6,7 +6,7 @@
 name = "demo-threading"
 version = "0.1.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [lib]
