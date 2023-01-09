@@ -2,9 +2,11 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#[cfg(feature = "qt_gui")]
+use crate::QColor;
 use crate::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
-    QVariant,
+    QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -16,6 +18,7 @@ mod qlist_i16;
 mod qlist_i32;
 mod qlist_i64;
 mod qlist_i8;
+#[cfg(feature = "qt_gui")]
 mod qlist_qcolor;
 mod qlist_qdate;
 mod qlist_qdatetime;
@@ -355,6 +358,7 @@ impl_qlist_element!(i8, qlist_i8, "QList_i8");
 impl_qlist_element!(i16, qlist_i16, "QList_i16");
 impl_qlist_element!(i32, qlist_i32, "QList_i32");
 impl_qlist_element!(i64, qlist_i64, "QList_i64");
+#[cfg(feature = "qt_gui")]
 impl_qlist_element!(QColor, qlist_qcolor, "QList_QColor");
 impl_qlist_element!(QDate, qlist_qdate, "QList_QDate");
 impl_qlist_element!(QDateTime, qlist_qdatetime, "QList_QDateTime");

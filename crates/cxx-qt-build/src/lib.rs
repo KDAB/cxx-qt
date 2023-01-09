@@ -256,7 +256,6 @@ impl CxxQtBuilder {
     pub fn new() -> Self {
         let mut qt_modules = HashSet::new();
         qt_modules.insert("Core".to_owned());
-        qt_modules.insert("Gui".to_owned());
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
@@ -304,7 +303,7 @@ impl CxxQtBuilder {
 
     /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html).
     /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
-    /// The Core and Gui modules are linked automatically; there is no need to specify them.
+    /// The Core module is linked automatically; there is no need to specify it.
     pub fn qt_modules(mut self, modules: &[&str]) -> Self {
         self.qt_modules
             .extend(modules.iter().cloned().map(String::from));
@@ -356,6 +355,11 @@ impl CxxQtBuilder {
         self.cc_builder.flag_if_supported("/permissive-");
         // GCC + Clang
         self.cc_builder.flag_if_supported("-std=c++17");
+
+        // Enable Qt Gui in C++ if the feature is enabled
+        if self.qt_modules.contains("Gui") {
+            self.cc_builder.define("CXX_QT_GUI_FEATURE", None);
+        }
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");

@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `QVariant` now has a uses a `QVariantValue` trait for supported types, allowing custom types to be used with QVariant
+- `QtGui` types in cxx-qt-lib are now behind a feature `qt_gui` and `Gui` needs to enabled as a `qt_module` in `CxxQtBuilder`
 
 ### Fixed
 

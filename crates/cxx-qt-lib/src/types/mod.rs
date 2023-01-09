@@ -6,7 +6,9 @@
 mod qbytearray;
 pub use qbytearray::QByteArray;
 
+#[cfg(feature = "qt_gui")]
 mod qcolor;
+#[cfg(feature = "qt_gui")]
 pub use qcolor::QColor;
 
 mod qdate;

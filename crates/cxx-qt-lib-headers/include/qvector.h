@@ -22,7 +22,10 @@
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
+
+#ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
+#endif
 
 #include "rust/cxx.h"
 
@@ -135,7 +138,9 @@ using QVector_i8 = QVector<::std::int8_t>;
 using QVector_i16 = QVector<::std::int16_t>;
 using QVector_i32 = QVector<::std::int32_t>;
 using QVector_i64 = QVector<::std::int64_t>;
+#ifdef CXX_QT_GUI_FEATURE
 using QVector_QColor = QVector<::QColor>;
+#endif
 using QVector_QDate = QVector<::QDate>;
 using QVector_QDateTime = QVector<::QDateTime>;
 using QVector_QPoint = QVector<::QPoint>;

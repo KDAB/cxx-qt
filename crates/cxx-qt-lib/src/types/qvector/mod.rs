@@ -2,9 +2,11 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#[cfg(feature = "qt_gui")]
+use crate::QColor;
 use crate::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
-    QVariant,
+    QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -16,6 +18,7 @@ mod qvector_i16;
 mod qvector_i32;
 mod qvector_i64;
 mod qvector_i8;
+#[cfg(feature = "qt_gui")]
 mod qvector_qcolor;
 mod qvector_qdate;
 mod qvector_qdatetime;
@@ -355,6 +358,7 @@ impl_qvector_element!(i8, qvector_i8, "QVector_i8");
 impl_qvector_element!(i16, qvector_i16, "QVector_i16");
 impl_qvector_element!(i32, qvector_i32, "QVector_i32");
 impl_qvector_element!(i64, qvector_i64, "QVector_i64");
+#[cfg(feature = "qt_gui")]
 impl_qvector_element!(QColor, qvector_qcolor, "QVector_QColor");
 impl_qvector_element!(QDate, qvector_qdate, "QVector_QDate");
 impl_qvector_element!(QDateTime, qvector_qdatetime, "QVector_QDateTime");

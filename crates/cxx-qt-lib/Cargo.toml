@@ -22,3 +22,7 @@ cxx.workspace = true
 cxx-build.workspace = true
 cxx-qt-lib-headers.workspace = true
 qt-build-utils.workspace = true
+
+[features]
+default = []
+qt_gui = ["cxx-qt-lib-headers/qt_gui"]

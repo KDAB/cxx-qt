@@ -38,7 +38,9 @@ CXX_QT_QVECTOR_ASSERTS(::std::int8_t, i8);
 CXX_QT_QVECTOR_ASSERTS(::std::int16_t, i16);
 CXX_QT_QVECTOR_ASSERTS(::std::int32_t, i32);
 CXX_QT_QVECTOR_ASSERTS(::std::int64_t, i64);
+#ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVECTOR_ASSERTS(::QColor, QColor);
+#endif
 CXX_QT_QVECTOR_ASSERTS(::QDate, QDate);
 CXX_QT_QVECTOR_ASSERTS(::QDateTime, QDateTime);
 CXX_QT_QVECTOR_ASSERTS(::QPoint, QPoint);

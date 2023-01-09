@@ -4,10 +4,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 fn main() {
-    let qt_modules = vec!["Core", "Gui"]
-        .iter()
-        .map(|m| String::from(*m))
-        .collect();
+    let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
+
+    let mut qt_modules = vec!["Core".to_owned()];
+    if feature_qt_gui_enabled {
+        qt_modules.push("Gui".to_owned());
+    }
+
     let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
     qtbuild.cargo_link_libraries();
     // Required for tests
@@ -20,9 +23,8 @@ fn main() {
         qtbuild.version().major
     );
 
-    let rust_bridges = [
+    let mut rust_bridges = vec![
         "qbytearray",
-        "qcolor",
         "qdate",
         "qdatetime",
         "qhash/qhash_i32_qbytearray",
@@ -34,7 +36,6 @@ fn main() {
         "qlist/qlist_i16",
         "qlist/qlist_i32",
         "qlist/qlist_i64",
-        "qlist/qlist_qcolor",
         "qlist/qlist_qdate",
         "qlist/qlist_qdatetime",
         "qlist/qlist_qpoint",
@@ -89,7 +90,6 @@ fn main() {
         "qvariant/qvariant_i16",
         "qvariant/qvariant_i32",
         "qvariant/qvariant_i64",
-        "qvariant/qvariant_qcolor",
         "qvariant/qvariant_qdate",
         "qvariant/qvariant_qdatetime",
         "qvariant/qvariant_qpoint",
@@ -112,7 +112,6 @@ fn main() {
         "qvector/qvector_i16",
         "qvector/qvector_i32",
         "qvector/qvector_i64",
-        "qvector/qvector_qcolor",
         "qvector/qvector_qdate",
         "qvector/qvector_qdatetime",
         "qvector/qvector_qpoint",
@@ -129,11 +128,21 @@ fn main() {
         "qvector/qvector_u16",
         "qvector/qvector_u32",
         "qvector/qvector_u64",
-        "qvector2d",
-        "qvector3d",
-        "qvector4d",
     ];
-    for bridge in rust_bridges {
+
+    if feature_qt_gui_enabled {
+        rust_bridges.extend([
+            "qcolor",
+            "qlist/qlist_qcolor",
+            "qvariant/qvariant_qcolor",
+            "qvector/qvector_qcolor",
+            "qvector2d",
+            "qvector3d",
+            "qvector4d",
+        ]);
+    }
+
+    for bridge in &rust_bridges {
         println!("cargo:rerun-if-changed=src/types/{bridge}.rs");
     }
 
@@ -149,9 +158,8 @@ fn main() {
             .map(|bridge| format!("src/types/{bridge}.rs")),
     );
 
-    let cpp_files = [
+    let mut cpp_files = vec![
         "qbytearray",
-        "qcolor",
         "qdate",
         "qdatetime",
         "qhash/qhash",
@@ -172,11 +180,13 @@ fn main() {
         "qurl",
         "qvariant/qvariant",
         "qvector/qvector",
-        "qvector2d",
-        "qvector3d",
-        "qvector4d",
     ];
-    for cpp_file in cpp_files {
+
+    if feature_qt_gui_enabled {
+        cpp_files.extend(["qcolor", "qvector2d", "qvector3d", "qvector4d"]);
+    }
+
+    for cpp_file in &cpp_files {
         builder.file(format!("src/types/{cpp_file}.cpp"));
         println!("cargo:rerun-if-changed=src/types/{cpp_file}.cpp");
     }
@@ -188,6 +198,11 @@ fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     cxx_qt_lib_headers::write_headers(format!("{out_dir}/cxx-qt-lib"));
     builder.include(out_dir);
+
+    // Enable Qt Gui in C++ if the feature is enabled
+    if feature_qt_gui_enabled {
+        builder.define("CXX_QT_GUI_FEATURE", None);
+    }
 
     // MSVC
     builder.flag_if_supported("/std:c++17");
