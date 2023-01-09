@@ -18,11 +18,8 @@ pub use qdatetime::QDateTime;
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
-// Qt 5 has a different QList<T>
-#[cfg(qt_version_major = "5")]
-mod qt5list;
-#[cfg(qt_version_major = "5")]
-pub use qt5list::{Qt5List, Qt5ListElement};
+mod qlist;
+pub use qlist::{QList, QListElement};
 
 mod qmap;
 pub use qmap::{QMap, QMapPair, QMapPair_QString_QVariant};

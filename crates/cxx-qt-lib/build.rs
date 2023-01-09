@@ -18,13 +18,37 @@ fn main() {
         qtbuild.version().major
     );
 
-    let mut rust_bridges = vec![
+    let rust_bridges = [
         "qbytearray",
         "qcolor",
         "qdate",
         "qdatetime",
         "qhash/qhash_i32_qbytearray",
         "qhash/qhash_qstring_qvariant",
+        "qlist/qlist_bool",
+        "qlist/qlist_f32",
+        "qlist/qlist_f64",
+        "qlist/qlist_i8",
+        "qlist/qlist_i16",
+        "qlist/qlist_i32",
+        "qlist/qlist_i64",
+        "qlist/qlist_qcolor",
+        "qlist/qlist_qdate",
+        "qlist/qlist_qdatetime",
+        "qlist/qlist_qpoint",
+        "qlist/qlist_qpointf",
+        "qlist/qlist_qrect",
+        "qlist/qlist_qrectf",
+        "qlist/qlist_qsize",
+        "qlist/qlist_qsizef",
+        "qlist/qlist_qstring",
+        "qlist/qlist_qtime",
+        "qlist/qlist_qurl",
+        "qlist/qlist_qvariant",
+        "qlist/qlist_u8",
+        "qlist/qlist_u16",
+        "qlist/qlist_u32",
+        "qlist/qlist_u64",
         "qmap/qmap_qstring_qvariant",
         "qmodelindex",
         "qpersistentmodelindex",
@@ -103,39 +127,8 @@ fn main() {
         "qvector/qvector_u32",
         "qvector/qvector_u64",
     ];
-
-    // Qt 5 has a different QList<T>
-    if qtbuild.version().major == 5 {
-        rust_bridges.extend_from_slice(&[
-            "qt5list/qt5list_bool",
-            "qt5list/qt5list_f32",
-            "qt5list/qt5list_f64",
-            "qt5list/qt5list_i8",
-            "qt5list/qt5list_i16",
-            "qt5list/qt5list_i32",
-            "qt5list/qt5list_i64",
-            "qt5list/qt5list_qcolor",
-            "qt5list/qt5list_qdate",
-            "qt5list/qt5list_qdatetime",
-            "qt5list/qt5list_qpoint",
-            "qt5list/qt5list_qpointf",
-            "qt5list/qt5list_qrect",
-            "qt5list/qt5list_qrectf",
-            "qt5list/qt5list_qsize",
-            "qt5list/qt5list_qsizef",
-            "qt5list/qt5list_qstring",
-            "qt5list/qt5list_qtime",
-            "qt5list/qt5list_qurl",
-            "qt5list/qt5list_qvariant",
-            "qt5list/qt5list_u8",
-            "qt5list/qt5list_u16",
-            "qt5list/qt5list_u32",
-            "qt5list/qt5list_u64",
-        ]);
-    }
-
-    for bridge in &rust_bridges {
-        println!("cargo:rerun-if-changed=src/types/{}.rs", bridge);
+    for bridge in rust_bridges {
+        println!("cargo:rerun-if-changed=src/types/{bridge}.rs");
     }
 
     for include_path in qtbuild.include_paths() {
@@ -156,7 +149,7 @@ fn main() {
         "qdate",
         "qdatetime",
         "qhash/qhash",
-        "qt5list/qt5list",
+        "qlist/qlist",
         "qmap/qmap",
         "qmodelindex",
         "qpersistentmodelindex",
