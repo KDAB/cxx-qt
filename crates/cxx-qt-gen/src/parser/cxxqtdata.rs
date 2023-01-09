@@ -23,11 +23,11 @@ pub struct ParsedCxxMappings {
     /// Map of the cxx_name of any types defined in CXX extern blocks
     ///
     /// This is used in the C++ generation to map the Rust type name to the C++ name
-    pub cxx_name: BTreeMap<String, String>,
+    pub cxx_names: BTreeMap<String, String>,
     /// Map of the namespace of any types or methods defined in CXX extern blocks
     ///
     /// This is used in the C++ generation to map the Rust type name to the C++ name
-    pub namespace: BTreeMap<String, String>,
+    pub namespaces: BTreeMap<String, String>,
 }
 
 impl ParsedCxxMappings {
@@ -35,12 +35,12 @@ impl ParsedCxxMappings {
     pub fn cxx(&self, ident: &str) -> String {
         // Check if there is a cxx_name or namespace to handle
         let cxx_name = self
-            .cxx_name
+            .cxx_names
             .get(ident)
             .cloned()
             .unwrap_or_else(|| ident.to_owned());
 
-        if let Some(namespace) = self.namespace.get(ident) {
+        if let Some(namespace) = self.namespaces.get(ident) {
             format!("::{namespace}::{cxx_name}")
         } else {
             cxx_name
@@ -158,7 +158,7 @@ impl ParsedCxxQtData {
 
         // There is a cxx_name attribute
         if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
-            self.cxx_mappings.cxx_name.insert(
+            self.cxx_mappings.cxx_names.insert(
                 ident.to_string(),
                 attribute_tokens_to_value::<LitStr>(&attrs[index])?.value(),
             );
@@ -167,7 +167,7 @@ impl ParsedCxxQtData {
         // There is a namespace
         if !namespace.is_empty() {
             self.cxx_mappings
-                .namespace
+                .namespaces
                 .insert(ident.to_string(), namespace);
         }
 
@@ -535,7 +535,7 @@ mod tests {
             }
         });
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert!(cxx_qt_data.cxx_mappings.cxx_name.is_empty());
+        assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
     }
 
     #[test]
@@ -549,8 +549,8 @@ mod tests {
             }
         });
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.get("A").unwrap(), "B");
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
     }
 
     #[test]
@@ -564,8 +564,8 @@ mod tests {
             }
         });
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.get("A").unwrap(), "B");
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
     }
 
     #[test]
@@ -583,16 +583,16 @@ mod tests {
         assert!(cxx_qt_data
             .parse_mappings(&item, "bridge_namespace")
             .is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.get("B").unwrap(), "C");
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("B").unwrap(), "C");
 
-        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("A").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
             "bridge_namespace"
         );
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("B").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("B").unwrap(),
             "bridge_namespace"
         );
     }
@@ -612,15 +612,15 @@ mod tests {
         });
         // Also ensure item namespace is chosen instead of bridge namespace
         assert!(cxx_qt_data.parse_mappings(&item, "namespace").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 0);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 0);
 
-        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("A").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
             "extern_namespace"
         );
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("B").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("B").unwrap(),
             "type_namespace"
         );
     }
@@ -641,17 +641,17 @@ mod tests {
             }
         });
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 2);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.get("A").unwrap(), "B");
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.get("C").unwrap(), "D");
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("C").unwrap(), "D");
 
-        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("A").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
             "type_namespace"
         );
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("C").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("C").unwrap(),
             "extern_namespace"
         );
     }
@@ -669,15 +669,15 @@ mod tests {
         });
 
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.cxx_name.get("EnumA").unwrap(),
+            cxx_qt_data.cxx_mappings.cxx_names.get("EnumA").unwrap(),
             "EnumB"
         );
 
-        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 1);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("EnumA").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("EnumA").unwrap(),
             "enum_namespace"
         );
     }
@@ -695,15 +695,15 @@ mod tests {
         });
 
         assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.cxx_name.get("StructA").unwrap(),
+            cxx_qt_data.cxx_mappings.cxx_names.get("StructA").unwrap(),
             "StructB"
         );
 
-        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 1);
         assert_eq!(
-            cxx_qt_data.cxx_mappings.namespace.get("StructA").unwrap(),
+            cxx_qt_data.cxx_mappings.namespaces.get("StructA").unwrap(),
             "struct_namespace"
         );
     }

@@ -182,7 +182,9 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut cxx_mapping = ParsedCxxMappings::default();
-        cxx_mapping.cxx_name.insert("A".to_owned(), "A1".to_owned());
+        cxx_mapping
+            .cxx_names
+            .insert("A".to_owned(), "A1".to_owned());
 
         let generated =
             generate_cpp_properties(&properties, &qobject_idents, &cxx_mapping).unwrap();

@@ -170,7 +170,7 @@ mod tests {
 
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_mappings).unwrap();
