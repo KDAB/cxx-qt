@@ -324,10 +324,10 @@ mod tests {
 
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("B".to_owned(), "B2".to_owned());
 
         let generated =

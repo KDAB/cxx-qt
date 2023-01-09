@@ -305,7 +305,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { A });
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
         let cxx_ty = CppType::from(&ty, &None, &cxx_mappings).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "A1");
@@ -317,7 +317,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { A });
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
         let cxx_ty = CppType::from(&ty, &Some("B1".to_owned()), &cxx_mappings).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "B1");
@@ -491,7 +491,7 @@ mod tests {
         let ty = tokens_to_syn(quote! { A });
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
         assert_eq!(to_cpp_string(&ty, &cxx_mappings).unwrap(), "A1");
     }
@@ -501,10 +501,10 @@ mod tests {
         let ty = tokens_to_syn(quote! { A });
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
-            .cxx_name
+            .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
         cxx_mappings
-            .namespace
+            .namespaces
             .insert("A".to_owned(), "N1".to_owned());
         assert_eq!(to_cpp_string(&ty, &cxx_mappings).unwrap(), "::N1::A1");
     }
