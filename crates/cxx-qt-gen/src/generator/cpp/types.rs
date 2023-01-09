@@ -109,13 +109,8 @@ fn to_cpp_string(ty: &Type, cxx_mapping: &ParsedCxxMappings) -> Result<String> {
                     return Ok(built_in.to_owned());
                 }
 
-                // Check if there is a cxx_name or namespace to handle
-                let cxx_name = cxx_mapping.cxx_name.get(first).unwrap_or(first);
-                if let Some(namespace) = cxx_mapping.namespace.get(first) {
-                    Ok(format!("::{namespace}::{cxx_name}"))
-                } else {
-                    Ok(cxx_name.to_owned())
-                }
+                // Use the CXX mapped name
+                Ok(cxx_mapping.cxx(first))
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -222,13 +217,7 @@ fn path_segment_to_string(
         ident = if let Some(built_in) = possible_built_in_template_base(&ident) {
             built_in.to_owned()
         } else {
-            // Check if there is a cxx_name or namespace to handle
-            let cxx_name = cxx_mapping.cxx_name.get(&ident).unwrap_or(&ident);
-            if let Some(namespace) = cxx_mapping.namespace.get(&ident) {
-                format!("::{namespace}::{cxx_name}")
-            } else {
-                cxx_name.to_owned()
-            }
+            cxx_mapping.cxx(&ident)
         };
     }
 
