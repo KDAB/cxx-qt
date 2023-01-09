@@ -8,9 +8,9 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        // Link Qt's Qml and Network libraries. Qt Core and Gui are always
-        // linked, so there is no need to specify them here.
-        .qt_modules(&["Qml", "Network"])
+        // Link Qt's Gui, Qml and Network libraries. Qt Core is always
+        // linked, so there is no need to specify it here.
+        .qt_modules(&["Gui", "Qml", "Network"])
         // Generate C++ from the `#[cxx_qt::bridge]` module
         .file("src/cxxqt_object.rs")
         // Generate C++ code from the .qrc file with the rcc tool

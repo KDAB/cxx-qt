@@ -6,8 +6,10 @@
 use cxx::{type_id, ExternType};
 use std::mem::MaybeUninit;
 
+#[cfg(feature = "qt_gui")]
+use crate::QColor;
 use crate::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+    QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
 };
 
 #[cxx::bridge]
@@ -146,6 +148,7 @@ impl_qvariant_value!(i8, qvariant_i8);
 impl_qvariant_value!(i16, qvariant_i16);
 impl_qvariant_value!(i32, qvariant_i32);
 impl_qvariant_value!(i64, qvariant_i64);
+#[cfg(feature = "qt_gui")]
 impl_qvariant_value!(QColor, qvariant_qcolor);
 impl_qvariant_value!(QDate, qvariant_qdate);
 impl_qvariant_value!(QDateTime, qvariant_qdatetime);

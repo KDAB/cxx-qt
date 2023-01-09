@@ -19,6 +19,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/convert.h"), "convert.h"),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
         (include_str!("../include/qbytearray.h"), "qbytearray.h"),
+        #[cfg(feature = "qt_gui")]
         (include_str!("../include/qcolor.h"), "qcolor.h"),
         (include_str!("../include/qdate.h"), "qdate.h"),
         (include_str!("../include/qdatetime.h"), "qdatetime.h"),

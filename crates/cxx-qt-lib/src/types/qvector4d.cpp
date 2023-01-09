@@ -4,6 +4,8 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qvector4d.h"
 
 #include "assertion_utils.h"
@@ -16,3 +18,4 @@ assert_alignment_and_size(QVector4D, alignof(float), sizeof(float[4]));
 
 static_assert(::std::is_trivially_copyable<QVector4D>::value,
               "QPointF should be trivially copyable");
+#endif

@@ -5,6 +5,8 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qcolor.h"
 
 #include "assertion_utils.h"
@@ -27,3 +29,4 @@ static_assert(QTypeInfo<QColor>::isRelocatable);
 #endif
 
 static_assert(::std::is_trivially_destructible<QColor>::value);
+#endif
