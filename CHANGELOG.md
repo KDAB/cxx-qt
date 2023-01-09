@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Support for generating correct C++ code for `Pin<T>` Rust types
+- Support namespace attribute on shared types, QObject struct, and extern blocks
 
 ## [0.4.1](https://github.com/KDAB/cxx-qt/compare/v0.4.0...v0.4.1) - 2022-11-18
 

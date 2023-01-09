@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
-use crate::syntax::attribute::attribute_tokens_to_value;
+use crate::syntax::attribute::{
+    attribute_tokens_to_map, attribute_tokens_to_value, AttributeDefault,
+};
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
@@ -51,12 +53,24 @@ impl ParsedCxxQtData {
                 if let Some(index) =
                     attribute_find_path(&qobject_struct.attrs, &["cxx_qt", "qobject"])
                 {
+                    // Load the QObject
+                    let mut qobject = ParsedQObject::from_struct(qobject_struct, index)?;
+
+                    // Parse any namespaces
+                    let attr_map = attribute_tokens_to_map::<Ident, LitStr>(
+                        &qobject_struct.attrs[index],
+                        AttributeDefault::None,
+                    )?;
+                    qobject.namespace =
+                        if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
+                            lit_str.value()
+                        } else {
+                            self.namespace.clone()
+                        };
+
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
-                    self.qobjects.insert(
-                        qobject_struct.ident.clone(),
-                        ParsedQObject::from_struct(qobject_struct, index)?,
-                    );
+                    self.qobjects.insert(qobject_struct.ident.clone(), qobject);
                 }
             }
         }
@@ -273,6 +287,44 @@ mod tests {
         assert!(cxx_qt_data
             .qobjects
             .contains_key(&format_ident!("SecondObject")));
+    }
+
+    #[test]
+    fn test_find_qobjects_namespace() {
+        let mut cxx_qt_data = ParsedCxxQtData {
+            namespace: "bridge_namespace".to_owned(),
+            ..Default::default()
+        };
+
+        let module: ItemMod = tokens_to_syn(quote! {
+            mod module {
+                struct Other;
+                #[cxx_qt::qobject(namespace = "qobject_namespace")]
+                struct MyObject;
+                #[cxx_qt::qobject]
+                struct SecondObject;
+            }
+        });
+        cxx_qt_data
+            .find_qobject_structs(&module.content.unwrap().1)
+            .unwrap();
+        assert_eq!(cxx_qt_data.qobjects.len(), 2);
+        assert_eq!(
+            cxx_qt_data
+                .qobjects
+                .get(&format_ident!("MyObject"))
+                .unwrap()
+                .namespace,
+            "qobject_namespace"
+        );
+        assert_eq!(
+            cxx_qt_data
+                .qobjects
+                .get(&format_ident!("SecondObject"))
+                .unwrap()
+                .namespace,
+            "bridge_namespace"
+        );
     }
 
     #[test]
