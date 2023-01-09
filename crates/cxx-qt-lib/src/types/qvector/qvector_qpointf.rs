@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QPointF"]
+        fn qvectorReserve(_: &mut QVector_QPointF, size: isize);
         #[rust_name = "append_QPointF"]
         fn qvectorAppend(_: &mut QVector_QPointF, _: &QPointF);
         #[rust_name = "get_unchecked_QPointF"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QPointF, value: &ffi::QPointF) {
 
 pub(crate) fn clone(s: &ffi::QVector_QPointF) -> ffi::QVector_QPointF {
     ffi::qvector_clone_QPointF(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QPointF, size: isize) {
+    ffi::reserve_QPointF(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QPointF {

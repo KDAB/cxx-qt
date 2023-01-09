@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QDate"]
+        fn qvectorReserve(_: &mut QVector_QDate, size: isize);
         #[rust_name = "append_QDate"]
         fn qvectorAppend(_: &mut QVector_QDate, _: &QDate);
         #[rust_name = "get_unchecked_QDate"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QDate, value: &ffi::QDate) {
 
 pub(crate) fn clone(s: &ffi::QVector_QDate) -> ffi::QVector_QDate {
     ffi::qvector_clone_QDate(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QDate, size: isize) {
+    ffi::reserve_QDate(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QDate {

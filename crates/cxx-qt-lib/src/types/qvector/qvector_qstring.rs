@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QString"]
+        fn qvectorReserve(_: &mut QVector_QString, size: isize);
         #[rust_name = "append_QString"]
         fn qvectorAppend(_: &mut QVector_QString, _: &QString);
         #[rust_name = "get_unchecked_QString"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QString, value: &ffi::QString) {
 
 pub(crate) fn clone(s: &ffi::QVector_QString) -> ffi::QVector_QString {
     ffi::qvector_clone_QString(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QString, size: isize) {
+    ffi::reserve_QString(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QString {

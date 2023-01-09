@@ -95,6 +95,12 @@ where
         T::append_clone(self, value);
     }
 
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
+
     /// Removes all elements from the vector.
     pub fn clear(&mut self) {
         T::clear(self);
@@ -172,6 +178,39 @@ where
     }
 }
 
+impl<T> From<&QVector<T>> for Vec<T>
+where
+    T: QVectorElement + Clone,
+{
+    /// Convert a reference to a [QVector] into a [Vec] by making a deep copy of the data.
+    /// The original QVector can still be used after constructing the Vec.
+    fn from(qvec: &QVector<T>) -> Self {
+        let mut vec = Vec::with_capacity(qvec.len().try_into().unwrap());
+        for element in qvec.iter() {
+            vec.push(element.clone());
+        }
+        vec
+    }
+}
+
+impl<T, S> From<S> for QVector<T>
+where
+    T: QVectorElement + Clone,
+    S: AsRef<[T]>,
+{
+    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QVector]
+    /// by making a deep copy of the data.
+    /// The original slice can still be used after constructing the QVector.
+    fn from(vec: S) -> Self {
+        let mut qvec = Self::default();
+        qvec.reserve(vec.as_ref().len().try_into().unwrap());
+        for element in vec.as_ref() {
+            qvec.append_clone(element);
+        }
+        qvec
+    }
+}
+
 unsafe impl<T> ExternType for QVector<T>
 where
     T: ExternType + QVectorElement,
@@ -229,6 +268,7 @@ pub trait QVectorElement: Sized {
     fn append_clone(vector: &mut QVector<Self>, value: &Self);
     fn clear(vector: &mut QVector<Self>);
     fn clone(vector: &QVector<Self>) -> QVector<Self>;
+    fn reserve(vector: &mut QVector<Self>, size: isize);
     fn contains(vector: &QVector<Self>, value: &Self) -> bool;
     fn default() -> QVector<Self>;
     fn drop(vector: &mut QVector<Self>);
@@ -265,6 +305,10 @@ macro_rules! impl_qvector_element {
 
             fn clone(vector: &QVector<Self>) -> QVector<Self> {
                 $module::clone(vector)
+            }
+
+            fn reserve(vector: &mut QVector<Self>, size: isize) {
+                $module::reserve(vector, size);
             }
 
             fn contains(vector: &QVector<Self>, value: &Self) -> bool {
@@ -330,3 +374,15 @@ impl_qvector_element!(u8, qvector_u8, "QVector_u8");
 impl_qvector_element!(u16, qvector_u16, "QVector_u16");
 impl_qvector_element!(u32, qvector_u32, "QVector_u32");
 impl_qvector_element!(u64, qvector_u64, "QVector_u64");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn qvec_from_array_to_vec() {
+        let array = [0, 1, 2];
+        let qvec = QVector::<u8>::from(array);
+        assert_eq!(Vec::from(&qvec), array);
+    }
+}

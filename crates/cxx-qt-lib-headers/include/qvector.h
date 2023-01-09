@@ -43,6 +43,13 @@ namespace cxxqtlib1 {
 namespace qvector {
 
 template<typename T>
+void
+qvectorReserve(QVector<T>& v, ::rust::isize size) noexcept
+{
+  v.reserve(size);
+}
+
+template<typename T>
 ::rust::isize
 qvectorLen(const QVector<T>& v) noexcept;
 

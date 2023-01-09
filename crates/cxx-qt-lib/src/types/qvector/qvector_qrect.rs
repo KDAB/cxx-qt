@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QRect"]
+        fn qvectorReserve(_: &mut QVector_QRect, size: isize);
         #[rust_name = "append_QRect"]
         fn qvectorAppend(_: &mut QVector_QRect, _: &QRect);
         #[rust_name = "get_unchecked_QRect"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QRect, value: &ffi::QRect) {
 
 pub(crate) fn clone(s: &ffi::QVector_QRect) -> ffi::QVector_QRect {
     ffi::qvector_clone_QRect(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QRect, size: isize) {
+    ffi::reserve_QRect(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QRect {

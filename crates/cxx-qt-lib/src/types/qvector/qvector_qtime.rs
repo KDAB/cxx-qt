@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QTime"]
+        fn qvectorReserve(_: &mut QVector_QTime, size: isize);
         #[rust_name = "append_QTime"]
         fn qvectorAppend(_: &mut QVector_QTime, _: &QTime);
         #[rust_name = "get_unchecked_QTime"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QTime, value: &ffi::QTime) {
 
 pub(crate) fn clone(s: &ffi::QVector_QTime) -> ffi::QVector_QTime {
     ffi::qvector_clone_QTime(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QTime, size: isize) {
+    ffi::reserve_QTime(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QTime {

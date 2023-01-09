@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_i64"]
+        fn qvectorReserve(_: &mut QVector_i64, size: isize);
         #[rust_name = "append_i64"]
         fn qvectorAppend(_: &mut QVector_i64, _: &i64);
         #[rust_name = "get_unchecked_i64"]
@@ -53,6 +55,10 @@ pub(crate) fn append(v: &mut ffi::QVector_i64, value: &i64) {
 
 pub(crate) fn clone(v: &ffi::QVector_i64) -> ffi::QVector_i64 {
     ffi::qvector_clone_i64(v)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_i64, size: isize) {
+    ffi::reserve_i64(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_i64 {
