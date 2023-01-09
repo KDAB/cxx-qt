@@ -63,6 +63,9 @@ add_executable(${APP_NAME}
     cpp/qurl.h
     cpp/qvariant.h
     cpp/qvector.h
+    cpp/qvector2d.h
+    cpp/qvector3d.h
+    cpp/qvector4d.h
 )
 target_include_directories(${APP_NAME} PRIVATE cpp)
 

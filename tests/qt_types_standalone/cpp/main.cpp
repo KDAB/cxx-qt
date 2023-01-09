@@ -30,6 +30,9 @@
 #include "qurl.h"
 #include "qvariant.h"
 #include "qvector.h"
+#include "qvector2d.h"
+#include "qvector3d.h"
+#include "qvector4d.h"
 
 int
 main(int argc, char* argv[])
@@ -66,6 +69,9 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QUrlTest));
   runTest(QScopedPointer<QObject>(new QVariantTest));
   runTest(QScopedPointer<QObject>(new QVectorTest));
+  runTest(QScopedPointer<QObject>(new QVector2DTest));
+  runTest(QScopedPointer<QObject>(new QVector3DTest));
+  runTest(QScopedPointer<QObject>(new QVector4DTest));
 
   return status;
 }

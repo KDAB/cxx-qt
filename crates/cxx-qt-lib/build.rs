@@ -129,6 +129,9 @@ fn main() {
         "qvector/qvector_u16",
         "qvector/qvector_u32",
         "qvector/qvector_u64",
+        "qvector2d",
+        "qvector3d",
+        "qvector4d",
     ];
     for bridge in rust_bridges {
         println!("cargo:rerun-if-changed=src/types/{bridge}.rs");
@@ -169,6 +172,9 @@ fn main() {
         "qurl",
         "qvariant/qvariant",
         "qvector/qvector",
+        "qvector2d",
+        "qvector3d",
+        "qvector4d",
     ];
     for cpp_file in cpp_files {
         builder.file(format!("src/types/{}.cpp", cpp_file));
