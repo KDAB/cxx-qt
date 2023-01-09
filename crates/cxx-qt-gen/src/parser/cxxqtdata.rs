@@ -12,7 +12,8 @@ use crate::syntax::{
 };
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Error, Ident, Item, ItemEnum, ItemImpl, LitStr, Result, Type, TypePath,
+    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemImpl, LitStr, Result, Type,
+    TypePath,
 };
 
 #[derive(Default)]
@@ -63,13 +64,20 @@ impl ParsedCxxQtData {
         Ok(())
     }
 
-    /// Search any ForeignMod's and look for a cxx_name or namespace attribute on a type
+    /// Search through Item's and look for a cxx_name or namespace attribute on a type
     ///
     /// We need to know this as it affects the type name used in the C++ generation
     pub fn parse_mappings(&mut self, item: &Item, bridge_namespace: &str) -> Result<()> {
-        // TODO: check any shared types here too
-        // eg enum {} or struct {}
-        // TODO: do we need to parse signals enum here? and where does the struct QObject get parsed?
+        // Consider if shared types have mappings
+        match item {
+            Item::Enum(item) => {
+                self.parse_mapping_attrs(&item.ident, &item.attrs, bridge_namespace)?;
+            }
+            Item::Struct(item) => {
+                self.parse_mapping_attrs(&item.ident, &item.attrs, bridge_namespace)?;
+            }
+            _others => {}
+        }
 
         // Extract the foreign mod (extern "ABI" { ... })
         let foreign_mod = match item {
@@ -91,29 +99,44 @@ impl ParsedCxxQtData {
 
             // Read each of the types in the mod (type A;)
             for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-                // Retrieve the namespace for the type itself if there is one
-                let namespace =
-                    if let Some(index) = attribute_find_path(&foreign_type.attrs, &["namespace"]) {
-                        attribute_tokens_to_value::<LitStr>(&foreign_type.attrs[index])?.value()
-                    } else {
-                        block_namespace.clone()
-                    };
-
-                // There is a cxx_name attribute
-                if let Some(index) = attribute_find_path(&foreign_type.attrs, &["cxx_name"]) {
-                    self.cxx_mappings.cxx_name.insert(
-                        foreign_type.ident.to_string(),
-                        attribute_tokens_to_value::<LitStr>(&foreign_type.attrs[index])?.value(),
-                    );
-                }
-
-                // There is a namespace
-                if !namespace.is_empty() {
-                    self.cxx_mappings
-                        .namespace
-                        .insert(foreign_type.ident.to_string(), namespace.to_owned());
-                }
+                self.parse_mapping_attrs(
+                    &foreign_type.ident,
+                    &foreign_type.attrs,
+                    &block_namespace,
+                )?;
             }
+        }
+
+        Ok(())
+    }
+
+    /// Helper which adds cxx_name and namespace mappings from the ident, attrs, and parent namespace
+    fn parse_mapping_attrs(
+        &mut self,
+        ident: &Ident,
+        attrs: &[Attribute],
+        parent_namespace: &str,
+    ) -> Result<()> {
+        // Retrieve the namespace for the type itself if there is one
+        let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
+            attribute_tokens_to_value::<LitStr>(&attrs[index])?.value()
+        } else {
+            parent_namespace.to_string()
+        };
+
+        // There is a cxx_name attribute
+        if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
+            self.cxx_mappings.cxx_name.insert(
+                ident.to_string(),
+                attribute_tokens_to_value::<LitStr>(&attrs[index])?.value(),
+            );
+        }
+
+        // There is a namespace
+        if !namespace.is_empty() {
+            self.cxx_mappings
+                .namespace
+                .insert(ident.to_string(), namespace);
         }
 
         Ok(())
@@ -560,6 +583,58 @@ mod tests {
         assert_eq!(
             cxx_qt_data.cxx_mappings.namespace.get("C").unwrap(),
             "extern_namespace"
+        );
+    }
+
+    #[test]
+    fn test_cxx_mappings_shared_enum() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[namespace = "enum_namespace"]
+            #[cxx_name = "EnumB"]
+            enum EnumA {
+                A,
+            }
+        });
+
+        assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
+        assert_eq!(
+            cxx_qt_data.cxx_mappings.cxx_name.get("EnumA").unwrap(),
+            "EnumB"
+        );
+
+        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 1);
+        assert_eq!(
+            cxx_qt_data.cxx_mappings.namespace.get("EnumA").unwrap(),
+            "enum_namespace"
+        );
+    }
+
+    #[test]
+    fn test_cxx_mappings_shared_struct() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = tokens_to_syn(quote! {
+            #[namespace = "struct_namespace"]
+            #[cxx_name = "StructB"]
+            struct StructA {
+                field: i32,
+            }
+        });
+
+        assert!(cxx_qt_data.parse_mappings(&item, "").is_ok());
+        assert_eq!(cxx_qt_data.cxx_mappings.cxx_name.len(), 1);
+        assert_eq!(
+            cxx_qt_data.cxx_mappings.cxx_name.get("StructA").unwrap(),
+            "StructB"
+        );
+
+        assert_eq!(cxx_qt_data.cxx_mappings.namespace.len(), 1);
+        assert_eq!(
+            cxx_qt_data.cxx_mappings.namespace.get("StructA").unwrap(),
+            "struct_namespace"
         );
     }
 }
