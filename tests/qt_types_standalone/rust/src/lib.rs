@@ -26,3 +26,6 @@ mod qtime;
 mod qurl;
 mod qvariant;
 mod qvector;
+mod qvector2d;
+mod qvector3d;
+mod qvector4d;

@@ -29,5 +29,8 @@ fn main() {
         .file("src/qurl.rs")
         .file("src/qvariant.rs")
         .file("src/qvector.rs")
+        .file("src/qvector2d.rs")
+        .file("src/qvector3d.rs")
+        .file("src/qvector4d.rs")
         .build();
 }

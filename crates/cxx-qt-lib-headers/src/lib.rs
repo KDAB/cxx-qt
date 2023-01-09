@@ -47,6 +47,9 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/qurl.h"), "qurl.h"),
         (include_str!("../include/qvariant.h"), "qvariant.h"),
         (include_str!("../include/qvector.h"), "qvector.h"),
+        (include_str!("../include/qvector2d.h"), "qvector2d.h"),
+        (include_str!("../include/qvector3d.h"), "qvector3d.h"),
+        (include_str!("../include/qvector4d.h"), "qvector4d.h"),
         (include_str!("../include/std_types.h"), "std_types.h"),
     ] {
         let h_path = format!("{}/{}", directory.display(), file_name);

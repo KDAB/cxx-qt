@@ -68,3 +68,12 @@ pub use qvariant::{QVariant, QVariantValue};
 
 mod qvector;
 pub use qvector::{QVector, QVectorElement};
+
+mod qvector2d;
+pub use qvector2d::QVector2D;
+
+mod qvector3d;
+pub use qvector3d::QVector3D;
+
+mod qvector4d;
+pub use qvector4d::QVector4D;
