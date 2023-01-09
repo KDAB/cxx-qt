@@ -10,6 +10,8 @@ fn main() {
         .collect();
     let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
     qtbuild.cargo_link_libraries();
+    // Required for tests
+    qt_build_utils::setup_linker();
 
     // Find the Qt version and tell the Rust compiler
     // this allows us to have conditional Rust code

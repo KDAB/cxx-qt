@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QColor"]
+        fn qvectorReserve(_: &mut QVector_QColor, size: isize);
         #[rust_name = "append_QColor"]
         fn qvectorAppend(_: &mut QVector_QColor, _: &QColor);
         #[rust_name = "get_unchecked_QColor"]
@@ -55,6 +57,10 @@ pub(crate) fn append(v: &mut ffi::QVector_QColor, value: &ffi::QColor) {
 
 pub(crate) fn clone(s: &ffi::QVector_QColor) -> ffi::QVector_QColor {
     ffi::qvector_clone_QColor(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_QColor, size: isize) {
+    ffi::reserve_QColor(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_QColor {

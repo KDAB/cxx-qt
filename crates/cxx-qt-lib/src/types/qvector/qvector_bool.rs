@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_bool"]
+        fn qvectorReserve(_: &mut QVector_bool, size: isize);
         #[rust_name = "append_bool"]
         fn qvectorAppend(_: &mut QVector_bool, _: &bool);
         #[rust_name = "get_unchecked_bool"]
@@ -53,6 +55,10 @@ pub(crate) fn append(v: &mut ffi::QVector_bool, value: &bool) {
 
 pub(crate) fn clone(v: &ffi::QVector_bool) -> ffi::QVector_bool {
     ffi::qvector_clone_bool(v)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_bool, size: isize) {
+    ffi::reserve_bool(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_bool {

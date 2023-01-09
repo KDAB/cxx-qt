@@ -45,6 +45,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_$1"]
+        fn qvectorReserve(_: &mut QVector_$1, size: isize);
         #[rust_name = "append_$1"]
         fn qvectorAppend(_: &mut QVector_$1, _: &$1);
         #[rust_name = "get_unchecked_$1"]
@@ -67,6 +69,10 @@ pub(crate) fn append(v: &mut ffi::QVector_$1, value: &$1) {
 
 pub(crate) fn clone(v: &ffi::QVector_$1) -> ffi::QVector_$1 {
     ffi::qvector_clone_$1(v)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_$1 {
@@ -138,6 +144,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_$1"]
+        fn qvectorReserve(_: &mut QVector_$1, size: isize);
         #[rust_name = "append_$1"]
         fn qvectorAppend(_: &mut QVector_$1, _: &$1);
         #[rust_name = "get_unchecked_$1"]
@@ -159,6 +167,10 @@ pub(crate) fn append(v: &mut ffi::QVector_$1, value: &ffi::$1) {
 
 pub(crate) fn clone(s: &ffi::QVector_$1) -> ffi::QVector_$1 {
     ffi::qvector_clone_$1(s)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_$1 {

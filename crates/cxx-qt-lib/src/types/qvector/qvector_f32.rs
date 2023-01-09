@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qvector"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_f32"]
+        fn qvectorReserve(_: &mut QVector_f32, size: isize);
         #[rust_name = "append_f32"]
         fn qvectorAppend(_: &mut QVector_f32, _: &f32);
         #[rust_name = "get_unchecked_f32"]
@@ -53,6 +55,10 @@ pub(crate) fn append(v: &mut ffi::QVector_f32, value: &f32) {
 
 pub(crate) fn clone(v: &ffi::QVector_f32) -> ffi::QVector_f32 {
     ffi::qvector_clone_f32(v)
+}
+
+pub(crate) fn reserve(v: &mut ffi::QVector_f32, size: isize) {
+    ffi::reserve_f32(v, size);
 }
 
 pub(crate) fn default() -> ffi::QVector_f32 {

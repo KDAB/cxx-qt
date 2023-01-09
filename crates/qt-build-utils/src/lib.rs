@@ -62,7 +62,7 @@ fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
 ///
 /// This does nothing on non-Unix platforms.
 pub fn setup_linker() {
-    if let Err(_) = env::var("CARGO_CFG_UNIX") {
+    if env::var("CARGO_CFG_UNIX").is_err() {
         return;
     }
 
