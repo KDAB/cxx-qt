@@ -30,6 +30,24 @@ pub struct ParsedCxxMappings {
     pub namespace: BTreeMap<String, String>,
 }
 
+impl ParsedCxxMappings {
+    /// For a given rust ident return the CXX name with it's namespace
+    pub fn cxx(&self, ident: &str) -> String {
+        // Check if there is a cxx_name or namespace to handle
+        let cxx_name = self
+            .cxx_name
+            .get(ident)
+            .cloned()
+            .unwrap_or_else(|| ident.to_owned());
+
+        if let Some(namespace) = self.namespace.get(ident) {
+            format!("::{namespace}::{cxx_name}")
+        } else {
+            cxx_name
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct ParsedCxxQtData {
     /// Mappings for
