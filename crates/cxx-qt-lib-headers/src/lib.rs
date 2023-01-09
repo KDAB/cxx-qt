@@ -23,7 +23,11 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/qdate.h"), "qdate.h"),
         (include_str!("../include/qdatetime.h"), "qdatetime.h"),
         (include_str!("../include/qhash.h"), "qhash.h"),
-        (include_str!("../include/qt5list.h"), "qt5list.h"),
+        (include_str!("../include/qlist.h"), "qlist.h"),
+        (
+            include_str!("../include/qlist_qvector.h"),
+            "qlist_qvector.h",
+        ),
         (include_str!("../include/qmap.h"), "qmap.h"),
         (include_str!("../include/qmodelindex.h"), "qmodelindex.h"),
         (

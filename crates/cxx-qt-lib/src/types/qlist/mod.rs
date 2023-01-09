@@ -1,0 +1,332 @@
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::{
+    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+    QVariant,
+};
+use core::{marker::PhantomData, mem::MaybeUninit};
+use cxx::{type_id, ExternType};
+
+mod qlist_bool;
+mod qlist_f32;
+mod qlist_f64;
+mod qlist_i16;
+mod qlist_i32;
+mod qlist_i64;
+mod qlist_i8;
+mod qlist_qcolor;
+mod qlist_qdate;
+mod qlist_qdatetime;
+mod qlist_qpoint;
+mod qlist_qpointf;
+mod qlist_qrect;
+mod qlist_qrectf;
+mod qlist_qsize;
+mod qlist_qsizef;
+mod qlist_qstring;
+mod qlist_qtime;
+mod qlist_qurl;
+mod qlist_qvariant;
+mod qlist_u16;
+mod qlist_u32;
+mod qlist_u64;
+mod qlist_u8;
+
+/// The QList class is a template class that provides a dynamic array.
+///
+/// To use QList with a custom type, implement the [`QListElement`] trait for T.
+#[repr(C)]
+pub struct QList<T>
+where
+    T: QListElement,
+{
+    /// The layout has changed between Qt 5 and Qt 6
+    ///
+    /// Qt5 QList has one pointer as a member
+    /// Qt6 QList/QList has one member, which contains two pointers and a size_t
+    #[cfg(qt_version_major = "5")]
+    _space: MaybeUninit<usize>,
+    #[cfg(qt_version_major = "6")]
+    _space: MaybeUninit<[usize; 3]>,
+    _value: PhantomData<T>,
+}
+
+impl<T> Clone for QList<T>
+where
+    T: QListElement,
+{
+    /// Constructs a copy of the QList.
+    fn clone(&self) -> Self {
+        T::clone(self)
+    }
+}
+
+impl<T> Default for QList<T>
+where
+    T: QListElement,
+{
+    /// Constructs an empty vector.
+    fn default() -> Self {
+        T::default()
+    }
+}
+
+impl<T> Drop for QList<T>
+where
+    T: QListElement,
+{
+    /// Destroys the QList.
+    fn drop(&mut self) {
+        T::drop(self);
+    }
+}
+
+impl<T> QList<T>
+where
+    T: QListElement,
+{
+    /// Inserts value at the end of the vector.
+    ///
+    /// The value is a reference here so it can be opaque or trivial but
+    /// note that the value is copied when being appended into the vector.
+    pub fn append_clone(&mut self, value: &T) {
+        T::append_clone(self, value);
+    }
+
+    /// Removes all elements from the vector.
+    pub fn clear(&mut self) {
+        T::clear(self);
+    }
+
+    /// Returns true if the vector contains item value; otherwise returns false.
+    pub fn contains(&self, value: &T) -> bool {
+        T::contains(self, value)
+    }
+
+    /// Returns the item at index position in the list.
+    ///
+    /// index must be a valid position in the list (i.e., 0 <= index < len()).
+    pub fn get(&self, index: isize) -> Option<&T> {
+        if index >= 0 && index < self.len() {
+            Some(unsafe { T::get_unchecked(self, index) })
+        } else {
+            None
+        }
+    }
+
+    /// Returns the index position of the first occurrence of value in the vector,
+    /// searching forward from index position from. Returns -1 if no item matched.
+    pub fn index_of(&self, value: &T) -> isize {
+        T::index_of(self, value)
+    }
+
+    /// Inserts item value into the vector, if value isn't already in the vector,
+    /// and returns an iterator pointing at the inserted item.
+    ///
+    /// The value is a reference here so it can be opaque or trivial but
+    /// note that the value is copied when being inserted into the vector.
+    pub fn insert_clone(&mut self, pos: isize, value: &T) {
+        T::insert_clone(self, pos, value);
+    }
+
+    /// Returns true if the vector contains no elements; otherwise returns false.
+    pub fn is_empty(&self) -> bool {
+        T::len(self) == 0
+    }
+
+    /// An iterator visiting all elements in arbitrary order.
+    /// The iterator element type is &'a T.
+    pub fn iter(&self) -> Iter<T> {
+        Iter {
+            vector: self,
+            index: 0,
+        }
+    }
+
+    /// Returns the number of items in the vector.
+    pub fn len(&self) -> isize {
+        T::len(self)
+    }
+
+    /// Removes the element at index position.
+    pub fn remove(&mut self, pos: isize) {
+        T::remove(self, pos);
+    }
+}
+
+impl<T> QList<T>
+where
+    T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    /// Inserts value at the end of the vector.
+    pub fn append(&mut self, value: T) {
+        T::append(self, value);
+    }
+
+    /// Inserts item value into the vector, if value isn't already in the vector,
+    /// and returns an iterator pointing at the inserted item.
+    pub fn insert(&mut self, pos: isize, value: T) {
+        T::insert(self, pos, value);
+    }
+}
+
+unsafe impl<T> ExternType for QList<T>
+where
+    T: ExternType + QListElement,
+{
+    type Id = T::TypeId;
+    type Kind = cxx::kind::Trivial;
+}
+
+pub struct Iter<'a, T>
+where
+    T: QListElement,
+{
+    vector: &'a QList<T>,
+    index: isize,
+}
+
+impl<'a, T> Iterator for Iter<'a, T>
+where
+    T: QListElement,
+{
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index < self.vector.len() {
+            let next = unsafe { T::get_unchecked(self.vector, self.index) };
+            self.index += 1;
+            Some(next)
+        } else {
+            None
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
+}
+
+impl<'a, T> ExactSizeIterator for Iter<'a, T>
+where
+    T: QListElement,
+{
+    fn len(&self) -> usize {
+        (self.vector.len() - self.index) as usize
+    }
+}
+
+/// Trait implementation for an element in a [`QList`].
+pub trait QListElement: Sized {
+    type TypeId;
+
+    fn append(vector: &mut QList<Self>, value: Self)
+    where
+        Self: ExternType<Kind = cxx::kind::Trivial>;
+    fn append_clone(vector: &mut QList<Self>, value: &Self);
+    fn clear(vector: &mut QList<Self>);
+    fn clone(vector: &QList<Self>) -> QList<Self>;
+    fn contains(vector: &QList<Self>, value: &Self) -> bool;
+    fn default() -> QList<Self>;
+    fn drop(vector: &mut QList<Self>);
+    fn index_of(vector: &QList<Self>, value: &Self) -> isize;
+    /// # Safety
+    ///
+    /// Calling this method with an out-of-bounds index is undefined behavior
+    /// even if the resulting reference is not used.
+    unsafe fn get_unchecked(vector: &QList<Self>, pos: isize) -> &Self;
+    fn insert(vector: &mut QList<Self>, pos: isize, value: Self)
+    where
+        Self: ExternType<Kind = cxx::kind::Trivial>;
+    fn insert_clone(vector: &mut QList<Self>, pos: isize, value: &Self);
+    fn len(vector: &QList<Self>) -> isize;
+    fn remove(vector: &mut QList<Self>, pos: isize);
+}
+
+macro_rules! impl_qlist_element {
+    ( $typeName:ty, $module:ident, $typeId:literal ) => {
+        impl QListElement for $typeName {
+            type TypeId = type_id!($typeId);
+
+            fn append(vector: &mut QList<Self>, value: Self) {
+                $module::append(vector, &value);
+            }
+
+            fn append_clone(vector: &mut QList<Self>, value: &Self) {
+                $module::append(vector, value);
+            }
+
+            fn clear(vector: &mut QList<Self>) {
+                vector.cxx_clear()
+            }
+
+            fn clone(vector: &QList<Self>) -> QList<Self> {
+                $module::clone(vector)
+            }
+
+            fn contains(vector: &QList<Self>, value: &Self) -> bool {
+                vector.cxx_contains(value)
+            }
+
+            fn default() -> QList<Self> {
+                $module::default()
+            }
+
+            fn drop(vector: &mut QList<Self>) {
+                $module::drop(vector);
+            }
+
+            unsafe fn get_unchecked(vector: &QList<Self>, pos: isize) -> &Self {
+                $module::get_unchecked(vector, pos)
+            }
+
+            fn index_of(vector: &QList<Self>, value: &Self) -> isize {
+                $module::index_of(vector, value)
+            }
+
+            fn insert(vector: &mut QList<Self>, pos: isize, value: Self) {
+                $module::insert(vector, pos, &value);
+            }
+
+            fn insert_clone(vector: &mut QList<Self>, pos: isize, value: &Self) {
+                $module::insert(vector, pos, value);
+            }
+
+            fn len(vector: &QList<Self>) -> isize {
+                $module::len(vector)
+            }
+
+            fn remove(vector: &mut QList<Self>, pos: isize) {
+                $module::remove(vector, pos);
+            }
+        }
+    };
+}
+
+impl_qlist_element!(bool, qlist_bool, "QList_bool");
+impl_qlist_element!(f32, qlist_f32, "QList_f32");
+impl_qlist_element!(f64, qlist_f64, "QList_f64");
+impl_qlist_element!(i8, qlist_i8, "QList_i8");
+impl_qlist_element!(i16, qlist_i16, "QList_i16");
+impl_qlist_element!(i32, qlist_i32, "QList_i32");
+impl_qlist_element!(i64, qlist_i64, "QList_i64");
+impl_qlist_element!(QColor, qlist_qcolor, "QList_QColor");
+impl_qlist_element!(QDate, qlist_qdate, "QList_QDate");
+impl_qlist_element!(QDateTime, qlist_qdatetime, "QList_QDateTime");
+impl_qlist_element!(QPoint, qlist_qpoint, "QList_QPoint");
+impl_qlist_element!(QPointF, qlist_qpointf, "QList_QPointF");
+impl_qlist_element!(QRect, qlist_qrect, "QList_QRect");
+impl_qlist_element!(QRectF, qlist_qrectf, "QList_QRectF");
+impl_qlist_element!(QSize, qlist_qsize, "QList_QSize");
+impl_qlist_element!(QSizeF, qlist_qsizef, "QList_QSizeF");
+impl_qlist_element!(QString, qlist_qstring, "QList_QString");
+impl_qlist_element!(QTime, qlist_qtime, "QList_QTime");
+impl_qlist_element!(QUrl, qlist_qurl, "QList_QUrl");
+impl_qlist_element!(QVariant, qlist_qvariant, "QList_QVariant");
+impl_qlist_element!(u8, qlist_u8, "QList_u8");
+impl_qlist_element!(u16, qlist_u16, "QList_u16");
+impl_qlist_element!(u32, qlist_u32, "QList_u32");
+impl_qlist_element!(u64, qlist_u64, "QList_u64");
