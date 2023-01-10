@@ -45,6 +45,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_$1"]
+        fn qlistReserve(_: &mut QList_$1, size: isize);
         #[rust_name = "append_$1"]
         fn qlistAppend(_: &mut QList_$1, _: &$1);
         #[rust_name = "get_unchecked_$1"]
@@ -59,6 +61,10 @@ pub mod ffi {
         #[rust_name = "remove_$1"]
         fn qlistRemove(_: &mut QList_$1, _: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_$1, value: &$1) {
@@ -138,6 +144,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_$1"]
+        fn qlistReserve(_: &mut QList_$1, size: isize);
         #[rust_name = "append_$1"]
         fn qlistAppend(_: &mut QList_$1, _: &$1);
         #[rust_name = "get_unchecked_$1"]
@@ -151,6 +159,10 @@ pub mod ffi {
         #[rust_name = "len_$1"]
         fn qlistLen(_: &QList_$1) -> isize;
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_$1, value: &ffi::$1) {

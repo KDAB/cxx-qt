@@ -44,6 +44,13 @@ namespace cxxqtlib1 {
 namespace qlist {
 
 template<typename T>
+void
+qlistReserve(QList<T>& v, ::rust::isize size) noexcept
+{
+  v.reserve(size);
+}
+
+template<typename T>
 ::rust::isize
 qlistLen(const QList<T>& v) noexcept;
 

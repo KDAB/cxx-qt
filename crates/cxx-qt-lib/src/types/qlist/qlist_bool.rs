@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_bool"]
+        fn qlistReserve(_: &mut QList_bool, size: isize);
         #[rust_name = "append_bool"]
         fn qlistAppend(_: &mut QList_bool, _: &bool);
         #[rust_name = "get_unchecked_bool"]
@@ -45,6 +47,10 @@ pub mod ffi {
         #[rust_name = "remove_bool"]
         fn qlistRemove(_: &mut QList_bool, _: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_bool, size: isize) {
+    ffi::reserve_bool(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_bool, value: &bool) {

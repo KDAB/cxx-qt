@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QSize"]
+        fn qlistReserve(_: &mut QList_QSize, size: isize);
         #[rust_name = "append_QSize"]
         fn qlistAppend(_: &mut QList_QSize, _: &QSize);
         #[rust_name = "get_unchecked_QSize"]
@@ -47,6 +49,10 @@ pub mod ffi {
         #[rust_name = "len_QSize"]
         fn qlistLen(_: &QList_QSize) -> isize;
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_QSize, size: isize) {
+    ffi::reserve_QSize(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_QSize, value: &ffi::QSize) {

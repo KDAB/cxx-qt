@@ -95,6 +95,12 @@ where
         T::append_clone(self, value);
     }
 
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
+
     /// Removes all elements from the list.
     pub fn clear(&mut self) {
         T::clear(self);
@@ -152,6 +158,39 @@ where
     /// Removes the element at index position.
     pub fn remove(&mut self, pos: isize) {
         T::remove(self, pos);
+    }
+}
+
+impl<T> From<&QList<T>> for Vec<T>
+where
+    T: QListElement + Clone,
+{
+    /// Convert a reference to a [QList] into a [Vec] by making a deep copy of the data.
+    /// The original QVector can still be used after constructing the Vec.
+    fn from(qlist: &QList<T>) -> Self {
+        let mut vec = Vec::with_capacity(qlist.len().try_into().unwrap());
+        for element in qlist.iter() {
+            vec.push(element.clone());
+        }
+        vec
+    }
+}
+
+impl<T, S> From<S> for QList<T>
+where
+    T: QListElement + Clone,
+    S: AsRef<[T]>,
+{
+    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QVector]
+    /// by making a deep copy of the data.
+    /// The original slice can still be used after constructing the QVector.
+    fn from(vec: S) -> Self {
+        let mut qlist = Self::default();
+        qlist.reserve(vec.as_ref().len().try_into().unwrap());
+        for element in vec.as_ref() {
+            qlist.append_clone(element);
+        }
+        qlist
     }
 }
 
@@ -227,6 +266,7 @@ pub trait QListElement: Sized {
     fn append_clone(list: &mut QList<Self>, value: &Self);
     fn clear(list: &mut QList<Self>);
     fn clone(list: &QList<Self>) -> QList<Self>;
+    fn reserve(vector: &mut QList<Self>, size: isize);
     fn contains(list: &QList<Self>, value: &Self) -> bool;
     fn default() -> QList<Self>;
     fn drop(list: &mut QList<Self>);
@@ -248,6 +288,10 @@ macro_rules! impl_qlist_element {
     ( $typeName:ty, $module:ident, $typeId:literal ) => {
         impl QListElement for $typeName {
             type TypeId = type_id!($typeId);
+
+            fn reserve(list: &mut QList<Self>, size: isize) {
+                $module::reserve(list, size);
+            }
 
             fn append(list: &mut QList<Self>, value: Self) {
                 $module::append(list, &value);
@@ -328,3 +372,15 @@ impl_qlist_element!(u8, qlist_u8, "QList_u8");
 impl_qlist_element!(u16, qlist_u16, "QList_u16");
 impl_qlist_element!(u32, qlist_u32, "QList_u32");
 impl_qlist_element!(u64, qlist_u64, "QList_u64");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn qlist_from_array_to_vec() {
+        let array = [0, 1, 2];
+        let qlist = QList::<u8>::from(array);
+        assert_eq!(Vec::from(&qlist), array);
+    }
+}

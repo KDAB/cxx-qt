@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_i8"]
+        fn qlistReserve(_: &mut QList_i8, size: isize);
         #[rust_name = "append_i8"]
         fn qlistAppend(_: &mut QList_i8, _: &i8);
         #[rust_name = "get_unchecked_i8"]
@@ -45,6 +47,10 @@ pub mod ffi {
         #[rust_name = "remove_i8"]
         fn qlistRemove(_: &mut QList_i8, _: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_i8, size: isize) {
+    ffi::reserve_i8(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_i8, value: &i8) {
