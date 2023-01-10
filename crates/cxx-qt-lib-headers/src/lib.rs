@@ -15,42 +15,51 @@ pub fn write_headers(directory: impl AsRef<Path>) {
     let directory = directory.as_ref();
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt-lib header directory");
     for (file_contents, file_name) in [
+        (include_str!("../include/core/qbytearray.h"), "qbytearray.h"),
+        (include_str!("../include/core/qdate.h"), "qdate.h"),
+        (include_str!("../include/core/qdatetime.h"), "qdatetime.h"),
+        (include_str!("../include/core/qhash.h"), "qhash.h"),
+        (include_str!("../include/core/qlist.h"), "qlist.h"),
+        (
+            include_str!("../include/core/qlist_qvector.h"),
+            "qlist_qvector.h",
+        ),
+        (include_str!("../include/core/qmap.h"), "qmap.h"),
+        (
+            include_str!("../include/core/qmodelindex.h"),
+            "qmodelindex.h",
+        ),
+        (
+            include_str!("../include/core/qpersistentmodelindex.h"),
+            "qpersistentmodelindex.h",
+        ),
+        (include_str!("../include/core/qpoint.h"), "qpoint.h"),
+        (include_str!("../include/core/qpointf.h"), "qpointf.h"),
+        (include_str!("../include/core/qrect.h"), "qrect.h"),
+        (include_str!("../include/core/qrectf.h"), "qrectf.h"),
+        (include_str!("../include/core/qset.h"), "qset.h"),
+        (include_str!("../include/core/qsize.h"), "qsize.h"),
+        (include_str!("../include/core/qsizef.h"), "qsizef.h"),
+        (include_str!("../include/core/qstring.h"), "qstring.h"),
+        (
+            include_str!("../include/core/qstringlist.h"),
+            "qstringlist.h",
+        ),
+        (include_str!("../include/core/qtime.h"), "qtime.h"),
+        (include_str!("../include/core/qurl.h"), "qurl.h"),
+        (include_str!("../include/core/qvariant.h"), "qvariant.h"),
+        (include_str!("../include/core/qvector.h"), "qvector.h"),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qcolor.h"), "qcolor.h"),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qvector2d.h"), "qvector2d.h"),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qvector3d.h"), "qvector3d.h"),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qvector4d.h"), "qvector4d.h"),
         (include_str!("../include/common.h"), "common.h"),
         (include_str!("../include/convert.h"), "convert.h"),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
-        (include_str!("../include/qbytearray.h"), "qbytearray.h"),
-        #[cfg(feature = "qt_gui")]
-        (include_str!("../include/qcolor.h"), "qcolor.h"),
-        (include_str!("../include/qdate.h"), "qdate.h"),
-        (include_str!("../include/qdatetime.h"), "qdatetime.h"),
-        (include_str!("../include/qhash.h"), "qhash.h"),
-        (include_str!("../include/qlist.h"), "qlist.h"),
-        (
-            include_str!("../include/qlist_qvector.h"),
-            "qlist_qvector.h",
-        ),
-        (include_str!("../include/qmap.h"), "qmap.h"),
-        (include_str!("../include/qmodelindex.h"), "qmodelindex.h"),
-        (
-            include_str!("../include/qpersistentmodelindex.h"),
-            "qpersistentmodelindex.h",
-        ),
-        (include_str!("../include/qpoint.h"), "qpoint.h"),
-        (include_str!("../include/qpointf.h"), "qpointf.h"),
-        (include_str!("../include/qrect.h"), "qrect.h"),
-        (include_str!("../include/qrectf.h"), "qrectf.h"),
-        (include_str!("../include/qset.h"), "qset.h"),
-        (include_str!("../include/qsize.h"), "qsize.h"),
-        (include_str!("../include/qsizef.h"), "qsizef.h"),
-        (include_str!("../include/qstring.h"), "qstring.h"),
-        (include_str!("../include/qstringlist.h"), "qstringlist.h"),
-        (include_str!("../include/qtime.h"), "qtime.h"),
-        (include_str!("../include/qurl.h"), "qurl.h"),
-        (include_str!("../include/qvariant.h"), "qvariant.h"),
-        (include_str!("../include/qvector.h"), "qvector.h"),
-        (include_str!("../include/qvector2d.h"), "qvector2d.h"),
-        (include_str!("../include/qvector3d.h"), "qvector3d.h"),
-        (include_str!("../include/qvector4d.h"), "qvector4d.h"),
         (include_str!("../include/std_types.h"), "std_types.h"),
     ] {
         let h_path = format!("{}/{file_name}", directory.display());

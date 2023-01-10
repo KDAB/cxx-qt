@@ -7,5 +7,10 @@
 #[cfg(not(any(qt_version_major = "5", qt_version_major = "6")))]
 compile_error!("qt_version_major must be either \"5\" or \"6\"");
 
-mod types;
-pub use types::*;
+mod core;
+pub use crate::core::*;
+
+#[cfg(feature = "qt_gui")]
+mod gui;
+#[cfg(feature = "qt_gui")]
+pub use crate::gui::*;
