@@ -58,6 +58,7 @@ add_executable(${APP_NAME}
     cpp/qsize.h
     cpp/qsizef.h
     cpp/qstring.h
+    cpp/qstringlist.h
     cpp/qtime.h
     cpp/qurl.h
     cpp/qvariant.h

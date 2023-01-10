@@ -48,6 +48,9 @@ pub use qsizef::QSizeF;
 mod qstring;
 pub use qstring::QString;
 
+mod qstringlist;
+pub use qstringlist::QStringList;
+
 mod qtime;
 pub use qtime::QTime;
 

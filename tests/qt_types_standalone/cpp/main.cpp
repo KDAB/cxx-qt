@@ -25,6 +25,7 @@
 #include "qsize.h"
 #include "qsizef.h"
 #include "qstring.h"
+#include "qstringlist.h"
 #include "qtime.h"
 #include "qurl.h"
 #include "qvariant.h"
@@ -60,6 +61,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QSizeTest));
   runTest(QScopedPointer<QObject>(new QSizeFTest));
   runTest(QScopedPointer<QObject>(new QStringTest));
+  runTest(QScopedPointer<QObject>(new QStringListTest));
   runTest(QScopedPointer<QObject>(new QTimeTest));
   runTest(QScopedPointer<QObject>(new QUrlTest));
   runTest(QScopedPointer<QObject>(new QVariantTest));

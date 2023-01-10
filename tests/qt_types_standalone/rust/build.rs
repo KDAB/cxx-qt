@@ -24,6 +24,7 @@ fn main() {
         .file("src/qsize.rs")
         .file("src/qsizef.rs")
         .file("src/qstring.rs")
+        .file("src/qstringlist.rs")
         .file("src/qtime.rs")
         .file("src/qurl.rs")
         .file("src/qvariant.rs")
