@@ -9,20 +9,21 @@
 
 #include <cstdint>
 
-#include <QVariant>
+#include <QtCore/QVariant>
 
-#include <QColor>
-#include <QDate>
-#include <QDateTime>
-#include <QPoint>
-#include <QPointF>
-#include <QRect>
-#include <QRectF>
-#include <QSize>
-#include <QSizeF>
-#include <QString>
-#include <QTime>
-#include <QUrl>
+#include <QtCore/QDate>
+#include <QtCore/QDateTime>
+#include <QtCore/QPoint>
+#include <QtCore/QPointF>
+#include <QtCore/QRect>
+#include <QtCore/QRectF>
+#include <QtCore/QSize>
+#include <QtCore/QSizeF>
+#include <QtCore/QString>
+#include <QtCore/QTime>
+#include <QtCore/QUrl>
+
+#include <QtGui/QColor>
 
 #include "rust/cxx.h"
 

@@ -9,8 +9,8 @@
 
 #include <optional>
 
-#include <QAbstractListModel>
-#include <QVector>
+#include <QtCore/QAbstractListModel>
+#include <QtCore/QVector>
 
 #include "cxx-qt-gen/energy_usage.cxxqt.h"
 

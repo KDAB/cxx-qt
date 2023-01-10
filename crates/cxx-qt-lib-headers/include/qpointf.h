@@ -7,4 +7,4 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QPointF>
+#include <QtCore/QPointF>
