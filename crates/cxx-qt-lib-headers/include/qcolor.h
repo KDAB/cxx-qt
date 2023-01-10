@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QColor>
+#include <QtGui/QColor>
 
 #include "rust/cxx.h"
 

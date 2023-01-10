@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qvariant.h"
 
-#include <QMetaObject>
+#include <QtCore/QMetaObject>
 
 #include "../assertion_utils.h"
 

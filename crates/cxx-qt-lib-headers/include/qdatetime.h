@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QDateTime>
+#include <QtCore/QDateTime>
 
 #include "rust/cxx.h"
 

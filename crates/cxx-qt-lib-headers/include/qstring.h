@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QString>
+#include <QtCore/QString>
 
 #include "rust/cxx.h"
 

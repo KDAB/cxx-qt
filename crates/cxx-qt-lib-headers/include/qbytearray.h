@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-#include <QByteArray>
+#include <QtCore/QByteArray>
 
 #include "rust/cxx.h"
 

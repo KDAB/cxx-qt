@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QObject>
-#include <QVariant>
+#include <QtCore/QObject>
+#include <QtCore/QVariant>
 
 struct CustomStruct
 {

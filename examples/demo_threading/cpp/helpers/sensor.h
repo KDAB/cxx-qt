@@ -9,7 +9,7 @@
 
 #include <optional>
 
-#include <QObject>
+#include <QtCore/QObject>
 
 #include "energyusageproxymodel.h"
 

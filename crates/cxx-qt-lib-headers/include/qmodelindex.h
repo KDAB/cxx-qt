@@ -6,4 +6,4 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QModelIndex>
+#include <QtCore/QModelIndex>

@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_qml_plugin
-#include <QQmlEngine>
-#include <QQmlExtensionPlugin>
+#include <QtQml/QQmlEngine>
+#include <QtQml/QQmlExtensionPlugin>
 
 #include "cxx-qt-gen/my_object.cxxqt.h"
 

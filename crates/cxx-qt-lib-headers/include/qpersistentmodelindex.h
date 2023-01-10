@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QPersistentModelIndex>
+#include <QtCore/QPersistentModelIndex>
 
 #include "rust/cxx.h"
 
