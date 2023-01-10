@@ -22,6 +22,7 @@
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
+
 #include <QtGui/QColor>
 
 #include "rust/cxx.h"
@@ -33,7 +34,7 @@
 #else
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
-struct rust::IsRelocatable<QList<T>> : std::true_type
+struct rust::IsRelocatable<QList<T>> : ::std::true_type
 {
 };
 #endif
