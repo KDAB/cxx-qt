@@ -11,24 +11,24 @@
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 #define CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name)                            \
   assert_alignment_and_size(                                                   \
-    QList_##name, alignof(std::size_t), sizeof(std::size_t[3]));
+    QList_##name, alignof(::std::size_t), sizeof(::std::size_t[3]));
 #else
 #define CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name)                            \
   assert_alignment_and_size(                                                   \
-    QList_##name, alignof(std::size_t), sizeof(std::size_t));
+    QList_##name, alignof(::std::size_t), sizeof(::std::size_t));
 #endif
 
 #define CXX_QT_QLIST_ASSERTS(typeName, name)                                   \
   CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name);                                 \
                                                                                \
-  static_assert(!std::is_trivially_copy_assignable<QList_##name>::value);      \
-  static_assert(!std::is_trivially_copy_constructible<QList_##name>::value);   \
-  static_assert(!std::is_trivially_destructible<QList_##name>::value);         \
+  static_assert(!::std::is_trivially_copy_assignable<QList_##name>::value);    \
+  static_assert(!::std::is_trivially_copy_constructible<QList_##name>::value); \
+  static_assert(!::std::is_trivially_destructible<QList_##name>::value);       \
                                                                                \
   static_assert(QTypeInfo<QList_##name>::isRelocatable);                       \
                                                                                \
-  static_assert(std::is_copy_assignable<typeName>::value);                     \
-  static_assert(std::is_copy_constructible<typeName>::value);
+  static_assert(::std::is_copy_assignable<typeName>::value);                   \
+  static_assert(::std::is_copy_constructible<typeName>::value);
 
 CXX_QT_QLIST_ASSERTS(bool, bool);
 CXX_QT_QLIST_ASSERTS(float, f32);
