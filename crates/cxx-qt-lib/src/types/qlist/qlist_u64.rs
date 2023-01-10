@@ -31,6 +31,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_u64"]
+        fn qlistReserve(_: &mut QList_u64, size: isize);
         #[rust_name = "append_u64"]
         fn qlistAppend(_: &mut QList_u64, _: &u64);
         #[rust_name = "get_unchecked_u64"]
@@ -45,6 +47,10 @@ pub mod ffi {
         #[rust_name = "remove_u64"]
         fn qlistRemove(_: &mut QList_u64, _: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_u64, size: isize) {
+    ffi::reserve_u64(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_u64, value: &u64) {

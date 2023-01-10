@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QDate"]
+        fn qlistReserve(_: &mut QList_QDate, size: isize);
         #[rust_name = "append_QDate"]
         fn qlistAppend(_: &mut QList_QDate, _: &QDate);
         #[rust_name = "get_unchecked_QDate"]
@@ -47,6 +49,10 @@ pub mod ffi {
         #[rust_name = "len_QDate"]
         fn qlistLen(_: &QList_QDate) -> isize;
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_QDate, size: isize) {
+    ffi::reserve_QDate(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_QDate, value: &ffi::QDate) {

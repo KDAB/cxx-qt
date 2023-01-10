@@ -34,6 +34,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qlist"]
     unsafe extern "C++" {
+        #[rust_name = "reserve_QRectF"]
+        fn qlistReserve(_: &mut QList_QRectF, size: isize);
         #[rust_name = "append_QRectF"]
         fn qlistAppend(_: &mut QList_QRectF, _: &QRectF);
         #[rust_name = "get_unchecked_QRectF"]
@@ -47,6 +49,10 @@ pub mod ffi {
         #[rust_name = "len_QRectF"]
         fn qlistLen(_: &QList_QRectF) -> isize;
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QList_QRectF, size: isize) {
+    ffi::reserve_QRectF(v, size);
 }
 
 pub(crate) fn append(v: &mut ffi::QList_QRectF, value: &ffi::QRectF) {
