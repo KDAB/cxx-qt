@@ -45,7 +45,7 @@ where
     /// The layout has changed between Qt 5 and Qt 6
     ///
     /// Qt5 QList has one pointer as a member
-    /// Qt6 QList/QList has one member, which contains two pointers and a size_t
+    /// Qt6 QVector/QList has one member, which contains two pointers and a size_t
     #[cfg(qt_version_major = "5")]
     _space: MaybeUninit<usize>,
     #[cfg(qt_version_major = "6")]
