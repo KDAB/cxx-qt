@@ -17,8 +17,8 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v6.2.4#n113
 assert_alignment_and_size(QSize,
-                          alignof(std::int32_t),
-                          sizeof(std::int32_t[2]));
+                          alignof(::std::int32_t),
+                          sizeof(::std::int32_t[2]));
 
-static_assert(std::is_trivially_copyable<QSize>::value,
+static_assert(::std::is_trivially_copyable<QSize>::value,
               "QSize must be trivially copyable!");

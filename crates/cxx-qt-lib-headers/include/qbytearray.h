@@ -13,7 +13,7 @@
 #include "rust/cxx.h"
 
 template<>
-struct rust::IsRelocatable<QByteArray> : std::true_type
+struct rust::IsRelocatable<QByteArray> : ::std::true_type
 {
 };
 

@@ -27,14 +27,14 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
             {ident}::{ident}(QObject* parent)
               : {base_class}(parent)
               , m_rustObj({namespace_internals}::createRs())
-              , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
-              , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
+              , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+              , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
             {{
             }}
 
             {ident}::~{ident}()
             {{
-              const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+              const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
               m_cxxQtThreadObj->ptr = nullptr;
             }}
 
@@ -50,20 +50,20 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
               return *m_rustObj;
             }}
 
-            std::unique_ptr<{cxx_qt_thread_ident}>
+            ::std::unique_ptr<{cxx_qt_thread_ident}>
             {ident}::qtThread() const
             {{
-              return std::make_unique<{cxx_qt_thread_ident}>(m_cxxQtThreadObj, m_rustObjMutex);
+              return ::std::make_unique<{cxx_qt_thread_ident}>(m_cxxQtThreadObj, m_rustObjMutex);
             }}
 
             {methods}
             {namespace_end}
 
             namespace {namespace_internals} {{
-            std::unique_ptr<{ident}>
+            ::std::unique_ptr<{ident}>
             newCppObject()
             {{
-              return std::make_unique<{ident}>();
+              return ::std::make_unique<{ident}>();
             }}
             }} // namespace {namespace_internals}
         "#,

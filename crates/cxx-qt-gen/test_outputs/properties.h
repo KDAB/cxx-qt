@@ -10,7 +10,7 @@ class CxxQtThread;
 
 namespace cxx_qt::my_object {
 class MyObject;
-using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
+using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 } // namespace cxx_qt::my_object
 
 #include "cxx-qt-gen/ffi.cxx.h"
@@ -30,7 +30,7 @@ public:
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
-  std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
+  ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   ::std::int32_t const& getPrimitive() const;
@@ -44,18 +44,18 @@ public:
   Q_SIGNAL void opaqueChanged();
 
 private:
-  rust::Box<MyObjectRust> m_rustObj;
-  std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-  std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
+  ::rust::Box<MyObjectRust> m_rustObj;
+  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+  ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
 };
 
-static_assert(std::is_base_of<QObject, MyObject>::value,
+static_assert(::std::is_base_of<QObject, MyObject>::value,
               "MyObject must inherit from QObject");
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {
-std::unique_ptr<MyObject>
+::std::unique_ptr<MyObject>
 newCppObject();
 } // namespace cxx_qt::my_object::cxx_qt_my_object
 

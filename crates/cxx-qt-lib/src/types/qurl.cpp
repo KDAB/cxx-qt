@@ -14,12 +14,12 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v5.15.6-lts-lgpl#n367
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v6.2.4#n294
-assert_alignment_and_size(QUrl, alignof(std::size_t), sizeof(std::size_t));
+assert_alignment_and_size(QUrl, alignof(::std::size_t), sizeof(::std::size_t));
 
-static_assert(!std::is_trivially_copy_assignable<QUrl>::value);
-static_assert(!std::is_trivially_copy_constructible<QUrl>::value);
+static_assert(!::std::is_trivially_copy_assignable<QUrl>::value);
+static_assert(!::std::is_trivially_copy_constructible<QUrl>::value);
 
-static_assert(!std::is_trivially_destructible<QUrl>::value);
+static_assert(!::std::is_trivially_destructible<QUrl>::value);
 
 static_assert(QTypeInfo<QUrl>::isRelocatable);
 
@@ -27,7 +27,7 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QUrl
-qurlInitFromString(rust::Str string)
+qurlInitFromString(::rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
@@ -40,7 +40,7 @@ qurlToQString(const QUrl& url)
   return url.toString();
 }
 
-rust::String
+::rust::String
 qurlToRustString(const QUrl& url)
 {
   // Note that this changes UTF-16 to UTF-8

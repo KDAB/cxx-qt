@@ -44,7 +44,7 @@ pub fn generate_cpp_signals(
                 rust_ty = cxx_ty.as_rust_ty(),
             ));
             parameter_values.push(format!(
-                "{convert}<{cxx_ty}, {rust_ty}>{{}}(std::move({ident}))",
+                "{convert}<{cxx_ty}, {rust_ty}>{{}}(::std::move({ident}))",
                 convert = CXX_QT_CONVERT,
                 cxx_ty = cxx_ty.as_cxx_ty(),
                 ident = ident_str,
@@ -150,7 +150,7 @@ mod tests {
             void
             MyObject::emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)
             {
-                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(std::move(trivial)), rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(std::move(opaque)));
+                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
             }
             "#}
         );
@@ -195,7 +195,7 @@ mod tests {
             void
             MyObject::emitDataChanged(A1 mapped)
             {
-                Q_EMIT dataChanged(rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(std::move(mapped)));
+                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
             }
             "#}
         );

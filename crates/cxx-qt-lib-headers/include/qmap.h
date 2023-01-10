@@ -15,7 +15,7 @@
 
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename K, typename V>
-struct rust::IsRelocatable<QMap<K, V>> : std::true_type
+struct rust::IsRelocatable<QMap<K, V>> : ::std::true_type
 {
 };
 
@@ -34,7 +34,7 @@ qmapGetUncheckedKey(const QMap<K, V>& m, ::rust::isize pos) noexcept
   Q_ASSERT(pos < qmapLen(m));
   Q_ASSERT(pos >= 0);
   auto it = m.cbegin();
-  std::advance(it, pos);
+  ::std::advance(it, pos);
   return it.key();
 }
 
@@ -45,7 +45,7 @@ qmapGetUncheckedValue(const QMap<K, V>& m, ::rust::isize pos) noexcept
   Q_ASSERT(pos < qmapLen(m));
   Q_ASSERT(pos >= 0);
   auto it = m.cbegin();
-  std::advance(it, pos);
+  ::std::advance(it, pos);
   return it.value();
 }
 

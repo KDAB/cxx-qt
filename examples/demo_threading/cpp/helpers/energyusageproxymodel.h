@@ -41,7 +41,7 @@ public:
                     int column = 0,
                     const QModelIndex& parent = QModelIndex()) const override;
 
-  std::optional<int> indexOf(const QString& uuid) const;
+  ::std::optional<int> indexOf(const QString& uuid) const;
 
 public Q_SLOTS:
   void setSourceModel(cxx_qt::energy_usage::EnergyUsage* energyUsage);

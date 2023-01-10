@@ -10,19 +10,20 @@
 
 #define CXX_QT_QMAP_ASSERTS(keyTypeName, valueTypeName, combinedName)          \
   assert_alignment_and_size(                                                   \
-    QMap_##combinedName, alignof(std::size_t), sizeof(std::size_t));           \
+    QMap_##combinedName, alignof(::std::size_t), sizeof(::std::size_t));       \
                                                                                \
   static_assert(                                                               \
-    !std::is_trivially_copy_assignable<QMap_##combinedName>::value);           \
+    !::std::is_trivially_copy_assignable<QMap_##combinedName>::value);         \
   static_assert(                                                               \
-    !std::is_trivially_copy_constructible<QMap_##combinedName>::value);        \
-  static_assert(!std::is_trivially_destructible<QMap_##combinedName>::value);  \
+    !::std::is_trivially_copy_constructible<QMap_##combinedName>::value);      \
+  static_assert(                                                               \
+    !::std::is_trivially_destructible<QMap_##combinedName>::value);            \
                                                                                \
   static_assert(QTypeInfo<QMap_##combinedName>::isRelocatable);                \
                                                                                \
-  static_assert(std::is_copy_assignable<keyTypeName>::value);                  \
-  static_assert(std::is_copy_constructible<keyTypeName>::value);               \
-  static_assert(std::is_copy_assignable<valueTypeName>::value);                \
-  static_assert(std::is_copy_constructible<valueTypeName>::value);
+  static_assert(::std::is_copy_assignable<keyTypeName>::value);                \
+  static_assert(::std::is_copy_constructible<keyTypeName>::value);             \
+  static_assert(::std::is_copy_assignable<valueTypeName>::value);              \
+  static_assert(::std::is_copy_constructible<valueTypeName>::value);
 
 CXX_QT_QMAP_ASSERTS(QString, QVariant, QString_QVariant);

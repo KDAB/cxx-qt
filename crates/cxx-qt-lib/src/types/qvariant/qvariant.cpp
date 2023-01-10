@@ -25,20 +25,20 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n474
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QVariant,
-                          alignof(std::size_t),
-                          sizeof(std::size_t[4]));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t[4]));
 #else
 assert_alignment_and_size(QVariant,
-                          alignof(std::size_t),
-                          sizeof(std::size_t[2]));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t[2]));
 #endif
 
-static_assert(!std::is_trivially_copy_assignable<QVariant>::value);
-static_assert(!std::is_trivially_copy_constructible<QVariant>::value);
+static_assert(!::std::is_trivially_copy_assignable<QVariant>::value);
+static_assert(!::std::is_trivially_copy_constructible<QVariant>::value);
 
 // Ensure that trivially destructible is correct
 // If this is false then we need to manually implement Drop rather than derive
-static_assert(!std::is_trivially_destructible<QVariant>::value);
+static_assert(!::std::is_trivially_destructible<QVariant>::value);
 
 static_assert(QTypeInfo<QVariant>::isRelocatable);
 

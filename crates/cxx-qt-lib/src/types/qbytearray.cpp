@@ -19,18 +19,18 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QByteArray,
-                          alignof(std::size_t),
-                          sizeof(std::size_t[3]));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t[3]));
 #else
 assert_alignment_and_size(QByteArray,
-                          alignof(std::size_t),
-                          sizeof(std::size_t));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t));
 #endif
 
-static_assert(!std::is_trivially_copy_assignable<QByteArray>::value);
-static_assert(!std::is_trivially_copy_constructible<QByteArray>::value);
+static_assert(!::std::is_trivially_copy_assignable<QByteArray>::value);
+static_assert(!::std::is_trivially_copy_constructible<QByteArray>::value);
 
-static_assert(!std::is_trivially_destructible<QByteArray>::value);
+static_assert(!::std::is_trivially_destructible<QByteArray>::value);
 
 static_assert(QTypeInfo<QByteArray>::isRelocatable);
 
@@ -54,7 +54,7 @@ qbytearrayFromSliceU8(::rust::Slice<const ::std::uint8_t> slice)
 qbytearrayToVecU8(const QByteArray& byteArray)
 {
   ::rust::Vec<::std::uint8_t> vec;
-  std::copy(byteArray.cbegin(), byteArray.cend(), std::back_inserter(vec));
+  std::copy(byteArray.cbegin(), byteArray.cend(), ::std::back_inserter(vec));
   return vec;
 }
 

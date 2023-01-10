@@ -48,7 +48,7 @@ Q_SIGNALS:
   void uuidChanged();
 
 private:
-  std::optional<int> m_index;
+  ::std::optional<int> m_index;
   EnergyUsageProxyModel* m_model;
   QString m_uuid;
 };

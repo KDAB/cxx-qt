@@ -20,27 +20,29 @@ private Q_SLOTS:
   void cxx_qt_convert_compiles()
   {
     // T -> R
-    QColor ret1a = rust::cxxqtlib1::cxx_qt_convert<QColor, QColor>{}(QColor());
+    QColor ret1a =
+      ::rust::cxxqtlib1::cxx_qt_convert<QColor, QColor>{}(QColor());
     auto colorRef = QColor();
     QColor& ret1b =
-      rust::cxxqtlib1::cxx_qt_convert<QColor&, QColor&>{}(colorRef);
+      ::rust::cxxqtlib1::cxx_qt_convert<QColor&, QColor&>{}(colorRef);
     const QColor& ret1c =
-      rust::cxxqtlib1::cxx_qt_convert<const QColor&, const QColor&>{}(QColor());
-
-    // std::unique_ptr<T> -> R
-    QColor ret2 =
-      rust::cxxqtlib1::cxx_qt_convert<QColor, std::unique_ptr<QColor>>{}(
-        std::make_unique<QColor>(QColor()));
-
-    // const std::unique_ptr<T>& -> const R&
-    const QColor& ret3 =
-      rust::cxxqtlib1::cxx_qt_convert<const QColor&,
-                                      const std::unique_ptr<QColor>&>{}(
-        std::make_unique<QColor>(QColor()));
-
-    // const T& -> std::unique_ptr<T>
-    std::unique_ptr<QColor> ret4 =
-      rust::cxxqtlib1::cxx_qt_convert<std::unique_ptr<QColor>, const QColor&>{}(
+      ::rust::cxxqtlib1::cxx_qt_convert<const QColor&, const QColor&>{}(
         QColor());
+
+    // ::std::unique_ptr<T> -> R
+    QColor ret2 =
+      ::rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(
+        ::std::make_unique<QColor>(QColor()));
+
+    // const ::std::unique_ptr<T>& -> const R&
+    const QColor& ret3 =
+      ::rust::cxxqtlib1::cxx_qt_convert<const QColor&,
+                                        const ::std::unique_ptr<QColor>&>{}(
+        ::std::make_unique<QColor>(QColor()));
+
+    // const T& -> ::std::unique_ptr<T>
+    ::std::unique_ptr<QColor> ret4 =
+      ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>,
+                                        const QColor&>{}(QColor());
   }
 };

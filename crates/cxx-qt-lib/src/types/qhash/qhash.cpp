@@ -10,20 +10,21 @@
 
 #define CXX_QT_QHASH_ASSERTS(keyTypeName, valueTypeName, combinedName)         \
   assert_alignment_and_size(                                                   \
-    QHash_##combinedName, alignof(std::size_t), sizeof(std::size_t));          \
+    QHash_##combinedName, alignof(::std::size_t), sizeof(::std::size_t));      \
                                                                                \
   static_assert(                                                               \
-    !std::is_trivially_copy_assignable<QHash_##combinedName>::value);          \
+    !::std::is_trivially_copy_assignable<QHash_##combinedName>::value);        \
   static_assert(                                                               \
-    !std::is_trivially_copy_constructible<QHash_##combinedName>::value);       \
-  static_assert(!std::is_trivially_destructible<QHash_##combinedName>::value); \
+    !::std::is_trivially_copy_constructible<QHash_##combinedName>::value);     \
+  static_assert(                                                               \
+    !::std::is_trivially_destructible<QHash_##combinedName>::value);           \
                                                                                \
   static_assert(QTypeInfo<QHash_##combinedName>::isRelocatable);               \
                                                                                \
-  static_assert(std::is_copy_assignable<keyTypeName>::value);                  \
-  static_assert(std::is_copy_constructible<keyTypeName>::value);               \
-  static_assert(std::is_copy_assignable<valueTypeName>::value);                \
-  static_assert(std::is_copy_constructible<valueTypeName>::value);
+  static_assert(::std::is_copy_assignable<keyTypeName>::value);                \
+  static_assert(::std::is_copy_constructible<keyTypeName>::value);             \
+  static_assert(::std::is_copy_assignable<valueTypeName>::value);              \
+  static_assert(::std::is_copy_constructible<valueTypeName>::value);
 
 CXX_QT_QHASH_ASSERTS(QString, QVariant, QString_QVariant);
 CXX_QT_QHASH_ASSERTS(::std::int32_t, QByteArray, i32_QByteArray);

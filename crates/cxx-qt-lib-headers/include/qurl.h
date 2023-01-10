@@ -12,7 +12,7 @@
 #include "rust/cxx.h"
 
 template<>
-struct rust::IsRelocatable<QUrl> : std::true_type
+struct rust::IsRelocatable<QUrl> : ::std::true_type
 {
 };
 
@@ -20,10 +20,10 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QUrl
-qurlInitFromString(rust::Str string);
+qurlInitFromString(::rust::Str string);
 QString
 qurlToQString(const QUrl& url);
-rust::String
+::rust::String
 qurlToRustString(const QUrl& url);
 
 }

@@ -49,7 +49,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
             formatdoc! { r#"
                 {namespace_start}
                 class {ident};
-                using {cxx_qt_thread_ident} = rust::cxxqtlib1::CxxQtThread<{ident}>;
+                using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{ident}>;
                 {namespace_end}
             "#,
             ident = qobject.ident,
@@ -78,20 +78,20 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
               ~{ident}();
               {rust_ident} const& unsafeRust() const;
               {rust_ident}& unsafeRustMut();
-              std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
+              ::std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
 
             {methods}
             private:
-              rust::Box<{rust_ident}> m_rustObj;
-              std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-              std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
+              ::rust::Box<{rust_ident}> m_rustObj;
+              ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+              ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
             }};
 
-            static_assert(std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
+            static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
             {namespace_end}
 
             namespace {namespace_internals} {{
-            std::unique_ptr<{ident}>
+            ::std::unique_ptr<{ident}>
             newCppObject();
             }} // namespace {namespace_internals}
 

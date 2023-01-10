@@ -14,18 +14,18 @@ In most cases, you'll therefore use a UniquePtr in Rust when you need ownership 
 However, Qt often requires values to be returned by-value, especially when compatibility with QML is required.
 CXX-Qt therefore allows you to automatically convert certain Rust types to certain C++ types.
 
-For example, CXX-Qt can convert a `std::unique_ptr<QColor>` to a `QColor` for you.
+For example, CXX-Qt can convert a `::std::unique_ptr<QColor>` to a `QColor` for you.
 
 CXX-Qt by default provides conversions for:
 
 | From                  | To            |                                           |
 |-----------------------|---------------|-------------------------------------------|
 | any type `T`          | any type `R`  | If `T` can be implicitly converted to `R` |
-| `std::unique_ptr<T>`  | T             | if T is moveable |
-| `std::unique_ptr<T>`  | T&            | |
+| `::std::unique_ptr<T>`  | T             | if T is moveable |
+| `::std::unique_ptr<T>`  | T&            | |
 
 ## Defining your own converter
-CXX-Qt uses the templated `rust::cxxqtlib1::cxx_qt_convert` struct for these conversions.
+CXX-Qt uses the templated `::rust::cxxqtlib1::cxx_qt_convert` struct for these conversions.
 In fact, an error message on this struct might have brought you here 😉.
 
 Before starting to define your own type converter, make sure this is actually what you want!!!

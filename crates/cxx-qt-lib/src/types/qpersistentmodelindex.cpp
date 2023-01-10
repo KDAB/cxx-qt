@@ -14,13 +14,14 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v5.15.6-lts-lgpl#n143
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v6.2.4#n243
 assert_alignment_and_size(QPersistentModelIndex,
-                          alignof(std::size_t),
-                          sizeof(std::size_t));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t));
 
-static_assert(!std::is_trivially_copy_assignable<QPersistentModelIndex>::value);
 static_assert(
-  !std::is_trivially_copy_constructible<QPersistentModelIndex>::value);
+  !::std::is_trivially_copy_assignable<QPersistentModelIndex>::value);
+static_assert(
+  !::std::is_trivially_copy_constructible<QPersistentModelIndex>::value);
 
-static_assert(!std::is_trivially_destructible<QPersistentModelIndex>::value);
+static_assert(!::std::is_trivially_destructible<QPersistentModelIndex>::value);
 
 static_assert(QTypeInfo<QPersistentModelIndex>::isRelocatable);
