@@ -166,7 +166,7 @@ where
     T: QListElement + Clone,
 {
     /// Convert a reference to a [QList] into a [Vec] by making a deep copy of the data.
-    /// The original QVector can still be used after constructing the Vec.
+    /// The original QList can still be used after constructing the Vec.
     fn from(qlist: &QList<T>) -> Self {
         let mut vec = Vec::with_capacity(qlist.len().try_into().unwrap());
         for element in qlist.iter() {
@@ -181,9 +181,9 @@ where
     T: QListElement + Clone,
     S: AsRef<[T]>,
 {
-    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QVector]
+    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QList]
     /// by making a deep copy of the data.
-    /// The original slice can still be used after constructing the QVector.
+    /// The original slice can still be used after constructing the QList.
     fn from(vec: S) -> Self {
         let mut qlist = Self::default();
         qlist.reserve(vec.as_ref().len().try_into().unwrap());
