@@ -14,14 +14,16 @@
 // compiler padding this results in a sizeof 16 or two pointers.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v5.15.6-lts-lgpl#n262
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
-assert_alignment_and_size(QColor, alignof(std::size_t), sizeof(std::size_t[2]));
+assert_alignment_and_size(QColor,
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t[2]));
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-static_assert(std::is_trivially_copyable<QColor>::value);
+static_assert(::std::is_trivially_copyable<QColor>::value);
 #else
 static_assert(QTypeInfo<QColor>::isRelocatable);
 #endif
 
-static_assert(std::is_trivially_destructible<QColor>::value);
+static_assert(::std::is_trivially_destructible<QColor>::value);

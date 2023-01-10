@@ -10,16 +10,16 @@
 
 #define CXX_QT_QSET_ASSERTS(typeName, name)                                    \
   assert_alignment_and_size(                                                   \
-    QSet_##name, alignof(std::size_t), sizeof(std::size_t));                   \
+    QSet_##name, alignof(::std::size_t), sizeof(::std::size_t));               \
                                                                                \
-  static_assert(!std::is_trivially_copy_assignable<QSet_##name>::value);       \
-  static_assert(!std::is_trivially_copy_constructible<QSet_##name>::value);    \
-  static_assert(!std::is_trivially_destructible<QSet_##name>::value);          \
+  static_assert(!::std::is_trivially_copy_assignable<QSet_##name>::value);     \
+  static_assert(!::std::is_trivially_copy_constructible<QSet_##name>::value);  \
+  static_assert(!::std::is_trivially_destructible<QSet_##name>::value);        \
                                                                                \
   static_assert(QTypeInfo<QSet_##name>::isRelocatable);                        \
                                                                                \
-  static_assert(std::is_copy_assignable<typeName>::value);                     \
-  static_assert(std::is_copy_constructible<typeName>::value);
+  static_assert(::std::is_copy_assignable<typeName>::value);                   \
+  static_assert(::std::is_copy_constructible<typeName>::value);
 
 CXX_QT_QSET_ASSERTS(bool, bool);
 CXX_QT_QSET_ASSERTS(float, f32);

@@ -12,6 +12,6 @@
 
 // This has static asserts in the cpp file to ensure this is valid.
 template<>
-struct rust::IsRelocatable<QPersistentModelIndex> : std::true_type
+struct rust::IsRelocatable<QPersistentModelIndex> : ::std::true_type
 {
 };

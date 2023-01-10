@@ -20,16 +20,18 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QString,
-                          alignof(std::size_t),
-                          sizeof(std::size_t[3]));
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t[3]));
 #else
-assert_alignment_and_size(QString, alignof(std::size_t), sizeof(std::size_t));
+assert_alignment_and_size(QString,
+                          alignof(::std::size_t),
+                          sizeof(::std::size_t));
 #endif
 
-static_assert(!std::is_trivially_copy_assignable<QString>::value);
-static_assert(!std::is_trivially_copy_constructible<QString>::value);
+static_assert(!::std::is_trivially_copy_assignable<QString>::value);
+static_assert(!::std::is_trivially_copy_constructible<QString>::value);
 
-static_assert(!std::is_trivially_destructible<QString>::value);
+static_assert(!::std::is_trivially_destructible<QString>::value);
 
 static_assert(QTypeInfo<QString>::isRelocatable);
 
@@ -37,19 +39,19 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QString
-qstringInitFromRustString(rust::Str string)
+qstringInitFromRustString(::rust::Str string)
 {
   // Note that rust::Str here is borrowed
   // and we convert back from UTF-8 to UTF-16
   return QString::fromUtf8(string.data(), string.size());
 }
 
-rust::String
+::rust::String
 qstringToRustString(const QString& string)
 {
   // Note that this changes UTF-16 to UTF-8
   const auto byteArray = string.toUtf8();
-  return rust::String(byteArray.constData(), byteArray.size());
+  return ::rust::String(byteArray.constData(), byteArray.size());
 }
 
 }

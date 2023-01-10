@@ -21,7 +21,7 @@
 
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
-struct rust::IsRelocatable<QSet<T>> : std::true_type
+struct rust::IsRelocatable<QSet<T>> : ::std::true_type
 {
 };
 
@@ -40,7 +40,7 @@ qsetGetUnchecked(const QSet<T>& s, ::rust::isize pos) noexcept
   Q_ASSERT(pos < qsetLen(s));
   Q_ASSERT(pos >= 0);
   auto it = s.cbegin();
-  std::advance(it, pos);
+  ::std::advance(it, pos);
   return *it;
 }
 

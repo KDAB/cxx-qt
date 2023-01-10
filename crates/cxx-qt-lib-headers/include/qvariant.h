@@ -28,7 +28,7 @@
 #include "rust/cxx.h"
 
 template<>
-struct rust::IsRelocatable<QVariant> : std::true_type
+struct rust::IsRelocatable<QVariant> : ::std::true_type
 {
 };
 

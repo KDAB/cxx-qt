@@ -14,7 +14,9 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n242
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n217
-assert_alignment_and_size(QTime, alignof(std::int32_t), sizeof(std::int32_t));
+assert_alignment_and_size(QTime,
+                          alignof(::std::int32_t),
+                          sizeof(::std::int32_t));
 
-static_assert(std::is_trivially_copyable<QTime>::value,
+static_assert(::std::is_trivially_copyable<QTime>::value,
               "QTime must be trivially copyable!");

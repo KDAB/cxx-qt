@@ -17,8 +17,8 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v6.2.4#n161
 assert_alignment_and_size(QRect,
-                          alignof(std::int32_t),
-                          sizeof(std::int32_t[4]));
+                          alignof(::std::int32_t),
+                          sizeof(::std::int32_t[4]));
 
-static_assert(std::is_trivially_copyable<QRect>::value,
+static_assert(::std::is_trivially_copyable<QRect>::value,
               "QRect must be trivially copyable");

@@ -237,7 +237,7 @@ mod tests {
             void
             MyObject::voidInvokable() const
             {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                 m_rustObj->voidInvokableWrapper(*this);
             }
             "#}
@@ -258,8 +258,8 @@ mod tests {
             ::std::int32_t
             MyObject::trivialInvokable(::std::int32_t param) const
             {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->trivialInvokableWrapper(*this, param));
+                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->trivialInvokableWrapper(*this, param));
             }
             "#}
         );
@@ -279,8 +279,8 @@ mod tests {
             QColor
             MyObject::opaqueInvokable(QColor const& param)
             {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
+                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                return ::rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
             }
             "#}
         );
@@ -300,8 +300,8 @@ mod tests {
             ::std::int32_t
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
+                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
             }
             "#}
         );
@@ -348,8 +348,8 @@ mod tests {
             B2
             MyObject::trivialInvokable(A1 param) const
             {
-                const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-                return rust::cxxqtlib1::cxx_qt_convert<B2, B2>{}(m_rustObj->trivialInvokableWrapper(*this, param));
+                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                return ::rust::cxxqtlib1::cxx_qt_convert<B2, B2>{}(m_rustObj->trivialInvokableWrapper(*this, param));
             }
             "#}
         );

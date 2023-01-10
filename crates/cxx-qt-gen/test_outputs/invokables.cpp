@@ -5,15 +5,16 @@ namespace cxx_qt::my_object {
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-  , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
   , m_cxxQtThreadObj(
-      std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
+      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
+        this))
 {
 }
 
 MyObject::~MyObject()
 {
-  const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+  const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
@@ -29,24 +30,24 @@ MyObject::unsafeRustMut()
   return *m_rustObj;
 }
 
-std::unique_ptr<MyObjectCxxQtThread>
+::std::unique_ptr<MyObjectCxxQtThread>
 MyObject::qtThread() const
 {
-  return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
-                                               m_rustObjMutex);
+  return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
+                                                 m_rustObjMutex);
 }
 
 void
 MyObject::invokable() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableWrapper(*this);
 }
 
 void
 MyObject::invokableMutable()
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableMutableWrapper(*this);
 }
 
@@ -55,53 +56,53 @@ MyObject::invokableParameters(QColor const& opaque,
                               QPoint const& trivial,
                               ::std::int32_t primitive) const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);
 }
 
 Value
 MyObject::invokableReturnOpaque()
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  return ::rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
     m_rustObj->invokableReturnOpaqueWrapper(*this));
 }
 
 QPoint
 MyObject::invokableReturnTrivial()
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  return ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
     m_rustObj->invokableReturnTrivialWrapper(*this));
 }
 
 void
 MyObject::invokableFinal() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableFinalWrapper(*this);
 }
 
 void
 MyObject::invokableOverride() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableOverrideWrapper(*this);
 }
 
 void
 MyObject::invokableVirtual() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableVirtualWrapper(*this);
 }
 
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {
-std::unique_ptr<MyObject>
+::std::unique_ptr<MyObject>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return ::std::make_unique<MyObject>();
 }
 } // namespace cxx_qt::my_object::cxx_qt_my_object

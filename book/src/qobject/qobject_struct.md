@@ -94,7 +94,7 @@ struct MyStruct {
   my_property: cxx::UniquePtr<OpaqueExampleType>
 }
 ```
-In this case, CXX-Qt will automatically convert the `std::unique_ptr<OpaqueExampleType>` to `OpaqueExampleType`.
+In this case, CXX-Qt will automatically convert the `::std::unique_ptr<OpaqueExampleType>` to `OpaqueExampleType`.
 
 For details, see the [page on type conversions](../concepts/type-conversions.md).
 

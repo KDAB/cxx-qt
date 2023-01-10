@@ -253,7 +253,7 @@ mod tests {
 
         namespace cxx_qt::my_object {
         class MyObject;
-        using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
+        using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
         } // namespace cxx_qt::my_object
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -270,7 +270,7 @@ mod tests {
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
-          std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
+          ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -283,16 +283,16 @@ mod tests {
           Q_SIGNAL void toggleChanged();
 
         private:
-          rust::Box<MyObjectRust> m_rustObj;
-          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
+          ::rust::Box<MyObjectRust> m_rustObj;
+          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
-        static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
+        static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
         } // namespace cxx_qt::my_object
 
         namespace cxx_qt::my_object::cxx_qt_my_object {
-        std::unique_ptr<MyObject>
+        ::std::unique_ptr<MyObject>
         newCppObject();
         } // namespace cxx_qt::my_object::cxx_qt_my_object
 
@@ -316,12 +316,12 @@ mod tests {
 
         namespace cxx_qt {
         class FirstObject;
-        using FirstObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<FirstObject>;
+        using FirstObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<FirstObject>;
         } // namespace cxx_qt
 
         namespace cxx_qt {
         class SecondObject;
-        using SecondObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<SecondObject>;
+        using SecondObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<SecondObject>;
         } // namespace cxx_qt
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -337,7 +337,7 @@ mod tests {
           ~FirstObject();
           FirstObjectRust const& unsafeRust() const;
           FirstObjectRust& unsafeRustMut();
-          std::unique_ptr<FirstObjectCxxQtThread> qtThread() const;
+          ::std::unique_ptr<FirstObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -345,16 +345,16 @@ mod tests {
           Q_SIGNAL void countChanged();
 
         private:
-          rust::Box<FirstObjectRust> m_rustObj;
-          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>> m_cxxQtThreadObj;
+          ::rust::Box<FirstObjectRust> m_rustObj;
+          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>> m_cxxQtThreadObj;
         };
 
-        static_assert(std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
+        static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
         } // namespace cxx_qt
 
         namespace cxx_qt::cxx_qt_first_object {
-        std::unique_ptr<FirstObject>
+        ::std::unique_ptr<FirstObject>
         newCppObject();
         } // namespace cxx_qt::cxx_qt_first_object
 
@@ -371,7 +371,7 @@ mod tests {
           ~SecondObject();
           SecondObjectRust const& unsafeRust() const;
           SecondObjectRust& unsafeRustMut();
-          std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
+          ::std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -379,16 +379,16 @@ mod tests {
           Q_SIGNAL void countChanged();
 
         private:
-          rust::Box<SecondObjectRust> m_rustObj;
-          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>> m_cxxQtThreadObj;
+          ::rust::Box<SecondObjectRust> m_rustObj;
+          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>> m_cxxQtThreadObj;
         };
 
-        static_assert(std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
+        static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
         } // namespace cxx_qt
 
         namespace cxx_qt::cxx_qt_second_object {
-        std::unique_ptr<SecondObject>
+        ::std::unique_ptr<SecondObject>
         newCppObject();
         } // namespace cxx_qt::cxx_qt_second_object
 
@@ -412,7 +412,7 @@ mod tests {
 
 
         class MyObject;
-        using MyObjectCxxQtThread = rust::cxxqtlib1::CxxQtThread<MyObject>;
+        using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -429,7 +429,7 @@ mod tests {
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
-          std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
+          ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -442,16 +442,16 @@ mod tests {
           Q_SIGNAL void toggleChanged();
 
         private:
-          rust::Box<MyObjectRust> m_rustObj;
-          std::shared_ptr<std::recursive_mutex> m_rustObjMutex;
-          std::shared_ptr<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
+          ::rust::Box<MyObjectRust> m_rustObj;
+          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
-        static_assert(std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
+        static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
 
 
         namespace cxx_qt_my_object {
-        std::unique_ptr<MyObject>
+        ::std::unique_ptr<MyObject>
         newCppObject();
         } // namespace cxx_qt_my_object
 
@@ -470,14 +470,14 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
-          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
+          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }
 
         MyObject::~MyObject()
         {
-          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
@@ -493,10 +493,10 @@ mod tests {
           return *m_rustObj;
         }
 
-        std::unique_ptr<MyObjectCxxQtThread>
+        ::std::unique_ptr<MyObjectCxxQtThread>
         MyObject::qtThread() const
         {
-          return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
+          return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -538,10 +538,10 @@ mod tests {
         } // namespace cxx_qt::my_object
 
         namespace cxx_qt::my_object::cxx_qt_my_object {
-        std::unique_ptr<MyObject>
+        ::std::unique_ptr<MyObject>
         newCppObject()
         {
-          return std::make_unique<MyObject>();
+          return ::std::make_unique<MyObject>();
         }
         } // namespace cxx_qt::my_object::cxx_qt_my_object
 
@@ -558,14 +558,14 @@ mod tests {
         FirstObject::FirstObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_first_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
-          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>>(this))
+          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>>(this))
         {
         }
 
         FirstObject::~FirstObject()
         {
-          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
@@ -581,10 +581,10 @@ mod tests {
           return *m_rustObj;
         }
 
-        std::unique_ptr<FirstObjectCxxQtThread>
+        ::std::unique_ptr<FirstObjectCxxQtThread>
         FirstObject::qtThread() const
         {
-          return std::make_unique<FirstObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
+          return ::std::make_unique<FirstObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -602,10 +602,10 @@ mod tests {
         } // namespace cxx_qt
 
         namespace cxx_qt::cxx_qt_first_object {
-        std::unique_ptr<FirstObject>
+        ::std::unique_ptr<FirstObject>
         newCppObject()
         {
-          return std::make_unique<FirstObject>();
+          return ::std::make_unique<FirstObject>();
         }
         } // namespace cxx_qt::cxx_qt_first_object
 
@@ -614,14 +614,14 @@ mod tests {
         SecondObject::SecondObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_second_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
-          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(this))
+          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(this))
         {
         }
 
         SecondObject::~SecondObject()
         {
-          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
@@ -637,10 +637,10 @@ mod tests {
           return *m_rustObj;
         }
 
-        std::unique_ptr<SecondObjectCxxQtThread>
+        ::std::unique_ptr<SecondObjectCxxQtThread>
         SecondObject::qtThread() const
         {
-          return std::make_unique<SecondObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
+          return ::std::make_unique<SecondObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -658,10 +658,10 @@ mod tests {
         } // namespace cxx_qt
 
         namespace cxx_qt::cxx_qt_second_object {
-        std::unique_ptr<SecondObject>
+        ::std::unique_ptr<SecondObject>
         newCppObject()
         {
-          return std::make_unique<SecondObject>();
+          return ::std::make_unique<SecondObject>();
         }
         } // namespace cxx_qt::cxx_qt_second_object
 
@@ -678,14 +678,14 @@ mod tests {
         MyObject::MyObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt_my_object::createRs())
-          , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
-          , m_cxxQtThreadObj(std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
+          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }
 
         MyObject::~MyObject()
         {
-          const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
           m_cxxQtThreadObj->ptr = nullptr;
         }
 
@@ -701,10 +701,10 @@ mod tests {
           return *m_rustObj;
         }
 
-        std::unique_ptr<MyObjectCxxQtThread>
+        ::std::unique_ptr<MyObjectCxxQtThread>
         MyObject::qtThread() const
         {
-          return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
+          return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -746,10 +746,10 @@ mod tests {
 
 
         namespace cxx_qt_my_object {
-        std::unique_ptr<MyObject>
+        ::std::unique_ptr<MyObject>
         newCppObject()
         {
-          return std::make_unique<MyObject>();
+          return ::std::make_unique<MyObject>();
         }
         } // namespace cxx_qt_my_object
 

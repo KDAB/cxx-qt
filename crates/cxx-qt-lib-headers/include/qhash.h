@@ -18,7 +18,7 @@
 
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename K, typename V>
-struct rust::IsRelocatable<QHash<K, V>> : std::true_type
+struct rust::IsRelocatable<QHash<K, V>> : ::std::true_type
 {
 };
 
@@ -37,7 +37,7 @@ qhashGetUncheckedKey(const QHash<K, V>& h, ::rust::isize pos) noexcept
   Q_ASSERT(pos < qhashLen(h));
   Q_ASSERT(pos >= 0);
   auto it = h.cbegin();
-  std::advance(it, pos);
+  ::std::advance(it, pos);
   return it.key();
 }
 
@@ -48,7 +48,7 @@ qhashGetUncheckedValue(const QHash<K, V>& h, ::rust::isize pos) noexcept
   Q_ASSERT(pos < qhashLen(h));
   Q_ASSERT(pos >= 0);
   auto it = h.cbegin();
-  std::advance(it, pos);
+  ::std::advance(it, pos);
   return it.value();
 }
 

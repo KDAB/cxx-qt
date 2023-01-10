@@ -12,7 +12,7 @@
 #include "rust/cxx.h"
 
 template<>
-struct rust::IsRelocatable<QDateTime> : std::true_type
+struct rust::IsRelocatable<QDateTime> : ::std::true_type
 {
 };
 

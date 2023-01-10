@@ -5,15 +5,16 @@ namespace cxx_qt::multi_object {
 MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
   , m_rustObj(cxx_qt::multi_object::cxx_qt_my_object::createRs())
-  , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
   , m_cxxQtThreadObj(
-      std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
+      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
+        this))
 {
 }
 
 MyObject::~MyObject()
 {
-  const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+  const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
@@ -29,36 +30,36 @@ MyObject::unsafeRustMut()
   return *m_rustObj;
 }
 
-std::unique_ptr<MyObjectCxxQtThread>
+::std::unique_ptr<MyObjectCxxQtThread>
 MyObject::qtThread() const
 {
-  return std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
-                                               m_rustObjMutex);
+  return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
+                                                 m_rustObjMutex);
 }
 
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
-                                         ::std::int32_t const&>{}(
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
+                                           ::std::int32_t const&>{}(
     m_rustObj->getPropertyName(*this));
 }
 
 void
 MyObject::setPropertyName(::std::int32_t const& value)
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setPropertyName(
     *this,
-    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
+    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
       value));
 }
 
 void
 MyObject::invokableName()
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableNameWrapper(*this);
 }
 
@@ -71,10 +72,10 @@ MyObject::emitReady()
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object::cxx_qt_my_object {
-std::unique_ptr<MyObject>
+::std::unique_ptr<MyObject>
 newCppObject()
 {
-  return std::make_unique<MyObject>();
+  return ::std::make_unique<MyObject>();
 }
 } // namespace cxx_qt::multi_object::cxx_qt_my_object
 
@@ -83,16 +84,16 @@ namespace cxx_qt::multi_object {
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
   , m_rustObj(cxx_qt::multi_object::cxx_qt_second_object::createRs())
-  , m_rustObjMutex(std::make_shared<std::recursive_mutex>())
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
   , m_cxxQtThreadObj(
-      std::make_shared<rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(
+      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(
         this))
 {
 }
 
 SecondObject::~SecondObject()
 {
-  const auto guard = std::unique_lock(m_cxxQtThreadObj->mutex);
+  const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
@@ -108,36 +109,36 @@ SecondObject::unsafeRustMut()
   return *m_rustObj;
 }
 
-std::unique_ptr<SecondObjectCxxQtThread>
+::std::unique_ptr<SecondObjectCxxQtThread>
 SecondObject::qtThread() const
 {
-  return std::make_unique<SecondObjectCxxQtThread>(m_cxxQtThreadObj,
-                                                   m_rustObjMutex);
+  return ::std::make_unique<SecondObjectCxxQtThread>(m_cxxQtThreadObj,
+                                                     m_rustObjMutex);
 }
 
 ::std::int32_t const&
 SecondObject::getPropertyName() const
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
-  return rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
-                                         ::std::int32_t const&>{}(
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
+                                           ::std::int32_t const&>{}(
     m_rustObj->getPropertyName(*this));
 }
 
 void
 SecondObject::setPropertyName(::std::int32_t const& value)
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->setPropertyName(
     *this,
-    rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
+    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
       value));
 }
 
 void
 SecondObject::invokableName()
 {
-  const std::lock_guard<std::recursive_mutex> guard(*m_rustObjMutex);
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableNameWrapper(*this);
 }
 
@@ -150,9 +151,9 @@ SecondObject::emitReady()
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object::cxx_qt_second_object {
-std::unique_ptr<SecondObject>
+::std::unique_ptr<SecondObject>
 newCppObject()
 {
-  return std::make_unique<SecondObject>();
+  return ::std::make_unique<SecondObject>();
 }
 } // namespace cxx_qt::multi_object::cxx_qt_second_object

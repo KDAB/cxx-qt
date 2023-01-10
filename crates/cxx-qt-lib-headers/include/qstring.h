@@ -12,7 +12,7 @@
 #include "rust/cxx.h"
 
 template<>
-struct rust::IsRelocatable<QString> : std::true_type
+struct rust::IsRelocatable<QString> : ::std::true_type
 {
 };
 
@@ -20,8 +20,8 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QString
-qstringInitFromRustString(rust::Str string);
-rust::String
+qstringInitFromRustString(::rust::Str string);
+::rust::String
 qstringToRustString(const QString& string);
 
 }
