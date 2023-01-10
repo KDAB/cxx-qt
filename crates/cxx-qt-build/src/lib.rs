@@ -320,6 +320,12 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Convenience wrapper around [qt_build_utils::setup_linker].
+    pub fn setup_linker(self) -> Self {
+        qt_build_utils::setup_linker();
+        self
+    }
+
     /// Use a closure to run additional customization on [CxxQtBuilder]'s internal [cc::Build]
     /// before calling [CxxQtBuilder::build]. This allows to add extra include paths, compiler flags,
     /// or anything else available via [cc::Build]'s API. For example, to add an include path for
