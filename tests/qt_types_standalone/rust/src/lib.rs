@@ -21,6 +21,7 @@ mod qset;
 mod qsize;
 mod qsizef;
 mod qstring;
+mod qstringlist;
 mod qtime;
 mod qurl;
 mod qvariant;
