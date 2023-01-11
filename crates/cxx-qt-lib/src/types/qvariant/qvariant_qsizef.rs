@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQSizeF(variant: &QVariant) -> bool;
         #[rust_name = "construct_QSizeF"]
         fn qvariantConstruct(value: &QSizeF) -> QVariant;
-        #[rust_name = "value_QSizeF"]
-        fn qvariantValue(variant: &QVariant) -> QSizeF;
+        #[rust_name = "value_or_default_QSizeF"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QSizeF;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QSizeF) -> ffi::QVariant {
     ffi::construct_QSizeF(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QSizeF {
-    ffi::value_QSizeF(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QSizeF {
+    ffi::value_or_default_QSizeF(variant)
 }

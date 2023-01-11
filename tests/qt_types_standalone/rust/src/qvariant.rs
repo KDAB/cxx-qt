@@ -81,31 +81,31 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
 
 fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
     match test {
-        VariantTest::Bool => match v.try_value::<bool>() {
+        VariantTest::Bool => match v.value::<bool>() {
             Some(b) => !b,
             None => false,
         },
-        VariantTest::F32 => match v.try_value::<f32>() {
+        VariantTest::F32 => match v.value::<f32>() {
             Some(f) => f == 89.1,
             None => false,
         },
-        VariantTest::F64 => match v.try_value::<f64>() {
+        VariantTest::F64 => match v.value::<f64>() {
             Some(f) => f == 89.1,
             None => false,
         },
-        VariantTest::I8 => match v.try_value::<i8>() {
+        VariantTest::I8 => match v.value::<i8>() {
             Some(i) => i == 89,
             None => false,
         },
-        VariantTest::I16 => match v.try_value::<i16>() {
+        VariantTest::I16 => match v.value::<i16>() {
             Some(i) => i == 8910,
             None => false,
         },
-        VariantTest::I32 => match v.try_value::<i32>() {
+        VariantTest::I32 => match v.value::<i32>() {
             Some(i) => i == 8910,
             None => false,
         },
-        VariantTest::QColor => match v.try_value::<QColor>() {
+        VariantTest::QColor => match v.value::<QColor>() {
             Some(color) => {
                 color.alpha() == 255
                     && color.red() == 0
@@ -114,11 +114,11 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             }
             None => false,
         },
-        VariantTest::QDate => match v.try_value::<QDate>() {
+        VariantTest::QDate => match v.value::<QDate>() {
             Some(date) => date.year() == 2021 && date.month() == 12 && date.day() == 31,
             None => false,
         },
-        VariantTest::QDateTime => match v.try_value::<QDateTime>() {
+        VariantTest::QDateTime => match v.value::<QDateTime>() {
             Some(date_time) => {
                 date_time.date().year() == 2021
                     && date_time.date().month() == 12
@@ -130,21 +130,21 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             }
             None => false,
         },
-        VariantTest::QPoint => match v.try_value::<QPoint>() {
+        VariantTest::QPoint => match v.value::<QPoint>() {
             Some(point) => point.x() == 8 && point.y() == 9,
             None => false,
         },
-        VariantTest::QPointF => match v.try_value::<QPointF>() {
+        VariantTest::QPointF => match v.value::<QPointF>() {
             Some(pointf) => pointf.x() == 8.0 && pointf.y() == 9.0,
             None => false,
         },
-        VariantTest::QRect => match v.try_value::<QRect>() {
+        VariantTest::QRect => match v.value::<QRect>() {
             Some(rect) => {
                 rect.x() == 123 && rect.y() == 456 && rect.width() == 246 && rect.height() == 912
             }
             None => false,
         },
-        VariantTest::QRectF => match v.try_value::<QRectF>() {
+        VariantTest::QRectF => match v.value::<QRectF>() {
             Some(rectf) => {
                 ((rectf.x() - 1.23).abs() < f64::EPSILON)
                     && ((rectf.y() - 4.56).abs() < f64::EPSILON)
@@ -153,37 +153,37 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             }
             None => false,
         },
-        VariantTest::QSize => match v.try_value::<QSize>() {
+        VariantTest::QSize => match v.value::<QSize>() {
             Some(size) => size.width() == 8 && size.height() == 9,
             None => false,
         },
-        VariantTest::QSizeF => match v.try_value::<QSizeF>() {
+        VariantTest::QSizeF => match v.value::<QSizeF>() {
             Some(sizef) => sizef.width() == 8.0 && sizef.height() == 9.0,
             None => false,
         },
-        VariantTest::QString => match v.try_value::<QString>() {
+        VariantTest::QString => match v.value::<QString>() {
             Some(s) => s.to_string() == "C++ string",
             None => false,
         },
-        VariantTest::QTime => match v.try_value::<QTime>() {
+        VariantTest::QTime => match v.value::<QTime>() {
             Some(time) => {
                 time.hour() == 4 && time.minute() == 3 && time.second() == 2 && time.msec() == 1
             }
             None => false,
         },
-        VariantTest::QUrl => match v.try_value::<QUrl>() {
+        VariantTest::QUrl => match v.value::<QUrl>() {
             Some(url) => url.to_string() == "https://github.com/KDAB/cxx-qt",
             None => false,
         },
-        VariantTest::U8 => match v.try_value::<u8>() {
+        VariantTest::U8 => match v.value::<u8>() {
             Some(i) => i == 89,
             None => false,
         },
-        VariantTest::U16 => match v.try_value::<u16>() {
+        VariantTest::U16 => match v.value::<u16>() {
             Some(i) => i == 8910,
             None => false,
         },
-        VariantTest::U32 => match v.try_value::<u32>() {
+        VariantTest::U32 => match v.value::<u32>() {
             Some(i) => i == 8910,
             None => false,
         },

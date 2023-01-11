@@ -94,9 +94,9 @@ where
 impl QVariant {
     /// Returns the stored value converted to the template type T
     /// if QVariant::canConvert is true otherwise returns None
-    pub fn try_value<T: QVariantValue>(&self) -> Option<T> {
+    pub fn value<T: QVariantValue>(&self) -> Option<T> {
         if T::can_convert(self) {
-            Some(T::value(self))
+            Some(T::value_or_default(self))
         } else {
             None
         }
@@ -105,15 +105,18 @@ impl QVariant {
     /// Returns the stored value converted to the template type T
     ///
     /// If the value cannot be converted, a default-constructed value will be returned.
-    pub fn value<T: QVariantValue>(&self) -> T {
-        T::value(self)
+    ///
+    /// Note that this calls the `QVariant::value` method, without performance loss.
+    /// Whereas `value` first calls `QVariant::canConvert`.
+    pub fn value_or_default<T: QVariantValue>(&self) -> T {
+        T::value_or_default(self)
     }
 }
 
 pub trait QVariantValue {
     fn can_convert(variant: &QVariant) -> bool;
     fn construct(value: &Self) -> QVariant;
-    fn value(variant: &QVariant) -> Self;
+    fn value_or_default(variant: &QVariant) -> Self;
 }
 
 macro_rules! impl_qvariant_value {
@@ -129,8 +132,8 @@ macro_rules! impl_qvariant_value {
                 $module::construct(value)
             }
 
-            fn value(variant: &QVariant) -> Self {
-                $module::value(variant)
+            fn value_or_default(variant: &QVariant) -> Self {
+                $module::value_or_default(variant)
             }
         }
     };

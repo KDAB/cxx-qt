@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertI16(variant: &QVariant) -> bool;
         #[rust_name = "construct_i16"]
         fn qvariantConstruct(value: &i16) -> QVariant;
-        #[rust_name = "value_i16"]
-        fn qvariantValue(variant: &QVariant) -> i16;
+        #[rust_name = "value_or_default_i16"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> i16;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &i16) -> ffi::QVariant {
     ffi::construct_i16(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> i16 {
-    ffi::value_i16(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> i16 {
+    ffi::value_or_default_i16(variant)
 }

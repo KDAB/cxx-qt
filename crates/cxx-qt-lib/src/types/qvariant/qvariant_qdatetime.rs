@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQDateTime(variant: &QVariant) -> bool;
         #[rust_name = "construct_QDateTime"]
         fn qvariantConstruct(value: &QDateTime) -> QVariant;
-        #[rust_name = "value_QDateTime"]
-        fn qvariantValue(variant: &QVariant) -> QDateTime;
+        #[rust_name = "value_or_default_QDateTime"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QDateTime;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QDateTime) -> ffi::QVariant {
     ffi::construct_QDateTime(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QDateTime {
-    ffi::value_QDateTime(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QDateTime {
+    ffi::value_or_default_QDateTime(variant)
 }

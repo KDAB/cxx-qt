@@ -45,7 +45,7 @@ qvariantConstruct(const T& value) noexcept
 
 template<typename T>
 T
-qvariantValue(const QVariant& variant) noexcept
+qvariantValueOrDefault(const QVariant& variant) noexcept
 {
   return variant.value<T>();
 }

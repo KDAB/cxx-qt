@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertBool(variant: &QVariant) -> bool;
         #[rust_name = "construct_bool"]
         fn qvariantConstruct(value: &bool) -> QVariant;
-        #[rust_name = "value_bool"]
-        fn qvariantValue(variant: &QVariant) -> bool;
+        #[rust_name = "value_or_default_bool"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> bool;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &bool) -> ffi::QVariant {
     ffi::construct_bool(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> bool {
-    ffi::value_bool(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> bool {
+    ffi::value_or_default_bool(variant)
 }

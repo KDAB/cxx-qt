@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertI64(variant: &QVariant) -> bool;
         #[rust_name = "construct_i64"]
         fn qvariantConstruct(value: &i64) -> QVariant;
-        #[rust_name = "value_i64"]
-        fn qvariantValue(variant: &QVariant) -> i64;
+        #[rust_name = "value_or_default_i64"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> i64;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &i64) -> ffi::QVariant {
     ffi::construct_i64(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> i64 {
-    ffi::value_i64(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> i64 {
+    ffi::value_or_default_i64(variant)
 }

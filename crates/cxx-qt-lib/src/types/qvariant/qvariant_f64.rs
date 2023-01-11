@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertF64(variant: &QVariant) -> bool;
         #[rust_name = "construct_f64"]
         fn qvariantConstruct(value: &f64) -> QVariant;
-        #[rust_name = "value_f64"]
-        fn qvariantValue(variant: &QVariant) -> f64;
+        #[rust_name = "value_or_default_f64"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> f64;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &f64) -> ffi::QVariant {
     ffi::construct_f64(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> f64 {
-    ffi::value_f64(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> f64 {
+    ffi::value_or_default_f64(variant)
 }

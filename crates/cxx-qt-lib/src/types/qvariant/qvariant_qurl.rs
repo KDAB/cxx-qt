@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQUrl(variant: &QVariant) -> bool;
         #[rust_name = "construct_QUrl"]
         fn qvariantConstruct(value: &QUrl) -> QVariant;
-        #[rust_name = "value_QUrl"]
-        fn qvariantValue(variant: &QVariant) -> QUrl;
+        #[rust_name = "value_or_default_QUrl"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QUrl;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QUrl) -> ffi::QVariant {
     ffi::construct_QUrl(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QUrl {
-    ffi::value_QUrl(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QUrl {
+    ffi::value_or_default_QUrl(variant)
 }

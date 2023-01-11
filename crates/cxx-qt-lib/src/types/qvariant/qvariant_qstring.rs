@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQString(variant: &QVariant) -> bool;
         #[rust_name = "construct_QString"]
         fn qvariantConstruct(value: &QString) -> QVariant;
-        #[rust_name = "value_QString"]
-        fn qvariantValue(variant: &QVariant) -> QString;
+        #[rust_name = "value_or_default_QString"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QString;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QString) -> ffi::QVariant {
     ffi::construct_QString(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QString {
-    ffi::value_QString(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QString {
+    ffi::value_or_default_QString(variant)
 }
