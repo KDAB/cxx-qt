@@ -4,13 +4,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qsize.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QSize = super::QSize;
+        type QString = crate::QString;
 
         /// Returns the height.
         fn height(self: &QSize) -> i32;
@@ -35,6 +38,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qsize_init"]
         fn construct(w: i32, h: i32) -> QSize;
+        #[doc(hidden)]
+        #[rust_name = "qsize_to_qstring"]
+        fn toQString(value: &QSize) -> QString;
     }
 }
 
@@ -57,6 +63,12 @@ impl Default for QSize {
     /// Constructs a size with an invalid width and height
     fn default() -> Self {
         ffi::qsize_init_default()
+    }
+}
+
+impl fmt::Display for QSize {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qsize_to_qstring(self))
     }
 }
 

@@ -123,6 +123,12 @@ impl std::fmt::Display for QByteArray {
     }
 }
 
+impl std::fmt::Debug for QByteArray {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
+}
+
 impl Drop for QByteArray {
     /// Destroys the byte array.
     fn drop(&mut self) {

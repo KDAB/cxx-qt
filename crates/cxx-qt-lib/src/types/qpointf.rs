@@ -5,13 +5,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpointf.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QPointF = super::QPointF;
+        type QString = crate::QString;
 
         /// Returns the x coordinate of this point.
         fn x(self: &QPointF) -> f64;
@@ -36,6 +39,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpointf_init"]
         fn construct(x: f64, y: f64) -> QPointF;
+        #[doc(hidden)]
+        #[rust_name = "qpointf_to_qstring"]
+        fn toQString(value: &QPointF) -> QString;
     }
 }
 
@@ -58,6 +64,12 @@ impl Default for QPointF {
     /// Constructs a null point, i.e. with coordinates (0.0, 0.0)
     fn default() -> Self {
         ffi::qpointf_init_default()
+    }
+}
+
+impl fmt::Display for QPointF {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpointf_to_qstring(self))
     }
 }
 

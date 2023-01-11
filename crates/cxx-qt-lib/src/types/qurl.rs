@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 use crate::QString;
@@ -43,7 +44,7 @@ mod ffi {
         fn qurlToRustString(url: &QUrl) -> String;
         #[doc(hidden)]
         #[rust_name = "qurl_to_qstring"]
-        fn qurlToQString(url: &QUrl) -> QString;
+        fn toQString(url: &QUrl) -> QString;
     }
 }
 
@@ -85,12 +86,18 @@ impl Default for QUrl {
     }
 }
 
-impl std::fmt::Display for QUrl {
+impl fmt::Display for QUrl {
     /// Convert the QUrl to a Rust string
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", ffi::qurl_to_rust_string(self))
+    }
+}
+
+impl fmt::Debug for QUrl {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

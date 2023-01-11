@@ -3,14 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qmodelindex.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QModelIndex = super::QModelIndex;
+        type QString = crate::QString;
 
         /// Returns the column this model index refers to.
         fn column(self: &QModelIndex) -> i32;
@@ -40,6 +43,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qmodelindex_init_default"]
         fn construct() -> QModelIndex;
+        #[doc(hidden)]
+        #[rust_name = "qmodelindex_to_qstring"]
+        fn toQString(value: &QModelIndex) -> QString;
     }
 }
 
@@ -54,6 +60,18 @@ impl Default for QModelIndex {
     /// Creates a new empty model index. This type of model index is used to indicate that the position in the model is invalid.
     fn default() -> Self {
         ffi::qmodelindex_init_default()
+    }
+}
+
+impl fmt::Display for QModelIndex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qmodelindex_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QModelIndex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

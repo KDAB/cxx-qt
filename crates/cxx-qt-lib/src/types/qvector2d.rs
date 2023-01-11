@@ -12,6 +12,8 @@ mod ffi {
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         include!("cxx-qt-lib/qvector2d.h");
         type QVector2D = super::QVector2D;
@@ -104,6 +106,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qvector2d_distance_to_point"]
         fn qvector2DDistanceToPoint(vector: &QVector2D, point: QVector2D) -> f32;
+        #[doc(hidden)]
+        #[rust_name = "qvector2d_to_qstring"]
+        fn toQString(value: &QVector2D) -> QString;
     }
 }
 
@@ -138,6 +143,12 @@ impl Default for QVector2D {
     /// Constructs a null vector, i.e. with coordinates (0, 0).
     fn default() -> Self {
         ffi::qvector2d_init_default()
+    }
+}
+
+impl std::fmt::Display for QVector2D {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qvector2d_to_qstring(self))
     }
 }
 

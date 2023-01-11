@@ -4,12 +4,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
         include!("cxx-qt-lib/qdate.h");
 
+        type QString = crate::QString;
         type QDate = super::QDate;
 
         /// Returns the year of this date.
@@ -37,11 +40,14 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdate_init"]
         fn construct(y: i32, m: i32, d: i32) -> QDate;
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_qstring"]
+        fn toQString(value: &QDate) -> QString;
     }
 }
 
 /// The QDate class provides date functions.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
@@ -51,6 +57,18 @@ impl Default for QDate {
     /// Constructs a null date. Null dates are invalid.
     fn default() -> Self {
         ffi::qdate_init_default()
+    }
+}
+
+impl fmt::Display for QDate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qdate_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QDate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

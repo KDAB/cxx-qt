@@ -4,13 +4,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qtime.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QTime = super::QTime;
+        type QString = crate::QString;
 
         /// Returns the hour part (0 to 23) of the time.
         fn hour(self: &QTime) -> i32;
@@ -36,11 +39,14 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtime_init"]
         fn construct(h: i32, m: i32, s: i32, ms: i32) -> QTime;
+        #[doc(hidden)]
+        #[rust_name = "qtime_to_qstring"]
+        fn toQString(value: &QTime) -> QString;
     }
 }
 
 /// The QTime class provides clock time functions.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct QTime {
     mds: i32,
@@ -57,6 +63,18 @@ impl Default for QTime {
     /// Constructs a null time object.
     fn default() -> Self {
         ffi::qtime_init_default()
+    }
+}
+
+impl fmt::Display for QTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qtime_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

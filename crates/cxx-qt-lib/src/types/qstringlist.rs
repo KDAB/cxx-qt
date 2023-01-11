@@ -53,6 +53,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstringlist_contains"]
         fn qstringlistContains(list: &QStringList, string: &QString) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_to_qstring"]
+        fn toQString(value: &QStringList) -> QString;
     }
 }
 
@@ -87,6 +91,18 @@ impl Default for QStringList {
     /// Constructs an empty list.
     fn default() -> Self {
         ffi::qstringlist_default()
+    }
+}
+
+impl std::fmt::Display for QStringList {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qstringlist_to_qstring(self))
+    }
+}
+
+impl std::fmt::Debug for QStringList {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{self}")
     }
 }
 

@@ -4,13 +4,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qrect.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QRect = super::QRect;
+        type QString = crate::QString;
 
         /// Returns the height of the rectangle.
         fn height(self: &QRect) -> i32;
@@ -45,6 +48,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qrect_init"]
         fn construct(x: i32, y: i32, width: i32, height: i32) -> QRect;
+        #[doc(hidden)]
+        #[rust_name = "qrect_to_qstring"]
+        fn toQString(value: &QRect) -> QString;
     }
 }
 
@@ -70,6 +76,12 @@ impl Default for QRect {
     /// Constructs a null rectangle.
     fn default() -> Self {
         ffi::qrect_init_default()
+    }
+}
+
+impl fmt::Display for QRect {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qrect_to_qstring(self))
     }
 }
 
