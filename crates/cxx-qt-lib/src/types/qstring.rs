@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -70,12 +71,18 @@ impl Default for QString {
     }
 }
 
-impl std::fmt::Display for QString {
+impl fmt::Display for QString {
     /// Convert the QString to a Rust string
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", <&QString as Into<String>>::into(self))
+    }
+}
+
+impl fmt::Debug for QString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

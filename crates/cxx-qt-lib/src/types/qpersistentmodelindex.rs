@@ -3,14 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpersistentmodelindex.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QPersistentModelIndex = super::QPersistentModelIndex;
+        type QString = crate::QString;
 
         include!("cxx-qt-lib/qmodelindex.h");
         type QModelIndex = crate::QModelIndex;
@@ -44,6 +47,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpersistentmodelindex_clone"]
         fn construct(other: &QPersistentModelIndex) -> QPersistentModelIndex;
+        #[doc(hidden)]
+        #[rust_name = "qpersistentmodelindex_to_qstring"]
+        fn toQString(value: &QPersistentModelIndex) -> QString;
     }
 }
 
@@ -71,6 +77,18 @@ impl From<&crate::QModelIndex> for QPersistentModelIndex {
     /// Creates a new QPersistentModelIndex that is a copy of the model index.
     fn from(index: &crate::QModelIndex) -> Self {
         ffi::qpersistentmodelindex_from_qmodelindex(index)
+    }
+}
+
+impl fmt::Display for QPersistentModelIndex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpersistentmodelindex_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QPersistentModelIndex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

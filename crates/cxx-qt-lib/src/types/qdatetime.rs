@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 use crate::{QDate, QTime};
@@ -13,10 +14,12 @@ mod ffi {
         include!("cxx-qt-lib/qdatetime.h");
         include!("cxx-qt-lib/qdate.h");
         include!("cxx-qt-lib/qtime.h");
+        include!("cxx-qt-lib/qstring.h");
 
         type QDate = crate::QDate;
         type QDateTime = super::QDateTime;
         type QTime = crate::QTime;
+        type QString = crate::QString;
 
         /// Returns the date part of the datetime.
         fn date(self: &QDateTime) -> QDate;
@@ -51,6 +54,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_set_time"]
         fn qdatetimeSetTime(datetime: &mut QDateTime, time: QTime);
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_to_qstring"]
+        fn toQString(value: &QDateTime) -> QString;
     }
 }
 
@@ -90,6 +96,18 @@ impl Default for QDateTime {
     /// Construct a default null QDateTime
     fn default() -> Self {
         ffi::qdatetime_init_default()
+    }
+}
+
+impl fmt::Display for QDateTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qdatetime_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QDateTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

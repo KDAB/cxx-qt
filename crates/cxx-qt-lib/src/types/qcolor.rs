@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -72,6 +73,31 @@ impl Default for QColor {
     /// The alpha value of an invalid color is unspecified.
     fn default() -> Self {
         ffi::qcolor_init_default()
+    }
+}
+
+impl fmt::Display for QColor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let r = self.red();
+        let g = self.green();
+        let b = self.blue();
+        let a = self.alpha();
+        write!(f, "RGBA({r}, {g}, {b}, {a})")
+    }
+}
+
+impl fmt::Debug for QColor {
+    // We use more fancy printing for the Debug formatter
+    // If you dislike this, use the Display formatter instead
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let r = self.red();
+        let g = self.green();
+        let b = self.blue();
+        let a = self.alpha();
+        // very simple heuristic to use a light foreground if background is dark and vice versa
+        let fg = if (r + b + g) < 384 { 255 } else { 0 };
+        // Use terminal escape codes to **actually** print the color
+        write!(f, "\x1b[48;2;{r};{g};{b}m\x1b[38;2;{fg};{fg};{fg}mRGBA({r}, {g}, {b}, {a})\x1b[39m\x1b[49m")
     }
 }
 
