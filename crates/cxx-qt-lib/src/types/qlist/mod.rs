@@ -95,12 +95,6 @@ where
         T::append_clone(self, value);
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
-    pub fn reserve(&mut self, size: isize) {
-        T::reserve(self, size);
-    }
-
     /// Removes all elements from the list.
     pub fn clear(&mut self) {
         T::clear(self);
@@ -128,7 +122,7 @@ where
         T::index_of(self, value)
     }
 
-    /// Inserts item value into the list, if value isn't already in the list.
+    /// Inserts item value into the list at the given position.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being inserted into the list.
@@ -158,6 +152,12 @@ where
     /// Removes the element at index position.
     pub fn remove(&mut self, pos: isize) {
         T::remove(self, pos);
+    }
+
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
     }
 }
 
@@ -203,7 +203,7 @@ where
         T::append(self, value);
     }
 
-    /// Inserts item value into the list, if value isn't already in the list.
+    /// Inserts item value into the list at the given position.
     pub fn insert(&mut self, pos: isize, value: T) {
         T::insert(self, pos, value);
     }
@@ -266,32 +266,28 @@ pub trait QListElement: Sized {
     fn append_clone(list: &mut QList<Self>, value: &Self);
     fn clear(list: &mut QList<Self>);
     fn clone(list: &QList<Self>) -> QList<Self>;
-    fn reserve(vector: &mut QList<Self>, size: isize);
     fn contains(list: &QList<Self>, value: &Self) -> bool;
     fn default() -> QList<Self>;
     fn drop(list: &mut QList<Self>);
-    fn index_of(list: &QList<Self>, value: &Self) -> isize;
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
     /// even if the resulting reference is not used.
     unsafe fn get_unchecked(list: &QList<Self>, pos: isize) -> &Self;
+    fn index_of(list: &QList<Self>, value: &Self) -> isize;
     fn insert(list: &mut QList<Self>, pos: isize, value: Self)
     where
         Self: ExternType<Kind = cxx::kind::Trivial>;
     fn insert_clone(list: &mut QList<Self>, pos: isize, value: &Self);
     fn len(list: &QList<Self>) -> isize;
     fn remove(list: &mut QList<Self>, pos: isize);
+    fn reserve(vector: &mut QList<Self>, size: isize);
 }
 
 macro_rules! impl_qlist_element {
     ( $typeName:ty, $module:ident, $typeId:literal ) => {
         impl QListElement for $typeName {
             type TypeId = type_id!($typeId);
-
-            fn reserve(list: &mut QList<Self>, size: isize) {
-                $module::reserve(list, size);
-            }
 
             fn append(list: &mut QList<Self>, value: Self) {
                 $module::append(list, &value);
@@ -343,6 +339,10 @@ macro_rules! impl_qlist_element {
 
             fn remove(list: &mut QList<Self>, pos: isize) {
                 $module::remove(list, pos);
+            }
+
+            fn reserve(list: &mut QList<Self>, size: isize) {
+                $module::reserve(list, size);
             }
         }
     };

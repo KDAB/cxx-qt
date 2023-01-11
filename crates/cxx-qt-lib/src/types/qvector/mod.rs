@@ -95,12 +95,6 @@ where
         T::append_clone(self, value);
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
-    pub fn reserve(&mut self, size: isize) {
-        T::reserve(self, size);
-    }
-
     /// Removes all elements from the vector.
     pub fn clear(&mut self) {
         T::clear(self);
@@ -128,8 +122,7 @@ where
         T::index_of(self, value)
     }
 
-    /// Inserts item value into the vector, if value isn't already in the vector,
-    /// and returns an iterator pointing at the inserted item.
+    /// Inserts item value into the vector at the given position.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being inserted into the vector.
@@ -156,6 +149,12 @@ where
         T::len(self)
     }
 
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
+
     /// Removes the element at index position.
     pub fn remove(&mut self, pos: isize) {
         T::remove(self, pos);
@@ -171,8 +170,7 @@ where
         T::append(self, value);
     }
 
-    /// Inserts item value into the vector, if value isn't already in the vector,
-    /// and returns an iterator pointing at the inserted item.
+    /// Inserts item value into the vector at the given position.
     pub fn insert(&mut self, pos: isize, value: T) {
         T::insert(self, pos, value);
     }
@@ -268,22 +266,22 @@ pub trait QVectorElement: Sized {
     fn append_clone(vector: &mut QVector<Self>, value: &Self);
     fn clear(vector: &mut QVector<Self>);
     fn clone(vector: &QVector<Self>) -> QVector<Self>;
-    fn reserve(vector: &mut QVector<Self>, size: isize);
     fn contains(vector: &QVector<Self>, value: &Self) -> bool;
     fn default() -> QVector<Self>;
     fn drop(vector: &mut QVector<Self>);
-    fn index_of(vector: &QVector<Self>, value: &Self) -> isize;
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
     /// even if the resulting reference is not used.
     unsafe fn get_unchecked(vector: &QVector<Self>, pos: isize) -> &Self;
+    fn index_of(vector: &QVector<Self>, value: &Self) -> isize;
     fn insert(vector: &mut QVector<Self>, pos: isize, value: Self)
     where
         Self: ExternType<Kind = cxx::kind::Trivial>;
     fn insert_clone(vector: &mut QVector<Self>, pos: isize, value: &Self);
     fn len(vector: &QVector<Self>) -> isize;
     fn remove(vector: &mut QVector<Self>, pos: isize);
+    fn reserve(vector: &mut QVector<Self>, size: isize);
 }
 
 macro_rules! impl_qvector_element {
@@ -305,10 +303,6 @@ macro_rules! impl_qvector_element {
 
             fn clone(vector: &QVector<Self>) -> QVector<Self> {
                 $module::clone(vector)
-            }
-
-            fn reserve(vector: &mut QVector<Self>, size: isize) {
-                $module::reserve(vector, size);
             }
 
             fn contains(vector: &QVector<Self>, value: &Self) -> bool {
@@ -345,6 +339,10 @@ macro_rules! impl_qvector_element {
 
             fn remove(vector: &mut QVector<Self>, pos: isize) {
                 $module::remove(vector, pos);
+            }
+
+            fn reserve(vector: &mut QVector<Self>, size: isize) {
+                $module::reserve(vector, size);
             }
         }
     };
