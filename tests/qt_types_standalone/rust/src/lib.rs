@@ -8,6 +8,7 @@ mod qbytearray;
 mod qcolor;
 mod qdate;
 mod qdatetime;
+mod qguiapplication;
 mod qhash;
 mod qlist;
 mod qmap;

@@ -6,6 +6,9 @@
 mod qcolor;
 pub use qcolor::QColor;
 
+mod qguiapplication;
+pub use qguiapplication::QGuiApplication;
+
 mod qvector2d;
 pub use qvector2d::QVector2D;
 
