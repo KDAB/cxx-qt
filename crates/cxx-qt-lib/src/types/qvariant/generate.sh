@@ -30,8 +30,8 @@ pub mod ffi {
         fn qvariantCanConvert$2(variant: &QVariant) -> bool;
         #[rust_name = "construct_$1"]
         fn qvariantConstruct(value: &$1) -> QVariant;
-        #[rust_name = "value_$1"]
-        fn qvariantValue(variant: &QVariant) -> $1;
+        #[rust_name = "value_or_default_$1"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> $1;
     }
 }
 
@@ -43,8 +43,8 @@ pub(crate) fn construct(value: &$1) -> ffi::QVariant {
     ffi::construct_$1(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> $1 {
-    ffi::value_$1(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> $1 {
+    ffi::value_or_default_$1(variant)
 }
 EOF
     rustfmt "$SCRIPTPATH/qvariant_$1.rs"
@@ -73,8 +73,8 @@ pub mod ffi {
         fn qvariantCanConvert$1(variant: &QVariant) -> bool;
         #[rust_name = "construct_$1"]
         fn qvariantConstruct(value: &$1) -> QVariant;
-        #[rust_name = "value_$1"]
-        fn qvariantValue(variant: &QVariant) -> $1;
+        #[rust_name = "value_or_default_$1"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> $1;
     }
 }
 
@@ -86,8 +86,8 @@ pub(crate) fn construct(value: &ffi::$1) -> ffi::QVariant {
     ffi::construct_$1(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::$1 {
-    ffi::value_$1(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::$1 {
+    ffi::value_or_default_$1(variant)
 }
 EOF
     rustfmt "$SCRIPTPATH/qvariant_$2.rs"

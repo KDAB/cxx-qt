@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQRect(variant: &QVariant) -> bool;
         #[rust_name = "construct_QRect"]
         fn qvariantConstruct(value: &QRect) -> QVariant;
-        #[rust_name = "value_QRect"]
-        fn qvariantValue(variant: &QVariant) -> QRect;
+        #[rust_name = "value_or_default_QRect"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QRect;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QRect) -> ffi::QVariant {
     ffi::construct_QRect(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QRect {
-    ffi::value_QRect(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QRect {
+    ffi::value_or_default_QRect(variant)
 }

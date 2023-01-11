@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQColor(variant: &QVariant) -> bool;
         #[rust_name = "construct_QColor"]
         fn qvariantConstruct(value: &QColor) -> QVariant;
-        #[rust_name = "value_QColor"]
-        fn qvariantValue(variant: &QVariant) -> QColor;
+        #[rust_name = "value_or_default_QColor"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QColor;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QColor) -> ffi::QVariant {
     ffi::construct_QColor(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QColor {
-    ffi::value_QColor(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QColor {
+    ffi::value_or_default_QColor(variant)
 }

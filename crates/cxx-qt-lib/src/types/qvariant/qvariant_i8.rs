@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertI8(variant: &QVariant) -> bool;
         #[rust_name = "construct_i8"]
         fn qvariantConstruct(value: &i8) -> QVariant;
-        #[rust_name = "value_i8"]
-        fn qvariantValue(variant: &QVariant) -> i8;
+        #[rust_name = "value_or_default_i8"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> i8;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &i8) -> ffi::QVariant {
     ffi::construct_i8(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> i8 {
-    ffi::value_i8(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> i8 {
+    ffi::value_or_default_i8(variant)
 }

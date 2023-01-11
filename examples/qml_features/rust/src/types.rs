@@ -24,8 +24,8 @@ impl cxx_qt_lib::QVariantValue for ffi::CustomStruct {
         ffi::qvariant_construct_custom_type(value)
     }
 
-    fn value(variant: &cxx_qt_lib::QVariant) -> Self {
-        ffi::qvariant_value_custom_type(variant)
+    fn value_or_default(variant: &cxx_qt_lib::QVariant) -> Self {
+        ffi::qvariant_value_or_default_custom_type(variant)
     }
 }
 // ANCHOR_END: book_qvariantvalue_impl
@@ -58,8 +58,8 @@ mod ffi {
 
         #[rust_name = "qvariant_construct_custom_type"]
         fn qvariantConstruct(value: &CustomStruct) -> QVariant;
-        #[rust_name = "qvariant_value_custom_type"]
-        fn qvariantValue(variant: &QVariant) -> CustomStruct;
+        #[rust_name = "qvariant_value_or_default_custom_type"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> CustomStruct;
     }
 
     #[cxx_qt::qobject]
@@ -88,13 +88,13 @@ mod ffi {
     impl qobject::Types {
         #[qinvokable]
         pub fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
-            if let Some(boolean) = variant.try_value::<bool>() {
+            if let Some(boolean) = variant.value::<bool>() {
                 self.set_boolean(boolean);
-            } else if let Some(point) = variant.try_value::<QPointF>() {
+            } else if let Some(point) = variant.value::<QPointF>() {
                 self.set_point(point);
-            } else if let Some(url) = variant.try_value::<QUrl>() {
+            } else if let Some(url) = variant.value::<QUrl>() {
                 self.set_url(url);
-            } else if let Some(custom) = variant.try_value::<CustomStruct>() {
+            } else if let Some(custom) = variant.value::<CustomStruct>() {
                 self.set_custom_value(custom.value);
             } else {
                 println!("Unknown QVariant type to load from");

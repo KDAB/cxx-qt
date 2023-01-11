@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQPointF(variant: &QVariant) -> bool;
         #[rust_name = "construct_QPointF"]
         fn qvariantConstruct(value: &QPointF) -> QVariant;
-        #[rust_name = "value_QPointF"]
-        fn qvariantValue(variant: &QVariant) -> QPointF;
+        #[rust_name = "value_or_default_QPointF"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QPointF;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QPointF) -> ffi::QVariant {
     ffi::construct_QPointF(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QPointF {
-    ffi::value_QPointF(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QPointF {
+    ffi::value_or_default_QPointF(variant)
 }

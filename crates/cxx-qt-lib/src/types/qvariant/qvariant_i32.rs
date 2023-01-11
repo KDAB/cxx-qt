@@ -16,8 +16,8 @@ pub mod ffi {
         fn qvariantCanConvertI32(variant: &QVariant) -> bool;
         #[rust_name = "construct_i32"]
         fn qvariantConstruct(value: &i32) -> QVariant;
-        #[rust_name = "value_i32"]
-        fn qvariantValue(variant: &QVariant) -> i32;
+        #[rust_name = "value_or_default_i32"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> i32;
     }
 }
 
@@ -29,6 +29,6 @@ pub(crate) fn construct(value: &i32) -> ffi::QVariant {
     ffi::construct_i32(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> i32 {
-    ffi::value_i32(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> i32 {
+    ffi::value_or_default_i32(variant)
 }

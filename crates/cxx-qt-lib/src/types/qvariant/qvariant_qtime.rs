@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQTime(variant: &QVariant) -> bool;
         #[rust_name = "construct_QTime"]
         fn qvariantConstruct(value: &QTime) -> QVariant;
-        #[rust_name = "value_QTime"]
-        fn qvariantValue(variant: &QVariant) -> QTime;
+        #[rust_name = "value_or_default_QTime"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QTime;
     }
 }
 
@@ -32,6 +32,6 @@ pub(crate) fn construct(value: &ffi::QTime) -> ffi::QVariant {
     ffi::construct_QTime(value)
 }
 
-pub(crate) fn value(variant: &ffi::QVariant) -> ffi::QTime {
-    ffi::value_QTime(variant)
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QTime {
+    ffi::value_or_default_QTime(variant)
 }
