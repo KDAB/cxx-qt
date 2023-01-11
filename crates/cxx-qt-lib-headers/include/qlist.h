@@ -44,13 +44,6 @@ namespace cxxqtlib1 {
 namespace qlist {
 
 template<typename T>
-void
-qlistReserve(QList<T>& v, ::rust::isize size) noexcept
-{
-  v.reserve(size);
-}
-
-template<typename T>
 ::rust::isize
 qlistLen(const QList<T>& v) noexcept;
 
@@ -117,6 +110,19 @@ qlistRemove(QList<T>& v, ::rust::isize pos) noexcept
   v.remove(static_cast<qsizetype>(pos));
 #else
   v.removeAt(static_cast<int>(pos));
+#endif
+}
+
+template<typename T>
+void
+qlistReserve(QList<T>& v, ::rust::isize size) noexcept
+{
+  Q_ASSERT(size >= 0);
+  // Qt has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  v.reserve(static_cast<qsizetype>(size));
+#else
+  v.reserve(static_cast<int>(size));
 #endif
 }
 

@@ -43,13 +43,6 @@ namespace cxxqtlib1 {
 namespace qvector {
 
 template<typename T>
-void
-qvectorReserve(QVector<T>& v, ::rust::isize size) noexcept
-{
-  v.reserve(size);
-}
-
-template<typename T>
 ::rust::isize
 qvectorLen(const QVector<T>& v) noexcept;
 
@@ -115,6 +108,19 @@ qvectorRemove(QVector<T>& v, ::rust::isize pos) noexcept
   v.removeAt(static_cast<qsizetype>(pos));
 #else
   v.removeAt(static_cast<int>(pos));
+#endif
+}
+
+template<typename T>
+void
+qvectorReserve(QVector<T>& v, ::rust::isize size) noexcept
+{
+  Q_ASSERT(size >= 0);
+  // Qt has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  v.reserve(static_cast<qsizetype>(size));
+#else
+  v.reserve(static_cast<int>(size));
 #endif
 }
 
