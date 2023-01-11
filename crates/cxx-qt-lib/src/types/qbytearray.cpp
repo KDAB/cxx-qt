@@ -70,12 +70,95 @@ qbytearrayFromRawData(::rust::Slice<const ::std::uint8_t> slice)
 #endif
 }
 
+::rust::Slice<::std::uint8_t>
+qbytearrayAsMutSlice(QByteArray& byteArray)
+{
+  return ::rust::Slice<::std::uint8_t>(
+    reinterpret_cast<std::uint8_t*>(byteArray.data()),
+    static_cast<::std::size_t>(byteArray.size()));
+}
+
 ::rust::Slice<const ::std::uint8_t>
 qbytearrayAsSlice(const QByteArray& byteArray)
 {
   return ::rust::Slice<const ::std::uint8_t>(
     reinterpret_cast<const std::uint8_t*>(byteArray.data()),
     static_cast<::std::size_t>(byteArray.size()));
+}
+
+void
+qbytearrayAppend(QByteArray& byteArray, ::std::uint8_t ch)
+{
+  byteArray.append(static_cast<char>(ch));
+}
+
+void
+qbytearrayFill(QByteArray& byteArray, ::std::uint8_t ch, ::rust::isize size)
+{
+  Q_ASSERT(size >= -1);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  byteArray.fill(static_cast<char>(ch), static_cast<qsizetype>(size));
+#else
+  byteArray.fill(static_cast<char>(ch), static_cast<int>(size));
+#endif
+}
+
+void
+qbytearrayInsert(QByteArray& byteArray, ::rust::isize pos, ::std::uint8_t ch)
+{
+  Q_ASSERT(pos >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  byteArray.insert(static_cast<qsizetype>(pos), static_cast<char>(ch));
+#else
+  byteArray.insert(static_cast<int>(pos), static_cast<char>(ch));
+#endif
+}
+
+::rust::isize
+qbytearrayLen(const QByteArray& byteArray)
+{
+  // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
+  // is the same for CXX
+  return static_cast<::rust::isize>(byteArray.size());
+}
+
+void
+qbytearrayRemove(QByteArray& byteArray, ::rust::isize pos, ::rust::isize len)
+{
+  Q_ASSERT(pos >= 0);
+  Q_ASSERT(len >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  byteArray.remove(static_cast<qsizetype>(pos), static_cast<qsizetype>(len));
+#else
+  byteArray.remove(static_cast<int>(pos), static_cast<int>(len));
+#endif
+}
+
+void
+qbytearrayReserve(QByteArray& byteArray, ::rust::isize size)
+{
+  Q_ASSERT(size >= 0);
+  // Qt has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  byteArray.reserve(static_cast<qsizetype>(size));
+#else
+  byteArray.reserve(static_cast<int>(size));
+#endif
+}
+
+void
+qbytearrayResize(QByteArray& byteArray, ::rust::isize size)
+{
+  Q_ASSERT(size >= 0);
+  // Qt has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  byteArray.resize(static_cast<qsizetype>(size));
+#else
+  byteArray.resize(static_cast<int>(size));
+#endif
 }
 
 }
