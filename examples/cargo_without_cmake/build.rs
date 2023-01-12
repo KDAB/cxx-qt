@@ -8,8 +8,8 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        // Link Qt's Qml and Network libraries. Qt Core and Gui are always
-        // linked, so there is no need to specify them here.
+        // Link Qt's Qml and Network libraries.
+        // Qt Core is always linked and Qt Gui is linked by enabling the qt_gui Cargo feature.
         .qt_module("Qml")
         .qt_module("Network")
         // Generate C++ from the `#[cxx_qt::bridge]` module
