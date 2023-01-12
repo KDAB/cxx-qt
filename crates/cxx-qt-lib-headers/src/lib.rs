@@ -66,6 +66,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/gui/qvector3d.h"), "qvector3d.h"),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qvector4d.h"), "qvector4d.h"),
+        #[cfg(feature = "qt_qml")]
+        (include_str!("../include/qml/qqmlengine.h"), "qqmlengine.h"),
         (include_str!("../include/common.h"), "common.h"),
         (include_str!("../include/convert.h"), "convert.h"),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),

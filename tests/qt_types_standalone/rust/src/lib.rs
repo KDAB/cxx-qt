@@ -17,6 +17,7 @@ mod qmodelindex;
 mod qpersistentmodelindex;
 mod qpoint;
 mod qpointf;
+mod qqmlengine;
 mod qrect;
 mod qrectf;
 mod qset;

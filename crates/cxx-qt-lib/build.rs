@@ -5,10 +5,14 @@
 
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
+    let feature_qt_qml_enabled = std::env::var("CARGO_FEATURE_QT_QML").is_ok();
 
     let mut qt_modules = vec!["Core".to_owned()];
     if feature_qt_gui_enabled {
         qt_modules.push("Gui".to_owned());
+    }
+    if feature_qt_qml_enabled {
+        qt_modules.push("Qml".to_owned());
     }
 
     let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
@@ -146,6 +150,12 @@ fn main() {
         ]);
     }
 
+    if feature_qt_qml_enabled {
+        rust_bridges.extend([
+            "qml/qqmlengine",
+        ]);
+    }
+
     for bridge in &rust_bridges {
         println!("cargo:rerun-if-changed=src/{bridge}.rs");
     }
@@ -194,6 +204,12 @@ fn main() {
         ]);
     }
 
+    if feature_qt_qml_enabled {
+        cpp_files.extend([
+            "qml/qqmlengine",
+        ]);
+    }
+
     for cpp_file in &cpp_files {
         builder.file(format!("src/{cpp_file}.cpp"));
         println!("cargo:rerun-if-changed=src/{cpp_file}.cpp");
@@ -210,6 +226,11 @@ fn main() {
     // Enable Qt Gui in C++ if the feature is enabled
     if feature_qt_gui_enabled {
         builder.define("CXX_QT_GUI_FEATURE", None);
+    }
+
+    // Enable Qt Qml in C++ if the feature is enabled
+    if feature_qt_gui_enabled {
+        builder.define("CXX_QT_QML_FEATURE", None);
     }
 
     // MSVC

@@ -25,3 +25,8 @@ fn get_ordering(ord: i8) -> Option<Ordering> {
 mod gui;
 #[cfg(feature = "qt_gui")]
 pub use crate::gui::*;
+
+#[cfg(feature = "qt_qml")]
+mod qml;
+#[cfg(feature = "qt_qml")]
+pub use crate::qml::*;
