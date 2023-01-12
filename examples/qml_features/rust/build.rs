@@ -12,7 +12,6 @@ fn main() {
         .cc_builder(|cc| {
             cc.include("../cpp");
         })
-        .qt_modules(&["Gui"])
         .file("src/containers.rs")
         .file("src/custom_base_class.rs")
         .file("src/invokables.rs")

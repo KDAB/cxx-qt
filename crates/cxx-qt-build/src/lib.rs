@@ -256,6 +256,7 @@ impl CxxQtBuilder {
     pub fn new() -> Self {
         let mut qt_modules = HashSet::new();
         qt_modules.insert("Core".to_owned());
+        qt_modules.insert("Gui".to_owned());
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
@@ -303,8 +304,15 @@ impl CxxQtBuilder {
 
     /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html).
     /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
-    /// The Core module is linked automatically; there is no need to specify it.
-    pub fn qt_modules(mut self, modules: &[&str]) -> Self {
+    /// The Core and Gui module is linked automatically; there is no need to specify it.
+    pub fn qt_module(mut self, module: &str) -> Self {
+        self.qt_modules.insert(module.to_owned());
+        self
+    }
+
+    /// Replace the list of [Qt modules](https://doc.qt.io/qt-6/qtmodules.html) to link.
+    pub fn set_qt_modules(mut self, modules: &[&str]) -> Self {
+        self.qt_modules.clear();
         self.qt_modules
             .extend(modules.iter().cloned().map(String::from));
         self
