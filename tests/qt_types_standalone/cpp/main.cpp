@@ -21,6 +21,7 @@
 #include "qpersistentmodelindex.h"
 #include "qpoint.h"
 #include "qpointf.h"
+#include "qqmlapplicationengine.h"
 #include "qqmlengine.h"
 #include "qrect.h"
 #include "qrectf.h"
@@ -63,6 +64,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QPersistentModelIndexTest));
   runTest(QScopedPointer<QObject>(new QPointTest));
   runTest(QScopedPointer<QObject>(new QPointFTest));
+  runTest(QScopedPointer<QObject>(new QQmlApplicationEngineTest));
   runTest(QScopedPointer<QObject>(new QQmlEngineTest));
   runTest(QScopedPointer<QObject>(new QRectTest));
   runTest(QScopedPointer<QObject>(new QRectFTest));

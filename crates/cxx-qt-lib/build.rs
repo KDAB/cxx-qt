@@ -151,9 +151,7 @@ fn main() {
     }
 
     if feature_qt_qml_enabled {
-        rust_bridges.extend([
-            "qml/qqmlengine",
-        ]);
+        rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
     for bridge in &rust_bridges {
@@ -205,9 +203,7 @@ fn main() {
     }
 
     if feature_qt_qml_enabled {
-        cpp_files.extend([
-            "qml/qqmlengine",
-        ]);
+        cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
     for cpp_file in &cpp_files {
