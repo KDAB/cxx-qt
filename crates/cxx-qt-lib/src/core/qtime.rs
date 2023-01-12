@@ -46,7 +46,7 @@ mod ffi {
 }
 
 /// The QTime class provides clock time functions.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[repr(C)]
 pub struct QTime {
     mds: i32,

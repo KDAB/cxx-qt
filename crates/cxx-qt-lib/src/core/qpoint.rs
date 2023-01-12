@@ -45,7 +45,7 @@ mod ffi {
 }
 
 /// The QPoint struct defines a point in the plane using integer precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QPoint {
     x: i32,

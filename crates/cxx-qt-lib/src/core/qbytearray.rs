@@ -34,6 +34,10 @@ mod ffi {
         fn construct(bytearray: &QByteArray) -> QByteArray;
 
         #[doc(hidden)]
+        #[rust_name = "qbytearray_eq"]
+        fn operatorEq(a: &QByteArray, b: &QByteArray) -> bool;
+
+        #[doc(hidden)]
         #[rust_name = "qbytearray_from_slice_u8"]
         fn qbytearrayFromSliceU8(slice: &[u8]) -> QByteArray;
         #[doc(hidden)]
@@ -109,6 +113,12 @@ impl Default for QByteArray {
     /// Constructs an empty byte array.
     fn default() -> Self {
         ffi::qbytearray_default()
+    }
+}
+
+impl std::cmp::PartialEq for QByteArray {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qbytearray_eq(self, other)
     }
 }
 

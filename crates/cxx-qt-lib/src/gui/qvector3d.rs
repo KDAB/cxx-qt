@@ -121,7 +121,7 @@ mod ffi {
 }
 
 /// The QVector3D class represents a vector or vertex in 3D space.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QVector3D {
     v: [f32; 3],

@@ -120,7 +120,7 @@ mod ffi {
 }
 
 /// The QVector4D class represents a vector or vertex in 4D space.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QVector4D {
     v: [f32; 4],

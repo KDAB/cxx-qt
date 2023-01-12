@@ -46,7 +46,7 @@ mod ffi {
 }
 
 /// The QSizeF class defines the size of a two-dimensional object using floating point precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QSizeF {
     w: f64,

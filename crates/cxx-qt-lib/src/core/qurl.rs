@@ -40,6 +40,10 @@ mod ffi {
         fn construct(url: &QUrl) -> QUrl;
 
         #[doc(hidden)]
+        #[rust_name = "qurl_eq"]
+        fn operatorEq(a: &QUrl, b: &QUrl) -> bool;
+
+        #[doc(hidden)]
         #[rust_name = "qurl_to_rust_string"]
         fn qurlToRustString(url: &QUrl) -> String;
         #[doc(hidden)]
@@ -83,6 +87,12 @@ impl Default for QUrl {
     /// Constructs an empty QUrl object.
     fn default() -> Self {
         ffi::qurl_init_default()
+    }
+}
+
+impl std::cmp::PartialEq for QUrl {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qurl_eq(self, other)
     }
 }
 

@@ -48,6 +48,9 @@ mod ffi {
         #[rust_name = "qpersistentmodelindex_clone"]
         fn construct(other: &QPersistentModelIndex) -> QPersistentModelIndex;
         #[doc(hidden)]
+        #[rust_name = "qpersistentmodelindex_eq"]
+        fn operatorEq(a: &QPersistentModelIndex, b: &QPersistentModelIndex) -> bool;
+        #[doc(hidden)]
         #[rust_name = "qpersistentmodelindex_to_qstring"]
         fn toQString(value: &QPersistentModelIndex) -> QString;
     }
@@ -77,6 +80,12 @@ impl From<&crate::QModelIndex> for QPersistentModelIndex {
     /// Creates a new QPersistentModelIndex that is a copy of the model index.
     fn from(index: &crate::QModelIndex) -> Self {
         ffi::qpersistentmodelindex_from_qmodelindex(index)
+    }
+}
+
+impl std::cmp::PartialEq for QPersistentModelIndex {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpersistentmodelindex_eq(self, other)
     }
 }
 
