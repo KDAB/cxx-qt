@@ -46,7 +46,7 @@ mod ffi {
 }
 
 /// The QPointF struct defines a point in the plane using floating point precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QPointF {
     x: f64,

@@ -55,6 +55,9 @@ mod ffi {
         #[rust_name = "qdatetime_set_time"]
         fn qdatetimeSetTime(datetime: &mut QDateTime, time: QTime);
         #[doc(hidden)]
+        #[rust_name = "qdatetime_eq"]
+        fn operatorEq(a: &QDateTime, b: &QDateTime) -> bool;
+        #[doc(hidden)]
         #[rust_name = "qdatetime_to_qstring"]
         fn toQString(value: &QDateTime) -> QString;
     }
@@ -96,6 +99,12 @@ impl Default for QDateTime {
     /// Construct a default null QDateTime
     fn default() -> Self {
         ffi::qdatetime_init_default()
+    }
+}
+
+impl std::cmp::PartialEq for QDateTime {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qdatetime_eq(self, other)
     }
 }
 

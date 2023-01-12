@@ -44,6 +44,9 @@ mod ffi {
         #[rust_name = "qmodelindex_init_default"]
         fn construct() -> QModelIndex;
         #[doc(hidden)]
+        #[rust_name = "qmodelindex_eq"]
+        fn operatorEq(a: &QModelIndex, b: &QModelIndex) -> bool;
+        #[doc(hidden)]
         #[rust_name = "qmodelindex_to_qstring"]
         fn toQString(value: &QModelIndex) -> QString;
     }
@@ -60,6 +63,12 @@ impl Default for QModelIndex {
     /// Creates a new empty model index. This type of model index is used to indicate that the position in the model is invalid.
     fn default() -> Self {
         ffi::qmodelindex_init_default()
+    }
+}
+
+impl std::cmp::PartialEq for QModelIndex {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qmodelindex_eq(self, other)
     }
 }
 

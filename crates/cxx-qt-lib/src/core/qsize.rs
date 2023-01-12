@@ -45,7 +45,7 @@ mod ffi {
 }
 
 /// The QSize struct defines the size of a two-dimensional object using integer point precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QSize {
     w: i32,

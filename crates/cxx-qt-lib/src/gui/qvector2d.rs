@@ -113,7 +113,7 @@ mod ffi {
 }
 
 /// The QVector2D class represents a vector or vertex in 2D space.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QVector2D {
     v: [f32; 2],

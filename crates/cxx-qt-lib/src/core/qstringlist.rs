@@ -55,6 +55,10 @@ mod ffi {
         fn qstringlistContains(list: &QStringList, string: &QString) -> bool;
 
         #[doc(hidden)]
+        #[rust_name = "qstringlist_eq"]
+        fn operatorEq(a: &QStringList, b: &QStringList) -> bool;
+
+        #[doc(hidden)]
         #[rust_name = "qstringlist_to_qstring"]
         fn toQString(value: &QStringList) -> QString;
     }
@@ -91,6 +95,12 @@ impl Default for QStringList {
     /// Constructs an empty list.
     fn default() -> Self {
         ffi::qstringlist_default()
+    }
+}
+
+impl std::cmp::PartialEq for QStringList {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qstringlist_eq(self, other)
     }
 }
 

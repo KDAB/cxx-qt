@@ -46,6 +46,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_rgba"]
         fn construct(red: i32, green: i32, blue: i32, alpha: i32) -> QColor;
+        #[doc(hidden)]
+        #[rust_name = "qcolor_eq"]
+        fn operatorEq(a: &QColor, b: &QColor) -> bool;
     }
 }
 
@@ -73,6 +76,12 @@ impl Default for QColor {
     /// The alpha value of an invalid color is unspecified.
     fn default() -> Self {
         ffi::qcolor_init_default()
+    }
+}
+
+impl std::cmp::PartialEq for QColor {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qcolor_eq(self, other)
     }
 }
 

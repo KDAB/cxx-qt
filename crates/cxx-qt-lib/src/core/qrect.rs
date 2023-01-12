@@ -55,7 +55,7 @@ mod ffi {
 }
 
 /// The QRect struct defines a rectangle in the plane using integer precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QRect {
     // Note that Qt stores QRect as two points rather than a point and size (which QRectF is)

@@ -34,6 +34,10 @@ mod ffi {
         fn construct(string: &QString) -> QString;
 
         #[doc(hidden)]
+        #[rust_name = "qstring_eq"]
+        fn operatorEq(a: &QString, b: &QString) -> bool;
+
+        #[doc(hidden)]
         #[rust_name = "qstring_to_rust_string"]
         fn qstringToRustString(string: &QString) -> String;
     }
@@ -68,6 +72,12 @@ impl Default for QString {
     /// Constructs a null string. Null strings are also empty.
     fn default() -> Self {
         ffi::qstring_init_default()
+    }
+}
+
+impl std::cmp::PartialEq for QString {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qstring_eq(self, other)
     }
 }
 

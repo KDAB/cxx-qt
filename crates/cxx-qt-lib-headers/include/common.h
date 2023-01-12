@@ -44,5 +44,12 @@ toQString(const T& value)
   return res;
 }
 
+template<typename T>
+bool
+operatorEq(const T& a, const T& b)
+{
+  return a == b;
+}
+
 } // namespace cxxqtlib1
 } // namespace rust

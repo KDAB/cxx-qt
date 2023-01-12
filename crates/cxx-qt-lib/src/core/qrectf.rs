@@ -55,7 +55,7 @@ mod ffi {
 }
 
 /// The QRectF struct defines a rectangle in the plane using floating point precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QRectF {
     xp: f64,
