@@ -3,5 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod qqmlapplicationengine;
+pub use qqmlapplicationengine::QQmlApplicationEngine;
+
 mod qqmlengine;
 pub use qqmlengine::QQmlEngine;

@@ -8,29 +8,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_cargo_cpp_includes
-#include <QtQml/QQmlApplicationEngine>
+#include <QtQml/QQmlEngine>
 
 #include "cxx-qt-gen/my_object.cxxqt.h"
 
 // ANCHOR_END: book_cargo_cpp_includes
 
 // ANCHOR: book_cargo_run_cpp
-// extern "C" is important for the linker to be able to link this
-// function with Rust code.
-extern "C" void
-run_cpp()
+void
+register_types()
 {
-  // ANCHOR_END: book_cargo_run_cpp
-
-  // ANCHOR: book_cargo_run_qml
-  // TODO: creating binding, needs to survive
-  QQmlApplicationEngine* engine = new QQmlApplicationEngine();
-
-  const QUrl url(QStringLiteral("qrc:/main.qml"));
-
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-
-  // TODO: this explodes due to calling qApp->arguments()
-  engine->load(url);
 }
 // ANCHOR_END: book_cargo_run_qml

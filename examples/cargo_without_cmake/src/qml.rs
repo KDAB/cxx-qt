@@ -9,4 +9,9 @@ pub mod ffi {
         include!("qml.qrc.cpp");
         fn qInitResources() -> i32;
     }
+
+    unsafe extern "C++" {
+        include!("register_types.cpp");
+        fn register_types();
+    }
 }
