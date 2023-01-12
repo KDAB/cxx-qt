@@ -20,6 +20,7 @@ fn main() {
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")
         .file("src/qpointf.rs")
+        .file("src/qqmlengine.rs")
         .file("src/qrect.rs")
         .file("src/qrectf.rs")
         .file("src/qset.rs")

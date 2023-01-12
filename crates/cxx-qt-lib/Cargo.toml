@@ -24,5 +24,6 @@ cxx-qt-lib-headers.workspace = true
 qt-build-utils.workspace = true
 
 [features]
-default = ["qt_gui"]
+default = ["qt_gui", "qt_qml"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
+qt_qml = ["cxx-qt-lib-headers/qt_qml"]

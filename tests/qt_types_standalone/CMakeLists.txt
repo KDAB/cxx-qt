@@ -18,10 +18,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Test)
+    find_package(Qt6 COMPONENTS Core Gui Qml Test)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Qml Test REQUIRED)
 endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
@@ -36,6 +36,7 @@ target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 target_link_libraries(${CRATE} INTERFACE
     Qt::Core
     Qt::Gui
+    Qt::Qml
 )
 
 add_executable(${APP_NAME}
@@ -54,6 +55,7 @@ add_executable(${APP_NAME}
     cpp/qpersistentmodelindex.h
     cpp/qpoint.h
     cpp/qpointf.h
+    cpp/qqmlengine.h
     cpp/qrect.h
     cpp/qrectf.h
     cpp/qset.h

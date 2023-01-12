@@ -258,6 +258,8 @@ impl CxxQtBuilder {
         qt_modules.insert("Core".to_owned());
         #[cfg(feature = "qt_gui")]
         qt_modules.insert("Gui".to_owned());
+        #[cfg(feature = "qt_qml")]
+        qt_modules.insert("Qml".to_owned());
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
@@ -360,6 +362,9 @@ impl CxxQtBuilder {
         // Enable Qt Gui in C++ if the feature is enabled
         #[cfg(feature = "qt_gui")]
         self.cc_builder.define("CXX_QT_GUI_FEATURE", None);
+        // Enable Qt Gui in C++ if the feature is enabled
+        #[cfg(feature = "qt_qml")]
+        self.cc_builder.define("CXX_QT_QML_FEATURE", None);
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");

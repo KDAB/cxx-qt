@@ -17,13 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 
 - Support for container types: `QSet<T>`, `QHash<K, V>`, `QList<T>`, `QMap<K, V>`, `QVector<T>`
-- Support for further types: `QByteArray`, `QCoreApplication`, `QGuiApplication`, `QModelIndex`, `QPersistentModelIndex`, `QStringList`, `QVector2D`, `QVector3D`, `QVector4D`
+- Support for further types: `QByteArray`, `QCoreApplication`, `QGuiApplication`, `QModelIndex`, `QPersistentModelIndex`, `QQmlEngine`, `QStringList`, `QVector2D`, `QVector3D`, `QVector4D`
 - Support for nesting objects in properties, invokables, and signals with `*mut T`
 
 ### Changed
 
 - `QVariant` now has a uses a `QVariantValue` trait for supported types, allowing custom types to be used with QVariant
-- `QtGui` types in cxx-qt-lib are now behind a feature `qt_gui`
+- `QtGui` and `QtQml` types in cxx-qt-lib are now behind the features `qt_gui` and `qt_qml`
 
 ### Fixed
 
