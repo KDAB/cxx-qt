@@ -6,6 +6,7 @@
 
 mod qbytearray;
 mod qcolor;
+mod qcoreapplication;
 mod qdate;
 mod qdatetime;
 mod qguiapplication;

@@ -6,6 +6,9 @@
 mod qbytearray;
 pub use qbytearray::QByteArray;
 
+mod qcoreapplication;
+pub use qcoreapplication::QCoreApplication;
+
 mod qdate;
 pub use qdate::QDate;
 

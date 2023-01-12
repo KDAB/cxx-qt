@@ -10,6 +10,7 @@
 #include "cxxqtconvert.h"
 #include "qbytearray.h"
 #include "qcolor.h"
+#include "qcoreapplication.h"
 #include "qdate.h"
 #include "qdatetime.h"
 #include "qguiapplication.h"
@@ -50,6 +51,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new CxxQtConvertTest));
   runTest(QScopedPointer<QObject>(new QByteArrayTest));
   runTest(QScopedPointer<QObject>(new QColorTest));
+  runTest(QScopedPointer<QObject>(new QCoreApplicationTest));
   runTest(QScopedPointer<QObject>(new QDateTest));
   runTest(QScopedPointer<QObject>(new QDateTimeTest));
   runTest(QScopedPointer<QObject>(new QGuiApplicationTest));
