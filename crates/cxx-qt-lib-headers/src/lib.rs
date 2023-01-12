@@ -16,6 +16,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt-lib header directory");
     for (file_contents, file_name) in [
         (include_str!("../include/core/qbytearray.h"), "qbytearray.h"),
+        (
+            include_str!("../include/core/qcoreapplication.h"),
+            "qcoreapplication.h",
+        ),
         (include_str!("../include/core/qdate.h"), "qdate.h"),
         (include_str!("../include/core/qdatetime.h"), "qdatetime.h"),
         (include_str!("../include/core/qhash.h"), "qhash.h"),

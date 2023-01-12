@@ -9,6 +9,7 @@ fn main() {
     CxxQtBuilder::new()
         .file("src/qbytearray.rs")
         .file("src/qcolor.rs")
+        .file("src/qcoreapplication.rs")
         .file("src/qdate.rs")
         .file("src/qdatetime.rs")
         .file("src/qguiapplication.rs")

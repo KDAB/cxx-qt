@@ -43,6 +43,7 @@ add_executable(${APP_NAME}
     cpp/main.cpp
     cpp/qbytearray.h
     cpp/qcolor.h
+    cpp/qcoreapplication.h
     cpp/qdate.h
     cpp/qdatetime.h
     cpp/qguiapplication.h
