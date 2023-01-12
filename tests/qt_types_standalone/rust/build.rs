@@ -7,7 +7,6 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        .qt_modules(&["Gui"])
         .file("src/qbytearray.rs")
         .file("src/qcolor.rs")
         .file("src/qdate.rs")
