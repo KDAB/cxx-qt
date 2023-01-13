@@ -40,12 +40,12 @@ TestCase {
         obj.insertHash("A3", 3);
         obj.insertHash("A3", 3);
 
-        compare(spy.count, 4);
+        compare(spy.count, 2);
         // Order of Hash is not consistent
         verify(obj.stringHash === "A1 => 1, A3 => 3" || obj.stringHash === "A3 => 3, A1 => 1");
 
         obj.reset();
-        compare(spy.count, 5);
+        compare(spy.count, 3);
         compare(obj.stringHash, "");
     }
 
@@ -85,11 +85,11 @@ TestCase {
         obj.insertMap("A3", 3);
         obj.insertMap("A3", 3);
 
-        compare(spy.count, 4);
+        compare(spy.count, 2);
         compare(obj.stringMap, "A1 => 1, A3 => 3");
 
         obj.reset();
-        compare(spy.count, 5);
+        compare(spy.count, 3);
         compare(obj.stringMap, "");
     }
 
@@ -107,12 +107,12 @@ TestCase {
         obj.insertSet(3);
         obj.insertSet(3);
 
-        compare(spy.count, 4);
+        compare(spy.count, 2);
         // Order of Set is not consistent
         verify(obj.stringSet === "1, 3" || obj.stringSet === "3, 1");
 
         obj.reset();
-        compare(spy.count, 5);
+        compare(spy.count, 3);
         compare(obj.stringSet, "");
     }
 

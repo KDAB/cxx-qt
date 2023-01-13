@@ -150,6 +150,9 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn set_primitive(mut self: Pin<&mut Self>, value: i32) {
+            if self.rust().primitive == value {
+                return;
+            }
             unsafe {
                 self.as_mut().rust_mut().primitive = value;
             }
@@ -183,6 +186,9 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn set_trivial(mut self: Pin<&mut Self>, value: QPoint) {
+            if self.rust().trivial == value {
+                return;
+            }
             unsafe {
                 self.as_mut().rust_mut().trivial = value;
             }
@@ -216,6 +222,9 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
+            if self.rust().opaque == value {
+                return;
+            }
             unsafe {
                 self.as_mut().rust_mut().opaque = value;
             }
