@@ -61,7 +61,7 @@ Implement the trait for your custom type and then you can use the containers as 
 To use a custom type with `QVariant` implement the `QVariantValue` trait for your custom type, as seen below, then it can be used as normal.
 
 ```rust,ignore
-{{#include ../../../examples/qml_features/rust/types.rs:book_qvariantvalue_impl}}
+{{#include ../../../examples/qml_features/rust/src/types.rs:book_qvariantvalue_impl}}
 ```
 
 A full example of implementing a custom struct with `QVariant` is shown in the [qml_features types example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/types.rs).

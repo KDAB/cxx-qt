@@ -14,10 +14,10 @@
 
 // ANCHOR_END: book_cargo_cpp_includes
 
-// ANCHOR: book_cargo_run_cpp
+// ANCHOR: book_cargo_register_types
 void
-register_types()
+registerTypes()
 {
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
 }
-// ANCHOR_END: book_cargo_run_qml
+// ANCHOR_END: book_cargo_register_types
