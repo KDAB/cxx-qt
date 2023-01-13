@@ -48,6 +48,10 @@ mod ffi {
         fn qurlToRustString(url: &QUrl) -> String;
         #[doc(hidden)]
         #[rust_name = "qurl_to_qstring"]
+        fn qurlToQString(url: &QUrl) -> QString;
+
+        #[doc(hidden)]
+        #[rust_name = "qurl_debug"]
         fn toQString(url: &QUrl) -> QString;
     }
 }
@@ -71,7 +75,7 @@ impl QUrl {
     // userName: Option<String>,
 
     /// Returns a QString representation of the URL.
-    pub fn qstring(&self) -> QString {
+    pub fn to_qstring(&self) -> QString {
         ffi::qurl_to_qstring(self)
     }
 }
@@ -109,7 +113,7 @@ impl fmt::Display for QUrl {
 
 impl fmt::Debug for QUrl {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qurl_debug(self))
     }
 }
 
