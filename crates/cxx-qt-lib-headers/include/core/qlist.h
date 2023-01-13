@@ -10,6 +10,7 @@
 
 #include <QtCore/QList>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
 #include <QtCore/QPoint>
@@ -23,7 +24,9 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 
+#ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
+#endif
 
 #include "rust/cxx.h"
 
@@ -137,7 +140,10 @@ using QList_i8 = QList<::std::int8_t>;
 using QList_i16 = QList<::std::int16_t>;
 using QList_i32 = QList<::std::int32_t>;
 using QList_i64 = QList<::std::int64_t>;
+using QList_QByteArray = QList<::QByteArray>;
+#ifdef CXX_QT_GUI_FEATURE
 using QList_QColor = QList<::QColor>;
+#endif
 using QList_QDate = QList<::QDate>;
 using QList_QDateTime = QList<::QDateTime>;
 using QList_QPoint = QList<::QPoint>;
