@@ -56,7 +56,7 @@ TestCase {
         obj.connect("https://kdab.com");
         compare(connectedSpy.count, 1);
         compare(connectedUrlSpy.count, 1);
-        compare(previousConnectedUrlSpy.count, 1);
+        compare(previousConnectedUrlSpy.count, 0);
         compare(statusSpy.count, 1);
         compare(obj.connected, true);
         compare(obj.connectedUrl, kdabUrl);
@@ -64,33 +64,46 @@ TestCase {
         compare(obj.statusMessage, "Connected");
 
         obj.connect("https://kdab.com/about");
-        compare(connectedSpy.count, 2);
+        compare(connectedSpy.count, 1);
         compare(connectedUrlSpy.count, 2);
-        compare(previousConnectedUrlSpy.count, 2);
-        compare(statusSpy.count, 2);
+        compare(previousConnectedUrlSpy.count, 1);
+        compare(statusSpy.count, 1);
         compare(obj.connected, true);
         compare(obj.connectedUrl, kdabAboutUrl);
         compare(obj.previousConnectedUrl, kdabUrl);
         compare(obj.statusMessage, "Connected");
 
         obj.disconnect();
-        compare(connectedSpy.count, 3);
+        compare(connectedSpy.count, 2);
         compare(connectedUrlSpy.count, 3);
-        compare(previousConnectedUrlSpy.count, 3);
-        compare(statusSpy.count, 3);
+        compare(previousConnectedUrlSpy.count, 2);
+        compare(statusSpy.count, 2);
         compare(obj.connected, false);
         compare(obj.connectedUrl, "");
         compare(obj.previousConnectedUrl, kdabAboutUrl);
         compare(obj.statusMessage, "Disconnected");
 
         obj.connect("https://github.com/kdab/cxx-qt");
-        compare(connectedSpy.count, 4);
+        compare(connectedSpy.count, 2);
         compare(connectedUrlSpy.count, 3);
-        compare(previousConnectedUrlSpy.count, 3);
-        compare(statusSpy.count, 4);
+        compare(previousConnectedUrlSpy.count, 2);
+        compare(statusSpy.count, 3);
         compare(obj.connected, false);
         compare(obj.connectedUrl, "");
         compare(obj.previousConnectedUrl, kdabAboutUrl);
         compare(obj.statusMessage, "URL does not start with https://kdab.com");
+    }
+
+    function test_signal_fired_only_when_changed() {
+        const obj = createTemporaryObject(componentProperties, null, {});
+        const connectedSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "connectedChanged",
+            target: obj,
+        });
+
+        compare(obj.connected, false);
+        obj.disconnect();
+        // signals should not be emitted when the value doesn't actually change
+        compare(connectedSpy.count, 0);
     }
 }

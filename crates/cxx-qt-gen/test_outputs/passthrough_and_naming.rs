@@ -271,6 +271,9 @@ mod cxx_qt_ffi {
 
     impl MyObjectQt {
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
+            if self.rust().property_name == value {
+                return;
+            }
             unsafe {
                 self.as_mut().rust_mut().property_name = value;
             }
@@ -368,6 +371,9 @@ mod cxx_qt_ffi {
 
     impl SecondObjectQt {
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
+            if self.rust().property_name == value {
+                return;
+            }
             unsafe {
                 self.as_mut().rust_mut().property_name = value;
             }

@@ -47,6 +47,12 @@ pub fn generate(
             quote! {
                 impl #cpp_class_name_rust {
                     pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
+                        if self.rust().#ident == value {
+                            // don't want to set the value again and reemit the signal,
+                            // as this can cause binding loops
+                            return;
+                        }
+
                         unsafe {
                             self.as_mut().rust_mut().#ident = value;
                         }

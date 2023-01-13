@@ -161,6 +161,9 @@ mod tests {
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
+                        if self.rust().trivial_property == value {
+                            return;
+                        }
                         unsafe {
                             self.as_mut().rust_mut().trivial_property = value;
                         }
@@ -249,6 +252,9 @@ mod tests {
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
+                        if self.rust().opaque_property == value {
+                            return;
+                        }
                         unsafe {
                             self.as_mut().rust_mut().opaque_property = value;
                         }
@@ -337,6 +343,9 @@ mod tests {
             tokens_to_syn::<syn::Item>(quote! {
                 impl MyObjectQt {
                     pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
+                        if self.rust().unsafe_property == value {
+                            return;
+                        }
                         unsafe {
                             self.as_mut().rust_mut().unsafe_property = value;
                         }
