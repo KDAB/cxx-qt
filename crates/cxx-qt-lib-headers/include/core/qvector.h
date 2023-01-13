@@ -10,6 +10,7 @@
 
 #include <QtCore/QVector>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
 #include <QtCore/QPoint>
@@ -138,6 +139,7 @@ using QVector_i8 = QVector<::std::int8_t>;
 using QVector_i16 = QVector<::std::int16_t>;
 using QVector_i32 = QVector<::std::int32_t>;
 using QVector_i64 = QVector<::std::int64_t>;
+using QVector_QByteArray = QVector<::QByteArray>;
 #ifdef CXX_QT_GUI_FEATURE
 using QVector_QColor = QVector<::QColor>;
 #endif

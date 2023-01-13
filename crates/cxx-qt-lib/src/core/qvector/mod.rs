@@ -6,7 +6,8 @@
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
+    QByteArray, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime,
+    QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -18,6 +19,7 @@ mod qvector_i16;
 mod qvector_i32;
 mod qvector_i64;
 mod qvector_i8;
+mod qvector_qbytearray;
 #[cfg(feature = "qt_gui")]
 mod qvector_qcolor;
 mod qvector_qdate;
@@ -358,6 +360,7 @@ impl_qvector_element!(i8, qvector_i8, "QVector_i8");
 impl_qvector_element!(i16, qvector_i16, "QVector_i16");
 impl_qvector_element!(i32, qvector_i32, "QVector_i32");
 impl_qvector_element!(i64, qvector_i64, "QVector_i64");
+impl_qvector_element!(QByteArray, qvector_qbytearray, "QVector_QByteArray");
 #[cfg(feature = "qt_gui")]
 impl_qvector_element!(QColor, qvector_qcolor, "QVector_QColor");
 impl_qvector_element!(QDate, qvector_qdate, "QVector_QDate");
