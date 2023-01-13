@@ -12,7 +12,7 @@ fn main() {
         // - Qt Core is always linked
         // - Qt Gui is linked by enabling the qt_gui Cargo feature.
         // - Qt Qml is linked by enabling the qt_qml Cargo feature.
-        .qt_module("Qml")
+        // - Qt Qml requires linking Qt Network on macOS
         .qt_module("Network")
         // Generate C++ from the `#[cxx_qt::bridge]` module
         .file("src/cxxqt_object.rs")

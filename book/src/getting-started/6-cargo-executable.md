@@ -17,7 +17,6 @@ Note that the folder structure of this example is different to the CMake tutoria
 The complete example code is available in [`examples/cargo_without_cmake`](https://github.com/KDAB/cxx-qt/tree/main/examples/cargo_without_cmake)
 in the cxx-qt repository.
 
-
 ## Cargo setup
 The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build` as in our [CMake example](./5-cmake-integration.md). However, we are not building a `staticlib` this time:
 
@@ -39,33 +38,19 @@ and [cc::Build](https://docs.rs/cc/latest/cc/struct.Build.html) documentation fo
 
 ## C++ shim
 
-We need to write a small C++ shim to start the QML application. Later we will call this from the Rust executable.
-This looks mostly the same as starting a normal C++ application with a QML GUI with a few small changes.
+We need to write a small C++ shim to register QML types. Later we will call this from the Rust executable.
 
-First, we need to include Qt headers, the C++ header generated from `src/cxxqt_object.rs`, and C++ code generated
-from the `qml.qrc` file:
+First, we need to include Qt headers and the C++ header generated from `src/cxxqt_object.rs`.
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_cpp_includes}}
+{{#include ../../../examples/cargo_without_cmake/cpp/register_types.cpp:book_cargo_cpp_includes}}
 ```
 
-Instead of the `main` function in a typical C++ application, write an `extern "C"` function which we will call
-from Rust:
+Now create a `registerTypes` method which uses the included QObject to register
+with the `QQmlEngine`.
 
 ```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_run_cpp}}
-```
-
-In this function, we need to initialize the Qt resource system:
-
-```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_init_qrc}}
-```
-
-Then, register the QML type and run the QML file just like a C++ program:
-
-```c++,ignore
-{{#include ../../../examples/cargo_without_cmake/cpp/run.cpp:book_cargo_run_qml}}
+{{#include ../../../examples/cargo_without_cmake/cpp/register_types.cpp:book_cargo_register_types}}
 ```
 
 ## Rust executable
@@ -78,22 +63,26 @@ will need to call C++:
 {{#include ../../../examples/cargo_without_cmake/src/main.rs:book_cargo_imports}}
 ```
 
-Tell the linker to link this Rust code with the `run_cpp` function from the `src/cpp/run.cpp` file:
+Now create a file called `src/qml.rs` this will contain a bridge which allows
+us to initialize the Qt resources and register the QML types.
 
 ```rust,ignore
-{{#include ../../../examples/cargo_without_cmake/src/main.rs:book_cargo_extern_c}}
+{{#include ../../../examples/cargo_without_cmake/src/qml.rs:book_cargo_qml_bridge}}
 ```
 
-Define the `main` function that will be called when the executable starts. QGuiApplication's C++ constructor expects
-the command line arguments from a C++ `main` function to support [command line arguments common to all Qt programs](https://doc.qt.io/qt-6/qguiapplication.html#supported-command-line-options).
-However, Rust does not represent command line arguments the same way as C++, so some conversion is needed before passing
-the command line arguments to C++:
+Define the `main` function that will be called when the executable starts.
+This performs the following tasks
+
+  * Initialize the Qt resources
+  * Create a `QGuiApplication`
+  * Create a `QQmlApplicationEngine`
+  * Register the QML types to the engine
+  * Set the QML file path to the engine
+  * Start the application
 
 ```rust,ignore
 {{#include ../../../examples/cargo_without_cmake/src/main.rs:book_cargo_rust_main}}
 ```
-
-You can add as much Rust code to setup your application as you want before calling the `run_cpp` function.
 
 To build and run the application, use `cargo run` within the cxx-qt repository:
 
