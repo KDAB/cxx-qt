@@ -57,12 +57,14 @@ pub fn generate_cpp_signals(
         let emit_ident = idents.emit_name.cpp.to_string();
         let signal_ident = idents.name.cpp.to_string();
 
-        // Generate the Q_SIGNAL
-        generated.methods.push(CppFragment::Header(format!(
-            "Q_SIGNAL void {ident}({parameters});",
-            ident = signal_ident,
-            parameters = parameter_types.join(", "),
-        )));
+        // Generate the Q_SIGNAL if this is not an existing signal
+        if !signal.inherit {
+            generated.methods.push(CppFragment::Header(format!(
+                "Q_SIGNAL void {ident}({parameters});",
+                ident = signal_ident,
+                parameters = parameter_types.join(", "),
+            )));
+        }
 
         // Generate the emitters
         generated.methods.push(CppFragment::Pair {
@@ -106,6 +108,8 @@ mod tests {
     fn test_generate_cpp_signals() {
         let signals = vec![ParsedSignal {
             ident: format_ident!("data_changed"),
+            cxx_name: None,
+            inherit: false,
             parameters: vec![
                 ParsedFunctionParameter {
                     ident: format_ident!("trivial"),
@@ -160,6 +164,8 @@ mod tests {
     fn test_generate_cpp_signals_mapped_cxx_name() {
         let signals = vec![ParsedSignal {
             ident: format_ident!("data_changed"),
+            cxx_name: None,
+            inherit: false,
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
                 ty: tokens_to_syn(quote! { A1 }),
@@ -196,6 +202,38 @@ mod tests {
             MyObject::emitDataChanged(A1 mapped)
             {
                 Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
+            }
+            "#}
+        );
+    }
+
+    #[test]
+    fn test_generate_cpp_signals_existing_cxx_name() {
+        let signals = vec![ParsedSignal {
+            ident: format_ident!("ExistingSignal"),
+            cxx_name: Some("baseName".to_owned()),
+            inherit: true,
+            parameters: vec![],
+        }];
+        let qobject_idents = create_qobjectname();
+
+        let generated =
+            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
+
+        assert_eq!(generated.methods.len(), 1);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, "void emitBaseName();");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::emitBaseName()
+            {
+                Q_EMIT baseName();
             }
             "#}
         );

@@ -16,12 +16,33 @@ pub struct ParsedSignal {
     pub ident: Ident,
     /// The parameters of the signal
     pub parameters: Vec<ParsedFunctionParameter>,
-    // TODO: later this will describe if the signal has an attribute
-    // stating that the signal exists in the base class
+    /// The name of the signal in C++
+    pub cxx_name: Option<String>,
+    /// If the signal is defined in the base class
+    pub inherit: bool,
 }
 
 impl ParsedSignal {
     pub fn from(variant: &mut Variant) -> Result<Self> {
+        // Find cxx_name and inherit
+        let inherit = if let Some(index) = attribute_find_path(&variant.attrs, &["inherit"]) {
+            // Remove the attribute from the original enum
+            // so that it doesn't end up in the Rust generation
+            variant.attrs.remove(index);
+            true
+        } else {
+            false
+        };
+        let cxx_name = if let Some(index) = attribute_find_path(&variant.attrs, &["cxx_name"]) {
+            let str = attribute_tokens_to_value::<LitStr>(&variant.attrs[index])?.value();
+            // Remove the attribute from the original enum
+            // so that it doesn't end up in the Rust generation
+            variant.attrs.remove(index);
+            Some(str)
+        } else {
+            None
+        };
+
         // Read the fields into parameter blocks
         let parameters = fields_to_named_fields_mut(&mut variant.fields)?
             .into_iter()
@@ -47,11 +68,10 @@ impl ParsedSignal {
             .collect::<Result<Vec<ParsedFunctionParameter>>>()?;
 
         Ok(ParsedSignal {
-            // TODO: later we might have attributes on the signal
-            // to state if they exist in the base class, these could be
-            // extracted and stored in ParsedSignal here
             ident: variant.ident.clone(),
             parameters,
+            cxx_name,
+            inherit,
         })
     }
 }
@@ -136,14 +156,21 @@ mod tests {
                     #[cxx_type = "f32"]
                     y: f64
                 },
+                #[cxx_name = "baseName"]
+                #[inherit]
+                ExistingSignal,
             }
         });
         let signals = ParsedSignalsEnum::from(&e, 0).unwrap();
         assert_eq!(signals.ident, "MySignals");
         assert_eq!(signals.item.attrs.len(), 0);
-        assert_eq!(signals.signals.len(), 2);
+        assert_eq!(signals.signals.len(), 3);
+        assert!(!signals.signals[0].inherit);
+        assert!(signals.signals[0].cxx_name.is_none());
         assert_eq!(signals.signals[0].ident, "Ready");
         assert_eq!(signals.signals[0].parameters.len(), 0);
+        assert!(!signals.signals[1].inherit);
+        assert!(signals.signals[1].cxx_name.is_none());
         assert_eq!(signals.signals[1].ident, "PointChanged");
         assert_eq!(signals.signals[1].parameters.len(), 2);
         assert!(signals.signals[1].parameters[0].cxx_type.is_none());
@@ -155,6 +182,11 @@ mod tests {
         );
         assert_eq!(signals.signals[1].parameters[1].ident, "y");
         assert_eq!(signals.signals[1].parameters[1].ty, f64_type());
+        assert!(signals.signals[2].inherit);
+        assert!(signals.signals[2].cxx_name.is_some());
+        assert_eq!(signals.signals[2].cxx_name.as_ref().unwrap(), "baseName");
+        assert_eq!(signals.signals[2].ident, "ExistingSignal");
+        assert_eq!(signals.signals[2].parameters.len(), 0);
     }
 
     #[test]

@@ -27,7 +27,14 @@ Page {
 
             ToolButton {
                 enabled: listView.currentIndex > -1 && listView.count > 0
-                text: qsTr("Remove Selected Row")
+                text: qsTr("Double Selected")
+
+                onClicked: customBaseClass.multiply(listView.currentIndex, 2.0)
+            }
+
+            ToolButton {
+                enabled: listView.currentIndex > -1 && listView.count > 0
+                text: qsTr("Remove Selected")
 
                 onClicked: customBaseClass.remove(listView.currentIndex)
             }

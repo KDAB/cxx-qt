@@ -136,6 +136,9 @@ mod tests {
                 UnsafeSignal {
                     param: *mut T,
                 },
+                #[cxx_name = "baseName"]
+                #[inherit]
+                ExistingSignal,
             }
         });
         let signals_enum = ParsedSignalsEnum::from(&e, 0).unwrap();
@@ -143,7 +146,7 @@ mod tests {
 
         let generated = generate_rust_signals(&signals_enum, &qobject_idents).unwrap();
 
-        assert_eq!(generated.cxx_mod_contents.len(), 3);
+        assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
 
         // Ready
@@ -179,6 +182,17 @@ mod tests {
             },
         );
 
+        // ExistingSignal
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[3],
+            quote! {
+                unsafe extern "C++" {
+                    #[rust_name = "emit_base_name"]
+                    fn emitBaseName(self: Pin<&mut MyObjectQt>);
+                }
+            },
+        );
+
         // enum
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
@@ -192,6 +206,7 @@ mod tests {
                     UnsafeSignal {
                         param: *mut T,
                     },
+                    ExistingSignal,
                 }
             },
         );
@@ -203,7 +218,8 @@ mod tests {
                         match signal {
                             MySignals::Ready {} => { self.emit_ready() },
                             MySignals::DataChanged { trivial, opaque } => { self.emit_data_changed(trivial, opaque) },
-                            MySignals::UnsafeSignal { param } => unsafe { self.emit_unsafe_signal(param) }
+                            MySignals::UnsafeSignal { param } => unsafe { self.emit_unsafe_signal(param) },
+                            MySignals::ExistingSignal {} => { self.emit_base_name() }
                         }
                     }
                 }

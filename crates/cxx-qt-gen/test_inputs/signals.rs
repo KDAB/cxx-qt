@@ -17,6 +17,16 @@ mod ffi {
             third: QPoint,
             fourth: &'a QPoint,
         },
+        #[cxx_name = "newData"]
+        #[inherit]
+        BaseClassNewData {
+            first: i32,
+            // Value and Opaque are not real types that would compile; these are only testing the code generation
+            #[cxx_type = "Value"]
+            second: UniquePtr<Opaque>,
+            third: QPoint,
+            fourth: &'a QPoint,
+        },
     }
 
     #[cxx_qt::qobject]

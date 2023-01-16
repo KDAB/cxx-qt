@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for container types: `QSet<T>`, `QHash<K, V>`, `QList<T>`, `QMap<K, V>`, `QVector<T>`
 - Support for further types: `QByteArray`, `QCoreApplication`, `QGuiApplication`, `QModelIndex`, `QPersistentModelIndex`, `QQmlApplicationEngine`, `QQmlEngine`, `QStringList`, `QVector2D`, `QVector3D`, `QVector4D`
 - Support for nesting objects in properties, invokables, and signals with `*mut T`
+- Allow for marking signals as existing in the base class
 
 ### Changed
 

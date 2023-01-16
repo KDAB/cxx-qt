@@ -20,6 +20,9 @@ mod ffi {
         include!("cxx-qt-lib/qmodelindex.h");
         type QModelIndex = cxx_qt_lib::QModelIndex;
 
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_i32 = cxx_qt_lib::QVector<i32>;
+
         #[cxx_name = "beginInsertRows"]
         fn begin_insert_rows(self: Pin<&mut CustomBaseClassQt>, first: i32, last: i32);
         #[cxx_name = "endInsertRows"]
@@ -34,6 +37,13 @@ mod ffi {
         fn begin_reset_model(self: Pin<&mut CustomBaseClassQt>);
         #[cxx_name = "endResetModel"]
         fn end_reset_model(self: Pin<&mut CustomBaseClassQt>);
+
+        fn index(
+            self: &CustomBaseClassQt,
+            row: i32,
+            column: i32,
+            parent: &QModelIndex,
+        ) -> QModelIndex;
     }
 
     // ANCHOR: book_qobject_base
@@ -44,6 +54,18 @@ mod ffi {
         id: u32,
         vector: Vec<(u32, f64)>,
     }
+
+    // ANCHOR: book_qsignals_inherit
+    #[cxx_qt::qsignals(CustomBaseClass)]
+    pub enum Signals<'a> {
+        #[inherit]
+        DataChanged {
+            top_left: &'a QModelIndex,
+            bottom_right: &'a QModelIndex,
+            roles: &'a QVector_i32,
+        },
+    }
+    // ANCHOR_END: book_qsignals_inherit
 
     impl qobject::CustomBaseClass {
         #[qinvokable]
@@ -86,6 +108,23 @@ mod ffi {
             self.as_mut().set_id(0);
             self.as_mut().vector_mut().clear();
             self.as_mut().end_reset_model();
+        }
+
+        #[qinvokable]
+        pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
+            if let Some((_, value)) = self.as_mut().vector_mut().get_mut(index as usize) {
+                *value *= factor;
+
+                // Emit dataChanged for the index and value role
+                let model_index = self.index(index, 0, &QModelIndex::default());
+                let mut vector_roles = QVector_i32::default();
+                vector_roles.append(1);
+                self.as_mut().emit(Signals::DataChanged {
+                    top_left: &model_index,
+                    bottom_right: &model_index,
+                    roles: &vector_roles,
+                });
+            }
         }
 
         #[qinvokable]
