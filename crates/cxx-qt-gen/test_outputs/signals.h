@@ -39,6 +39,10 @@ public:
                        ::std::unique_ptr<Opaque> second,
                        QPoint third,
                        QPoint const& fourth);
+  void emitNewData(::std::int32_t first,
+                   ::std::unique_ptr<Opaque> second,
+                   QPoint third,
+                   QPoint const& fourth);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

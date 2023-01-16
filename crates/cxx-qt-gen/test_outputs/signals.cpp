@@ -66,6 +66,22 @@ MyObject::emitDataChanged(::std::int32_t first,
       ::std::move(fourth)));
 }
 
+void
+MyObject::emitNewData(::std::int32_t first,
+                      ::std::unique_ptr<Opaque> second,
+                      QPoint third,
+                      QPoint const& fourth)
+{
+  Q_EMIT newData(
+    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
+      ::std::move(first)),
+    ::rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
+      ::std::move(second)),
+    ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
+    ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
+      ::std::move(fourth)));
+}
+
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {

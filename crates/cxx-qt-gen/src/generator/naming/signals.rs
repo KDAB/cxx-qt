@@ -17,16 +17,17 @@ pub struct QSignalName {
 
 impl From<&ParsedSignal> for QSignalName {
     fn from(signal: &ParsedSignal) -> Self {
-        Self::from(&signal.ident)
-    }
-}
+        // Check if there is a cxx ident that should be used
+        let cxx_ident = if let Some(cxx_name) = &signal.cxx_name {
+            format_ident!("{}", cxx_name)
+        } else {
+            signal.ident.clone()
+        };
 
-impl From<&Ident> for QSignalName {
-    fn from(ident: &Ident) -> Self {
         Self {
-            enum_name: ident.clone(),
-            name: name_from_ident(ident),
-            emit_name: emit_name_from_ident(ident),
+            enum_name: signal.ident.clone(),
+            name: name_from_ident(&cxx_ident),
+            emit_name: emit_name_from_ident(&cxx_ident),
         }
     }
 }
@@ -55,10 +56,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parsed_property() {
+    fn test_parsed_signal() {
         let qsignal = ParsedSignal {
             ident: format_ident!("DataChanged"),
             parameters: vec![],
+            cxx_name: None,
+            inherit: false,
         };
 
         let names = QSignalName::from(&qsignal);
@@ -67,5 +70,22 @@ mod tests {
         assert_eq!(names.name.rust, format_ident!("data_changed"));
         assert_eq!(names.emit_name.cpp, format_ident!("emitDataChanged"));
         assert_eq!(names.emit_name.rust, format_ident!("emit_data_changed"));
+    }
+
+    #[test]
+    fn test_parsed_signal_existing_cxx_name() {
+        let qsignal = ParsedSignal {
+            ident: format_ident!("ExistingSignal"),
+            parameters: vec![],
+            cxx_name: Some("baseName".to_owned()),
+            inherit: true,
+        };
+
+        let names = QSignalName::from(&qsignal);
+        assert_eq!(names.enum_name, format_ident!("ExistingSignal"));
+        assert_eq!(names.name.cpp, format_ident!("baseName"));
+        assert_eq!(names.name.rust, format_ident!("base_name"));
+        assert_eq!(names.emit_name.cpp, format_ident!("emitBaseName"));
+        assert_eq!(names.emit_name.rust, format_ident!("emit_base_name"));
     }
 }

@@ -19,6 +19,14 @@ If the enum variant has members, they will become the parameters for the corresp
 Because CXX-Qt needs to know the names of each parameter, only enum variants with named members are supported.
 The signal parameters are generated in order of appearance in the enum variant.
 
+If a signal is defined on the base class of the QObject then `#[inherit]` can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qsignals_inherit}}
+```
+
+Note that `#[cxx_name = "..."]` can also be used on a signal to declare a different name in C++ to Rust.
+
 ## Emitting a signal
 
 For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum, CXX-Qt will generate an `emit` function:

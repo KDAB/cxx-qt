@@ -49,6 +49,17 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[rust_name = "emit_new_data"]
+        fn emitNewData(
+            self: Pin<&mut MyObjectQt>,
+            first: i32,
+            second: UniquePtr<Opaque>,
+            third: QPoint,
+            fourth: &QPoint,
+        );
+    }
+
+    unsafe extern "C++" {
         type MyObjectCxxQtThread;
 
         #[cxx_name = "unsafeRust"]
@@ -119,6 +130,12 @@ mod cxx_qt_ffi {
             third: QPoint,
             fourth: &'a QPoint,
         },
+        BaseClassNewData {
+            first: i32,
+            second: UniquePtr<Opaque>,
+            third: QPoint,
+            fourth: &'a QPoint,
+        },
     }
 
     impl MyObjectQt {
@@ -131,6 +148,12 @@ mod cxx_qt_ffi {
                     third,
                     fourth,
                 } => self.emit_data_changed(first, second, third, fourth),
+                MySignals::BaseClassNewData {
+                    first,
+                    second,
+                    third,
+                    fourth,
+                } => self.emit_new_data(first, second, third, fourth),
             }
         }
     }

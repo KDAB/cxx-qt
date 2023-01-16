@@ -27,6 +27,14 @@ TestCase {
         }
     }
 
+    Component {
+        id: componentSpy
+
+        SignalSpy {
+
+        }
+    }
+
     function test_add_remove() {
         const model = createTemporaryObject(componentCustomBaseClass, null, {});
         const instantiator = createTemporaryObject(componentInstantiator, null, {
@@ -54,5 +62,24 @@ TestCase {
         tryCompare(instantiator, "count", 5);
         model.clear();
         compare(instantiator.count, 0);
+    }
+
+    function test_multiply() {
+        const model = createTemporaryObject(componentCustomBaseClass, null, {});
+        const instantiator = createTemporaryObject(componentInstantiator, null, {
+            model: model,
+        });
+        const dataChangedSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "dataChanged",
+            target: model,
+        });
+        instantiator.model = model;
+        model.add();
+        compare(instantiator.count, 1);
+        compare(dataChangedSpy.count, 0);
+
+        model.multiply(0, 2.0);
+        compare(instantiator.count, 1);
+        compare(dataChangedSpy.count, 1);
     }
 }
