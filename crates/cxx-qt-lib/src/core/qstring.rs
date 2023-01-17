@@ -10,10 +10,77 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qstring.h");
+        include!("cxx-qt-lib/qt.h");
+        type CaseSensitivity = crate::CaseSensitivity;
+        type SplitBehaviorFlags = crate::SplitBehaviorFlags;
+    }
 
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qbytearray.h");
+        type QByteArray = crate::QByteArray;
+        include!("cxx-qt-lib/qstring.h");
         type QString = super::QString;
+        include!("cxx-qt-lib/qstringlist.h");
+        type QStringList = crate::QStringList;
+
+        /// Appends the string str onto the end of this string.
+        fn append<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;
+
+        /// Clears the contents of the string and makes it null.
+        fn clear(self: &mut QString);
+
+        /// Lexically compares this string with the other string and
+        /// returns an integer less than, equal to, or greater than zero if
+        /// this string is less than, equal to, or greater than the other string.
+        fn compare(self: &QString, other: &QString, cs: CaseSensitivity) -> i32;
+
+        /// Returns true if this string contains an occurrence of the string str; otherwise returns false.
+        fn contains(self: &QString, str: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Returns true if the string ends with s; otherwise returns false.
+        #[rust_name = "ends_with"]
+        fn endsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Returns true if the string has no characters; otherwise returns false.
+        #[rust_name = "is_empty"]
+        fn isEmpty(self: &QString) -> bool;
+
+        /// Returns true if the string is lowercase, that is, it's identical to its toLower() folding.
+        #[rust_name = "is_lower"]
+        fn isLower(self: &QString) -> bool;
+
+        /// Returns true if this string is null; otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QString) -> bool;
+
+        /// Returns true if the string is read right to left.
+        #[rust_name = "is_right_to_left"]
+        fn isRightToLeft(self: &QString) -> bool;
+
+        /// Returns true if the string is uppercase, that is, it's identical to its toUpper() folding.
+        #[rust_name = "is_upper"]
+        fn isUpper(self: &QString) -> bool;
+
+        /// Prepends the string str to the beginning of this string and returns a reference to this string.
+        fn prepend<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;
+
+        /// Removes every occurrence of the given str string in this string, and returns a reference to this string.
+        fn remove<'a>(self: &'a mut QString, str: &QString, cs: CaseSensitivity)
+            -> &'a mut QString;
+
+        /// Replaces every occurrence of the string before with the string after and returns a reference to this string.
+        fn replace<'a>(
+            self: &'a mut QString,
+            before: &QString,
+            after: &QString,
+            cs: CaseSensitivity,
+        ) -> &'a mut QString;
+
+        /// Returns true if the string starts with s; otherwise returns false.
+        #[rust_name = "starts_with"]
+        fn startsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -44,12 +111,70 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_to_rust_string"]
         fn qstringToRustString(string: &QString) -> String;
+
+        #[doc(hidden)]
+        #[rust_name = "qstring_arg"]
+        fn qstringArg(string: &QString, a: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_index_of"]
+        fn qstringIndexOf(
+            string: &QString,
+            str: &QString,
+            from: isize,
+            cs: CaseSensitivity,
+        ) -> isize;
+        #[doc(hidden)]
+        #[rust_name = "qstring_insert"]
+        fn qstringInsert<'a>(string: &'a mut QString, pos: isize, str: &QString)
+            -> &'a mut QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_left"]
+        fn qstringLeft(string: &QString, n: isize) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_len"]
+        fn qstringLen(string: &QString) -> isize;
+        #[doc(hidden)]
+        #[rust_name = "qstring_mid"]
+        fn qstringMid(string: &QString, position: isize, n: isize) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_right"]
+        fn qstringRight(string: &QString, n: isize) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_simplified"]
+        fn qstringSimplified(string: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_split"]
+        fn qstringSplit(
+            string: &QString,
+            sep: &QString,
+            behavior: SplitBehaviorFlags,
+            cs: CaseSensitivity,
+        ) -> QStringList;
+        #[doc(hidden)]
+        #[rust_name = "qstring_to_latin1"]
+        fn qstringToLatin1(string: &QString) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qstring_to_local8bit"]
+        fn qstringToLocal8Bit(string: &QString) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qstring_to_lower"]
+        fn qstringToLower(string: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_to_upper"]
+        fn qstringToUpper(string: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_to_utf8"]
+        fn qstringToUtf8(string: &QString) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qstring_trimmed"]
+        fn qstringTrimmed(string: &QString) -> QString;
     }
 }
 
 /// The QString class provides a Unicode character string.
 ///
 /// Note that QString is a UTF-16 whereas Rust strings are a UTF-8
+#[repr(C)]
 pub struct QString {
     /// The layout has changed between Qt 5 and Qt 6
     ///
@@ -145,6 +270,92 @@ impl From<&QString> for String {
     /// Note that this converts from UTF-16 to UTF-8
     fn from(qstring: &QString) -> Self {
         ffi::qstring_to_rust_string(qstring)
+    }
+}
+
+impl QString {
+    /// Returns a copy of this string with the lowest numbered place marker replaced by string a, i.e., %1, %2, ..., %99.
+    pub fn arg(&self, a: &QString) -> Self {
+        ffi::qstring_arg(self, a)
+    }
+
+    /// Returns the index position of the first occurrence of the string str in this string,
+    /// searching forward from index position from. Returns -1 if str is not found.
+    pub fn index_of(&self, str: &QString, from: isize, cs: ffi::CaseSensitivity) -> isize {
+        ffi::qstring_index_of(self, str, from, cs)
+    }
+
+    /// Inserts the string str at the given index position and returns a mutable reference to this string.
+    pub fn insert<'a>(&'a mut self, pos: isize, str: &Self) -> &'a mut Self {
+        ffi::qstring_insert(self, pos, str)
+    }
+
+    /// Returns a substring that contains the n leftmost characters of the string.
+    pub fn left(&self, n: isize) -> Self {
+        ffi::qstring_left(self, n)
+    }
+
+    /// Returns the number of characters in this string.
+    pub fn len(self: &QString) -> isize {
+        ffi::qstring_len(self)
+    }
+
+    /// Returns a string that contains n characters of this string, starting at the specified position index.
+    pub fn mid(&self, position: isize, n: isize) -> Self {
+        ffi::qstring_mid(self, position, n)
+    }
+
+    /// Returns a substring that contains the n rightmost characters of the string.
+    pub fn right(&self, n: isize) -> Self {
+        ffi::qstring_right(self, n)
+    }
+
+    /// Returns a string that has whitespace removed from the start and the end,
+    /// and that has each sequence of internal whitespace replaced with a single space.
+    pub fn simplified(&self) -> Self {
+        ffi::qstring_simplified(self)
+    }
+
+    /// Splits the string into substrings wherever sep occurs, and returns the list of those strings.
+    /// If sep does not match anywhere in the string, split() returns a single-element list containing this string.
+    pub fn split(
+        &self,
+        sep: &QString,
+        behavior: ffi::SplitBehaviorFlags,
+        cs: ffi::CaseSensitivity,
+    ) -> ffi::QStringList {
+        ffi::qstring_split(self, sep, behavior, cs)
+    }
+
+    /// Returns a Latin-1 representation of the string as a QByteArray.
+    pub fn to_latin1(&self) -> ffi::QByteArray {
+        ffi::qstring_to_latin1(self)
+    }
+
+    /// Returns the local 8-bit representation of the string as a QByteArray.
+    /// The returned byte array is undefined if the string contains characters not supported by the local 8-bit encoding.
+    pub fn to_local8bit(&self) -> ffi::QByteArray {
+        ffi::qstring_to_local8bit(self)
+    }
+
+    /// Returns a lowercase copy of the string.
+    pub fn to_lower(&self) -> Self {
+        ffi::qstring_to_lower(self)
+    }
+
+    /// Returns an uppercase copy of the string.
+    pub fn to_upper(&self) -> Self {
+        ffi::qstring_to_upper(self)
+    }
+
+    /// Returns a UTF-8 representation of the string as a QByteArray.
+    pub fn to_utf8(&self) -> ffi::QByteArray {
+        ffi::qstring_to_utf8(self)
+    }
+
+    /// Returns a string that has whitespace removed from the start and the end.
+    pub fn trimmed(&self) -> Self {
+        ffi::qstring_trimmed(self)
     }
 }
 
