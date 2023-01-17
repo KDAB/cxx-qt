@@ -15,17 +15,38 @@ mod ffi {
         type QPoint = super::QPoint;
         type QString = crate::QString;
 
-        /// Returns the x coordinate of this point.
-        fn x(self: &QPoint) -> i32;
-        /// Returns the y coordinate of this point.
-        fn y(self: &QPoint) -> i32;
+        /// Returns true if both the x and y coordinates are set to 0, otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QPoint) -> bool;
+
+        /// Returns the sum of the absolute values of x() and y(),
+        /// traditionally known as the "Manhattan length" of the vector from the origin to the point.
+        #[rust_name = "manhattan_length"]
+        fn manhattanLength(self: &QPoint) -> i32;
 
         /// Sets the x coordinate of this point to the given x coordinate.
         #[rust_name = "set_x"]
         fn setX(self: &mut QPoint, x: i32);
+
         /// Sets the y coordinate of this point to the given y coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QPoint, y: i32);
+
+        /// Returns a point with x and y coordinates exchanged
+        fn transposed(self: &QPoint) -> QPoint;
+
+        /// Returns the x coordinate of this point.
+        fn x(self: &QPoint) -> i32;
+
+        /// Returns the y coordinate of this point.
+        fn y(self: &QPoint) -> i32;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qpoint_dot_product"]
+        fn qpointDotProduct(p1: &QPoint, p2: &QPoint) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -53,6 +74,11 @@ pub struct QPoint {
 }
 
 impl QPoint {
+    /// Returns the dot product of p1 and p2.
+    pub fn dot_product(p1: &QPoint, p2: &QPoint) -> i32 {
+        ffi::qpoint_dot_product(p1, p2)
+    }
+
     /// Constructs a point with the given coordinates (x, y).
     pub fn new(x: i32, y: i32) -> Self {
         ffi::qpoint_init(x, y)
