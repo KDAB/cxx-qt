@@ -7,4 +7,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
+
 #include <QtCore/QPoint>
+
+namespace rust {
+namespace cxxqtlib1 {
+
+::std::int32_t
+qpointDotProduct(const QPoint& p1, const QPoint& p2);
+
+}
+}
