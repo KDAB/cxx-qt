@@ -90,6 +90,7 @@ fn main() {
         "core/qsizef",
         "core/qstring",
         "core/qstringlist",
+        "core/qt",
         "core/qtime",
         "core/qurl",
         "core/qvariant/mod",

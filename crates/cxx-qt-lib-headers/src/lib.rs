@@ -51,6 +51,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             include_str!("../include/core/qstringlist.h"),
             "qstringlist.h",
         ),
+        (include_str!("../include/core/qt.h"), "qt.h"),
         (include_str!("../include/core/qtime.h"), "qtime.h"),
         (include_str!("../include/core/qurl.h"), "qurl.h"),
         (include_str!("../include/core/qvariant.h"), "qvariant.h"),
