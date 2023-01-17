@@ -13,6 +13,7 @@
 
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QPersistentModelIndex>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QRect>
@@ -69,6 +70,7 @@ CXX_QT_QVARIANT_CAN_CONVERT(QColor)
 #endif
 CXX_QT_QVARIANT_CAN_CONVERT(QDate)
 CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)
+CXX_QT_QVARIANT_CAN_CONVERT(QPersistentModelIndex)
 CXX_QT_QVARIANT_CAN_CONVERT(QPoint)
 CXX_QT_QVARIANT_CAN_CONVERT(QPointF)
 CXX_QT_QVARIANT_CAN_CONVERT(QRect)

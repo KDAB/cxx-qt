@@ -8,8 +8,6 @@
 
 #include "../assertion_utils.h"
 
-// The layout has changed between Qt 5 and Qt 6
-//
 // QPersistentModelIndex is a single pointer to a QPersistentModelIndexData
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v5.15.6-lts-lgpl#n143
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v6.2.4#n243
