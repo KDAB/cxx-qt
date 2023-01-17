@@ -161,5 +161,29 @@ qbytearrayResize(QByteArray& byteArray, ::rust::isize size)
 #endif
 }
 
+QByteArray
+qbytearraySimplified(const QByteArray& byteArray)
+{
+  return byteArray.simplified();
+}
+
+QByteArray
+qbytearrayToLower(const QByteArray& byteArray)
+{
+  return byteArray.toLower();
+}
+
+QByteArray
+qbytearrayToUpper(const QByteArray& byteArray)
+{
+  return byteArray.toUpper();
+}
+
+QByteArray
+qbytearrayTrimmed(const QByteArray& byteArray)
+{
+  return byteArray.trimmed();
+}
+
 }
 }

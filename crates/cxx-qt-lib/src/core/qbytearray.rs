@@ -14,6 +14,18 @@ mod ffi {
 
         /// Clears the contents of the byte array and makes it null.
         fn clear(self: &mut QByteArray);
+        /// Returns true if the byte array has size 0; otherwise returns false.
+        #[rust_name = "is_empty"]
+        fn isEmpty(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is lowercase, that is, if it's identical to its toLower() folding.
+        #[rust_name = "is_lower"]
+        fn isLower(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is null; otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is uppercase, that is, if it's identical to its toUpper() folding.
+        #[rust_name = "is_upper"]
+        fn isUpper(self: &QByteArray) -> bool;
         /// Releases any memory not required to store the array's data.
         fn squeeze(self: &mut QByteArray);
     }
@@ -75,6 +87,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qbytearray_resize"]
         fn qbytearrayResize(bytearray: &mut QByteArray, size: isize);
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_simplified"]
+        fn qbytearraySimplified(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_to_lower"]
+        fn qbytearrayToLower(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_to_upper"]
+        fn qbytearrayToUpper(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_trimmed"]
+        fn qbytearrayTrimmed(bytearray: &QByteArray) -> QByteArray;
     }
 }
 
@@ -213,11 +237,6 @@ impl QByteArray {
         ffi::qbytearray_insert(self, pos, ch);
     }
 
-    /// Returns true if the list contains no elements; otherwise returns false.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
     /// Returns the number of items in the QByteArray.
     pub fn len(&self) -> isize {
         ffi::qbytearray_len(self)
@@ -241,6 +260,27 @@ impl QByteArray {
     /// If size is less than the current size, bytes beyond position size are excluded from the byte array.
     pub fn resize(&mut self, size: isize) {
         ffi::qbytearray_resize(self, size);
+    }
+
+    /// Returns a copy of this byte array that has spacing characters removed from the start and end,
+    /// and in which each sequence of internal spacing characters is replaced with a single space.
+    pub fn simplified(&self) -> Self {
+        ffi::qbytearray_simplified(self)
+    }
+
+    /// Returns a copy of the byte array in which each ASCII uppercase letter converted to lowercase.
+    pub fn to_lower(&self) -> Self {
+        ffi::qbytearray_to_lower(self)
+    }
+
+    /// Returns a copy of the byte array in which each ASCII lowercase letter converted to uppercase.
+    pub fn to_upper(&self) -> Self {
+        ffi::qbytearray_to_upper(self)
+    }
+
+    /// Returns a copy of this byte array with spacing characters removed from the start and end.
+    pub fn trimmed(&self) -> Self {
+        ffi::qbytearray_trimmed(self)
     }
 }
 
