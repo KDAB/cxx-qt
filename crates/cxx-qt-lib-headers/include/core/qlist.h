@@ -13,6 +13,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QPersistentModelIndex>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QRect>
@@ -146,6 +147,7 @@ using QList_QColor = QList<::QColor>;
 #endif
 using QList_QDate = QList<::QDate>;
 using QList_QDateTime = QList<::QDateTime>;
+using QList_QPersistentModelIndex = QList<::QPersistentModelIndex>;
 using QList_QPoint = QList<::QPoint>;
 using QList_QPointF = QList<::QPointF>;
 using QList_QRect = QList<::QRect>;

@@ -5,9 +5,6 @@
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
-mod qmap_qstring_qvariant;
-pub use qmap_qstring_qvariant::QMapPair_QString_QVariant;
-
 /// The QMap class is a template class that provides an associative array.
 ///
 /// To use QMap with a custom pair, implement the [`QMapPair`] trait for T.
@@ -199,6 +196,9 @@ pub trait QMapPair: Sized {
 
 macro_rules! impl_qmap_pair {
     ( $keyTypeName:ty, $valueTypeName:ty, $module:ident, $pairTypeName:ident, $typeId:literal ) => {
+        mod $module;
+        pub use $module::$pairTypeName;
+
         impl QMapPair for $module::$pairTypeName {
             type Key = $keyTypeName;
             type Value = $valueTypeName;

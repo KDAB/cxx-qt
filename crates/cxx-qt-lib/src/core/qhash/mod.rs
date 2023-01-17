@@ -5,12 +5,6 @@
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
-mod qhash_i32_qbytearray;
-pub use qhash_i32_qbytearray::QHashPair_i32_QByteArray;
-
-mod qhash_qstring_qvariant;
-pub use qhash_qstring_qvariant::QHashPair_QString_QVariant;
-
 /// The QHash class is a template class that provides a hash-table-based dictionary.
 ///
 /// Note that this means that T needs to have a C++ global
@@ -207,6 +201,9 @@ pub trait QHashPair: Sized {
 
 macro_rules! impl_qhash_pair {
     ( $keyTypeName:ty, $valueTypeName:ty, $module:ident, $pairTypeName:ident, $typeId:literal ) => {
+        mod $module;
+        pub use $module::$pairTypeName;
+
         impl QHashPair for $module::$pairTypeName {
             type Key = $keyTypeName;
             type Value = $valueTypeName;

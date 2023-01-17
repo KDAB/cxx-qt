@@ -9,7 +9,8 @@ use std::mem::MaybeUninit;
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
+    QDate, QDateTime, QPersistentModelIndex, QPoint, QPointF, QRect, QRectF, QSize, QSizeF,
+    QString, QTime, QUrl,
 };
 
 #[cxx::bridge]
@@ -152,6 +153,7 @@ impl_qvariant_value!(i64, qvariant_i64);
 impl_qvariant_value!(QColor, qvariant_qcolor);
 impl_qvariant_value!(QDate, qvariant_qdate);
 impl_qvariant_value!(QDateTime, qvariant_qdatetime);
+impl_qvariant_value!(QPersistentModelIndex, qvariant_qpersistentmodelindex);
 impl_qvariant_value!(QPoint, qvariant_qpoint);
 impl_qvariant_value!(QPointF, qvariant_qpointf);
 impl_qvariant_value!(QRect, qvariant_qrect);

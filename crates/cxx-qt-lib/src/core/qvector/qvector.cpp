@@ -44,6 +44,7 @@ CXX_QT_QVECTOR_ASSERTS(::QColor, QColor);
 #endif
 CXX_QT_QVECTOR_ASSERTS(::QDate, QDate);
 CXX_QT_QVECTOR_ASSERTS(::QDateTime, QDateTime);
+CXX_QT_QVECTOR_ASSERTS(::QPersistentModelIndex, QPersistentModelIndex);
 CXX_QT_QVECTOR_ASSERTS(::QPoint, QPoint);
 CXX_QT_QVECTOR_ASSERTS(::QPointF, QPointF);
 CXX_QT_QVECTOR_ASSERTS(::QRect, QRect);
