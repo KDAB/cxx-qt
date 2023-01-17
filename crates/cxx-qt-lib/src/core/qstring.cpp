@@ -54,10 +54,136 @@ qstringToRustString(const QString& string)
   return ::rust::String(byteArray.constData(), byteArray.size());
 }
 
-void
-qstringAppend(QString& a, const QString& b)
+QString
+qstringArg(const QString& string, const QString& a)
 {
-  a.append(b);
+  // CXX can't choose between arg overloads so use C++
+  return string.arg(a);
+}
+
+::rust::isize
+qstringIndexOf(const QString& string,
+               const QString& str,
+               ::rust::isize from,
+               Qt::CaseSensitivity cs)
+{
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return static_cast<::rust::isize>(
+    string.indexOf(str, static_cast<qsizetype>(from), cs));
+#else
+  return static_cast<::rust::isize>(
+    string.indexOf(str, static_cast<int>(from), cs));
+#endif
+}
+
+QString&
+qstringInsert(QString& string, ::rust::isize pos, const QString& str)
+{
+  Q_ASSERT(pos >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return string.insert(static_cast<qsizetype>(pos), str);
+#else
+  return string.insert(static_cast<int>(pos), str);
+#endif
+}
+
+QString
+qstringLeft(const QString& string, ::rust::isize n)
+{
+  Q_ASSERT(n >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return string.left(static_cast<qsizetype>(n));
+#else
+  return string.left(static_cast<int>(n));
+#endif
+}
+
+::rust::isize
+qstringLen(const QString& string)
+{
+  // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
+  // is the same for CXX
+  return static_cast<::rust::isize>(string.size());
+}
+
+QString
+qstringMid(const QString& string, ::rust::isize position, ::rust::isize n)
+{
+  Q_ASSERT(position >= 0);
+  Q_ASSERT(n >= -1);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return string.mid(static_cast<qsizetype>(position),
+                    static_cast<qsizetype>(n));
+#else
+  return string.mid(static_cast<qsizetype>(position), static_cast<int>(n));
+#endif
+}
+
+QString
+qstringRight(const QString& string, ::rust::isize n)
+{
+  Q_ASSERT(n >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return string.right(static_cast<qsizetype>(n));
+#else
+  return string.right(static_cast<int>(n));
+#endif
+}
+
+QStringList
+qstringSplit(const QString& string,
+             const QString& sep,
+             Qt::SplitBehaviorFlags behavior,
+             Qt::CaseSensitivity cs)
+{
+  return string.split(sep, behavior, cs);
+}
+
+QString
+qstringSimplified(const QString& string)
+{
+  return string.simplified();
+}
+
+QByteArray
+qstringToLatin1(const QString& string)
+{
+  return string.toLatin1();
+}
+
+QByteArray
+qstringToLocal8Bit(const QString& string)
+{
+  return string.toLocal8Bit();
+}
+
+QString
+qstringToLower(const QString& string)
+{
+  return string.toLower();
+}
+
+QString
+qstringToUpper(const QString& string)
+{
+  return string.toUpper();
+}
+
+QByteArray
+qstringToUtf8(const QString& string)
+{
+  return string.toUtf8();
+}
+
+QString
+qstringTrimmed(const QString& string)
+{
+  return string.trimmed();
 }
 
 }
