@@ -8,3 +8,12 @@
 #pragma once
 
 #include <QtCore/QPointF>
+
+namespace rust {
+namespace cxxqtlib1 {
+
+double
+qpointfDotProduct(const QPointF& p1, const QPointF& p2);
+
+}
+}
