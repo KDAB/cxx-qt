@@ -45,6 +45,7 @@ CXX_QT_QLIST_ASSERTS(::QDate, QDate);
 CXX_QT_QLIST_ASSERTS(::QDateTime, QDateTime);
 CXX_QT_QLIST_ASSERTS(::QMargins, QMargins);
 CXX_QT_QLIST_ASSERTS(::QMarginsF, QMarginsF);
+CXX_QT_QLIST_ASSERTS(::QPersistentModelIndex, QPersistentModelIndex);
 CXX_QT_QLIST_ASSERTS(::QPoint, QPoint);
 CXX_QT_QLIST_ASSERTS(::QPointF, QPointF);
 CXX_QT_QLIST_ASSERTS(::QRect, QRect);

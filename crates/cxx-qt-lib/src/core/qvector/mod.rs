@@ -6,40 +6,11 @@
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPoint, QPointF, QRect, QRectF, QSize,
-    QSizeF, QString, QTime, QUrl, QVariant,
+    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
-
-mod qvector_bool;
-mod qvector_f32;
-mod qvector_f64;
-mod qvector_i16;
-mod qvector_i32;
-mod qvector_i64;
-mod qvector_i8;
-mod qvector_qbytearray;
-#[cfg(feature = "qt_gui")]
-mod qvector_qcolor;
-mod qvector_qdate;
-mod qvector_qdatetime;
-mod qvector_qmargins;
-mod qvector_qmarginsf;
-mod qvector_qpoint;
-mod qvector_qpointf;
-mod qvector_qrect;
-mod qvector_qrectf;
-mod qvector_qsize;
-mod qvector_qsizef;
-mod qvector_qstring;
-mod qvector_qtime;
-mod qvector_qurl;
-mod qvector_qvariant;
-mod qvector_u16;
-mod qvector_u32;
-mod qvector_u64;
-mod qvector_u8;
 
 /// The QVector class is a template class that provides a dynamic array.
 ///
@@ -305,6 +276,8 @@ pub trait QVectorElement: Sized {
 
 macro_rules! impl_qvector_element {
     ( $typeName:ty, $module:ident, $typeId:literal ) => {
+        mod $module;
+
         impl QVectorElement for $typeName {
             type TypeId = type_id!($typeId);
 
@@ -381,6 +354,11 @@ impl_qvector_element!(QDate, qvector_qdate, "QVector_QDate");
 impl_qvector_element!(QDateTime, qvector_qdatetime, "QVector_QDateTime");
 impl_qvector_element!(QMargins, qvector_qmargins, "QVector_QMargins");
 impl_qvector_element!(QMarginsF, qvector_qmarginsf, "QVector_QMarginsF");
+impl_qvector_element!(
+    QPersistentModelIndex,
+    qvector_qpersistentmodelindex,
+    "QVector_QPersistentModelIndex"
+);
 impl_qvector_element!(QPoint, qvector_qpoint, "QVector_QPoint");
 impl_qvector_element!(QPointF, qvector_qpointf, "QVector_QPointF");
 impl_qvector_element!(QRect, qvector_qrect, "QVector_QRect");

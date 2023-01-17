@@ -6,40 +6,11 @@
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPoint, QPointF, QRect, QRectF, QSize,
-    QSizeF, QString, QTime, QUrl, QVariant,
+    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
-
-mod qlist_bool;
-mod qlist_f32;
-mod qlist_f64;
-mod qlist_i16;
-mod qlist_i32;
-mod qlist_i64;
-mod qlist_i8;
-mod qlist_qbytearray;
-#[cfg(feature = "qt_gui")]
-mod qlist_qcolor;
-mod qlist_qdate;
-mod qlist_qdatetime;
-mod qlist_qmargins;
-mod qlist_qmarginsf;
-mod qlist_qpoint;
-mod qlist_qpointf;
-mod qlist_qrect;
-mod qlist_qrectf;
-mod qlist_qsize;
-mod qlist_qsizef;
-mod qlist_qstring;
-mod qlist_qtime;
-mod qlist_qurl;
-mod qlist_qvariant;
-mod qlist_u16;
-mod qlist_u32;
-mod qlist_u64;
-mod qlist_u8;
 
 /// The QList class is a template class that provides a dynamic array.
 ///
@@ -305,6 +276,8 @@ pub trait QListElement: Sized {
 
 macro_rules! impl_qlist_element {
     ( $typeName:ty, $module:ident, $typeId:literal ) => {
+        mod $module;
+
         impl QListElement for $typeName {
             type TypeId = type_id!($typeId);
 
@@ -381,6 +354,11 @@ impl_qlist_element!(QDate, qlist_qdate, "QList_QDate");
 impl_qlist_element!(QDateTime, qlist_qdatetime, "QList_QDateTime");
 impl_qlist_element!(QMargins, qlist_qmargins, "QList_QMargins");
 impl_qlist_element!(QMarginsF, qlist_qmarginsf, "QList_QMarginsF");
+impl_qlist_element!(
+    QPersistentModelIndex,
+    qlist_qpersistentmodelindex,
+    "QList_QPersistentModelIndex"
+);
 impl_qlist_element!(QPoint, qlist_qpoint, "QList_QPoint");
 impl_qlist_element!(QPointF, qlist_qpointf, "QList_QPointF");
 impl_qlist_element!(QRect, qlist_qrect, "QList_QRect");

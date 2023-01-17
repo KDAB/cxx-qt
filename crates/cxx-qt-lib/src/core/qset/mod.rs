@@ -2,27 +2,9 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QByteArray, QDate, QDateTime, QString, QTime, QUrl};
+use crate::{QByteArray, QDate, QDateTime, QPersistentModelIndex, QString, QTime, QUrl};
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
-
-mod qset_bool;
-mod qset_f32;
-mod qset_f64;
-mod qset_i16;
-mod qset_i32;
-mod qset_i64;
-mod qset_i8;
-mod qset_qbytearray;
-mod qset_qdate;
-mod qset_qdatetime;
-mod qset_qstring;
-mod qset_qtime;
-mod qset_qurl;
-mod qset_u16;
-mod qset_u32;
-mod qset_u64;
-mod qset_u8;
 
 /// The QSet class is a template class that provides a hash-table-based set.
 ///
@@ -211,6 +193,8 @@ pub trait QSetElement: Sized {
 
 macro_rules! impl_qset_element {
     ( $typeName:ty, $module:ident, $typeId:literal ) => {
+        mod $module;
+
         impl QSetElement for $typeName {
             type TypeId = type_id!($typeId);
 
@@ -267,6 +251,11 @@ impl_qset_element!(i64, qset_i64, "QSet_i64");
 impl_qset_element!(QByteArray, qset_qbytearray, "QSet_QByteArray");
 impl_qset_element!(QDate, qset_qdate, "QSet_QDate");
 impl_qset_element!(QDateTime, qset_qdatetime, "QSet_QDateTime");
+impl_qset_element!(
+    QPersistentModelIndex,
+    qset_qpersistentmodelindex,
+    "QSet_QPersistentModelIndex"
+);
 impl_qset_element!(QString, qset_qstring, "QSet_QString");
 impl_qset_element!(QTime, qset_qtime, "QSet_QTime");
 impl_qset_element!(QUrl, qset_qurl, "QSet_QUrl");

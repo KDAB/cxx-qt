@@ -13,6 +13,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QPersistentModelIndex>
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
@@ -74,6 +75,7 @@ using QSet_i64 = QSet<::std::int64_t>;
 using QSet_QByteArray = QSet<::QByteArray>;
 using QSet_QDate = QSet<::QDate>;
 using QSet_QDateTime = QSet<::QDateTime>;
+using QSet_QPersistentModelIndex = QSet<::QPersistentModelIndex>;
 using QSet_QString = QSet<::QString>;
 using QSet_QTime = QSet<::QTime>;
 using QSet_QUrl = QSet<::QUrl>;
