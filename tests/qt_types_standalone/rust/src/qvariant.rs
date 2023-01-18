@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt_lib::{
     QByteArray, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QTime, QUrl, QVariant,
+    QTime, QTimeZone, QUrl, QVariant,
 };
 
 #[cxx::bridge]
@@ -61,9 +61,10 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
         VariantTest::QByteArray => QVariant::from(&QByteArray::from("Rust bytes")),
         VariantTest::QColor => QVariant::from(&QColor::from_rgb(255, 0, 0)),
         VariantTest::QDate => QVariant::from(&QDate::new(2022, 1, 1)),
-        VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time(
+        VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time_time_zone(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
+            &QTimeZone::from_offset_seconds(0),
         )),
         VariantTest::QPoint => QVariant::from(&QPoint::new(1, 3)),
         VariantTest::QPointF => QVariant::from(&QPointF::new(1.0, 3.0)),
@@ -133,6 +134,7 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
                     && date_time.time().minute() == 3
                     && date_time.time().second() == 2
                     && date_time.time().msec() == 1
+                    && date_time.offset_from_utc() == 0
             }
             None => false,
         },

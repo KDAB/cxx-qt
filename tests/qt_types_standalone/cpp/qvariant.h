@@ -48,7 +48,8 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
              v.value<QDateTime>().time().hour() == 1 &&
              v.value<QDateTime>().time().minute() == 2 &&
              v.value<QDateTime>().time().second() == 3 &&
-             v.value<QDateTime>().time().msec() == 4;
+             v.value<QDateTime>().time().msec() == 4 &&
+             v.value<QDateTime>().offsetFromUtc() == 0;
     case VariantTest::QPoint:
       return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
     case VariantTest::QPointF:

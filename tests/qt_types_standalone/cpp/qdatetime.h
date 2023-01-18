@@ -18,7 +18,8 @@ class QDateTimeTest : public QObject
 private Q_SLOTS:
   void construct()
   {
-    const auto dt = construct_qdatetime(QDate(2022, 1, 1), QTime(1, 2, 3, 4));
+    const auto dt =
+      construct_qdatetime(QDate(2022, 1, 1), QTime(1, 2, 3, 4), QTimeZone(0));
     QCOMPARE(dt.date().year(), 2022);
     QCOMPARE(dt.date().month(), 1);
     QCOMPARE(dt.date().day(), 1);
@@ -26,6 +27,7 @@ private Q_SLOTS:
     QCOMPARE(dt.time().minute(), 2);
     QCOMPARE(dt.time().second(), 3);
     QCOMPARE(dt.time().msec(), 4);
+    QCOMPARE(dt.offsetFromUtc(), 0);
   }
 
   void read()
