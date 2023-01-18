@@ -13,6 +13,8 @@ mod qguiapplication;
 mod qhash;
 mod qlist;
 mod qmap;
+mod qmargins;
+mod qmarginsf;
 mod qmodelindex;
 mod qpersistentmodelindex;
 mod qpoint;

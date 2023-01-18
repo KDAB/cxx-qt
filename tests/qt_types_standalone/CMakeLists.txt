@@ -51,6 +51,8 @@ add_executable(${APP_NAME}
     cpp/qhash.h
     cpp/qlist.h
     cpp/qmap.h
+    cpp/qmargins.h
+    cpp/qmarginsf.h
     cpp/qmodelindex.h
     cpp/qpersistentmodelindex.h
     cpp/qpoint.h

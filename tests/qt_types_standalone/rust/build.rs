@@ -16,6 +16,8 @@ fn main() {
         .file("src/qhash.rs")
         .file("src/qlist.rs")
         .file("src/qmap.rs")
+        .file("src/qmargins.rs")
+        .file("src/qmarginsf.rs")
         .file("src/qmodelindex.rs")
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")

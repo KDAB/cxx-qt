@@ -1,0 +1,102 @@
+// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+use cxx::{type_id, ExternType};
+use std::fmt;
+
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qmargins.h");
+        type QMargins = super::QMargins;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        /// Returns the bottom margin.
+        fn bottom(self: &QMargins) -> i32;
+
+        /// Returns true if all margins are is 0; otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QMargins) -> bool;
+
+        /// Returns the left margin.
+        fn left(self: &QMargins) -> i32;
+
+        /// Returns the right margin.
+        fn right(self: &QMargins) -> i32;
+
+        /// Sets the bottom margin to bottom.
+        #[rust_name = "set_bottom"]
+        fn setBottom(self: &mut QMargins, bottom: i32);
+
+        /// Sets the left margin to left.
+        #[rust_name = "set_left"]
+        fn setLeft(self: &mut QMargins, left: i32);
+
+        /// Sets the right margin to right.
+        #[rust_name = "set_right"]
+        fn setRight(self: &mut QMargins, right: i32);
+
+        /// Sets the Top margin to Top.
+        #[rust_name = "set_top"]
+        fn setTop(self: &mut QMargins, top: i32);
+
+        /// Returns the top margin.
+        fn top(self: &QMargins) -> i32;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
+        #[doc(hidden)]
+        #[rust_name = "qmargins_default"]
+        fn construct() -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_new"]
+        fn construct(left: i32, top: i32, right: i32, bottom: i32) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_to_qstring"]
+        fn toQString(value: &QMargins) -> QString;
+    }
+}
+
+/// The QMargins class defines the four margins of a rectangle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[repr(C)]
+pub struct QMargins {
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+}
+
+impl QMargins {
+    /// Constructs margins with the given left, top, right, and bottom
+    pub fn new(left: i32, top: i32, right: i32, bottom: i32) -> Self {
+        ffi::qmargins_new(left, top, right, bottom)
+    }
+}
+
+impl Default for QMargins {
+    /// Constructs a margins object with all margins set to 0.
+    fn default() -> Self {
+        ffi::qmargins_default()
+    }
+}
+
+impl fmt::Display for QMargins {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qmargins_to_qstring(self))
+    }
+}
+
+// Safety:
+//
+// Static checks on the C++ side ensure that QMargins is trivial.
+unsafe impl ExternType for QMargins {
+    type Id = type_id!("QMargins");
+    type Kind = cxx::kind::Trivial;
+}
