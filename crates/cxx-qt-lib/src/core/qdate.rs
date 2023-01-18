@@ -47,7 +47,7 @@ mod ffi {
 }
 
 /// The QDate class provides date functions.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,

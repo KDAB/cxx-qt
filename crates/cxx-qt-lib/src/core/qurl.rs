@@ -96,6 +96,8 @@ impl std::cmp::PartialEq for QUrl {
     }
 }
 
+impl std::cmp::Eq for QUrl {}
+
 impl fmt::Display for QUrl {
     /// Convert the QUrl to a Rust string
     ///

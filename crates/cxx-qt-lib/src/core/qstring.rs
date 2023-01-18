@@ -81,6 +81,8 @@ impl std::cmp::PartialEq for QString {
     }
 }
 
+impl std::cmp::Eq for QString {}
+
 impl fmt::Display for QString {
     /// Convert the QString to a Rust string
     ///

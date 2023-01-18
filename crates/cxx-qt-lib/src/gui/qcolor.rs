@@ -85,6 +85,8 @@ impl std::cmp::PartialEq for QColor {
     }
 }
 
+impl std::cmp::Eq for QColor {}
+
 impl fmt::Display for QColor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let r = self.red();

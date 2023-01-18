@@ -104,6 +104,8 @@ impl std::cmp::PartialEq for QStringList {
     }
 }
 
+impl std::cmp::Eq for QStringList {}
+
 impl std::fmt::Display for QStringList {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", ffi::qstringlist_to_qstring(self))

@@ -122,6 +122,8 @@ impl std::cmp::PartialEq for QByteArray {
     }
 }
 
+impl std::cmp::Eq for QByteArray {}
+
 impl std::fmt::Display for QByteArray {
     /// Convert the QByteArray to a Rust string
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
