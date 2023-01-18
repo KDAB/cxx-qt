@@ -29,6 +29,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             "qlist_qvector.h",
         ),
         (include_str!("../include/core/qmap.h"), "qmap.h"),
+        (include_str!("../include/core/qmargins.h"), "qmargins.h"),
+        (include_str!("../include/core/qmarginsf.h"), "qmarginsf.h"),
         (
             include_str!("../include/core/qmodelindex.h"),
             "qmodelindex.h",

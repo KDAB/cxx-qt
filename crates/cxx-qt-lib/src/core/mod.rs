@@ -24,6 +24,12 @@ pub use qlist::{QList, QListElement};
 mod qmap;
 pub use qmap::{QMap, QMapPair, QMapPair_QString_QVariant};
 
+mod qmargins;
+pub use qmargins::QMargins;
+
+mod qmarginsf;
+pub use qmarginsf::QMarginsF;
+
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 

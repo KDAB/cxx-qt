@@ -17,6 +17,8 @@
 #include "qhash.h"
 #include "qlist.h"
 #include "qmap.h"
+#include "qmargins.h"
+#include "qmarginsf.h"
 #include "qmodelindex.h"
 #include "qpersistentmodelindex.h"
 #include "qpoint.h"
@@ -60,6 +62,8 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QHashTest));
   runTest(QScopedPointer<QObject>(new QListTest));
   runTest(QScopedPointer<QObject>(new QMapTest));
+  runTest(QScopedPointer<QObject>(new QMarginsTest));
+  runTest(QScopedPointer<QObject>(new QMarginsFTest));
   runTest(QScopedPointer<QObject>(new QModelIndexTest));
   runTest(QScopedPointer<QObject>(new QPersistentModelIndexTest));
   runTest(QScopedPointer<QObject>(new QPointTest));

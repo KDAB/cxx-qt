@@ -6,8 +6,8 @@
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QByteArray, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime,
-    QUrl, QVariant,
+    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPoint, QPointF, QRect, QRectF, QSize,
+    QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -24,6 +24,8 @@ mod qvector_qbytearray;
 mod qvector_qcolor;
 mod qvector_qdate;
 mod qvector_qdatetime;
+mod qvector_qmargins;
+mod qvector_qmarginsf;
 mod qvector_qpoint;
 mod qvector_qpointf;
 mod qvector_qrect;
@@ -377,6 +379,8 @@ impl_qvector_element!(QByteArray, qvector_qbytearray, "QVector_QByteArray");
 impl_qvector_element!(QColor, qvector_qcolor, "QVector_QColor");
 impl_qvector_element!(QDate, qvector_qdate, "QVector_QDate");
 impl_qvector_element!(QDateTime, qvector_qdatetime, "QVector_QDateTime");
+impl_qvector_element!(QMargins, qvector_qmargins, "QVector_QMargins");
+impl_qvector_element!(QMarginsF, qvector_qmarginsf, "QVector_QMarginsF");
 impl_qvector_element!(QPoint, qvector_qpoint, "QVector_QPoint");
 impl_qvector_element!(QPointF, qvector_qpointf, "QVector_QPointF");
 impl_qvector_element!(QRect, qvector_qrect, "QVector_QRect");

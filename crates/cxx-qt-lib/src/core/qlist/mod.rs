@@ -6,8 +6,8 @@
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
 use crate::{
-    QByteArray, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime,
-    QUrl, QVariant,
+    QByteArray, QDate, QDateTime, QMargins, QMarginsF, QPoint, QPointF, QRect, QRectF, QSize,
+    QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -24,6 +24,8 @@ mod qlist_qbytearray;
 mod qlist_qcolor;
 mod qlist_qdate;
 mod qlist_qdatetime;
+mod qlist_qmargins;
+mod qlist_qmarginsf;
 mod qlist_qpoint;
 mod qlist_qpointf;
 mod qlist_qrect;
@@ -377,6 +379,8 @@ impl_qlist_element!(QByteArray, qlist_qbytearray, "QList_QByteArray");
 impl_qlist_element!(QColor, qlist_qcolor, "QList_QColor");
 impl_qlist_element!(QDate, qlist_qdate, "QList_QDate");
 impl_qlist_element!(QDateTime, qlist_qdatetime, "QList_QDateTime");
+impl_qlist_element!(QMargins, qlist_qmargins, "QList_QMargins");
+impl_qlist_element!(QMarginsF, qlist_qmarginsf, "QList_QMarginsF");
 impl_qlist_element!(QPoint, qlist_qpoint, "QList_QPoint");
 impl_qlist_element!(QPointF, qlist_qpointf, "QList_QPointF");
 impl_qlist_element!(QRect, qlist_qrect, "QList_QRect");
