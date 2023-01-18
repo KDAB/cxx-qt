@@ -32,6 +32,7 @@ fn main() {
         .file("src/qstring.rs")
         .file("src/qstringlist.rs")
         .file("src/qtime.rs")
+        .file("src/qtimezone.rs")
         .file("src/qurl.rs")
         .file("src/qvariant.rs")
         .file("src/qvector.rs")
