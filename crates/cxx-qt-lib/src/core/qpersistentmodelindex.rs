@@ -89,6 +89,8 @@ impl std::cmp::PartialEq for QPersistentModelIndex {
     }
 }
 
+impl std::cmp::Eq for QPersistentModelIndex {}
+
 impl fmt::Display for QPersistentModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qpersistentmodelindex_to_qstring(self))

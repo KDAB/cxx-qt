@@ -72,6 +72,8 @@ impl std::cmp::PartialEq for QModelIndex {
     }
 }
 
+impl std::cmp::Eq for QModelIndex {}
+
 impl fmt::Display for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qmodelindex_to_qstring(self))

@@ -108,6 +108,8 @@ impl std::cmp::PartialEq for QDateTime {
     }
 }
 
+impl std::cmp::Eq for QDateTime {}
+
 impl fmt::Display for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qdatetime_to_qstring(self))
