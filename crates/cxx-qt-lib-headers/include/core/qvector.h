@@ -13,6 +13,8 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QMargins>
+#include <QtCore/QMarginsF>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
 #include <QtCore/QRect>
@@ -145,6 +147,8 @@ using QVector_QColor = QVector<::QColor>;
 #endif
 using QVector_QDate = QVector<::QDate>;
 using QVector_QDateTime = QVector<::QDateTime>;
+using QVector_QMargins = QVector<::QMargins>;
+using QVector_QMarginsF = QVector<::QMarginsF>;
 using QVector_QPoint = QVector<::QPoint>;
 using QVector_QPointF = QVector<::QPointF>;
 using QVector_QRect = QVector<::QRect>;
