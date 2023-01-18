@@ -63,6 +63,9 @@ pub use qt::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags};
 mod qtime;
 pub use qtime::QTime;
 
+mod qtimezone;
+pub use qtimezone::QTimeZone;
+
 mod qpoint;
 pub use qpoint::QPoint;
 
