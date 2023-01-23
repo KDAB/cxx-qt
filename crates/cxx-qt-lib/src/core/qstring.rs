@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::cmp::Ordering;
 use std::fmt;
 use std::mem::MaybeUninit;
 
@@ -36,6 +37,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_eq"]
         fn operatorEq(a: &QString, b: &QString) -> bool;
+        #[doc(hidden)]
+        #[rust_name = "qstring_cmp"]
+        fn operatorCmp(a: &QString, b: &QString) -> i8;
 
         #[doc(hidden)]
         #[rust_name = "qstring_to_rust_string"]
@@ -75,13 +79,19 @@ impl Default for QString {
     }
 }
 
-impl std::cmp::PartialEq for QString {
+impl PartialEq for QString {
     fn eq(&self, other: &Self) -> bool {
         ffi::qstring_eq(self, other)
     }
 }
 
-impl std::cmp::Eq for QString {}
+impl Eq for QString {}
+
+impl PartialOrd for QString {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        crate::get_ordering(ffi::qstring_cmp(self, other))
+    }
+}
 
 impl fmt::Display for QString {
     /// Convert the QString to a Rust string

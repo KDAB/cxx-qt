@@ -9,6 +9,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QString>
+#include <cinttypes>
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -49,6 +50,13 @@ bool
 operatorEq(const T& a, const T& b)
 {
   return a == b;
+}
+
+template<typename T>
+::std::int8_t
+operatorCmp(const T& a, const T& b)
+{
+  return operatorEq(a, b) ? 0 : (a < b ? -1 : 1);
 }
 
 } // namespace cxxqtlib1
