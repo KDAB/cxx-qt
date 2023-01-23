@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
-use std::fmt;
 use std::mem::MaybeUninit;
+use std::{cmp::Ordering, fmt};
 
 use crate::{QDate, QTime};
 
@@ -58,6 +58,9 @@ mod ffi {
         #[rust_name = "qdatetime_eq"]
         fn operatorEq(a: &QDateTime, b: &QDateTime) -> bool;
         #[doc(hidden)]
+        #[rust_name = "qdatetime_cmp"]
+        fn operatorCmp(a: &QDateTime, b: &QDateTime) -> i8;
+        #[doc(hidden)]
         #[rust_name = "qdatetime_to_qstring"]
         fn toQString(value: &QDateTime) -> QString;
     }
@@ -109,6 +112,12 @@ impl std::cmp::PartialEq for QDateTime {
 }
 
 impl std::cmp::Eq for QDateTime {}
+
+impl std::cmp::PartialOrd for QDateTime {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        crate::get_ordering(ffi::qdatetime_cmp(self, other))
+    }
+}
 
 impl fmt::Display for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
