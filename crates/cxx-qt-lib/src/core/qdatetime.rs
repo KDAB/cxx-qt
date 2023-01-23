@@ -105,17 +105,23 @@ impl Default for QDateTime {
     }
 }
 
-impl std::cmp::PartialEq for QDateTime {
+impl PartialEq for QDateTime {
     fn eq(&self, other: &Self) -> bool {
         ffi::qdatetime_eq(self, other)
     }
 }
 
-impl std::cmp::Eq for QDateTime {}
+impl Eq for QDateTime {}
 
-impl std::cmp::PartialOrd for QDateTime {
+impl PartialOrd for QDateTime {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         crate::get_ordering(ffi::qdatetime_cmp(self, other))
+    }
+}
+
+impl Ord for QDateTime {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 

@@ -93,6 +93,12 @@ impl PartialOrd for QString {
     }
 }
 
+impl Ord for QString {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 impl fmt::Display for QString {
     /// Convert the QString to a Rust string
     ///
