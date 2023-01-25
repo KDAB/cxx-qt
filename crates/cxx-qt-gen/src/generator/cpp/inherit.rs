@@ -9,7 +9,7 @@ use crate::{
     parser::{cxxqtdata::ParsedCxxMappings, qobject::ParsedQObject},
 };
 
-use syn::{Error, Result, ReturnType};
+use syn::{Result, ReturnType};
 
 use super::types::CppType;
 
@@ -28,13 +28,7 @@ pub fn generate(
             "void".to_owned()
         };
 
-        let missing_base_class_error = || {
-            Error::new_spanned(&method.method, format!("C++ code generation failed!\nClass {} has  inherited methods, but no base class!", qobject.qobject_struct.ident))
-        };
-        let base_class = qobject
-            .base_class
-            .clone()
-            .ok_or_else(missing_base_class_error)?;
+        let base_class = qobject.base_class.as_deref().unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {
         r#"
