@@ -18,6 +18,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 | cxx-qt | [![docs.rs](https://img.shields.io/docsrs/cxx-qt?logo=docsdotrs)](https://docs.rs/cxx-qt) [![Crates.io](https://img.shields.io/crates/v/cxx-qt)](https://crates.io/crates/cxx-qt) |
 | cxx-qt-build | [![docs.rs](https://img.shields.io/docsrs/cxx-qt-build?logo=docsdotrs)](https://docs.rs/cxx-qt-build) [![Crates.io](https://img.shields.io/crates/v/cxx-qt-build)](https://crates.io/crates/cxx-qt-build) |
 | cxx-qt-lib | [![docs.rs](https://img.shields.io/docsrs/cxx-qt-lib?logo=docsdotrs)](https://docs.rs/cxx-qt-lib) [![Crates.io](https://img.shields.io/crates/v/cxx-qt-lib)](https://crates.io/crates/cxx-qt-lib) |
+| qt-build-utils | [![docs.rs](https://img.shields.io/docsrs/qt-build-utils?logo=docsdotrs)](https://docs.rs/qt-build-utils) [![Crates.io](https://img.shields.io/crates/v/qt-build-utils)](https://crates.io/crates/qt-build-utils) |
 
 CXX-Qt is a set of Rust crates for creating bidirectional Rust ⇄ C++ bindings with [Qt](https://www.qt.io/).
 It can be used to integrate Rust into C++ applications using CMake or used to build Rust applications with Cargo.
