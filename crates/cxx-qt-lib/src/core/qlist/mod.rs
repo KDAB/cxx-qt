@@ -88,6 +88,16 @@ where
     }
 }
 
+impl<T> PartialEq for QList<T>
+where
+    T: QListElement + PartialEq,
+{
+    /// Returns true if both lists contain the same elements in the same order
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a == b)
+    }
+}
+
 impl<T> QList<T>
 where
     T: QListElement,

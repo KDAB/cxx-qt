@@ -68,6 +68,16 @@ where
     }
 }
 
+impl<T> PartialEq for QSet<T>
+where
+    T: QSetElement + PartialEq,
+{
+    /// Returns true if both sets contain the same elements
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().all(|x| other.contains(x))
+    }
+}
+
 impl<T> QSet<T>
 where
     T: QSetElement,
