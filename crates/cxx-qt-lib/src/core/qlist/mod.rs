@@ -98,6 +98,8 @@ where
     }
 }
 
+impl<T> Eq for QList<T> where T: QListElement + Eq {}
+
 impl<T> QList<T>
 where
     T: QListElement,
