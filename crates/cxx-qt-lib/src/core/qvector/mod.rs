@@ -88,6 +88,16 @@ where
     }
 }
 
+impl<T> PartialEq for QVector<T>
+where
+    T: QVectorElement + PartialEq,
+{
+    /// Returns true if both vectors contain the same elements in the same order
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a == b)
+    }
+}
+
 impl<T> QVector<T>
 where
     T: QVectorElement,
