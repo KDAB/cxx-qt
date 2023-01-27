@@ -48,10 +48,7 @@ mod my_object {
 
         #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
-            println!(
-                "Hi from Rust! String is '{}' and number is {}",
-                string, number
-            );
+            println!("Hi from Rust! String is '{string}' and number is {number}");
         }
     }
     // ANCHOR_END: book_rustobj_impl
