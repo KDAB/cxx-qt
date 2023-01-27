@@ -78,6 +78,8 @@ where
     }
 }
 
+impl<T> Eq for QSet<T> where T: QSetElement + PartialEq {}
+
 impl<T> QSet<T>
 where
     T: QSetElement,

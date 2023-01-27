@@ -98,6 +98,8 @@ where
     }
 }
 
+impl<T> Eq for QVector<T> where T: QVectorElement + Eq {}
+
 impl<T> QVector<T>
 where
     T: QVectorElement,
