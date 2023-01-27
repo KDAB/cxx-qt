@@ -55,7 +55,7 @@ mod tests {
         // Scope stdin to force an automatic flush
         {
             let mut stdin = child.stdin.take().unwrap();
-            write!(stdin, "{}", rs_code).unwrap();
+            write!(stdin, "{rs_code}").unwrap();
         }
 
         let output = child.wait_with_output().unwrap();

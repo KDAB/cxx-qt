@@ -50,10 +50,7 @@ mod ffi {
 
         #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
-            println!(
-                "Hi from Rust! String is {} and number is {}",
-                string, number
-            );
+            println!("Hi from Rust! String is {string} and number is {number}");
         }
 
         #[qinvokable]

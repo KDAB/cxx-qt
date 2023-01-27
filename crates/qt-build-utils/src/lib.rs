@@ -313,10 +313,7 @@ impl QtBuild {
             let (link_lib, prl_path) = if framework {
                 (
                     format!("framework=Qt{qt_module}"),
-                    format!(
-                        "{}/Qt{}.framework/Resources/Qt{}.prl",
-                        lib_path, qt_module, qt_module
-                    ),
+                    format!("{lib_path}/Qt{qt_module}.framework/Resources/Qt{qt_module}.prl"),
                 )
             } else {
                 (

@@ -80,6 +80,6 @@ pub fn write_headers(directory: impl AsRef<Path>) {
     ] {
         let h_path = format!("{}/{file_name}", directory.display());
         let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
-        write!(header, "{}", file_contents).expect("Could not write cxx-qt-lib header");
+        write!(header, "{file_contents}").expect("Could not write cxx-qt-lib header");
     }
 }
