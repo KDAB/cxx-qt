@@ -31,9 +31,9 @@ use qcolor_cxx::ColorTest;
 
 fn construct_qcolor(test: ColorTest) -> QColor {
     match test {
-        ColorTest::Rgb_Red => QColor::from_rgba(255, 0, 0, 255),
-        ColorTest::Rgb_Green => QColor::from_rgba(0, 255, 0, 255),
-        ColorTest::Rgb_Blue => QColor::from_rgba(0, 0, 255, 255),
+        ColorTest::Rgb_Red => QColor::from_rgb(255, 0, 0),
+        ColorTest::Rgb_Green => QColor::from_rgb(0, 255, 0),
+        ColorTest::Rgb_Blue => QColor::from_rgb(0, 0, 255),
         ColorTest::Rgb_Transparent => QColor::from_rgba(0, 0, 0, 0),
         _others => panic!("Unsupported test: {}", test.repr),
     }

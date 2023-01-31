@@ -60,11 +60,10 @@ pub mod ffi {
     impl RustInvokables {
         /// Immutable Rust context method that returns the QColor
         fn as_qcolor(&self) -> QColor {
-            QColor::from_rgba(
+            QColor::from_rgb(
                 (self.red * 255.0).round() as i32,
                 (self.green * 255.0).round() as i32,
                 (self.blue * 255.0).round() as i32,
-                255,
             )
         }
     }

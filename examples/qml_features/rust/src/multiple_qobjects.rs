@@ -24,7 +24,7 @@ mod ffi {
         fn default() -> Self {
             Self {
                 counter: 10,
-                color: QColor::from_rgba(0, 0, 255, 255),
+                color: QColor::from_rgb(0, 0, 255),
             }
         }
     }
@@ -42,10 +42,10 @@ mod ffi {
             self.as_mut().set_counter(new_value);
 
             if new_value % 2 == 0 {
-                self.as_mut().set_color(QColor::from_rgba(0, 0, 255, 255));
+                self.as_mut().set_color(QColor::from_rgb(0, 0, 255));
                 self.emit(FirstSignals::Accepted);
             } else {
-                self.as_mut().set_color(QColor::from_rgba(255, 0, 0, 255));
+                self.as_mut().set_color(QColor::from_rgb(255, 0, 0));
                 self.emit(FirstSignals::Rejected);
             }
         }
