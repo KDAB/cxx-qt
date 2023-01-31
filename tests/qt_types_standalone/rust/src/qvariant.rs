@@ -4,8 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt_lib::{
-    QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl,
-    QVariant,
+    QByteArray, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
+    QTime, QUrl, QVariant,
 };
 
 #[cxx::bridge]
@@ -17,6 +17,7 @@ mod qvariant_cxx {
         I8,
         I16,
         I32,
+        QByteArray,
         QColor,
         QDate,
         QDateTime,
@@ -57,6 +58,7 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
         VariantTest::I8 => QVariant::from(&12_i8),
         VariantTest::I16 => QVariant::from(&123_i16),
         VariantTest::I32 => QVariant::from(&123_i32),
+        VariantTest::QByteArray => QVariant::from(&QByteArray::from("Rust bytes")),
         VariantTest::QColor => QVariant::from(&QColor::from_rgba(255, 0, 0, 255)),
         VariantTest::QDate => QVariant::from(&QDate::new(2022, 1, 1)),
         VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time(
@@ -103,6 +105,10 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
         },
         VariantTest::I32 => match v.value::<i32>() {
             Some(i) => i == 8910,
+            None => false,
+        },
+        VariantTest::QByteArray => match v.value::<QByteArray>() {
+            Some(bytes) => bytes.to_string() == "C++ bytes",
             None => false,
         },
         VariantTest::QColor => match v.value::<QColor>() {

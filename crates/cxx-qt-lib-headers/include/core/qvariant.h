@@ -11,8 +11,10 @@
 
 #include <QtCore/QVariant>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QModelIndex>
 #include <QtCore/QPersistentModelIndex>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
@@ -21,6 +23,7 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
 
@@ -65,11 +68,13 @@ CXX_QT_QVARIANT_CAN_CONVERT(I8)
 CXX_QT_QVARIANT_CAN_CONVERT(I16)
 CXX_QT_QVARIANT_CAN_CONVERT(I32)
 CXX_QT_QVARIANT_CAN_CONVERT(I64)
+CXX_QT_QVARIANT_CAN_CONVERT(QByteArray)
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT(QColor)
 #endif
 CXX_QT_QVARIANT_CAN_CONVERT(QDate)
 CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)
+CXX_QT_QVARIANT_CAN_CONVERT(QModelIndex)
 CXX_QT_QVARIANT_CAN_CONVERT(QPersistentModelIndex)
 CXX_QT_QVARIANT_CAN_CONVERT(QPoint)
 CXX_QT_QVARIANT_CAN_CONVERT(QPointF)
@@ -78,6 +83,7 @@ CXX_QT_QVARIANT_CAN_CONVERT(QRectF)
 CXX_QT_QVARIANT_CAN_CONVERT(QSize)
 CXX_QT_QVARIANT_CAN_CONVERT(QSizeF)
 CXX_QT_QVARIANT_CAN_CONVERT(QString)
+CXX_QT_QVARIANT_CAN_CONVERT(QStringList)
 CXX_QT_QVARIANT_CAN_CONVERT(QTime)
 CXX_QT_QVARIANT_CAN_CONVERT(QUrl)
 CXX_QT_QVARIANT_CAN_CONVERT(U8)
