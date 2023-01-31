@@ -32,6 +32,8 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
       return v.value<::std::int16_t>() == 123;
     case VariantTest::I32:
       return v.value<::std::int32_t>() == 123;
+    case VariantTest::QByteArray:
+      return v.value<QByteArray>() == QByteArrayLiteral("Rust bytes");
     case VariantTest::QColor:
       return v.value<QColor>().alpha() == 255 &&
              v.value<QColor>().red() == 255 && v.value<QColor>().green() == 0 &&
@@ -109,6 +111,7 @@ private Q_SLOTS:
     QTest::newRow("I8") << VariantTest::I8;
     QTest::newRow("I16") << VariantTest::I16;
     QTest::newRow("I32") << VariantTest::I32;
+    QTest::newRow("QByteArray") << VariantTest::QByteArray;
     QTest::newRow("QColor") << VariantTest::QColor;
     QTest::newRow("QDate") << VariantTest::QDate;
     QTest::newRow("QDateTime") << VariantTest::QDateTime;
@@ -149,6 +152,9 @@ private Q_SLOTS:
     QTest::newRow("I16") << QVariant::fromValue<::std::int16_t>(8910)
                          << VariantTest::I16;
     QTest::newRow("I32") << QVariant::fromValue(8910) << VariantTest::I32;
+    QTest::newRow("QByteArray")
+      << QVariant::fromValue<QByteArray>(QByteArrayLiteral("C++ bytes"))
+      << VariantTest::QByteArray;
     QTest::newRow("QColor")
       << QVariant::fromValue<QColor>(QColor(0, 255, 0, 255))
       << VariantTest::QColor;
