@@ -176,6 +176,22 @@ impl From<&QByteArray> for Vec<u8> {
     }
 }
 
+#[cfg(feature = "bytes")]
+impl From<&bytes::Bytes> for QByteArray {
+    /// Convert `bytes::Bytes` to a QByteArray. This makes a deep copy of the data.
+    fn from(value: &bytes::Bytes) -> Self {
+        Self::from(value.as_ref())
+    }
+}
+
+#[cfg(feature = "bytes")]
+impl From<&QByteArray> for bytes::Bytes {
+    /// Convert QByteArray to a `bytes::Bytes`. This makes a deep copy of the data.
+    fn from(value: &QByteArray) -> Self {
+        Self::copy_from_slice(value.as_ref())
+    }
+}
+
 impl QByteArray {
     /// Inserts value at the end of the list.
     pub fn append(&mut self, ch: u8) {
@@ -199,12 +215,24 @@ impl QByteArray {
         ffi::qbytearray_fill(self, ch, size)
     }
 
+    /// Construct a QByteArray from a `bytes::Bytes` without a deep copy
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the original `bytes::Bytes` outlives the QByteArray
+    /// and that the QByteArray is not modified
+    #[cfg(feature = "bytes")]
+    pub unsafe fn from_raw_bytes(bytes: &bytes::Bytes) -> Self {
+        Self::from_raw_data(bytes.as_ref())
+    }
+
     /// Construct a QByteArray from a `&[u8]` without a deep copy
     ///
     /// # Safety
     ///
     /// The caller must ensure that the original slice outlives the QByteArray
-    pub unsafe fn from_raw_data(bytes: &[u8]) -> QByteArray {
+    /// and that the QByteArray is not modified
+    pub unsafe fn from_raw_data(bytes: &[u8]) -> Self {
         ffi::qbytearray_from_raw_data(bytes)
     }
 
@@ -250,4 +278,21 @@ impl QByteArray {
 unsafe impl ExternType for QByteArray {
     type Id = type_id!("QByteArray");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "bytes")]
+    use super::*;
+
+    #[cfg(feature = "bytes")]
+    #[test]
+    fn test_bytes() {
+        let bytes = bytes::Bytes::from("KDAB");
+        let qbytearray = QByteArray::from(&bytes);
+        assert_eq!(bytes.as_ref(), qbytearray.as_ref());
+
+        let bytes_bytes = bytes::Bytes::from(&qbytearray);
+        assert_eq!(bytes, bytes_bytes)
+    }
 }
