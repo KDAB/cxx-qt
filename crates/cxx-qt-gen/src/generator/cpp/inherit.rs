@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use indoc::formatdoc;
 
-// SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
     generator::cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
     parser::{cxxqtdata::ParsedCxxMappings, qobject::ParsedQObject},

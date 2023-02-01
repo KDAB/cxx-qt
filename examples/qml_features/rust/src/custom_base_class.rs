@@ -24,6 +24,7 @@ mod ffi {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
+    // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     #[cxx_qt::qobject(
         base = "QAbstractListModel",
@@ -36,6 +37,7 @@ mod ffi {
         id: u32,
         vector: Vec<(u32, f64)>,
     }
+    // ANCHOR_END: book_inherit_qalm
 
     // ANCHOR: book_qsignals_inherit
     #[cxx_qt::qsignals(CustomBaseClass)]
@@ -85,6 +87,7 @@ mod ffi {
             self.as_mut().end_insert_rows();
         }
 
+        // ANCHOR: book_inherit_clear
         #[qinvokable]
         pub fn clear(mut self: Pin<&mut Self>) {
             self.as_mut().begin_reset_model();
@@ -92,6 +95,7 @@ mod ffi {
             self.as_mut().vector_mut().clear();
             self.as_mut().end_reset_model();
         }
+        // ANCHOR_END: book_inherit_clear
 
         #[qinvokable]
         pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
@@ -125,6 +129,7 @@ mod ffi {
 
     // QAbstractListModel implementation
     impl qobject::CustomBaseClass {
+        // ANCHOR: book_inherit_qalm_impl
         cxx_qt::inherit! {
             fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
             fn end_insert_rows(self: Pin<&mut Self>);
@@ -134,8 +139,15 @@ mod ffi {
 
             fn begin_reset_model(self: Pin<&mut Self>);
             fn end_reset_model(self: Pin<&mut Self>);
-        }
 
+            #[cxx_name="canFetchMore"]
+            fn base_can_fetch_more(&self, parent: &QModelIndex) -> bool;
+
+            fn index(&self, row: i32, column: i32, parent: &QModelIndex) -> QModelIndex;
+        }
+        // ANCHOR_END: book_inherit_qalm_impl
+
+        // ANCHOR: book_inherit_data
         #[qinvokable(cxx_override)]
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
             if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {
@@ -148,6 +160,15 @@ mod ffi {
 
             QVariant::default()
         }
+        // ANCHOR_END: book_inherit_data
+
+        // ANCHOR: book_inherit_can_fetch_more
+        // Example of overriding a C++ virtual method and calling the base class implementation.
+        #[qinvokable(cxx_override)]
+        pub fn can_fetch_more(&self, parent: &QModelIndex) -> bool {
+            self.base_can_fetch_more(parent)
+        }
+        // ANCHOR_END: book_inherit_can_fetch_more
 
         #[qinvokable(cxx_override)]
         pub fn role_names(&self) -> QHash_i32_QByteArray {

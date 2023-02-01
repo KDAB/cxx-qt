@@ -216,7 +216,10 @@ impl ParsedQObject {
                     }
                 }
                 _ => {
-                    return Err(Error::new(item.span(), "Only methods are supported."));
+                    return Err(Error::new(
+                        item.span(),
+                        "Only methods or cxx_qt::inherit is supported.",
+                    ));
                 }
             }
         }

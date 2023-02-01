@@ -31,3 +31,4 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Build Systems](./concepts/build_systems.md)
     - [Threading](./concepts/threading.md)
     - [Nested Objects](./concepts/nested_objects.md)
+    - [Inheritance & Overriding](./concepts/inheritance.md)

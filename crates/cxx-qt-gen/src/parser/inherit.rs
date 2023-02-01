@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
@@ -40,6 +40,7 @@ pub struct ParsedInheritedMethod {
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
     pub ident: CombinedIdent,
+    /// the name of the wrapper function in C++
     pub wrapper_ident: Ident,
 }
 

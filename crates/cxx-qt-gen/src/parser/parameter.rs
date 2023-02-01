@@ -38,9 +38,10 @@ impl ParsedFunctionParameter {
             }
             Some(FnArg::Receiver(Receiver {
                 reference: Some(_), // `self` needs to be by-ref, by-value is not supported.
-                mutability: None,   // Mutable self references are not supported.
+                mutability: None,   // Mutable `&mut self` references are not supported.
+                                    // Use `Pin<&mut  Self>` instead.
                 ..
-            })) => Ok(()), /*Okay, found a &self reference*/
+            })) => Ok(()), // Okay, found a &self reference
             Some(arg) => Err(Error::new_spanned(arg, missing_self_arg)),
             None => Err(Error::new_spanned(signature, "Missing 'self' receiver!")),
         }?;
