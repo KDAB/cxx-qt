@@ -122,6 +122,7 @@ mod ffi {
 
 /// The QDate class provides date functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QDate {
     jd: i64,

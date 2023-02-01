@@ -107,6 +107,7 @@ mod ffi {
 
 /// The QSizeF class defines the size of a two-dimensional object using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QSizeF {
     width: f64,
@@ -155,4 +156,23 @@ impl From<QSizeF> for ffi::QSize {
 unsafe impl ExternType for QSizeF {
     type Id = type_id!("QSizeF");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QSizeF = serde_json::from_str(r#"{"width":1.0,"height":2.0}"#).unwrap();
+        assert_eq!(test_data, QSizeF::new(1.0, 2.0));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QSizeF::new(1.0, 2.0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"width":1.0,"height":2.0}"#);
+    }
 }

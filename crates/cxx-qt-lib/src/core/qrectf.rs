@@ -266,6 +266,7 @@ mod ffi {
 
 /// The QRectF struct defines a rectangle in the plane using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QRectF {
     xp: f64,

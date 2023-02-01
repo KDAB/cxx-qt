@@ -95,6 +95,7 @@ mod ffi {
 
 /// The QSize struct defines the size of a two-dimensional object using integer point precision.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QSize {
     width: i32,
@@ -127,4 +128,23 @@ impl fmt::Display for QSize {
 unsafe impl ExternType for QSize {
     type Id = type_id!("QSize");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QSize = serde_json::from_str(r#"{"width":1,"height":2}"#).unwrap();
+        assert_eq!(test_data, QSize::new(1, 2));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QSize::new(1, 2);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"width":1,"height":2}"#);
+    }
 }
