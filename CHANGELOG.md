@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for further types: `QByteArray`, `QCoreApplication`, `QGuiApplication`, `QModelIndex`, `QPersistentModelIndex`, `QQmlApplicationEngine`, `QQmlEngine`, `QStringList`, `QVector2D`, `QVector3D`, `QVector4D`
 - Support for nesting objects in properties, invokables, and signals with `*mut T`
 - Allow for marking signals as existing in the base class
+- Support for conversions to types in third-party crates: `rgb`
 
 ### Changed
 
