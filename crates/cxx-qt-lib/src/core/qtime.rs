@@ -47,6 +47,7 @@ mod ffi {
 
 /// The QTime class provides clock time functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QTime {
     mds: i32,

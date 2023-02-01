@@ -64,6 +64,7 @@ mod ffi {
 
 /// The QPoint struct defines a point in the plane using integer precision.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QPoint {
     x: i32,
@@ -138,4 +139,23 @@ impl std::ops::Div<f64> for QPoint {
 unsafe impl ExternType for QPoint {
     type Id = type_id!("QPoint");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QPoint = serde_json::from_str(r#"{"x":1,"y":2}"#).unwrap();
+        assert_eq!(test_data, QPoint::new(1, 2));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QPoint::new(1, 2);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"x":1,"y":2}"#);
+    }
 }

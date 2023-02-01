@@ -20,6 +20,7 @@ cxx.workspace = true
 bytes = { version = "1.4", optional = true }
 http = { version = "0.2", optional = true }
 rgb = { version = "0.8", optional = true }
+serde = { optional = true, workspace = true }
 url = { version = "2.3", optional = true }
 
 [build-dependencies]
@@ -27,11 +28,16 @@ cxx-build.workspace = true
 cxx-qt-lib-headers.workspace = true
 qt-build-utils.workspace = true
 
+# TODO: can we make this only enabled for features?
+[dev-dependencies]
+serde_json.workspace = true
+
 [features]
 default = ["qt_gui", "qt_qml"]
 bytes = ["dep:bytes"]
 http = ["dep:http"]
-rgb = ["dep:rgb"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]
+rgb = ["dep:rgb"]
+serde = ["dep:serde"]
 url = ["dep:url"]
