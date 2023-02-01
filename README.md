@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 [![Book status](https://img.shields.io/github/actions/workflow/status/kdab/cxx-qt/book.yml?label=book&logo=mdbook)](https://kdab.github.io/cxx-qt/book)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kdab/cxx-qt/github-cxx-qt-tests.yml)
 ![License (MIT/Apache2.0)](https://img.shields.io/crates/l/cxx-qt)
+[![REUSE status](https://api.reuse.software/badge/github.com/KDAB/cxx-qt)](https://api.reuse.software/info/github.com/KDAB/cxx-qt)
 | Crate | Status |
 | --- | --- |
 | cxx-qt | [![docs.rs](https://img.shields.io/docsrs/cxx-qt?logo=docsdotrs)](https://docs.rs/cxx-qt) [![Crates.io](https://img.shields.io/crates/v/cxx-qt)](https://crates.io/crates/cxx-qt) |
