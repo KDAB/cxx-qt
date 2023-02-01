@@ -165,6 +165,22 @@ impl TryFrom<&QUrl> for http::Uri {
     }
 }
 
+#[cfg(feature = "url")]
+impl From<&url::Url> for QUrl {
+    fn from(value: &url::Url) -> Self {
+        QUrl::from(&value.to_string())
+    }
+}
+
+#[cfg(feature = "url")]
+impl TryFrom<&QUrl> for url::Url {
+    type Error = url::ParseError;
+
+    fn try_from(value: &QUrl) -> Result<Self, Self::Error> {
+        url::Url::parse(value.to_string().as_str())
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
@@ -175,7 +191,7 @@ unsafe impl ExternType for QUrl {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "http")]
+    #[cfg(any(feature = "http", feature = "url"))]
     use super::*;
 
     #[cfg(feature = "http")]
@@ -189,5 +205,16 @@ mod tests {
 
         let http_uri = http::Uri::try_from(&qurl).unwrap();
         assert_eq!(http_uri, uri);
+    }
+
+    #[cfg(feature = "url")]
+    #[test]
+    fn test_url() {
+        let url = url::Url::parse("https://github.com/kdab/cxx-qt").unwrap();
+        let qurl = QUrl::from(&url);
+        assert_eq!(url.to_string(), qurl.to_string());
+
+        let url_url = url::Url::try_from(&qurl).unwrap();
+        assert_eq!(url_url, url);
     }
 }
