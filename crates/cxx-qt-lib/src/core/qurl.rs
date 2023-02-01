@@ -149,10 +149,45 @@ impl From<&String> for QUrl {
     }
 }
 
+#[cfg(feature = "http")]
+impl From<&http::Uri> for QUrl {
+    fn from(value: &http::Uri) -> Self {
+        QUrl::from(&value.to_string())
+    }
+}
+
+#[cfg(feature = "http")]
+impl TryFrom<&QUrl> for http::Uri {
+    type Error = http::uri::InvalidUri;
+
+    fn try_from(value: &QUrl) -> Result<Self, Self::Error> {
+        value.to_string().parse::<http::Uri>()
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QUrl {
     type Id = type_id!("QUrl");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "http")]
+    use super::*;
+
+    #[cfg(feature = "http")]
+    #[test]
+    fn test_http() {
+        let uri = "https://github.com/kdab/cxx-qt"
+            .parse::<http::Uri>()
+            .unwrap();
+        let qurl = QUrl::from(&uri);
+        assert_eq!(uri.to_string(), qurl.to_string());
+
+        let http_uri = http::Uri::try_from(&qurl).unwrap();
+        assert_eq!(http_uri, uri);
+    }
 }
