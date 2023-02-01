@@ -17,6 +17,7 @@ links = "cxx-qt-lib"
 
 [dependencies]
 cxx.workspace = true
+rgb = { version = "0.8", optional = true }
 
 [build-dependencies]
 cxx-build.workspace = true
@@ -25,5 +26,6 @@ qt-build-utils.workspace = true
 
 [features]
 default = ["qt_gui", "qt_qml"]
+rgb = ["dep:rgb"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]

@@ -112,10 +112,95 @@ impl fmt::Debug for QColor {
     }
 }
 
+#[cfg(feature = "rgb")]
+impl From<&rgb::RGB8> for QColor {
+    fn from(value: &rgb::RGB8) -> Self {
+        Self::from_rgba(value.r as i32, value.g as i32, value.b as i32, 255)
+    }
+}
+
+#[cfg(feature = "rgb")]
+impl From<&rgb::RGBA8> for QColor {
+    fn from(value: &rgb::RGBA8) -> Self {
+        Self::from_rgba(
+            value.r as i32,
+            value.g as i32,
+            value.b as i32,
+            value.a as i32,
+        )
+    }
+}
+
+#[cfg(feature = "rgb")]
+impl From<&QColor> for rgb::RGB8 {
+    fn from(value: &QColor) -> Self {
+        Self {
+            r: value.red() as u8,
+            g: value.green() as u8,
+            b: value.blue() as u8,
+        }
+    }
+}
+
+#[cfg(feature = "rgb")]
+impl From<&QColor> for rgb::RGBA8 {
+    fn from(value: &QColor) -> Self {
+        Self {
+            r: value.red() as u8,
+            g: value.green() as u8,
+            b: value.blue() as u8,
+            a: value.alpha() as u8,
+        }
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QColor {
     type Id = type_id!("QColor");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "rgb")]
+    use super::*;
+
+    #[cfg(feature = "rgb")]
+    #[test]
+    fn test_rgb() {
+        let color = rgb::RGB8 {
+            r: 0,
+            g: 100,
+            b: 255,
+        };
+        let qcolor = QColor::from(&color);
+        assert_eq!(qcolor.red(), 0);
+        assert_eq!(qcolor.green(), 100);
+        assert_eq!(qcolor.blue(), 255);
+        assert_eq!(qcolor.alpha(), 255);
+
+        let rgb_color = rgb::RGB8::from(&qcolor);
+        assert_eq!(color, rgb_color);
+    }
+
+    #[cfg(feature = "rgb")]
+    #[test]
+    fn test_rgba() {
+        let color = rgb::RGBA8 {
+            r: 0,
+            g: 100,
+            b: 255,
+            a: 100,
+        };
+        let qcolor = QColor::from(&color);
+        assert_eq!(qcolor.red(), 0);
+        assert_eq!(qcolor.green(), 100);
+        assert_eq!(qcolor.blue(), 255);
+        assert_eq!(qcolor.alpha(), 100);
+
+        let rgba_color = rgb::RGBA8::from(&qcolor);
+        assert_eq!(color, rgba_color);
+    }
 }
