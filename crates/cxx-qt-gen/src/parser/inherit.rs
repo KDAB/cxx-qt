@@ -12,21 +12,59 @@ use quote::format_ident;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Error, ForeignItemFn, Ident, LitStr, Result,
+    Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, LitStr, Result, Token,
 };
 
 /// This type is used when parsing the `cxx_qt::inherit!` macro contents into raw ForeignItemFn items
 pub struct InheritMethods {
-    pub base_functions: Vec<ForeignItemFn>,
+    pub base_safe_functions: Vec<ForeignItemFn>,
+    pub base_unsafe_functions: Vec<ForeignItemFn>,
 }
 
 impl Parse for InheritMethods {
     fn parse(input: ParseStream) -> Result<Self> {
-        let mut base_functions = Vec::new();
+        let mut base_safe_functions = Vec::new();
+        let mut base_unsafe_functions = Vec::new();
+
         while !input.is_empty() {
-            base_functions.push(input.parse::<ForeignItemFn>()?);
+            // base_safe_functions.push(input.parse::<ForeignItemFn>()?);
+            // This looks somewhat counter-intuitive, but if we add `unsafe`
+            // to the `extern "C++"` block, the contained functions will be safe to call.
+            let is_safe = input.peek(Token![unsafe]);
+            if is_safe {
+                input.parse::<Token![unsafe]>()?;
+            }
+
+            let extern_block = input.parse::<ItemForeignMod>()?;
+            if extern_block.abi.name != Some(LitStr::new("C++", extern_block.abi.span())) {
+                return Err(Error::new(
+                    extern_block.abi.span(),
+                    "Inherit blocks must be marked with `extern \"C++\"`",
+                ));
+            }
+
+            for item in extern_block.items {
+                match item {
+                    ForeignItem::Fn(function) => {
+                        if is_safe {
+                            base_safe_functions.push(function);
+                        } else {
+                            base_unsafe_functions.push(function);
+                        }
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            item.span(),
+                            "Only functions are allowed in cxx_qt::inherit! blocks",
+                        ))
+                    }
+                }
+            }
         }
-        Ok(InheritMethods { base_functions })
+        Ok(InheritMethods {
+            base_safe_functions,
+            base_unsafe_functions,
+        })
     }
 }
 
@@ -36,6 +74,8 @@ pub struct ParsedInheritedMethod {
     pub method: ForeignItemFn,
     /// whether the inherited method is marked as mutable
     pub mutable: bool,
+    /// Whether the method is safe to call.
+    pub safe: bool,
     /// the parameters of the method, without the `self` argument
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
@@ -45,7 +85,17 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
-    pub fn parse(method: ForeignItemFn) -> Result<Self> {
+    pub fn parse_unsafe(method: ForeignItemFn) -> Result<Self> {
+        if method.sig.unsafety.is_none() {
+            return Err(Error::new(
+                method.span(),
+                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"C++\"` block!",
+            ));
+        }
+        Self::parse_safe(method)
+    }
+
+    pub fn parse_safe(method: ForeignItemFn) -> Result<Self> {
         let mutable = is_method_mutable(&method.sig);
 
         let parameters = ParsedFunctionParameter::parse_all_without_receiver(&method.sig)?;
@@ -64,6 +114,7 @@ impl ParsedInheritedMethod {
             ident.cpp = format_ident!("{}", name.value());
         }
         let wrapper_ident = format_ident!("{}_cxxqt_inherit", &ident.cpp);
+        let safe = method.sig.unsafety.is_none();
 
         Ok(Self {
             method,
@@ -71,6 +122,7 @@ impl ParsedInheritedMethod {
             parameters,
             ident,
             wrapper_ident,
+            safe,
         })
     }
 }

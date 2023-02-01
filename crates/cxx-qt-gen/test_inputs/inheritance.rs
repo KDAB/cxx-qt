@@ -20,10 +20,14 @@ mod inheritance {
         }
 
         cxx_qt::inherit! {
-            fn fetch_more(self: Pin<&mut Self>, index: &QModelIndex);
+            extern "C++" {
+                unsafe fn fetch_more(self: Pin<&mut Self>, index: &QModelIndex);
+            }
 
-            #[cxx_name="hasChildren"]
-            fn has_children_super(&self, parent: &QModelIndex) -> bool;
+            unsafe extern "C++" {
+                #[cxx_name="hasChildren"]
+                fn has_children_super(&self, parent: &QModelIndex) -> bool;
+            }
         }
 
         #[qinvokable(cxx_override)]

@@ -192,9 +192,14 @@ impl ParsedQObject {
     fn parse_impl_inherit(&mut self, mac: &ImplItemMacro) -> Result<()> {
         let inherited: InheritMethods = mac.mac.parse_body()?;
 
-        for method in inherited.base_functions.into_iter() {
+        for method in inherited.base_safe_functions.into_iter() {
             self.inherited_methods
-                .push(ParsedInheritedMethod::parse(method)?);
+                .push(ParsedInheritedMethod::parse_safe(method)?);
+        }
+
+        for method in inherited.base_unsafe_functions.into_iter() {
+            self.inherited_methods
+                .push(ParsedInheritedMethod::parse_unsafe(method)?);
         }
 
         Ok(())
@@ -389,12 +394,15 @@ pub mod tests {
         let item: ItemImpl = tokens_to_syn(quote! {
             impl T {
                 cxx_qt::inherit! {
-                    fn test(&self);
+                    unsafe extern "C++" {
+                        fn test(&self);
 
-                    fn with_args(&self, arg: i32);
-
-                    #[cxx_name="withRename"]
-                    fn with_rename(self: Pin<&mut Self>, arg: i32);
+                        fn with_args(&self, arg: i32);
+                    }
+                    extern "C++" {
+                        #[cxx_name="withRename"]
+                        unsafe fn with_rename(self: Pin<&mut Self>, arg: i32);
+                    }
                 }
             }
         });
@@ -406,6 +414,9 @@ pub mod tests {
         assert!(!inherited[0].mutable);
         assert!(!inherited[1].mutable);
         assert!(inherited[2].mutable);
+        assert!(inherited[0].safe);
+        assert!(inherited[1].safe);
+        assert!(!inherited[2].safe);
         assert_eq!(inherited[0].parameters.len(), 0);
         assert_eq!(inherited[1].parameters.len(), 1);
         assert_eq!(inherited[1].parameters[0].ident, "arg");

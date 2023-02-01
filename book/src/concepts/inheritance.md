@@ -32,7 +32,7 @@ For this, access to the `beginResetModel` and related methods is required.
 See [the Qt docs](https://doc.qt.io/qt-6/qabstractlistmodel.html) for more details on the specific subclassing requirements.
 These methods are then made accessible by using `cxx_qt::inherit!`.
 
-Methods can be declared inside `cxx_qt::inherit!` in the same format as in plain CXX, with the same restrictions regarding which types can be used.
+Methods can be declared inside `cxx_qt::inherit!` in `extern "C++"` blocks similar to C++, with the same restrictions regarding which types can be used.
 Additionally, the `self` type must be either `self: Pin<&mut Self>` or `&self`.
 
 The declared methods will be case-converted as in other CXX-Qt APIs.
@@ -45,8 +45,8 @@ This way methods can be overridden, declared as `virtual` or `final`.
 
 | C++ keyword | CXX-Qt attribute              |
 |-------------|-------------------------------|
-| `override`  | `qinvokable(cxx_override)`    |
-| `virtual`   | `#[qinvokable(cxx_override)]` |
+| `override`  | `#[qinvokable(cxx_override)]` |
+| `virtual`   | `#[qinvokable(cxx_virtual)]`  |
 | `final`     | `#[qinvokable(cxx_final)]`    |
 
 The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmodel.html#data) method inherited from the QAbstractListModel.

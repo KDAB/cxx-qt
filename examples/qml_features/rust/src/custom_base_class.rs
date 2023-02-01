@@ -79,21 +79,28 @@ mod ffi {
 
         fn add_cpp_context(mut self: Pin<&mut Self>) {
             let count = self.vector().len();
-            self.as_mut()
-                .begin_insert_rows(&QModelIndex::default(), count as i32, count as i32);
-            let id = *self.id();
-            self.as_mut().set_id(id + 1);
-            self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
-            self.as_mut().end_insert_rows();
+            unsafe {
+                self.as_mut().begin_insert_rows(
+                    &QModelIndex::default(),
+                    count as i32,
+                    count as i32,
+                );
+                let id = *self.id();
+                self.as_mut().set_id(id + 1);
+                self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
+                self.as_mut().end_insert_rows();
+            }
         }
 
         // ANCHOR: book_inherit_clear
         #[qinvokable]
         pub fn clear(mut self: Pin<&mut Self>) {
-            self.as_mut().begin_reset_model();
-            self.as_mut().set_id(0);
-            self.as_mut().vector_mut().clear();
-            self.as_mut().end_reset_model();
+            unsafe {
+                self.as_mut().begin_reset_model();
+                self.as_mut().set_id(0);
+                self.as_mut().vector_mut().clear();
+                self.as_mut().end_reset_model();
+            }
         }
         // ANCHOR_END: book_inherit_clear
 
@@ -120,10 +127,12 @@ mod ffi {
                 return;
             }
 
-            self.as_mut()
-                .begin_remove_rows(&QModelIndex::default(), index, index);
-            self.as_mut().vector_mut().remove(index as usize);
-            self.as_mut().end_remove_rows();
+            unsafe {
+                self.as_mut()
+                    .begin_remove_rows(&QModelIndex::default(), index, index);
+                self.as_mut().vector_mut().remove(index as usize);
+                self.as_mut().end_remove_rows();
+            }
         }
     }
 
@@ -131,19 +140,22 @@ mod ffi {
     impl qobject::CustomBaseClass {
         // ANCHOR: book_inherit_qalm_impl
         cxx_qt::inherit! {
-            fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
-            fn end_insert_rows(self: Pin<&mut Self>);
+            extern "C++" {
+                unsafe fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
+                unsafe fn end_insert_rows(self: Pin<&mut Self>);
 
-            fn begin_remove_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
-            fn end_remove_rows(self: Pin<&mut Self>);
+                unsafe fn begin_remove_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
+                unsafe fn end_remove_rows(self: Pin<&mut Self>);
 
-            fn begin_reset_model(self: Pin<&mut Self>);
-            fn end_reset_model(self: Pin<&mut Self>);
+                unsafe fn begin_reset_model(self: Pin<&mut Self>);
+                unsafe fn end_reset_model(self: Pin<&mut Self>);
+            }
+            unsafe extern "C++" {
+                #[cxx_name="canFetchMore"]
+                fn base_can_fetch_more(&self, parent: &QModelIndex) -> bool;
 
-            #[cxx_name="canFetchMore"]
-            fn base_can_fetch_more(&self, parent: &QModelIndex) -> bool;
-
-            fn index(&self, row: i32, column: i32, parent: &QModelIndex) -> QModelIndex;
+                fn index(&self, row: i32, column: i32, parent: &QModelIndex) -> QModelIndex;
+            }
         }
         // ANCHOR_END: book_inherit_qalm_impl
 

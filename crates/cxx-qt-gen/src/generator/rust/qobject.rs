@@ -175,10 +175,16 @@ fn generate_inherited_methods(
                 quote! { self: &#qobject_name }
             };
             let return_type = &method.method.sig.output;
+
+            let mut unsafe_block = None;
+            let mut unsafe_call = Some(quote! { unsafe });
+            if method.safe {
+                std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+            }
             syn::parse2(quote! {
-                unsafe extern "C++" {
+                #unsafe_block extern "C++" {
                     #[cxx_name=#cxx_name_string]
-                    fn #ident(#self_param, #(#parameters),*) #return_type;
+                    #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
                 }
             })
         })
