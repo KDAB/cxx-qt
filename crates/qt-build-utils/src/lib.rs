@@ -579,6 +579,8 @@ Q_IMPORT_PLUGIN({plugin_class_name});
                 input_path.to_str().unwrap(),
                 "-o",
                 output_path.to_str().unwrap(),
+                "--name",
+                input_path.file_name().unwrap().to_str().unwrap(),
             ])
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
