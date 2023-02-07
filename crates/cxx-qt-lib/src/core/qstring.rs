@@ -168,3 +168,61 @@ unsafe impl ExternType for QString {
     type Id = type_id!("QString");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(feature = "serde")]
+struct QStringVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QStringVisitor {
+    type Value = QString;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QString")
+    }
+
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(QString::from(v))
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(QStringVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QString = serde_json::from_str(r#""kdab""#).unwrap();
+        assert_eq!(test_data, QString::from("kdab"));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QString::from("kdab");
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#""kdab""#);
+    }
+}
