@@ -336,3 +336,80 @@ mod tests {
         assert_eq!(bytes, bytes_bytes)
     }
 }
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeSeq;
+
+#[cfg(feature = "serde")]
+struct QByteArrayVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QByteArrayVisitor {
+    type Value = QByteArray;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QByteArray")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        // TODO: can we construct a QByteArray in a better way?
+        //
+        // Note there is serialize_bytes and deserialize_bytes but they
+        // don't seem to work consistently? So creating a Vec<u8> appears to be better?
+        let mut bytes = QByteArray::default();
+        bytes.reserve(seq.size_hint().unwrap_or(0) as isize);
+
+        while let Some(value) = seq.next_element::<u8>()? {
+            bytes.append(value);
+        }
+
+        Ok(bytes)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QByteArray {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(QByteArrayVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QByteArray {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let bytes = self.as_slice();
+        let mut seq = serializer.serialize_seq(Some(bytes.len()))?;
+        for e in bytes.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QByteArray = serde_json::from_str(r#"[107,100,97,98]"#).unwrap();
+        assert_eq!(test_data, QByteArray::from("kdab"));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QByteArray::from("kdab");
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"[107,100,97,98]"#);
+    }
+}
