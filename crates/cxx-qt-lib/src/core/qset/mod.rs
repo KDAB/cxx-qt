@@ -109,6 +109,11 @@ where
     pub fn remove(&mut self, value: &T) -> bool {
         T::remove(self, value)
     }
+
+    /// Ensures that the set's internal hash table consists of at least size buckets.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
 }
 
 impl<T> QSet<T>
@@ -189,6 +194,7 @@ pub trait QSetElement: Sized {
     fn insert_clone(set: &mut QSet<Self>, value: &Self);
     fn len(set: &QSet<Self>) -> isize;
     fn remove(set: &mut QSet<Self>, value: &Self) -> bool;
+    fn reserve(vector: &mut QSet<Self>, size: isize);
 }
 
 macro_rules! impl_qset_element {
@@ -237,6 +243,10 @@ macro_rules! impl_qset_element {
             fn remove(set: &mut QSet<Self>, value: &Self) -> bool {
                 set.cxx_remove(value)
             }
+
+            fn reserve(list: &mut QSet<Self>, size: isize) {
+                $module::reserve(list, size);
+            }
         }
     };
 }
@@ -263,3 +273,105 @@ impl_qset_element!(u8, qset_u8, "QSet_u8");
 impl_qset_element!(u16, qset_u16, "QSet_u16");
 impl_qset_element!(u32, qset_u32, "QSet_u32");
 impl_qset_element!(u64, qset_u64, "QSet_u64");
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeSeq;
+
+#[cfg(feature = "serde")]
+struct QSetVisitor<T>
+where
+    T: QSetElement,
+{
+    _value: PhantomData<fn() -> QSet<T>>,
+}
+
+#[cfg(feature = "serde")]
+impl<T> QSetVisitor<T>
+where
+    T: QSetElement,
+{
+    fn new() -> Self {
+        Self {
+            _value: PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::de::Visitor<'de> for QSetVisitor<T>
+where
+    T: serde::Deserialize<'de> + QSetElement,
+{
+    type Value = QSet<T>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QSet<T>")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        let mut new_seq = QSet::<T>::default();
+        new_seq.reserve(seq.size_hint().unwrap_or(0) as isize);
+
+        while let Some(value) = seq.next_element::<T>()? {
+            // Use insert_clone so that opaque types can work
+            new_seq.insert_clone(&value);
+        }
+
+        Ok(new_seq)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for QSet<T>
+where
+    T: serde::Deserialize<'de> + QSetElement,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(QSetVisitor::<T>::new())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for QSet<T>
+where
+    T: serde::Serialize + QSetElement,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.len() as usize))?;
+        for e in self.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QSet<QString> = serde_json::from_str(r#"["cxx-qt","kdab"]"#).unwrap();
+        assert!(test_data.contains(&QString::from("kdab")));
+        assert!(test_data.contains(&QString::from("cxx-qt")));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let mut test_data = QSet::<QString>::default();
+        test_data.insert(QString::from("cxx-qt"));
+        test_data.insert(QString::from("kdab"));
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert!(data_string == r#"["cxx-qt","kdab"]"# || data_string == r#"["kdab","cxx-qt"]"#);
+    }
+}

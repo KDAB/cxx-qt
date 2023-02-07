@@ -42,7 +42,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QUrl, _: &QUrl);
         #[rust_name = "len_QUrl"]
         fn qsetLen(_: &QSet_QUrl) -> isize;
+        #[rust_name = "reserve_QUrl"]
+        fn qsetReserve(_: &mut QSet_QUrl, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_QUrl, size: isize) {
+    ffi::reserve_QUrl(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QUrl) -> ffi::QSet_QUrl {

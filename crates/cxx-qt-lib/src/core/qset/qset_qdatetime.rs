@@ -42,7 +42,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QDateTime, _: &QDateTime);
         #[rust_name = "len_QDateTime"]
         fn qsetLen(_: &QSet_QDateTime) -> isize;
+        #[rust_name = "reserve_QDateTime"]
+        fn qsetReserve(_: &mut QSet_QDateTime, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_QDateTime, size: isize) {
+    ffi::reserve_QDateTime(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QDateTime) -> ffi::QSet_QDateTime {

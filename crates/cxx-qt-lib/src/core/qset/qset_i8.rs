@@ -40,7 +40,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_i8, _: &i8);
         #[rust_name = "len_i8"]
         fn qsetLen(_: &QSet_i8) -> isize;
+        #[rust_name = "reserve_i8"]
+        fn qsetReserve(_: &mut QSet_i8, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_i8, size: isize) {
+    ffi::reserve_i8(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_i8) -> ffi::QSet_i8 {
