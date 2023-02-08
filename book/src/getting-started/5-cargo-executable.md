@@ -17,7 +17,7 @@ The complete example code is available in [`examples/cargo_without_cmake`](https
 in the cxx-qt repository.
 
 ## Cargo setup
-The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build` as in our [CMake example](./5-cmake-integration.md). However, we are not building a `staticlib` this time:
+The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build` as in our [CMake example](./4-cmake-integration.md). However, we are not building a `staticlib` this time:
 
 ```toml,ignore
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}

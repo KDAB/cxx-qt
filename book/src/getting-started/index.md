@@ -28,12 +28,11 @@ Take a look at the CXX documentation here: [https://cxx.rs/](https://cxx.rs/)
 
 During this getting started guide we'll first take a look at how CXX-Qt integrates with Qt's object system to allow the [definition of QObjects in Rust](./1-qobjects-in-rust.md).
 Then we'll dive straight into practice and define our first [QObject in Rust](./2-our-first-cxx-qt-module.md).
-Once we've done that, its time to [expose the defined QObject to QML](./3-exposing-to-qml.md).
-Followed by actually [defining our GUI using QML](./4-qml-gui.md).
+Followed by actually [defining our GUI using QML](./3-qml-gui.md).
 
 We will show two different ways to build the project.
-First, we will show how to integrate cxx-qt into a C++ application by [building with CMake](./5-cmake-integration.md).
-We will also demonstrate how to build the same cxx-qt code [as a Rust executable](./6-cargo-executable.md) without requiring a C++ build system.
+First, we will show how to integrate cxx-qt into a C++ application by [building with CMake](./4-cmake-integration.md).
+We will also demonstrate how to build the same cxx-qt code [as a Rust executable](./5-cargo-executable.md) without requiring a C++ build system.
 
 **Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86). It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
 

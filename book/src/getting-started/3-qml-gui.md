@@ -16,7 +16,7 @@ So let's add a `main.qml` file in a `qml` folder:
 {{#include ../../../examples/qml_minimal/qml/main.qml:book_main_qml}}
 ```
 
-If you're not familiar with QML, I recommend you take a look at the [Qt QML intro](https://doc.qt.io/qt-6/qmlapplications.html).
+If you're not familiar with QML, take a look at the [Qt QML intro](https://doc.qt.io/qt-6/qmlapplications.html).
 
 This code will create a pretty simple GUI that consists of two Labels and two Buttons.
 The important part here is the use of the `MyObject` type.
@@ -33,4 +33,16 @@ It is again important to emphasize here that `MyObject` is just another QObject 
 The only difference being that any invokable functions that are defined are defined in Rust, instead of C++.
 For QML, this doesn't make a difference though.
 
-But enough of that, let's get this project [building and running](./5-cmake-integration.md).
+# Qt resources
+
+To include the `main.qml` file inside the application, use the [Qt resource system](https://doc.qt.io/qt-6/resources.html) by listing it in a `qml.qrc` file in the `qml` folder:
+```qrc,ignore
+{{#include ../../../examples/qml_minimal/qml/qml.qrc:book_rcc_block}}
+```
+
+You can omit this, but then you should change the url of the `main.qml` file, so that Qt can find it on your computer.
+``` cpp, ignore
+{{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_url}}
+```
+
+Now that we have some application code, let's get this project [building and running](./4-cmake-integration.md).

@@ -27,7 +27,9 @@ mod my_object {
         #[qproperty]
         string: QString,
     }
+    // ANCHOR_END: book_rustobj_struct
 
+    // ANCHOR: book_rustobj_default
     impl Default for MyObject {
         fn default() -> Self {
             Self {
@@ -36,7 +38,7 @@ mod my_object {
             }
         }
     }
-    // ANCHOR_END: book_rustobj_struct
+    // ANCHOR_END: book_rustobj_default
 
     // ANCHOR: book_rustobj_impl
     impl qobject::MyObject {
