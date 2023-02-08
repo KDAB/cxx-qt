@@ -10,9 +10,27 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 In this example, we will demonstrate how to integrate cxx-qt code into a C++ application. Cargo builds the cxx-qt code
 as a static library, then CMake links it into a C++ executable.
 
-> If you don't want to use CMake, and only want to use Cargo to build your project, you can [skip to the next chapter](./6-cargo-executable.md).
-> Note that using CMake is currently still easier!
-> It also allows you to integrate Rust into existing Qt projects and tooling.
+> If you don't want to use CMake, and only want to use Cargo to build your project, you can [skip to the next chapter](./5-cargo-executable.md).
+
+## C++ executable
+
+To start our QML application, we'll need a small `main.cpp` file with an ordinary `main` function. Puts this in a `cpp` folder to clearly separate the C++ and Rust code:
+```cpp,ignore
+{{#include ../../../examples/qml_minimal/cpp/main.cpp:book_main_cpp}}
+```
+
+You can add as much C++ code as you want in addition to this.
+
+## Using Rust QObjects in C++
+
+For every `#[cxx_qt::bridge]` that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
+They will always be in the `cxx-qt-gen/` include path and use the snake_case naming convention.
+The name of the header file will be the name of the Rust module of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
+So in our case: `#include cxx-qt-gen/my_object.cxxqt.h`
+
+Including the generated header allows accessing the `MyObject` C++ class, just like any other C++ class.
+Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
+That's the power of CXX-Qt.
 
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
@@ -44,10 +62,9 @@ We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/build.rs:book_build_rs}}
 ```
-This is what generates the C++ code for our `MyObject` class at compile-time.
-It will output the `cxx-qt-gen/include/my_object.h` file we included earlier in `main.cpp`.
+This is what generates and compiles the C++ code for our `MyObject` class at build time.
 
-Note that all Rust source files that uses the `#[cxx_qt::bridge]` macro need to be included in this script!
+Every Rust source file that uses the `#[cxx_qt::bridge]` macro need to be included in this script.
 In our case, this is only the `src/cxxqt_object.rs` file.
 
 ## CMake setup
@@ -94,12 +111,12 @@ If this fails for any reason, take a look at the [`examples/qml_minimal`](https:
 This should now configure and compile our project.
 If this was successful, you can now run our little project.
 ```shell
-$ build/qml_minimal
+$ build/examples/qml_minimal/example_qml_minimal
 ```
 
 You should now see the two Labels that display the state of our `MyObject`, as well as the two buttons to call our two Rust functions.
 
-## Success   🥳
+## Success 🥳
 
 For further reading, you can take a look at the [QObject chapter](../qobject/index.md) which goes into detail about all features that CXX-Qt exposes to new QObject subclasses.
 As well as the [Concepts chapter](../concepts/index.md), which explains the concepts underlying CXX-Qt.
