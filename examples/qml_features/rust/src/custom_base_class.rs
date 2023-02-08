@@ -47,7 +47,11 @@ mod ffi {
     }
 
     // ANCHOR: book_qobject_base
-    #[cxx_qt::qobject(base = "QAbstractListModelCXX")]
+    #[cxx_qt::qobject(
+        base = "QAbstractListModelCXX",
+        qml_uri = "com.kdab.cxx_qt.demo",
+        qml_version = "1.0"
+    )]
     #[derive(Default)]
     pub struct CustomBaseClass {
         // ANCHOR_END: book_qobject_base

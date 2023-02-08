@@ -13,7 +13,7 @@ mod ffi {
     }
 
     // ANCHOR: book_properties_struct
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct RustProperties {
         #[qproperty]
         connected: bool,

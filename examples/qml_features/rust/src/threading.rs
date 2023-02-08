@@ -16,7 +16,7 @@ mod ffi {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct ThreadingWebsite {
         #[qproperty]
         title: QString,

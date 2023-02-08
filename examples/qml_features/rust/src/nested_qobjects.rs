@@ -13,14 +13,14 @@ mod ffi {
     }
     // ANCHOR_END: book_extern_block
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct InnerObject {
         #[qproperty]
         counter: i32,
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct OuterObject {
         #[qproperty]
         inner: *mut CxxInnerObject,

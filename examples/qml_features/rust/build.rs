@@ -9,9 +9,6 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        .cc_builder(|cc| {
-            cc.include("../cpp");
-        })
         .file("src/containers.rs")
         .file("src/custom_base_class.rs")
         .file("src/invokables.rs")
@@ -22,6 +19,13 @@ fn main() {
         .file("src/properties.rs")
         .file("src/threading.rs")
         .file("src/types.rs")
+        // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
+        // otherwise linking cargo tests fails because the symbols from those files are not found.
+        .cc_builder(|cc| {
+            cc.include("../cpp");
+            cc.file("../cpp/custom_object.cpp");
+        })
+        .qobject_header("../cpp/custom_object.h")
         .build();
 }
 // ANCHOR_END: book_build_rs

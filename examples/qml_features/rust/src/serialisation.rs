@@ -34,7 +34,7 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct Serialisation {
         #[qproperty]
         pub number: i32,

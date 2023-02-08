@@ -62,7 +62,7 @@ mod ffi {
         fn qvariantValueOrDefault(variant: &QVariant) -> CustomStruct;
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct Types {
         #[qproperty]
         boolean: bool,

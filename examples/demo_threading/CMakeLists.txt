@@ -34,15 +34,18 @@ if(NOT Corrosion_FOUND)
     FetchContent_MakeAvailable(Corrosion)
 endif()
 
-set(CRATE demo-threading)
+set(CRATE cxx-qt-demo-threading)
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
     "QMAKE=${QMAKE}"
 )
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
-target_link_libraries(${CRATE} INTERFACE
+
+add_library(${APP_NAME}_lib INTERFACE)
+target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${APP_NAME}_lib INTERFACE
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
     Qt::Core
     Qt::Gui
     Qt::Qml
@@ -66,5 +69,5 @@ add_executable(${APP_NAME}
     qml/qml.qrc
     ${QML_COMPAT_RESOURCES}
 )
-target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
+target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
 qt_import_qml_plugins(${APP_NAME})
