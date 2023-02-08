@@ -26,6 +26,31 @@ impl GeneratedCppQObjectBlocks {
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
     }
+
+    pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
+        let mut qml_specifiers = Vec::new();
+        if let Some(qml_metadata) = &qobject.qml_metadata {
+            // Somehow moc doesn't include the info in metatypes.json that qmltyperegistrar needs
+            // when using the QML_ELEMENT/QML_NAMED_ELEMENT macros, but moc works when using what
+            // those macros expand to.
+            qml_specifiers.push(format!(
+                "Q_CLASSINFO(\"QML.Element\", \"{}\")",
+                qml_metadata.name
+            ));
+            // TODO untested
+            if qml_metadata.uncreatable {
+                qml_specifiers.push("Q_CLASSINFO(\"QML.Creatable\", \"false\")".to_owned());
+            }
+            // TODO untested
+            if qml_metadata.singleton {
+                qml_specifiers.push("QML_SINGLETON".to_owned());
+            }
+        }
+        GeneratedCppQObjectBlocks {
+            metaobjects: qml_specifiers,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Default)]
@@ -61,7 +86,7 @@ impl GeneratedCppQObject {
                 .base_class
                 .clone()
                 .unwrap_or_else(|| "QObject".to_string()),
-            ..Default::default()
+            blocks: GeneratedCppQObjectBlocks::from(qobject),
         };
 
         // Generate methods for the properties, invokables, signals

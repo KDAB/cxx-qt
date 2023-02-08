@@ -17,6 +17,17 @@ use syn::{
     Result,
 };
 
+/// Metadata for registering QML element
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct QmlElementMetadata {
+    pub uri: String,
+    pub name: String,
+    pub version_major: usize,
+    pub version_minor: usize,
+    pub uncreatable: bool,
+    pub singleton: bool,
+}
+
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
 /// This has initial splitting of [syn::Item]'s into relevant blocks, other phases will
@@ -45,6 +56,8 @@ pub struct ParsedQObject {
     pub properties: Vec<ParsedQProperty>,
     /// List of Rust fields on the struct that need getters and setters generated
     pub fields: Vec<ParsedRustField>,
+    /// List of specifiers to register with in QML
+    pub qml_metadata: Option<QmlElementMetadata>,
     /// Items that we don't need to generate anything for CXX or C++
     /// eg impls on the Rust object or Default implementations
     pub others: Vec<Item>,
@@ -53,13 +66,17 @@ pub struct ParsedQObject {
 impl ParsedQObject {
     /// Parse a [syn::ItemStruct] into a [ParsedQObject] with the index of the cxx_qt::qobject specified
     pub fn from_struct(qobject_struct: &ItemStruct, attr_index: usize) -> Result<Self> {
-        // Find if there is any base class
-        let base_class = attribute_tokens_to_map::<Ident, LitStr>(
+        let qml_metadata = Self::parse_qml_metadata(qobject_struct, attr_index)?;
+
+        let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
             &qobject_struct.attrs[attr_index],
-            AttributeDefault::None,
-        )?
-        .get(&quote::format_ident!("base"))
-        .map(|base| base.value());
+            AttributeDefault::Some(|span| LitStr::new("", span)),
+        )?;
+
+        // Find if there is any base class
+        let base_class = attrs_map
+            .get(&quote::format_ident!("base"))
+            .map(|base| base.value());
 
         // Remove the macro from the struct
         let mut qobject_struct = qobject_struct.clone();
@@ -79,8 +96,77 @@ impl ParsedQObject {
             methods: vec![],
             properties,
             fields,
+            qml_metadata,
             others: vec![],
         })
+    }
+
+    fn parse_qml_metadata(
+        qobject_struct: &ItemStruct,
+        attr_index: usize,
+    ) -> Result<Option<QmlElementMetadata>> {
+        let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
+            &qobject_struct.attrs[attr_index],
+            AttributeDefault::Some(|span| LitStr::new("", span)),
+        )?;
+        let qml_uri = attrs_map.get(&quote::format_ident!("qml_uri"));
+        let qml_version = attrs_map.get(&quote::format_ident!("qml_version"));
+        let qml_name = attrs_map.get(&quote::format_ident!("qml_name"));
+        let qml_uncreatable = attrs_map.get(&quote::format_ident!("qml_uncreatable"));
+        let qml_singleton = attrs_map.get(&quote::format_ident!("qml_singleton"));
+        match (qml_uri, qml_version) {
+            (Some(qml_uri), Some(qml_version)) => {
+                let qml_version = qml_version.value();
+                let version_parts: Vec<_> = qml_version.split('.').collect();
+                let version_major = version_parts[0]
+                    .parse()
+                    .expect("Could not parse major version from qml_version");
+                let version_minor = version_parts.get(1).unwrap_or(&"0").parse().unwrap_or(0);
+
+                let name = match qml_name {
+                    Some(qml_name) => qml_name.value(),
+                    None => qobject_struct.ident.to_string(),
+                };
+
+                Ok(Some(QmlElementMetadata {
+                    uri: qml_uri.value(),
+                    name,
+                    version_major,
+                    version_minor,
+                    uncreatable: qml_uncreatable.is_some(),
+                    singleton: qml_singleton.is_some(),
+                }))
+            }
+            (Some(uri), None) => Err(Error::new(
+                uri.span(),
+                "qml_uri specified but no qml_version specified",
+            )),
+            (None, Some(version)) => Err(Error::new(
+                version.span(),
+                "qml_version specified but no qml_uri specified",
+            )),
+            (None, None) => {
+                if let Some(qml_name) = qml_name {
+                    return Err(Error::new(
+                        qml_name.span(),
+                        "qml_name specified but qml_uri and qml_version unspecified",
+                    ));
+                }
+                if let Some(qml_uncreatable) = qml_uncreatable {
+                    return Err(Error::new(
+                        qml_uncreatable.span(),
+                        "qml_uncreatable specified but qml_uri and qml_version unspecified",
+                    ));
+                }
+                if let Some(qml_singleton) = qml_singleton {
+                    return Err(Error::new(
+                        qml_singleton.span(),
+                        "qml_singleton specified but qml_uri and qml_version unspecified",
+                    ));
+                }
+                Ok(None)
+            }
+        }
     }
 
     fn parse_impl_method(&mut self, method: &ImplItemMethod) -> Result<()> {
@@ -176,6 +262,7 @@ pub mod tests {
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert!(qobject.base_class.is_none());
+        assert!(qobject.qml_metadata.is_none());
     }
 
     #[test]
@@ -326,6 +413,73 @@ pub mod tests {
         let item: ItemStruct = tokens_to_syn(quote! {
             #[cxx_qt::qobject]
             struct T(f64);
+        });
+        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+    }
+
+    #[test]
+    fn test_qml_metadata() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1.0")]
+            struct MyObject;
+        });
+        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        assert_eq!(
+            qobject.qml_metadata,
+            Some(QmlElementMetadata {
+                uri: "foo.bar".to_owned(),
+                name: "MyObject".to_owned(),
+                version_major: 1,
+                version_minor: 0,
+                uncreatable: false,
+                singleton: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_qml_metadata_named() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_name = "MyQmlElement")]
+            struct MyNamedObject;
+        });
+        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        assert_eq!(
+            qobject.qml_metadata,
+            Some(QmlElementMetadata {
+                uri: "foo.bar".to_owned(),
+                name: "MyQmlElement".to_owned(),
+                version_major: 1,
+                version_minor: 0,
+                uncreatable: false,
+                singleton: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_qml_metadata_no_version() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_uri = "foo.bar")]
+            struct MyObject;
+        });
+        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+    }
+
+    #[test]
+    fn test_qml_metadata_no_uri() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_version = "1.0")]
+            struct MyObject;
+        });
+        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+    }
+
+    #[test]
+    fn test_qml_metadata_only_name_no_version_no_uri() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_name = "MyQmlElement")]
+            struct MyObject;
         });
         assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }

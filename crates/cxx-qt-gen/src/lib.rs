@@ -12,7 +12,7 @@ pub use generator::{
     cpp::{fragment::CppFragment, GeneratedCppBlocks},
     rust::GeneratedRustBlocks,
 };
-pub use parser::Parser;
+pub use parser::{qobject::QmlElementMetadata, Parser};
 pub use syntax::{parse_qt_file, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
