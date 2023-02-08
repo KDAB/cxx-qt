@@ -7,6 +7,7 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 
 import com.kdab.energy 1.0
+import com.kdab.energy_cpp 1.0
 
 Window {
     id: root

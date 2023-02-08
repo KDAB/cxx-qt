@@ -22,7 +22,7 @@ mod ffi {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustContainers {
         #[qproperty]

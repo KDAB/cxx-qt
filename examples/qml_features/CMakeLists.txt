@@ -42,8 +42,10 @@ corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
     "QMAKE=${QMAKE}"
 )
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
-target_link_libraries(${CRATE} INTERFACE
+add_library(${APP_NAME}_lib INTERFACE)
+target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${APP_NAME}_lib INTERFACE
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
     Qt::Core
     Qt::Gui
     Qt::Qml
@@ -51,15 +53,13 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 add_executable(${APP_NAME}
-    cpp/custom_object.h
-    cpp/custom_object.cpp
     cpp/main.cpp
     cpp/qabstractlistmodelcxx.h
     qml/qml.qrc
 )
 
 target_include_directories(${APP_NAME} PRIVATE cpp)
-target_link_libraries(${APP_NAME} PRIVATE ${CRATE})
+target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
 qt_import_qml_plugins(${APP_NAME})
 
 #
@@ -84,14 +84,12 @@ copy_qml_test(threading)
 copy_qml_test(types)
 
 add_executable(${APP_NAME}_test
-    cpp/custom_object.h
-    cpp/custom_object.cpp
     cpp/qabstractlistmodelcxx.h
     tests/main.cpp
 )
 target_include_directories(${APP_NAME}_test PRIVATE cpp)
 target_link_libraries(${APP_NAME}_test PRIVATE
-    ${CRATE}
+    ${APP_NAME}_lib
     Qt::Test
     Qt::QuickTest
 )

@@ -11,7 +11,7 @@ pub mod ffi {
         type QColor = cxx_qt_lib::QColor;
     }
 
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct RustInvokables {
         red: f32,
         green: f32,

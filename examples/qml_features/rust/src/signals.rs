@@ -23,7 +23,7 @@ pub mod ffi {
     // ANCHOR_END: book_signals_enum
 
     // ANCHOR: book_signals_struct
-    #[cxx_qt::qobject]
+    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustSignals;
     // ANCHOR: book_signals_struct

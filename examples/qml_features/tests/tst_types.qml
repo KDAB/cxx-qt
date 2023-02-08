@@ -7,6 +7,7 @@ import QtQuick 2.12
 import QtTest 1.12
 
 import com.kdab.cxx_qt.demo 1.0
+import com.kdab.cxx_qt.demo_cpp 1.0
 
 TestCase {
     name: "TypesTests"

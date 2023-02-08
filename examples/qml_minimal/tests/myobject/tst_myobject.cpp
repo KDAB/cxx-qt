@@ -9,17 +9,9 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "cxx-qt-gen/my_object.cxxqt.h"
-
 class Setup : public QObject
 {
   Q_OBJECT
-
-public:
-  Setup()
-  {
-    qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
-  }
 };
 
 QUICK_TEST_MAIN_WITH_SETUP(myobject, Setup)
