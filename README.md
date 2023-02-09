@@ -114,7 +114,7 @@ ctest --test-dir build
 
 ## Licensing
 
-CXX-Qt is Copyright (C) 2022, Klarälvdalens Datakonsult AB, and is available under
+CXX-Qt is Copyright (C) 2023, Klarälvdalens Datakonsult AB, and is available under
 the terms of the [MIT](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/MIT.txt)
 or the [Apache-2.0](https://github.com/KDAB/cxx-qt/blob/main/LICENSES/Apache-2.0.txt)
 licenses.
