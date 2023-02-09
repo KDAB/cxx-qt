@@ -50,6 +50,24 @@ where
     }
 }
 
+impl<T> PartialEq for QMap<T>
+where
+    T: QMapPair,
+    T::Value: PartialEq,
+{
+    /// Returns true if both maps contain the same key value pairs
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().all(|(k, v)| &T::value(other, k) == v)
+    }
+}
+
+impl<T> Eq for QMap<T>
+where
+    T: QMapPair,
+    T::Value: Eq,
+{
+}
+
 impl<T> QMap<T>
 where
     T: QMapPair,
