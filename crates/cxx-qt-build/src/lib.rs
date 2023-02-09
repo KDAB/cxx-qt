@@ -47,7 +47,7 @@ struct GeneratedCpp {
 
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
-    pub fn new(rust_file_path: impl AsRef<Path>) -> Self {
+    pub fn new(rust_file_path: impl AsRef<Path>) -> cxx_qt_gen::Result<Self> {
         let rust_file_path = rust_file_path.as_ref();
         let file = parse_qt_file(rust_file_path).unwrap();
 
@@ -90,13 +90,13 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    let parser = Parser::from(m.clone()).unwrap();
-                    let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
+                    let parser = Parser::from(m.clone())?;
+                    let generated_cpp = GeneratedCppBlocks::from(&parser)?;
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(write_cpp(&generated_cpp));
 
-                    let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
+                    let generated_rust = GeneratedRustBlocks::from(&parser)?;
                     let rust_tokens = write_rust(&generated_rust);
                     file_ident = parser.cxx_file_stem.clone();
                     for (_, qobject) in parser.cxx_qt_data.qobjects {
@@ -119,12 +119,12 @@ impl GeneratedCpp {
         let cxx = cxx_gen::generate_header_and_cc(tokens, &opt)
             .expect("Could not generate C++ from Rust file");
 
-        GeneratedCpp {
+        Ok(GeneratedCpp {
             cxx_qt,
             cxx,
             file_ident,
             qml_metadata,
-        }
+        })
     }
 
     /// Write generated .cpp and .h files to specified directories. Returns the paths of all files written.
@@ -210,7 +210,7 @@ impl GeneratedCpp {
 fn generate_cxxqt_cpp_files(
     rs_source: &[PathBuf],
     header_dir: impl AsRef<Path>,
-) -> Vec<GeneratedCppFilePaths> {
+) -> cxx_qt_gen::Result<Vec<GeneratedCppFilePaths>> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
@@ -219,11 +219,11 @@ fn generate_cxxqt_cpp_files(
         let path = format!("{manifest_dir}/{}", rs_path.display());
         println!("cargo:rerun-if-changed={path}");
 
-        let generated_code = GeneratedCpp::new(&path);
+        let generated_code = GeneratedCpp::new(&path)?;
         generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
     }
 
-    generated_file_paths
+    Ok(generated_file_paths)
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the [cxx_qt::bridge] macro, compile
@@ -426,11 +426,25 @@ impl CxxQtBuilder {
         }
 
         // Generate files
-        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
-            self.cc_builder.file(files.plain_cpp);
-            if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
-                self.cc_builder.file(&qobject);
-                self.qobject_headers.push(qobject_header);
+        match generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
+            Ok(generated_files) => {
+                for files in generated_files {
+                    self.cc_builder.file(files.plain_cpp);
+                    if let (Some(qobject), Some(qobject_header)) =
+                        (files.qobject, files.qobject_header)
+                    {
+                        self.cc_builder.file(&qobject);
+                        self.qobject_headers.push(qobject_header);
+                    }
+                }
+            }
+            Err(e) => {
+                // Don't panic here because rust-analyzer would fail with a verbose backtrace
+                // when running the build script. The same error will be encountered when the proc_macro
+                // expands after the build script runs, which allows rust-analyzer to make sense of the
+                // error and point the user to the code causing the problem.
+                println!("cargo:warning=cxx-qt-build failed to parse cxx_qt::bridge: {e:?}");
+                return;
             }
         }
 
