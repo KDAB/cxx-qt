@@ -29,6 +29,5 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Types](./concepts/types.md)
     - [Type Conversions](./concepts/type-conversions.md)
     - [Build Systems](./concepts/build_systems.md)
-    - [Register Types](./concepts/register_types.md)
     - [Threading](./concepts/threading.md)
     - [Nested Objects](./concepts/nested_objects.md)
