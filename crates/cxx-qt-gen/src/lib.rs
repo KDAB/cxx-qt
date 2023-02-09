@@ -16,6 +16,8 @@ pub use parser::{qobject::QmlElementMetadata, Parser};
 pub use syntax::{parse_qt_file, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
+pub use syn::{Error, Result};
+
 #[cfg(test)]
 mod tests {
     use super::*;
