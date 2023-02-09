@@ -56,6 +56,23 @@ where
     }
 }
 
+impl<T> PartialEq for QHash<T>
+where
+    T: QHashPair,
+    T::Value: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().all(|(k, v)| &T::value(other, k) == v)
+    }
+}
+
+impl<T> Eq for QHash<T>
+where
+    T: QHashPair,
+    T::Value: Eq,
+{
+}
+
 impl<T> QHash<T>
 where
     T: QHashPair,
