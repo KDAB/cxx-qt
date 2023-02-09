@@ -16,7 +16,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 ## Build tooling
 
   * [Build Systems](./build_systems.md)
-  * [Register Types](./register_types.md)
 
 ## Advanced Concepts
 
