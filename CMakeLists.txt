@@ -153,46 +153,36 @@ endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 set(CARGO_ENV "QMAKE=${QMAKE}")
 
-# Create helper method which adds relevent cargo tests for a given manifest
-function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
-    # Add cargo as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --manifest-path ${MANIFEST_PATH})
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
-    # Check if we should enable doc tests
-    if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
-        # Add cargo docs as a test
-        add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --doc --manifest-path ${MANIFEST_PATH})
-        set_property(TEST ${TEST_NAME_PREFIX}_cargo_doc_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
-    endif()
-    # Add clippy as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_clippy PROPERTY ENVIRONMENT ${CARGO_ENV})
-    # Add rustfmt as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_fmt PROPERTY ENVIRONMENT ${CARGO_ENV})
-endfunction()
+# Add CMake tests for `cargo test/clippy/fmt`. Set the target dir to the same that Corrosion
+# uses to reuse build artifacts from the main build.
+add_test(
+    NAME cargo_tests
+    COMMAND cargo test --all-targets --target-dir ${CMAKE_CURRENT_BINARY_DIR}/cargo/build
+)
+add_test(
+    NAME cargo_doc_tests
+    COMMAND cargo test --doc --target-dir ${CMAKE_CURRENT_BINARY_DIR}/cargo/build
+)
+add_test(
+    NAME cargo_clippy
+    COMMAND cargo clippy --all-targets --target-dir ${CMAKE_CURRENT_BINARY_DIR}/cargo/build -- -D warnings
+)
+# cargo fmt does not have a --target-dir argument
+add_test(
+    NAME cargo_fmt
+    COMMAND cargo fmt -- --check
+)
 
-# Add cargo tests for all our manifests
-#
-# Note doctests are not supported on the staticlib in root
-add_test_cargo(cxx_qt "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_build "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-build/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_gen "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_lib "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-lib/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(cxx_qt_lib_headers "${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-lib-headers/Cargo.toml" DOCTESTS_ON)
+set_tests_properties(cargo_tests cargo_doc_tests cargo_clippy cargo_fmt PROPERTIES
+    ENVIRONMENT ${CARGO_ENV}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Ensure test inputs and outputs are formatted
 file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_inputs/*.rs)
 file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
 add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
-
-# QML example has add_test in it's CMakeLists, so just add the cargo tests here
-add_test_cargo(qt-build-utils "${CMAKE_CURRENT_SOURCE_DIR}/crates/qt-build-utils/Cargo.toml" DOCTESTS_ON)
-add_test_cargo(demo_threading "${CMAKE_CURRENT_SOURCE_DIR}/examples/demo_threading/rust/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(qml_features "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_features/rust/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(qml_extension_plugin "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_extension_plugin/plugin/rust/Cargo.toml" DOCTESTS_OFF)
-add_test_cargo(qml_minimal "${CMAKE_CURRENT_SOURCE_DIR}/examples/qml_minimal/rust/Cargo.toml" DOCTESTS_OFF)
 
 # Add test which scans for all .cpp and .h files in this project and runs clang-format
 add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
