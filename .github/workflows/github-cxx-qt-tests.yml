@@ -238,4 +238,5 @@ jobs:
           ${{ matrix.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ matrix.workspace }}/build/vcpkg-bootstrap.log
           ${{ matrix.workspace }}/build/vcpkg-manifest-install.log
+          ${{ matrix.workspace }}/build/vcpkg_installed/vcpkg/issue_body.md
         if-no-files-found: ignore
