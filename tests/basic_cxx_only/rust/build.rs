@@ -10,6 +10,7 @@ fn main() {
         .file("src/lib.rs")
         .cc_builder(|cc| {
             cc.include("../cpp");
+            cc.file("../cpp/cxx_test.cpp");
         })
         .build();
 }

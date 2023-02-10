@@ -9,14 +9,6 @@
 
 #include "cxx-qt-gen/ffi.cxx.h"
 
-int hidden_num = 100;
-
-int
-get_cpp_number()
-{
-  return hidden_num;
-}
-
 class CxxTest : public QObject
 {
   Q_OBJECT

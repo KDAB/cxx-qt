@@ -9,3 +9,5 @@
 
 int
 get_cpp_number();
+
+extern int hidden_num;
