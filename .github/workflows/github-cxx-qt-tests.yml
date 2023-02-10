@@ -70,6 +70,8 @@ jobs:
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
+            cc: clang
+            cxx: clang++
           - name: macOS 11 (clang) Qt6
             os: macos-11
             qt_version: 6
@@ -80,6 +82,8 @@ jobs:
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
+            cc: clang
+            cxx: clang++
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
