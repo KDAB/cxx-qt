@@ -78,6 +78,11 @@ impl ParsedQObject {
             .get(&quote::format_ident!("base"))
             .map(|base| base.value());
 
+        // Load the namespace, if it is empty then the ParsedCxxQtData will inject any global namespace
+        let namespace = attrs_map
+            .get(&quote::format_ident!("namespace"))
+            .map_or_else(|| "".to_owned(), |base| base.value());
+
         // Remove the macro from the struct
         let mut qobject_struct = qobject_struct.clone();
         qobject_struct.attrs.remove(attr_index);
@@ -89,8 +94,7 @@ impl ParsedQObject {
         Ok(Self {
             base_class,
             qobject_struct,
-            // TODO: read from the qobject macro later
-            namespace: "".to_owned(),
+            namespace,
             signals: None,
             invokables: vec![],
             methods: vec![],
