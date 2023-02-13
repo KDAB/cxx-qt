@@ -8,6 +8,12 @@ use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type CaseSensitivity = crate::CaseSensitivity;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
@@ -18,9 +24,18 @@ mod ffi {
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = super::QStringList;
 
+        /// Returns true if the list contains the string str; otherwise returns false.
+        fn contains(self: &QStringList, str: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Returns a list of all the strings containing the substring str.
+        fn filter(self: &QStringList, str: &QString, cs: CaseSensitivity) -> QStringList;
+
         /// Joins all the string list's strings into a single string with each element
         /// separated by the given separator (which can be an empty string).
         fn join(self: &QStringList, separator: &QString) -> QString;
+
+        /// Sorts the list of strings in ascending order.
+        fn sort(self: &mut QStringList, cs: CaseSensitivity);
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -44,23 +59,25 @@ mod ffi {
         fn construct(string: &QString) -> QStringList;
 
         #[doc(hidden)]
-        #[rust_name = "qstringlist_from_qlist_qstring"]
-        fn qstringlistFromQListQString(list: &QList_QString) -> QStringList;
-        #[doc(hidden)]
-        #[rust_name = "qstringlist_as_qlist_qstring"]
-        fn qstringlistAsQListQString(list: &QStringList) -> QList_QString;
-
-        #[doc(hidden)]
-        #[rust_name = "qstringlist_contains"]
-        fn qstringlistContains(list: &QStringList, string: &QString) -> bool;
-
-        #[doc(hidden)]
         #[rust_name = "qstringlist_eq"]
         fn operatorEq(a: &QStringList, b: &QStringList) -> bool;
 
         #[doc(hidden)]
         #[rust_name = "qstringlist_to_qstring"]
         fn toQString(value: &QStringList) -> QString;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_from_qlist_qstring"]
+        fn qstringlistFromQListQString(list: &QList_QString) -> QStringList;
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_as_qlist_qstring"]
+        fn qstringlistAsQListQString(list: &QStringList) -> QList_QString;
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_remove_duplicates"]
+        fn qstringlistRemoveDuplicates(list: &mut QStringList) -> isize;
     }
 }
 
@@ -78,9 +95,10 @@ pub struct QStringList {
 }
 
 impl QStringList {
-    /// Returns true if the list contains the string str; otherwise returns false
-    pub fn contains(&self, string: &QString) -> bool {
-        ffi::qstringlist_contains(self, string)
+    /// This function removes duplicate entries from a list.
+    /// The entries do not have to be sorted. They will retain their original order.
+    pub fn remove_duplicates(&mut self) -> isize {
+        ffi::qstringlist_remove_duplicates(self)
     }
 }
 
