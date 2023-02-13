@@ -97,6 +97,24 @@ impl GeneratedRustQObject {
                 .append(&mut generate_rust_signals(signals_enum, &qobject_idents)?);
         }
 
+        // If this type is a singleton then we need to add an include
+        if let Some(qml_metadata) = &qobject.qml_metadata {
+            if qml_metadata.singleton {
+                let fragment = RustFragmentPair {
+                    cxx_bridge: vec![quote! {
+                        unsafe extern "C++" {
+                            include!(<QtQml/QQmlEngine>);
+                        }
+                    }],
+                    implementation: vec![],
+                };
+                generated
+                    .blocks
+                    .cxx_mod_contents
+                    .append(&mut fragment.cxx_bridge_as_items()?);
+            }
+        }
+
         Ok(generated)
     }
 }
@@ -164,7 +182,7 @@ mod tests {
     use super::*;
 
     use crate::parser::Parser;
-    use crate::tests::tokens_to_syn;
+    use crate::tests::{assert_tokens_eq, tokens_to_syn};
     use syn::ItemMod;
 
     #[test]
@@ -211,5 +229,47 @@ mod tests {
         );
         assert_eq!(rust.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(rust.rust_struct_ident, "MyObject");
+    }
+
+    #[test]
+    fn test_generated_rust_qobject_blocks_singleton() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
+                struct MyObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
+            .unwrap();
+        assert_eq!(rust.blocks.cxx_mod_contents.len(), 3);
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "MyObject"]
+                    type MyObjectQt;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[1],
+            quote! {
+                extern "Rust" {
+                    #[cxx_name = "MyObjectRust"]
+                    type MyObject;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[2],
+            quote! {
+                unsafe extern "C++" {
+                    include!(<QtQml/QQmlEngine>);
+                }
+            },
+        );
     }
 }

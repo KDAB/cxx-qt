@@ -37,11 +37,11 @@ impl GeneratedCppQObjectBlocks {
                 "Q_CLASSINFO(\"QML.Element\", \"{}\")",
                 qml_metadata.name
             ));
-            // TODO untested
+
             if qml_metadata.uncreatable {
                 qml_specifiers.push("Q_CLASSINFO(\"QML.Creatable\", \"false\")".to_owned());
             }
-            // TODO untested
+
             if qml_metadata.singleton {
                 qml_specifiers.push("QML_SINGLETON".to_owned());
             }
@@ -142,6 +142,7 @@ mod tests {
         assert_eq!(cpp.cxx_qt_thread_ident, "MyObjectCxxQtThread");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
         assert_eq!(cpp.base_class, "QObject");
+        assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
     #[test]
@@ -162,5 +163,83 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(cpp.base_class, "QStringListModel");
+        assert_eq!(cpp.blocks.metaobjects.len(), 0);
+    }
+
+    #[test]
+    fn test_generated_cpp_qobject_named() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_name = "MyQmlElement")]
+                struct MyNamedObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let cpp = GeneratedCppQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &ParsedCxxMappings::default(),
+        )
+        .unwrap();
+        assert_eq!(cpp.ident, "MyNamedObject");
+        assert_eq!(cpp.blocks.metaobjects.len(), 1);
+        assert_eq!(
+            cpp.blocks.metaobjects[0],
+            "Q_CLASSINFO(\"QML.Element\", \"MyQmlElement\")"
+        );
+    }
+
+    #[test]
+    fn test_generated_cpp_qobject_singleton() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
+                struct MyObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let cpp = GeneratedCppQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &ParsedCxxMappings::default(),
+        )
+        .unwrap();
+        assert_eq!(cpp.ident, "MyObject");
+        assert_eq!(cpp.blocks.metaobjects.len(), 2);
+        assert_eq!(
+            cpp.blocks.metaobjects[0],
+            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
+        );
+        assert_eq!(cpp.blocks.metaobjects[1], "QML_SINGLETON");
+    }
+
+    #[test]
+    fn test_generated_cpp_qobject_uncreatable() {
+        let module: ItemMod = tokens_to_syn(quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_uncreatable)]
+                struct MyObject;
+            }
+        });
+        let parser = Parser::from(module).unwrap();
+
+        let cpp = GeneratedCppQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &ParsedCxxMappings::default(),
+        )
+        .unwrap();
+        assert_eq!(cpp.ident, "MyObject");
+        assert_eq!(cpp.blocks.metaobjects.len(), 2);
+        assert_eq!(
+            cpp.blocks.metaobjects[0],
+            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
+        );
+        assert_eq!(
+            cpp.blocks.metaobjects[1],
+            "Q_CLASSINFO(\"QML.Creatable\", \"false\")"
+        );
     }
 }
