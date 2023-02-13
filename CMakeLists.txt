@@ -5,8 +5,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-# TODO: figure out what the actual hard minimum is
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")

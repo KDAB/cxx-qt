@@ -4,8 +4,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-# TODO: figure out what the actual hard minimum is
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 project(tests_qt_types_standalone)
 set(APP_NAME ${PROJECT_NAME})

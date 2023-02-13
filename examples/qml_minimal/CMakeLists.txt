@@ -4,9 +4,8 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-# TODO: figure out what the actual hard minimum is
 # ANCHOR: book_cmake_setup
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 project(example_qml_minimal)
 set(APP_NAME ${PROJECT_NAME})
