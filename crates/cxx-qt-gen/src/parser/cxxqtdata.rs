@@ -4,9 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
-use crate::syntax::attribute::{
-    attribute_tokens_to_map, attribute_tokens_to_value, AttributeDefault,
-};
+use crate::syntax::attribute::attribute_tokens_to_value;
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
@@ -74,17 +72,10 @@ impl ParsedCxxQtData {
                     // Load the QObject
                     let mut qobject = ParsedQObject::from_struct(qobject_struct, index)?;
 
-                    // Parse any namespaces
-                    let attr_map = attribute_tokens_to_map::<Ident, LitStr>(
-                        &qobject_struct.attrs[index],
-                        AttributeDefault::None,
-                    )?;
-                    qobject.namespace =
-                        if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
-                            lit_str.value()
-                        } else {
-                            self.namespace.clone()
-                        };
+                    // Inject the bridge namespace if the qobject one is empty
+                    if qobject.namespace.is_empty() && !self.namespace.is_empty() {
+                        qobject.namespace = self.namespace.clone();
+                    }
 
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
