@@ -462,6 +462,46 @@ pub mod tests {
     }
 
     #[test]
+    fn test_qml_metadata_singleton() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_singleton)]
+            struct MyObject;
+        });
+        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        assert_eq!(
+            qobject.qml_metadata,
+            Some(QmlElementMetadata {
+                uri: "foo.bar".to_owned(),
+                name: "MyObject".to_owned(),
+                version_major: 1,
+                version_minor: 0,
+                uncreatable: false,
+                singleton: true,
+            })
+        );
+    }
+
+    #[test]
+    fn test_qml_metadata_uncreatable() {
+        let item: ItemStruct = tokens_to_syn(quote! {
+            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_uncreatable)]
+            struct MyObject;
+        });
+        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        assert_eq!(
+            qobject.qml_metadata,
+            Some(QmlElementMetadata {
+                uri: "foo.bar".to_owned(),
+                name: "MyObject".to_owned(),
+                version_major: 1,
+                version_minor: 0,
+                uncreatable: true,
+                singleton: false,
+            })
+        );
+    }
+
+    #[test]
     fn test_qml_metadata_no_version() {
         let item: ItemStruct = tokens_to_syn(quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar")]
