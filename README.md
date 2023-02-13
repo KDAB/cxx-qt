@@ -86,7 +86,7 @@ Ensure that you have the following installed
 
   * C++ compiler
   * [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
-  * [CMake v3.16+](https://cmake.org/)
+  * [CMake](https://cmake.org/)
   * [Qt 5 and/or Qt 6](https://www.qt.io/)
   * [Rust toolchain](https://www.rust-lang.org/)
   * [mold](https://github.com/rui314/mold), [lld](https://lld.llvm.org/), or GNU ld.gold for Linux (lld is included in the XCode toolchain on macOS)
