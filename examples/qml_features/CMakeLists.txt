@@ -80,6 +80,7 @@ copy_qml_test(nested_qobjects)
 copy_qml_test(properties)
 copy_qml_test(serialisation)
 copy_qml_test(signals)
+copy_qml_test(singleton)
 copy_qml_test(threading)
 copy_qml_test(types)
 

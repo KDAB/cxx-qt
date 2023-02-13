@@ -16,6 +16,7 @@ fn main() {
         .file("src/nested_qobjects.rs")
         .file("src/serialisation.rs")
         .file("src/signals.rs")
+        .file("src/singleton.rs")
         .file("src/properties.rs")
         .file("src/threading.rs")
         .file("src/types.rs")
