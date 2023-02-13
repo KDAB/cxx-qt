@@ -83,6 +83,7 @@ copy_qml_test(signals)
 copy_qml_test(singleton)
 copy_qml_test(threading)
 copy_qml_test(types)
+copy_qml_test(uncreatable)
 
 add_executable(${APP_NAME}_test
     cpp/qabstractlistmodelcxx.h
