@@ -28,6 +28,15 @@ template<typename K, typename V>
 qmapLen(const QMap<K, V>& m) noexcept;
 
 template<typename K, typename V>
+V
+qmapGetOrDefault(const QMap<K, V>& m, const K& key) noexcept
+{
+  // Qt 6 returns a T and Qt 5 returns an const T
+  // so we need to define our own method here for CXX
+  return m.value(key);
+}
+
+template<typename K, typename V>
 const K&
 qmapGetUncheckedKey(const QMap<K, V>& m, ::rust::isize pos) noexcept
 {
@@ -69,15 +78,6 @@ bool
 qmapRemove(QMap<K, V>& m, const K& key) noexcept
 {
   return m.remove(key) >= 1;
-}
-
-template<typename K, typename V>
-V
-qmapValue(const QMap<K, V>& m, const K& key) noexcept
-{
-  // Qt 6 returns a T and Qt 5 returns an const T
-  // so we need to define our own method here for CXX
-  return m.value(key);
 }
 
 }

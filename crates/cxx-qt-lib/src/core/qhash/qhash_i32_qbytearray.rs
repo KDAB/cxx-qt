@@ -36,6 +36,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qhash"]
     unsafe extern "C++" {
+        #[rust_name = "get_or_default_i32_QByteArray"]
+        fn qhashGetOrDefault(_: &QHash_i32_QByteArray, key: &i32) -> QByteArray;
         #[rust_name = "get_unchecked_key_i32_QByteArray"]
         #[allow(clippy::needless_lifetimes)]
         unsafe fn qhashGetUncheckedKey<'a>(_: &'a QHash_i32_QByteArray, pos: isize) -> &'a i32;
@@ -47,8 +49,6 @@ pub mod ffi {
         fn qhashLen(_: &QHash_i32_QByteArray) -> isize;
         #[rust_name = "remove_i32_QByteArray"]
         fn qhashRemove(_: &mut QHash_i32_QByteArray, key: &i32) -> bool;
-        #[rust_name = "value_i32_QByteArray"]
-        fn qhashValue(_: &QHash_i32_QByteArray, key: &i32) -> QByteArray;
     }
 }
 
@@ -62,6 +62,10 @@ pub(crate) fn default() -> ffi::QHash_i32_QByteArray {
 
 pub(crate) fn drop(hash: &mut ffi::QHash_i32_QByteArray) {
     ffi::qhash_drop_i32_QByteArray(hash);
+}
+
+pub(crate) fn get_or_default(hash: &ffi::QHash_i32_QByteArray, key: &i32) -> ffi::QByteArray {
+    ffi::get_or_default_i32_QByteArray(hash, key)
 }
 
 pub(crate) unsafe fn get_unchecked_key(hash: &ffi::QHash_i32_QByteArray, pos: isize) -> &i32 {
@@ -85,10 +89,6 @@ pub(crate) fn len(hash: &ffi::QHash_i32_QByteArray) -> isize {
 
 pub(crate) fn remove(hash: &mut ffi::QHash_i32_QByteArray, key: &i32) -> bool {
     ffi::remove_i32_QByteArray(hash, key)
-}
-
-pub(crate) fn value(hash: &ffi::QHash_i32_QByteArray, key: &i32) -> ffi::QByteArray {
-    ffi::value_i32_QByteArray(hash, key)
 }
 
 #[allow(non_camel_case_types)]

@@ -38,6 +38,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qhash"]
     unsafe extern "C++" {
+        #[rust_name = "get_or_default_QString_QVariant"]
+        fn qhashGetOrDefault(_: &QHash_QString_QVariant, key: &QString) -> QVariant;
         #[rust_name = "get_unchecked_key_QString_QVariant"]
         unsafe fn qhashGetUncheckedKey(_: &QHash_QString_QVariant, pos: isize) -> &QString;
         #[rust_name = "get_unchecked_value_QString_QVariant"]
@@ -48,8 +50,6 @@ pub mod ffi {
         fn qhashLen(_: &QHash_QString_QVariant) -> isize;
         #[rust_name = "remove_QString_QVariant"]
         fn qhashRemove(_: &mut QHash_QString_QVariant, key: &QString) -> bool;
-        #[rust_name = "value_QString_QVariant"]
-        fn qhashValue(_: &QHash_QString_QVariant, key: &QString) -> QVariant;
     }
 }
 
@@ -63,6 +63,13 @@ pub(crate) fn default() -> ffi::QHash_QString_QVariant {
 
 pub(crate) fn drop(hash: &mut ffi::QHash_QString_QVariant) {
     ffi::qhash_drop_QString_QVariant(hash);
+}
+
+pub(crate) fn get_or_default(
+    hash: &ffi::QHash_QString_QVariant,
+    key: &ffi::QString,
+) -> ffi::QVariant {
+    ffi::get_or_default_QString_QVariant(hash, key)
 }
 
 pub(crate) unsafe fn get_unchecked_key(
@@ -93,10 +100,6 @@ pub(crate) fn len(hash: &ffi::QHash_QString_QVariant) -> isize {
 
 pub(crate) fn remove(hash: &mut ffi::QHash_QString_QVariant, key: &ffi::QString) -> bool {
     ffi::remove_QString_QVariant(hash, key)
-}
-
-pub(crate) fn value(hash: &ffi::QHash_QString_QVariant, key: &ffi::QString) -> ffi::QVariant {
-    ffi::value_QString_QVariant(hash, key)
 }
 
 #[allow(non_camel_case_types)]

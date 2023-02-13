@@ -31,6 +31,15 @@ template<typename K, typename V>
 qhashLen(const QHash<K, V>& h) noexcept;
 
 template<typename K, typename V>
+V
+qhashGetOrDefault(const QHash<K, V>& h, const K& key) noexcept
+{
+  // Qt 6 returns a T and Qt 5 returns an const T
+  // so we need to define our own method here for CXX
+  return h.value(key);
+}
+
+template<typename K, typename V>
 const K&
 qhashGetUncheckedKey(const QHash<K, V>& h, ::rust::isize pos) noexcept
 {
@@ -77,15 +86,6 @@ qhashRemove(QHash<K, V>& h, const K& key) noexcept
 #else
   return h.remove(key) >= 1;
 #endif
-}
-
-template<typename K, typename V>
-V
-qhashValue(const QHash<K, V>& h, const K& key) noexcept
-{
-  // Qt 6 returns a T and Qt 5 returns an const T
-  // so we need to define our own method here for CXX
-  return h.value(key);
 }
 
 }

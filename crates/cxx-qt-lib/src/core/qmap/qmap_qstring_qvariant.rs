@@ -38,6 +38,8 @@ pub mod ffi {
 
     #[namespace = "rust::cxxqtlib1::qmap"]
     unsafe extern "C++" {
+        #[rust_name = "get_or_default_QString_QVariant"]
+        fn qmapGetOrDefault(_: &QMap_QString_QVariant, key: &QString) -> QVariant;
         #[rust_name = "get_unchecked_key_QString_QVariant"]
         unsafe fn qmapGetUncheckedKey(_: &QMap_QString_QVariant, pos: isize) -> &QString;
         #[rust_name = "get_unchecked_value_QString_QVariant"]
@@ -48,8 +50,6 @@ pub mod ffi {
         fn qmapLen(_: &QMap_QString_QVariant) -> isize;
         #[rust_name = "remove_QString_QVariant"]
         fn qmapRemove(_: &mut QMap_QString_QVariant, key: &QString) -> bool;
-        #[rust_name = "value_QString_QVariant"]
-        fn qmapValue(_: &QMap_QString_QVariant, key: &QString) -> QVariant;
     }
 }
 
@@ -63,6 +63,13 @@ pub(crate) fn default() -> ffi::QMap_QString_QVariant {
 
 pub(crate) fn drop(map: &mut ffi::QMap_QString_QVariant) {
     ffi::qmap_drop_QString_QVariant(map);
+}
+
+pub(crate) fn get_or_default(
+    map: &ffi::QMap_QString_QVariant,
+    key: &ffi::QString,
+) -> ffi::QVariant {
+    ffi::get_or_default_QString_QVariant(map, key)
 }
 
 pub(crate) unsafe fn get_unchecked_key(
@@ -93,10 +100,6 @@ pub(crate) fn len(map: &ffi::QMap_QString_QVariant) -> isize {
 
 pub(crate) fn remove(map: &mut ffi::QMap_QString_QVariant, key: &ffi::QString) -> bool {
     ffi::remove_QString_QVariant(map, key)
-}
-
-pub(crate) fn value(map: &ffi::QMap_QString_QVariant, key: &ffi::QString) -> ffi::QVariant {
-    ffi::value_QString_QVariant(map, key)
 }
 
 #[allow(non_camel_case_types)]

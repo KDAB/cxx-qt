@@ -35,11 +35,11 @@ fn read_qhash_qstring_qvariant(h: &QHash<QHashPair_QString_QVariant>) -> bool {
     }
 
     // Check that value method works
-    let value_kdab = match h.value(&QString::from("kdab")).value::<i32>() {
+    let value_kdab = match h.get_or_default(&QString::from("kdab")).value::<i32>() {
         Some(value) => value == 10,
         None => false,
     };
-    let value_qt = match h.value(&QString::from("Qt")).value::<QString>() {
+    let value_qt = match h.get_or_default(&QString::from("Qt")).value::<QString>() {
         Some(value) => value.to_string() == "Rust",
         _ => false,
     };

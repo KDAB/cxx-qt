@@ -62,7 +62,7 @@ where
     T::Value: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.len() == other.len() && self.iter().all(|(k, v)| &T::value(other, k) == v)
+        self.len() == other.len() && self.iter().all(|(k, v)| other.get(k).as_ref() == Some(v))
     }
 }
 
@@ -85,6 +85,20 @@ where
     /// Returns true if the hash contains an item with the key; otherwise returns false.
     pub fn contains(&self, key: &T::Key) -> bool {
         T::contains(self, key)
+    }
+
+    /// Returns the value associated with the key if it exists.
+    pub fn get(&self, key: &T::Key) -> Option<T::Value> {
+        if self.contains(key) {
+            Some(T::get_or_default(self, key))
+        } else {
+            None
+        }
+    }
+
+    /// Returns the value associated with the key or a default value.
+    pub fn get_or_default(&self, key: &T::Key) -> T::Value {
+        T::get_or_default(self, key)
     }
 
     /// Inserts a new item with the key and a value of value.
@@ -119,11 +133,6 @@ where
     /// Returns true if at least one item was removed, otherwise returns false.
     pub fn remove(&mut self, key: &T::Key) -> bool {
         T::remove(self, key)
-    }
-
-    /// Returns the value associated with the key.
-    pub fn value(&self, key: &T::Key) -> T::Value {
-        T::value(self, key)
     }
 }
 
@@ -202,6 +211,7 @@ pub trait QHashPair: Sized {
     fn contains(hash: &QHash<Self>, key: &Self::Key) -> bool;
     fn default() -> QHash<Self>;
     fn drop(hash: &mut QHash<Self>);
+    fn get_or_default(hash: &QHash<Self>, key: &Self::Key) -> Self::Value;
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
@@ -219,7 +229,6 @@ pub trait QHashPair: Sized {
     fn insert_clone(hash: &mut QHash<Self>, key: &Self::Key, value: &Self::Value);
     fn len(hash: &QHash<Self>) -> isize;
     fn remove(hash: &mut QHash<Self>, key: &Self::Key) -> bool;
-    fn value(hash: &QHash<Self>, key: &Self::Key) -> Self::Value;
 }
 
 macro_rules! impl_qhash_pair {
@@ -249,6 +258,10 @@ macro_rules! impl_qhash_pair {
                 $module::drop(hash);
             }
 
+            fn get_or_default(hash: &QHash<Self>, key: &$keyTypeName) -> $valueTypeName {
+                $module::get_or_default(hash, key)
+            }
+
             unsafe fn get_unchecked_key(hash: &QHash<Self>, pos: isize) -> &$keyTypeName {
                 $module::get_unchecked_key(hash, pos)
             }
@@ -271,10 +284,6 @@ macro_rules! impl_qhash_pair {
 
             fn remove(hash: &mut QHash<Self>, key: &$keyTypeName) -> bool {
                 $module::remove(hash, key)
-            }
-
-            fn value(hash: &QHash<Self>, key: &$keyTypeName) -> $valueTypeName {
-                $module::value(hash, key)
             }
         }
     };
