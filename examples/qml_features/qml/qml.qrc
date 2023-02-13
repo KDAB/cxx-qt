@@ -17,6 +17,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
         <file>pages/PropertiesPage.qml</file>
         <file>pages/SerialisationPage.qml</file>
         <file>pages/SignalsPage.qml</file>
+        <file>pages/SingletonPage.qml</file>
         <file>pages/ThreadingPage.qml</file>
         <file>pages/TypesPage.qml</file>
     </qresource>

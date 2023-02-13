@@ -12,5 +12,6 @@ mod nested_qobjects;
 mod properties;
 mod serialisation;
 mod signals;
+mod singleton;
 mod threading;
 mod types;

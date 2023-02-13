@@ -46,6 +46,7 @@ ApplicationWindow {
 
         readonly property alias currentItem: drawerView.currentItem
 
+        clip: true
         height: window.height - header.height
         width: Math.min(window.width * 0.66, 200)
         y: header.height
@@ -106,6 +107,10 @@ ApplicationWindow {
                 ListElement {
                     name: "Nested QObjects"
                     source: "qrc:/pages/NestedQObjectsPage.qml"
+                }
+                ListElement {
+                    name: "Singleton"
+                    source: "qrc:/pages/SingletonPage.qml"
                 }
             }
         }
