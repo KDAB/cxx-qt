@@ -20,6 +20,7 @@ fn main() {
         .file("src/properties.rs")
         .file("src/threading.rs")
         .file("src/types.rs")
+        .file("src/uncreatable.rs")
         // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
         // otherwise linking cargo tests fails because the symbols from those files are not found.
         .cc_builder(|cc| {
