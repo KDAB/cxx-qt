@@ -57,7 +57,7 @@ where
 {
     /// Returns true if both maps contain the same key value pairs
     fn eq(&self, other: &Self) -> bool {
-        self.len() == other.len() && self.iter().all(|(k, v)| &T::value(other, k) == v)
+        self.len() == other.len() && self.iter().all(|(k, v)| other.get(k).as_ref() == Some(v))
     }
 }
 
@@ -80,6 +80,20 @@ where
     /// Returns true if the map contains an item with the key; otherwise returns false.
     pub fn contains(&self, key: &T::Key) -> bool {
         T::contains(self, key)
+    }
+
+    /// Returns the value associated with the key if it exists.
+    pub fn get(&self, key: &T::Key) -> Option<T::Value> {
+        if self.contains(key) {
+            Some(T::get_or_default(self, key))
+        } else {
+            None
+        }
+    }
+
+    /// Returns the value associated with the key or a default value.
+    pub fn get_or_default(&self, key: &T::Key) -> T::Value {
+        T::get_or_default(self, key)
     }
 
     /// Inserts a new item with the key and a value of value.
@@ -112,11 +126,6 @@ where
     /// Removes all the items that have the key from the map.
     pub fn remove(&mut self, key: &T::Key) -> bool {
         T::remove(self, key)
-    }
-
-    /// Returns the value associated with the key.
-    pub fn value(&self, key: &T::Key) -> T::Value {
-        T::value(self, key)
     }
 }
 
@@ -195,6 +204,7 @@ pub trait QMapPair: Sized {
     fn contains(map: &QMap<Self>, key: &Self::Key) -> bool;
     fn default() -> QMap<Self>;
     fn drop(map: &mut QMap<Self>);
+    fn get_or_default(map: &QMap<Self>, key: &Self::Key) -> Self::Value;
     /// # Safety
     ///
     /// Calling this method with an out-of-bounds index is undefined behavior
@@ -212,7 +222,6 @@ pub trait QMapPair: Sized {
     fn insert_clone(map: &mut QMap<Self>, key: &Self::Key, value: &Self::Value);
     fn len(map: &QMap<Self>) -> isize;
     fn remove(map: &mut QMap<Self>, key: &Self::Key) -> bool;
-    fn value(map: &QMap<Self>, key: &Self::Key) -> Self::Value;
 }
 
 macro_rules! impl_qmap_pair {
@@ -242,6 +251,10 @@ macro_rules! impl_qmap_pair {
                 $module::drop(map);
             }
 
+            fn get_or_default(map: &QMap<Self>, key: &$keyTypeName) -> $valueTypeName {
+                $module::get_or_default(map, key)
+            }
+
             unsafe fn get_unchecked_key(map: &QMap<Self>, pos: isize) -> &$keyTypeName {
                 $module::get_unchecked_key(map, pos)
             }
@@ -264,10 +277,6 @@ macro_rules! impl_qmap_pair {
 
             fn remove(map: &mut QMap<Self>, key: &$keyTypeName) -> bool {
                 $module::remove(map, key)
-            }
-
-            fn value(map: &QMap<Self>, key: &$keyTypeName) -> $valueTypeName {
-                $module::value(map, key)
             }
         }
     };

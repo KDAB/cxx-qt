@@ -36,11 +36,11 @@ fn read_qmap_qstring_qvariant(h: &QMap<QMapPair_QString_QVariant>) -> bool {
 
     // Check that that contains and value method works
     let value_kdab = h
-        .value(&QString::from("kdab"))
+        .get_or_default(&QString::from("kdab"))
         .value::<i32>()
         .map_or_else(|| false, |value| value == 10);
     let value_qt = h
-        .value(&QString::from("Qt"))
+        .get_or_default(&QString::from("Qt"))
         .value::<QString>()
         .map_or_else(|| false, |value| value.to_string() == "Rust");
 
