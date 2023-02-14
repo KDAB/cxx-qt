@@ -294,3 +294,96 @@ impl_qmap_pair!(
     QMapPair_QString_QVariant,
     "QMap_QString_QVariant"
 );
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QMapVisitor<T>
+where
+    T: QMapPair,
+{
+    _value: PhantomData<fn() -> QMap<T>>,
+}
+
+#[cfg(feature = "serde")]
+impl<T> QMapVisitor<T>
+where
+    T: QMapPair,
+{
+    fn new() -> Self {
+        Self {
+            _value: PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::de::Visitor<'de> for QMapVisitor<T>
+where
+    T: QMapPair,
+    T::Key: serde::Deserialize<'de>,
+    T::Value: serde::Deserialize<'de>,
+{
+    type Value = QMap<T>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QMap<T>")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut new_map = QMap::<T>::default();
+
+        while let Some((key, value)) = map.next_entry()? {
+            // Use insert_clone so that opaque types can work
+            new_map.insert_clone(&key, &value);
+        }
+
+        Ok(new_map)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for QMap<T>
+where
+    T: QMapPair,
+    T::Key: serde::Deserialize<'de>,
+    T::Value: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QMapVisitor::<T>::new())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for QMap<T>
+where
+    T: QMapPair,
+    T::Key: serde::Serialize,
+    T::Value: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.len() as usize))?;
+        for (k, v) in self.iter() {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}
+
+// TODO: write tests for serde with QMap once we have a pair that supports serde
+//
+// #[cfg(feature = "serde")]
+// #[cfg(test)]
+// mod serde_tests {
+//
+// }
