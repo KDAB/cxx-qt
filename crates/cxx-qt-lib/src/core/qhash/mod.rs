@@ -128,6 +128,12 @@ where
     pub fn remove(&mut self, key: &T::Key) -> bool {
         T::remove(self, key)
     }
+
+    /// Ensures that the QHash's internal hash table has space to store at
+    /// least size items without having to grow the hash table.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
 }
 
 impl<T> QHash<T>
@@ -223,6 +229,7 @@ pub trait QHashPair: Sized {
     fn insert_clone(hash: &mut QHash<Self>, key: &Self::Key, value: &Self::Value);
     fn len(hash: &QHash<Self>) -> isize;
     fn remove(hash: &mut QHash<Self>, key: &Self::Key) -> bool;
+    fn reserve(hash: &mut QHash<Self>, size: isize);
 }
 
 macro_rules! impl_qhash_pair {
@@ -282,6 +289,10 @@ macro_rules! impl_qhash_pair {
             fn remove(hash: &mut QHash<Self>, key: &$keyTypeName) -> bool {
                 $module::remove(hash, key)
             }
+
+            fn reserve(hash: &mut QHash<Self>, size: isize) {
+                $module::reserve(hash, size);
+            }
         }
     };
 }
@@ -306,3 +317,120 @@ impl_qhash_pair!(
     QHashPair_i32_QByteArray,
     "QHash_i32_QByteArray"
 );
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QHashVisitor<T>
+where
+    T: QHashPair,
+{
+    _value: PhantomData<fn() -> QHash<T>>,
+}
+
+#[cfg(feature = "serde")]
+impl<T> QHashVisitor<T>
+where
+    T: QHashPair,
+{
+    fn new() -> Self {
+        Self {
+            _value: PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::de::Visitor<'de> for QHashVisitor<T>
+where
+    T: QHashPair,
+    T::Key: serde::Deserialize<'de>,
+    T::Value: serde::Deserialize<'de>,
+{
+    type Value = QHash<T>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QHash<T>")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut new_map = QHash::<T>::default();
+        new_map.reserve(map.size_hint().unwrap_or(0) as isize);
+
+        while let Some((key, value)) = map.next_entry()? {
+            // Use insert_clone so that opaque types can work
+            new_map.insert_clone(&key, &value);
+        }
+
+        Ok(new_map)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for QHash<T>
+where
+    T: QHashPair,
+    T::Key: serde::Deserialize<'de>,
+    T::Value: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QHashVisitor::<T>::new())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for QHash<T>
+where
+    T: QHashPair,
+    T::Key: serde::Serialize,
+    T::Value: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.len() as usize))?;
+        for (k, v) in self.iter() {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    use crate::QByteArray;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QHash<QHashPair_i32_QByteArray> =
+            serde_json::from_str(r#"{"1":[107,100,97,98],"2":[99,120,120,45,113,116]}"#).unwrap();
+        let mut expected_data = QHash::<QHashPair_i32_QByteArray>::default();
+        expected_data.insert(1, QByteArray::from("kdab"));
+        expected_data.insert(2, QByteArray::from("cxx-qt"));
+        assert!(test_data == expected_data);
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let mut test_data = QHash::<QHashPair_i32_QByteArray>::default();
+        test_data.insert(1, QByteArray::from("kdab"));
+        test_data.insert(2, QByteArray::from("cxx-qt"));
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        println!("{}", data_string);
+        assert!(
+            data_string == r#"{"1":[107,100,97,98],"2":[99,120,120,45,113,116]}"#
+                || data_string == r#"{"2":[99,120,120,45,113,116],"1":[107,100,97,98]}"#
+        );
+    }
+}
