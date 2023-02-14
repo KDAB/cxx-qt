@@ -58,7 +58,9 @@ mod ffi {
 #[derive(Clone)]
 #[repr(C)]
 pub struct QColor {
-    _space: MaybeUninit<[usize; 2]>,
+    _cspec: MaybeUninit<usize>,
+    _ct: MaybeUninit<[u16; 5]>,
+    _padding: MaybeUninit<u16>,
 }
 
 impl QColor {

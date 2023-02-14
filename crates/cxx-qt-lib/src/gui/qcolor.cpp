@@ -18,7 +18,9 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
 assert_alignment_and_size(QColor,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[2]));
+                          sizeof(::std::size_t) +
+                            (sizeof(::std::uint16_t) * 5) +
+                            2 /* compiler padding */);
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.

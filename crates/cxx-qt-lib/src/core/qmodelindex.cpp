@@ -15,6 +15,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v6.2.4#n195
 assert_alignment_and_size(QModelIndex,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[3]));
+                          (sizeof(::std::int32_t) * 2) + sizeof(::std::size_t) +
+                            sizeof(::std::size_t));
 
 static_assert(::std::is_trivially_copyable<QModelIndex>::value);

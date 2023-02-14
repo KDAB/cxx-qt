@@ -24,13 +24,24 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n540
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n474
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+
+#if (QT_POINTER_SIZE == 4)
+// 32bit is 3 * 32bit ptr (12) + union with double (8) + 4 bytes padding
+// alignment is 8 byte on 32bit systems as well due to the double
+assert_alignment_and_size(QVariant,
+                          alignof(double),
+                          (sizeof(::std::size_t) * 3) + sizeof(double) + 4);
+#else
+// 64bit is 3 * 64ptr ptr (16) + union with double (8)
 assert_alignment_and_size(QVariant,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[4]));
+                          (sizeof(::std::size_t) * 3) + sizeof(double));
+#endif
+
 #else
 assert_alignment_and_size(QVariant,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[2]));
+                          (sizeof(::std::uint32_t) * 3) + sizeof(::std::size_t)));
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QVariant>::value);

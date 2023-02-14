@@ -56,7 +56,10 @@ mod ffi {
 #[derive(Clone)]
 #[repr(C)]
 pub struct QModelIndex {
-    _space: MaybeUninit<[usize; 3]>,
+    _r: MaybeUninit<i32>,
+    _c: MaybeUninit<i32>,
+    _i: MaybeUninit<usize>,
+    _m: MaybeUninit<usize>,
 }
 
 impl Default for QModelIndex {
