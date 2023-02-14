@@ -44,6 +44,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_to_rust_string"]
         fn qstringToRustString(string: &QString) -> String;
+
+        #[doc(hidden)]
+        #[rust_name = "qstring_append"]
+        fn qstringAppend(a: &mut QString, b: &QString);
     }
 }
 
@@ -111,6 +115,15 @@ impl fmt::Display for QString {
 impl fmt::Debug for QString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{self}")
+    }
+}
+
+impl std::ops::Add for QString {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        let mut res = ffi::qstring_init_from_qstring(&self);
+        ffi::qstring_append(&mut res, &other);
+        res
     }
 }
 

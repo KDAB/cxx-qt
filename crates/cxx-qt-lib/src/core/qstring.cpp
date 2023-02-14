@@ -54,5 +54,11 @@ qstringToRustString(const QString& string)
   return ::rust::String(byteArray.constData(), byteArray.size());
 }
 
+void
+qstringAppend(QString& a, const QString& b)
+{
+  a.append(b);
+}
+
 }
 }
