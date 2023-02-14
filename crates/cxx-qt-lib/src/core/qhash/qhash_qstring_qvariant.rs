@@ -50,6 +50,8 @@ pub mod ffi {
         fn qhashLen(_: &QHash_QString_QVariant) -> isize;
         #[rust_name = "remove_QString_QVariant"]
         fn qhashRemove(_: &mut QHash_QString_QVariant, key: &QString) -> bool;
+        #[rust_name = "reserve_QString_QVariant"]
+        fn qhashReserve(_: &mut QHash_QString_QVariant, size: isize);
     }
 }
 
@@ -100,6 +102,10 @@ pub(crate) fn len(hash: &ffi::QHash_QString_QVariant) -> isize {
 
 pub(crate) fn remove(hash: &mut ffi::QHash_QString_QVariant, key: &ffi::QString) -> bool {
     ffi::remove_QString_QVariant(hash, key)
+}
+
+pub(crate) fn reserve(hash: &mut ffi::QHash_QString_QVariant, size: isize) {
+    ffi::reserve_QString_QVariant(hash, size)
 }
 
 #[allow(non_camel_case_types)]
