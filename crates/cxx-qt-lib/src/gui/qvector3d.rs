@@ -258,3 +258,102 @@ unsafe impl ExternType for QVector3D {
     type Id = type_id!("QVector3D");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeTuple;
+
+#[cfg(feature = "serde")]
+struct QVector3DVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QVector3DVisitor {
+    type Value = QVector3D;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QVector3D")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        if let Some(size_hint) = seq.size_hint() {
+            if size_hint != 3 {
+                return Err(serde::de::Error::invalid_length(
+                    size_hint,
+                    &"a tuple of three numbers",
+                ));
+            }
+        }
+
+        let x = if let Some(value) = seq.next_element::<f32>()? {
+            value
+        } else {
+            return Err(serde::de::Error::invalid_length(
+                0,
+                &"a tuple of three numbers",
+            ));
+        };
+        let y = if let Some(value) = seq.next_element::<f32>()? {
+            value
+        } else {
+            return Err(serde::de::Error::invalid_length(
+                1,
+                &"a tuple of three numbers",
+            ));
+        };
+        let z = if let Some(value) = seq.next_element::<f32>()? {
+            value
+        } else {
+            return Err(serde::de::Error::invalid_length(
+                2,
+                &"a tuple of three numbers",
+            ));
+        };
+
+        Ok(QVector3D::new(x, y, z))
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QVector3D {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_tuple(3, QVector3DVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QVector3D {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_tuple(3)?;
+        seq.serialize_element(&self.x())?;
+        seq.serialize_element(&self.y())?;
+        seq.serialize_element(&self.z())?;
+        seq.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QVector3D = serde_json::from_str(r#"[1.0,2.0,3.0]"#).unwrap();
+        assert_eq!(test_data, QVector3D::new(1.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QVector3D::new(1.0, 2.0, 3.0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"[1.0,2.0,3.0]"#);
+    }
+}
