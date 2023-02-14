@@ -13,24 +13,45 @@
 
 // The layout has changed between Qt 5 and Qt 6
 //
-// Qt5 QVariant has one member, which contains three uints and a union.
-// The three uints are optimised to a reduced size, resulting in a combined size
-// of two pointers.
-// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n491
-// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n411
-//
 // Qt6 QVariant has one member, which contains three pointers and a union
-// (with a pointer as the largest member)
+// (with a pointer / double as the largest member)
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n540
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v6.2.4#n474
+//
+// Qt5 QVariant has one member, which contains three uints and a union
+// (with a pointer / double as the largest member)
+// The three uints are optimised to a reduced size of ushorts
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n491
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n411
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+
+#if (QT_POINTER_SIZE == 4)
+// 32bit is 3 * 32bit ptr (12) + union with double (8) + 4 bytes padding
+// alignment is 8 byte on 32bit systems as well due to the double
 assert_alignment_and_size(QVariant,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t[4]));
+                          alignof(double),
+                          (sizeof(::std::size_t) * 3) + sizeof(double) +
+                            4 /* compiler padding */);
 #else
+// 64bit is 3 * 64ptr ptr (16) + union with double (8)
+// alignment is 8 bytes from the double or the pointer on 64bit systems
 assert_alignment_and_size(QVariant,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t[2]));
+                          alignof(double),
+                          (sizeof(::std::size_t) * 3) + sizeof(double));
+#endif
+
+#else
+
+// 3 * uint (12) + union with double (8)
+// but due to compiler optimisation it ends up as
+// 3 * ushort (6) + union with double (8) + 2 bytes padding
+// alignment is 8 byte on 32bit systems as well due to the double
+assert_alignment_and_size(
+  QVariant,
+  alignof(double),
+  (sizeof(::std::uint16_t /* compiler optimised from ::std::uint32_t */) * 3) +
+    sizeof(double) + 2 /* compiler padding */);
+
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QVariant>::value);

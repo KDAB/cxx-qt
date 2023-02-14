@@ -8,13 +8,12 @@
 
 #include "../assertion_utils.h"
 
-// QModelIndex has two ints, a uint pointer, and a pointer.
-// This results in 4 + 4 + 4 + 8 = 20, then due to compiler padding this results
-// in size of 24 or three pointers.
+// QModelIndex has two ints, a quint pointer (same as size_t), and a pointer.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v5.15.6-lts-lgpl#n93
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/itemmodels/qabstractitemmodel.h?h=v6.2.4#n195
 assert_alignment_and_size(QModelIndex,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[3]));
+                          (sizeof(::std::int32_t) * 2) + sizeof(::std::size_t) +
+                            sizeof(::std::size_t));
 
 static_assert(::std::is_trivially_copyable<QModelIndex>::value);

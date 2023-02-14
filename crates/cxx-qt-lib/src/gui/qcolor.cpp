@@ -12,13 +12,15 @@
 #include "../assertion_utils.h"
 
 // QColor has an enum with six values and a union with the largest being five
-// ushorts. This results in (5 * std::uint16) + std::uint32_t = 14, then due to
-// compiler padding this results in a sizeof 16 or two pointers.
+// ushorts. This results in std::int32_t + (5 * std::uint16) = 14, then due to
+// compiler padding this results in a sizeof 16.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v5.15.6-lts-lgpl#n262
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
 assert_alignment_and_size(QColor,
                           alignof(::std::size_t),
-                          sizeof(::std::size_t[2]));
+                          sizeof(::std::int32_t) +
+                            (sizeof(::std::uint16_t) * 5) +
+                            2 /* compiler padding */);
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.

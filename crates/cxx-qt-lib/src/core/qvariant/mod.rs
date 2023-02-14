@@ -51,10 +51,22 @@ pub struct QVariant {
     ///
     /// Qt5 QVariant has one member, which contains three uints (but they are optimised to a size of 8) and a union
     /// Qt6 QVariant has one member, which contains three pointers and a union (pointer largest)
+    _data: MaybeUninit<f64>,
+
+    // Compiler optimisations reduce the size of the uint to a ushort
     #[cfg(qt_version_major = "5")]
-    _space: MaybeUninit<[usize; 2]>,
+    _type: MaybeUninit<u16>,
+    #[cfg(qt_version_major = "5")]
+    _is_shared: MaybeUninit<u16>,
+    #[cfg(qt_version_major = "5")]
+    _is_null: MaybeUninit<u16>,
+
     #[cfg(qt_version_major = "6")]
-    _space: MaybeUninit<[usize; 4]>,
+    _is_shared: MaybeUninit<usize>,
+    #[cfg(qt_version_major = "6")]
+    _is_null: MaybeUninit<usize>,
+    #[cfg(qt_version_major = "6")]
+    _packed_type: MaybeUninit<usize>,
 }
 
 impl Clone for QVariant {
