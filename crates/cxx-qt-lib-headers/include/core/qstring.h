@@ -23,6 +23,8 @@ QString
 qstringInitFromRustString(::rust::Str string);
 ::rust::String
 qstringToRustString(const QString& string);
+void
+qstringAppend(QString& a, const QString& b);
 
 }
 }
