@@ -20,6 +20,40 @@ pub struct ParsedFunctionParameter {
 }
 
 impl ParsedFunctionParameter {
+    fn parse_remaining<'a>(
+        iter: impl Iterator<Item = &'a FnArg>,
+    ) -> Result<Vec<ParsedFunctionParameter>> {
+        iter.map(|input| {
+            match input {
+                FnArg::Typed(type_pattern) => {
+                    let parameter = ParsedFunctionParameter::parse(type_pattern)?;
+
+                    // Ignore self as a parameter
+                    if parameter.ident == "self" {
+                        return Ok(None);
+                    }
+                    Ok(Some(parameter))
+                }
+                // Ignore self as a parameter
+                FnArg::Receiver(_) => Ok(None),
+            }
+        })
+        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+        .collect::<Result<Vec<ParsedFunctionParameter>>>()
+    }
+
+    pub fn parse_all_ignoring_receiver(
+        signature: &Signature,
+    ) -> Result<Vec<ParsedFunctionParameter>> {
+        let mut iter = signature.inputs.iter();
+        // whilst we can ignore the receiver argument, make sure it actually exists
+        if iter.next().is_none() {
+            return Err(Error::new_spanned(signature, "Missing receiver argument!"));
+        }
+
+        Self::parse_remaining(iter)
+    }
+
     /// This function parses the list of arguments
     pub fn parse_all_without_receiver(
         signature: &Signature,
@@ -46,23 +80,7 @@ impl ParsedFunctionParameter {
             None => Err(Error::new_spanned(signature, "Missing 'self' receiver!")),
         }?;
 
-        iter.map(|input| {
-            match input {
-                FnArg::Typed(type_pattern) => {
-                    let parameter = ParsedFunctionParameter::parse(type_pattern)?;
-
-                    // Ignore self as a parameter
-                    if parameter.ident == "self" {
-                        return Ok(None);
-                    }
-                    Ok(Some(parameter))
-                }
-                // Ignore self as a parameter
-                FnArg::Receiver(_) => Ok(None),
-            }
-        })
-        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
-        .collect::<Result<Vec<ParsedFunctionParameter>>>()
+        Self::parse_remaining(iter)
     }
 
     pub fn parse(type_pattern: &PatType) -> Result<Self> {

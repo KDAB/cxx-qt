@@ -121,19 +121,16 @@ pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
 ///     #[derive(Default)]
 ///     struct MyObject;
 ///
-///     impl qobject::MyObject {
-///         cxx_qt::inherit! {
-///             extern "C++" {
-///                 // Unsafe to call
-///                 unsafe fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
-///             }
-///             unsafe extern "C++" {
-///                 // Safe to call - you are responsible to ensure this is true.
-///                 fn end_insert_rows(self: Pin<&mut Self>);
-///             }
-///         }
+///     #[cxx_qt::inherit]
+///     extern "C++" {
+///         // Unsafe to call
+///         unsafe fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
+///     }
 ///
-///         // ...
+///     #[cxx_qt::inherit]
+///     unsafe extern "C++" {
+///         // Safe to call - you are responsible to ensure this is true!
+///         fn end_insert_rows(self: Pin<&mut Self>);
 ///     }
 /// }
 /// ```

@@ -13,15 +13,15 @@ Specifically [QAbstractItemModel](https://doc.qt.io/qt-6/qabstractitemmodel.html
 To support creating such subclasses directly from within Rust, CXX-Qt provides you with multiple helpers.
 
 ## Accessing base class methods
-To access the methods of a base class in Rust, use the `cxx_qt::inherit!` macro.
-It can be placed within a `impl qobject::T` block in a `#[cxx_qt::bridge]`.
+To access the methods of a base class in Rust, use the `#[cxx_qt::inherit]` macro.
+It can be placed in front of an `extern "C++"` block in a `#[cxx_qt::bridge]`.
 
 ```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm}}
 
-    impl qobject::CustomBaseClass {
-{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl}}
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl_unsafe}}
 
+    impl qobject::CustomBaseClass {
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_clear}}
     }
 ```
@@ -30,10 +30,10 @@ It can be placed within a `impl qobject::T` block in a `#[cxx_qt::bridge]`.
 This code implements a QAbstractListModel subclass.
 For this, access to the `beginResetModel` and related methods is required.
 See [the Qt docs](https://doc.qt.io/qt-6/qabstractlistmodel.html) for more details on the specific subclassing requirements.
-These methods are then made accessible by using `cxx_qt::inherit!`.
+These methods are then made accessible by using `#[cxx_qt::inherit]`.
 
-Methods can be declared inside `cxx_qt::inherit!` in `extern "C++"` blocks similar to C++, with the same restrictions regarding which types can be used.
-Additionally, the `self` type must be either `self: Pin<&mut Self>` or `&self`.
+Methods can be declared inside `#[cxx_qt::inherit]` in `extern "C++"` blocks similar to CXX, with the same restrictions regarding which types can be used.
+Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `self: &qobject::T`. Where `qobject::T` may refer to any valid `#[cxx_qt::qobject]` in the `#[cxx_qt::bridge]`
 
 The declared methods will be case-converted as in other CXX-Qt APIs.
 To explicitly declare the C++ method name, use the `#[cxx_name="myFunctionName"]` attribute.
@@ -60,16 +60,16 @@ The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmod
 ```
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
-Note that if a method is overridden using `cxx_override` the base class version of the method can be accessed by using `cxx_qt::inherit!` in combination with the `#[cxx_name]` attribute.
+Note that if a method is overridden using `cxx_override` the base class version of the method can be accessed by using `#[cxx_qt::inherit]` in combination with the `#[cxx_name]` attribute.
 In this case the base class version of the function must get a different name, as Rust can't natively express the concept of calling a base class method.
 
 Example:
 ```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm}}
 
-    impl qobject::CustomBaseClass {
-{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl}}
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl_safe}}
 
+    impl qobject::CustomBaseClass {
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_can_fetch_more}}
     }
 ```

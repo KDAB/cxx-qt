@@ -136,29 +136,47 @@ mod ffi {
         }
     }
 
+    // ANCHOR: book_inherit_qalm_impl_unsafe
+    #[cxx_qt::inherit]
+    extern "C++" {
+        unsafe fn begin_insert_rows(
+            self: Pin<&mut qobject::CustomBaseClass>,
+            parent: &QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        unsafe fn end_insert_rows(self: Pin<&mut qobject::CustomBaseClass>);
+
+        unsafe fn begin_remove_rows(
+            self: Pin<&mut qobject::CustomBaseClass>,
+            parent: &QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        unsafe fn end_remove_rows(self: Pin<&mut qobject::CustomBaseClass>);
+
+        unsafe fn begin_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn end_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+    }
+    // ANCHOR_END: book_inherit_qalm_impl_unsafe
+
+    // ANCHOR: book_inherit_qalm_impl_safe
+    #[cxx_qt::inherit]
+    unsafe extern "C++" {
+        #[cxx_name = "canFetchMore"]
+        fn base_can_fetch_more(self: &qobject::CustomBaseClass, parent: &QModelIndex) -> bool;
+
+        fn index(
+            self: &qobject::CustomBaseClass,
+            row: i32,
+            column: i32,
+            parent: &QModelIndex,
+        ) -> QModelIndex;
+    }
+    // ANCHOR_END: book_inherit_qalm_impl_safe
+
     // QAbstractListModel implementation
     impl qobject::CustomBaseClass {
-        // ANCHOR: book_inherit_qalm_impl
-        cxx_qt::inherit! {
-            extern "C++" {
-                unsafe fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
-                unsafe fn end_insert_rows(self: Pin<&mut Self>);
-
-                unsafe fn begin_remove_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
-                unsafe fn end_remove_rows(self: Pin<&mut Self>);
-
-                unsafe fn begin_reset_model(self: Pin<&mut Self>);
-                unsafe fn end_reset_model(self: Pin<&mut Self>);
-            }
-            unsafe extern "C++" {
-                #[cxx_name="canFetchMore"]
-                fn base_can_fetch_more(&self, parent: &QModelIndex) -> bool;
-
-                fn index(&self, row: i32, column: i32, parent: &QModelIndex) -> QModelIndex;
-            }
-        }
-        // ANCHOR_END: book_inherit_qalm_impl
-
         // ANCHOR: book_inherit_data
         #[qinvokable(cxx_override)]
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {

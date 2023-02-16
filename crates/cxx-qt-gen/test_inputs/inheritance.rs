@@ -13,21 +13,21 @@ mod inheritance {
         data: Vec<i32>,
     }
 
+    #[cxx_qt::inherit]
+    unsafe extern "C++" {
+        #[cxx_name = "hasChildren"]
+        fn has_children_super(self: &qobject::MyObject, parent: &QModelIndex) -> bool;
+    }
+
+    #[cxx_qt::inherit]
+    extern "C++" {
+        unsafe fn fetch_more(self: Pin<&mut qobject::MyObject>, index: &QModelIndex);
+    }
+
     impl qobject::MyObject {
         #[qinvokable(cxx_override)]
         pub fn data(&self, _index: &QModelIndex, _role: i32) -> QVariant {
             QVariant::default()
-        }
-
-        cxx_qt::inherit! {
-            extern "C++" {
-                unsafe fn fetch_more(self: Pin<&mut Self>, index: &QModelIndex);
-            }
-
-            unsafe extern "C++" {
-                #[cxx_name="hasChildren"]
-                fn has_children_super(&self, parent: &QModelIndex) -> bool;
-            }
         }
 
         #[qinvokable(cxx_override)]
