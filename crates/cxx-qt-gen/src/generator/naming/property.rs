@@ -93,6 +93,8 @@ pub mod tests {
             ty,
             vis: syn::Visibility::Inherited,
             cxx_type: None,
+            get: None,
+            set: None,
         };
         QPropertyName::from(&property)
     }

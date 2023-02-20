@@ -13,7 +13,7 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Comma, Paren},
-    Attribute, Error, Ident, Result, Token,
+    Attribute, Error, Expr, Ident, Result, Token,
 };
 
 /// Representation of a list of idents in an attribute, eg attribute(A, B, C)
@@ -141,6 +141,46 @@ pub fn attribute_tokens_to_value<V: Parse>(attr: &Attribute) -> Result<V> {
         input.parse::<V>()
     };
     parse_value.parse2(attr.tokens.clone())
+}
+
+#[derive(Debug)]
+pub enum PropertyAttribute {
+    Get(Option<Expr>),
+    Set(Option<Expr>),
+    CxxType(syn::LitStr)
+}
+
+impl Parse for PropertyAttribute {
+    fn parse (input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let name = input.call(syn::Ident::parse_any)?;
+        let name_str = name.to_string();
+
+        let res = if input.peek(Token![=]) {
+            // attributes with only the identifier
+            // e.g. #[qproperty(get = Self::hello_fn)]
+            let _assign_token: Token![=] = input.parse()?;
+            // name = expr | type | ident
+            match &*name_str {
+                "get" => PropertyAttribute::Get(Some(input.parse()?)),
+                "set" => PropertyAttribute::Set(Some(input.parse()?)),
+                "cxx_type" => PropertyAttribute::CxxType(input.parse()?),
+                _ => {
+                    panic!("Invalid attribute for property")
+                }
+            }
+        } else {
+            // attributes with only the identifier
+            // e.g. #[qproperty(get, set)]
+            match &*name_str {
+                "get" => PropertyAttribute::Get(None),
+                "set" => PropertyAttribute::Set(None),
+                _ => {
+                    panic!("Invalid attribute for property")
+                }
+            }
+        };
+        Ok(res)
+    }
 }
 
 #[cfg(test)]

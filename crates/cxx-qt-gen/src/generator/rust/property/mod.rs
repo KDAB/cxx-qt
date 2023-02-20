@@ -12,7 +12,7 @@ use crate::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::qobject::GeneratedRustQObjectBlocks,
     },
-    parser::property::ParsedQProperty,
+    parser::property::{ParsedQProperty, MaybeCustomFn},
 };
 use syn::Result;
 
@@ -25,23 +25,47 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyName::from(property);
 
+        let getter_setter_not_explicit = property.get.is_none() && property.set.is_none();
+
         // Getters
-        let getter = getter::generate(&idents, qobject_idents, &property.ty);
-        generated
-            .cxx_mod_contents
-            .append(&mut getter.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut getter.implementation_as_items()?);
+        let default_getter = match property.get {
+            Some(MaybeCustomFn::Default) => true,
+            _ => false,
+        };
+        if getter_setter_not_explicit || default_getter {
+            let getter = getter::generate(&idents, qobject_idents, &property.ty);
+            generated
+                .cxx_mod_contents
+                .append(&mut getter.cxx_bridge_as_items()?);
+            generated
+                .cxx_qt_mod_contents
+                .append(&mut getter.implementation_as_items()?);
+        } else if let Some(getter_attr) = &property.get {
+            if let MaybeCustomFn::Custom(getter_fn) = getter_attr {
+                let getter = getter::generate_custom(&idents, qobject_idents, getter_fn, &property.ty);
+                generated
+                    .cxx_mod_contents
+                    .append(&mut getter.cxx_bridge_as_items().unwrap());
+                generated
+                    .cxx_qt_mod_contents
+                    .append(&mut getter.implementation_as_items().unwrap());
+            }
+        }
 
         // Setters
-        let setter = setter::generate(&idents, qobject_idents, &property.ty);
-        generated
-            .cxx_mod_contents
-            .append(&mut setter.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut setter.implementation_as_items()?);
+        let default_setter = match property.set {
+            Some(MaybeCustomFn::Default) => true,
+            _ => false,
+        };
+        if getter_setter_not_explicit || default_setter {
+            let setter = setter::generate(&idents, qobject_idents, &property.ty);
+            generated
+                .cxx_mod_contents
+                .append(&mut setter.cxx_bridge_as_items()?);
+            generated
+                .cxx_qt_mod_contents
+                .append(&mut setter.implementation_as_items()?);
+        }
 
         // Signals
         let notify = signal::generate(&idents, qobject_idents);
@@ -71,18 +95,32 @@ mod tests {
                 ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
+                get: None,
+                set: None,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: tokens_to_syn::<syn::Type>(quote! { UniquePtr<QColor> }),
                 vis: tokens_to_syn::<syn::Visibility>(quote! { pub }),
                 cxx_type: Some("QColor".to_owned()),
+                get: None,
+                set: None,
             },
             ParsedQProperty {
                 ident: format_ident!("unsafe_property"),
                 ty: tokens_to_syn::<syn::Type>(quote! { *mut T }),
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
+                get: None,
+                set: None,
+            },
+            ParsedQProperty {
+                ident: format_ident!("custom_getter"),
+                ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                vis: syn::Visibility::Inherited,
+                cxx_type: None,
+                get: Some(MaybeCustomFn::Custom(Box::new(tokens_to_syn::<syn::Expr>(quote! { Self::custom_getter_fn })))),
+                set: None,
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -90,8 +128,8 @@ mod tests {
         let generated = generate_rust_properties(&properties, &qobject_idents).unwrap();
 
         // Check that we have the expected number of blocks
-        assert_eq!(generated.cxx_mod_contents.len(), 9);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 15);
+        assert_eq!(generated.cxx_mod_contents.len(), 11);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 18);
 
         // Trivial Property
 
@@ -362,6 +400,60 @@ mod tests {
                 unsafe extern "C++" {
                     #[rust_name = "unsafe_property_changed"]
                     fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>);
+                }
+            })
+        );
+
+        // Custom getter
+
+        // Getter
+        assert_eq!(
+            generated.cxx_mod_contents[9],
+            tokens_to_syn::<syn::Item>(quote! {
+                extern "Rust" {
+                    #[cxx_name = "getCustomGetter"]
+                    unsafe fn custom_getter<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[15],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObject {
+                    pub fn custom_getter<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
+                        cpp.custom_getter()
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[16],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub fn custom_getter(&self) -> &i32 {
+                        (Self::custom_getter_fn)(&self.rust())
+                    }
+                }
+            })
+        );
+        assert_eq!(
+            generated.cxx_qt_mod_contents[17],
+            tokens_to_syn::<syn::Item>(quote! {
+                impl MyObjectQt {
+                    pub unsafe fn custom_getter_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+                        (Self::custom_getter_fn)(&mut self.rust_mut().get_unchecked_mut())
+                    }
+                }
+            })
+        );
+
+        // Notify
+        assert_eq!(
+            generated.cxx_mod_contents[10],
+            tokens_to_syn::<syn::Item>(quote! {
+                unsafe extern "C++" {
+                    #[rust_name = "custom_getter_changed"]
+                    fn customGetterChanged(self: Pin<&mut MyObjectQt>);
                 }
             })
         );

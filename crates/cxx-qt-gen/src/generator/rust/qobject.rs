@@ -17,7 +17,7 @@ use crate::{
 use quote::quote;
 use syn::{Ident, ImplItemMethod, Item, Result};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct GeneratedRustQObjectBlocks {
     /// Module for the CXX bridge
     pub cxx_mod_contents: Vec<Item>,
@@ -33,6 +33,7 @@ impl GeneratedRustQObjectBlocks {
     }
 }
 
+#[derive(Debug)]
 pub struct GeneratedRustQObject {
     /// Ident of the Rust name for the C++ object
     pub cpp_struct_ident: Ident,

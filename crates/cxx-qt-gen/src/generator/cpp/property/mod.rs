@@ -7,7 +7,7 @@ use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, types::CppType},
     naming::{property::QPropertyName, qobject::QObjectName},
 };
-use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
+use crate::parser::{cxxqtdata::ParsedCxxMappings, property::{ParsedQProperty, MaybeCustomFn}};
 use syn::Result;
 
 mod getter;
@@ -27,13 +27,27 @@ pub fn generate_cpp_properties(
         let idents = QPropertyName::from(property);
         let cxx_ty = CppType::from(&property.ty, &property.cxx_type, cxx_mappings)?;
 
-        generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .methods
-            .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+        generated.metaobjects.push(meta::generate(&idents, &property, &cxx_ty));
+
+        let getter_setter_not_explicit = property.get.is_none() && property.set.is_none();
+
+        // Getters
+        if getter_setter_not_explicit || property.get.is_some() {
+            generated
+                .methods
+                .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+        }
+
+        // Setters
+        let default_setter = match property.set {
+            Some(MaybeCustomFn::Default) => true,
+            _ => false,
+        };
+        if getter_setter_not_explicit || property.set.is_some() {
+            generated
+                .methods
+                .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+        }
         generated.methods.push(signal::generate(&idents));
     }
 
@@ -59,12 +73,16 @@ mod tests {
                 ty: tokens_to_syn(quote! { i32 }),
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
+                get: None,
+                set: None,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: tokens_to_syn(quote! { UniquePtr<QColor> }),
                 vis: syn::Visibility::Inherited,
                 cxx_type: Some("QColor".to_owned()),
+                get: None,
+                set: None,
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -178,6 +196,8 @@ mod tests {
             ty: tokens_to_syn(quote! { A1 }),
             vis: syn::Visibility::Inherited,
             cxx_type: None,
+            get: None,
+            set: None,
         }];
         let qobject_idents = create_qobjectname();
 
