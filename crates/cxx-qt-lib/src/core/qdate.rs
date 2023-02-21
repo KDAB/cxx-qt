@@ -122,7 +122,6 @@ mod ffi {
 
 /// The QDate class provides date functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
@@ -225,6 +224,76 @@ unsafe impl ExternType for QDate {
     type Kind = cxx::kind::Trivial;
 }
 
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QDateVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QDateVisitor {
+    type Value = QDate;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QDate")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut year = None;
+        let mut month = None;
+        let mut day = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "year" => year = Some(value),
+                "month" => month = Some(value),
+                "day" => day = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either year, month, or day as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(year), Some(month), Some(day)) = (year, month, day) {
+            Ok(QDate::new(year, month, day))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing year, month, or day as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QDate {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QDateVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QDate {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(3))?;
+        map.serialize_entry("year", &self.year())?;
+        map.serialize_entry("month", &self.month())?;
+        map.serialize_entry("day", &self.day())?;
+        map.end()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -241,5 +310,24 @@ mod test {
         let date_a = QDate::from(1000);
         let date_b = QDate::from(1010);
         assert_eq!(date_a.days_to(date_b), 10);
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QDate = serde_json::from_str(r#"{"year":2023,"month":1,"day":1}"#).unwrap();
+        assert_eq!(test_data, QDate::new(2023, 1, 1));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QDate::new(2023, 1, 1);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"year":2023,"month":1,"day":1}"#);
     }
 }

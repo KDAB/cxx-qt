@@ -77,7 +77,6 @@ mod ffi {
 
 /// The QPointF struct defines a point in the plane using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QPointF {
     x: f64,
@@ -130,6 +129,71 @@ impl From<QPointF> for ffi::QPoint {
 unsafe impl ExternType for QPointF {
     type Id = type_id!("QPointF");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QPointFVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QPointFVisitor {
+    type Value = QPointF;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QPointF")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut x = None;
+        let mut y = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "x" => x = Some(value),
+                "y" => y = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either x or y as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(x), Some(y)) = (x, y) {
+            Ok(QPointF::new(x, y))
+        } else {
+            Err(serde::de::Error::missing_field("missing x or y as key"))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QPointF {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QPointFVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QPointF {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("x", &self.x())?;
+        map.serialize_entry("y", &self.y())?;
+        map.end()
+    }
 }
 
 #[cfg(feature = "serde")]

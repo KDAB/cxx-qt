@@ -114,7 +114,6 @@ mod ffi {
 
 /// The QTime class provides clock time functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QTime {
     mds: i32,
@@ -200,4 +199,97 @@ impl From<&QTime> for i32 {
 unsafe impl ExternType for QTime {
     type Id = type_id!("QTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QTimeVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QTimeVisitor {
+    type Value = QTime;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QTime")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut hour = None;
+        let mut minute = None;
+        let mut second = None;
+        let mut msec = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "hour" => hour = Some(value),
+                "minute" => minute = Some(value),
+                "second" => second = Some(value),
+                "msec" => msec = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either hour, minute, second, or msec as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(hour), Some(minute), Some(second), Some(msec)) = (hour, minute, second, msec) {
+            Ok(QTime::new(hour, minute, second, msec))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing hour, minute, second, or msec as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QTime {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QTimeVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QTime {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(4))?;
+        map.serialize_entry("hour", &self.hour())?;
+        map.serialize_entry("minute", &self.minute())?;
+        map.serialize_entry("second", &self.second())?;
+        map.serialize_entry("msec", &self.msec())?;
+        map.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QTime =
+            serde_json::from_str(r#"{"hour":1,"minute":2,"second":3,"msec":4}"#).unwrap();
+        assert_eq!(test_data, QTime::new(1, 2, 3, 4));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QTime::new(1, 2, 3, 4);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"hour":1,"minute":2,"second":3,"msec":4}"#);
+    }
 }
