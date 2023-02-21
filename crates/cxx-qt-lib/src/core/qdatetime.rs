@@ -394,3 +394,140 @@ unsafe impl ExternType for QDateTime {
     type Id = type_id!("QDateTime");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QDateTimeVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QDateTimeVisitor {
+    type Value = QDateTime;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QDateTime")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut year = None;
+        let mut month = None;
+        let mut day = None;
+        let mut hour = None;
+        let mut minute = None;
+        let mut second = None;
+        let mut msec = None;
+        let mut offset = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "year" => year = Some(value),
+                "month" => month = Some(value),
+                "day" => day = Some(value),
+                "hour" => hour = Some(value),
+                "minute" => minute = Some(value),
+                "second" => second = Some(value),
+                "msec" => msec = Some(value),
+                "offset" => offset = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either year, month, day, hour, minute, second, msec, or offset as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (
+            Some(year),
+            Some(month),
+            Some(day),
+            Some(hour),
+            Some(minute),
+            Some(second),
+            Some(msec),
+            Some(offset),
+        ) = (year, month, day, hour, minute, second, msec, offset)
+        {
+            Ok(QDateTime::from_date_and_time_time_zone(
+                &QDate::new(year, month, day),
+                &QTime::new(hour, minute, second, msec),
+                &ffi::QTimeZone::from_offset_seconds(offset),
+            ))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing year, month, day, hour, minute, second, msec, or offset as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QDateTime {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QDateTimeVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QDateTime {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(8))?;
+        let date = self.date();
+        let time = self.time();
+        map.serialize_entry("year", &date.year())?;
+        map.serialize_entry("month", &date.month())?;
+        map.serialize_entry("day", &date.day())?;
+        map.serialize_entry("hour", &time.hour())?;
+        map.serialize_entry("minute", &time.minute())?;
+        map.serialize_entry("second", &time.second())?;
+        map.serialize_entry("msec", &time.msec())?;
+        map.serialize_entry("offset", &self.offset_from_utc())?;
+        map.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QDateTime = serde_json::from_str(
+            r#"{"year":2023,"month":1,"day":1,"hour":1,"minute":2,"second":3,"msec":4,"offset":0}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            test_data,
+            QDateTime::from_date_and_time_time_zone(
+                &QDate::new(2023, 1, 1),
+                &QTime::new(1, 2, 3, 4),
+                &ffi::QTimeZone::from_offset_seconds(0)
+            )
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::from_offset_seconds(0),
+        );
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"year":2023,"month":1,"day":1,"hour":1,"minute":2,"second":3,"msec":4,"offset":0}"#
+        );
+    }
+}
