@@ -59,7 +59,6 @@ mod ffi {
 
 /// The QSizeF class defines the size of a two-dimensional object using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QSizeF {
     w: f64,
@@ -120,6 +119,73 @@ impl std::ops::Div<f64> for QSizeF {
 unsafe impl ExternType for QSizeF {
     type Id = type_id!("QSizeF");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QSizeFVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QSizeFVisitor {
+    type Value = QSizeF;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QSizeF")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut width = None;
+        let mut height = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "width" => width = Some(value),
+                "height" => height = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either width or height as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(width), Some(height)) = (width, height) {
+            Ok(QSizeF::new(width, height))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing width or height as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QSizeF {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QSizeFVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QSizeF {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("width", &self.width())?;
+        map.serialize_entry("height", &self.height())?;
+        map.end()
+    }
 }
 
 #[cfg(feature = "serde")]

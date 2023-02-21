@@ -64,7 +64,6 @@ mod ffi {
 
 /// The QRectF struct defines a rectangle in the plane using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(C)]
 pub struct QRectF {
     xp: f64,
@@ -114,4 +113,97 @@ impl std::ops::Sub<QMarginsF> for QRectF {
 unsafe impl ExternType for QRectF {
     type Id = type_id!("QRectF");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QRectFVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QRectFVisitor {
+    type Value = QRectF;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QRectF")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut x = None;
+        let mut y = None;
+        let mut width = None;
+        let mut height = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "x" => x = Some(value),
+                "y" => y = Some(value),
+                "width" => width = Some(value),
+                "height" => height = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either x, y, height, or width as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(x), Some(y), Some(width), Some(height)) = (x, y, width, height) {
+            Ok(QRectF::new(x, y, width, height))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing x, y, height, or width as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QRectF {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QRectFVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QRectF {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(4))?;
+        map.serialize_entry("x", &self.x())?;
+        map.serialize_entry("y", &self.y())?;
+        map.serialize_entry("width", &self.width())?;
+        map.serialize_entry("height", &self.height())?;
+        map.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QRectF =
+            serde_json::from_str(r#"{"x":1.0,"y":2.0,"width":3.0,"height":4.0}"#).unwrap();
+        assert_eq!(test_data, QRectF::new(1.0, 2.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QRectF::new(1.0, 2.0, 3.0, 4.0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"x":1.0,"y":2.0,"width":3.0,"height":4.0}"#);
+    }
 }
