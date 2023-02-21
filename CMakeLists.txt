@@ -155,16 +155,16 @@ set(CARGO_ENV "QMAKE=${QMAKE}")
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-targets --manifest-path ${MANIFEST_PATH})
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-features --all-targets --manifest-path ${MANIFEST_PATH})
     set_property(TEST ${TEST_NAME_PREFIX}_cargo_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
     # Check if we should enable doc tests
     if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
         # Add cargo docs as a test
-        add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --doc --manifest-path ${MANIFEST_PATH})
+        add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --all-features --doc --manifest-path ${MANIFEST_PATH})
         set_property(TEST ${TEST_NAME_PREFIX}_cargo_doc_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
     endif()
     # Add clippy as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
+    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-features --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
     set_property(TEST ${TEST_NAME_PREFIX}_cargo_clippy PROPERTY ENVIRONMENT ${CARGO_ENV})
     # Add rustfmt as a test
     add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
