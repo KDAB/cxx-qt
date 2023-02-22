@@ -137,6 +137,7 @@ mod ffi {
     }
 
     // ANCHOR: book_inherit_qalm_impl_unsafe
+    // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
     #[cxx_qt::inherit]
     extern "C++" {
         unsafe fn begin_insert_rows(

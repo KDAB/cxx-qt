@@ -61,7 +61,7 @@ The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmod
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
 Note that if a method is overridden using `cxx_override` the base class version of the method can be accessed by using `#[cxx_qt::inherit]` in combination with the `#[cxx_name]` attribute.
-In this case the base class version of the function must get a different name, as Rust can't natively express the concept of calling a base class method.
+In this case the base class version of the function must get a different name, as Rust can't have two functions with the same name on one type.
 
 Example:
 ```rust,ignore
