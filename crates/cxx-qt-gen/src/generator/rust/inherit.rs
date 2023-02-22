@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use crate::{
     generator::{naming::qobject::QObjectName, rust::qobject::GeneratedRustQObjectBlocks},
     parser::inherit::ParsedInheritedMethod,
@@ -68,7 +73,7 @@ mod tests {
     ) -> Result<GeneratedRustQObjectBlocks> {
         let method: ForeignItemFn = tokens_to_syn(tokens);
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, safety).unwrap()];
-        generate(&create_qobjectname(), &*inherited_methods)
+        generate(&create_qobjectname(), &inherited_methods)
     }
 
     #[test]

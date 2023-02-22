@@ -24,7 +24,7 @@ impl From<&ImplItemMethod> for QInvokableName {
         let ident = &method.sig.ident;
         Self {
             name: CombinedIdent::from_rust_function(ident.clone()),
-            wrapper: CombinedIdent::wrapper_from_invokable(&ident),
+            wrapper: CombinedIdent::wrapper_from_invokable(ident),
         }
     }
 }

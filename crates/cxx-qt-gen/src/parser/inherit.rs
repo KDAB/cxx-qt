@@ -192,7 +192,7 @@ mod tests {
                 assert_eq!(inherit.safety, Safety::Safe);
             }
             MaybeInheritMethods::PassThrough(item) => {
-                panic!("Expected InheritMethods, got {:?}", item);
+                panic!("Expected InheritMethods, got {item:?}");
             }
         }
     }
@@ -259,14 +259,14 @@ mod tests {
         let parsed = ParsedInheritedMethod::parse(function, Safety::Safe).unwrap();
 
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
-        assert_eq!(parsed.mutable, true);
         assert_eq!(parsed.parameters.len(), 2);
         assert_eq!(parsed.ident.rust, format_ident!("test"));
         assert_eq!(parsed.ident.cpp, format_ident!("testFunction"));
-        assert_eq!(parsed.safe, true);
         assert_eq!(
             parsed.wrapper_ident(),
             format_ident!("testFunctionCxxqtInherit")
         );
+        assert!(parsed.mutable);
+        assert!(parsed.safe);
     }
 }

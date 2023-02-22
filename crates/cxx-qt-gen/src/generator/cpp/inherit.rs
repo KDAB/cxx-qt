@@ -69,7 +69,7 @@ mod tests {
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, Safety::Safe).unwrap()];
         let base_class = base_class.map(|s| s.to_owned());
         generate(
-            &*inherited_methods,
+            &inherited_methods,
             &base_class,
             &ParsedCxxMappings::default(),
         )
