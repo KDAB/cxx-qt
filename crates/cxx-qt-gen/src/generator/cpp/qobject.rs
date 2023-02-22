@@ -107,9 +107,11 @@ impl GeneratedCppQObject {
                 cxx_mappings,
             )?);
         }
-        generated
-            .blocks
-            .append(&mut inherit::generate(qobject, cxx_mappings)?);
+        generated.blocks.append(&mut inherit::generate(
+            &*qobject.inherited_methods,
+            &qobject.base_class,
+            cxx_mappings,
+        )?);
 
         Ok(generated)
     }

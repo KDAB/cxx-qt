@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    inherit::*,
+    inherit::ParsedInheritedMethod,
     invokable::ParsedQInvokable,
     property::{ParsedQProperty, ParsedRustField},
     signals::ParsedSignalsEnum,

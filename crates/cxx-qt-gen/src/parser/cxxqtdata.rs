@@ -217,11 +217,7 @@ impl ParsedCxxQtData {
 
     fn add_inherited_methods(&mut self, inherited: InheritMethods) -> Result<()> {
         for method in inherited.base_functions.into_iter() {
-            let parsed_inherited_method = if inherited.is_safe {
-                ParsedInheritedMethod::parse_safe(method)?
-            } else {
-                ParsedInheritedMethod::parse_unsafe(method)?
-            };
+            let parsed_inherited_method = ParsedInheritedMethod::parse(method, inherited.safety)?;
 
             if let Some(ref mut qobject) = self
                 .qobjects

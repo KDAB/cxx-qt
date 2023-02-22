@@ -101,3 +101,61 @@ impl ParsedFunctionParameter {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use quote::ToTokens;
+    use syn::ForeignItemFn;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_all_without_receiver() {
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo(&self, a: i32, b: String);
+        };
+
+        let parameters =
+            ParsedFunctionParameter::parse_all_without_receiver(&function.sig).unwrap();
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(parameters[0].ident, "a");
+        assert_eq!(parameters[0].ty.to_token_stream().to_string(), "i32");
+        assert_eq!(parameters[1].ident, "b");
+        assert_eq!(parameters[1].ty.to_token_stream().to_string(), "String");
+    }
+
+    #[test]
+    fn test_parse_all_without_receiver_invalid_self() {
+        fn assert_parse_error(function: ForeignItemFn) {
+            assert!(ParsedFunctionParameter::parse_all_without_receiver(&function.sig).is_err());
+        }
+        // Missing self
+        assert_parse_error(syn::parse_quote! {
+            fn foo(a: i32, b: String);
+        });
+        // self parameter points to non-self type
+        assert_parse_error(syn::parse_quote! {
+            fn foo(self: T);
+        });
+        // self parameter is a non-self pin
+        assert_parse_error(syn::parse_quote! {
+            fn foo(self: Pin<&mut T>);
+        })
+    }
+
+    #[test]
+    fn test_parse_all_ignoring_receiver() {
+        // This supports using a type as `self` that's not "Self".
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo(self: T, a: i32, b: String);
+        };
+
+        let parameters =
+            ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).unwrap();
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(parameters[0].ident, "a");
+        assert_eq!(parameters[0].ty.to_token_stream().to_string(), "i32");
+        assert_eq!(parameters[1].ident, "b");
+        assert_eq!(parameters[1].ty.to_token_stream().to_string(), "String");
+    }
+}

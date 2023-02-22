@@ -8,7 +8,9 @@ use crate::{
     parser::parameter::ParsedFunctionParameter,
     syntax::{
         attribute::{attribute_find_path, attribute_tokens_to_value},
-        foreignmod, types,
+        foreignmod,
+        safety::Safety,
+        types,
     },
 };
 use quote::format_ident;
@@ -46,7 +48,7 @@ impl Parse for MaybeInheritMethods {
 
 /// This type is used when parsing the `#[cxx_qt::inherit]` macro contents into raw ForeignItemFn items
 pub struct InheritMethods {
-    pub is_safe: bool,
+    pub safety: Safety,
     pub base_functions: Vec<ForeignItemFn>,
 }
 
@@ -54,11 +56,14 @@ impl Parse for InheritMethods {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut base_functions = Vec::new();
 
-        // base_safe_functions.push(input.parse::<ForeignItemFn>()?);
         // This looks somewhat counter-intuitive, but if we add `unsafe`
         // to the `extern "C++"` block, the contained functions will be safe to call.
-        let is_safe = input.peek(Token![unsafe]);
-        if is_safe {
+        let safety = if input.peek(Token![unsafe]) {
+            Safety::Safe
+        } else {
+            Safety::Unsafe
+        };
+        if safety == Safety::Safe {
             input.parse::<Token![unsafe]>()?;
         }
 
@@ -85,7 +90,7 @@ impl Parse for InheritMethods {
         }
 
         Ok(InheritMethods {
-            is_safe,
+            safety,
             base_functions,
         })
     }
@@ -105,22 +110,17 @@ pub struct ParsedInheritedMethod {
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
     pub ident: CombinedIdent,
-    /// the name of the wrapper function in C++
-    pub wrapper_ident: Ident,
 }
 
 impl ParsedInheritedMethod {
-    pub fn parse_unsafe(method: ForeignItemFn) -> Result<Self> {
-        if method.sig.unsafety.is_none() {
+    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
+        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
             return Err(Error::new(
                 method.span(),
                 "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"C++\"` block!",
             ));
         }
-        Self::parse_safe(method)
-    }
 
-    pub fn parse_safe(method: ForeignItemFn) -> Result<Self> {
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.typ)?;
         let mutable = mutability.is_some();
@@ -140,7 +140,6 @@ impl ParsedInheritedMethod {
 
             ident.cpp = format_ident!("{}", name.value());
         }
-        let wrapper_ident = format_ident!("{}_cxxqt_inherit", &ident.cpp);
         let safe = method.sig.unsafety.is_none();
 
         Ok(Self {
@@ -149,8 +148,125 @@ impl ParsedInheritedMethod {
             mutable,
             parameters,
             ident,
-            wrapper_ident,
             safe,
         })
+    }
+
+    /// the name of the wrapper function in C++
+    pub fn wrapper_ident(&self) -> Ident {
+        format_ident!("{}CxxqtInherit", self.ident.cpp)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::tokens_to_syn;
+    use quote::quote;
+
+    #[test]
+    fn test_parse_unsafe_mod() {
+        let module = quote! {
+            extern "C++" {
+                unsafe fn test(self: &qobject::T);
+            }
+        };
+        let parsed: InheritMethods = syn::parse2(module).unwrap();
+        assert_eq!(parsed.base_functions.len(), 1);
+        assert_eq!(parsed.safety, Safety::Unsafe);
+    }
+
+    #[test]
+    fn test_parse_safe_mod() {
+        let module = quote! {
+            #[cxx_qt::inherit]
+            unsafe extern "C++" {
+                fn test(self: &qobject::T);
+                unsafe fn test2(self: &qobject::T);
+            }
+        };
+        let parsed: MaybeInheritMethods = syn::parse2(module).unwrap();
+        match parsed {
+            MaybeInheritMethods::Found(inherit) => {
+                assert_eq!(inherit.base_functions.len(), 2);
+                assert_eq!(inherit.safety, Safety::Safe);
+            }
+            MaybeInheritMethods::PassThrough(item) => {
+                panic!("Expected InheritMethods, got {:?}", item);
+            }
+        }
+    }
+
+    fn assert_parse_error(tokens: proc_macro2::TokenStream) {
+        let function: ForeignItemFn = tokens_to_syn(tokens);
+
+        let result = ParsedInheritedMethod::parse(function, Safety::Safe);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parser_errors() {
+        // Missing self type
+        assert_parse_error(quote! {
+            fn test(&self);
+        });
+        // Missing qobject::
+        assert_parse_error(quote! {
+            fn test(self: &T);
+        });
+        assert_parse_error(quote! {
+            fn test(self: &mut T);
+        });
+        assert_parse_error(quote! {
+            fn test(self: Pin<&mut T>);
+        });
+        // Pointer types
+        assert_parse_error(quote! {
+            fn test(self: *const T);
+        });
+        assert_parse_error(quote! {
+            fn test(self: *mut T);
+        });
+        // Invalid pin usage
+        assert_parse_error(quote! {
+            fn test(self: Pin<&T>);
+        });
+        assert_parse_error(quote! {
+            fn test(self: &mut T);
+        });
+        // Attributes
+        assert_parse_error(quote! {
+            #[myattribute]
+            fn test(self: &qobject::T);
+        });
+        assert_parse_error(quote! {
+            fn test(#[test] self: &qobject::T);
+        });
+        // Missing "unsafe"
+        let function: ForeignItemFn = tokens_to_syn(quote! {
+            fn test(self: &qobject::T);
+        });
+        assert!(ParsedInheritedMethod::parse(function, Safety::Unsafe).is_err());
+    }
+
+    #[test]
+    fn test_parse_safe() {
+        let function: ForeignItemFn = tokens_to_syn(quote! {
+            #[cxx_name="testFunction"]
+            fn test(self: Pin<&mut qobject::T>, a: i32, b: &str);
+        });
+
+        let parsed = ParsedInheritedMethod::parse(function, Safety::Safe).unwrap();
+
+        assert_eq!(parsed.qobject_ident, format_ident!("T"));
+        assert_eq!(parsed.mutable, true);
+        assert_eq!(parsed.parameters.len(), 2);
+        assert_eq!(parsed.ident.rust, format_ident!("test"));
+        assert_eq!(parsed.ident.cpp, format_ident!("testFunction"));
+        assert_eq!(parsed.safe, true);
+        assert_eq!(
+            parsed.wrapper_ident(),
+            format_ident!("testFunctionCxxqtInherit")
+        );
     }
 }

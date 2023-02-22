@@ -3,7 +3,7 @@
 
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::path::*;
+use crate::syntax::path::path_compare_str;
 use syn::{
     token::Mut, Error, GenericArgument, Ident, Path, PathArguments, Result, Type, TypePath,
     TypeReference,

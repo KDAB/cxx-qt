@@ -7,14 +7,13 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            field::generate_rust_fields, fragment::RustFragmentPair,
+            field::generate_rust_fields, fragment::RustFragmentPair, inherit,
             invokable::generate_rust_invokables, property::generate_rust_properties,
             signals::generate_rust_signals,
         },
     },
-    parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject},
+    parser::qobject::ParsedQObject,
 };
-use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, ImplItemMethod, Item, Result};
 
@@ -91,7 +90,7 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
-        generated.blocks.append(&mut generate_inherited_methods(
+        generated.blocks.append(&mut inherit::generate(
             &qobject_idents,
             &qobject.inherited_methods,
         )?);
@@ -145,52 +144,6 @@ pub fn generate_methods(
             .collect::<Result<Vec<Item>>>()?,
     );
 
-    Ok(blocks)
-}
-
-fn generate_inherited_methods(
-    qobject_ident: &QObjectName,
-    methods: &[ParsedInheritedMethod],
-) -> Result<GeneratedRustQObjectBlocks> {
-    let mut blocks = GeneratedRustQObjectBlocks::default();
-    let qobject_name = &qobject_ident.cpp_class.rust;
-
-    let mut bridges = methods
-        .iter()
-        .map(|method| {
-            let parameters = method
-                .parameters
-                .iter()
-                .map(|parameter| {
-                    let ident = &parameter.ident;
-                    let ty = &parameter.ty;
-                    quote! { #ident: #ty }
-                })
-                .collect::<Vec<TokenStream>>();
-            let ident = &method.method.sig.ident;
-            let cxx_name_string = &method.wrapper_ident.to_string();
-            let self_param = if method.mutable {
-                quote! { self: Pin<&mut #qobject_name> }
-            } else {
-                quote! { self: &#qobject_name }
-            };
-            let return_type = &method.method.sig.output;
-
-            let mut unsafe_block = None;
-            let mut unsafe_call = Some(quote! { unsafe });
-            if method.safe {
-                std::mem::swap(&mut unsafe_call, &mut unsafe_block);
-            }
-            syn::parse2(quote! {
-                #unsafe_block extern "C++" {
-                    #[cxx_name=#cxx_name_string]
-                    #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
-                }
-            })
-        })
-        .collect::<Result<Vec<Item>>>()?;
-
-    blocks.cxx_mod_contents.append(&mut bridges);
     Ok(blocks)
 }
 

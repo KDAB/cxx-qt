@@ -29,12 +29,12 @@ public:
                             ::std::int32_t _role) const override;
   Q_INVOKABLE bool hasChildren(QModelIndex const& _parent) const override;
   template<class... Args>
-  bool hasChildren_cxxqt_inherit(Args... args) const
+  bool hasChildrenCxxqtInherit(Args... args) const
   {
     return QAbstractItemModel::hasChildren(args...);
   }
   template<class... Args>
-  void fetchMore_cxxqt_inherit(Args... args)
+  void fetchMoreCxxqtInherit(Args... args)
   {
     return QAbstractItemModel::fetchMore(args...);
   }
