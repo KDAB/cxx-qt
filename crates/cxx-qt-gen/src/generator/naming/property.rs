@@ -20,11 +20,11 @@ pub struct QPropertyName {
 impl From<&Ident> for QPropertyName {
     fn from(ident: &Ident) -> Self {
         Self {
-            name: name_from_ident(ident),
-            getter: getter_from_ident(ident),
-            getter_mutable: getter_mutable_from_ident(ident),
-            setter: setter_from_ident(ident),
-            notify: notify_from_ident(ident),
+            name: CombinedIdent::from_property(ident.clone()),
+            getter: CombinedIdent::getter_from_property(ident.clone()),
+            getter_mutable: CombinedIdent::getter_mutable_from_property(ident),
+            setter: CombinedIdent::setter_from_property(ident),
+            notify: CombinedIdent::notify_from_property(ident),
         }
     }
 }
@@ -35,45 +35,47 @@ impl From<&ParsedQProperty> for QPropertyName {
     }
 }
 
-/// For a given ident generate the Rust and C++ getter names
-fn getter_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("get{}", ident.to_string().to_case(Case::Pascal)),
-        rust: ident.clone(),
+impl CombinedIdent {
+    /// For a given ident generate the Rust and C++ getter names
+    fn getter_from_property(ident: Ident) -> Self {
+        Self {
+            cpp: format_ident!("get{}", ident.to_string().to_case(Case::Pascal)),
+            rust: ident,
+        }
     }
-}
 
-/// For a given ident generate the Rust and C++ getter mutable names
-fn getter_mutable_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("get{}Mut", ident.to_string().to_case(Case::Pascal)),
-        rust: format_ident!("{ident}_mut"),
+    /// For a given ident generate the Rust and C++ getter mutable names
+    fn getter_mutable_from_property(ident: &Ident) -> Self {
+        Self {
+            cpp: format_ident!("get{}Mut", ident.to_string().to_case(Case::Pascal)),
+            rust: format_ident!("{ident}_mut"),
+        }
     }
-}
 
-/// For a given ident generate the Rust and C++ names
-fn name_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident.clone(),
+    /// For a given ident generate the Rust and C++ names
+    fn from_property(ident: Ident) -> Self {
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
     }
-}
 
-/// For a given ident generate the Rust and C++ notify names
-fn notify_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("{ident}_changed");
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
+    /// For a given ident generate the Rust and C++ notify names
+    fn notify_from_property(ident: &Ident) -> Self {
+        let ident = format_ident!("{ident}_changed");
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
     }
-}
 
-/// For a given ident generate the Rust and C++ setter names
-fn setter_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("set_{ident}");
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
+    /// For a given ident generate the Rust and C++ setter names
+    fn setter_from_property(ident: &Ident) -> Self {
+        let ident = format_ident!("set_{ident}");
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
     }
 }
 

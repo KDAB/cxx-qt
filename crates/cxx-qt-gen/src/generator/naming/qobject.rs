@@ -28,19 +28,11 @@ impl From<&ParsedQObject> for QObjectName {
 impl From<&Ident> for QObjectName {
     fn from(ident: &Ident) -> Self {
         Self {
-            cpp_class: cpp_class_from_ident(ident),
-            rust_struct: rust_struct_from_ident(ident),
+            cpp_class: CombinedIdent::cpp_class_from_rust_struct(ident.clone()),
+            rust_struct: CombinedIdent::from_rust_struct(ident.clone()),
             cxx_qt_thread_class: cxx_qt_thread_class_from_ident(ident),
             cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(ident),
         }
-    }
-}
-
-/// For a given ident generate the C++ class name
-fn cpp_class_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: ident.clone(),
-        rust: format_ident!("{ident}Qt"),
     }
 }
 
@@ -54,11 +46,19 @@ fn cxx_qt_thread_queued_fn_struct_from_ident(ident: &Ident) -> Ident {
     format_ident!("{ident}CxxQtThreadQueuedFn")
 }
 
-/// For a given ident generate the Rust and C++ names
-fn rust_struct_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("{ident}Rust"),
-        rust: ident.clone(),
+impl CombinedIdent {
+    /// For a given ident generate the C++ class name
+    fn cpp_class_from_rust_struct(ident: Ident) -> Self {
+        let rust = format_ident!("{ident}Qt");
+        Self { cpp: ident, rust }
+    }
+
+    /// For a given ident generate the Rust and C++ names
+    fn from_rust_struct(ident: Ident) -> Self {
+        Self {
+            cpp: format_ident!("{ident}Rust"),
+            rust: ident,
+        }
     }
 }
 

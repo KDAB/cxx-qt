@@ -26,28 +26,30 @@ impl From<&ParsedSignal> for QSignalName {
 
         Self {
             enum_name: signal.ident.clone(),
-            name: name_from_ident(&cxx_ident),
-            emit_name: emit_name_from_ident(&cxx_ident),
+            name: CombinedIdent::from_signal(&cxx_ident),
+            emit_name: CombinedIdent::emit_from_signal(&cxx_ident),
         }
     }
 }
 
-/// For a given signal ident generate the Rust and C++ names
-fn name_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        // Note that signal names are in camel case so we need to convert to snake and can't clone
-        rust: format_ident!("{}", ident.to_string().to_case(Case::Snake)),
+impl CombinedIdent {
+    /// For a given signal ident generate the Rust and C++ names
+    fn from_signal(ident: &Ident) -> Self {
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            // Note that signal names are in camel case so we need to convert to snake and can't clone
+            rust: format_ident!("{}", ident.to_string().to_case(Case::Snake)),
+        }
     }
-}
 
-/// For a given signal ident generate the Rust and C++ emit name
-fn emit_name_from_ident(ident: &Ident) -> CombinedIdent {
-    // Note that signal names are in camel case so we need to convert to snake first
-    let ident = format_ident!("emit_{}", ident.to_string().to_case(Case::Snake));
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
+    /// For a given signal ident generate the Rust and C++ emit name
+    fn emit_from_signal(ident: &Ident) -> Self {
+        // Note that signal names are in camel case so we need to convert to snake first
+        let ident = format_ident!("emit_{}", ident.to_string().to_case(Case::Snake));
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
     }
 }
 
