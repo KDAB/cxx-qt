@@ -154,7 +154,7 @@ impl ParsedInheritedMethod {
 
     /// the name of the wrapper function in C++
     pub fn wrapper_ident(&self) -> Ident {
-        format_ident!("{}CxxqtInherit", self.ident.cpp)
+        format_ident!("{}CxxQtInherit", self.ident.cpp)
     }
 }
 
@@ -264,7 +264,7 @@ mod tests {
         assert_eq!(parsed.ident.cpp, format_ident!("testFunction"));
         assert_eq!(
             parsed.wrapper_ident(),
-            format_ident!("testFunctionCxxqtInherit")
+            format_ident!("testFunctionCxxQtInherit")
         );
         assert!(parsed.mutable);
         assert!(parsed.safe);

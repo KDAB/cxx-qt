@@ -97,7 +97,7 @@ mod tests {
         assert_generated_eq(
             indoc::indoc! {"
                 template <class... Args>
-                void testCxxqtInherit(Args ...args) const
+                void testCxxQtInherit(Args ...args) const
                 {
                     return TestBaseClass::test(args...);
                 }"
@@ -119,7 +119,7 @@ mod tests {
         assert_generated_eq(
             indoc::indoc! {"
                 template <class... Args>
-                void testCxxqtInherit(Args ...args)
+                void testCxxQtInherit(Args ...args)
                 {
                     return TestBaseClass::test(args...);
                 }"
@@ -141,7 +141,7 @@ mod tests {
         assert_generated_eq(
             indoc::indoc! {"
                 template <class... Args>
-                void testCxxqtInherit(Args ...args) const
+                void testCxxQtInherit(Args ...args) const
                 {
                     return QObject::test(args...);
                 }"

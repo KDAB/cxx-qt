@@ -7,7 +7,7 @@ use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
 
-use super::*;
+use super::CombinedIdent;
 
 impl CombinedIdent {
     /// Generate a CombinedIdent from a rust function name.

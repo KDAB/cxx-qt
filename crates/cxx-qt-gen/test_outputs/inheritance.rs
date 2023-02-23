@@ -38,11 +38,11 @@ mod inheritance {
         fn has_children_wrapper(self: &MyObject, cpp: &MyObjectQt, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
-        #[cxx_name = "hasChildrenCxxqtInherit"]
+        #[cxx_name = "hasChildrenCxxQtInherit"]
         fn has_children_super(self: &MyObjectQt, parent: &QModelIndex) -> bool;
     }
     extern "C++" {
-        #[cxx_name = "fetchMoreCxxqtInherit"]
+        #[cxx_name = "fetchMoreCxxQtInherit"]
         unsafe fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
     }
     unsafe extern "C++" {

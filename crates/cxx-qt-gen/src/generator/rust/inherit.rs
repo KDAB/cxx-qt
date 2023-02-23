@@ -93,7 +93,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name="testCxxqtInherit"]
+                    #[cxx_name="testCxxQtInherit"]
                     fn test(self: Pin<&mut MyObjectQt>, a: B, b: C);
                 }
             },
@@ -117,7 +117,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name="testCxxqtInherit"]
+                    #[cxx_name="testCxxQtInherit"]
                     fn test(self: &MyObjectQt, a: B, b: C);
                 }
             },
@@ -142,7 +142,7 @@ mod tests {
             // TODO: Maybe remove the trailing comma after self?
             quote! {
                 extern "C++" {
-                    #[cxx_name="testCxxqtInherit"]
+                    #[cxx_name="testCxxQtInherit"]
                     unsafe fn test(self: &MyObjectQt,);
                 }
             },
