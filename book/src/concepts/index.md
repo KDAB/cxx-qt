@@ -1,6 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
@@ -21,3 +22,4 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
   * [Threading concept and safety](./threading.md)
   * [Nesting Rust objects](./nested_objects.md)
+  * [Inheriting QObjects and overriding methods](./inheritance.md)

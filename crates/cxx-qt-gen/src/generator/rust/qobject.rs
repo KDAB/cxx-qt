@@ -7,7 +7,7 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            field::generate_rust_fields, fragment::RustFragmentPair,
+            field::generate_rust_fields, fragment::RustFragmentPair, inherit,
             invokable::generate_rust_invokables, property::generate_rust_properties,
             signals::generate_rust_signals,
         },
@@ -90,6 +90,10 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
+        generated.blocks.append(&mut inherit::generate(
+            &qobject_idents,
+            &qobject.inherited_methods,
+        )?);
 
         if let Some(signals_enum) = &qobject.signals {
             generated

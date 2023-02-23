@@ -53,7 +53,6 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 
 add_executable(${APP_NAME}
     cpp/main.cpp
-    cpp/qabstractlistmodelcxx.h
     qml/qml.qrc
 )
 
@@ -85,7 +84,6 @@ copy_qml_test(types)
 copy_qml_test(uncreatable)
 
 add_executable(${APP_NAME}_test
-    cpp/qabstractlistmodelcxx.h
     tests/main.cpp
 )
 target_include_directories(${APP_NAME}_test PRIVATE cpp)

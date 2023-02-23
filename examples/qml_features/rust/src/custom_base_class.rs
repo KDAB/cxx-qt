@@ -8,7 +8,7 @@
 mod ffi {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
-        include!("qabstractlistmodelcxx.h");
+        include!(< QAbstractListModel >);
         // ANCHOR_END: book_base_include
 
         include!("cxx-qt-lib/qhash.h");
@@ -22,33 +22,12 @@ mod ffi {
 
         include!("cxx-qt-lib/qvector.h");
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
-
-        #[cxx_name = "beginInsertRows"]
-        fn begin_insert_rows(self: Pin<&mut CustomBaseClassQt>, first: i32, last: i32);
-        #[cxx_name = "endInsertRows"]
-        fn end_insert_rows(self: Pin<&mut CustomBaseClassQt>);
-
-        #[cxx_name = "beginRemoveRows"]
-        fn begin_remove_rows(self: Pin<&mut CustomBaseClassQt>, first: i32, last: i32);
-        #[cxx_name = "endRemoveRows"]
-        fn end_remove_rows(self: Pin<&mut CustomBaseClassQt>);
-
-        #[cxx_name = "beginResetModel"]
-        fn begin_reset_model(self: Pin<&mut CustomBaseClassQt>);
-        #[cxx_name = "endResetModel"]
-        fn end_reset_model(self: Pin<&mut CustomBaseClassQt>);
-
-        fn index(
-            self: &CustomBaseClassQt,
-            row: i32,
-            column: i32,
-            parent: &QModelIndex,
-        ) -> QModelIndex;
     }
 
+    // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     #[cxx_qt::qobject(
-        base = "QAbstractListModelCXX",
+        base = "QAbstractListModel",
         qml_uri = "com.kdab.cxx_qt.demo",
         qml_version = "1.0"
     )]
@@ -58,6 +37,7 @@ mod ffi {
         id: u32,
         vector: Vec<(u32, f64)>,
     }
+    // ANCHOR_END: book_inherit_qalm
 
     // ANCHOR: book_qsignals_inherit
     #[cxx_qt::qsignals(CustomBaseClass)]
@@ -99,20 +79,30 @@ mod ffi {
 
         fn add_cpp_context(mut self: Pin<&mut Self>) {
             let count = self.vector().len();
-            self.as_mut().begin_insert_rows(count as i32, count as i32);
-            let id = *self.id();
-            self.as_mut().set_id(id + 1);
-            self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
-            self.as_mut().end_insert_rows();
+            unsafe {
+                self.as_mut().begin_insert_rows(
+                    &QModelIndex::default(),
+                    count as i32,
+                    count as i32,
+                );
+                let id = *self.id();
+                self.as_mut().set_id(id + 1);
+                self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
+                self.as_mut().end_insert_rows();
+            }
         }
 
+        // ANCHOR: book_inherit_clear
         #[qinvokable]
         pub fn clear(mut self: Pin<&mut Self>) {
-            self.as_mut().begin_reset_model();
-            self.as_mut().set_id(0);
-            self.as_mut().vector_mut().clear();
-            self.as_mut().end_reset_model();
+            unsafe {
+                self.as_mut().begin_reset_model();
+                self.as_mut().set_id(0);
+                self.as_mut().vector_mut().clear();
+                self.as_mut().end_reset_model();
+            }
         }
+        // ANCHOR_END: book_inherit_clear
 
         #[qinvokable]
         pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
@@ -137,14 +127,58 @@ mod ffi {
                 return;
             }
 
-            self.as_mut().begin_remove_rows(index, index);
-            self.as_mut().vector_mut().remove(index as usize);
-            self.as_mut().end_remove_rows();
+            unsafe {
+                self.as_mut()
+                    .begin_remove_rows(&QModelIndex::default(), index, index);
+                self.as_mut().vector_mut().remove(index as usize);
+                self.as_mut().end_remove_rows();
+            }
         }
     }
 
+    // ANCHOR: book_inherit_qalm_impl_unsafe
+    // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
+    #[cxx_qt::inherit]
+    extern "C++" {
+        unsafe fn begin_insert_rows(
+            self: Pin<&mut qobject::CustomBaseClass>,
+            parent: &QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        unsafe fn end_insert_rows(self: Pin<&mut qobject::CustomBaseClass>);
+
+        unsafe fn begin_remove_rows(
+            self: Pin<&mut qobject::CustomBaseClass>,
+            parent: &QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        unsafe fn end_remove_rows(self: Pin<&mut qobject::CustomBaseClass>);
+
+        unsafe fn begin_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn end_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+    }
+    // ANCHOR_END: book_inherit_qalm_impl_unsafe
+
+    // ANCHOR: book_inherit_qalm_impl_safe
+    #[cxx_qt::inherit]
+    unsafe extern "C++" {
+        #[cxx_name = "canFetchMore"]
+        fn base_can_fetch_more(self: &qobject::CustomBaseClass, parent: &QModelIndex) -> bool;
+
+        fn index(
+            self: &qobject::CustomBaseClass,
+            row: i32,
+            column: i32,
+            parent: &QModelIndex,
+        ) -> QModelIndex;
+    }
+    // ANCHOR_END: book_inherit_qalm_impl_safe
+
     // QAbstractListModel implementation
     impl qobject::CustomBaseClass {
+        // ANCHOR: book_inherit_data
         #[qinvokable(cxx_override)]
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
             if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {
@@ -157,6 +191,15 @@ mod ffi {
 
             QVariant::default()
         }
+        // ANCHOR_END: book_inherit_data
+
+        // ANCHOR: book_inherit_can_fetch_more
+        // Example of overriding a C++ virtual method and calling the base class implementation.
+        #[qinvokable(cxx_override)]
+        pub fn can_fetch_more(&self, parent: &QModelIndex) -> bool {
+            self.base_can_fetch_more(parent)
+        }
+        // ANCHOR_END: book_inherit_can_fetch_more
 
         #[qinvokable(cxx_override)]
         pub fn role_names(&self) -> QHash_i32_QByteArray {

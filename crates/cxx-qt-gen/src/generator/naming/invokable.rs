@@ -23,26 +23,20 @@ impl From<&ImplItemMethod> for QInvokableName {
     fn from(method: &ImplItemMethod) -> Self {
         let ident = &method.sig.ident;
         Self {
-            name: name_from_ident(ident),
-            wrapper: wrapper_from_ident(ident),
+            name: CombinedIdent::from_rust_function(ident.clone()),
+            wrapper: CombinedIdent::wrapper_from_invokable(ident),
         }
     }
 }
 
-/// For a given ident generate the Rust and C++ names
-fn name_from_ident(ident: &Ident) -> CombinedIdent {
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident.clone(),
-    }
-}
-
-/// For a given ident generate the Rust and C++ wrapper names
-fn wrapper_from_ident(ident: &Ident) -> CombinedIdent {
-    let ident = format_ident!("{ident}_wrapper");
-    CombinedIdent {
-        cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-        rust: ident,
+impl CombinedIdent {
+    /// For a given ident generate the Rust and C++ wrapper names
+    fn wrapper_from_invokable(ident: &Ident) -> Self {
+        let ident = format_ident!("{ident}_wrapper");
+        Self {
+            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            rust: ident,
+        }
     }
 }
 

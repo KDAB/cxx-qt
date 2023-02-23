@@ -3,7 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{spanned::Spanned, Error, FnArg, Ident, Pat, PatIdent, PatType, Result, Signature, Type};
+use crate::syntax::types;
+use syn::{
+    spanned::Spanned, Error, FnArg, Ident, Pat, PatIdent, PatType, Receiver, Result, Signature,
+    Type,
+};
 
 /// Describes a single parameter for a function
 pub struct ParsedFunctionParameter {
@@ -16,29 +20,67 @@ pub struct ParsedFunctionParameter {
 }
 
 impl ParsedFunctionParameter {
+    fn parse_remaining<'a>(
+        iter: impl Iterator<Item = &'a FnArg>,
+    ) -> Result<Vec<ParsedFunctionParameter>> {
+        iter.map(|input| {
+            match input {
+                FnArg::Typed(type_pattern) => {
+                    let parameter = ParsedFunctionParameter::parse(type_pattern)?;
+
+                    // Ignore self as a parameter
+                    if parameter.ident == "self" {
+                        return Ok(None);
+                    }
+                    Ok(Some(parameter))
+                }
+                // Ignore self as a parameter
+                FnArg::Receiver(_) => Ok(None),
+            }
+        })
+        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+        .collect::<Result<Vec<ParsedFunctionParameter>>>()
+    }
+
+    pub fn parse_all_ignoring_receiver(
+        signature: &Signature,
+    ) -> Result<Vec<ParsedFunctionParameter>> {
+        let mut iter = signature.inputs.iter();
+        // whilst we can ignore the receiver argument, make sure it actually exists
+        if iter.next().is_none() {
+            return Err(Error::new_spanned(signature, "Missing receiver argument!"));
+        }
+
+        Self::parse_remaining(iter)
+    }
+
+    /// This function parses the list of arguments
     pub fn parse_all_without_receiver(
         signature: &Signature,
     ) -> Result<Vec<ParsedFunctionParameter>> {
-        signature
-            .inputs
-            .iter()
-            .map(|input| {
-                match input {
-                    FnArg::Typed(type_pattern) => {
-                        let parameter = ParsedFunctionParameter::parse(type_pattern)?;
+        let mut iter = signature.inputs.iter();
 
-                        // Ignore self as a parameter
-                        if parameter.ident == "self" {
-                            return Ok(None);
-                        }
-                        Ok(Some(parameter))
-                    }
-                    // Ignore self as a parameter
-                    FnArg::Receiver(_) => Ok(None),
+        let missing_self_arg = "First argument must be a supported `self` receiver type!\nUse `&self` or `self: Pin<&mut Self>` instead.";
+        match iter.next() {
+            Some(FnArg::Typed(type_pattern)) => {
+                let parameter = ParsedFunctionParameter::parse(type_pattern)?;
+                if parameter.ident == "self" && types::is_pin_of_self(&parameter.ty) {
+                    Ok(())
+                } else {
+                    Err(Error::new_spanned(type_pattern, missing_self_arg))
                 }
-            })
-            .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
-            .collect::<Result<Vec<ParsedFunctionParameter>>>()
+            }
+            Some(FnArg::Receiver(Receiver {
+                reference: Some(_), // `self` needs to be by-ref, by-value is not supported.
+                mutability: None,   // Mutable `&mut self` references are not supported.
+                                    // Use `Pin<&mut  Self>` instead.
+                ..
+            })) => Ok(()), // Okay, found a &self reference
+            Some(arg) => Err(Error::new_spanned(arg, missing_self_arg)),
+            None => Err(Error::new_spanned(signature, "Missing 'self' receiver!")),
+        }?;
+
+        Self::parse_remaining(iter)
     }
 
     pub fn parse(type_pattern: &PatType) -> Result<Self> {
@@ -57,5 +99,63 @@ impl ParsedFunctionParameter {
             // TODO: later we might support cxx_type for parameters in invokables
             cxx_type: None,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use quote::ToTokens;
+    use syn::ForeignItemFn;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_all_without_receiver() {
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo(&self, a: i32, b: String);
+        };
+
+        let parameters =
+            ParsedFunctionParameter::parse_all_without_receiver(&function.sig).unwrap();
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(parameters[0].ident, "a");
+        assert_eq!(parameters[0].ty.to_token_stream().to_string(), "i32");
+        assert_eq!(parameters[1].ident, "b");
+        assert_eq!(parameters[1].ty.to_token_stream().to_string(), "String");
+    }
+
+    #[test]
+    fn test_parse_all_without_receiver_invalid_self() {
+        fn assert_parse_error(function: ForeignItemFn) {
+            assert!(ParsedFunctionParameter::parse_all_without_receiver(&function.sig).is_err());
+        }
+        // Missing self
+        assert_parse_error(syn::parse_quote! {
+            fn foo(a: i32, b: String);
+        });
+        // self parameter points to non-self type
+        assert_parse_error(syn::parse_quote! {
+            fn foo(self: T);
+        });
+        // self parameter is a non-self pin
+        assert_parse_error(syn::parse_quote! {
+            fn foo(self: Pin<&mut T>);
+        })
+    }
+
+    #[test]
+    fn test_parse_all_ignoring_receiver() {
+        // This supports using a type as `self` that's not "Self".
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo(self: T, a: i32, b: String);
+        };
+
+        let parameters =
+            ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).unwrap();
+        assert_eq!(parameters.len(), 2);
+        assert_eq!(parameters[0].ident, "a");
+        assert_eq!(parameters[0].ty.to_token_stream().to_string(), "i32");
+        assert_eq!(parameters[1].ident, "b");
+        assert_eq!(parameters[1].ty.to_token_stream().to_string(), "String");
     }
 }

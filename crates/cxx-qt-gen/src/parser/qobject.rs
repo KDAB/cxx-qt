@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
+    inherit::ParsedInheritedMethod,
     invokable::ParsedQInvokable,
     property::{ParsedQProperty, ParsedRustField},
     signals::ParsedSignalsEnum,
@@ -46,6 +47,8 @@ pub struct ParsedQObject {
     ///
     /// These will also be exposed as Q_INVOKABLE on the C++ object
     pub invokables: Vec<ParsedQInvokable>,
+    /// List of inherited methods
+    pub inherited_methods: Vec<ParsedInheritedMethod>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// Note that they will only be visible on the Rust side
@@ -97,6 +100,7 @@ impl ParsedQObject {
             namespace,
             signals: None,
             invokables: vec![],
+            inherited_methods: vec![],
             methods: vec![],
             properties,
             fields,
@@ -193,7 +197,10 @@ impl ParsedQObject {
                     self.parse_impl_method(method)?;
                 }
                 _ => {
-                    return Err(Error::new(item.span(), "Only methods are supported."));
+                    return Err(Error::new(
+                        item.span(),
+                        "Only methods are supported within a QObject impl block!",
+                    ));
                 }
             }
         }
@@ -326,7 +333,7 @@ pub mod tests {
                 fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
 
                 #[qinvokable(cxx_final, cxx_override, cxx_virtual)]
-                fn invokable_with_specifiers() -> f64 {}
+                fn invokable_with_specifiers(&self) -> f64 {}
 
                 fn cpp_context(&self) {}
             }

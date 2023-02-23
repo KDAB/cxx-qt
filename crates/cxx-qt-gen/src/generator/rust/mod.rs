@@ -5,6 +5,7 @@
 
 pub mod field;
 pub mod fragment;
+pub mod inherit;
 pub mod invokable;
 pub mod property;
 pub mod qobject;

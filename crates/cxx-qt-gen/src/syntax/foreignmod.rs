@@ -7,7 +7,8 @@ use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
     parse::{ParseStream, Parser},
-    Attribute, ForeignItem, ForeignItemType, Ident, ItemForeignMod, Result, Token, Visibility,
+    Attribute, Error, ForeignItem, ForeignItemType, Ident, ItemForeignMod, PatIdent, PatType,
+    Result, Signature, Token, Visibility,
 };
 
 /// For a given [syn::ForeignItem] return the [syn::ForeignItemType] if there is one
@@ -111,8 +112,56 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
     .parse2(tokens.clone())
 }
 
+pub struct ForeignFnSelf {
+    pub ident: Ident,
+    pub typ: syn::Type,
+}
+
+pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<ForeignFnSelf> {
+    let mut span: &dyn ToTokens = signature;
+    if let Some(arg) = signature.inputs.iter().next() {
+        span = arg;
+        if let syn::FnArg::Typed(PatType {
+            pat,
+            ty,
+            attrs,
+            colon_token: _,
+        }) = arg
+        {
+            if !attrs.is_empty() {
+                return Err(Error::new_spanned(
+                    arg,
+                    "Attributes on the `self:` receiver are not supported",
+                ));
+            }
+            if let syn::Pat::Ident(PatIdent {
+                ident,
+                // It should be a `self:` value, without `mut` or `&`
+                mutability: None,
+                by_ref: None,
+                attrs,
+                subpat: _,
+            }) = &**pat
+            {
+                if ident == "self" && attrs.is_empty() {
+                    return Ok(ForeignFnSelf {
+                        ident: ident.clone(),
+                        typ: *ty.clone(),
+                    });
+                }
+            }
+        }
+    }
+    Err(Error::new_spanned(
+        span,
+        "Expected first argument to be a `self:` receiver",
+    ))
+}
+
 #[cfg(test)]
 mod tests {
+    use syn::ForeignItemFn;
+
     use super::*;
 
     use crate::tests::tokens_to_syn;
@@ -149,5 +198,39 @@ mod tests {
         let result = result.unwrap();
         assert_eq!(result.attrs.len(), 1);
         assert_eq!(result.items.len(), 1);
+    }
+
+    #[test]
+    fn test_foreign_fn_self() {
+        let foreign_fn: ForeignItemFn = tokens_to_syn(quote! {
+            fn foo(self: &qobject::T, a: A) -> B;
+        });
+        let result = self_type_from_foreign_fn(&foreign_fn.sig).unwrap();
+        assert_eq!(result.ident, "self");
+        assert_eq!(result.typ.to_token_stream().to_string(), "& qobject :: T");
+    }
+
+    #[test]
+    fn test_foreign_fn_invalid_self() {
+        macro_rules! test {
+            ($($tt:tt)*) => {
+                let foreign_fn: ForeignItemFn = tokens_to_syn(quote! {
+                    $($tt)*
+                });
+                assert!(self_type_from_foreign_fn(&foreign_fn.sig).is_err());
+            }
+        }
+        // Missing self
+        test! { fn foo(a: A) -> B; }
+        // self without type
+        test! { fn foo(self); }
+        // self with mut
+        test! { fn foo(mut self: T); }
+        // self reference
+        test! { fn foo(&self); }
+        // self reference with mut
+        test! { fn foo(&mut self); }
+        // attribute on self type
+        test! { fn foo(#[attr] self: T); }
     }
 }

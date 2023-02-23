@@ -106,6 +106,39 @@ pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("cxx_qt::qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
+/// A macro which allows you to access base class methods from within Rust.
+///
+/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
+/// Furthermore, the macro must be placed within the `impl` block of a `qobject::T`.
+/// See [the book page](https://kdab.github.io/cxx-qt/book/concepts/inheritance.html) for more
+/// details.
+///
+/// # Example
+/// ``` ignore
+/// #[cxx_qt::bridge]
+/// mod my_object {
+///     #[cxx_qt::qobject(base="QAbstractListModel")]
+///     #[derive(Default)]
+///     struct MyObject;
+///
+///     #[cxx_qt::inherit]
+///     extern "C++" {
+///         // Unsafe to call
+///         unsafe fn begin_insert_rows(self: Pin<&mut Self>, parent: &QModelIndex, first: i32, last: i32);
+///     }
+///
+///     #[cxx_qt::inherit]
+///     unsafe extern "C++" {
+///         // Safe to call - you are responsible to ensure this is true!
+///         fn end_insert_rows(self: Pin<&mut Self>);
+///     }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn inherit(_args: TokenStream, _input: TokenStream) -> TokenStream {
+    unreachable!("cxx_qt::inherit should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
+}
+
 // Take the module and C++ namespace and generate the rust code
 fn extract_and_generate(module: ItemMod) -> TokenStream {
     let parser = Parser::from(module).unwrap();

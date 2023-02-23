@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- Support for inheriting methods from the superclass into Rust using `#[cxx_qt::inherit]`.
 - Register QML types at build time: `#[cxxqt::qobject(qml_uri = "foo.bar", qml_version = "1.0")]`
 - Register QRC resources at build time in Cargo builds (don't need to call initialization function from Rust `main` function)
 - Support for container types: `QSet<T>`, `QHash<K, V>`, `QList<T>`, `QMap<K, V>`, `QVector<T>`

@@ -3,18 +3,26 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{qobject::ParsedQObject, signals::ParsedSignalsEnum};
+use crate::parser::{
+    inherit::{InheritMethods, ParsedInheritedMethod},
+    qobject::ParsedQObject,
+    signals::ParsedSignalsEnum,
+};
 use crate::syntax::attribute::attribute_tokens_to_value;
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::path_to_single_ident,
 };
+use proc_macro2::TokenStream;
+use quote::ToTokens;
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemImpl, LitStr, Result, Type,
-    TypePath,
+    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, LitStr,
+    Result, Type, TypePath,
 };
+
+use super::inherit::MaybeInheritMethods;
 
 #[derive(Default)]
 pub struct ParsedCxxMappings {
@@ -183,8 +191,59 @@ impl ParsedCxxQtData {
                 self.uses.push(item);
                 Ok(None)
             }
+            Item::Verbatim(tokens) => self.try_parse_inherit_verbatim(tokens),
+            Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
             _ => Ok(Some(item)),
         }
+    }
+
+    fn try_parse_inherit_verbatim(&mut self, tokens: TokenStream) -> Result<Option<Item>> {
+        let try_parse: MaybeInheritMethods = syn::parse2(tokens)?;
+
+        match try_parse {
+            MaybeInheritMethods::Found(inherited) => {
+                self.add_inherited_methods(inherited)?;
+                Ok(None)
+            }
+            MaybeInheritMethods::PassThrough(item) => Ok(Some(item)),
+        }
+    }
+
+    fn parse_inherit_mod(&mut self, tokens: TokenStream) -> Result<()> {
+        let inherited: InheritMethods = syn::parse2(tokens)?;
+
+        self.add_inherited_methods(inherited)
+    }
+
+    fn add_inherited_methods(&mut self, inherited: InheritMethods) -> Result<()> {
+        for method in inherited.base_functions.into_iter() {
+            let parsed_inherited_method = ParsedInheritedMethod::parse(method, inherited.safety)?;
+
+            if let Some(ref mut qobject) = self
+                .qobjects
+                .get_mut(&parsed_inherited_method.qobject_ident)
+            {
+                qobject.inherited_methods.push(parsed_inherited_method);
+            } else {
+                return Err(Error::new_spanned(
+                    parsed_inherited_method.qobject_ident,
+                    "No QObject with this name found.",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn parse_foreign_mod(&mut self, mut foreign_mod: ItemForeignMod) -> Result<Option<Item>> {
+        // Check if the foreign mod has cxx_qt::inherit on it
+        if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["cxx_qt", "inherit"]) {
+            // Remove the inherit attribute
+            foreign_mod.attrs.remove(index);
+
+            self.parse_inherit_mod(foreign_mod.into_token_stream())?;
+            return Ok(None);
+        }
+        Ok(Some(Item::ForeignMod(foreign_mod)))
     }
 
     /// Parse a [syn::ItemEnum] into the qobjects if it's a CXX-Qt signal
@@ -442,7 +501,7 @@ mod tests {
         let item: Item = tokens_to_syn(quote! {
             impl qobject::MyObject {
                 #[qinvokable]
-                fn invokable() {}
+                fn invokable(&self) {}
 
                 fn cpp_context() {}
             }
@@ -715,5 +774,45 @@ mod tests {
             cxx_qt_data.cxx_mappings.namespaces.get("StructA").unwrap(),
             "struct_namespace"
         );
+    }
+
+    #[test]
+    fn test_parse_inherited_methods() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+
+        let unsafe_block: Item = tokens_to_syn(quote! {
+            #[cxx_qt::inherit]
+            unsafe extern "C++" {
+                fn test(self: &qobject::MyObject);
+
+                fn with_args(self: &qobject::MyObject, arg: i32);
+            }
+        });
+        let safe_block: Item = tokens_to_syn(quote! {
+            #[cxx_qt::inherit]
+            extern "C++" {
+                #[cxx_name="withRename"]
+                unsafe fn with_rename(self: Pin<&mut qobject::MyObject>, arg: i32);
+            }
+        });
+
+        cxxqtdata.parse_cxx_qt_item(unsafe_block).unwrap();
+        cxxqtdata.parse_cxx_qt_item(safe_block).unwrap();
+
+        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+
+        let inherited = &qobject.inherited_methods;
+        assert_eq!(inherited.len(), 3);
+        assert!(!inherited[0].mutable);
+        assert!(!inherited[1].mutable);
+        assert!(inherited[2].mutable);
+        assert!(inherited[0].safe);
+        assert!(inherited[1].safe);
+        assert!(!inherited[2].safe);
+        assert_eq!(inherited[0].parameters.len(), 0);
+        assert_eq!(inherited[1].parameters.len(), 1);
+        assert_eq!(inherited[1].parameters[0].ident, "arg");
+        assert_eq!(inherited[2].parameters.len(), 1);
+        assert_eq!(inherited[2].parameters[0].ident, "arg");
     }
 }
