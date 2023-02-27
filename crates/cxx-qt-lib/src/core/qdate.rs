@@ -240,6 +240,30 @@ impl TryFrom<QDate> for chrono::NaiveDate {
     }
 }
 
+#[cfg(feature = "time")]
+impl From<time::Date> for QDate {
+    fn from(value: time::Date) -> Self {
+        QDate::new(
+            value.year(),
+            Into::<u8>::into(value.month()) as i32,
+            value.day() as i32,
+        )
+    }
+}
+
+#[cfg(feature = "time")]
+impl TryFrom<QDate> for time::Date {
+    type Error = time::error::ComponentRange;
+
+    fn try_from(value: QDate) -> Result<Self, Self::Error> {
+        time::Date::from_calendar_date(
+            value.year(),
+            time::Month::try_from(value.month() as u8)?,
+            value.day() as u8,
+        )
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -272,5 +296,21 @@ mod test {
         let naive = chrono::NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
         let qdate = QDate::new(2023, 1, 1);
         assert_eq!(chrono::NaiveDate::try_from(qdate).unwrap(), naive);
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdate_from_time_date() {
+        let time_date = time::Date::from_calendar_date(2023, time::Month::January, 1).unwrap();
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(QDate::from(time_date), qdate);
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdate_to_time_date() {
+        let time_date = time::Date::from_calendar_date(2023, time::Month::January, 1).unwrap();
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(time::Date::try_from(qdate).unwrap(), time_date);
     }
 }

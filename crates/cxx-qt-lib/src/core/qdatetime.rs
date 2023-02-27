@@ -433,6 +433,54 @@ impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
     }
 }
 
+#[cfg(feature = "time")]
+impl From<time::OffsetDateTime> for QDateTime {
+    fn from(value: time::OffsetDateTime) -> Self {
+        QDateTime::from_date_and_time_time_spec(
+            &QDate::from(value.date()),
+            &QTime::from(value.time()),
+            ffi::TimeSpec::OffsetFromUTC,
+            value.offset().whole_seconds(),
+        )
+    }
+}
+
+#[cfg(feature = "time")]
+impl From<time::PrimitiveDateTime> for QDateTime {
+    fn from(value: time::PrimitiveDateTime) -> Self {
+        QDateTime::from_date_and_time_time_spec(
+            &QDate::from(value.date()),
+            &QTime::from(value.time()),
+            ffi::TimeSpec::UTC,
+            0,
+        )
+    }
+}
+
+#[cfg(feature = "time")]
+impl TryFrom<QDateTime> for time::OffsetDateTime {
+    type Error = time::error::ComponentRange;
+
+    fn try_from(value: QDateTime) -> Result<Self, Self::Error> {
+        Ok(time::Date::try_from(value.date())?
+            .with_time(time::Time::try_from(value.time())?)
+            .assume_offset(time::UtcOffset::from_whole_seconds(
+                value.offset_from_utc(),
+            )?))
+    }
+}
+
+#[cfg(feature = "time")]
+impl TryFrom<QDateTime> for time::PrimitiveDateTime {
+    type Error = time::error::ComponentRange;
+
+    fn try_from(value: QDateTime) -> Result<Self, Self::Error> {
+        let value_utc = value.to_utc();
+        Ok(time::Date::try_from(value_utc.date())?
+            .with_time(time::Time::try_from(value_utc.time())?))
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
@@ -443,7 +491,7 @@ unsafe impl ExternType for QDateTime {
 
 #[cfg(test)]
 mod test {
-    #[cfg(feature = "chrono")]
+    #[cfg(any(feature = "chrono", feature = "time"))]
     use super::*;
 
     #[cfg(feature = "chrono")]
@@ -532,5 +580,77 @@ mod test {
             chrono::DateTime::<chrono::Utc>::try_from(qdatetime).unwrap(),
             datetime_utc
         );
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdatetime_to_time_offsetdatetime() {
+        let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
+            .unwrap()
+            .with_hms_milli(1, 2, 3, 4)
+            .unwrap()
+            .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+        );
+        assert_eq!(
+            time::OffsetDateTime::try_from(qdatetime).unwrap(),
+            time_offsetdatetime
+        );
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdatetime_to_time_primitivedatetime() {
+        let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
+            .unwrap()
+            .with_hms_milli(1, 2, 3, 4)
+            .unwrap();
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(
+            time::PrimitiveDateTime::try_from(qdatetime).unwrap(),
+            time_offsetdatetime
+        );
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdatetime_from_time_offsetdatetime() {
+        let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
+            .unwrap()
+            .with_hms_milli(1, 2, 3, 4)
+            .unwrap()
+            .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+        );
+        assert_eq!(QDateTime::from(time_offsetdatetime), qdatetime);
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qdatetime_from_time_primitivedatetime() {
+        let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
+            .unwrap()
+            .with_hms_milli(1, 2, 3, 4)
+            .unwrap();
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(QDateTime::from(time_offsetdatetime), qdatetime);
     }
 }
