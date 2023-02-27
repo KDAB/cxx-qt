@@ -387,10 +387,150 @@ impl Drop for QDateTime {
     }
 }
 
+#[cfg(feature = "chrono")]
+use chrono::Offset;
+
+#[cfg(feature = "chrono")]
+impl<Tz: chrono::TimeZone> From<chrono::DateTime<Tz>> for QDateTime {
+    fn from(value: chrono::DateTime<Tz>) -> Self {
+        QDateTime::from_date_and_time_time_spec(
+            &QDate::from(value.date_naive()),
+            &QTime::from(value.time()),
+            ffi::TimeSpec::OffsetFromUTC,
+            value.offset().fix().local_minus_utc(),
+        )
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl TryFrom<QDateTime> for chrono::DateTime<chrono::FixedOffset> {
+    type Error = &'static str;
+
+    fn try_from(value: QDateTime) -> Result<Self, Self::Error> {
+        let timezone_east = chrono::FixedOffset::east_opt(value.offset_from_utc())
+            .ok_or("out-of-bound offset secs")?;
+        let naivedatetime_east = chrono::NaiveDate::try_from(value.date())?
+            .and_time(chrono::NaiveTime::try_from(value.time())?);
+        Ok(chrono::DateTime::<chrono::FixedOffset>::from_local(
+            naivedatetime_east,
+            timezone_east,
+        ))
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
+    type Error = &'static str;
+
+    fn try_from(value: QDateTime) -> Result<Self, Self::Error> {
+        let value_utc = value.to_utc();
+        let naivedatetime_utc = chrono::NaiveDate::try_from(value_utc.date())?
+            .and_time(chrono::NaiveTime::try_from(value_utc.time())?);
+        Ok(chrono::DateTime::<chrono::Utc>::from_utc(
+            naivedatetime_utc,
+            chrono::Utc,
+        ))
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QDateTime {
     type Id = type_id!("QDateTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    #[cfg(feature = "chrono")]
+    use super::*;
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdatetime_from_chrono() {
+        let datetime_east = {
+            let timezone_east = chrono::FixedOffset::east_opt(60 * 60).unwrap();
+            let naivedatetime_east = chrono::NaiveDate::from_ymd_opt(2023, 1, 1)
+                .unwrap()
+                .and_hms_milli_opt(1, 2, 3, 4)
+                .unwrap();
+            chrono::DateTime::<chrono::FixedOffset>::from_local(naivedatetime_east, timezone_east)
+        };
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+        );
+        assert_eq!(QDateTime::from(datetime_east), qdatetime);
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdatetime_to_chrono_fixed_offset() {
+        let datetime_east = {
+            let timezone_east = chrono::FixedOffset::east_opt(60 * 60).unwrap();
+            let naivedatetime_east = chrono::NaiveDate::from_ymd_opt(2023, 1, 1)
+                .unwrap()
+                .and_hms_milli_opt(1, 2, 3, 4)
+                .unwrap();
+            chrono::DateTime::<chrono::FixedOffset>::from_local(naivedatetime_east, timezone_east)
+        };
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+        );
+        assert_eq!(
+            chrono::DateTime::<chrono::FixedOffset>::try_from(qdatetime).unwrap(),
+            datetime_east
+        );
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdatetime_to_chrono_utc() {
+        let datetime_utc = {
+            let naivedatetime_utc = chrono::NaiveDate::from_ymd_opt(2023, 1, 1)
+                .unwrap()
+                .and_hms_milli_opt(1, 2, 3, 4)
+                .unwrap();
+            chrono::DateTime::<chrono::Utc>::from_utc(naivedatetime_utc, chrono::Utc)
+        };
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(
+            chrono::DateTime::<chrono::Utc>::try_from(qdatetime).unwrap(),
+            datetime_utc
+        );
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdatetime_to_chrono_utc_with_offset() {
+        let datetime_utc = {
+            let naivedatetime_utc = chrono::NaiveDate::from_ymd_opt(2023, 1, 1)
+                .unwrap()
+                .and_hms_milli_opt(0, 2, 3, 4)
+                .unwrap();
+            chrono::DateTime::<chrono::Utc>::from_utc(naivedatetime_utc, chrono::Utc)
+        };
+
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 2, 3, 4),
+            // Should cause one hour offset when in chrono::DateTime
+            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+        );
+        assert_eq!(
+            chrono::DateTime::<chrono::Utc>::try_from(qdatetime).unwrap(),
+            datetime_utc
+        );
+    }
 }

@@ -220,6 +220,26 @@ unsafe impl ExternType for QDate {
     type Kind = cxx::kind::Trivial;
 }
 
+#[cfg(feature = "chrono")]
+use chrono::Datelike;
+
+#[cfg(feature = "chrono")]
+impl From<chrono::NaiveDate> for QDate {
+    fn from(value: chrono::NaiveDate) -> Self {
+        QDate::new(value.year(), value.month() as i32, value.day() as i32)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl TryFrom<QDate> for chrono::NaiveDate {
+    type Error = &'static str;
+
+    fn try_from(value: QDate) -> Result<Self, Self::Error> {
+        chrono::NaiveDate::from_ymd_opt(value.year(), value.month() as u32, value.day() as u32)
+            .ok_or("out-of-range date, invalid month and/or day")
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -236,5 +256,21 @@ mod test {
         let date_a = QDate::from_julian_day(1000);
         let date_b = QDate::from_julian_day(1010);
         assert_eq!(date_a.days_to(date_b), 10);
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdate_from_chrono_naive() {
+        let naive = chrono::NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(QDate::from(naive), qdate);
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qdate_to_chrono_naive() {
+        let naive = chrono::NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(chrono::NaiveDate::try_from(qdate).unwrap(), naive);
     }
 }

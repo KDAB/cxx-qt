@@ -178,10 +178,77 @@ impl fmt::Debug for QTime {
     }
 }
 
+#[cfg(feature = "chrono")]
+use chrono::Timelike;
+
+#[cfg(feature = "chrono")]
+impl From<chrono::NaiveTime> for QTime {
+    fn from(value: chrono::NaiveTime) -> Self {
+        let ms = (value.nanosecond() / 1_000_000) as i32;
+        QTime::new(
+            value.hour() as i32,
+            value.minute() as i32,
+            // NaiveTime can have a nanosecond larger than 1 second
+            // to represent a leap second.
+            //
+            // For now we merge this into the QTime second as it can't have
+            // milliseconds larger than 1 second. This does however mean the
+            // information is lost when reversed back to a NaiveTime
+            value.second() as i32 + (ms / 1_000),
+            ms % 1_000,
+        )
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl TryFrom<QTime> for chrono::NaiveTime {
+    type Error = &'static str;
+
+    fn try_from(value: QTime) -> Result<Self, Self::Error> {
+        chrono::NaiveTime::from_hms_milli_opt(
+            value.hour() as u32,
+            value.minute() as u32,
+            value.second() as u32,
+            value.msec() as u32,
+        )
+        .ok_or("invalid hour, minute, second and/or millisecond")
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side ensure that QTime is trivial.
 unsafe impl ExternType for QTime {
     type Id = type_id!("QTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    #[cfg(feature = "chrono")]
+    use super::*;
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qtime_from_chrono_naive() {
+        let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(QTime::from(naive), qtime);
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qtime_from_chrono_naive_leap_second() {
+        let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 1_000).unwrap();
+        let qtime = QTime::new(1, 2, 4, 0);
+        assert_eq!(QTime::from(naive), qtime);
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn qtime_to_chrono_naive() {
+        let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(chrono::NaiveTime::try_from(qtime).unwrap(), naive);
+    }
 }
