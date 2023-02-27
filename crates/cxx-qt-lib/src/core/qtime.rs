@@ -215,6 +215,32 @@ impl TryFrom<QTime> for chrono::NaiveTime {
     }
 }
 
+#[cfg(feature = "time")]
+impl From<time::Time> for QTime {
+    fn from(value: time::Time) -> Self {
+        QTime::new(
+            value.hour() as i32,
+            value.minute() as i32,
+            value.second() as i32,
+            value.millisecond() as i32,
+        )
+    }
+}
+
+#[cfg(feature = "time")]
+impl TryFrom<QTime> for time::Time {
+    type Error = time::error::ComponentRange;
+
+    fn try_from(value: QTime) -> Result<Self, Self::Error> {
+        time::Time::from_hms_milli(
+            value.hour() as u8,
+            value.minute() as u8,
+            value.second() as u8,
+            value.msec() as u16,
+        )
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side ensure that QTime is trivial.
@@ -225,7 +251,7 @@ unsafe impl ExternType for QTime {
 
 #[cfg(test)]
 mod test {
-    #[cfg(feature = "chrono")]
+    #[cfg(any(feature = "chrono", feature = "time"))]
     use super::*;
 
     #[cfg(feature = "chrono")]
@@ -250,5 +276,21 @@ mod test {
         let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
         let qtime = QTime::new(1, 2, 3, 4);
         assert_eq!(chrono::NaiveTime::try_from(qtime).unwrap(), naive);
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qtime_from_time_time() {
+        let time_time = time::Time::from_hms_milli(1, 2, 3, 4).unwrap();
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(QTime::from(time_time), qtime);
+    }
+
+    #[cfg(feature = "time")]
+    #[test]
+    fn qtime_to_time_time() {
+        let time_time = time::Time::from_hms_milli(1, 2, 3, 4).unwrap();
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(time::Time::try_from(qtime).unwrap(), time_time);
     }
 }

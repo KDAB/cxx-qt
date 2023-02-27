@@ -21,6 +21,7 @@ bytes = { version = "1.4", optional = true }
 chrono = { version = "0.4.23", optional = true }
 http = { version = "0.2", optional = true }
 rgb = { version = "0.8", optional = true }
+time = { version = "0.3.20", optional = true }
 url = { version = "2.3", optional = true }
 
 [build-dependencies]
@@ -36,4 +37,5 @@ http = ["dep:http"]
 rgb = ["dep:rgb"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]
+time = ["dep:time"]
 url = ["dep:url"]
