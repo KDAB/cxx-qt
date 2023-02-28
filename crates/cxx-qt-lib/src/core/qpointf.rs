@@ -42,6 +42,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpointf_to_qstring"]
         fn toQString(value: &QPointF) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qpointf_plus"]
+        fn operatorPlus(a: &QPointF, b: &QPointF) -> QPointF;
+        #[doc(hidden)]
+        #[rust_name = "qpointf_minus"]
+        fn operatorMinus(a: &QPointF, b: &QPointF) -> QPointF;
+        #[doc(hidden)]
+        #[rust_name = "qpointf_mul"]
+        fn operatorMul(a: f64, b: &QPointF) -> QPointF;
+        #[doc(hidden)]
+        #[rust_name = "qpointf_div"]
+        fn operatorDiv(a: f64, b: &QPointF) -> QPointF;
     }
 }
 
@@ -70,6 +82,34 @@ impl Default for QPointF {
 impl fmt::Display for QPointF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qpointf_to_qstring(self))
+    }
+}
+
+impl std::ops::Add for QPointF {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        ffi::qpointf_plus(&self, &other)
+    }
+}
+
+impl std::ops::Sub for QPointF {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        ffi::qpointf_minus(&self, &other)
+    }
+}
+
+impl std::ops::Mul<f64> for QPointF {
+    type Output = Self;
+    fn mul(self, rhs: f64) -> Self {
+        ffi::qpointf_mul(rhs, &self)
+    }
+}
+
+impl std::ops::Div<f64> for QPointF {
+    type Output = Self;
+    fn div(self, rhs: f64) -> Self {
+        ffi::qpointf_div(rhs, &self)
     }
 }
 
