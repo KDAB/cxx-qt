@@ -109,6 +109,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qvector2d_to_qstring"]
         fn toQString(value: &QVector2D) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qvector2d_plus"]
+        fn operatorPlus(a: &QVector2D, b: &QVector2D) -> QVector2D;
+        #[doc(hidden)]
+        #[rust_name = "qvector2d_minus"]
+        fn operatorMinus(a: &QVector2D, b: &QVector2D) -> QVector2D;
+        #[doc(hidden)]
+        #[rust_name = "qvector2d_mul"]
+        fn operatorMul(a: f32, b: &QVector2D) -> QVector2D;
+        #[doc(hidden)]
+        #[rust_name = "qvector2d_div"]
+        fn operatorDiv(a: f32, b: &QVector2D) -> QVector2D;
     }
 }
 
@@ -149,6 +161,34 @@ impl Default for QVector2D {
 impl std::fmt::Display for QVector2D {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", ffi::qvector2d_to_qstring(self))
+    }
+}
+
+impl std::ops::Add for QVector2D {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        ffi::qvector2d_plus(&self, &other)
+    }
+}
+
+impl std::ops::Sub for QVector2D {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        ffi::qvector2d_minus(&self, &other)
+    }
+}
+
+impl std::ops::Mul<f32> for QVector2D {
+    type Output = Self;
+    fn mul(self, rhs: f32) -> Self {
+        ffi::qvector2d_mul(rhs, &self)
+    }
+}
+
+impl std::ops::Div<f32> for QVector2D {
+    type Output = Self;
+    fn div(self, rhs: f32) -> Self {
+        ffi::qvector2d_div(rhs, &self)
     }
 }
 
