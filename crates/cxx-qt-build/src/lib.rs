@@ -4,6 +4,13 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#![deny(missing_docs)]
+
+//! This crate provides a builder which parses given Rust source code to search
+//! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
+//! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
+
 use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
