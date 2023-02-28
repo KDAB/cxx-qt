@@ -578,6 +578,188 @@ unsafe impl ExternType for QColor {
     type Kind = cxx::kind::Trivial;
 }
 
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+use std::collections::HashMap;
+
+#[cfg(feature = "serde")]
+struct QColorVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QColorVisitor {
+    type Value = QColor;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QColor")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut color_map = HashMap::<&str, i32>::default();
+        let mut color_map_f = HashMap::<&str, f32>::default();
+        let mut color_spec = None;
+
+        while let Some(key) = map.next_key()? {
+            match key {
+                "spec" => color_spec = map.next_value()?,
+                // rgb
+                "alpha" | "red" | "green" | "blue" |
+                // hsv / hsl
+                "hue" | "saturation" | "value" | "lightness" |
+                // cmyk
+                "cyan" | "magenta" | "yellow" | "black" => {
+                    color_map.insert(key, map.next_value()?);
+                }
+                // scrgb
+                "alpha_f" | "red_f" | "green_f" | "blue_f" => {
+                    color_map_f.insert(key, map.next_value()?);
+                }
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected spec, alpha(_f), red(_f), green(_f), blue(_f), hue, saturation, value, lightness, cyna, magenta, yellow, or black as a key",
+                    ));
+                }
+            }
+        }
+
+        if let Some(color_spec) = color_spec {
+            macro_rules! let_color_from_map {
+                ($map:ident, $color:ident) => {
+                    let $color = if let Some(value) = $map.get(&stringify!($color)) {
+                        value
+                    } else {
+                        return Err(serde::de::Error::missing_field(concat!(
+                            "missing ",
+                            stringify!($color),
+                            " as key"
+                        )));
+                    };
+                };
+            }
+
+            match color_spec {
+                "invalid" => Ok(QColor::default()),
+                "rgb" => {
+                    let_color_from_map!(color_map, red);
+                    let_color_from_map!(color_map, green);
+                    let_color_from_map!(color_map, blue);
+                    let_color_from_map!(color_map, alpha);
+
+                    Ok(QColor::from_rgb(*red, *green, *blue, *alpha))
+                }
+                "hsv" => {
+                    let_color_from_map!(color_map, hue);
+                    let_color_from_map!(color_map, saturation);
+                    let_color_from_map!(color_map, value);
+                    let_color_from_map!(color_map, alpha);
+
+                    Ok(QColor::from_hsv(*hue, *saturation, *value, *alpha))
+                }
+                "cmyk" => {
+                    let_color_from_map!(color_map, cyan);
+                    let_color_from_map!(color_map, magenta);
+                    let_color_from_map!(color_map, yellow);
+                    let_color_from_map!(color_map, black);
+                    let_color_from_map!(color_map, alpha);
+
+                    Ok(QColor::from_cmyk(*cyan, *magenta, *yellow, *black, *alpha))
+                }
+                "hsl" => {
+                    let_color_from_map!(color_map, hue);
+                    let_color_from_map!(color_map, saturation);
+                    let_color_from_map!(color_map, lightness);
+                    let_color_from_map!(color_map, alpha);
+
+                    Ok(QColor::from_hsl(*hue, *saturation, *lightness, *alpha))
+                }
+                "scrgb" => {
+                    let_color_from_map!(color_map_f, red_f);
+                    let_color_from_map!(color_map_f, green_f);
+                    let_color_from_map!(color_map_f, blue_f);
+                    let_color_from_map!(color_map_f, alpha_f);
+
+                    Ok(QColor::from_rgb_f(*red_f, *green_f, *blue_f, *alpha_f))
+                }
+                others => Err(serde::de::Error::invalid_value(
+                    serde::de::Unexpected::Str(others),
+                    &"expected invalid, rgb, hsv, cmyk, hsl, or scrgb as the spec value",
+                )),
+            }
+        } else {
+            Err(serde::de::Error::missing_field("missing spec as key"))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QColor {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QColorVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QColor {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(3))?;
+        match self.spec() {
+            ffi::QColorSpec::Invalid => {
+                map.serialize_entry("spec", &"invalid")?;
+            }
+            ffi::QColorSpec::Rgb => {
+                map.serialize_entry("spec", &"rgb")?;
+                map.serialize_entry("red", &self.red())?;
+                map.serialize_entry("green", &self.green())?;
+                map.serialize_entry("blue", &self.blue())?;
+                map.serialize_entry("alpha", &self.alpha())?;
+            }
+            ffi::QColorSpec::Hsv => {
+                map.serialize_entry("spec", &"hsv")?;
+                map.serialize_entry("hue", &self.hsv_hue())?;
+                map.serialize_entry("saturation", &self.hsv_saturation())?;
+                map.serialize_entry("value", &self.value())?;
+                map.serialize_entry("alpha", &self.alpha())?;
+            }
+            ffi::QColorSpec::Cmyk => {
+                map.serialize_entry("spec", &"cmyk")?;
+                map.serialize_entry("cyan", &self.cyan())?;
+                map.serialize_entry("magenta", &self.magenta())?;
+                map.serialize_entry("yellow", &self.yellow())?;
+                map.serialize_entry("black", &self.black())?;
+                map.serialize_entry("alpha", &self.alpha())?;
+            }
+            ffi::QColorSpec::Hsl => {
+                map.serialize_entry("spec", &"hsl")?;
+                map.serialize_entry("hue", &self.hsl_hue())?;
+                map.serialize_entry("saturation", &self.hsl_saturation())?;
+                map.serialize_entry("lightness", &self.lightness())?;
+                map.serialize_entry("alpha", &self.alpha())?;
+            }
+            ffi::QColorSpec::ExtendedRgb => {
+                map.serialize_entry("spec", &"scrgb")?;
+                map.serialize_entry("red_f", &self.red_f())?;
+                map.serialize_entry("green_f", &self.green_f())?;
+                map.serialize_entry("blue_f", &self.blue_f())?;
+                map.serialize_entry("alpha_f", &self.alpha_f())?;
+            }
+            _others => return Err(serde::ser::Error::custom("unknown QColorSpec")),
+        }
+
+        map.end()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "rgb")]
@@ -618,5 +800,117 @@ mod tests {
 
         let rgba_color = rgb::RGBA8::from(&qcolor);
         assert_eq!(color, rgba_color);
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize_invalid() {
+        let test_data: QColor = serde_json::from_str(r#"{"spec":"invalid"}"#).unwrap();
+        assert!(!test_data.is_valid());
+    }
+
+    #[test]
+    fn test_serde_deserialize_rgb() {
+        let test_data: QColor =
+            serde_json::from_str(r#"{"spec":"rgb","red":255,"green":0,"blue":0,"alpha":0}"#)
+                .unwrap();
+        assert_eq!(test_data, QColor::from_rgb(255, 0, 0, 0));
+    }
+
+    #[test]
+    fn test_serde_deserialize_hsv() {
+        let test_data: QColor =
+            serde_json::from_str(r#"{"spec":"hsv","hue":255,"saturation":0,"value":0,"alpha":0}"#)
+                .unwrap();
+        assert_eq!(test_data, QColor::from_hsv(255, 0, 0, 0));
+    }
+
+    #[test]
+    fn test_serde_deserialize_cmyk() {
+        let test_data: QColor = serde_json::from_str(
+            r#"{"spec":"cmyk","cyan":255,"magenta":0,"yellow":0,"black":0,"alpha":0}"#,
+        )
+        .unwrap();
+        assert_eq!(test_data, QColor::from_cmyk(255, 0, 0, 0, 0));
+    }
+
+    #[test]
+    fn test_serde_deserialize_hsl() {
+        let test_data: QColor = serde_json::from_str(
+            r#"{"spec":"hsl","hue":255,"saturation":0,"lightness":0,"alpha":0}"#,
+        )
+        .unwrap();
+        assert_eq!(test_data, QColor::from_hsl(255, 0, 0, 0));
+    }
+
+    #[test]
+    fn test_serde_deserialize_scrgb() {
+        let test_data: QColor = serde_json::from_str(
+            r#"{"spec":"scrgb","red_f":1.5,"green_f":0.0,"blue_f":0.0,"alpha_f":0.0}"#,
+        )
+        .unwrap();
+        assert_eq!(test_data, QColor::from_rgb_f(1.5, 0.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn test_serde_serialize_invalid() {
+        let test_data = QColor::default();
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"spec":"invalid"}"#);
+    }
+
+    #[test]
+    fn test_serde_serialize_rgb() {
+        let test_data = QColor::from_rgb(255, 0, 0, 0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"spec":"rgb","red":255,"green":0,"blue":0,"alpha":0}"#
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize_hsv() {
+        let test_data = QColor::from_hsv(255, 0, 0, 0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"spec":"hsv","hue":255,"saturation":0,"value":0,"alpha":0}"#
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize_cmyk() {
+        let test_data = QColor::from_cmyk(255, 0, 0, 0, 0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"spec":"cmyk","cyan":255,"magenta":0,"yellow":0,"black":0,"alpha":0}"#
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize_hsl() {
+        let test_data = QColor::from_hsl(255, 0, 0, 0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"spec":"hsl","hue":255,"saturation":0,"lightness":0,"alpha":0}"#
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize_scrgb() {
+        let test_data = QColor::from_rgb_f(1.5, 0.0, 0.0, 0.0);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(
+            data_string,
+            r#"{"spec":"scrgb","red_f":1.5,"green_f":0.0,"blue_f":0.0,"alpha_f":0.0}"#
+        );
     }
 }
