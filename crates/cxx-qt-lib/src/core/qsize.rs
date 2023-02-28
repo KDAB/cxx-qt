@@ -41,6 +41,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qsize_to_qstring"]
         fn toQString(value: &QSize) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qsize_plus"]
+        fn operatorPlus(a: &QSize, b: &QSize) -> QSize;
+        #[doc(hidden)]
+        #[rust_name = "qsize_minus"]
+        fn operatorMinus(a: &QSize, b: &QSize) -> QSize;
+        #[doc(hidden)]
+        #[rust_name = "qsize_mul"]
+        fn operatorMul(a: f64, b: &QSize) -> QSize;
+        #[doc(hidden)]
+        #[rust_name = "qsize_div"]
+        fn operatorDiv(a: f64, b: &QSize) -> QSize;
     }
 }
 
@@ -69,6 +81,34 @@ impl Default for QSize {
 impl fmt::Display for QSize {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qsize_to_qstring(self))
+    }
+}
+
+impl std::ops::Add for QSize {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        ffi::qsize_plus(&self, &other)
+    }
+}
+
+impl std::ops::Sub for QSize {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        ffi::qsize_minus(&self, &other)
+    }
+}
+
+impl std::ops::Mul<f64> for QSize {
+    type Output = Self;
+    fn mul(self, rhs: f64) -> Self {
+        ffi::qsize_mul(rhs, &self)
+    }
+}
+
+impl std::ops::Div<f64> for QSize {
+    type Output = Self;
+    fn div(self, rhs: f64) -> Self {
+        ffi::qsize_div(rhs, &self)
     }
 }
 
