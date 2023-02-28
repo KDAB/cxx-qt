@@ -141,7 +141,9 @@ pub fn inherit(_args: TokenStream, _input: TokenStream) -> TokenStream {
 
 // Take the module and C++ namespace and generate the rust code
 fn extract_and_generate(module: ItemMod) -> TokenStream {
-    let parser = Parser::from(module).unwrap();
-    let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
-    write_rust(&generated_rust).into()
+    Parser::from(module)
+        .and_then(|parser| GeneratedRustBlocks::from(&parser))
+        .map(|generated_rust| write_rust(&generated_rust))
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
