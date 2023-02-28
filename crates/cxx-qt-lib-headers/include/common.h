@@ -59,5 +59,33 @@ operatorCmp(const T& a, const T& b)
   return operatorEq(a, b) ? 0 : (a < b ? -1 : 1);
 }
 
+template<typename A, typename B>
+A
+operatorPlus(const A& a, const B& b)
+{
+  return a + b;
+}
+
+template<typename A, typename B>
+A
+operatorMinus(const A& a, const B& b)
+{
+  return a - b;
+}
+
+template<typename S, typename T>
+T
+operatorMul(const S scalar, const T& t)
+{
+  return scalar * t;
+}
+
+template<typename S, typename T>
+T
+operatorDiv(const S scalar, const T& t)
+{
+  return t / scalar;
+}
+
 } // namespace cxxqtlib1
 } // namespace rust
