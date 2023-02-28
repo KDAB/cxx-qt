@@ -46,6 +46,16 @@ void
 qbytearrayReserve(QByteArray& byteArray, ::rust::isize size);
 void
 qbytearrayResize(QByteArray& byteArray, ::rust::isize size);
+// If Q_COMPILER_REF_QUALIFIERS is set the definition of these is
+// T method() const& which CXX doesn't bind it.
+QByteArray
+qbytearraySimplified(const QByteArray& byteArray);
+QByteArray
+qbytearrayToLower(const QByteArray& byteArray);
+QByteArray
+qbytearrayToUpper(const QByteArray& byteArray);
+QByteArray
+qbytearrayTrimmed(const QByteArray& byteArray);
 
 }
 }

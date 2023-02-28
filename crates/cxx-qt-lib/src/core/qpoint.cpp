@@ -9,8 +9,6 @@
 
 #include "../assertion_utils.h"
 
-#include <cstdint>
-
 // QPoint has "int" members - xp and yp
 // Rust represents these as 32-bit integer types.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qpoint.h?h=v5.15.6-lts-lgpl#n271
@@ -21,3 +19,15 @@ assert_alignment_and_size(QPoint,
                           sizeof(::std::int32_t[2]));
 
 static_assert(::std::is_trivially_copyable<QPoint>::value);
+
+namespace rust {
+namespace cxxqtlib1 {
+
+::std::int32_t
+qpointDotProduct(const QPoint& p1, const QPoint& p2)
+{
+  return QPoint::dotProduct(p1, p2);
+}
+
+}
+}

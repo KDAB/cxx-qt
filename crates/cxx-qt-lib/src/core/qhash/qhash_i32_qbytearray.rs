@@ -49,6 +49,8 @@ pub mod ffi {
         fn qhashLen(_: &QHash_i32_QByteArray) -> isize;
         #[rust_name = "remove_i32_QByteArray"]
         fn qhashRemove(_: &mut QHash_i32_QByteArray, key: &i32) -> bool;
+        #[rust_name = "reserve_i32_QByteArray"]
+        fn qhashReserve(_: &mut QHash_i32_QByteArray, size: isize);
     }
 }
 
@@ -89,6 +91,10 @@ pub(crate) fn len(hash: &ffi::QHash_i32_QByteArray) -> isize {
 
 pub(crate) fn remove(hash: &mut ffi::QHash_i32_QByteArray, key: &i32) -> bool {
     ffi::remove_i32_QByteArray(hash, key)
+}
+
+pub(crate) fn reserve(hash: &mut ffi::QHash_i32_QByteArray, size: isize) {
+    ffi::reserve_i32_QByteArray(hash, size)
 }
 
 #[allow(non_camel_case_types)]

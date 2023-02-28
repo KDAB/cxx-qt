@@ -88,6 +88,18 @@ qhashRemove(QHash<K, V>& h, const K& key) noexcept
 #endif
 }
 
+template<typename K, typename V>
+void
+qhashReserve(QHash<K, V>& h, ::rust::isize size) noexcept
+{
+  // Qt has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  h.reserve(static_cast<qsizetype>(size));
+#else
+  h.reserve(static_cast<int>(size));
+#endif
+}
+
 }
 }
 }

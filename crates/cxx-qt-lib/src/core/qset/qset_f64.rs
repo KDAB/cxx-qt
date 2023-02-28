@@ -40,7 +40,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_f64, _: &f64);
         #[rust_name = "len_f64"]
         fn qsetLen(_: &QSet_f64) -> isize;
+        #[rust_name = "reserve_f64"]
+        fn qsetReserve(_: &mut QSet_f64, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_f64, size: isize) {
+    ffi::reserve_f64(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_f64) -> ffi::QSet_f64 {

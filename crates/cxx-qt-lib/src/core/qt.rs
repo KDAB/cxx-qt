@@ -36,13 +36,26 @@ mod ffi {
         SkipEmptyParts,
     }
 
+    #[repr(i32)]
+    enum TimeSpec {
+        /// Local time, controlled by a system time-zone setting.
+        LocalTime,
+        /// Coordinated Universal Time.
+        UTC,
+        /// An offset in seconds from Coordinated Universal Time.
+        OffsetFromUTC,
+        /// A named time zone.
+        TimeZone,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
         type CaseSensitivity;
         type DateFormat;
         type SplitBehaviorFlags;
+        type TimeSpec;
     }
 }
 
-pub use ffi::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags};
+pub use ffi::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags, TimeSpec};

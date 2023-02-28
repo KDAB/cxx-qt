@@ -42,7 +42,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QByteArray, _: &QByteArray);
         #[rust_name = "len_QByteArray"]
         fn qsetLen(_: &QSet_QByteArray) -> isize;
+        #[rust_name = "reserve_QByteArray"]
+        fn qsetReserve(_: &mut QSet_QByteArray, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_QByteArray, size: isize) {
+    ffi::reserve_QByteArray(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QByteArray) -> ffi::QSet_QByteArray {

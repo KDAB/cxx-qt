@@ -42,7 +42,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QString, _: &QString);
         #[rust_name = "len_QString"]
         fn qsetLen(_: &QSet_QString) -> isize;
+        #[rust_name = "reserve_QString"]
+        fn qsetReserve(_: &mut QSet_QString, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_QString, size: isize) {
+    ffi::reserve_QString(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_QString) -> ffi::QSet_QString {

@@ -8,24 +8,73 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qsize.h");
-        include!("cxx-qt-lib/qstring.h");
+        include!("cxx-qt-lib/qt.h");
+        type AspectRatioMode = crate::AspectRatioMode;
+    }
 
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qmargins.h");
+        type QMargins = crate::QMargins;
+        include!("cxx-qt-lib/qsize.h");
         type QSize = super::QSize;
+        include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        /// Returns a size holding the minimum width and height of this size and the given otherSize.
+        #[rust_name = "bounded_to"]
+        fn boundedTo(self: &QSize, other_size: &QSize) -> QSize;
+
+        /// Returns a size holding the maximum width and height of this size and the given otherSize.
+        #[rust_name = "expanded_to"]
+        fn expandedTo(self: &QSize, other_size: &QSize) -> QSize;
 
         /// Returns the height.
         fn height(self: &QSize) -> i32;
-        /// Returns the width.
-        fn width(self: &QSize) -> i32;
+
+        /// Returns true if either of the width and height is less than or equal to 0; otherwise returns false.
+        #[rust_name = "is_empty"]
+        fn isEmpty(self: &QSize) -> bool;
+
+        /// Returns true if both the width and height is 0; otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QSize) -> bool;
+
+        /// Returns true if both the width and height is equal to or greater than 0; otherwise returns false.
+        #[rust_name = "is_valid"]
+        fn isValid(self: &QSize) -> bool;
+
+        /// Returns the size that results from growing this size by margins.
+        #[rust_name = "grown_by"]
+        fn grownBy(self: &QSize, margins: QMargins) -> QSize;
+
+        /// Scales the size to a rectangle with the given size, according to the specified mode.
+        fn scale(self: &mut QSize, size: &QSize, mode: AspectRatioMode);
+
+        /// Return a size scaled to a rectangle with the given size s, according to the specified mode.
+        fn scaled(self: &QSize, s: &QSize, mode: AspectRatioMode) -> QSize;
 
         /// Sets the height to the given height.
         #[rust_name = "set_height"]
-        fn setHeight(self: &mut QSize, h: i32);
+        fn setHeight(self: &mut QSize, height: i32);
+
         /// Sets the width to the given width.
         #[rust_name = "set_width"]
-        fn setWidth(self: &mut QSize, w: i32);
+        fn setWidth(self: &mut QSize, width: i32);
+
+        /// Returns the size that results from shrinking this size by margins.
+        #[rust_name = "shrunk_by"]
+        fn shrunkBy(self: &QSize, margins: QMargins) -> QSize;
+
+        /// Swaps the width and height values.
+        fn transpose(self: &mut QSize);
+
+        /// Returns a QSize with width and height swapped.
+        fn transposed(self: &QSize) -> QSize;
+
+        /// Returns the width.
+        fn width(self: &QSize) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -48,8 +97,8 @@ mod ffi {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QSize {
-    w: i32,
-    h: i32,
+    width: i32,
+    height: i32,
 }
 
 impl QSize {
@@ -78,4 +127,90 @@ impl fmt::Display for QSize {
 unsafe impl ExternType for QSize {
     type Id = type_id!("QSize");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeMap;
+
+#[cfg(feature = "serde")]
+struct QSizeVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QSizeVisitor {
+    type Value = QSize;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QSize")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut width = None;
+        let mut height = None;
+
+        while let Some((key, value)) = map.next_entry()? {
+            match key {
+                "width" => width = Some(value),
+                "height" => height = Some(value),
+                others => {
+                    return Err(serde::de::Error::invalid_value(
+                        serde::de::Unexpected::Str(others),
+                        &"expected either width or height as a key",
+                    ));
+                }
+            }
+        }
+
+        if let (Some(width), Some(height)) = (width, height) {
+            Ok(QSize::new(width, height))
+        } else {
+            Err(serde::de::Error::missing_field(
+                "missing width or height as key",
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QSize {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(QSizeVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QSize {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("width", &self.width())?;
+        map.serialize_entry("height", &self.height())?;
+        map.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QSize = serde_json::from_str(r#"{"width":1,"height":2}"#).unwrap();
+        assert_eq!(test_data, QSize::new(1, 2));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QSize::new(1, 2);
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"{"width":1,"height":2}"#);
+    }
 }

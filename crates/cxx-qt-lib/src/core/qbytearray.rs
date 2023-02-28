@@ -14,6 +14,18 @@ mod ffi {
 
         /// Clears the contents of the byte array and makes it null.
         fn clear(self: &mut QByteArray);
+        /// Returns true if the byte array has size 0; otherwise returns false.
+        #[rust_name = "is_empty"]
+        fn isEmpty(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is lowercase, that is, if it's identical to its toLower() folding.
+        #[rust_name = "is_lower"]
+        fn isLower(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is null; otherwise returns false.
+        #[rust_name = "is_null"]
+        fn isNull(self: &QByteArray) -> bool;
+        /// Returns true if this byte array is uppercase, that is, if it's identical to its toUpper() folding.
+        #[rust_name = "is_upper"]
+        fn isUpper(self: &QByteArray) -> bool;
         /// Releases any memory not required to store the array's data.
         fn squeeze(self: &mut QByteArray);
     }
@@ -75,6 +87,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qbytearray_resize"]
         fn qbytearrayResize(bytearray: &mut QByteArray, size: isize);
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_simplified"]
+        fn qbytearraySimplified(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_to_lower"]
+        fn qbytearrayToLower(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_to_upper"]
+        fn qbytearrayToUpper(bytearray: &QByteArray) -> QByteArray;
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_trimmed"]
+        fn qbytearrayTrimmed(bytearray: &QByteArray) -> QByteArray;
     }
 }
 
@@ -241,11 +265,6 @@ impl QByteArray {
         ffi::qbytearray_insert(self, pos, ch);
     }
 
-    /// Returns true if the list contains no elements; otherwise returns false.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
     /// Returns the number of items in the QByteArray.
     pub fn len(&self) -> isize {
         ffi::qbytearray_len(self)
@@ -269,6 +288,27 @@ impl QByteArray {
     /// If size is less than the current size, bytes beyond position size are excluded from the byte array.
     pub fn resize(&mut self, size: isize) {
         ffi::qbytearray_resize(self, size);
+    }
+
+    /// Returns a copy of this byte array that has spacing characters removed from the start and end,
+    /// and in which each sequence of internal spacing characters is replaced with a single space.
+    pub fn simplified(&self) -> Self {
+        ffi::qbytearray_simplified(self)
+    }
+
+    /// Returns a copy of the byte array in which each ASCII uppercase letter converted to lowercase.
+    pub fn to_lower(&self) -> Self {
+        ffi::qbytearray_to_lower(self)
+    }
+
+    /// Returns a copy of the byte array in which each ASCII lowercase letter converted to uppercase.
+    pub fn to_upper(&self) -> Self {
+        ffi::qbytearray_to_upper(self)
+    }
+
+    /// Returns a copy of this byte array with spacing characters removed from the start and end.
+    pub fn trimmed(&self) -> Self {
+        ffi::qbytearray_trimmed(self)
     }
 }
 
@@ -294,5 +334,82 @@ mod tests {
 
         let bytes_bytes = bytes::Bytes::from(&qbytearray);
         assert_eq!(bytes, bytes_bytes)
+    }
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeSeq;
+
+#[cfg(feature = "serde")]
+struct QByteArrayVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QByteArrayVisitor {
+    type Value = QByteArray;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QByteArray")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        // TODO: can we construct a QByteArray in a better way?
+        //
+        // Note there is serialize_bytes and deserialize_bytes but they
+        // don't seem to work consistently? So creating a Vec<u8> appears to be better?
+        let mut bytes = QByteArray::default();
+        bytes.reserve(seq.size_hint().unwrap_or(0) as isize);
+
+        while let Some(value) = seq.next_element::<u8>()? {
+            bytes.append(value);
+        }
+
+        Ok(bytes)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QByteArray {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(QByteArrayVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QByteArray {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let bytes = self.as_slice();
+        let mut seq = serializer.serialize_seq(Some(bytes.len()))?;
+        for e in bytes.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QByteArray = serde_json::from_str(r#"[107,100,97,98]"#).unwrap();
+        assert_eq!(test_data, QByteArray::from("kdab"));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let test_data = QByteArray::from("kdab");
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"[107,100,97,98]"#);
     }
 }

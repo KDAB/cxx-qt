@@ -58,10 +58,13 @@ mod qstringlist;
 pub use qstringlist::QStringList;
 
 mod qt;
-pub use qt::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags};
+pub use qt::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags, TimeSpec};
 
 mod qtime;
 pub use qtime::QTime;
+
+mod qtimezone;
+pub use qtimezone::QTimeZone;
 
 mod qpoint;
 pub use qpoint::QPoint;

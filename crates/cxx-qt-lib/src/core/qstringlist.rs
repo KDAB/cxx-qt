@@ -8,6 +8,12 @@ use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type CaseSensitivity = crate::CaseSensitivity;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
@@ -18,9 +24,18 @@ mod ffi {
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = super::QStringList;
 
+        /// Returns true if the list contains the string str; otherwise returns false.
+        fn contains(self: &QStringList, str: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Returns a list of all the strings containing the substring str.
+        fn filter(self: &QStringList, str: &QString, cs: CaseSensitivity) -> QStringList;
+
         /// Joins all the string list's strings into a single string with each element
         /// separated by the given separator (which can be an empty string).
         fn join(self: &QStringList, separator: &QString) -> QString;
+
+        /// Sorts the list of strings in ascending order.
+        fn sort(self: &mut QStringList, cs: CaseSensitivity);
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -44,23 +59,25 @@ mod ffi {
         fn construct(string: &QString) -> QStringList;
 
         #[doc(hidden)]
-        #[rust_name = "qstringlist_from_qlist_qstring"]
-        fn qstringlistFromQListQString(list: &QList_QString) -> QStringList;
-        #[doc(hidden)]
-        #[rust_name = "qstringlist_as_qlist_qstring"]
-        fn qstringlistAsQListQString(list: &QStringList) -> QList_QString;
-
-        #[doc(hidden)]
-        #[rust_name = "qstringlist_contains"]
-        fn qstringlistContains(list: &QStringList, string: &QString) -> bool;
-
-        #[doc(hidden)]
         #[rust_name = "qstringlist_eq"]
         fn operatorEq(a: &QStringList, b: &QStringList) -> bool;
 
         #[doc(hidden)]
         #[rust_name = "qstringlist_to_qstring"]
         fn toQString(value: &QStringList) -> QString;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_from_qlist_qstring"]
+        fn qstringlistFromQListQString(list: &QList_QString) -> QStringList;
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_as_qlist_qstring"]
+        fn qstringlistAsQListQString(list: &QStringList) -> QList_QString;
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_remove_duplicates"]
+        fn qstringlistRemoveDuplicates(list: &mut QStringList) -> isize;
     }
 }
 
@@ -78,9 +95,10 @@ pub struct QStringList {
 }
 
 impl QStringList {
-    /// Returns true if the list contains the string str; otherwise returns false
-    pub fn contains(&self, string: &QString) -> bool {
-        ffi::qstringlist_contains(self, string)
+    /// This function removes duplicate entries from a list.
+    /// The entries do not have to be sorted. They will retain their original order.
+    pub fn remove_duplicates(&mut self) -> isize {
+        ffi::qstringlist_remove_duplicates(self)
     }
 }
 
@@ -152,4 +170,82 @@ impl From<&QStringList> for QList<QString> {
 unsafe impl ExternType for QStringList {
     type Id = type_id!("QStringList");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(feature = "serde")]
+use serde::ser::SerializeSeq;
+
+#[cfg(feature = "serde")]
+struct QStringListVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Visitor<'de> for QStringListVisitor {
+    type Value = QStringList;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QStringList")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        let mut new_seq = QList::<QString>::default();
+        new_seq.reserve(seq.size_hint().unwrap_or(0) as isize);
+
+        while let Some(value) = seq.next_element::<QString>()? {
+            new_seq.append(value);
+        }
+
+        Ok(QStringList::from(&new_seq))
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QStringList {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(QStringListVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QStringList {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let list = QList::<QString>::from(self);
+        let mut seq = serializer.serialize_seq(Some(list.len() as usize))?;
+        for e in list.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QStringList = serde_json::from_str(r#"["kdab","cxx-qt"]"#).unwrap();
+        let mut expected_data = QList::<QString>::default();
+        expected_data.append(QString::from("kdab"));
+        expected_data.append(QString::from("cxx-qt"));
+        assert!(test_data == QStringList::from(&expected_data));
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let mut test_data = QList::<QString>::default();
+        test_data.append(QString::from("kdab"));
+        test_data.append(QString::from("cxx-qt"));
+        let data_string = serde_json::to_string(&QStringList::from(&test_data)).unwrap();
+        assert_eq!(data_string, r#"["kdab","cxx-qt"]"#);
+    }
 }

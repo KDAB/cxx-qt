@@ -20,12 +20,12 @@ struct rust::IsRelocatable<QStringList> : ::std::true_type
 namespace rust {
 namespace cxxqtlib1 {
 
-bool
-qstringlistContains(const QStringList& list, const QString& string);
 QStringList
 qstringlistFromQListQString(const QList<QString>& list);
 QList<QString>
 qstringlistAsQListQString(const QStringList& list);
+::rust::isize
+qstringlistRemoveDuplicates(QStringList& list);
 
 }
 }

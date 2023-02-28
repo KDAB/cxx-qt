@@ -54,7 +54,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {
@@ -130,7 +136,13 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
+}
+
+pub(crate) fn reserve(v: &mut ffi::QSet_$1, size: isize) {
+    ffi::reserve_$1(v, size);
 }
 
 pub(crate) fn clone(s: &ffi::QSet_$1) -> ffi::QSet_$1 {

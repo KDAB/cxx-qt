@@ -36,12 +36,6 @@ static_assert(QTypeInfo<QStringList>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-bool
-qstringlistContains(const QStringList& list, const QString& string)
-{
-  return list.contains(string);
-}
-
 QStringList
 qstringlistFromQListQString(const QList<QString>& list)
 {
@@ -54,6 +48,13 @@ qstringlistAsQListQString(const QStringList& list)
   // Cast to a QList then copy it
   const auto list_cast = static_cast<QList<QString>>(list);
   return QList<QString>(list_cast);
+}
+
+::rust::isize
+qstringlistRemoveDuplicates(QStringList& list)
+{
+  // Qt 5 has an int Qt 6 has a qsizetype
+  return static_cast<::rust::isize>(list.removeDuplicates());
 }
 
 }

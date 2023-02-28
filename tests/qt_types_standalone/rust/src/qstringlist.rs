@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::{QList, QString, QStringList};
+use cxx_qt_lib::{CaseSensitivity, QList, QString, QStringList};
 
 #[cxx::bridge]
 mod qstringlist_cxx {
@@ -30,7 +30,10 @@ fn construct_qstringlist(a: &QString, b: &QString) -> QStringList {
 
 fn read_qstringlist(l: &QStringList) -> bool {
     let qlist = QList::<QString>::from(l);
-    l.contains(&QString::from("https://kdab.com/")) && qlist.len() == 2
+    l.contains(
+        &QString::from("https://kdab.com/"),
+        CaseSensitivity::CaseSensitive,
+    ) && qlist.len() == 2
 }
 
 fn clone_qstringlist(l: &QStringList) -> QStringList {

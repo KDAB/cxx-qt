@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::{QDate, QDateTime, QTime};
+use cxx_qt_lib::{QDate, QDateTime, QTime, QTimeZone};
 
 #[cxx::bridge]
 mod qdatetime_cxx {
@@ -12,24 +12,26 @@ mod qdatetime_cxx {
         include!("cxx-qt-lib/qdate.h");
         include!("cxx-qt-lib/qdatetime.h");
         include!("cxx-qt-lib/qtime.h");
+        include!("cxx-qt-lib/qtimezone.h");
 
         type QDate = cxx_qt_lib::QDate;
         type QDateTime = cxx_qt_lib::QDateTime;
         type QTime = cxx_qt_lib::QTime;
+        type QTimeZone = cxx_qt_lib::QTimeZone;
     }
 
     extern "Rust" {
-        fn construct_qdatetime(date: &QDate, time: &QTime) -> QDateTime;
+        fn construct_qdatetime(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime;
         fn read_qdatetime(c: &QDateTime, date: &QDate, time: &QTime) -> bool;
         fn clone_qdatetime(c: &QDateTime) -> QDateTime;
     }
 }
 
-fn construct_qdatetime(date: &QDate, time: &QTime) -> QDateTime {
-    QDateTime::from_date_and_time(date, time)
+fn construct_qdatetime(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime {
+    QDateTime::from_date_and_time_time_zone(date, time, time_zone)
 }
 
-fn read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) -> bool {
+fn read_qdatetime(dt: &QDateTime, date: &QDate, time: &QTime) -> bool {
     dt.date().year() == date.year()
         && dt.date().month() == date.month()
         && dt.date().day() == date.day()
@@ -37,6 +39,7 @@ fn read_qdatetime(dt: &cxx_qt_lib::QDateTime, date: &QDate, time: &QTime) -> boo
         && dt.time().minute() == time.minute()
         && dt.time().second() == time.second()
         && dt.time().msec() == time.msec()
+        && dt.offset_from_utc() == 0
 }
 
 fn clone_qdatetime(dt: &QDateTime) -> QDateTime {

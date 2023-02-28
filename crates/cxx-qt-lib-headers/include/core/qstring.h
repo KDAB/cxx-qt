@@ -7,7 +7,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QByteArray>
 #include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/Qt>
 
 #include "rust/cxx.h"
 
@@ -23,6 +26,46 @@ QString
 qstringInitFromRustString(::rust::Str string);
 ::rust::String
 qstringToRustString(const QString& string);
+
+QString
+qstringArg(const QString& string, const QString& a);
+::rust::isize
+qstringIndexOf(const QString& string,
+               const QString& str,
+               ::rust::isize from,
+               Qt::CaseSensitivity cs);
+QString&
+qstringInsert(QString& string, ::rust::isize pos, const QString& str);
+QString
+qstringLeft(const QString& string, ::rust::isize n);
+::rust::isize
+qstringLen(const QString& string);
+QString
+qstringMid(const QString& string, ::rust::isize position, ::rust::isize n);
+QString
+qstringRight(const QString& string, ::rust::isize n);
+QStringList
+qstringSplit(const QString& string,
+             const QString& sep,
+             Qt::SplitBehaviorFlags behavior,
+             Qt::CaseSensitivity cs);
+
+// If Q_COMPILER_REF_QUALIFIERS is set the definition of these is
+// T method() const& which CXX doesn't bind it.
+QString
+qstringSimplified(const QString& string);
+QByteArray
+qstringToLatin1(const QString& string);
+QByteArray
+qstringToLocal8Bit(const QString& string);
+QString
+qstringToLower(const QString& string);
+QString
+qstringToUpper(const QString& string);
+QByteArray
+qstringToUtf8(const QString& string);
+QString
+qstringTrimmed(const QString& string);
 
 }
 }

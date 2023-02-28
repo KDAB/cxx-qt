@@ -374,6 +374,86 @@ impl_qvector_element!(u16, qvector_u16, "QVector_u16");
 impl_qvector_element!(u32, qvector_u32, "QVector_u32");
 impl_qvector_element!(u64, qvector_u64, "QVector_u64");
 
+#[cfg(feature = "serde")]
+use serde::ser::SerializeSeq;
+
+#[cfg(feature = "serde")]
+struct QVectorVisitor<T>
+where
+    T: QVectorElement,
+{
+    _value: PhantomData<fn() -> QVector<T>>,
+}
+
+#[cfg(feature = "serde")]
+impl<T> QVectorVisitor<T>
+where
+    T: QVectorElement,
+{
+    fn new() -> Self {
+        Self {
+            _value: PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::de::Visitor<'de> for QVectorVisitor<T>
+where
+    T: serde::Deserialize<'de> + QVectorElement,
+{
+    type Value = QVector<T>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("QVector<T>")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        let mut new_seq = QVector::<T>::default();
+        new_seq.reserve(seq.size_hint().unwrap_or(0) as isize);
+
+        while let Some(value) = seq.next_element::<T>()? {
+            // Use append_clone so that opaque types can work
+            new_seq.append_clone(&value);
+        }
+
+        Ok(new_seq)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for QVector<T>
+where
+    T: serde::Deserialize<'de> + QVectorElement,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(QVectorVisitor::<T>::new())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for QVector<T>
+where
+    T: serde::Serialize + QVectorElement,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.len() as usize))?;
+        for e in self.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -383,5 +463,30 @@ mod test {
         let array = [0, 1, 2];
         let qvec = QVector::<u8>::from(array);
         assert_eq!(Vec::from(&qvec), array);
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn test_serde_deserialize() {
+        let test_data: QVector<QPoint> =
+            serde_json::from_str(r#"[{"x":1,"y":2},{"x":3,"y":4}]"#).unwrap();
+        let mut expected_data = QVector::<QPoint>::default();
+        expected_data.append(QPoint::new(1, 2));
+        expected_data.append(QPoint::new(3, 4));
+        assert!(test_data == expected_data);
+    }
+
+    #[test]
+    fn test_serde_serialize() {
+        let mut test_data = QVector::<QPoint>::default();
+        test_data.append(QPoint::new(1, 2));
+        test_data.append(QPoint::new(3, 4));
+        let data_string = serde_json::to_string(&test_data).unwrap();
+        assert_eq!(data_string, r#"[{"x":1,"y":2},{"x":3,"y":4}]"#);
     }
 }

@@ -20,3 +20,47 @@ assert_alignment_and_size(QTime,
 
 static_assert(::std::is_trivially_copyable<QTime>::value,
               "QTime must be trivially copyable!");
+
+namespace rust {
+namespace cxxqtlib1 {
+
+QTime
+qtimeCurrentTime()
+{
+  return QTime::currentTime();
+}
+
+QTime
+qtimeFromMSecsSinceStartOfDay(::std::int32_t msecs)
+{
+  return QTime::fromMSecsSinceStartOfDay(static_cast<int>(msecs));
+}
+
+::std::int32_t
+qtimeMSecsTo(const QTime& time, QTime t)
+{
+  // In Qt 5 t is const-ref, in Qt 6 it is value
+  return static_cast<::std::int32_t>(time.msecsTo(t));
+}
+
+QTime
+qtimeFromString(const QString& string, const QString& format)
+{
+  return QTime::fromString(string, format);
+}
+
+QTime
+qtimeFromString(const QString& string, Qt::DateFormat format)
+{
+  return QTime::fromString(string, format);
+}
+
+::std::int32_t
+qtimeSecsTo(const QTime& time, QTime t)
+{
+  // In Qt 5 t is const-ref, in Qt 6 it is value
+  return static_cast<::std::int32_t>(time.secsTo(t));
+}
+
+}
+}
