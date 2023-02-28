@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#![deny(missing_docs)]
+
 //! This crate is a hack so build.rs for cxx-qt-lib and cxx-qt-build both have access to cxx-qt-lib's C++ headers.
 //! This must be a separate crate from cxx-qt-lib because cxx-qt-lib cannot be a build dependency of cxx-qt-build.
 //! Otherwise Cargo links the executable compiled from a build.rs that uses cxx-qt-build to Qt, so running
