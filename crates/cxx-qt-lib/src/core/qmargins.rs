@@ -60,6 +60,30 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qmargins_to_qstring"]
         fn toQString(value: &QMargins) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_plus"]
+        fn operatorPlus(a: &QMargins, b: &QMargins) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_plus_i32"]
+        fn operatorPlus(a: &QMargins, b: &i32) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_minus"]
+        fn operatorMinus(a: &QMargins, b: &QMargins) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_minus_i32"]
+        fn operatorMinus(a: &QMargins, b: &i32) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_mul_i32"]
+        fn operatorMul(a: i32, b: &QMargins) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_mul_f64"]
+        fn operatorMul(a: f64, b: &QMargins) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_div_i32"]
+        fn operatorDiv(a: i32, b: &QMargins) -> QMargins;
+        #[doc(hidden)]
+        #[rust_name = "qmargins_div_f64"]
+        fn operatorDiv(a: f64, b: &QMargins) -> QMargins;
     }
 }
 
@@ -90,6 +114,62 @@ impl Default for QMargins {
 impl fmt::Display for QMargins {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qmargins_to_qstring(self))
+    }
+}
+
+impl std::ops::Add for QMargins {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        ffi::qmargins_plus(&self, &other)
+    }
+}
+
+impl std::ops::Add<i32> for QMargins {
+    type Output = Self;
+    fn add(self, other: i32) -> Self {
+        ffi::qmargins_plus_i32(&self, &other)
+    }
+}
+
+impl std::ops::Sub for QMargins {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        ffi::qmargins_minus(&self, &other)
+    }
+}
+
+impl std::ops::Sub<i32> for QMargins {
+    type Output = Self;
+    fn sub(self, other: i32) -> Self {
+        ffi::qmargins_minus_i32(&self, &other)
+    }
+}
+
+impl std::ops::Mul<i32> for QMargins {
+    type Output = Self;
+    fn mul(self, rhs: i32) -> Self {
+        ffi::qmargins_mul_i32(rhs, &self)
+    }
+}
+
+impl std::ops::Mul<f64> for QMargins {
+    type Output = Self;
+    fn mul(self, rhs: f64) -> Self {
+        ffi::qmargins_mul_f64(rhs, &self)
+    }
+}
+
+impl std::ops::Div<i32> for QMargins {
+    type Output = Self;
+    fn div(self, rhs: i32) -> Self {
+        ffi::qmargins_div_i32(rhs, &self)
+    }
+}
+
+impl std::ops::Div<f64> for QMargins {
+    type Output = Self;
+    fn div(self, rhs: f64) -> Self {
+        ffi::qmargins_div_f64(rhs, &self)
     }
 }
 
