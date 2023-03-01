@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for nesting objects in properties, invokables, and signals with `*mut T`
 - Allow for marking signals as existing in the base class
 - Support for conversions to types in third-party crates: `bytes`, `http`, `rgb`, `url`
+- Add several QoL functions to builtin cxx-qt-lib types, including Default constructors, string formatting, std::cmp order and operators
 
 ### Changed
 
