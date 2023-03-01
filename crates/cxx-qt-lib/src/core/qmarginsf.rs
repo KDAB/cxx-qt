@@ -71,6 +71,24 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qmarginsf_to_qstring"]
         fn toQString(value: &QMarginsF) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_plus"]
+        fn operatorPlus(a: &QMarginsF, b: &QMarginsF) -> QMarginsF;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_plus_f64"]
+        fn operatorPlus(a: &QMarginsF, b: &f64) -> QMarginsF;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_minus"]
+        fn operatorMinus(a: &QMarginsF, b: &QMarginsF) -> QMarginsF;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_minus_f64"]
+        fn operatorMinus(a: &QMarginsF, b: &f64) -> QMarginsF;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_mul"]
+        fn operatorMul(a: f64, b: &QMarginsF) -> QMarginsF;
+        #[doc(hidden)]
+        #[rust_name = "qmarginsf_div"]
+        fn operatorDiv(a: f64, b: &QMarginsF) -> QMarginsF;
     }
 }
 
@@ -101,6 +119,48 @@ impl Default for QMarginsF {
 impl fmt::Display for QMarginsF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qmarginsf_to_qstring(self))
+    }
+}
+
+impl std::ops::Add for QMarginsF {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        ffi::qmarginsf_plus(&self, &other)
+    }
+}
+
+impl std::ops::Add<f64> for QMarginsF {
+    type Output = Self;
+    fn add(self, other: f64) -> Self {
+        ffi::qmarginsf_plus_f64(&self, &other)
+    }
+}
+
+impl std::ops::Sub for QMarginsF {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        ffi::qmarginsf_minus(&self, &other)
+    }
+}
+
+impl std::ops::Sub<f64> for QMarginsF {
+    type Output = Self;
+    fn sub(self, other: f64) -> Self {
+        ffi::qmarginsf_minus_f64(&self, &other)
+    }
+}
+
+impl std::ops::Mul<f64> for QMarginsF {
+    type Output = Self;
+    fn mul(self, rhs: f64) -> Self {
+        ffi::qmarginsf_mul(rhs, &self)
+    }
+}
+
+impl std::ops::Div<f64> for QMarginsF {
+    type Output = Self;
+    fn div(self, rhs: f64) -> Self {
+        ffi::qmarginsf_div(rhs, &self)
     }
 }
 
