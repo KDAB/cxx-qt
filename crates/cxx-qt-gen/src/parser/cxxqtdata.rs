@@ -330,7 +330,7 @@ mod tests {
             mod module {
                 struct Other;
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
@@ -345,11 +345,11 @@ mod tests {
 
         let module: ItemMod = tokens_to_syn(quote! {
             mod module {
-                struct Other;
+                pub struct Other;
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
                 #[cxx_qt::qobject]
-                struct SecondObject;
+                pub struct SecondObject;
             }
         });
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
@@ -370,11 +370,11 @@ mod tests {
 
         let module: ItemMod = tokens_to_syn(quote! {
             mod module {
-                struct Other;
+                pub struct Other;
                 #[cxx_qt::qobject(namespace = "qobject_namespace")]
-                struct MyObject;
+                pub struct MyObject;
                 #[cxx_qt::qobject]
-                struct SecondObject;
+                pub struct SecondObject;
             }
         });
         cxx_qt_data
@@ -405,8 +405,8 @@ mod tests {
 
         let module: ItemMod = tokens_to_syn(quote! {
             mod module {
-                struct Other;
-                struct MyObject;
+                pub struct Other;
+                pub struct MyObject;
             }
         });
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
@@ -477,7 +477,7 @@ mod tests {
 
         let item: Item = tokens_to_syn(quote! {
             #[cxx_qt::qobject]
-            struct MyObject;
+            pub struct MyObject;
         });
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());

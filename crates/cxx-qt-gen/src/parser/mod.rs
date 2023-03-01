@@ -163,7 +163,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
 
                 #[cxx_qt::qsignals(MyObject)]
                 enum MySignals {
@@ -188,7 +188,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
 
                 #[cxx_qt::qsignals(MyObject)]
                 enum MySignals {
@@ -217,7 +217,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
 
                 #[cxx_qt::qsignals(UnknownObj)]
                 enum MySignals {

@@ -132,7 +132,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -156,7 +156,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(base = "QStringListModel")]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -177,7 +177,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_name = "MyQmlElement")]
-                struct MyNamedObject;
+                pub struct MyNamedObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -201,7 +201,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -226,7 +226,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_uncreatable)]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();

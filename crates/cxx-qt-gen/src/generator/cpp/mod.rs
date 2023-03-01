@@ -59,7 +59,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -76,7 +76,7 @@ mod tests {
             #[cxx_qt::bridge(cxx_file_stem = "my_object")]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
@@ -93,7 +93,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
-                struct MyObject;
+                pub struct MyObject;
             }
         });
         let parser = Parser::from(module).unwrap();
