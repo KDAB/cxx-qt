@@ -11,9 +11,11 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qrect.h");
         include!("cxx-qt-lib/qstring.h");
+        include!("cxx-qt-lib/qmargins.h");
 
         type QRect = super::QRect;
         type QString = crate::QString;
+        type QMargins = crate::QMargins;
 
         /// Returns the height of the rectangle.
         fn height(self: &QRect) -> i32;
@@ -51,6 +53,12 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qrect_to_qstring"]
         fn toQString(value: &QRect) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qrect_plus"]
+        fn operatorPlus(a: &QRect, b: &QMargins) -> QRect;
+        #[doc(hidden)]
+        #[rust_name = "qrect_minus"]
+        fn operatorMinus(a: &QRect, b: &QMargins) -> QRect;
     }
 }
 
@@ -82,6 +90,21 @@ impl Default for QRect {
 impl fmt::Display for QRect {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qrect_to_qstring(self))
+    }
+}
+
+type QMargins = crate::QMargins;
+impl std::ops::Add<QMargins> for QRect {
+    type Output = Self;
+    fn add(self, other: QMargins) -> Self {
+        ffi::qrect_plus(&self, &other)
+    }
+}
+
+impl std::ops::Sub<QMargins> for QRect {
+    type Output = Self;
+    fn sub(self, other: QMargins) -> Self {
+        ffi::qrect_minus(&self, &other)
     }
 }
 
