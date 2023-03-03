@@ -12,7 +12,7 @@
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
 mod diagnostics;
-use diagnostics::Diagnostic;
+use diagnostics::{Diagnostic, GeneratedError};
 
 use convert_case::{Case, Casing};
 use quote::ToTokens;
@@ -62,7 +62,9 @@ impl GeneratedCpp {
 
         let rust_file_path = rust_file_path.as_ref();
 
-        let file = parse_qt_file(rust_file_path).map_err(to_diagnostic)?;
+        let file = parse_qt_file(rust_file_path)
+            .map_err(GeneratedError::from)
+            .map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
         let mut qml_metadata = Vec::new();
@@ -103,14 +105,19 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    let parser = Parser::from(m.clone()).map_err(to_diagnostic)?;
-                    let generated_cpp = GeneratedCppBlocks::from(&parser).map_err(to_diagnostic)?;
+                    let parser = Parser::from(m.clone())
+                        .map_err(GeneratedError::from)
+                        .map_err(to_diagnostic)?;
+                    let generated_cpp = GeneratedCppBlocks::from(&parser)
+                        .map_err(GeneratedError::from)
+                        .map_err(to_diagnostic)?;
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(write_cpp(&generated_cpp));
 
-                    let generated_rust =
-                        GeneratedRustBlocks::from(&parser).map_err(to_diagnostic)?;
+                    let generated_rust = GeneratedRustBlocks::from(&parser)
+                        .map_err(GeneratedError::from)
+                        .map_err(to_diagnostic)?;
                     let rust_tokens = write_rust(&generated_rust);
                     file_ident = parser.cxx_file_stem.clone();
                     for (_, qobject) in parser.cxx_qt_data.qobjects {
@@ -131,7 +138,8 @@ impl GeneratedCpp {
 
         let opt = cxx_gen::Opt::default();
         let cxx = cxx_gen::generate_header_and_cc(tokens, &opt)
-            .expect("Could not generate C++ from Rust file");
+            .map_err(GeneratedError::from)
+            .map_err(to_diagnostic)?;
 
         Ok(GeneratedCpp {
             cxx_qt,
