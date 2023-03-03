@@ -6,28 +6,75 @@
 //! This module takes care of displaying errors emitted by CXX-Qt as nicely-printed diagnostics
 //! using codespan-reporting.
 
-use std::{ops::Range, path::PathBuf};
+use std::{fmt::Display, ops::Range, path::PathBuf};
 
-use proc_macro2::LineColumn;
+use proc_macro2::{LineColumn, Span};
+
+/// We need to wrap the CXX and CXX-Qt errors in a single error type so that they
+/// can be returned from the generation phases. This then allows for us to not unwrap
+/// the CXX failures meaning that we can display the macro expansion correctly.
+#[derive(Debug)]
+pub(crate) enum GeneratedError {
+    Cxx(cxx_gen::Error),
+    CxxQt(cxx_qt_gen::Error),
+}
+
+impl Display for GeneratedError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GeneratedError::Cxx(err) => write!(f, "{}", err),
+            GeneratedError::CxxQt(err) => write!(f, "{}", err),
+        }
+    }
+}
+
+impl From<cxx_gen::Error> for GeneratedError {
+    fn from(err: cxx_gen::Error) -> Self {
+        Self::Cxx(err)
+    }
+}
+
+impl From<cxx_qt_gen::Error> for GeneratedError {
+    fn from(err: cxx_qt_gen::Error) -> Self {
+        Self::CxxQt(err)
+    }
+}
+
+impl GeneratedError {
+    fn context(&self) -> &str {
+        match self {
+            GeneratedError::Cxx(_) => "cxx",
+            GeneratedError::CxxQt(_) => "cxxqt",
+        }
+    }
+
+    fn span(&self) -> Option<Span> {
+        match self {
+            // TODO: CXX doesn't have span available yet
+            // https://github.com/KDAB/cxx-qt/issues/536
+            GeneratedError::Cxx(_) => None,
+            GeneratedError::CxxQt(syn_err) => Some(syn_err.span()),
+        }
+    }
+}
 
 pub(crate) struct Diagnostic {
     file_path: PathBuf,
-    error: cxx_qt_gen::Error,
+    error: GeneratedError,
 }
 
 impl Diagnostic {
-    pub(crate) fn new(file_path: PathBuf, error: cxx_qt_gen::Error) -> Self {
+    pub(crate) fn new(file_path: PathBuf, error: GeneratedError) -> Self {
         Self { file_path, error }
     }
 
     fn byte_span_in(&self, source: &str) -> Option<Range<usize>> {
-        let syn_err = &self.error;
-        let span = syn_err.span();
+        self.error.span().and_then(|span| {
+            let start_offset = line_column_to_byte_in(span.start(), source)?;
+            let end_offset = line_column_to_byte_in(span.end(), source)?;
 
-        let start_offset = line_column_to_byte_in(span.start(), source)?;
-        let end_offset = line_column_to_byte_in(span.end(), source)?;
-
-        Some(start_offset..end_offset)
+            Some(start_offset..end_offset)
+        })
     }
 
     fn create_codespan_diagnostic(
@@ -39,7 +86,7 @@ impl Diagnostic {
         let syn_err = &self.error;
         let mut diagnostic = codespan_reporting::diagnostic::Diagnostic::error()
             .with_message(format!("{syn_err}"))
-            .with_code("cxxqt".to_owned());
+            .with_code(syn_err.context());
 
         if let Some(span) = self.byte_span_in(source) {
             diagnostic = diagnostic.with_labels(vec![Label::primary((), span)]);
