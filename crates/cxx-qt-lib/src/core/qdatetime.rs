@@ -358,7 +358,7 @@ impl Eq for QDateTime {}
 
 impl PartialOrd for QDateTime {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        crate::get_ordering(ffi::qdatetime_cmp(self, other))
+        0.partial_cmp(&ffi::qdatetime_cmp(self, other))
     }
 }
 
