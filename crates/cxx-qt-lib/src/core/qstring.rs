@@ -214,7 +214,7 @@ impl Eq for QString {}
 
 impl PartialOrd for QString {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        crate::get_ordering(ffi::qstring_cmp(self, other))
+        0.partial_cmp(&ffi::qstring_cmp(self, other))
     }
 }
 
