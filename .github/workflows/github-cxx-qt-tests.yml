@@ -139,7 +139,7 @@ jobs:
         toolchain: stable
 
     - name: "Rust tools cache"
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: rust-tools-cache
       with:
         path: |
@@ -152,7 +152,7 @@ jobs:
       run: cargo install sccache mdbook mdbook-linkcheck
 
     - name: "Compiler cache"
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}-${{ github.head_ref }}-${{ github.run_number }}
