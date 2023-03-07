@@ -20,12 +20,12 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 # Use `cxx = "1.0.83"` here instead!
 cxx.workspace = true
-# Use `cxx-qt = "0.4"` here instead!
+# Use `cxx-qt = "0.5"` here instead!
 cxx-qt.workspace = true
-# Use `cxx-qt-lib = "0.4"` here instead!
+# Use `cxx-qt-lib = "0.5"` here instead!
 cxx-qt-lib.workspace = true
 
 [build-dependencies]
-# Use `cxx-qt-build = "0.4"` here instead!
+# Use `cxx-qt-build = "0.5"` here instead!
 cxx-qt-build.workspace = true
 # ANCHOR_END: book_cargo_toml_no_cmake
