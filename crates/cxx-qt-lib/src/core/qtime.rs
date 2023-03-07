@@ -250,11 +250,10 @@ unsafe impl ExternType for QTime {
 }
 
 #[cfg(test)]
-mod test {
-    #[cfg(any(feature = "chrono", feature = "time"))]
+#[cfg(feature = "chrono")]
+mod test_chrono {
     use super::*;
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qtime_from_chrono_naive() {
         let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
@@ -262,7 +261,6 @@ mod test {
         assert_eq!(QTime::from(naive), qtime);
     }
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qtime_from_chrono_naive_leap_second() {
         let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 1_000).unwrap();
@@ -270,15 +268,19 @@ mod test {
         assert_eq!(QTime::from(naive), qtime);
     }
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qtime_to_chrono_naive() {
         let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
         let qtime = QTime::new(1, 2, 3, 4);
         assert_eq!(chrono::NaiveTime::try_from(qtime).unwrap(), naive);
     }
+}
 
-    #[cfg(feature = "time")]
+#[cfg(test)]
+#[cfg(feature = "time")]
+mod test_time {
+    use super::*;
+
     #[test]
     fn qtime_from_time_time() {
         let time_time = time::Time::from_hms_milli(1, 2, 3, 4).unwrap();
@@ -286,7 +288,6 @@ mod test {
         assert_eq!(QTime::from(time_time), qtime);
     }
 
-    #[cfg(feature = "time")]
     #[test]
     fn qtime_to_time_time() {
         let time_time = time::Time::from_hms_milli(1, 2, 3, 4).unwrap();

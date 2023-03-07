@@ -490,11 +490,10 @@ unsafe impl ExternType for QDateTime {
 }
 
 #[cfg(test)]
-mod test {
-    #[cfg(any(feature = "chrono", feature = "time"))]
+#[cfg(feature = "chrono")]
+mod test_chrono {
     use super::*;
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qdatetime_from_chrono() {
         let datetime_east = {
@@ -514,7 +513,6 @@ mod test {
         assert_eq!(QDateTime::from(datetime_east), qdatetime);
     }
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qdatetime_to_chrono_fixed_offset() {
         let datetime_east = {
@@ -537,7 +535,6 @@ mod test {
         );
     }
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qdatetime_to_chrono_utc() {
         let datetime_utc = {
@@ -559,7 +556,6 @@ mod test {
         );
     }
 
-    #[cfg(feature = "chrono")]
     #[test]
     fn qdatetime_to_chrono_utc_with_offset() {
         let datetime_utc = {
@@ -581,8 +577,13 @@ mod test {
             datetime_utc
         );
     }
+}
 
-    #[cfg(feature = "time")]
+#[cfg(test)]
+#[cfg(feature = "time")]
+mod test_time {
+    use super::*;
+
     #[test]
     fn qdatetime_to_time_offsetdatetime() {
         let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
@@ -602,7 +603,6 @@ mod test {
         );
     }
 
-    #[cfg(feature = "time")]
     #[test]
     fn qdatetime_to_time_primitivedatetime() {
         let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
@@ -621,7 +621,6 @@ mod test {
         );
     }
 
-    #[cfg(feature = "time")]
     #[test]
     fn qdatetime_from_time_offsetdatetime() {
         let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
@@ -638,7 +637,6 @@ mod test {
         assert_eq!(QDateTime::from(time_offsetdatetime), qdatetime);
     }
 
-    #[cfg(feature = "time")]
     #[test]
     fn qdatetime_from_time_primitivedatetime() {
         let time_offsetdatetime = time::Date::from_calendar_date(2023, time::Month::January, 1)
