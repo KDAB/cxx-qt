@@ -10,8 +10,8 @@ fn main() {
     CxxQtBuilder::new()
         // Link Qt's Network library
         // - Qt Core is always linked
-        // - Qt Gui is linked by enabling the qt_gui Cargo feature.
-        // - Qt Qml is linked by enabling the qt_qml Cargo feature.
+        // - Qt Gui is linked by enabling the qt_gui Cargo feature (default).
+        // - Qt Qml is linked by enabling the qt_qml Cargo feature (default).
         // - Qt Qml requires linking Qt Network on macOS
         .qt_module("Network")
         // Generate C++ from the `#[cxx_qt::bridge]` module
