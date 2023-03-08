@@ -34,6 +34,6 @@ We will show two different ways to build the project.
 First, we will show how to integrate cxx-qt into a C++ application by [building with CMake](./4-cmake-integration.md).
 We will also demonstrate how to build the same cxx-qt code [as a Rust executable](./5-cargo-executable.md) without requiring a C++ build system.
 
-**Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86). It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
+**Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
 
 So, without further ado - let's [Get Started](./1-qobjects-in-rust.md)
