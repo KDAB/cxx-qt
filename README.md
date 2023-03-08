@@ -37,7 +37,7 @@ The [CXX-Qt Book](https://kdab.github.io/cxx-qt/book/getting-started/index.html)
 step-by-step and documents CXX-Qt's features for the latest release. The [examples folder](./examples) contains
 demonstrations of using threading, QQmlExtensionPlugin, and various other features.
 
-CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86). It should work on other platforms that Qt and
+CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). It should work on other platforms that Qt and
 Rust both support, however, these are not tested regularly.
 
 CXX-Qt is in early development and the API changes frequently. For the latest documentation between releases, [install mdBook](https://rust-lang.github.io/mdBook/guide/installation.html)
