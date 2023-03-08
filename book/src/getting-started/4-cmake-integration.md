@@ -55,7 +55,7 @@ In the end, your `Cargo.toml` should look similar to this.
 {{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_all}}
 ```
 
-> Note that instead of the `{ path = "..." }` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
+> Note that instead of the `*.workspace = true` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
 > As described in the code comment above each dependency.
 
 We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
