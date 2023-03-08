@@ -7,9 +7,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # CXX-Qt - Safe interop between Rust and Qt
 
+<p align=center><a href="./getting-started/index.md">TLDR: Click here for "Getting Started" guide</a></p>
+
 This library provides a safe mechanism for bridging between Qt code and Rust code in a different way to typical Rust Qt bindings.
 
-We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrap from one to another.
+We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrapped from one to another.
 
 Instead of one-to-one bindings we use [CXX](https://cxx.rs/) to [bridge](./concepts/bridge.md) between, this allows for normal Qt code and normal Rust code.
 

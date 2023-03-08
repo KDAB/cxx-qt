@@ -57,7 +57,9 @@ application in C++:
 {{#include ../../../examples/cargo_without_cmake/src/main.rs:book_cargo_rust_main}}
 ```
 
-To build and run the application, use `cargo run` within the cxx-qt repository:
+To build and run the application, use `cargo run`.
+
+If you have cloned the CXX-Qt repository, you can run this example from within the repository using:
 
 ```shell
 cargo run -p qml-minimal-no-cmake
