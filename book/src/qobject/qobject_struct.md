@@ -29,6 +29,20 @@ The macro does multiple other things for you though:
 - Generate `Q_PROPERTY`s for all fields that are marked as `#[qproperty]`.
 - Generate signals if paired with a [`#[cxx_qt::qsignals]` enum](./signals_enum.md).
 
+## Exposing to QML
+`#[cxx_qt::qobject]` supports registering the Qt object as a QML type directly at build time.
+This is comparable to [adding `QML_ELEMENT` in C++](https://doc.qt.io/qt-6/qtqml-cppintegration-definetypes.html).
+
+For this, add the `qml_uri` and `qml_version` attributes to the `#[cxx_qt::qobject]` macro.
+``` rust,ignore,noplayground
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
+```
+
+Additionally, you can configure the QML registration with these attributes:
+- `qml_name`: Use a different type name for QML.
+- `qml_uncreatable`: Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
+- `qml_singleton`: An instance of the QObject will be instantiated as a singleton in QML.
+
 ## `base` attribute
 Use the `base` attribute to specify a C++ class that the C++ QObject will inherit from.
 The base class must inherit from QObject (directly or indirectly). If you do not specify a base attribute, it will inherit directly from QObject.
