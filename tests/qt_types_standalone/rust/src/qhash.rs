@@ -12,7 +12,7 @@ mod qhash_cxx {
         include!("cxx-qt-lib/qhash.h");
         type QHash_QString_QVariant = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_QString_QVariant>;
     }
-    // ANCHOR_END: book_qset
+    // ANCHOR_END: book_qhash
 
     extern "Rust" {
         fn construct_qhash_qstring_qvariant() -> QHash_QString_QVariant;
