@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # `#[cxx_qt::bridge]` Macro
 
-The `#[cxx_qt::bridge]` macro functions very similarly to the [`#[cxx::bridge]`](https://docs.rs/cxx/latest/cxx/attr.bridge.html). This macro needs to be written above a Rust module definition.
+The `#[cxx_qt::bridge]` macro functions very similarly to [`#[cxx::bridge]`](https://docs.rs/cxx/latest/cxx/attr.bridge.html). This macro needs to be written above a Rust module definition.
 This Rust module will then function like a normal CXX bridge, whilst also supporting the additional features added by CXX-Qt. Refer to the [the CXX documentation](https://cxx.rs/) for details on how to describe the language boundary.
 Also don't forget to add the Rust source file to the CxxQtBuilder in your build.rs script.
 For instructions, see the [Getting Started guide](../getting-started/4-cmake-integration.md).
