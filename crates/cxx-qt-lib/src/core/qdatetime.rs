@@ -111,10 +111,10 @@ mod ffi {
         #[rust_name = "qdatetime_add_secs"]
         fn qdatetimeAddSecs(datetime: &QDateTime, secs: i64) -> QDateTime;
         #[doc(hidden)]
-        #[rust_name = "qdatetime_current_datetime"]
+        #[rust_name = "qdatetime_current_date_time"]
         fn qdatetimeCurrentDateTime() -> QDateTime;
         #[doc(hidden)]
-        #[rust_name = "qdatetime_current_datetime_utc"]
+        #[rust_name = "qdatetime_current_date_time_utc"]
         fn qdatetimeCurrentDateTimeUtc() -> QDateTime;
         #[doc(hidden)]
         #[rust_name = "qdatetime_current_msecs_since_epoch"]
@@ -224,13 +224,13 @@ impl QDateTime {
     }
 
     /// Returns the current datetime, as reported by the system clock, in the local time zone.
-    pub fn current_date() -> Self {
-        ffi::qdatetime_current_datetime()
+    pub fn current_date_time() -> Self {
+        ffi::qdatetime_current_date_time()
     }
 
     /// Returns the current datetime, as reported by the system clock, in UTC.
-    pub fn current_date_utc() -> Self {
-        ffi::qdatetime_current_datetime_utc()
+    pub fn current_date_time_utc() -> Self {
+        ffi::qdatetime_current_date_time_utc()
     }
 
     /// Returns the number of milliseconds since 1970-01-01T00:00:00 Universal Coordinated Time.

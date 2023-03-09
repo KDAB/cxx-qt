@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.5.0...HEAD)
 
+### Changed
+
+- `QDateTime` API to use `current_date_time` rather than `current_date`
+
 ## [0.5.0](https://github.com/KDAB/cxx-qt/compare/v0.4.1...v0.5.0) - 2023-03-08
 
 ## Added
