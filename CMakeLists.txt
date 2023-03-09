@@ -35,7 +35,7 @@ if(VCPKG)
 
     if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
         if(WIN32)
-            set(COMMAND_PREIFX "")
+            set(COMMAND_PREFIX "")
             set(EXE_SUFFIX ".exe")
             set(SCRIPT_SUFFIX ".bat")
             set(DOTNET_RUNTIME "")
