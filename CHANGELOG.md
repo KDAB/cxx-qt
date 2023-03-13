@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `QDateTime` API to use `current_date_time` rather than `current_date`
 
+### Fixed
+
+- `qrc` resources added to `CxxQtBuilder` or `QtBuild` now trigger `cargo:rerun-if-changed` for file entries
+
 ## [0.5.0](https://github.com/KDAB/cxx-qt/compare/v0.4.1...v0.5.0) - 2023-03-08
 
 ## Added
