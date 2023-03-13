@@ -630,6 +630,27 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             );
         }
 
+        // Add the qrc file contents to the cargo rerun list
+        let cmd_list = Command::new(self.rcc_executable.as_ref().unwrap())
+            .args(["--list", input_path.to_str().unwrap()])
+            .output()
+            .unwrap_or_else(|_| panic!("rcc --list failed for {}", input_path.display()));
+
+        if !cmd_list.status.success() {
+            panic!(
+                "rcc --list failed for {}:\n{}",
+                input_path.display(),
+                String::from_utf8_lossy(&cmd.stderr)
+            );
+        }
+
+        for path in String::from_utf8_lossy(&cmd_list.stdout)
+            .split('\n')
+            .map(PathBuf::from)
+        {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+
         output_path
     }
 }
