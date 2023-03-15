@@ -97,6 +97,8 @@ pub mod ffi {
     }
 
     impl qobject::MyObject {
+        pub const MY_CONSTANT: i32 = 42; // the answer to everything ;)
+
         #[qinvokable]
         pub fn invokable_name(self: Pin<&mut Self>) {
             println!("Bye from Rust!");

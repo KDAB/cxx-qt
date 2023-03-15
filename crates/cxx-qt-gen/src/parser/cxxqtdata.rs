@@ -511,7 +511,12 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 1);
+        assert_eq!(
+            cxx_qt_data.qobjects[&qobject_ident()]
+                .passthrough_impl_items
+                .len(),
+            1
+        );
     }
 
     #[test]

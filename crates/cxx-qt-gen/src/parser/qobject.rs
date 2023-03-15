@@ -49,10 +49,10 @@ pub struct ParsedQObject {
     pub invokables: Vec<ParsedQInvokable>,
     /// List of inherited methods
     pub inherited_methods: Vec<ParsedInheritedMethod>,
-    /// List of methods that need to be implemented on the C++ object in Rust
+    /// List of "impl" items that need to be implemented on the C++ object in Rust
     ///
     /// Note that they will only be visible on the Rust side
-    pub methods: Vec<ImplItemFn>,
+    pub passthrough_impl_items: Vec<ImplItem>,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
@@ -110,7 +110,7 @@ impl ParsedQObject {
             signals: None,
             invokables: vec![],
             inherited_methods: vec![],
-            methods: vec![],
+            passthrough_impl_items: vec![],
             properties,
             fields,
             qml_metadata,
@@ -190,7 +190,8 @@ impl ParsedQObject {
         if let Some(invokable) = ParsedQInvokable::try_parse(method)? {
             self.invokables.push(invokable);
         } else {
-            self.methods.push(method.clone());
+            self.passthrough_impl_items
+                .push(ImplItem::Fn(method.clone()));
         }
         Ok(())
     }
@@ -205,10 +206,14 @@ impl ParsedQObject {
                 ImplItem::Fn(method) => {
                     self.parse_impl_method(method)?;
                 }
+                ImplItem::Const(constant) => {
+                    self.passthrough_impl_items
+                        .push(ImplItem::Const(constant.clone()));
+                }
                 _ => {
                     return Err(Error::new(
                         item.span(),
-                        "Only methods are supported within a QObject impl block!",
+                        "Only methods and associated constants are supported within a QObject impl block!",
                     ));
                 }
             }
@@ -349,7 +354,7 @@ pub mod tests {
         });
         assert!(qobject.parse_impl_items(&item.items).is_ok());
         assert_eq!(qobject.invokables.len(), 3);
-        assert_eq!(qobject.methods.len(), 1);
+        assert_eq!(qobject.passthrough_impl_items.len(), 1);
         assert!(qobject.invokables[0].return_cxx_type.is_none());
         assert!(!qobject.invokables[0].mutable);
         assert_eq!(qobject.invokables[0].parameters.len(), 2);
