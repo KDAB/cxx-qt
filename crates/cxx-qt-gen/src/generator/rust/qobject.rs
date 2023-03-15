@@ -15,7 +15,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, ImplItemFn, Item, Result};
+use syn::{Ident, ImplItem, Item, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -87,9 +87,10 @@ impl GeneratedRustQObject {
             &qobject.invokables,
             &qobject_idents,
         )?);
-        generated
-            .blocks
-            .append(&mut generate_methods(&qobject.methods, &qobject_idents)?);
+        generated.blocks.append(&mut generate_passthrough_impl(
+            &qobject.passthrough_impl_items,
+            &qobject_idents,
+        )?);
         generated.blocks.append(&mut inherit::generate(
             &qobject_idents,
             &qobject.inherited_methods,
@@ -124,20 +125,20 @@ impl GeneratedRustQObject {
 }
 
 /// Generate the non invokable methods for the Rust side
-pub fn generate_methods(
-    methods: &[ImplItemFn],
+pub fn generate_passthrough_impl(
+    impl_items: &[ImplItem],
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut blocks = GeneratedRustQObjectBlocks::default();
     blocks.cxx_qt_mod_contents.extend_from_slice(
-        &methods
+        &impl_items
             .iter()
             // Build non invokables on the C++ struct
-            .map(|method| {
+            .map(|impl_item| {
                 let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
                 syn::parse2(quote! {
                     impl #cpp_class_name_rust {
-                        #method
+                        #impl_item
                     }
                 })
             })

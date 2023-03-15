@@ -294,6 +294,10 @@ mod cxx_qt_ffi {
         }
     }
 
+    impl MyObjectQt {
+        pub const MY_CONSTANT: i32 = 42;
+    }
+
     pub enum MySignals {
         Ready,
     }

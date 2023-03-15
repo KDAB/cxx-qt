@@ -178,13 +178,16 @@ mod ffi {
 
     // QAbstractListModel implementation
     impl qobject::CustomBaseClass {
+        pub const ID_ROLE: i32 = 0;
+        pub const VALUE_ROLE: i32 = 1;
+
         // ANCHOR: book_inherit_data
         #[qinvokable(cxx_override)]
         fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
             if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {
                 return match role {
-                    0 => QVariant::from(id),
-                    1 => QVariant::from(value),
+                    Self::ID_ROLE => QVariant::from(id),
+                    Self::VALUE_ROLE => QVariant::from(value),
                     _ => QVariant::default(),
                 };
             }
@@ -204,8 +207,8 @@ mod ffi {
         #[qinvokable(cxx_override)]
         pub fn role_names(&self) -> QHash_i32_QByteArray {
             let mut roles = QHash_i32_QByteArray::default();
-            roles.insert(0, cxx_qt_lib::QByteArray::from("id"));
-            roles.insert(1, cxx_qt_lib::QByteArray::from("value"));
+            roles.insert(Self::ID_ROLE, cxx_qt_lib::QByteArray::from("id"));
+            roles.insert(Self::VALUE_ROLE, cxx_qt_lib::QByteArray::from("value"));
             roles
         }
 

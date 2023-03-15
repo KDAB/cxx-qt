@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.5.2...HEAD)
 
+### Added
+
+- Allow associated constants within `qobject::T` blocks
+
 ### Changed
 
 - `QDateTime` API to use `current_date_time` rather than `current_date`
