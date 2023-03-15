@@ -161,9 +161,10 @@ private Q_SLOTS:
       << VariantTest::QColor;
     QTest::newRow("QDate") << QVariant::fromValue<QDate>(QDate(2021, 12, 31))
                            << VariantTest::QDate;
-    QTest::newRow("QDateTime") << QVariant::fromValue<QDateTime>(QDateTime(
-                                    QDate(2021, 12, 31), QTime(4, 3, 2, 1)))
-                               << VariantTest::QDateTime;
+    QTest::newRow("QDateTime")
+      << QVariant::fromValue<QDateTime>(
+           QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1), Qt::UTC))
+      << VariantTest::QDateTime;
     QTest::newRow("QPoint")
       << QVariant::fromValue<QPoint>(QPoint(8, 9)) << VariantTest::QPoint;
     QTest::newRow("QPointF") << QVariant::fromValue<QPointF>(QPointF(8.0, 9.0))
