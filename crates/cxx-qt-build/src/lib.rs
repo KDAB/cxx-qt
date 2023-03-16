@@ -11,6 +11,9 @@
 //! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
+mod diagnostics;
+use diagnostics::Diagnostic;
+
 use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
@@ -54,9 +57,12 @@ struct GeneratedCpp {
 
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
-    pub fn new(rust_file_path: impl AsRef<Path>) -> cxx_qt_gen::Result<Self> {
+    pub fn new(rust_file_path: impl AsRef<Path>) -> Result<Self, Diagnostic> {
+        let to_diagnostic = |err| Diagnostic::new(rust_file_path.as_ref().to_owned(), err);
+
         let rust_file_path = rust_file_path.as_ref();
-        let file = parse_qt_file(rust_file_path).unwrap();
+
+        let file = parse_qt_file(rust_file_path).map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
         let mut qml_metadata = Vec::new();
@@ -97,13 +103,14 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    let parser = Parser::from(m.clone())?;
-                    let generated_cpp = GeneratedCppBlocks::from(&parser)?;
+                    let parser = Parser::from(m.clone()).map_err(to_diagnostic)?;
+                    let generated_cpp = GeneratedCppBlocks::from(&parser).map_err(to_diagnostic)?;
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
                     cxx_qt = Some(write_cpp(&generated_cpp));
 
-                    let generated_rust = GeneratedRustBlocks::from(&parser)?;
+                    let generated_rust =
+                        GeneratedRustBlocks::from(&parser).map_err(to_diagnostic)?;
                     let rust_tokens = write_rust(&generated_rust);
                     file_ident = parser.cxx_file_stem.clone();
                     for (_, qobject) in parser.cxx_qt_data.qobjects {
@@ -217,7 +224,7 @@ impl GeneratedCpp {
 fn generate_cxxqt_cpp_files(
     rs_source: &[PathBuf],
     header_dir: impl AsRef<Path>,
-) -> cxx_qt_gen::Result<Vec<GeneratedCppFilePaths>> {
+) -> Result<Vec<GeneratedCppFilePaths>, Diagnostic> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
@@ -446,13 +453,13 @@ impl CxxQtBuilder {
                     }
                 }
             }
-            Err(e) => {
-                // Don't panic here because rust-analyzer would fail with a verbose backtrace
-                // when running the build script. The same error will be encountered when the proc_macro
-                // expands after the build script runs, which allows rust-analyzer to make sense of the
-                // error and point the user to the code causing the problem.
-                println!("cargo:warning=cxx-qt-build failed to parse cxx_qt::bridge: {e:?}");
-                return;
+            Err(diagnostic) => {
+                // When CXX-Qt fails in the build script, we shouldn't panic, as the Rust backtrace
+                // probably isn't useful. We can instead report the error nicely, using
+                // codespan_reporting and then just exit the build script with a non-zero exit code.
+                // This will make for a cleaner build-script output than panicing.
+                diagnostic.report();
+                std::process::exit(1);
             }
         }
 

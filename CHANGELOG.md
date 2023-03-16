@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Pretty-print errors messages when build script fails
 - `QDateTime` API to use `current_date_time` rather than `current_date`
 - Always call `qt_build_utils::setup_linker()` in `CxxQtBuilder` and remove the proxy method
 - Moved to `syn` 2.0 internally and for any exported `syn` types

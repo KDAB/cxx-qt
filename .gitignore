@@ -16,3 +16,7 @@ rustup/*
 
 # clangd
 compile_commands.json
+
+# cmps (https://github.com/leonmatthes/cmps)
+.cmps/
+
