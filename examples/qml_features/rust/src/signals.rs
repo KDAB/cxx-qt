@@ -67,6 +67,20 @@ pub mod ffi {
             // Emit a signal to QML stating that we have disconnected
             self.as_mut().emit(Connection::Disconnected);
         }
+
+        #[qinvokable]
+        pub fn listen(mut self: Pin<&mut Self>) {
+            // TODO: no way to disconnect yet
+            self.as_mut().on_connected(|_, url| {
+                println!("Connected: {}", url);
+            });
+            self.as_mut().on_error(|_, message| {
+                println!("Error: {}", message);
+            });
+            self.as_mut().on_disconnected(|_| {
+                println!("Disconnected");
+            });
+        }
     }
     // ANCHOR_END: book_rust_obj_impl
 }

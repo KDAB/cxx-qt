@@ -26,6 +26,12 @@ Page {
                 onClicked: rustSignals.connect(urlTextField.text)
             }
 
+            ToolButton {
+                text: qsTr("Listen")
+
+                onClicked: rustSignals.listen()
+            }
+
             Item {
                 Layout.fillWidth: true
             }

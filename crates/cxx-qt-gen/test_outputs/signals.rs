@@ -37,6 +37,13 @@ mod ffi {
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[rust_name = "on_ready"]
+        fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>));
+    }
+    unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "emit_data_changed"]
         fn emitDataChanged(
@@ -48,6 +55,22 @@ mod ffi {
         );
     }
     unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "dataChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[rust_name = "on_data_changed"]
+        fn dataChangedConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(
+                this: Pin<&mut MyObjectQt>,
+                first: i32,
+                second: UniquePtr<Opaque>,
+                third: QPoint,
+                fourth: &QPoint,
+            ),
+        );
+    }
+    unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "emit_new_data"]
         fn emitNewData(
@@ -56,6 +79,22 @@ mod ffi {
             second: UniquePtr<Opaque>,
             third: QPoint,
             fourth: &QPoint,
+        );
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "newData"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[rust_name = "on_new_data"]
+        fn newDataConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(
+                this: Pin<&mut MyObjectQt>,
+                first: i32,
+                second: UniquePtr<Opaque>,
+                third: QPoint,
+                fourth: &QPoint,
+            ),
         );
     }
     unsafe extern "C++" {
@@ -120,6 +159,10 @@ mod cxx_qt_ffi {
     }
     impl MyObjectQt {
         pub fn invokable(self: Pin<&mut Self>) {
+            self.as_mut()
+                .on_data_changed(|_sender, _first, _second, _third, _fourth| {
+                    println!("DataChanged");
+                });
             self.as_mut().emit(MySignals::DataChanged {
                 first: 1,
                 second: Opaque::new(),

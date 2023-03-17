@@ -35,28 +35,31 @@ pub fn generate_rust_signals(
     for signal in &signals_enum.signals {
         let idents = QSignalName::from(signal);
         let signal_ident_rust = idents.enum_name;
+        let signal_ident_cpp_str = idents.name.cpp.to_string();
         let emit_ident_cpp = &idents.emit_name.cpp;
         let emit_ident_rust = &idents.emit_name.rust;
         let emit_ident_rust_str = idents.emit_name.rust.to_string();
+        let connect_ident_cpp = idents.connect_name.cpp;
+        let connect_ident_rust_str = idents.connect_name.rust.to_string();
 
+        let mut parameters = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                let mut ty = parameter.ty.clone();
+                // Remove any lifetime from the signal, as this will be related
+                // to the enum. For the CXX methods these can just be
+                // normal references with inferred lifetimes.
+                if let Type::Reference(ty) = &mut ty {
+                    ty.lifetime = None;
+                }
+                quote! { #ident: #ty }
+            })
+            .collect::<Vec<TokenStream>>();
         let parameter_signatures = if signal.parameters.is_empty() {
             quote! { self: Pin<&mut #cpp_class_name_rust> }
         } else {
-            let parameters = signal
-                .parameters
-                .iter()
-                .map(|parameter| {
-                    let ident = &parameter.ident;
-                    let mut ty = parameter.ty.clone();
-                    // Remove any lifetime from the signal, as this will be related
-                    // to the enum. For the CXX methods these can just be
-                    // normal references with inferred lifetimes.
-                    if let Type::Reference(ty) = &mut ty {
-                        ty.lifetime = None;
-                    }
-                    quote! { #ident: #ty }
-                })
-                .collect::<Vec<TokenStream>>();
             quote! { self: Pin<&mut #cpp_class_name_rust>, #(#parameters),* }
         };
         let parameter_names = signal
@@ -76,14 +79,33 @@ pub fn generate_rust_signals(
             quote! {}
         };
 
+        // Add the self context to parameters as this is used for the connection function pointer
+        parameters.insert(
+            0,
+            quote! {
+                this: Pin<&mut #cpp_class_name_rust>
+            },
+        );
+
         let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote! {
-                unsafe extern "C++" {
-                    #[doc(hidden)]
-                    #[rust_name = #emit_ident_rust_str]
-                    #has_unsafe fn #emit_ident_cpp(#parameter_signatures);
-                }
-            }],
+            cxx_bridge: vec![
+                quote! {
+                    unsafe extern "C++" {
+                        #[doc(hidden)]
+                        #[rust_name = #emit_ident_rust_str]
+                        #has_unsafe fn #emit_ident_cpp(#parameter_signatures);
+                    }
+                },
+                quote! {
+                    unsafe extern "C++" {
+                        #[doc = "Connect the given function pointer to the signal "]
+                        #[doc = #signal_ident_cpp_str]
+                        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                        #[rust_name = #connect_ident_rust_str]
+                        fn #connect_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, func: #has_unsafe fn(#(#parameters),*));
+                    }
+                },
+            ],
             implementation: vec![],
         };
         signal_matches.push(quote! {
@@ -153,7 +175,7 @@ mod tests {
 
         let generated = generate_rust_signals(&signals_enum, &qobject_idents).unwrap();
 
-        assert_eq!(generated.cxx_mod_contents.len(), 4);
+        assert_eq!(generated.cxx_mod_contents.len(), 8);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
 
         // Ready
@@ -167,10 +189,22 @@ mod tests {
                 }
             },
         );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[1],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "ready"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[rust_name = "on_ready"]
+                    fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>));
+                }
+            },
+        );
 
         // DataChanged
         assert_tokens_eq(
-            &generated.cxx_mod_contents[1],
+            &generated.cxx_mod_contents[2],
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
@@ -179,10 +213,22 @@ mod tests {
                 }
             },
         );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[3],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "dataChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[rust_name = "on_data_changed"]
+                    fn dataChangedConnect(self: Pin<&mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>));
+                }
+            },
+        );
 
         // UnsafeSignal
         assert_tokens_eq(
-            &generated.cxx_mod_contents[2],
+            &generated.cxx_mod_contents[4],
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
@@ -191,15 +237,39 @@ mod tests {
                 }
             },
         );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[5],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "unsafeSignal"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[rust_name = "on_unsafe_signal"]
+                    fn unsafeSignalConnect(self: Pin <&mut MyObjectQt>, func: unsafe fn(this: Pin<&mut MyObjectQt>, param: *mut T));
+                }
+            },
+        );
 
         // ExistingSignal
         assert_tokens_eq(
-            &generated.cxx_mod_contents[3],
+            &generated.cxx_mod_contents[6],
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[rust_name = "emit_base_name"]
                     fn emitBaseName(self: Pin<&mut MyObjectQt>);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[7],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "baseName"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[rust_name = "on_base_name"]
+                    fn baseNameConnect(self: Pin<& mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>));
                 }
             },
         );

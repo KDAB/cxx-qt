@@ -36,6 +36,9 @@ mod ffi {
     impl qobject::MyObject {
         #[qinvokable]
         pub fn invokable(self: Pin<&mut Self>) {
+            self.as_mut().on_data_changed(|_sender, _first, _second, _third, _fourth| {
+                println!("DataChanged");
+            });
             self.as_mut().emit(MySignals::DataChanged {
                 first: 1,
                 second: Opaque::new(),

@@ -94,6 +94,13 @@ pub mod ffi {
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[rust_name = "on_ready"]
+        fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>));
+    }
+    unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
         #[doc = r""]
         #[doc = r" CXX doesn't support having generic types in the function yet"]
@@ -178,6 +185,13 @@ pub mod ffi {
         #[doc(hidden)]
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut SecondObjectQt>);
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[rust_name = "on_ready"]
+        fn readyConnect(self: Pin<&mut SecondObjectQt>, func: fn(this: Pin<&mut SecondObjectQt>));
     }
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
