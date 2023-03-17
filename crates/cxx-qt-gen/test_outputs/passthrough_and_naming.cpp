@@ -69,6 +69,16 @@ MyObject::emitReady()
   Q_EMIT ready();
 }
 
+void
+MyObject::readyConnect(::rust::Fn<void(MyObject&)> func)
+{
+  QObject::connect(
+    this, &MyObject::ready, this, [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    });
+}
+
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object::cxx_qt_my_object {
@@ -146,6 +156,16 @@ void
 SecondObject::emitReady()
 {
   Q_EMIT ready();
+}
+
+void
+SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func)
+{
+  QObject::connect(
+    this, &SecondObject::ready, this, [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    });
 }
 
 } // namespace cxx_qt::multi_object

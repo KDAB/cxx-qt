@@ -13,6 +13,7 @@ pub struct QSignalName {
     pub enum_name: Ident,
     pub name: CombinedIdent,
     pub emit_name: CombinedIdent,
+    pub connect_name: CombinedIdent,
 }
 
 impl From<&ParsedSignal> for QSignalName {
@@ -28,6 +29,7 @@ impl From<&ParsedSignal> for QSignalName {
             enum_name: signal.ident.clone(),
             name: CombinedIdent::from_signal(&cxx_ident),
             emit_name: CombinedIdent::emit_from_signal(&cxx_ident),
+            connect_name: CombinedIdent::connect_from_signal(&cxx_ident),
         }
     }
 }
@@ -51,6 +53,15 @@ impl CombinedIdent {
             rust: ident,
         }
     }
+
+    fn connect_from_signal(ident: &Ident) -> Self {
+        Self {
+            // Use signalConnect instead of onSignal here so that we don't
+            // create a C++ name that is similar to the QML naming scheme for signals
+            cpp: format_ident!("{}Connect", ident.to_string().to_case(Case::Camel)),
+            rust: format_ident!("on_{}", ident.to_string().to_case(Case::Snake)),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -72,6 +83,8 @@ mod tests {
         assert_eq!(names.name.rust, format_ident!("data_changed"));
         assert_eq!(names.emit_name.cpp, format_ident!("emitDataChanged"));
         assert_eq!(names.emit_name.rust, format_ident!("emit_data_changed"));
+        assert_eq!(names.connect_name.cpp, format_ident!("dataChangedConnect"));
+        assert_eq!(names.connect_name.rust, format_ident!("on_data_changed"));
     }
 
     #[test]
@@ -89,5 +102,7 @@ mod tests {
         assert_eq!(names.name.rust, format_ident!("base_name"));
         assert_eq!(names.emit_name.cpp, format_ident!("emitBaseName"));
         assert_eq!(names.emit_name.rust, format_ident!("emit_base_name"));
+        assert_eq!(names.connect_name.cpp, format_ident!("baseNameConnect"));
+        assert_eq!(names.connect_name.rust, format_ident!("on_base_name"));
     }
 }

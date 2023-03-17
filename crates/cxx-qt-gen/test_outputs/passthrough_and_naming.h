@@ -41,6 +41,7 @@ public:
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();
+  void readyConnect(::rust::Fn<void(MyObject&)> func);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
@@ -81,6 +82,7 @@ public:
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();
+  void readyConnect(::rust::Fn<void(SecondObject&)> func);
 
 private:
   ::rust::Box<SecondObjectRust> m_rustObj;

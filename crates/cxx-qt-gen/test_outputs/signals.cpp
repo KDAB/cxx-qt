@@ -51,6 +51,16 @@ MyObject::emitReady()
 }
 
 void
+MyObject::readyConnect(::rust::Fn<void(MyObject&)> func)
+{
+  QObject::connect(
+    this, &MyObject::ready, this, [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    });
+}
+
+void
 MyObject::emitDataChanged(::std::int32_t first,
                           ::std::unique_ptr<Opaque> second,
                           QPoint third,
@@ -67,6 +77,32 @@ MyObject::emitDataChanged(::std::int32_t first,
 }
 
 void
+MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
+                                             ::std::int32_t first,
+                                             ::std::unique_ptr<Opaque> second,
+                                             QPoint third,
+                                             QPoint const& fourth)> func)
+{
+  QObject::connect(
+    this,
+    &MyObject::dataChanged,
+    this,
+    [&, func = ::std::move(func)](
+      ::std::int32_t first, Value second, QPoint third, QPoint const& fourth) {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(
+        *this,
+        ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
+          ::std::move(first)),
+        ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>, Value>{}(
+          ::std::move(second)),
+        ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
+        ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
+          ::std::move(fourth)));
+    });
+}
+
+void
 MyObject::emitNewData(::std::int32_t first,
                       ::std::unique_ptr<Opaque> second,
                       QPoint third,
@@ -80,6 +116,32 @@ MyObject::emitNewData(::std::int32_t first,
     ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
     ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
       ::std::move(fourth)));
+}
+
+void
+MyObject::newDataConnect(::rust::Fn<void(MyObject&,
+                                         ::std::int32_t first,
+                                         ::std::unique_ptr<Opaque> second,
+                                         QPoint third,
+                                         QPoint const& fourth)> func)
+{
+  QObject::connect(
+    this,
+    &MyObject::newData,
+    this,
+    [&, func = ::std::move(func)](
+      ::std::int32_t first, Value second, QPoint third, QPoint const& fourth) {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(
+        *this,
+        ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
+          ::std::move(first)),
+        ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>, Value>{}(
+          ::std::move(second)),
+        ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
+        ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
+          ::std::move(fourth)));
+    });
 }
 
 } // namespace cxx_qt::my_object
