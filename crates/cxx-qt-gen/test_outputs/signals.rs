@@ -9,6 +9,11 @@ mod ffi {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
+        include!("cxx-qt-lib/qt.h");
+        #[doc(hidden)]
+        #[namespace = "Qt"]
+        #[rust_name = "CxxQtConnectionType"]
+        type ConnectionType = cxx_qt_lib::ConnectionType;
         include!("cxx-qt-lib/qmetaobjectconnection.h");
         #[doc(hidden)]
         #[namespace = "rust::cxxqtlib1"]
@@ -49,6 +54,7 @@ mod ffi {
         fn readyConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
+            conn_type: CxxQtConnectionType,
         ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
@@ -76,6 +82,7 @@ mod ffi {
                 third: QPoint,
                 fourth: &QPoint,
             ),
+            conn_type: CxxQtConnectionType,
         ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
@@ -103,6 +110,7 @@ mod ffi {
                 third: QPoint,
                 fourth: &QPoint,
             ),
+            conn_type: CxxQtConnectionType,
         ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
@@ -167,10 +175,12 @@ mod cxx_qt_ffi {
     }
     impl MyObjectQt {
         pub fn invokable(self: Pin<&mut Self>) {
-            self.as_mut()
-                .on_data_changed(|_sender, _first, _second, _third, _fourth| {
+            self.as_mut().on_data_changed(
+                |_sender, _first, _second, _third, _fourth| {
                     println!("DataChanged");
-                });
+                },
+                cxx_qt_lib::ConnectionType::AutoConnection,
+            );
             self.as_mut().emit(MySignals::DataChanged {
                 first: 1,
                 second: Opaque::new(),

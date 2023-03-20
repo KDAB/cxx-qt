@@ -9,6 +9,8 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_signals")]
 pub mod ffi {
+    use cxx_qt_lib::ConnectionType;
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         /// QString from cxx_qt_lib
@@ -78,15 +80,24 @@ pub mod ffi {
                 }
             } else {
                 let connections = [
-                    self.as_mut().on_connected(|_, url| {
-                        println!("Connected: {}", url);
-                    }),
-                    self.as_mut().on_error(|_, message| {
-                        println!("Error: {}", message);
-                    }),
-                    self.as_mut().on_disconnected(|_| {
-                        println!("Disconnected");
-                    }),
+                    self.as_mut().on_connected(
+                        |_, url| {
+                            println!("Connected: {}", url);
+                        },
+                        ConnectionType::AutoConnection,
+                    ),
+                    self.as_mut().on_error(
+                        |_, message| {
+                            println!("Error: {}", message);
+                        },
+                        ConnectionType::AutoConnection,
+                    ),
+                    self.as_mut().on_disconnected(
+                        |_| {
+                            println!("Disconnected");
+                        },
+                        ConnectionType::AutoConnection,
+                    ),
                 ];
                 self.as_mut().set_connections(Some(connections));
             }

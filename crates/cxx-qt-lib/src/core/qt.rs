@@ -22,6 +22,25 @@ mod ffi {
         CaseSensitive,
     }
 
+    /// This enum describes the types of connection that can be used with signals.
+    ///
+    /// Note that UniqueConnection is not supported.
+    #[repr(i32)]
+    enum ConnectionType {
+        /// If the receiver lives in the thread that emits the signal, Qt::DirectConnection is used.
+        /// Otherwise, Qt::QueuedConnection is used. The connection type is determined when the signal is emitted.
+        AutoConnection,
+        /// The slot is invoked immediately when the signal is emitted.
+        /// The slot is executed in the signalling thread.
+        DirectConnection,
+        /// The slot is invoked when control returns to the event loop of the receiver's thread.
+        /// The slot is executed in the receiver's thread.
+        QueuedConnection,
+        /// Same as Qt::QueuedConnection, except that the signalling thread blocks until the slot returns.
+        /// This connection must not be used if the receiver lives in the signalling thread, or else the application will deadlock.
+        BlockingQueuedConnection,
+    }
+
     #[repr(i32)]
     enum DateFormat {
         TextDate = 0,
@@ -52,10 +71,13 @@ mod ffi {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
         type CaseSensitivity;
+        type ConnectionType;
         type DateFormat;
         type SplitBehaviorFlags;
         type TimeSpec;
     }
 }
 
-pub use ffi::{AspectRatioMode, CaseSensitivity, DateFormat, SplitBehaviorFlags, TimeSpec};
+pub use ffi::{
+    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
+};

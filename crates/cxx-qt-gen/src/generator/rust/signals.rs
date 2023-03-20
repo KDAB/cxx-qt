@@ -102,7 +102,7 @@ pub fn generate_rust_signals(
                         #[doc = #signal_ident_cpp_str]
                         #[doc = ", so that when the signal is emitted the function pointer is executed."]
                         #[rust_name = #connect_ident_rust_str]
-                        fn #connect_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, func: #has_unsafe fn(#(#parameters),*)) -> UniquePtr<CxxQtQMetaObjectConnection>;
+                        fn #connect_ident_cpp(self: Pin<&mut #cpp_class_name_rust>, func: #has_unsafe fn(#(#parameters),*), conn_type: CxxQtConnectionType) -> UniquePtr<CxxQtQMetaObjectConnection>;
                     }
                 },
             ],
@@ -197,7 +197,7 @@ mod tests {
                     #[doc = "ready"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[rust_name = "on_ready"]
-                    fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>)) -> UniquePtr<CxxQtQMetaObjectConnection>;
+                    fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>), conn_type : CxxQtConnectionType) -> UniquePtr<CxxQtQMetaObjectConnection>;
                 }
             },
         );
@@ -221,7 +221,7 @@ mod tests {
                     #[doc = "dataChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[rust_name = "on_data_changed"]
-                    fn dataChangedConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>)) -> UniquePtr<CxxQtQMetaObjectConnection>;
+                    fn dataChangedConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>), conn_type : CxxQtConnectionType) -> UniquePtr<CxxQtQMetaObjectConnection>;
                 }
             },
         );
@@ -245,7 +245,7 @@ mod tests {
                     #[doc = "unsafeSignal"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[rust_name = "on_unsafe_signal"]
-                    fn unsafeSignalConnect(self: Pin <&mut MyObjectQt>, func: unsafe fn(Pin<&mut MyObjectQt>, param: *mut T)) -> UniquePtr<CxxQtQMetaObjectConnection>;
+                    fn unsafeSignalConnect(self: Pin <&mut MyObjectQt>, func: unsafe fn(Pin<&mut MyObjectQt>, param: *mut T), conn_type : CxxQtConnectionType) -> UniquePtr<CxxQtQMetaObjectConnection>;
                 }
             },
         );
@@ -269,7 +269,7 @@ mod tests {
                     #[doc = "baseName"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[rust_name = "on_base_name"]
-                    fn baseNameConnect(self: Pin<& mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>)) -> UniquePtr<CxxQtQMetaObjectConnection>;
+                    fn baseNameConnect(self: Pin<& mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>), conn_type : CxxQtConnectionType) -> UniquePtr<CxxQtQMetaObjectConnection>;
                 }
             },
         );
