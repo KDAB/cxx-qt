@@ -70,13 +70,18 @@ MyObject::emitReady()
 }
 
 ::std::unique_ptr<QMetaObject::Connection>
-MyObject::readyConnect(::rust::Fn<void(MyObject&)> func)
+MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
+                       Qt::ConnectionType type)
 {
   return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
-    this, &MyObject::ready, this, [&, func = ::std::move(func)]() {
+    this,
+    &MyObject::ready,
+    this,
+    [&, func = ::std::move(func)]() {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
       func(*this);
-    }));
+    },
+    type));
 }
 
 } // namespace cxx_qt::multi_object
@@ -159,13 +164,18 @@ SecondObject::emitReady()
 }
 
 ::std::unique_ptr<QMetaObject::Connection>
-SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func)
+SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
+                           Qt::ConnectionType type)
 {
   return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
-    this, &SecondObject::ready, this, [&, func = ::std::move(func)]() {
+    this,
+    &SecondObject::ready,
+    this,
+    [&, func = ::std::move(func)]() {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
       func(*this);
-    }));
+    },
+    type));
 }
 
 } // namespace cxx_qt::multi_object

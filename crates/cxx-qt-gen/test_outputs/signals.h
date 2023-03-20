@@ -32,7 +32,8 @@ public:
   Q_SIGNAL void ready();
   void emitReady();
   ::std::unique_ptr<QMetaObject::Connection> readyConnect(
-    ::rust::Fn<void(MyObject&)> func);
+    ::rust::Fn<void(MyObject&)> func,
+    Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             Value second,
                             QPoint third,
@@ -46,7 +47,8 @@ public:
                     ::std::int32_t first,
                     ::std::unique_ptr<Opaque> second,
                     QPoint third,
-                    QPoint const& fourth)> func);
+                    QPoint const& fourth)> func,
+    Qt::ConnectionType type);
   void emitNewData(::std::int32_t first,
                    ::std::unique_ptr<Opaque> second,
                    QPoint third,
@@ -56,7 +58,8 @@ public:
                     ::std::int32_t first,
                     ::std::unique_ptr<Opaque> second,
                     QPoint third,
-                    QPoint const& fourth)> func);
+                    QPoint const& fourth)> func,
+    Qt::ConnectionType type);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

@@ -167,6 +167,12 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 include!("cxx-qt-lib/convert.h");
                 include!("cxx-qt-lib/cxxqt_thread.h");
 
+                include!("cxx-qt-lib/qt.h");
+                #[doc(hidden)]
+                #[namespace = "Qt"]
+                #[rust_name = "CxxQtConnectionType"]
+                type ConnectionType = cxx_qt_lib::ConnectionType;
+
                 include!("cxx-qt-lib/qmetaobjectconnection.h");
                 #[doc(hidden)]
                 #[namespace = "rust::cxxqtlib1"]
@@ -418,6 +424,12 @@ mod tests {
                     include!("cxx-qt-lib/convert.h");
                     include!("cxx-qt-lib/cxxqt_thread.h");
 
+                    include!("cxx-qt-lib/qt.h");
+                    #[doc(hidden)]
+                    #[namespace = "Qt"]
+                    #[rust_name = "CxxQtConnectionType"]
+                    type ConnectionType = cxx_qt_lib::ConnectionType;
+
                     include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtlib1"]
@@ -569,6 +581,12 @@ mod tests {
                     include ! (< QtCore / QObject >);
                     include!("cxx-qt-lib/convert.h");
                     include!("cxx-qt-lib/cxxqt_thread.h");
+
+                    include!("cxx-qt-lib/qt.h");
+                    #[doc(hidden)]
+                    #[namespace = "Qt"]
+                    #[rust_name = "CxxQtConnectionType"]
+                    type ConnectionType = cxx_qt_lib::ConnectionType;
 
                     include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
