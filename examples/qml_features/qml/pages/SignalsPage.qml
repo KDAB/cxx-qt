@@ -27,9 +27,9 @@ Page {
             }
 
             ToolButton {
-                text: qsTr("Listen")
+                text: qsTr("Toggle Logging")
 
-                onClicked: rustSignals.listen()
+                onClicked: rustSignals.toggleLogging()
             }
 
             Item {

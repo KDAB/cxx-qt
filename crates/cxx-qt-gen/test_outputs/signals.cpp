@@ -50,14 +50,14 @@ MyObject::emitReady()
   Q_EMIT ready();
 }
 
-void
+::std::unique_ptr<QMetaObject::Connection>
 MyObject::readyConnect(::rust::Fn<void(MyObject&)> func)
 {
-  QObject::connect(
+  return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
     this, &MyObject::ready, this, [&, func = ::std::move(func)]() {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
       func(*this);
-    });
+    }));
 }
 
 void
@@ -76,14 +76,14 @@ MyObject::emitDataChanged(::std::int32_t first,
       ::std::move(fourth)));
 }
 
-void
+::std::unique_ptr<QMetaObject::Connection>
 MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
                                              ::std::int32_t first,
                                              ::std::unique_ptr<Opaque> second,
                                              QPoint third,
                                              QPoint const& fourth)> func)
 {
-  QObject::connect(
+  return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
     this,
     &MyObject::dataChanged,
     this,
@@ -99,7 +99,7 @@ MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
         ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
         ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
           ::std::move(fourth)));
-    });
+    }));
 }
 
 void
@@ -118,14 +118,14 @@ MyObject::emitNewData(::std::int32_t first,
       ::std::move(fourth)));
 }
 
-void
+::std::unique_ptr<QMetaObject::Connection>
 MyObject::newDataConnect(::rust::Fn<void(MyObject&,
                                          ::std::int32_t first,
                                          ::std::unique_ptr<Opaque> second,
                                          QPoint third,
                                          QPoint const& fourth)> func)
 {
-  QObject::connect(
+  return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
     this,
     &MyObject::newData,
     this,
@@ -141,7 +141,7 @@ MyObject::newDataConnect(::rust::Fn<void(MyObject&,
         ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
         ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
           ::std::move(fourth)));
-    });
+    }));
 }
 
 } // namespace cxx_qt::my_object

@@ -10,6 +10,11 @@ mod inheritance {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
+        include!("cxx-qt-lib/qmetaobjectconnection.h");
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "CxxQtQMetaObjectConnection"]
+        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/inheritance.cxxqt.h");

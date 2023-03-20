@@ -30,6 +30,9 @@ pub use qmargins::QMargins;
 mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
+mod qmetaobjectconnection;
+pub use qmetaobjectconnection::QMetaObjectConnection;
+
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 
