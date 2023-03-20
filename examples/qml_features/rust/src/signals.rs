@@ -74,11 +74,14 @@ pub mod ffi {
 
         #[qinvokable]
         pub fn toggle_logging(mut self: Pin<&mut Self>) {
+            // ANCHOR: book_signals_disconnect
             if let Some(connections) = self.as_mut().connections_mut().take() {
                 for conn in connections {
                     conn.disconnect();
                 }
+            // ANCHOR_END: book_signals_disconnect
             } else {
+                // ANCHOR: book_signals_connect
                 let connections = [
                     self.as_mut().on_connected(
                         |_, url| {
@@ -100,6 +103,7 @@ pub mod ffi {
                     ),
                 ];
                 self.as_mut().set_connections(Some(connections));
+                // ANCHOR_END: book_signals_connect
             }
         }
     }

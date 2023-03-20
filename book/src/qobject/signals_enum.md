@@ -27,6 +27,26 @@ If a signal is defined on the base class of the QObject then `#[inherit]` can be
 
 Note that `#[cxx_name = "..."]` can also be used on a signal to declare a different name in C++ to Rust.
 
+## Connecting to a signal
+
+For every signal defined in the enum, a method is generated called `on_<signal_name>`.
+This method takes a function as the first parameter.
+That function's first argument is the qobject and the remaining arguments are the signal parameters.
+The second parameter of the `on_<signal_name>` method is the [Qt connection type](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum).
+
+Note that by using the `#[inherit]` macro on a signal, connections can be made to property changes
+using the signal name `<property>Changed` with no parameters.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_connect}}
+```
+
+Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which can be disconnected later by calling its `disconnect` method.
+
+```rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_disconnect}}
+```
+
 ## Emitting a signal
 
 For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum, CXX-Qt will generate an `emit` function:
