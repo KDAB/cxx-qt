@@ -9,6 +9,11 @@ mod ffi {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
+        include!("cxx-qt-lib/qmetaobjectconnection.h");
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[rust_name = "CxxQtQMetaObjectConnection"]
+        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
@@ -41,7 +46,10 @@ mod ffi {
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[rust_name = "on_ready"]
-        fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(this: Pin<&mut MyObjectQt>));
+        fn readyConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -62,13 +70,13 @@ mod ffi {
         fn dataChangedConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(
-                this: Pin<&mut MyObjectQt>,
+                Pin<&mut MyObjectQt>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
                 fourth: &QPoint,
             ),
-        );
+        ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -89,13 +97,13 @@ mod ffi {
         fn newDataConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(
-                this: Pin<&mut MyObjectQt>,
+                Pin<&mut MyObjectQt>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
                 fourth: &QPoint,
             ),
-        );
+        ) -> UniquePtr<CxxQtQMetaObjectConnection>;
     }
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]

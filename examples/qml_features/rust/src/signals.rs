@@ -41,7 +41,9 @@ pub mod ffi {
     // ANCHOR: book_signals_struct
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
-    pub struct RustSignals;
+    pub struct RustSignals {
+        connections: Option<[cxx::UniquePtr<cxx_qt_lib::QMetaObjectConnection>; 3]>,
+    }
     // ANCHOR: book_signals_struct
 
     // ANCHOR: book_rust_obj_impl
@@ -69,17 +71,25 @@ pub mod ffi {
         }
 
         #[qinvokable]
-        pub fn listen(mut self: Pin<&mut Self>) {
-            // TODO: no way to disconnect yet
-            self.as_mut().on_connected(|_, url| {
-                println!("Connected: {}", url);
-            });
-            self.as_mut().on_error(|_, message| {
-                println!("Error: {}", message);
-            });
-            self.as_mut().on_disconnected(|_| {
-                println!("Disconnected");
-            });
+        pub fn toggle_logging(mut self: Pin<&mut Self>) {
+            if let Some(connections) = self.as_mut().connections_mut().take() {
+                for conn in connections {
+                    conn.disconnect();
+                }
+            } else {
+                let connections = [
+                    self.as_mut().on_connected(|_, url| {
+                        println!("Connected: {}", url);
+                    }),
+                    self.as_mut().on_error(|_, message| {
+                        println!("Error: {}", message);
+                    }),
+                    self.as_mut().on_disconnected(|_| {
+                        println!("Disconnected");
+                    }),
+                ];
+                self.as_mut().set_connections(Some(connections));
+            }
         }
     }
     // ANCHOR_END: book_rust_obj_impl

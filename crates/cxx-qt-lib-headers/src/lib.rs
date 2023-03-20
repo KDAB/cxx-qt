@@ -34,6 +34,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/core/qmargins.h"), "qmargins.h"),
         (include_str!("../include/core/qmarginsf.h"), "qmarginsf.h"),
         (
+            include_str!("../include/core/qmetaobjectconnection.h"),
+            "qmetaobjectconnection.h",
+        ),
+        (
             include_str!("../include/core/qmodelindex.h"),
             "qmodelindex.h",
         ),

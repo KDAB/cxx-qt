@@ -104,21 +104,21 @@ pub fn generate_cpp_signals(
 
         generated.methods.push(CppFragment::Pair {
             header: format!(
-                "void {connect_ident}(::rust::Fn<void({parameters})> func);",
+                "::std::unique_ptr<QMetaObject::Connection> {connect_ident}(::rust::Fn<void({parameters})> func);",
                 parameters = parameter_types_rust.join(", ")
             ),
             source: formatdoc! {
                 r#"
-                void
+                ::std::unique_ptr<QMetaObject::Connection>
                 {qobject_ident}::{connect_ident}(::rust::Fn<void({parameters_rust})> func)
                 {{
-                    QObject::connect(this,
+                    return ::std::make_unique<QMetaObject::Connection>(QObject::connect(this,
                             &{qobject_ident}::{signal_ident},
                             this,
                             [&, func = ::std::move(func)]({parameters_cpp}) {{
                               {RUST_OBJ_MUTEX_LOCK_GUARD}
                               func({parameter_values});
-                            }});
+                            }}));
                 }}
                 "#,
                 connect_ident = connect_ident,
@@ -205,21 +205,21 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "void dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func);"
+            "::std::unique_ptr<QMetaObject::Connection> dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            void
+            ::std::unique_ptr<QMetaObject::Connection>
             MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func)
             {
-                QObject::connect(this,
+                return ::std::make_unique<QMetaObject::Connection>(QObject::connect(this,
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](::std::int32_t trivial, QColor opaque) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, QColor>{}(::std::move(opaque)));
-                        });
+                        }));
             }
             "#}
         );
@@ -278,21 +278,21 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "void dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func);"
+            "::std::unique_ptr<QMetaObject::Connection> dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            void
+            ::std::unique_ptr<QMetaObject::Connection>
             MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func)
             {
-                QObject::connect(this,
+                return ::std::make_unique<QMetaObject::Connection>(QObject::connect(this,
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](A1 mapped) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this, ::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
-                        });
+                        }));
             }
             "#}
         );
@@ -334,20 +334,20 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(header, "void baseNameConnect(::rust::Fn<void(MyObject&)> func);");
+        assert_str_eq!(header, "::std::unique_ptr<QMetaObject::Connection> baseNameConnect(::rust::Fn<void(MyObject&)> func);");
         assert_str_eq!(
             source,
             indoc! {r#"
-            void
+            ::std::unique_ptr<QMetaObject::Connection>
             MyObject::baseNameConnect(::rust::Fn<void(MyObject&)> func)
             {
-                QObject::connect(this,
+                return ::std::make_unique<QMetaObject::Connection>(QObject::connect(this,
                         &MyObject::baseName,
                         this,
                         [&, func = ::std::move(func)]() {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this);
-                        });
+                        }));
             }
             "#}
         );

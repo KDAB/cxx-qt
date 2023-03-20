@@ -69,14 +69,14 @@ MyObject::emitReady()
   Q_EMIT ready();
 }
 
-void
+::std::unique_ptr<QMetaObject::Connection>
 MyObject::readyConnect(::rust::Fn<void(MyObject&)> func)
 {
-  QObject::connect(
+  return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
     this, &MyObject::ready, this, [&, func = ::std::move(func)]() {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
       func(*this);
-    });
+    }));
 }
 
 } // namespace cxx_qt::multi_object
@@ -158,14 +158,14 @@ SecondObject::emitReady()
   Q_EMIT ready();
 }
 
-void
+::std::unique_ptr<QMetaObject::Connection>
 SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func)
 {
-  QObject::connect(
+  return ::std::make_unique<QMetaObject::Connection>(QObject::connect(
     this, &SecondObject::ready, this, [&, func = ::std::move(func)]() {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
       func(*this);
-    });
+    }));
 }
 
 } // namespace cxx_qt::multi_object
