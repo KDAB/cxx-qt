@@ -25,6 +25,16 @@ pub mod ffi {
         counter: i32,
     }
 
+    /// Signals for the inner QObject
+    #[cxx_qt::qsignals(InnerObject)]
+    pub enum InnerSignals {
+        /// A signal showing how to refer to another QObject as an argument
+        Called {
+            /// Inner QObject being referred to
+            inner: *mut CxxInnerObject,
+        },
+    }
+
     /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct OuterObject {
@@ -51,6 +61,26 @@ pub mod ffi {
     }
 
     impl qobject::OuterObject {
+        /// Initialise the QObject, creating a connection from one signal to another
+        #[qinvokable]
+        pub fn initialise(self: Pin<&mut Self>) {
+            // Example of connecting a signal from one QObject to another QObject
+            // this causes OuterObject::Called to trigger InnerObject::Called
+            self.on_called(
+                |qobject, obj| {
+                    // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
+                    if let Some(inner) = unsafe { qobject.inner().as_mut() } {
+                        // TODO: Use `pin!` one it's stable so that this unsafe block can be removed
+                        // https://doc.rust-lang.org/std/pin/macro.pin.html
+                        let pinned_inner = unsafe { Pin::new_unchecked(inner) };
+                        // Now pinned inner can be used as normal
+                        pinned_inner.emit(InnerSignals::Called { inner: obj });
+                    }
+                },
+                cxx_qt_lib::ConnectionType::AutoConnection,
+            );
+        }
+
         /// Print the count of the given inner QObject
         //
         // This method needs to be unsafe otherwise clippy complains that the
