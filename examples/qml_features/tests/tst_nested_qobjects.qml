@@ -20,7 +20,7 @@ TestCase {
     Component {
         id: componentOuterObject
         OuterObject {
-
+            Component.onCompleted: initialise()
         }
     }
 
@@ -41,12 +41,18 @@ TestCase {
             signalName: "called",
             target: outer,
         });
+        const calledInnerSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "called",
+            target: inner,
+        });
 
         compare(inner.counter, 0);
         compare(calledSpy.count, 0);
+        compare(calledInnerSpy.count, 0);
         outer.reset();
         compare(inner.counter, 10);
         compare(calledSpy.count, 1);
+        compare(calledInnerSpy.count, 1);
         compare(calledSpy.signalArguments[0].length, 1);
         compare(calledSpy.signalArguments[0][0], inner);
 
@@ -56,6 +62,7 @@ TestCase {
         compare(inner2.counter, 20);
         outer.printCount(inner2);
         compare(calledSpy.count, 2);
+        compare(calledInnerSpy.count, 2);
         compare(calledSpy.signalArguments[1].length, 1);
         compare(calledSpy.signalArguments[1][0], inner2);
         compare(calledSpy.signalArguments[1][0].counter, 20);
