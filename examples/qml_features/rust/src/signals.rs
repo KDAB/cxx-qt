@@ -36,6 +36,12 @@ pub mod ffi {
             /// The message of the error
             message: QString,
         },
+        // Example of using #[inherit] so that connections to the logging_enabled property can be made
+        #[inherit]
+        // We don't ever emit this enum, so silence clippy warnings
+        #[allow(dead_code)]
+        /// The Q_SIGNAL emitted when the Q_PROPERTY logging_enabled changes
+        LoggingEnabledChanged,
     }
     // ANCHOR_END: book_signals_enum
 
@@ -45,8 +51,10 @@ pub mod ffi {
     #[derive(Default)]
     pub struct RustSignals {
         connections: Option<[cxx::UniquePtr<cxx_qt_lib::QMetaObjectConnection>; 3]>,
+
+        #[qproperty]
+        logging_enabled: bool,
     }
-    // ANCHOR: book_signals_struct
 
     // ANCHOR: book_rust_obj_impl
     impl qobject::RustSignals {
@@ -72,39 +80,52 @@ pub mod ffi {
             self.as_mut().emit(Connection::Disconnected);
         }
 
+        /// Initialise the QObject, creating a connection reacting to the logging enabled property
         #[qinvokable]
-        pub fn toggle_logging(mut self: Pin<&mut Self>) {
-            // ANCHOR: book_signals_disconnect
-            if let Some(connections) = self.as_mut().connections_mut().take() {
-                for conn in connections {
-                    conn.disconnect();
-                }
-            // ANCHOR_END: book_signals_disconnect
-            } else {
-                // ANCHOR: book_signals_connect
-                let connections = [
-                    self.as_mut().on_connected(
-                        |_, url| {
-                            println!("Connected: {}", url);
-                        },
-                        ConnectionType::AutoConnection,
-                    ),
-                    self.as_mut().on_error(
-                        |_, message| {
-                            println!("Error: {}", message);
-                        },
-                        ConnectionType::AutoConnection,
-                    ),
-                    self.as_mut().on_disconnected(
-                        |_| {
-                            println!("Disconnected");
-                        },
-                        ConnectionType::AutoConnection,
-                    ),
-                ];
-                self.as_mut().set_connections(Some(connections));
-                // ANCHOR_END: book_signals_connect
-            }
+        pub fn initialise(self: Pin<&mut Self>) {
+            self.on_logging_enabled_changed(
+                |mut qobject| {
+                    // Determine if logging is enabled
+                    if *qobject.as_ref().logging_enabled() {
+                        // If no connections have been made, then create them
+                        if qobject.as_ref().connections().is_none() {
+                            // ANCHOR: book_signals_connect
+                            let connections = [
+                                qobject.as_mut().on_connected(
+                                    |_, url| {
+                                        println!("Connected: {}", url);
+                                    },
+                                    ConnectionType::AutoConnection,
+                                ),
+                                qobject.as_mut().on_disconnected(
+                                    |_| {
+                                        println!("Disconnected");
+                                    },
+                                    ConnectionType::AutoConnection,
+                                ),
+                                qobject.as_mut().on_error(
+                                    |_, message| {
+                                        println!("Error: {}", message);
+                                    },
+                                    ConnectionType::AutoConnection,
+                                ),
+                            ];
+                            qobject.as_mut().set_connections(Some(connections));
+                            // ANCHOR_END: book_signals_connect
+                        }
+                    } else {
+                        // Disabling logging so disconnect
+                        // ANCHOR: book_signals_disconnect
+                        if let Some(connections) = qobject.as_mut().connections_mut().take() {
+                            for conn in connections {
+                                conn.disconnect();
+                            }
+                        }
+                        // ANCHOR_END: book_signals_disconnect
+                    }
+                },
+                ConnectionType::AutoConnection,
+            );
         }
     }
     // ANCHOR_END: book_rust_obj_impl

@@ -27,9 +27,11 @@ Page {
             }
 
             ToolButton {
+                checkable: true
+                checked: rustSignals.loggingEnabled
                 text: qsTr("Toggle Logging")
 
-                onClicked: rustSignals.toggleLogging()
+                onClicked: rustSignals.loggingEnabled = !rustSignals.loggingEnabled
             }
 
             Item {
@@ -40,6 +42,8 @@ Page {
 
     RustSignals {
         id: rustSignals
+
+        Component.onCompleted: initialise()
     }
 
     ColumnLayout {
