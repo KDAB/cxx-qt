@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `qrc` resources added to `CxxQtBuilder` or `QtBuild` now trigger `cargo:rerun-if-changed` for file entries
+- Fix not being able to use `QVariant` as a `#[qproperty]`, because the `PartialEq` implementation was missing
 
 ## [0.5.0](https://github.com/KDAB/cxx-qt/compare/v0.4.1...v0.5.0) - 2023-03-08
 
