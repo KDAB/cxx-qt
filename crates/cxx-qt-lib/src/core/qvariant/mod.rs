@@ -35,6 +35,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qvariant_clone"]
         fn construct(variant: &QVariant) -> QVariant;
+        #[doc(hidden)]
+        #[rust_name = "qvariant_eq"]
+        fn operatorEq(a: &QVariant, b: &QVariant) -> bool;
     }
 }
 
@@ -118,6 +121,12 @@ impl QVariant {
     /// Whereas `value` first calls `QVariant::canConvert`.
     pub fn value_or_default<T: QVariantValue>(&self) -> T {
         T::value_or_default(self)
+    }
+}
+
+impl std::cmp::PartialEq for QVariant {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qvariant_eq(self, other)
     }
 }
 
