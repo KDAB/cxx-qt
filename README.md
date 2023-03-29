@@ -71,7 +71,7 @@ First, [enable Windows Developer Mode](https://learn.microsoft.com/en-us/gaming/
 to avoid needing administrator privileges to create symlinks. Then, enable symlinks in Git:
 
 ```shell
-git config core.symlinks true
+git config --global core.symlinks true
 ```
 
 Now clone the Git repository:
