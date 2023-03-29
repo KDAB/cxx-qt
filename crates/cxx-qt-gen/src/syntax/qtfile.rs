@@ -41,7 +41,10 @@ impl ToTokens for CxxQtFile {
 }
 
 pub fn parse_qt_file(path: impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
-    let source = std::fs::read_to_string(path.as_ref()).expect("Could not read path {} to string");
+    let source = std::fs::read_to_string(path.as_ref()).unwrap_or_else(|err| {
+        // todo: fixme with a proper error propagation
+        panic!("Failed to read file {:?}: {}", path.as_ref(), err);
+    });
 
     // We drop the shebang from the generated Rust code
     if source.starts_with("#!") && !source.starts_with("#![") {
