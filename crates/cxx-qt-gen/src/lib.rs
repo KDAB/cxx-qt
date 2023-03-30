@@ -73,6 +73,11 @@ mod tests {
         syn::parse2(tokens.into_token_stream()).unwrap()
     }
 
+    fn sanitize_code(mut code: String) -> String {
+        code.retain(|c| c != '\r');
+        code
+    }
+
     /// Helper for testing if a given input Rust file generates the expected C++ & Rust code
     /// This needs to be a macro rather than a function because include_str needs the file path at compile time.
     macro_rules! test_code_generation {
@@ -86,25 +91,31 @@ mod tests {
             let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
             let (header, source) =
                 if let CppFragment::Pair { header, source } = write_cpp(&generated_cpp) {
-                    (header, source)
+                    (sanitize_code(header), sanitize_code(source))
                 } else {
                     panic!("Expected CppFragment::Pair")
                 };
             let expected_cpp_header =
-                clang_format(include_str!(concat!("../test_outputs/", $file_stem, ".h"))).unwrap();
+                clang_format(include_str!(concat!("../test_outputs/", $file_stem, ".h")))
+                    .map(sanitize_code)
+                    .unwrap();
             let expected_cpp_source = clang_format(include_str!(concat!(
                 "../test_outputs/",
                 $file_stem,
                 ".cpp"
             )))
+            .map(sanitize_code)
             .unwrap();
             assert_str_eq!(header, expected_cpp_header);
             assert_str_eq!(source, expected_cpp_source);
 
             let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
-            let rust = format_rs_source(&write_rust(&generated_rust).to_string());
-            let expected_rust_output =
-                format_rs_source(include_str!(concat!("../test_outputs/", $file_stem, ".rs")));
+            let rust = sanitize_code(format_rs_source(&write_rust(&generated_rust).to_string()));
+            let expected_rust_output = sanitize_code(format_rs_source(include_str!(concat!(
+                "../test_outputs/",
+                $file_stem,
+                ".rs"
+            ))));
             assert_str_eq!(rust, expected_rust_output);
         };
     }
