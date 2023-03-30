@@ -17,6 +17,7 @@ The complete example code is available in [`examples/cargo_without_cmake`](https
 in the cxx-qt repository.
 
 ## Cargo setup
+
 The Cargo.toml file still requires dependencies to `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build` as in our [CMake example](./4-cmake-integration.md). However, we are not building a `staticlib` this time:
 
 ```toml,ignore
@@ -58,6 +59,16 @@ application in C++:
 ```
 
 To build and run the application, use `cargo run`.
+
+> Note that in order for cxx-qt to work, the `qmake` executable must be located. This is because cxx-qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
+>
+> `cxx-qt` will find qmake in the following order:
+> - Look for an environment variable `QMAKE` that should have the path to `qmake`.
+> - Use `qmake` from the `PATH`. If multiple `qmake` exists in `PATH`, environment variable `QT_VERSION_MAJOR` will control the selected one.
+>
+> To check which version of Qt will be used with `qmake`, you can use the `qmake -query` command. This will display information about the Qt installation, including the version number and installation path.
+>
+> Check [CxxQtBuilder](https://docs.rs/cxx-qt-build/latest/cxx_qt_build/struct.CxxQtBuilder.html) for more information
 
 If you have cloned the CXX-Qt repository, you can run this example from within the repository using:
 

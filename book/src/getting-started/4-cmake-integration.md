@@ -49,6 +49,10 @@ We'll have to do multiple things:
 - Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies
 - Add `cxx-qt-build` as a build dependency
 
+> Note that in order for cxx-qt to work, the `qmake` executable must be located. This is because cxx-qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
+>
+> This will be done by setting `QMAKE` environment variable from CMake, so that Qt version found by CMake will be correctly passed down to Cargo.
+
 In the end, your `Cargo.toml` should look similar to this.
 
 ```toml,ignore
@@ -76,7 +80,8 @@ Qt5 and Qt6 with CMake](https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.h
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup}}
 ```
 
-From the Qt CMake target, find the location of the qmake executable. cxx-qt-build will need this later.
+To ensure that cxx-qt-build uses the same version of Qt as your CMake targets, use the `Qt` CMake target to locate the qmake executable. Then, pass `qmake` executable path to `build.rs` with the environment variable `QMAKE` using `corrosion_set_env_vars`.
+
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_qmake}}
 ```
