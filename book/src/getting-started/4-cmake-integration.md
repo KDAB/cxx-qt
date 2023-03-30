@@ -116,6 +116,12 @@ $ build/examples/qml_minimal/example_qml_minimal
 
 You should now see the two Labels that display the state of our `MyObject`, as well as the two buttons to call our two Rust functions.
 
+### Windows with MSVC
+
+If you're building CXX-Qt on Windows using MSVC generator, you need to add the `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` flag to the cmake command when building with the `Debug` configuration. This flag is necessary to ensure that the correct C Runtime Library is used. Then you can build using `cmake --build build --config Debug`.
+
+This issue is caused by a bug in the [cc](https://docs.rs/cc/latest/cc/index.html) crate (as described in https://github.com/rust-lang/cc-rs/pull/717), which has not been merged yet. Specifically, the problem is that cc generated code always links to the MultiThreaded runtime, even when building in Debug mode. We hope that this step won't be necessary in the future, once the cc crate fix is merged and released.
+
 ## Success 🥳
 
 For further reading, you can take a look at the [QObject chapter](../qobject/index.md) which goes into detail about all features that CXX-Qt exposes to new QObject subclasses.
