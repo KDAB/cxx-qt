@@ -259,24 +259,22 @@ pub mod tests {
     use super::*;
 
     use crate::parser::{invokable::ParsedQInvokableSpecifiers, tests::f64_type};
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::{ItemImpl, Visibility};
+    use syn::{parse_quote, ItemImpl, Visibility};
 
     pub fn create_parsed_qobject() -> ParsedQObject {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+        let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct MyObject;
-        });
+        };
         ParsedQObject::from_struct(&qobject_struct, 0).unwrap()
     }
 
     #[test]
     fn test_from_struct_no_base_class() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+        let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct MyObject;
-        });
+        };
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert!(qobject.base_class.is_none());
@@ -285,10 +283,10 @@ pub mod tests {
 
     #[test]
     fn test_from_struct_base_class() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+        let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(base = "QStringListModel")]
             pub struct MyObject;
-        });
+        };
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
@@ -296,7 +294,7 @@ pub mod tests {
 
     #[test]
     fn test_from_struct_properties_and_fields() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+        let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct MyObject {
                 #[qproperty]
@@ -307,7 +305,7 @@ pub mod tests {
 
                 field: i32,
             }
-        });
+        };
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 2);
@@ -316,12 +314,12 @@ pub mod tests {
 
     #[test]
     fn test_from_struct_fields() {
-        let qobject_struct: ItemStruct = tokens_to_syn(quote! {
+        let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct MyObject {
                 field: i32,
             }
-        });
+        };
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 0);
@@ -331,7 +329,7 @@ pub mod tests {
     #[test]
     fn test_parse_impl_items_valid() {
         let mut qobject = create_parsed_qobject();
-        let item: ItemImpl = tokens_to_syn(quote! {
+        let item: ItemImpl = parse_quote! {
             impl T {
                 #[qinvokable]
                 fn invokable(&self, a: f64, b: f64) {}
@@ -344,7 +342,7 @@ pub mod tests {
 
                 fn cpp_context(&self) {}
             }
-        });
+        };
         assert!(qobject.parse_impl_items(&item.items).is_ok());
         assert_eq!(qobject.invokables.len(), 3);
         assert_eq!(qobject.passthrough_impl_items.len(), 1);
@@ -374,7 +372,7 @@ pub mod tests {
     #[test]
     fn test_parse_impl_items_invalid() {
         let mut qobject = create_parsed_qobject();
-        let item: ItemImpl = tokens_to_syn(quote! {
+        let item: ItemImpl = parse_quote! {
             impl T {
                 const VALUE: i32 = 1;
 
@@ -387,13 +385,13 @@ pub mod tests {
 
                 fn cpp_context() {}
             }
-        });
+        };
         assert!(qobject.parse_impl_items(&item.items).is_err());
     }
 
     #[test]
     fn test_parse_struct_fields_valid() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct T {
                 #[qproperty]
@@ -407,7 +405,7 @@ pub mod tests {
 
                 field: f64,
             }
-        });
+        };
         let properties = ParsedQObject::from_struct(&item, 0).unwrap().properties;
         assert_eq!(properties.len(), 3);
         assert_eq!(properties[0].ident, "f64_property");
@@ -428,19 +426,19 @@ pub mod tests {
 
     #[test]
     fn test_parse_struct_fields_invalid() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct T(f64);
-        });
+        };
         assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }
 
     #[test]
     fn test_qml_metadata() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1.0")]
             pub struct MyObject;
-        });
+        };
         let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
@@ -457,10 +455,10 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_named() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_name = "MyQmlElement")]
             pub struct MyNamedObject;
-        });
+        };
         let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
@@ -477,10 +475,10 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_singleton() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_singleton)]
             pub struct MyObject;
-        });
+        };
         let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
@@ -497,10 +495,10 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_uncreatable() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_uncreatable)]
             pub struct MyObject;
-        });
+        };
         let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
@@ -517,28 +515,28 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_no_version() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar")]
             pub struct MyObject;
-        });
+        };
         assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }
 
     #[test]
     fn test_qml_metadata_no_uri() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_version = "1.0")]
             pub struct MyObject;
-        });
+        };
         assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }
 
     #[test]
     fn test_qml_metadata_only_name_no_version_no_uri() {
-        let item: ItemStruct = tokens_to_syn(quote! {
+        let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject(qml_name = "MyQmlElement")]
             pub struct MyObject;
-        });
+        };
         assert!(ParsedQObject::from_struct(&item, 0).is_err());
     }
 }

@@ -108,19 +108,19 @@ impl ParsedSignalsEnum {
 
 #[cfg(test)]
 mod tests {
+    use syn::parse_quote;
+
     use super::*;
 
     use crate::parser::tests::f64_type;
     use crate::syntax::path::path_compare_str;
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
 
     #[test]
     fn test_parsed_signals_from_empty() {
-        let e: ItemEnum = tokens_to_syn(quote! {
+        let e: ItemEnum = parse_quote! {
             #[cxx_qt::qsignals(MyObject)]
             enum MySignals {}
-        });
+        };
         let signals = ParsedSignalsEnum::from(&e, 0).unwrap();
         assert_eq!(signals.ident, "MySignals");
         assert_eq!(signals.item.attrs.len(), 0);
@@ -129,12 +129,12 @@ mod tests {
 
     #[test]
     fn test_parsed_signals_from_empty_attrs() {
-        let e: ItemEnum = tokens_to_syn(quote! {
+        let e: ItemEnum = parse_quote! {
             #[before]
             #[cxx_qt::qsignals(MyObject)]
             #[after]
             enum MySignals {}
-        });
+        };
         let signals = ParsedSignalsEnum::from(&e, 1).unwrap();
         assert_eq!(signals.ident, "MySignals");
         assert_eq!(signals.item.attrs.len(), 2);
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn test_parsed_signals_from_named() {
-        let e: ItemEnum = tokens_to_syn(quote! {
+        let e: ItemEnum = parse_quote! {
             #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
@@ -164,7 +164,7 @@ mod tests {
                 #[inherit]
                 ExistingSignal,
             }
-        });
+        };
         let signals = ParsedSignalsEnum::from(&e, 0).unwrap();
         assert_eq!(signals.ident, "MySignals");
         assert_eq!(signals.item.attrs.len(), 0);
@@ -195,13 +195,13 @@ mod tests {
 
     #[test]
     fn test_parsed_signals_from_unnamed() {
-        let e: ItemEnum = tokens_to_syn(quote! {
+        let e: ItemEnum = parse_quote! {
             #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
                 PointChanged(f64, f64),
             }
-        });
+        };
         let signals = ParsedSignalsEnum::from(&e, 0);
         assert!(signals.is_err());
     }

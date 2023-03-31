@@ -122,19 +122,17 @@ mod tests {
     use super::*;
 
     use crate::parser::Parser;
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ItemMod;
+    use syn::{parse_quote, ItemMod};
 
     #[test]
     fn test_generated_cpp_qobject_blocks() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppQObject::from(
@@ -152,13 +150,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_qobject_blocks_base_and_namespace() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(base = "QStringListModel")]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppQObject::from(
@@ -173,13 +171,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_qobject_named() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_name = "MyQmlElement")]
                 pub struct MyNamedObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppQObject::from(
@@ -197,13 +195,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_qobject_singleton() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppQObject::from(
@@ -222,13 +220,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_qobject_uncreatable() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_uncreatable)]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppQObject::from(

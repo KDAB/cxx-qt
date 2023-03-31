@@ -22,69 +22,51 @@ pub fn is_method_mutable_pin_of_self(signature: &Signature) -> bool {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ImplItemFn;
+    use syn::{parse_quote, ImplItemFn};
 
     #[test]
     fn test_is_method_mutable_self() {
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable(&self) {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable(&self) {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable(&mut self) {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable(&mut self) {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
+        };
+        assert!(is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable_with_return_cxx_type(mut self: Pin<&mut Self>) -> f64 {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable_with_return_cxx_type(mut self: Pin<&mut Self>) -> f64 {}
+        };
+        assert!(is_method_mutable_pin_of_self(&item.sig));
     }
 
     #[test]
     fn test_is_method_mutable_value() {
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable(value: T) {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable(value: T) {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable_with_return_cxx_type(value: Pin<&mut T>) -> f64 {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable_with_return_cxx_type(value: Pin<&mut T>) -> f64 {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable_with_return_cxx_type(mut value: Pin<&mut T>) -> f64 {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable_with_return_cxx_type(mut value: Pin<&mut T>) -> f64 {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
 
-        assert!(!is_method_mutable_pin_of_self(
-            &tokens_to_syn::<ImplItemFn>(quote! {
-                fn invokable_with_return_cxx_type(mut value: T) -> f64 {}
-            })
-            .sig
-        ));
+        let item: ImplItemFn = parse_quote! {
+            fn invokable_with_return_cxx_type(mut value: T) -> f64 {}
+        };
+        assert!(!is_method_mutable_pin_of_self(&item.sig));
     }
 }

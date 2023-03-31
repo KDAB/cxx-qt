@@ -60,27 +60,28 @@ pub fn generate_rust_properties(
 mod tests {
     use super::*;
 
-    use crate::{generator::naming::qobject::tests::create_qobjectname, tests::tokens_to_syn};
-    use quote::{format_ident, quote};
+    use crate::generator::naming::qobject::tests::create_qobjectname;
+    use quote::format_ident;
+    use syn::parse_quote;
 
     #[test]
     fn test_generate_rust_properties() {
         let properties = vec![
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
-                ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                ty: parse_quote! { i32 },
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
-                ty: tokens_to_syn::<syn::Type>(quote! { UniquePtr<QColor> }),
-                vis: tokens_to_syn::<syn::Visibility>(quote! { pub }),
+                ty: parse_quote! { UniquePtr<QColor> },
+                vis: parse_quote! { pub },
                 cxx_type: Some("QColor".to_owned()),
             },
             ParsedQProperty {
                 ident: format_ident!("unsafe_property"),
-                ty: tokens_to_syn::<syn::Type>(quote! { *mut T }),
+                ty: parse_quote! { *mut T },
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
             },
@@ -98,67 +99,67 @@ mod tests {
         // Getter
         assert_eq!(
             generated.cxx_mod_contents[0],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getTrivialProperty"]
                     unsafe fn trivial_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[0],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn trivial_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
                         cpp.trivial_property()
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[1],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn trivial_property(&self) -> &i32 {
                         &self.rust().trivial_property
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[2],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub unsafe fn trivial_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
                         &mut self.rust_mut().get_unchecked_mut().trivial_property
                     }
                 }
-            })
+            }
         );
 
         // Setters
         assert_eq!(
             generated.cxx_mod_contents[1],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setTrivialProperty"]
                     fn set_trivial_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[3],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn set_trivial_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
                         cpp.set_trivial_property(value);
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[4],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
                         if self.rust().trivial_property == value {
@@ -170,18 +171,18 @@ mod tests {
                         self.as_mut().trivial_property_changed();
                     }
                 }
-            })
+            }
         );
 
         // Notify
         assert_eq!(
             generated.cxx_mod_contents[2],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 unsafe extern "C++" {
                     #[rust_name = "trivial_property_changed"]
                     fn trivialPropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
-            })
+            }
         );
 
         // Opaque Property
@@ -189,67 +190,67 @@ mod tests {
         // Getter
         assert_eq!(
             generated.cxx_mod_contents[3],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getOpaqueProperty"]
                     unsafe fn opaque_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[5],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
                         cpp.opaque_property()
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[6],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn opaque_property(&self) -> &UniquePtr<QColor> {
                         &self.rust().opaque_property
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[7],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub unsafe fn opaque_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
                         &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
                 }
-            })
+            }
         );
 
         // Setters
         assert_eq!(
             generated.cxx_mod_contents[4],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setOpaqueProperty"]
                     fn set_opaque_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[8],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn set_opaque_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
                         cpp.set_opaque_property(value);
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[9],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
                         if self.rust().opaque_property == value {
@@ -261,18 +262,18 @@ mod tests {
                         self.as_mut().opaque_property_changed();
                     }
                 }
-            })
+            }
         );
 
         // Notify
         assert_eq!(
             generated.cxx_mod_contents[5],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 unsafe extern "C++" {
                     #[rust_name = "opaque_property_changed"]
                     fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
-            })
+            }
         );
 
         // Unsafe Property
@@ -280,67 +281,67 @@ mod tests {
         // Getter
         assert_eq!(
             generated.cxx_mod_contents[6],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getUnsafeProperty"]
                     unsafe fn unsafe_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a *mut T;
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[10],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn unsafe_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a *mut T {
                         cpp.unsafe_property()
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[11],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn unsafe_property(&self) -> &*mut T {
                         &self.rust().unsafe_property
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[12],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub unsafe fn unsafe_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut *mut T {
                         &mut self.rust_mut().get_unchecked_mut().unsafe_property
                     }
                 }
-            })
+            }
         );
 
         // Setters
         assert_eq!(
             generated.cxx_mod_contents[7],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setUnsafeProperty"]
                     unsafe fn set_unsafe_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: *mut T);
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[13],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObject {
                     pub fn set_unsafe_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: *mut T) {
                         cpp.set_unsafe_property(value);
                     }
                 }
-            })
+            }
         );
         assert_eq!(
             generated.cxx_qt_mod_contents[14],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 impl MyObjectQt {
                     pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
                         if self.rust().unsafe_property == value {
@@ -352,18 +353,18 @@ mod tests {
                         self.as_mut().unsafe_property_changed();
                     }
                 }
-            })
+            }
         );
 
         // Notify
         assert_eq!(
             generated.cxx_mod_contents[8],
-            tokens_to_syn::<syn::Item>(quote! {
+            parse_quote! {
                 unsafe extern "C++" {
                     #[rust_name = "unsafe_property_changed"]
                     fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
-            })
+            }
         );
     }
 }

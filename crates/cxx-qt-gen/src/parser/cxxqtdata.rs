@@ -305,9 +305,8 @@ mod tests {
     use super::*;
 
     use crate::parser::qobject::tests::create_parsed_qobject;
-    use crate::tests::tokens_to_syn;
-    use quote::{format_ident, quote};
-    use syn::ItemMod;
+    use quote::format_ident;
+    use syn::{parse_quote, ItemMod};
 
     /// The QObject ident used in these tests as the ident that already
     /// has been found.
@@ -328,13 +327,13 @@ mod tests {
     fn test_find_qobjects_one_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             mod module {
                 struct Other;
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 1);
@@ -345,7 +344,7 @@ mod tests {
     fn test_find_qobjects_multiple_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             mod module {
                 pub struct Other;
                 #[cxx_qt::qobject]
@@ -353,7 +352,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct SecondObject;
             }
-        });
+        };
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 2);
@@ -370,7 +369,7 @@ mod tests {
             ..Default::default()
         };
 
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             mod module {
                 pub struct Other;
                 #[cxx_qt::qobject(namespace = "qobject_namespace")]
@@ -378,7 +377,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct SecondObject;
             }
-        });
+        };
         cxx_qt_data
             .find_qobject_structs(&module.content.unwrap().1)
             .unwrap();
@@ -405,12 +404,12 @@ mod tests {
     fn test_find_qobjects_no_macro() {
         let mut cxx_qt_data = ParsedCxxQtData::default();
 
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             mod module {
                 pub struct Other;
                 pub struct MyObject;
             }
-        });
+        };
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 0);
@@ -420,12 +419,12 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_valid_signals() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()].signals.is_some());
@@ -436,12 +435,12 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         // Valid signals enum but missing QObject
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[cxx_qt::qsignals(UnknownObj)]
             enum MySignals {
                 Ready,
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -450,11 +449,11 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             enum MySignals {
                 Ready,
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }
@@ -463,12 +462,12 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_enum_error() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[cxx_qt::qsignals]
             enum MySignals {
                 Ready,
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -477,10 +476,10 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_struct_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[cxx_qt::qobject]
             pub struct MyObject;
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
     }
@@ -489,9 +488,9 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_struct_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             struct Unknown;
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }
@@ -500,14 +499,14 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_valid_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             impl qobject::MyObject {
                 #[qinvokable]
                 fn invokable(&self) {}
 
                 fn cpp_context() {}
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
@@ -523,12 +522,12 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_invalid_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             impl qobject::MyObject::Bad {
                 #[qinvokable]
                 fn invokable() {}
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -537,12 +536,12 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_unknown_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             impl qobject::UnknownObj {
                 #[qinvokable]
                 fn invokable() {}
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_err());
     }
@@ -551,11 +550,11 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_impl_valid_rustobj() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             impl MyObject {
                 fn method() {}
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
@@ -565,9 +564,9 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_uses() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             use std::collections::HashMap;
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.uses.len(), 1);
@@ -577,11 +576,11 @@ mod tests {
     fn test_find_and_merge_cxx_qt_item_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             extern "Rust" {
                 fn test();
             }
-        });
+        };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_some());
     }
@@ -590,11 +589,11 @@ mod tests {
     fn test_cxx_mappings_cxx_name_empty() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             extern "C++" {
                 type A;
             }
-        });
+        };
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
             .is_ok());
@@ -605,12 +604,12 @@ mod tests {
     fn test_cxx_mappings_cxx_name_normal() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             extern "C++" {
                 #[cxx_name = "B"]
                 type A;
             }
-        });
+        };
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
             .is_ok());
@@ -622,12 +621,12 @@ mod tests {
     fn test_cxx_mappings_cxx_name_verbatim() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             unsafe extern "C++" {
                 #[cxx_name = "B"]
                 type A = C;
             }
-        });
+        };
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
             .is_ok());
@@ -639,14 +638,14 @@ mod tests {
     fn test_cxx_mappings_cxx_name_namespace_bridge() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             extern "C++" {
                 type A;
 
                 #[cxx_name = "C"]
                 type B;
             }
-        });
+        };
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "bridge_namespace")
             .is_ok());
@@ -668,7 +667,7 @@ mod tests {
     fn test_cxx_mappings_cxx_name_namespace_items() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[namespace = "extern_namespace"]
             extern "C++" {
                 type A;
@@ -676,7 +675,7 @@ mod tests {
                 #[namespace = "type_namespace"]
                 type B;
             }
-        });
+        };
         // Also ensure item namespace is chosen instead of bridge namespace
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "namespace")
@@ -698,7 +697,7 @@ mod tests {
     fn test_cxx_mappings_cxx_name_normal_namespace_cxx_name() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[namespace = "extern_namespace"]
             extern "C++" {
                 #[cxx_name = "B"]
@@ -708,7 +707,7 @@ mod tests {
                 #[cxx_name = "D"]
                 type C;
             }
-        });
+        };
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
             .is_ok());
@@ -731,13 +730,13 @@ mod tests {
     fn test_cxx_mappings_shared_enum() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[namespace = "enum_namespace"]
             #[cxx_name = "EnumB"]
             enum EnumA {
                 A,
             }
-        });
+        };
 
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
@@ -759,13 +758,13 @@ mod tests {
     fn test_cxx_mappings_shared_struct() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
-        let item: Item = tokens_to_syn(quote! {
+        let item: Item = parse_quote! {
             #[namespace = "struct_namespace"]
             #[cxx_name = "StructB"]
             struct StructA {
                 field: i32,
             }
-        });
+        };
 
         assert!(cxx_qt_data
             .populate_cxx_mappings_from_item(&item, "")
@@ -787,21 +786,21 @@ mod tests {
     fn test_parse_inherited_methods() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
 
-        let unsafe_block: Item = tokens_to_syn(quote! {
+        let unsafe_block: Item = parse_quote! {
             #[cxx_qt::inherit]
             unsafe extern "C++" {
                 fn test(self: &qobject::MyObject);
 
                 fn with_args(self: &qobject::MyObject, arg: i32);
             }
-        });
-        let safe_block: Item = tokens_to_syn(quote! {
+        };
+        let safe_block: Item = parse_quote! {
             #[cxx_qt::inherit]
             extern "C++" {
                 #[cxx_name="withRename"]
                 unsafe fn with_rename(self: Pin<&mut qobject::MyObject>, arg: i32);
             }
-        });
+        };
 
         cxxqtdata.parse_cxx_qt_item(unsafe_block).unwrap();
         cxxqtdata.parse_cxx_qt_item(safe_block).unwrap();

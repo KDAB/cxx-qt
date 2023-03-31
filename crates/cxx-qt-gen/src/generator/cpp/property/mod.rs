@@ -45,24 +45,24 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::tests::tokens_to_syn;
     use crate::CppFragment;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use quote::{format_ident, quote};
+    use quote::format_ident;
+    use syn::parse_quote;
 
     #[test]
     fn test_generate_cpp_properties() {
         let properties = vec![
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
-                ty: tokens_to_syn(quote! { i32 }),
+                ty: parse_quote! { i32 },
                 vis: syn::Visibility::Inherited,
                 cxx_type: None,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
-                ty: tokens_to_syn(quote! { UniquePtr<QColor> }),
+                ty: parse_quote! { UniquePtr<QColor> },
                 vis: syn::Visibility::Inherited,
                 cxx_type: Some("QColor".to_owned()),
             },
@@ -175,7 +175,7 @@ mod tests {
     fn test_generate_cpp_properties_mapped_cxx_name() {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
-            ty: tokens_to_syn(quote! { A1 }),
+            ty: parse_quote! { A1 },
             vis: syn::Visibility::Inherited,
             cxx_type: None,
         }];

@@ -219,27 +219,25 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 mod tests {
     use super::*;
 
-    use crate::{
-        generator::rust::qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks},
-        tests::tokens_to_syn,
-    };
+    use crate::generator::rust::qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks};
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
+    use syn::parse_quote;
 
     /// Helper to create a GeneratedRustBlocks for testing
     pub fn create_generated_rust() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
-            cxx_mod: tokens_to_syn(quote! {
+            cxx_mod: parse_quote! {
                 mod ffi {}
-            }),
-            cxx_mod_contents: vec![tokens_to_syn(quote! {
+            },
+            cxx_mod_contents: vec![parse_quote! {
                 unsafe extern "C++" {
                     include!("myobject.cxxqt.h");
                 }
-            })],
-            cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
+            }],
+            cxx_qt_mod_contents: vec![parse_quote! {
                 use module::Struct;
-            })],
+            }],
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![GeneratedRustQObject {
                 cpp_struct_ident: format_ident!("MyObjectQt"),
@@ -249,31 +247,31 @@ mod tests {
                 rust_struct_ident: format_ident!("MyObject"),
                 blocks: GeneratedRustQObjectBlocks {
                     cxx_mod_contents: vec![
-                        tokens_to_syn(quote! {
+                        parse_quote! {
                             unsafe extern "C++" {
                                 #[cxx_name = "MyObject"]
                                 type MyObjectQt;
                             }
-                        }),
-                        tokens_to_syn(quote! {
+                        },
+                        parse_quote! {
                             extern "Rust" {
                                 #[cxx_name = "MyObjectRust"]
                                 type MyObject;
                             }
-                        }),
+                        },
                     ],
                     cxx_qt_mod_contents: vec![
-                        tokens_to_syn(quote! {
+                        parse_quote! {
                             #[derive(Default)]
                             pub struct MyObject;
-                        }),
-                        tokens_to_syn(quote! {
+                        },
+                        parse_quote! {
                             impl MyObject {
                                 fn rust_method(&self) {
 
                                 }
                             }
-                        }),
+                        },
                     ],
                 },
             }],
@@ -283,17 +281,17 @@ mod tests {
     /// Helper to create a GeneratedRustBlocks for testing with multiple qobjects
     pub fn create_generated_rust_multi_qobjects() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
-            cxx_mod: tokens_to_syn(quote! {
+            cxx_mod: parse_quote! {
                 mod ffi {}
-            }),
-            cxx_mod_contents: vec![tokens_to_syn(quote! {
+            },
+            cxx_mod_contents: vec![parse_quote! {
                 unsafe extern "C++" {
                     include!("multiobject.cxxqt.h");
                 }
-            })],
-            cxx_qt_mod_contents: vec![tokens_to_syn(quote! {
+            }],
+            cxx_qt_mod_contents: vec![parse_quote! {
                 use module::Struct;
-            })],
+            }],
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
                 GeneratedRustQObject {
@@ -304,31 +302,31 @@ mod tests {
                     rust_struct_ident: format_ident!("FirstObject"),
                     blocks: GeneratedRustQObjectBlocks {
                         cxx_mod_contents: vec![
-                            tokens_to_syn(quote! {
+                            parse_quote! {
                                 unsafe extern "C++" {
                                     #[cxx_name = "FirstObject"]
                                     type FirstObjectQt;
                                 }
-                            }),
-                            tokens_to_syn(quote! {
+                            },
+                            parse_quote! {
                                 extern "Rust" {
                                     #[cxx_name = "FirstObjectRust"]
                                     type FirstObject;
                                 }
-                            }),
+                            },
                         ],
                         cxx_qt_mod_contents: vec![
-                            tokens_to_syn(quote! {
+                            parse_quote! {
                                 #[derive(Default)]
                                 pub struct FirstObject;
-                            }),
-                            tokens_to_syn(quote! {
+                            },
+                            parse_quote! {
                                 impl FirstObject {
                                     fn rust_method(&self) {
 
                                     }
                                 }
-                            }),
+                            },
                         ],
                     },
                 },
@@ -340,31 +338,31 @@ mod tests {
                     rust_struct_ident: format_ident!("SecondObject"),
                     blocks: GeneratedRustQObjectBlocks {
                         cxx_mod_contents: vec![
-                            tokens_to_syn(quote! {
+                            parse_quote! {
                                 unsafe extern "C++" {
                                     #[cxx_name = "SecondObject"]
                                     type SecondObjectQt;
                                 }
-                            }),
-                            tokens_to_syn(quote! {
+                            },
+                            parse_quote! {
                                 extern "Rust" {
                                     #[cxx_name = "SecondObjectRust"]
                                     type SecondObject;
                                 }
-                            }),
+                            },
                         ],
                         cxx_qt_mod_contents: vec![
-                            tokens_to_syn(quote! {
+                            parse_quote! {
                                 #[derive(Default)]
                                 pub struct SecondObject;
-                            }),
-                            tokens_to_syn(quote! {
+                            },
+                            parse_quote! {
                                 impl SecondObject {
                                     fn rust_method(&self) {
 
                                     }
                                 }
-                            }),
+                            },
                         ],
                     },
                 },

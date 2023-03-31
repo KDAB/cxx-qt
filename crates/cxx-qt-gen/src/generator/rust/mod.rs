@@ -61,19 +61,21 @@ fn generate_include(parser: &Parser) -> Result<Item> {
 
 #[cfg(test)]
 mod tests {
+    use syn::parse_quote;
+
     use super::*;
 
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::assert_tokens_eq;
 
     #[test]
     fn test_generated_rust_blocks() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
@@ -94,13 +96,13 @@ mod tests {
 
     #[test]
     fn test_generated_rust_blocks_namespace() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
@@ -113,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_generated_rust_blocks_uses() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 use std::collections::HashMap;
@@ -121,7 +123,7 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
@@ -134,13 +136,13 @@ mod tests {
 
     #[test]
     fn test_generated_rust_blocks_cxx_file_stem() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(cxx_file_stem = "my_object")]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();

@@ -111,19 +111,18 @@ pub fn attribute_tokens_to_map<K: std::cmp::Eq + std::hash::Hash + Parse, V: Par
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::{format_ident, quote};
-    use syn::{Ident, ItemMod, LitStr};
+    use quote::format_ident;
+    use syn::{parse_quote, Ident, ItemMod, LitStr};
 
     #[test]
     fn test_attribute_find_path() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::qsignals(MyObject)]
             #[cxx_qt::bridge(namespace = "my::namespace")]
             mod module;
-        });
+        };
 
         assert!(attribute_find_path(&module.attrs, &["qinvokable"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]).is_some());
@@ -133,7 +132,7 @@ mod tests {
 
     #[test]
     fn test_attribute_tokens_to_ident() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::qsignals(MyObject)]
@@ -141,7 +140,7 @@ mod tests {
             #[cxx_qt::list(A, B, C)]
             #[cxx_qt::empty()]
             mod module;
-        });
+        };
 
         assert!(attribute_tokens_to_ident(&module.attrs[0]).is_err());
         assert!(attribute_tokens_to_ident(&module.attrs[1]).is_err());
@@ -157,7 +156,7 @@ mod tests {
 
     #[test]
     fn test_attribute_tokens_to_list() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::qsignals(MyObject)]
@@ -165,7 +164,7 @@ mod tests {
             #[cxx_qt::list(A, B, C)]
             #[cxx_qt::list()]
             mod module;
-        });
+        };
 
         assert!(attribute_tokens_to_list(&module.attrs[0]).is_err());
         assert!(attribute_tokens_to_list(&module.attrs[1]).is_err());
@@ -187,7 +186,7 @@ mod tests {
 
     #[test]
     fn test_attribute_tokens_to_map() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[qinvokable]
             #[cxx_qt::bridge]
             #[cxx_qt::qsignals(MyObject)]
@@ -198,7 +197,7 @@ mod tests {
             #[cxx_qt::bridge()]
             #[qinvokable(cxx_override, return_cxx_type = "T")]
             mod module;
-        });
+        };
 
         assert_eq!(
             attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[0], AttributeDefault::None)

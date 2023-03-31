@@ -21,20 +21,18 @@ pub fn fields_to_named_fields_mut(fields: &mut Fields) -> Result<Vec<&mut Field>
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::{ItemStruct, Type, Variant};
+    use syn::{parse_quote, ItemStruct, Type, Variant};
 
     /// Helper which returns a f64 as a [syn::Type]
     fn f64_type() -> Type {
-        tokens_to_syn(quote! { f64 })
+        parse_quote! { f64 }
     }
 
     #[test]
     fn test_fields_to_named_fields_enum_variant_named() {
-        let mut v: Variant = tokens_to_syn(quote! {
+        let mut v: Variant = parse_quote! {
             PointChanged { x: f64, y: f64 }
-        });
+        };
         let result = fields_to_named_fields_mut(&mut v.fields).unwrap();
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].ident.as_ref().unwrap(), "x");
@@ -45,30 +43,30 @@ mod tests {
 
     #[test]
     fn test_fields_to_named_fields_enum_variant_unamed() {
-        let mut v: Variant = tokens_to_syn(quote! {
+        let mut v: Variant = parse_quote! {
             PointChanged(f64, f64)
-        });
+        };
         let result = fields_to_named_fields_mut(&mut v.fields);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_fields_to_named_fields_enum_variant_empty() {
-        let mut v: Variant = tokens_to_syn(quote! {
+        let mut v: Variant = parse_quote! {
             PointChanged
-        });
+        };
         let result = fields_to_named_fields_mut(&mut v.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 
     #[test]
     fn test_fields_to_named_fields_struct_named() {
-        let mut s: ItemStruct = tokens_to_syn(quote! {
+        let mut s: ItemStruct = parse_quote! {
             struct Point {
                 x: f64,
                 y: f64
             }
-        });
+        };
         let result = fields_to_named_fields_mut(&mut s.fields).unwrap();
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].ident.as_ref().unwrap(), "x");
@@ -79,41 +77,41 @@ mod tests {
 
     #[test]
     fn test_fields_to_named_fields_struct_unamed() {
-        let mut s: ItemStruct = tokens_to_syn(quote! {
+        let mut s: ItemStruct = parse_quote! {
             struct Point(f64, f64);
-        });
+        };
         let result = fields_to_named_fields_mut(&mut s.fields);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_fields_to_named_fields_struct_empty() {
-        let mut s: ItemStruct = tokens_to_syn(quote! {
+        let mut s: ItemStruct = parse_quote! {
             struct Point;
-        });
+        };
         let result = fields_to_named_fields_mut(&mut s.fields).unwrap();
         assert_eq!(result.len(), 0);
     }
 
     #[test]
     fn test_fields_to_named_fields_mutatable() {
-        let mut s: ItemStruct = tokens_to_syn(quote! {
+        let mut s: ItemStruct = parse_quote! {
             struct Point {
                 #[attribute]
                 x: f64,
                 y: f64
             }
-        });
+        };
         let mut result = fields_to_named_fields_mut(&mut s.fields).unwrap();
         assert_eq!(result.len(), 2);
         result[0].attrs.clear();
 
-        let expected: ItemStruct = tokens_to_syn(quote! {
+        let expected: ItemStruct = parse_quote! {
             struct Point {
                 x: f64,
                 y: f64
             }
-        });
+        };
         assert_eq!(s, expected);
     }
 }
