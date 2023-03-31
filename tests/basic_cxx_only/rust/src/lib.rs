@@ -19,3 +19,13 @@ mod ffi {
 fn get_numbers_sum() -> i32 {
     ffi::get_cpp_number() + 2
 }
+
+#[cfg(test)]
+mod tests {
+    use super::ffi::get_cpp_number;
+
+    #[test]
+    fn test_get_numbers_sum() {
+        assert_eq!(get_cpp_number(), 100);
+    }
+}

@@ -9,3 +9,6 @@
 
 int
 get_cpp_number();
+
+void
+set_cpp_number(int num);

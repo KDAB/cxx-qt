@@ -8,14 +8,7 @@
 #include <QtTest/QTest>
 
 #include "cxx-qt-gen/ffi.cxx.h"
-
-int hidden_num = 100;
-
-int
-get_cpp_number()
-{
-  return hidden_num;
-}
+#include "cxx_test.h"
 
 class CxxTest : public QObject
 {
@@ -26,7 +19,7 @@ private Q_SLOTS:
   void test_cxx_interaction()
   {
     QCOMPARE(get_numbers_sum(), 102);
-    hidden_num = 200;
+    set_cpp_number(200);
     QCOMPARE(get_numbers_sum(), 202);
   }
 };
