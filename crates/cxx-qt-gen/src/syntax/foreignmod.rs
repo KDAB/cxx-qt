@@ -7,8 +7,9 @@ use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
     parse::{ParseStream, Parser},
-    Attribute, Error, ForeignItem, ForeignItemType, Ident, ItemForeignMod, PatIdent, PatType,
-    Result, Signature, Token, Visibility,
+    spanned::Spanned,
+    Attribute, Error, FnArg, ForeignItem, ForeignItemType, Ident, ItemForeignMod, Receiver, Result,
+    Signature, Token, Visibility,
 };
 
 /// For a given [syn::ForeignItem] return the [syn::ForeignItemType] if there is one
@@ -112,50 +113,43 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
     .parse2(tokens.clone())
 }
 
-pub struct ForeignFnSelf {
-    pub ident: Ident,
-    pub typ: syn::Type,
-}
-
-pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<ForeignFnSelf> {
-    let mut span: &dyn ToTokens = signature;
-    if let Some(arg) = signature.inputs.iter().next() {
-        span = arg;
-        if let syn::FnArg::Typed(PatType {
-            pat,
-            ty,
-            attrs,
-            colon_token: _,
-        }) = arg
-        {
-            if !attrs.is_empty() {
-                return Err(Error::new_spanned(
-                    arg,
-                    "Attributes on the `self:` receiver are not supported",
-                ));
-            }
-            if let syn::Pat::Ident(PatIdent {
-                ident,
-                // It should be a `self:` value, without `mut` or `&`
-                mutability: None,
-                by_ref: None,
-                attrs,
-                subpat: _,
-            }) = &**pat
-            {
-                if ident == "self" && attrs.is_empty() {
-                    return Ok(ForeignFnSelf {
-                        ident: ident.clone(),
-                        typ: *ty.clone(),
-                    });
-                }
-            }
+pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
+    if let Some(FnArg::Receiver(receiver)) = signature.inputs.iter().next() {
+        if !receiver.attrs.is_empty() {
+            return Err(Error::new(
+                receiver.span(),
+                "Attributes on the `self:` receiver are not supported",
+            ));
         }
+
+        if receiver.mutability.is_some() {
+            return Err(Error::new(
+                receiver.span(),
+                "mut on the `self:` receiver are not supported",
+            ));
+        }
+
+        if receiver.reference.is_some() {
+            return Err(Error::new(
+                receiver.span(),
+                "Reference on the `self:` receiver are not supported",
+            ));
+        }
+
+        if receiver.colon_token.is_none() {
+            return Err(Error::new(
+                receiver.span(),
+                "Missing type on the `self:` receiver are not supported",
+            ));
+        }
+
+        Ok(receiver.clone())
+    } else {
+        Err(Error::new_spanned(
+            signature,
+            "Expected first argument to be a `self:` receiver",
+        ))
     }
-    Err(Error::new_spanned(
-        span,
-        "Expected first argument to be a `self:` receiver",
-    ))
 }
 
 #[cfg(test)]
@@ -206,8 +200,7 @@ mod tests {
             fn foo(self: &qobject::T, a: A) -> B;
         });
         let result = self_type_from_foreign_fn(&foreign_fn.sig).unwrap();
-        assert_eq!(result.ident, "self");
-        assert_eq!(result.typ.to_token_stream().to_string(), "& qobject :: T");
+        assert_eq!(result.ty.to_token_stream().to_string(), "& qobject :: T");
     }
 
     #[test]

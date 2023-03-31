@@ -62,14 +62,11 @@ impl ParsedFunctionParameter {
 
         let missing_self_arg = "First argument must be a supported `self` receiver type!\nUse `&self` or `self: Pin<&mut Self>` instead.";
         match iter.next() {
-            Some(FnArg::Typed(type_pattern)) => {
-                let parameter = ParsedFunctionParameter::parse(type_pattern)?;
-                if parameter.ident == "self" && types::is_pin_of_self(&parameter.ty) {
-                    Ok(())
-                } else {
-                    Err(Error::new_spanned(type_pattern, missing_self_arg))
-                }
-            }
+            Some(FnArg::Receiver(Receiver {
+                reference: None,
+                ty,
+                ..
+            })) if types::is_pin_of_self(ty) => Ok(()), // Okay, found a Pin<&Self> or Pin<&mut Self>
             Some(FnArg::Receiver(Receiver {
                 reference: Some(_), // `self` needs to be by-ref, by-value is not supported.
                 mutability: None,   // Mutable `&mut self` references are not supported.

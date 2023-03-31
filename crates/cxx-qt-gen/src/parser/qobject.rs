@@ -14,8 +14,8 @@ use crate::syntax::{
     fields::fields_to_named_fields_mut,
 };
 use syn::{
-    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
-    Result, Visibility,
+    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemFn, Item, ItemStruct, LitStr, Result,
+    Visibility,
 };
 
 /// Metadata for registering QML element
@@ -52,7 +52,7 @@ pub struct ParsedQObject {
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// Note that they will only be visible on the Rust side
-    pub methods: Vec<ImplItemMethod>,
+    pub methods: Vec<ImplItemFn>,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
@@ -186,7 +186,7 @@ impl ParsedQObject {
         }
     }
 
-    fn parse_impl_method(&mut self, method: &ImplItemMethod) -> Result<()> {
+    fn parse_impl_method(&mut self, method: &ImplItemFn) -> Result<()> {
         if let Some(invokable) = ParsedQInvokable::try_parse(method)? {
             self.invokables.push(invokable);
         } else {
@@ -202,7 +202,7 @@ impl ParsedQObject {
         for item in items {
             // Check if this item is a method
             match item {
-                ImplItem::Method(method) => {
+                ImplItem::Fn(method) => {
                     self.parse_impl_method(method)?;
                 }
                 _ => {

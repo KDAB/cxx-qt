@@ -140,8 +140,14 @@ mod tests {
         let signals = ParsedSignalsEnum::from(&e, 1).unwrap();
         assert_eq!(signals.ident, "MySignals");
         assert_eq!(signals.item.attrs.len(), 2);
-        assert!(path_compare_str(&signals.item.attrs[0].path, &["before"]));
-        assert!(path_compare_str(&signals.item.attrs[1].path, &["after"]));
+        assert!(path_compare_str(
+            signals.item.attrs[0].meta.path(),
+            &["before"]
+        ));
+        assert!(path_compare_str(
+            signals.item.attrs[1].meta.path(),
+            &["after"]
+        ));
         assert_eq!(signals.signals.len(), 0);
     }
 

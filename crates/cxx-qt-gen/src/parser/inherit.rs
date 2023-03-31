@@ -122,14 +122,14 @@ impl ParsedInheritedMethod {
         }
 
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.typ)?;
+        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
         let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
         for attribute in &method.attrs {
-            if !attribute.path.is_ident(&format_ident!("cxx_name")) {
+            if !attribute.meta.path().is_ident(&format_ident!("cxx_name")) {
                 return Err(Error::new(
                     attribute.span(),
                     "Unsupported attribute in #[cxx_qt::inherit]",
