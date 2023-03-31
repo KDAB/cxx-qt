@@ -3,23 +3,25 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    inherit::{InheritMethods, ParsedInheritedMethod},
-    qobject::ParsedQObject,
-    signals::ParsedSignalsEnum,
-};
-use crate::syntax::attribute::attribute_tokens_to_value;
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_ident},
     path::path_to_single_ident,
 };
+use crate::{
+    parser::{
+        inherit::{InheritMethods, ParsedInheritedMethod},
+        qobject::ParsedQObject,
+        signals::ParsedSignalsEnum,
+    },
+    syntax::expr::expr_to_string,
+};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, LitStr,
-    Result, Type, TypePath,
+    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
+    Type, TypePath,
 };
 
 use super::inherit::MaybeInheritMethods;
@@ -127,7 +129,7 @@ impl ParsedCxxQtData {
             // Retrieve a namespace from the mod or the bridge
             let block_namespace =
                 if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                    attribute_tokens_to_value::<LitStr>(&foreign_mod.attrs[index])?.value()
+                    expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value)?
                 } else {
                     bridge_namespace.to_owned()
                 };
@@ -154,7 +156,7 @@ impl ParsedCxxQtData {
     ) -> Result<()> {
         // Retrieve the namespace for the type itself if there is one
         let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
-            attribute_tokens_to_value::<LitStr>(&attrs[index])?.value()
+            expr_to_string(&attrs[index].meta.require_name_value()?.value)?
         } else {
             parent_namespace.to_string()
         };
@@ -163,7 +165,7 @@ impl ParsedCxxQtData {
         if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
             self.cxx_mappings.cxx_names.insert(
                 ident.to_string(),
-                attribute_tokens_to_value::<LitStr>(&attrs[index])?.value(),
+                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
             );
         }
 

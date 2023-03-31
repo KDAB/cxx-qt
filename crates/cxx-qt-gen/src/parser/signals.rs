@@ -4,11 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::parameter::ParsedFunctionParameter;
-use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_value},
-    fields::fields_to_named_fields_mut,
-};
-use syn::{Ident, ItemEnum, LitStr, Result, Variant};
+use crate::syntax::expr::expr_to_string;
+use crate::syntax::{attribute::attribute_find_path, fields::fields_to_named_fields_mut};
+use syn::{Ident, ItemEnum, Result, Variant};
 
 /// Describes an individual Signal
 pub struct ParsedSignal {
@@ -34,7 +32,7 @@ impl ParsedSignal {
             false
         };
         let cxx_name = if let Some(index) = attribute_find_path(&variant.attrs, &["cxx_name"]) {
-            let str = attribute_tokens_to_value::<LitStr>(&variant.attrs[index])?.value();
+            let str = expr_to_string(&variant.attrs[index].meta.require_name_value()?.value)?;
             // Remove the attribute from the original enum
             // so that it doesn't end up in the Rust generation
             variant.attrs.remove(index);
@@ -50,7 +48,7 @@ impl ParsedSignal {
                 // Parse any cxx_type for the signal
                 let cxx_type = if let Some(index) = attribute_find_path(&field.attrs, &["cxx_type"])
                 {
-                    let str = attribute_tokens_to_value::<LitStr>(&field.attrs[index])?.value();
+                    let str = expr_to_string(&field.attrs[index].meta.require_name_value()?.value)?;
                     // Remove the attribute from the original enum
                     // so that it doesn't end up in the Rust generation
                     field.attrs.remove(index);

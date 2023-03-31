@@ -5,11 +5,10 @@
 
 use crate::syntax::path::path_compare_str;
 use proc_macro2::Span;
-use quote::ToTokens;
 use std::collections::HashMap;
 use syn::{
     ext::IdentExt,
-    parse::{Parse, ParseStream, Parser},
+    parse::{Parse, ParseStream},
     spanned::Spanned,
     Attribute, Error, Ident, Meta, Result, Token,
 };
@@ -106,12 +105,6 @@ pub fn attribute_tokens_to_map<K: std::cmp::Eq + std::hash::Hash + Parse, V: Par
     } else {
         Ok(HashMap::default())
     }
-}
-
-/// Returns the value in a attribute, eg the value in #[key = value]
-pub fn attribute_tokens_to_value<V: Parse>(attr: &Attribute) -> Result<V> {
-    let parse_value = |input: ParseStream| -> Result<V> { input.parse::<V>() };
-    parse_value.parse2(attr.meta.require_name_value()?.value.to_token_stream())
 }
 
 #[cfg(test)]
@@ -267,22 +260,5 @@ mod tests {
         assert_eq!(result.len(), 2);
         assert!(result.contains_key(&format_ident!("cxx_override")));
         assert!(result.contains_key(&format_ident!("return_cxx_type")));
-    }
-
-    #[test]
-    fn test_attribute_tokens_to_value() {
-        let module: ItemMod = tokens_to_syn(quote! {
-            #[cxx_type = "QColor"]
-            #[cxx_type]
-            mod module;
-        });
-
-        assert_eq!(
-            attribute_tokens_to_value::<LitStr>(&module.attrs[0])
-                .unwrap()
-                .value(),
-            "QColor"
-        );
-        assert!(attribute_tokens_to_value::<LitStr>(&module.attrs[1]).is_err());
     }
 }
