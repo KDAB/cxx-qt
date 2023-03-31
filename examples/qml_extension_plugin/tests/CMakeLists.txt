@@ -19,10 +19,25 @@ target_link_libraries(${APP_NAME} Qt::QuickTest)
 
 add_dependencies(${APP_NAME} core_qmlplugin)
 
-set(test_cmd "./${APP_NAME}" -import "${CMAKE_CURRENT_BINARY_DIR}/../qml" -input "${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME ${APP_NAME}
+set(test_cmd
+    "$<TARGET_FILE:${APP_NAME}>"
+    -import
+    "${CMAKE_CURRENT_BINARY_DIR}/../qml"
+    -input
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    -plugins
+    "$<TARGET_FILE_DIR:core_qmlplugin>"
+)
+
+add_test(
+    NAME ${APP_NAME}
     COMMAND ${test_cmd}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
+set_tests_properties(
+    ${APP_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
 )
 
 # TODO: Remove valgrind_additional_suppressions, there is a currently unknown issue with Qt5,

@@ -138,9 +138,6 @@ function(add_valgrind_test NAME_WITH_PREFIX BINARY WORKING_DIRECTORY)
     )
 endfunction()
 
-add_subdirectory(book)
-add_subdirectory(examples)
-
 # QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
 if(NOT USE_QT5)
@@ -150,25 +147,86 @@ if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
 endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
-set(CARGO_ENV "QMAKE=${QMAKE}")
+set(CARGO_ENV "QMAKE=set:${QMAKE}")
+set(RUNTIME_ENV "")
+
+# On windows, Qt dll needs to be in the PATH for the tests to run
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    execute_process(
+        COMMAND ${QMAKE} -query QT_INSTALL_BINS
+        OUTPUT_VARIABLE QT_INSTALL_BINS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    execute_process(
+        COMMAND ${QMAKE} -query QT_INSTALL_PLUGINS
+        OUTPUT_VARIABLE QT_INSTALL_PLUGINS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    execute_process(
+        COMMAND ${QMAKE} -query QT_INSTALL_QML
+        OUTPUT_VARIABLE QT_INSTALL_QML
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    list(
+        APPEND
+        RUNTIME_ENV
+        "PATH=path_list_append:${QT_INSTALL_BINS}"
+        "QT_PLUGIN_PATH=path_list_append:${QT_INSTALL_PLUGINS}"
+        "QML_IMPORT_PATH=path_list_append:${QT_INSTALL_QML}"
+        "QML2_IMPORT_PATH=path_list_append:${QT_INSTALL_QML}"
+    )
+    list(APPEND CARGO_ENV ${RUNTIME_ENV})
+endif()
 
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_tests COMMAND cargo test --all-features --all-targets --manifest-path ${MANIFEST_PATH})
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
+    set(CARGO_TEST_NAME ${TEST_NAME_PREFIX}_cargo_tests)
+    add_test(NAME ${CARGO_TEST_NAME}
+             COMMAND cargo test --all-features --all-targets --manifest-path
+                     ${MANIFEST_PATH}
+    )
+    set_tests_properties(
+        ${CARGO_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
+    )
+
     # Check if we should enable doc tests
-    if (${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
+    if(${ADD_DOCTESTS} STREQUAL "DOCTESTS_ON")
+        set(CARGO_DOC_TEST_NAME ${TEST_NAME_PREFIX}_cargo_doc_tests)
         # Add cargo docs as a test
-        add_test(NAME ${TEST_NAME_PREFIX}_cargo_doc_tests COMMAND cargo test --all-features --doc --manifest-path ${MANIFEST_PATH})
-        set_property(TEST ${TEST_NAME_PREFIX}_cargo_doc_tests PROPERTY ENVIRONMENT ${CARGO_ENV})
+        add_test(NAME ${CARGO_DOC_TEST_NAME}
+                 COMMAND cargo test --all-features --doc --manifest-path
+                         ${MANIFEST_PATH}
+        )
+        set_tests_properties(
+            ${CARGO_DOC_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION
+                                              "${CARGO_ENV}"
+        )
     endif()
+
     # Add clippy as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_clippy COMMAND cargo clippy --all-features --all-targets --manifest-path ${MANIFEST_PATH} -- -D warnings)
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_clippy PROPERTY ENVIRONMENT ${CARGO_ENV})
+    set(CARGO_CLIPPY_TEST_NAME ${TEST_NAME_PREFIX}_cargo_clippy)
+    add_test(NAME ${CARGO_CLIPPY_TEST_NAME}
+             COMMAND cargo clippy --all-features --all-targets --manifest-path
+                     ${MANIFEST_PATH} -- -D warnings
+    )
+    set_tests_properties(
+        ${CARGO_CLIPPY_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION
+                                             "${CARGO_ENV}"
+    )
+
     # Add rustfmt as a test
-    add_test(NAME ${TEST_NAME_PREFIX}_cargo_fmt COMMAND cargo fmt --manifest-path ${MANIFEST_PATH} -- --check)
-    set_property(TEST ${TEST_NAME_PREFIX}_cargo_fmt PROPERTY ENVIRONMENT ${CARGO_ENV})
+    set(CARGO_FMT_TEST_NAME ${TEST_NAME_PREFIX}_cargo_fmt)
+    add_test(NAME ${CARGO_FMT_TEST_NAME} COMMAND cargo fmt --manifest-path
+                                                 ${MANIFEST_PATH} -- --check
+    )
+    set_tests_properties(
+        ${CARGO_FMT_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION
+                                          "${CARGO_ENV}"
+    )
 endfunction()
 
 # Add cargo tests for all our manifests
@@ -199,4 +257,6 @@ add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format
 # Add test which checks all files have a valid license
 add_test(NAME reuse_lint COMMAND reuse lint)
 
+add_subdirectory(book)
+add_subdirectory(examples)
 add_subdirectory(tests)

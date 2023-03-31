@@ -91,7 +91,7 @@ jobs:
             # FIXME: many tests fail to link
             # https://github.com/KDAB/cxx-qt/issues/111
             # cxx_qt_lib_cargo_tests fails to run with a missing DLL error.
-            ctest_args: --exclude-regex '^(demo_threading_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind|cxx_qt_lib_cargo_tests)$'
+            ctest_args: --exclude-regex '^(test_basic_cxx_only_cargo_tests|reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -106,7 +106,7 @@ jobs:
             # FIXME: many tests fail to link
             # https://github.com/KDAB/cxx-qt/issues/111
             # cxx_qt_lib_cargo_tests fails to run with a missing DLL error.
-            ctest_args: --exclude-regex '^(demo_threading_cargo_tests|example_qml.*|qml.*tests|test.*|reuse_lint|cpp_clang_format|.*valgrind|cxx_qt_lib_cargo_tests)$'
+            ctest_args: --exclude-regex '^(test_basic_cxx_only_cargo_tests|reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache

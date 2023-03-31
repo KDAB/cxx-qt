@@ -64,46 +64,28 @@ qt_import_qml_plugins(${APP_NAME})
 # Unit test
 #
 
-# Copy QML unit test to build folder
-# this is so that our test executable can find the QML files in the same folder
-function(copy_qml_test TEST_NAME)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/tests/tst_${TEST_NAME}.qml COPYONLY)
-endfunction()
-
-copy_qml_test(containers)
-copy_qml_test(custom_base_class)
-copy_qml_test(invokables)
-copy_qml_test(multiple_qobjects)
-copy_qml_test(nested_qobjects)
-copy_qml_test(properties)
-copy_qml_test(serialisation)
-copy_qml_test(signals)
-copy_qml_test(singleton)
-copy_qml_test(threading)
-copy_qml_test(types)
-copy_qml_test(uncreatable)
-
-add_executable(${APP_NAME}_test
-    tests/main.cpp
+set(APP_TEST_NAME ${APP_NAME}_test)
+add_executable(${APP_TEST_NAME} tests/main.cpp)
+target_include_directories(${APP_TEST_NAME} PRIVATE cpp)
+target_link_libraries(
+    ${APP_TEST_NAME} PRIVATE ${APP_NAME}_lib Qt::Test Qt::QuickTest
 )
-target_include_directories(${APP_NAME}_test PRIVATE cpp)
-target_link_libraries(${APP_NAME}_test PRIVATE
-    ${APP_NAME}_lib
-    Qt::Test
-    Qt::QuickTest
+qt_import_qml_plugins(${APP_TEST_NAME})
+
+set(TEST_CMD
+    $<TARGET_FILE:${APP_TEST_NAME}> -input ${CMAKE_CURRENT_SOURCE_DIR}/tests
 )
-qt_import_qml_plugins(${APP_NAME}_test)
 
-if(WIN32)
-    set(EXE_SUFFIX ".exe")
-else()
-    set(EXE_SUFFIX "")
-endif()
+add_test(
+    NAME ${APP_TEST_NAME}
+    COMMAND ${TEST_CMD}
+)
 
-add_test(NAME ${APP_NAME}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/${APP_NAME}_test${EXE_SUFFIX} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
+add_valgrind_test(
+    ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
+)
 
-add_valgrind_test(${APP_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/tests/${APP_NAME}_test${EXE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/tests)
-
-set_target_properties(${APP_NAME}_test PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
+# RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
+set_tests_properties(
+    ${APP_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
 )
