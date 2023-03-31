@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `QDateTime` API to use `current_date_time` rather than `current_date`
 - Always call `qt_build_utils::setup_linker()` in `CxxQtBuilder` and remove the proxy method
+- Moved to `syn` 2.0 internally and for any exported `syn` types
 
 ## [0.5.2](https://github.com/KDAB/cxx-qt/compare/v0.5.1...v0.5.2) - 2023-04-27
 

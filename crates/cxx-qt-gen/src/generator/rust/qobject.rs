@@ -15,7 +15,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, ImplItemMethod, Item, Result};
+use syn::{Ident, ImplItemFn, Item, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -125,7 +125,7 @@ impl GeneratedRustQObject {
 
 /// Generate the non invokable methods for the Rust side
 pub fn generate_methods(
-    methods: &[ImplItemMethod],
+    methods: &[ImplItemFn],
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut blocks = GeneratedRustQObjectBlocks::default();

@@ -5,30 +5,14 @@
 
 use crate::syntax::path::path_compare_str;
 use proc_macro2::Span;
-use std::{collections::HashMap, iter::FromIterator};
+use quote::ToTokens;
+use std::collections::HashMap;
 use syn::{
     ext::IdentExt,
-    parenthesized,
     parse::{Parse, ParseStream, Parser},
-    punctuated::Punctuated,
     spanned::Spanned,
-    token::{Comma, Paren},
-    Attribute, Error, Ident, Result, Token,
+    Attribute, Error, Ident, Meta, Result, Token,
 };
-
-/// Representation of a list of idents in an attribute, eg attribute(A, B, C)
-pub struct AttributeList {
-    pub items: Punctuated<Ident, Comma>,
-}
-
-impl Parse for AttributeList {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let content;
-        parenthesized!(content in input);
-        let items = content.parse_terminated(Ident::parse_any)?;
-        Ok(AttributeList { items })
-    }
-}
 
 /// Representation of a key and an optional value in an attribute, eg `attribute(key = value)` or `attribute(key)`
 struct AttributeMapValue<K: Parse, V: Parse> {
@@ -49,29 +33,10 @@ impl<K: Parse, V: Parse> Parse for AttributeMapValue<K, V> {
     }
 }
 
-/// Representation of a list of keys and values represented as a map from an attribute, eg attribute(a = b, c = d)
-struct AttributeMap<K: Parse, V: Parse> {
-    pub items: Option<Punctuated<AttributeMapValue<K, V>, Comma>>,
-}
-
-impl<K: Parse, V: Parse> Parse for AttributeMap<K, V> {
-    fn parse(input: ParseStream) -> Result<Self> {
-        Ok(AttributeMap {
-            items: if input.peek(Paren) {
-                let content;
-                parenthesized!(content in input);
-                Some(content.parse_terminated(AttributeMapValue::parse)?)
-            } else {
-                None
-            },
-        })
-    }
-}
-
 /// Returns the index of the first [syn::Attribute] that matches a given path
 pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> {
     for (i, attr) in attrs.iter().enumerate() {
-        if path_compare_str(&attr.path, path) {
+        if path_compare_str(attr.meta.path(), path) {
             return Some(i);
         }
     }
@@ -95,8 +60,14 @@ pub fn attribute_tokens_to_ident(attr: &Attribute) -> Result<Ident> {
 /// Returns the list of [syn::Ident]'s A, B, C from attribute(A, B, C)
 /// and errors if there is a parser error
 pub fn attribute_tokens_to_list(attr: &Attribute) -> Result<Vec<Ident>> {
-    let attrs: AttributeList = syn::parse2(attr.tokens.clone())?;
-    Ok(Vec::from_iter(attrs.items.into_iter()))
+    attr.meta
+        .require_list()?
+        .parse_args_with(|input: ParseStream| -> Result<Vec<Ident>> {
+            Ok(input
+                .parse_terminated(Ident::parse_any, Token![,])?
+                .into_iter()
+                .collect::<Vec<Ident>>())
+        })
 }
 
 /// Whether the attribute has a default value if there is one missing
@@ -114,33 +85,33 @@ pub fn attribute_tokens_to_map<K: std::cmp::Eq + std::hash::Hash + Parse, V: Par
     attr: &Attribute,
     default_value: AttributeDefault<V>,
 ) -> Result<HashMap<K, V>> {
-    let attrs_map: AttributeMap<K, V> = syn::parse2(attr.tokens.clone())?;
-    let mut map = HashMap::new();
-    if let Some(items) = attrs_map.items {
-        for item in items {
-            if let std::collections::hash_map::Entry::Vacant(e) = map.entry(item.key) {
-                if let Some(value) = item.value {
-                    e.insert(value);
-                } else if let AttributeDefault::Some(default_value) = default_value {
-                    e.insert(default_value(attr.span()));
+    if let Meta::List(meta_list) = &attr.meta {
+        meta_list.parse_args_with(|input: ParseStream| -> Result<HashMap<K, V>> {
+            let mut map = HashMap::new();
+            for item in input.parse_terminated(AttributeMapValue::parse, Token![,])? {
+                if let std::collections::hash_map::Entry::Vacant(e) = map.entry(item.key) {
+                    if let Some(value) = item.value {
+                        e.insert(value);
+                    } else if let AttributeDefault::Some(default_value) = default_value {
+                        e.insert(default_value(attr.span()));
+                    } else {
+                        return Err(Error::new(attr.span(), "Attribute key is missing a value"));
+                    }
                 } else {
-                    return Err(Error::new(attr.span(), "Attribute key is missing a value"));
+                    return Err(Error::new(attr.span(), "Duplicate keys in the attributes"));
                 }
-            } else {
-                return Err(Error::new(attr.span(), "Duplicate keys in the attributes"));
             }
-        }
+            Ok(map)
+        })
+    } else {
+        Ok(HashMap::default())
     }
-    Ok(map)
 }
 
 /// Returns the value in a attribute, eg the value in #[key = value]
 pub fn attribute_tokens_to_value<V: Parse>(attr: &Attribute) -> Result<V> {
-    let parse_value = |input: ParseStream| -> Result<V> {
-        input.parse::<Token![=]>()?;
-        input.parse::<V>()
-    };
-    parse_value.parse2(attr.tokens.clone())
+    let parse_value = |input: ParseStream| -> Result<V> { input.parse::<V>() };
+    parse_value.parse2(attr.meta.require_name_value()?.value.to_token_stream())
 }
 
 #[cfg(test)]

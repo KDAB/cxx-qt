@@ -9,31 +9,57 @@ use syn::{
     TypeReference,
 };
 
+fn pin_path(ty: &Type) -> Option<Path> {
+    if let Type::Path(TypePath { path, .. }) = ty {
+        if path_compare_str(path, &["Pin"]) {
+            return Some(path.clone());
+        }
+    }
+
+    None
+}
+
+/// Determine if a given [syn::Type] has a mutable T in Pin<T>
+pub fn is_pin_mut(ty: &Type) -> bool {
+    if let Some(path) = pin_path(ty) {
+        // Read the contents of the T
+        if let Some(last) = path.segments.last() {
+            if let PathArguments::AngleBracketed(args) = &last.arguments {
+                if let Some(GenericArgument::Type(Type::Reference(TypeReference {
+                    mutability: Some(_),
+                    ..
+                }))) = args.args.first()
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
+}
+
 /// Checks if the given type is a `Pin<&Self>` or `Pin<&mut Self>`.
 /// `Pin<Box<Self>>` is currently not supported.
 pub fn is_pin_of_self(ty: &Type) -> bool {
-    if let Type::Path(type_path) = ty {
-        if path_compare_str(&type_path.path, &["Pin"]) {
-            if let PathArguments::AngleBracketed(angles) =
-                &type_path.path.segments.first().unwrap().arguments
+    if let Some(path) = pin_path(ty) {
+        if let PathArguments::AngleBracketed(angles) = &path.segments.first().unwrap().arguments {
+            if let [GenericArgument::Type(Type::Reference(TypeReference {
+                elem: type_elem, ..
+            }))] = *angles.args.iter().collect::<Vec<_>>()
             {
-                if let [GenericArgument::Type(Type::Reference(TypeReference {
-                    elem: type_elem,
-                    ..
-                }))] = *angles.args.iter().collect::<Vec<_>>()
+                if let Type::Path(TypePath {
+                    path: self_path, ..
+                }) = &**type_elem
                 {
-                    if let Type::Path(TypePath {
-                        path: self_path, ..
-                    }) = &**type_elem
-                    {
-                        if path_compare_str(self_path, &["Self"]) {
-                            return true;
-                        }
+                    if path_compare_str(self_path, &["Self"]) {
+                        return true;
                     }
                 }
             }
         }
     }
+
     false
 }
 
@@ -125,7 +151,7 @@ mod tests {
     use crate::tests::tokens_to_syn;
     use proc_macro2::TokenStream;
     use quote::quote;
-    use syn::Type;
+    use syn::{parse_quote, Type};
 
     fn assert_pin_of_self(tokens: TokenStream) {
         let pin: Type = tokens_to_syn(tokens);
@@ -150,6 +176,18 @@ mod tests {
         assert_not_pin_of_self(quote! { Pin<Self> });
         assert_not_pin_of_self(quote! { Pin<&Foo> });
         assert_not_pin_of_self(quote! { Pin<&mut Foo> });
+    }
+
+    #[test]
+    fn test_is_pin_mut() {
+        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Self> }));
+        assert!(super::is_pin_mut(&parse_quote! { Pin<&mut Self> }));
+        assert!(!super::is_pin_mut(&parse_quote! { Pin<Box<Self>> }));
+        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Self, Foo> }));
+        assert!(!super::is_pin_mut(&parse_quote! { Pin }));
+        assert!(!super::is_pin_mut(&parse_quote! { Pin<Self> }));
+        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Foo> }));
+        assert!(super::is_pin_mut(&parse_quote! { Pin<&mut Foo> }));
     }
 
     fn assert_qobject_ident(tokens: TokenStream, expected_ident: &str, expected_mutability: bool) {

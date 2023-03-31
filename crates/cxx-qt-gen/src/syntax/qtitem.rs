@@ -55,9 +55,9 @@ impl Parse for CxxQtItem {
 
         if ahead.peek(Token![mod]) {
             for attribute in &attributes {
-                if path_compare_str(&attribute.path, &["cxx", "bridge"]) {
+                if path_compare_str(attribute.meta.path(), &["cxx", "bridge"]) {
                     return input.parse().map(CxxQtItem::Cxx);
-                } else if path_compare_str(&attribute.path, &["cxx_qt", "bridge"]) {
+                } else if path_compare_str(attribute.meta.path(), &["cxx_qt", "bridge"]) {
                     return input.parse().map(CxxQtItem::CxxQt);
                 }
             }

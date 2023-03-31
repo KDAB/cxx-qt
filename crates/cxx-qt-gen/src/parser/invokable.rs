@@ -5,10 +5,10 @@
 
 use crate::{
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::*, implitemmethod::is_method_mutable},
+    syntax::{attribute::*, implitemfn::is_method_mutable},
 };
 use std::collections::HashSet;
-use syn::{Ident, ImplItemMethod, LitStr, Result};
+use syn::{Ident, ImplItemFn, LitStr, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -20,8 +20,8 @@ pub enum ParsedQInvokableSpecifiers {
 
 /// Describes a single Q_INVOKABLE for a struct
 pub struct ParsedQInvokable {
-    /// The original [syn::ImplItemMethod] of the invokable
-    pub method: ImplItemMethod,
+    /// The original [syn::ImplItemFn] of the invokable
+    pub method: ImplItemFn,
     /// Whether this invokable is mutable
     pub mutable: bool,
     /// The name of the C++ type for the return type if one has been specified
@@ -33,7 +33,7 @@ pub struct ParsedQInvokable {
 }
 
 impl ParsedQInvokable {
-    pub fn try_parse(method: &ImplItemMethod) -> Result<Option<Self>> {
+    pub fn try_parse(method: &ImplItemFn) -> Result<Option<Self>> {
         let index = attribute_find_path(&method.attrs, &["qinvokable"]);
 
         if index.is_none() {
@@ -42,7 +42,7 @@ impl ParsedQInvokable {
         Ok(Some(Self::parse(method, index.unwrap())?))
     }
 
-    fn parse(method: &ImplItemMethod, index: usize) -> Result<Self> {
+    fn parse(method: &ImplItemFn, index: usize) -> Result<Self> {
         // Parse any return_cxx_type in the qproperty macro
         let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
             &method.attrs[index],
