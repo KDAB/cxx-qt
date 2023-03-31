@@ -103,29 +103,32 @@ else()
 endif()
 
 function(add_qml_test TEST_NAME)
-    # Copy QML unit test to build folder
-    # this is so that our tst_${TEST_NAME} executable can find the QML files
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/tst_${TEST_NAME}.qml COPYONLY)
-
-    add_executable("${APP_NAME}_${TEST_NAME}_test" "tests/${TEST_NAME}/tst_${TEST_NAME}.cpp")
-    target_link_libraries(${APP_NAME}_${TEST_NAME}_test PRIVATE
+    set(APP_TEST_NAME ${APP_NAME}_${TEST_NAME}_test)
+    add_executable(${APP_TEST_NAME} tests/${TEST_NAME}/tst_${TEST_NAME}.cpp)
+    target_link_libraries(${APP_TEST_NAME} PRIVATE
         ${APP_NAME}_lib
         Qt::QuickTest
     )
-    qt_import_qml_plugins(${APP_NAME}_${TEST_NAME}_test)
+    qt_import_qml_plugins(${APP_TEST_NAME})
 
-    if(WIN32)
-        set(EXE_SUFFIX ".exe")
-    else()
-        set(EXE_SUFFIX "")
-    endif()
+    set(TEST_CMD
+        $<TARGET_FILE:${APP_TEST_NAME}> -input
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml
+    )
 
-    add_test(NAME ${APP_NAME}_${TEST_NAME}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+    add_test(
+        NAME ${APP_TEST_NAME}
+        COMMAND ${TEST_CMD}
+    )
 
-    add_valgrind_test(${APP_NAME}_${TEST_NAME}_test ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}/${APP_NAME}_${TEST_NAME}_test${EXE_SUFFIX} ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+    # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
+    set_tests_properties(
+        ${APP_NAME}_${TEST_NAME}_test PROPERTIES ENVIRONMENT_MODIFICATION
+                                                 "${RUNTIME_ENV}"
+    )
 
-    set_target_properties(${APP_NAME}_${TEST_NAME}_test PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+    add_valgrind_test(
+        ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
     )
 endfunction()
 
