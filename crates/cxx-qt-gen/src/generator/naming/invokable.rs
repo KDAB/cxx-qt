@@ -42,19 +42,19 @@ impl CombinedIdent {
 
 #[cfg(test)]
 mod tests {
+    use syn::parse_quote;
+
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
     use std::collections::HashSet;
 
     #[test]
     fn test_from_impl_method() {
-        let item: ImplItemFn = tokens_to_syn(quote! {
+        let item: ImplItemFn = parse_quote! {
             fn my_invokable() {
 
             }
-        });
+        };
         let parsed = ParsedQInvokable {
             method: item,
             mutable: false,

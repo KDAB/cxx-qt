@@ -34,14 +34,13 @@ pub fn path_to_single_ident(path: &Path) -> Result<Ident> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use syn::parse_quote;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
+    use super::*;
 
     #[test]
     fn test_path_compare_str() {
-        let path: Path = tokens_to_syn(quote! { a::b::c });
+        let path: Path = parse_quote! { a::b::c };
         assert!(!path_compare_str(&path, &["a", "b"]));
         assert!(path_compare_str(&path, &["a", "b", "c"]));
         assert!(!path_compare_str(&path, &["a", "c", "b"]));
@@ -50,10 +49,10 @@ mod tests {
 
     #[test]
     fn test_path_to_single_ident() {
-        let path: Path = tokens_to_syn(quote! { a::b::c });
+        let path: Path = parse_quote! { a::b::c };
         assert!(path_to_single_ident(&path).is_err());
 
-        let path: Path = tokens_to_syn(quote! { a });
+        let path: Path = parse_quote! { a };
         let ident = path_to_single_ident(&path).unwrap();
         assert_eq!(ident, "a");
     }

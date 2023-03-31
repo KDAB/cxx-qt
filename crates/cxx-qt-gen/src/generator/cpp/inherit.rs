@@ -52,20 +52,16 @@ pub fn generate(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_str_eq;
-    use syn::ForeignItemFn;
+    use syn::{parse_quote, ForeignItemFn};
 
-    use crate::{
-        parser::inherit::ParsedInheritedMethod, syntax::safety::Safety, tests::tokens_to_syn,
-    };
+    use crate::{parser::inherit::ParsedInheritedMethod, syntax::safety::Safety};
 
     use super::*;
-    use quote::quote;
 
     fn generate_from_foreign(
-        tokens: proc_macro2::TokenStream,
+        method: ForeignItemFn,
         base_class: Option<&str>,
     ) -> Result<GeneratedCppQObjectBlocks> {
-        let method: ForeignItemFn = tokens_to_syn(tokens);
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, Safety::Safe).unwrap()];
         let base_class = base_class.map(|s| s.to_owned());
         generate(
@@ -87,7 +83,7 @@ mod tests {
     #[test]
     fn test_immutable() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                 fn test(self: &qobject::T, a: B, b: C);
             },
             Some("TestBaseClass"),
@@ -109,7 +105,7 @@ mod tests {
     #[test]
     fn test_mutable() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                 fn test(self: Pin<&mut qobject::T>);
             },
             Some("TestBaseClass"),
@@ -131,7 +127,7 @@ mod tests {
     #[test]
     fn test_default_base_class() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                 fn test(self: &qobject::T);
             },
             None,

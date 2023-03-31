@@ -49,19 +49,17 @@ mod tests {
     use super::*;
 
     use crate::parser::Parser;
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ItemMod;
+    use syn::{parse_quote, ItemMod};
 
     #[test]
     fn test_generated_cpp_blocks() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
@@ -72,13 +70,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_blocks_cxx_file_stem() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(cxx_file_stem = "my_object")]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
@@ -89,13 +87,13 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_blocks_namespace() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();

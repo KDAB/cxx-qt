@@ -109,26 +109,23 @@ impl Parser {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-    use syn::ItemMod;
-    use syn::Type;
+    use syn::{parse_quote, ItemMod, Type};
 
     /// Helper which returns a f64 as a [syn::Type]
     pub fn f64_type() -> Type {
-        tokens_to_syn(quote! { f64 })
+        parse_quote! { f64 }
     }
 
     #[test]
     fn test_parser_from_empty_module() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {}
-        });
+        };
         let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = tokens_to_syn(quote! {
+        let expected_module: ItemMod = parse_quote! {
             mod ffi {}
-        });
+        };
         assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
@@ -136,22 +133,22 @@ mod tests {
 
     #[test]
     fn test_parser_from_cxx_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "Rust" {
                     fn test();
                 }
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = tokens_to_syn(quote! {
+        let expected_module: ItemMod = parse_quote! {
             mod ffi {
                 extern "Rust" {
                     fn test();
                 }
             }
-        });
+        };
         assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.namespace, "");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
@@ -159,7 +156,7 @@ mod tests {
 
     #[test]
     fn test_parser_from_cxx_qt_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
@@ -170,7 +167,7 @@ mod tests {
                     Ready,
                 }
             }
-        });
+        };
         let parser = Parser::from(module.clone()).unwrap();
 
         assert_ne!(parser.passthrough_module, module);
@@ -184,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_parser_from_cxx_and_cxx_qt_items() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
@@ -199,7 +196,7 @@ mod tests {
                     fn test();
                 }
             }
-        });
+        };
         let parser = Parser::from(module.clone()).unwrap();
 
         assert_ne!(parser.passthrough_module, module);
@@ -213,7 +210,7 @@ mod tests {
 
     #[test]
     fn test_parser_from_error() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
@@ -224,20 +221,20 @@ mod tests {
                     Ready,
                 }
             }
-        });
+        };
         let parser = Parser::from(module);
         assert!(parser.is_err());
     }
 
     #[test]
     fn test_parser_from_error_no_attribute() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             mod ffi {
                 extern "Rust" {
                     fn test();
                 }
             }
-        });
+        };
         let parser = Parser::from(module);
         assert!(parser.is_err());
     }

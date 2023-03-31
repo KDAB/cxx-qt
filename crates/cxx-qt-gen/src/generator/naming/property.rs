@@ -81,13 +81,12 @@ impl CombinedIdent {
 
 #[cfg(test)]
 pub mod tests {
+    use syn::parse_quote;
+
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
-
     pub fn create_i32_qpropertyname() -> QPropertyName {
-        let ty: syn::Type = tokens_to_syn(quote! { i32 });
+        let ty: syn::Type = parse_quote! { i32 };
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,

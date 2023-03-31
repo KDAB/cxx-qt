@@ -61,17 +61,15 @@ pub fn generate(
 mod tests {
     use super::*;
     use crate::{
-        generator::naming::qobject::tests::create_qobjectname,
-        syntax::safety::Safety,
-        tests::{assert_tokens_eq, tokens_to_syn},
+        generator::naming::qobject::tests::create_qobjectname, syntax::safety::Safety,
+        tests::assert_tokens_eq,
     };
-    use syn::ForeignItemFn;
+    use syn::{parse_quote, ForeignItemFn};
 
     fn generate_from_foreign(
-        tokens: proc_macro2::TokenStream,
+        method: ForeignItemFn,
         safety: Safety,
     ) -> Result<GeneratedRustQObjectBlocks> {
-        let method: ForeignItemFn = tokens_to_syn(tokens);
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, safety).unwrap()];
         generate(&create_qobjectname(), &inherited_methods)
     }
@@ -79,7 +77,7 @@ mod tests {
     #[test]
     fn test_mutable() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                     fn test(self: Pin<&mut qobject::MyObject>, a: B, b: C);
             },
             Safety::Safe,
@@ -103,7 +101,7 @@ mod tests {
     #[test]
     fn test_immutable() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                 fn test(self: &qobject::MyObject, a: B, b: C);
             },
             Safety::Safe,
@@ -127,7 +125,7 @@ mod tests {
     #[test]
     fn test_unsafe() {
         let generated = generate_from_foreign(
-            quote! {
+            parse_quote! {
                 unsafe fn test(self: &qobject::MyObject);
             },
             Safety::Unsafe,

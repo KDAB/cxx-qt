@@ -68,11 +68,6 @@ mod tests {
         output.replace("\n\n", "\n")
     }
 
-    /// Helper to parse a quote TokenStream into a given syn item
-    pub fn tokens_to_syn<T: syn::parse::Parse>(tokens: proc_macro2::TokenStream) -> T {
-        syn::parse2(tokens.into_token_stream()).unwrap()
-    }
-
     fn sanitize_code(mut code: String) -> String {
         code.retain(|c| c != '\r');
         code

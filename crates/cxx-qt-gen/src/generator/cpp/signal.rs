@@ -99,10 +99,10 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
-    use crate::tests::tokens_to_syn;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use quote::{format_ident, quote};
+    use quote::format_ident;
+    use syn::parse_quote;
 
     #[test]
     fn test_generate_cpp_signals() {
@@ -113,12 +113,12 @@ mod tests {
             parameters: vec![
                 ParsedFunctionParameter {
                     ident: format_ident!("trivial"),
-                    ty: tokens_to_syn(quote! { i32 }),
+                    ty: parse_quote! { i32 },
                     cxx_type: None,
                 },
                 ParsedFunctionParameter {
                     ident: format_ident!("opaque"),
-                    ty: tokens_to_syn(quote! { UniquePtr<QColor> }),
+                    ty: parse_quote! { UniquePtr<QColor> },
                     cxx_type: Some("QColor".to_owned()),
                 },
             ],
@@ -168,7 +168,7 @@ mod tests {
             inherit: false,
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
-                ty: tokens_to_syn(quote! { A1 }),
+                ty: parse_quote! { A1 },
                 cxx_type: None,
             }],
         }];

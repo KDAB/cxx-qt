@@ -124,52 +124,49 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::assert_tokens_eq;
     use quote::format_ident;
     use std::collections::HashSet;
+    use syn::parse_quote;
 
     #[test]
     fn test_generate_rust_invokables() {
         let invokables = vec![
             ParsedQInvokable {
-                method: tokens_to_syn(quote! { fn void_invokable(&self) {} }),
+                method: parse_quote! { fn void_invokable(&self) {} },
                 mutable: false,
                 parameters: vec![],
                 return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: tokens_to_syn(quote! { fn trivial_invokable(&self, param: i32) -> i32 {} }),
+                method: parse_quote! { fn trivial_invokable(&self, param: i32) -> i32 {} },
                 mutable: false,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
-                    ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                    ty: parse_quote! { i32 },
                     cxx_type: None,
                 }],
                 return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: tokens_to_syn(
-                    quote! { fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {} },
-                ),
+                method: parse_quote! { fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {} },
                 mutable: true,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
-                    ty: tokens_to_syn::<syn::Type>(quote! { &QColor }),
+                    ty: parse_quote! { &QColor },
                     cxx_type: None,
                 }],
                 return_cxx_type: Some("QColor".to_owned()),
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: tokens_to_syn(
-                    quote! { fn unsafe_invokable(&self, param: *mut T) -> *mut T {} },
-                ),
+                method: parse_quote! { fn unsafe_invokable(&self, param: *mut T) -> *mut T {} },
                 mutable: false,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
-                    ty: tokens_to_syn::<syn::Type>(quote! { *mut T }),
+                    ty: parse_quote! { *mut T },
                     cxx_type: None,
                 }],
                 return_cxx_type: None,

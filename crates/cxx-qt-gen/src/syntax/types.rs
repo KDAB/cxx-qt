@@ -147,35 +147,21 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::tests::tokens_to_syn;
-    use proc_macro2::TokenStream;
-    use quote::quote;
     use syn::{parse_quote, Type};
-
-    fn assert_pin_of_self(tokens: TokenStream) {
-        let pin: Type = tokens_to_syn(tokens);
-        assert!(super::is_pin_of_self(&pin));
-    }
-
-    fn assert_not_pin_of_self(tokens: TokenStream) {
-        let pin: Type = tokens_to_syn(tokens);
-        assert!(!super::is_pin_of_self(&pin));
-    }
 
     #[test]
     fn test_is_pin_of_self() {
-        assert_pin_of_self(quote! { Pin<&Self> });
-        assert_pin_of_self(quote! { Pin<&mut Self> });
+        assert!(super::is_pin_of_self(&parse_quote! { Pin<&Self> }));
+        assert!(super::is_pin_of_self(&parse_quote! { Pin<&mut Self> }));
 
         // `Pin<Box<Self>>` is currently not supported because it can't be used with
         // Opaque C++ types. Use UniquePtr<Self> instead.
-        assert_not_pin_of_self(quote! { Pin<Box<Self>> });
-        assert_not_pin_of_self(quote! { Pin<&Self, Foo> });
-        assert_not_pin_of_self(quote! { Pin });
-        assert_not_pin_of_self(quote! { Pin<Self> });
-        assert_not_pin_of_self(quote! { Pin<&Foo> });
-        assert_not_pin_of_self(quote! { Pin<&mut Foo> });
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin<Box<Self>> }));
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin<&Self, Foo> }));
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin }));
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin<Self> }));
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin<&Foo> }));
+        assert!(!super::is_pin_of_self(&parse_quote! { Pin<&mut Foo> }));
     }
 
     #[test]
@@ -190,28 +176,22 @@ mod tests {
         assert!(super::is_pin_mut(&parse_quote! { Pin<&mut Foo> }));
     }
 
-    fn assert_qobject_ident(tokens: TokenStream, expected_ident: &str, expected_mutability: bool) {
-        let ty: Type = tokens_to_syn(tokens);
+    fn assert_qobject_ident(ty: Type, expected_ident: &str, expected_mutability: bool) {
         let (ident, mutability) = super::extract_qobject_ident(&ty).unwrap();
         assert_eq!(ident.to_string(), expected_ident);
         assert_eq!(mutability.is_some(), expected_mutability);
     }
 
-    fn assert_no_qobject_ident(tokens: TokenStream) {
-        let ty: Type = tokens_to_syn(tokens);
-        assert!(super::extract_qobject_ident(&ty).is_err());
-    }
-
     #[test]
     fn test_extract_qobject_ident() {
-        assert_qobject_ident(quote! { &qobject::Foo }, "Foo", false);
-        assert_qobject_ident(quote! { Pin<&mut qobject::Foo> }, "Foo", true);
+        assert_qobject_ident(parse_quote! { &qobject::Foo }, "Foo", false);
+        assert_qobject_ident(parse_quote! { Pin<&mut qobject::Foo> }, "Foo", true);
 
-        assert_no_qobject_ident(quote! { qobject::Foo });
-        assert_no_qobject_ident(quote! { &mut qobject::Foo });
-        assert_no_qobject_ident(quote! { Pin<&qobject::Foo> });
-        assert_no_qobject_ident(quote! { Foo });
-        assert_no_qobject_ident(quote! { qobject::X::Foo });
-        assert_no_qobject_ident(quote! { Self });
+        assert!(super::extract_qobject_ident(&parse_quote! { qobject::Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { &mut qobject::Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Pin<&qobject::Foo> }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { qobject::X::Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
     }
 }

@@ -154,15 +154,13 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
 
 #[cfg(test)]
 mod tests {
-    use syn::ForeignItemFn;
+    use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-
     #[test]
     fn test_foreign_mod_to_foreign_item_types() {
-        let item: ItemForeignMod = tokens_to_syn(quote! {
+        let item: ItemForeignMod = parse_quote! {
             extern "C++" {
                 #[namespace = "a"]
                 type A;
@@ -170,7 +168,7 @@ mod tests {
                 #[cxx_name = "D"]
                 type B = C;
             }
-        });
+        };
         let result = foreign_mod_to_foreign_item_types(&item).unwrap();
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].attrs.len(), 1);
@@ -196,9 +194,9 @@ mod tests {
 
     #[test]
     fn test_foreign_fn_self() {
-        let foreign_fn: ForeignItemFn = tokens_to_syn(quote! {
+        let foreign_fn: ForeignItemFn = parse_quote! {
             fn foo(self: &qobject::T, a: A) -> B;
-        });
+        };
         let result = self_type_from_foreign_fn(&foreign_fn.sig).unwrap();
         assert_eq!(result.ty.to_token_stream().to_string(), "& qobject :: T");
     }
@@ -207,9 +205,9 @@ mod tests {
     fn test_foreign_fn_invalid_self() {
         macro_rules! test {
             ($($tt:tt)*) => {
-                let foreign_fn: ForeignItemFn = tokens_to_syn(quote! {
+                let foreign_fn: ForeignItemFn = parse_quote! {
                     $($tt)*
-                });
+                };
                 assert!(self_type_from_foreign_fn(&foreign_fn.sig).is_err());
             }
         }

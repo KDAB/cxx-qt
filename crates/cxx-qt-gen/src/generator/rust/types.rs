@@ -33,34 +33,29 @@ pub fn is_unsafe_cxx_type(ty: &Type) -> bool {
 mod tests {
     use super::*;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
+    use syn::parse_quote;
 
     #[test]
     fn test_is_unsafe_cxx_type_path() {
-        assert!(!is_unsafe_cxx_type(&tokens_to_syn(quote! { i32 })));
+        assert!(!is_unsafe_cxx_type(&parse_quote! { i32 }));
     }
 
     #[test]
     fn test_is_unsafe_cxx_type_path_template() {
-        assert!(!is_unsafe_cxx_type(&tokens_to_syn(quote! { Vector<i32> })));
-        assert!(is_unsafe_cxx_type(&tokens_to_syn(
-            quote! { Vector<*mut T> }
-        )));
+        assert!(!is_unsafe_cxx_type(&parse_quote! { Vector<i32> }));
+        assert!(is_unsafe_cxx_type(&parse_quote! { Vector<*mut T> }));
     }
 
     #[test]
     fn test_is_unsafe_cxx_type_ptr() {
-        assert!(is_unsafe_cxx_type(&tokens_to_syn(quote! { *mut T })));
+        assert!(is_unsafe_cxx_type(&parse_quote! { *mut T }));
     }
 
     #[test]
     fn test_is_unsafe_cxx_type_reference() {
-        assert!(!is_unsafe_cxx_type(&tokens_to_syn(quote! { &i32 })));
-        assert!(is_unsafe_cxx_type(&tokens_to_syn(quote! { &*mut T })));
-        assert!(!is_unsafe_cxx_type(&tokens_to_syn(quote! { &Vector<i32> })));
-        assert!(is_unsafe_cxx_type(&tokens_to_syn(
-            quote! { &Vector<*mut T> }
-        )));
+        assert!(!is_unsafe_cxx_type(&parse_quote! { &i32 }));
+        assert!(is_unsafe_cxx_type(&parse_quote! { &*mut T }));
+        assert!(!is_unsafe_cxx_type(&parse_quote! { &Vector<i32> }));
+        assert!(is_unsafe_cxx_type(&parse_quote! { &Vector<*mut T> }));
     }
 }

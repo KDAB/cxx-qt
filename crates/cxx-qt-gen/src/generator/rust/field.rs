@@ -70,24 +70,22 @@ pub fn generate_rust_fields(
 mod tests {
     use super::*;
 
-    use crate::{
-        generator::naming::qobject::tests::create_qobjectname,
-        tests::{assert_tokens_eq, tokens_to_syn},
-    };
+    use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use quote::{format_ident, quote};
+    use syn::parse_quote;
 
     #[test]
     fn test_generate_rust_properties() {
         let properties = vec![
             ParsedRustField {
                 ident: format_ident!("private_field"),
-                ty: tokens_to_syn::<syn::Type>(quote! { i32 }),
+                ty: parse_quote! { i32 },
                 vis: syn::Visibility::Inherited,
             },
             ParsedRustField {
                 ident: format_ident!("public_field"),
-                ty: tokens_to_syn::<syn::Type>(quote! { f64 }),
-                vis: tokens_to_syn::<syn::Visibility>(quote! { pub }),
+                ty: parse_quote! { f64 },
+                vis: parse_quote! { pub },
             },
         ];
         let qobject_idents = create_qobjectname();

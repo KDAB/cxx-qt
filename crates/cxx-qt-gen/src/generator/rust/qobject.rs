@@ -187,18 +187,18 @@ mod tests {
     use super::*;
 
     use crate::parser::Parser;
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
-    use syn::ItemMod;
+    use crate::tests::assert_tokens_eq;
+    use syn::{parse_quote, ItemMod};
 
     #[test]
     fn test_generated_rust_qobject_blocks() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
@@ -215,13 +215,13 @@ mod tests {
 
     #[test]
     fn test_generated_rust_qobject_blocks_namespace() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
@@ -238,13 +238,13 @@ mod tests {
 
     #[test]
     fn test_generated_rust_qobject_blocks_singleton() {
-        let module: ItemMod = tokens_to_syn(quote! {
+        let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
                 pub struct MyObject;
             }
-        });
+        };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())

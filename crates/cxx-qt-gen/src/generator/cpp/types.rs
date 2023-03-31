@@ -274,14 +274,13 @@ fn possible_built_in_template_base(ty: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use syn::parse_quote;
 
-    use crate::tests::tokens_to_syn;
-    use quote::quote;
+    use super::*;
 
     #[test]
     fn test_cxx_type_with_attribute() {
-        let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
+        let ty = parse_quote! { UniquePtr<QColor> };
         let cxx_ty = CppType::from(
             &ty,
             &Some("QColor".to_owned()),
@@ -294,7 +293,7 @@ mod tests {
 
     #[test]
     fn test_cxx_type_without_attribute() {
-        let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
+        let ty = parse_quote! { UniquePtr<QColor> };
         let cxx_ty = CppType::from(&ty, &None, &ParsedCxxMappings::default()).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "::std::unique_ptr<QColor>");
         assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
@@ -302,7 +301,7 @@ mod tests {
 
     #[test]
     fn test_cxx_type_mapped() {
-        let ty = tokens_to_syn(quote! { A });
+        let ty = parse_quote! { A };
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
             .cxx_names
@@ -314,7 +313,7 @@ mod tests {
 
     #[test]
     fn test_cxx_type_mapped_with_attribute() {
-        let ty = tokens_to_syn(quote! { A });
+        let ty = parse_quote! { A };
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
             .cxx_names
@@ -326,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_built_in_one_part() {
-        let ty = tokens_to_syn(quote! { i32 });
+        let ty = parse_quote! { i32 };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::int32_t"
@@ -335,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_unknown_one_part() {
-        let ty = tokens_to_syn(quote! { QPoint });
+        let ty = parse_quote! { QPoint };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "QPoint"
@@ -344,7 +343,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_const_one_part() {
-        let ty = tokens_to_syn(quote! { &QPoint });
+        let ty = parse_quote! { &QPoint };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "QPoint const&"
@@ -353,7 +352,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_mut_one_part() {
-        let ty = tokens_to_syn(quote! { &mut QPoint });
+        let ty = parse_quote! { &mut QPoint };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "QPoint&"
@@ -362,7 +361,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_const_ptr_mut_one_part() {
-        let ty = tokens_to_syn(quote! { &*mut T });
+        let ty = parse_quote! { &*mut T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T* const&"
@@ -371,7 +370,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_const_ptr_const_one_part() {
-        let ty = tokens_to_syn(quote! { &*const T });
+        let ty = parse_quote! { &*const T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "const T* const&"
@@ -380,7 +379,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_mut_ptr_mut_one_part() {
-        let ty = tokens_to_syn(quote! { &mut *mut T });
+        let ty = parse_quote! { &mut *mut T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T*&"
@@ -389,7 +388,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ref_mut_ptr_const_one_part() {
-        let ty = tokens_to_syn(quote! { &mut *const T });
+        let ty = parse_quote! { &mut *const T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "const T*&"
@@ -398,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ptr_mut_one_part() {
-        let ty = tokens_to_syn(quote! { *mut T });
+        let ty = parse_quote! { *mut T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T*"
@@ -407,7 +406,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_ptr_const_one_part() {
-        let ty = tokens_to_syn(quote! { *const T });
+        let ty = parse_quote! { *const T };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "const T*"
@@ -416,7 +415,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_built_in() {
-        let ty = tokens_to_syn(quote! { Vec<f64> });
+        let ty = parse_quote! { Vec<f64> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Vec<double>"
@@ -425,7 +424,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_unknown() {
-        let ty = tokens_to_syn(quote! { UniquePtr<QColor> });
+        let ty = parse_quote! { UniquePtr<QColor> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<QColor>"
@@ -434,7 +433,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_built_in_ref_const() {
-        let ty = tokens_to_syn(quote! { &Vec<f64> });
+        let ty = parse_quote! { &Vec<f64> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Vec<double> const&"
@@ -443,7 +442,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_built_in_ptr_mut() {
-        let ty = tokens_to_syn(quote! { &Vec<*mut T> });
+        let ty = parse_quote! { &Vec<*mut T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Vec<T*> const&"
@@ -452,7 +451,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_built_in_ptr_const() {
-        let ty = tokens_to_syn(quote! { &Vec<*const T> });
+        let ty = parse_quote! { &Vec<*const T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Vec<const T*> const&"
@@ -461,7 +460,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_unknown_ref_mut() {
-        let ty = tokens_to_syn(quote! { &mut UniquePtr<QColor> });
+        let ty = parse_quote! { &mut UniquePtr<QColor> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<QColor>&"
@@ -470,7 +469,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_unknown_ptr_mut() {
-        let ty = tokens_to_syn(quote! { &mut UniquePtr<*mut T> });
+        let ty = parse_quote! { &mut UniquePtr<*mut T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<T*>&"
@@ -479,7 +478,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_templated_unknown_ptr_const() {
-        let ty = tokens_to_syn(quote! { &mut UniquePtr<*const T> });
+        let ty = parse_quote! { &mut UniquePtr<*const T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<const T*>&"
@@ -488,7 +487,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_mapped() {
-        let ty = tokens_to_syn(quote! { A });
+        let ty = parse_quote! { A };
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
             .cxx_names
@@ -498,7 +497,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_mapped_with_namespace() {
-        let ty = tokens_to_syn(quote! { A });
+        let ty = parse_quote! { A };
         let mut cxx_mappings = ParsedCxxMappings::default();
         cxx_mappings
             .cxx_names
@@ -511,7 +510,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin() {
-        let ty = tokens_to_syn(quote! { Pin<T> });
+        let ty = parse_quote! { Pin<T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T"
@@ -520,7 +519,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin_ref() {
-        let ty = tokens_to_syn(quote! { Pin<&T> });
+        let ty = parse_quote! { Pin<&T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T const&"
@@ -529,7 +528,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin_ref_mut() {
-        let ty = tokens_to_syn(quote! { Pin<&mut T> });
+        let ty = parse_quote! { Pin<&mut T> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "T&"
@@ -538,7 +537,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin_template() {
-        let ty = tokens_to_syn(quote! { Pin<UniquePtr<T>> });
+        let ty = parse_quote! { Pin<UniquePtr<T>> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<T>"
@@ -547,7 +546,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin_template_ref() {
-        let ty = tokens_to_syn(quote! { Pin<&UniquePtr<T>> });
+        let ty = parse_quote! { Pin<&UniquePtr<T>> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<T> const&"
@@ -556,7 +555,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_pin_template_ref_mut() {
-        let ty = tokens_to_syn(quote! { Pin<&mut UniquePtr<T>> });
+        let ty = parse_quote! { Pin<&mut UniquePtr<T>> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::unique_ptr<T>&"
@@ -565,7 +564,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_slice() {
-        let ty = tokens_to_syn(quote! { &[i32] });
+        let ty = parse_quote! { &[i32] };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Slice<::std::int32_t const>"
@@ -574,7 +573,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_slice_mut() {
-        let ty = tokens_to_syn(quote! { &mut [i32] });
+        let ty = parse_quote! { &mut [i32] };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Slice<::std::int32_t>"
@@ -583,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_str() {
-        let ty = tokens_to_syn(quote! { &str });
+        let ty = parse_quote! { &str };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Str"
@@ -592,7 +591,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_str_template() {
-        let ty = tokens_to_syn(quote! { Vec<&str> });
+        let ty = parse_quote! { Vec<&str> };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Vec<::rust::Str>"
@@ -601,7 +600,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_array() {
-        let ty = tokens_to_syn(quote! { [i32; 10] });
+        let ty = parse_quote! { [i32; 10] };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::std::array<::std::int32_t, 10>"
@@ -610,19 +609,19 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_array_length_zero() {
-        let ty = tokens_to_syn(quote! { [i32; 0] });
+        let ty = parse_quote! { [i32; 0] };
         assert!(to_cpp_string(&ty, &ParsedCxxMappings::default()).is_err());
     }
 
     #[test]
     fn test_to_cpp_string_array_length_invalid() {
-        let ty = tokens_to_syn(quote! { [i32; String] });
+        let ty = parse_quote! { [i32; String] };
         assert!(to_cpp_string(&ty, &ParsedCxxMappings::default()).is_err());
     }
 
     #[test]
     fn test_to_cpp_string_fn() {
-        let ty = tokens_to_syn(quote! { fn(i32, i32) -> bool });
+        let ty = parse_quote! { fn(i32, i32) -> bool };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Fn<bool, (::std::int32_t, ::std::int32_t)>"
@@ -631,7 +630,7 @@ mod tests {
 
     #[test]
     fn test_to_cpp_string_fn_void() {
-        let ty = tokens_to_syn(quote! { fn() });
+        let ty = parse_quote! { fn() };
         assert_eq!(
             to_cpp_string(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Fn<void, ()>"

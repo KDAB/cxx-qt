@@ -115,16 +115,16 @@ pub fn generate_rust_signals(
 mod tests {
     use super::*;
 
-    use crate::tests::{assert_tokens_eq, tokens_to_syn};
+    use crate::tests::assert_tokens_eq;
     use crate::{
         generator::naming::qobject::tests::create_qobjectname, parser::signals::ParsedSignalsEnum,
     };
     use quote::quote;
-    use syn::ItemEnum;
+    use syn::{parse_quote, ItemEnum};
 
     #[test]
     fn test_generate_rust_signals() {
-        let e: ItemEnum = tokens_to_syn(quote! {
+        let e: ItemEnum = parse_quote! {
             #[cxx_qt::qsignals(MyObject)]
             enum MySignals {
                 Ready,
@@ -140,7 +140,7 @@ mod tests {
                 #[inherit]
                 ExistingSignal,
             }
-        });
+        };
         let signals_enum = ParsedSignalsEnum::from(&e, 0).unwrap();
         let qobject_idents = create_qobjectname();
 

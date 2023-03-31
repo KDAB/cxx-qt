@@ -159,8 +159,8 @@ impl ParsedInheritedMethod {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::tokens_to_syn;
     use quote::quote;
+    use syn::parse_quote;
 
     #[test]
     fn test_parse_unsafe_mod() {
@@ -195,9 +195,7 @@ mod tests {
         }
     }
 
-    fn assert_parse_error(tokens: proc_macro2::TokenStream) {
-        let function: ForeignItemFn = tokens_to_syn(tokens);
-
+    fn assert_parse_error(function: ForeignItemFn) {
         let result = ParsedInheritedMethod::parse(function, Safety::Safe);
         assert!(result.is_err());
     }
@@ -205,54 +203,54 @@ mod tests {
     #[test]
     fn test_parser_errors() {
         // Missing self type
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(&self);
         });
         // Missing qobject::
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: &T);
         });
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: &mut T);
         });
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: Pin<&mut T>);
         });
         // Pointer types
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: *const T);
         });
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: *mut T);
         });
         // Invalid pin usage
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: Pin<&T>);
         });
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(self: &mut T);
         });
         // Attributes
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             #[myattribute]
             fn test(self: &qobject::T);
         });
-        assert_parse_error(quote! {
+        assert_parse_error(parse_quote! {
             fn test(#[test] self: &qobject::T);
         });
         // Missing "unsafe"
-        let function: ForeignItemFn = tokens_to_syn(quote! {
+        let function: ForeignItemFn = parse_quote! {
             fn test(self: &qobject::T);
-        });
+        };
         assert!(ParsedInheritedMethod::parse(function, Safety::Unsafe).is_err());
     }
 
     #[test]
     fn test_parse_safe() {
-        let function: ForeignItemFn = tokens_to_syn(quote! {
+        let function: ForeignItemFn = parse_quote! {
             #[cxx_name="testFunction"]
             fn test(self: Pin<&mut qobject::T>, a: i32, b: &str);
-        });
+        };
 
         let parsed = ParsedInheritedMethod::parse(function, Safety::Safe).unwrap();
 
