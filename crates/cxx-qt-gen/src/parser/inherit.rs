@@ -7,10 +7,7 @@ use crate::{
     generator::naming::CombinedIdent,
     parser::parameter::ParsedFunctionParameter,
     syntax::{
-        attribute::{attribute_find_path, attribute_tokens_to_value},
-        foreignmod,
-        safety::Safety,
-        types,
+        attribute::attribute_find_path, expr::expr_to_string, foreignmod, safety::Safety, types,
     },
 };
 use quote::format_ident;
@@ -136,9 +133,10 @@ impl ParsedInheritedMethod {
                 ));
             }
 
-            let name = attribute_tokens_to_value::<LitStr>(attribute)?;
-
-            ident.cpp = format_ident!("{}", name.value());
+            ident.cpp = format_ident!(
+                "{}",
+                expr_to_string(&attribute.meta.require_name_value()?.value)?
+            );
         }
         let safe = method.sig.unsafety.is_none();
 
