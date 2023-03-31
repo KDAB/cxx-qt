@@ -120,7 +120,7 @@ cmake --build build
 ### Testing
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
-For testing the book, it assumes that [`mdbook` and `mdbook-linkcheck`](https://rust-lang.github.io/mdBook/guide/installation.html) are installed.
+For testing the book, it assumes that [`mdbook`](https://rust-lang.github.io/mdBook/guide/installation.html) and [`mdbook-linkcheck`](https://github.com/Michael-F-Bryan/mdbook-linkcheck) are installed.
 
 For license and memory testing, it assumes that you have [`reuse`](https://reuse.software/) installed (eg via `pip3 install reuse`) and [`valgrind`](https://valgrind.org/).
 
