@@ -88,9 +88,6 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
-            # FIXME: many tests fail to link
-            # https://github.com/KDAB/cxx-qt/issues/111
-            # cxx_qt_lib_cargo_tests fails to run with a missing DLL error.
             ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -103,9 +100,6 @@ jobs:
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
-            # FIXME: many tests fail to link
-            # https://github.com/KDAB/cxx-qt/issues/111
-            # cxx_qt_lib_cargo_tests fails to run with a missing DLL error.
             ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
