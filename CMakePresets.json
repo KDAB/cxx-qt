@@ -10,32 +10,6 @@
             }
         },
         {
-            "name": "build-debug",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "build-relwithdebinfo",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-            }
-        },
-        {
-            "name": "build-release",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "ninja",
-            "hidden": true,
-            "generator": "Ninja"
-        },
-        {
             "name": "qt6",
             "hidden": true,
             "cacheVariables": {
@@ -50,26 +24,17 @@
             }
         },
         {
-            "name": "ninja-debug",
-            "displayName": "Ninja Debug",
-            "description": "Build in Debug with Ninja generator",
-            "inherits": ["common", "ninja", "build-debug", "qt6"]
-        },
-        {
-            "name": "ninja-relwithdebinfo",
-            "displayName": "Ninja RelWithDebInfo",
-            "description": "Build in RelWithDebInfo with Ninja generator",
-            "inherits": ["common", "ninja", "build-relwithdebinfo", "qt6"]
-        },
-        {
-            "name": "ninja-release",
-            "displayName": "Ninja Release",
-            "description": "Build in Release with Ninja generator",
-            "inherits": ["common", "ninja", "build-release", "qt6"]
+            "name": "ninja",
+            "hidden": true,
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
         },
         {
             "name": "ninja-multi",
-            "displayName": "Ninja Multi-Config",
+            "displayName": "Ninja",
             "description": "Default build using Ninja Multi-Config generator",
             "generator": "Ninja Multi-Config",
             "inherits": ["common", "ninja", "qt6"]
@@ -109,21 +74,6 @@
             "name": "build-release",
             "configuration": "Release",
             "hidden": true
-        },
-        {
-            "name": "ninja-debug",
-            "configurePreset": "ninja-debug",
-            "inherits": "build-debug"
-        },
-        {
-            "name": "ninja-relwithdebinfo",
-            "configurePreset": "ninja-relwithdebinfo",
-            "inherits": "build-relwithdebinfo"
-        },
-        {
-            "name": "ninja-release",
-            "configurePreset": "ninja-release",
-            "inherits": "build-release"
         },
         {
             "name": "ninja-multi-debug",
