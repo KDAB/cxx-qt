@@ -13,7 +13,7 @@ A minimal example building the same code with Cargo is in the [`cargo_without_cm
 
 Then we have multiple other examples available inside the projects
 
-  * [Defining properties and invokables](./qml_features/rust/src/invokables.rs.rs)
+  * [Defining properties and invokables](./qml_features/rust/src/invokables.rs)
   * [Defining & Emitting Signals](./qml_features/rust/src/signals.rs)
   * [Using threaded logic](./qml_features/rust/src/threading.rs)
   * [How to (de)serialise QObjects](./qml_features/rust/src/serialisation.rs)
