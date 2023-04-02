@@ -181,6 +181,31 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND CARGO_ENV ${RUNTIME_ENV})
 endif()
 
+# Same logic as in Corrosion.cmake
+if(CMAKE_VS_PLATFORM_NAME)
+    set(BUILD_DIR "${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>")
+elseif(CMAKE_CONFIGURATION_TYPES)
+    set(BUILD_DIR "$<CONFIG>")
+else()
+    set(BUILD_DIR .)
+endif()
+
+# Set the target dir to the same that Corrosion uses to reuse build artifacts
+# from the main build.
+set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
+
+# Add CMake tests for `cargo test/clippy/fmt`.
+add_test(NAME cargo_tests COMMAND cargo test --all-targets --target-dir
+                                  ${CARGO_TARGET_DIR})
+add_test(NAME cargo_doc_tests COMMAND cargo test --doc --target-dir
+                                      ${CARGO_TARGET_DIR})
+add_test(NAME cargo_clippy COMMAND cargo clippy --all-targets --target-dir
+                                   ${CARGO_TARGET_DIR} -- -D warnings)
+
+set_tests_properties(cargo_tests cargo_doc_tests cargo_clippy PROPERTIES
+    ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
+)
+
 # Create helper method which adds relevent cargo tests for a given manifest
 function(add_test_cargo TEST_NAME_PREFIX MANIFEST_PATH ADD_DOCTESTS)
     # Add cargo as a test
