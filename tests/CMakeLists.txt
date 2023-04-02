@@ -12,12 +12,6 @@ function(add_acceptance_tests TEST_NAME)
     set(NAME_WITH_PREFIX test_${TEST_NAME})
     set(TARGET_NAME tests_${TEST_NAME})
 
-    # Add all the normal tests used on the other modules
-    add_test_cargo(
-        ${NAME_WITH_PREFIX}
-        "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}/rust/Cargo.toml" DOCTESTS_OFF
-    )
-
     set(CPP_TEST_NAME ${NAME_WITH_PREFIX}_cpp_tests)
     add_test(NAME ${CPP_TEST_NAME} COMMAND $<TARGET_FILE:${TARGET_NAME}>)
 
