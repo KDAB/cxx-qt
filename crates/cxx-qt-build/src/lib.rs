@@ -348,12 +348,6 @@ impl CxxQtBuilder {
         self
     }
 
-    /// Convenience wrapper around [qt_build_utils::setup_linker].
-    pub fn setup_linker(self) -> Self {
-        qt_build_utils::setup_linker();
-        self
-    }
-
     /// Use a closure to run additional customization on [CxxQtBuilder]'s internal [cc::Build]
     /// before calling [CxxQtBuilder::build]. This allows to add extra include paths, compiler flags,
     /// or anything else available via [cc::Build]'s API. For example, to add an include path for
@@ -377,6 +371,9 @@ impl CxxQtBuilder {
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
+        // Ensure that the linker is setup correctly for Cargo builds
+        qt_build_utils::setup_linker();
+
         let out_dir = env::var("OUT_DIR").unwrap();
         // The include directory needs to be namespaced by crate name when exporting for a C++ build system,
         // but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
