@@ -19,7 +19,6 @@ fn main() {
         // Generate C++ code from the .qrc file with the rcc tool
         // https://doc.qt.io/qt-6/resources.html
         .qrc("qml/qml.qrc")
-        .setup_linker()
         .build();
 }
 // ANCHOR_END: book_cargo_executable_build_rs
