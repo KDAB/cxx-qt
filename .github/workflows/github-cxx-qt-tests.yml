@@ -146,13 +146,12 @@ jobs:
       run: cargo install sccache mdbook mdbook-linkcheck
 
     - name: "Compiler cache"
-      uses: actions/cache@v3
+      # Only restore here, later we save for only the main branch
+      # and always use the same key as we start from the main branch cache
+      uses: actions/cache/restore@v3
       with:
         path: ${{ matrix.compiler_cache_path }}
-        key: ${{ matrix.name }}-${{ github.head_ref }}-${{ github.run_number }}
-        restore-keys: |
-          ${{ matrix.name }}-${{ github.head_ref }}
-          ${{ matrix.name }}
+        key: ${{ matrix.name }}_compiler_cache
 
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
@@ -238,3 +237,16 @@ jobs:
           ${{ matrix.workspace }}/build/vcpkg-manifest-install.log
           ${{ matrix.workspace }}/build/vcpkg_installed/vcpkg/issue_body.md
         if-no-files-found: ignore
+
+    - name: "Post compiler cache"
+      # Only save the cache when we are the main branch
+      #
+      # This should prevent the cache from increasing in size dramatically over time.
+      # Which then can cache the useful caches to be purged. Instead we always start
+      # with the main branch cache and build from here, this has the disadvantage of
+      # needing to rebuild any changes in the branch each time.
+      if: github.event.base_ref == 'refs/heads/main'
+      uses: actions/cache/save@v3
+      with:
+        path: ${{ matrix.compiler_cache_path }}
+        key: ${{ matrix.name }}_compiler_cache
