@@ -11,6 +11,7 @@ fn main() {
     CxxQtBuilder::new()
         .file("src/containers.rs")
         .file("src/custom_base_class.rs")
+        .file("src/custom_parent_class.rs")
         .file("src/invokables.rs")
         .file("src/multiple_qobjects.rs")
         .file("src/nested_qobjects.rs")
@@ -28,6 +29,9 @@ fn main() {
             cc.file("../cpp/custom_object.cpp");
         })
         .qobject_header("../cpp/custom_object.h")
+        // Ensure that Quick module is linked, so that cargo test can work.
+        // In a CMake project this isn't required as the linking happens in CMake.
+        .qt_module("Quick")
         .build();
 }
 // ANCHOR_END: book_build_rs

@@ -12,6 +12,7 @@
 
 pub mod containers;
 pub mod custom_base_class;
+pub mod custom_parent_class;
 pub mod invokables;
 pub mod multiple_qobjects;
 pub mod nested_qobjects;

@@ -112,6 +112,10 @@ ApplicationWindow {
                     name: "Singleton"
                     source: "qrc:/pages/SingletonPage.qml"
                 }
+                ListElement {
+                    name: "Custom Parent Class"
+                    source: "qrc:/pages/CustomParentClassPage.qml"
+                }
             }
         }
     }
