@@ -70,8 +70,6 @@ pub mod ffi {
                 |qobject, obj| {
                     // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
                     if let Some(inner) = unsafe { qobject.inner().as_mut() } {
-                        // TODO: Use `pin!` one it's stable so that this unsafe block can be removed
-                        // https://doc.rust-lang.org/std/pin/macro.pin.html
                         let pinned_inner = unsafe { Pin::new_unchecked(inner) };
                         // Now pinned inner can be used as normal
                         pinned_inner.emit(InnerSignals::Called { inner: obj });
@@ -99,8 +97,6 @@ pub mod ffi {
         pub fn reset(self: Pin<&mut Self>) {
             // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
             if let Some(inner) = unsafe { self.inner().as_mut() } {
-                // TODO: Use `pin!` one it's stable so that this unsafe block can be removed
-                // https://doc.rust-lang.org/std/pin/macro.pin.html
                 let pinned_inner = unsafe { Pin::new_unchecked(inner) };
                 // Now pinned inner can be used as normal
                 pinned_inner.set_counter(10);
