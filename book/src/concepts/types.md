@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 CXX-Qt supports most types supported by CXX. These can be used in properties, invokables, and signals.
 
-Note that there is currently missing support for a few CXX types in CXX-Qt, which is tracked in [this issue](https://github.com/KDAB/cxx-qt/issues/328).
-
 ## `cxx-qt-lib` Types
 
 The `cxx-qt-lib` crate provides CXX bindings for common Qt types.
