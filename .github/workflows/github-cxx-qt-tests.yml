@@ -245,7 +245,7 @@ jobs:
       # Which then can cache the useful caches to be purged. Instead we always start
       # with the main branch cache and build from here, this has the disadvantage of
       # needing to rebuild any changes in the branch each time.
-      if: github.event.base_ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main'
       uses: actions/cache/save@v3
       with:
         path: ${{ matrix.compiler_cache_path }}
