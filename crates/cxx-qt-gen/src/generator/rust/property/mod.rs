@@ -110,6 +110,10 @@ mod tests {
             generated.cxx_qt_mod_contents[0],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "trivial_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
                     pub fn trivial_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
                         cpp.trivial_property()
                     }
@@ -120,6 +124,8 @@ mod tests {
             generated.cxx_qt_mod_contents[1],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "trivial_property"]
                     pub fn trivial_property(&self) -> &i32 {
                         &self.rust().trivial_property
                     }
@@ -130,6 +136,13 @@ mod tests {
             generated.cxx_qt_mod_contents[2],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "unsafe getter for the Q_PROPERTY "]
+                    #[doc = "trivial_property"]
+                    #[doc = "\n"]
+                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+                    #[doc = "\n"]
+                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+                    #[doc = "trivial_property_changed"]
                     pub unsafe fn trivial_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
                         &mut self.rust_mut().get_unchecked_mut().trivial_property
                     }
@@ -151,6 +164,10 @@ mod tests {
             generated.cxx_qt_mod_contents[3],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "trivial_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
                     pub fn set_trivial_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
                         cpp.set_trivial_property(value);
                     }
@@ -161,6 +178,8 @@ mod tests {
             generated.cxx_qt_mod_contents[4],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "trivial_property"]
                     pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
                         if self.rust().trivial_property == value {
                             return;
@@ -179,6 +198,12 @@ mod tests {
             generated.cxx_mod_contents[2],
             parse_quote! {
                 unsafe extern "C++" {
+                    #[doc = "Notify signal for the Q_PROPERTY"]
+                    #[doc = "trivial_property"]
+                    #[doc = "\n"]
+                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+                    #[doc = "trivial_property_mut"]
+                    #[doc = ", is used."]
                     #[rust_name = "trivial_property_changed"]
                     fn trivialPropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
@@ -201,6 +226,10 @@ mod tests {
             generated.cxx_qt_mod_contents[5],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "opaque_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
                     pub fn opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
                         cpp.opaque_property()
                     }
@@ -211,6 +240,8 @@ mod tests {
             generated.cxx_qt_mod_contents[6],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "opaque_property"]
                     pub fn opaque_property(&self) -> &UniquePtr<QColor> {
                         &self.rust().opaque_property
                     }
@@ -221,6 +252,13 @@ mod tests {
             generated.cxx_qt_mod_contents[7],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "unsafe getter for the Q_PROPERTY "]
+                    #[doc = "opaque_property"]
+                    #[doc = "\n"]
+                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+                    #[doc = "\n"]
+                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+                    #[doc = "opaque_property_changed"]
                     pub unsafe fn opaque_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
                         &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
@@ -242,6 +280,10 @@ mod tests {
             generated.cxx_qt_mod_contents[8],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "opaque_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
                     pub fn set_opaque_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
                         cpp.set_opaque_property(value);
                     }
@@ -252,6 +294,8 @@ mod tests {
             generated.cxx_qt_mod_contents[9],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "opaque_property"]
                     pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
                         if self.rust().opaque_property == value {
                             return;
@@ -270,6 +314,12 @@ mod tests {
             generated.cxx_mod_contents[5],
             parse_quote! {
                 unsafe extern "C++" {
+                    #[doc = "Notify signal for the Q_PROPERTY"]
+                    #[doc = "opaque_property"]
+                    #[doc = "\n"]
+                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+                    #[doc = "opaque_property_mut"]
+                    #[doc = ", is used."]
                     #[rust_name = "opaque_property_changed"]
                     fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }
@@ -292,6 +342,10 @@ mod tests {
             generated.cxx_qt_mod_contents[10],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "unsafe_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
                     pub fn unsafe_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a *mut T {
                         cpp.unsafe_property()
                     }
@@ -302,6 +356,8 @@ mod tests {
             generated.cxx_qt_mod_contents[11],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = "unsafe_property"]
                     pub fn unsafe_property(&self) -> &*mut T {
                         &self.rust().unsafe_property
                     }
@@ -312,6 +368,13 @@ mod tests {
             generated.cxx_qt_mod_contents[12],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "unsafe getter for the Q_PROPERTY "]
+                    #[doc = "unsafe_property"]
+                    #[doc = "\n"]
+                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+                    #[doc = "\n"]
+                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+                    #[doc = "unsafe_property_changed"]
                     pub unsafe fn unsafe_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut *mut T {
                         &mut self.rust_mut().get_unchecked_mut().unsafe_property
                     }
@@ -333,6 +396,10 @@ mod tests {
             generated.cxx_qt_mod_contents[13],
             parse_quote! {
                 impl MyObject {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "unsafe_property"]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
                     pub fn set_unsafe_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: *mut T) {
                         cpp.set_unsafe_property(value);
                     }
@@ -343,6 +410,8 @@ mod tests {
             generated.cxx_qt_mod_contents[14],
             parse_quote! {
                 impl MyObjectQt {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = "unsafe_property"]
                     pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
                         if self.rust().unsafe_property == value {
                             return;
@@ -361,6 +430,12 @@ mod tests {
             generated.cxx_mod_contents[8],
             parse_quote! {
                 unsafe extern "C++" {
+                    #[doc = "Notify signal for the Q_PROPERTY"]
+                    #[doc = "unsafe_property"]
+                    #[doc = "\n"]
+                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+                    #[doc = "unsafe_property_mut"]
+                    #[doc = ", is used."]
                     #[rust_name = "unsafe_property_changed"]
                     fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>);
                 }

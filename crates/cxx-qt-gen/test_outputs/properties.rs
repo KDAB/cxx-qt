@@ -18,6 +18,12 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc = "The C++ type for the QObject "]
+        #[doc = "MyObject"]
+        #[doc = "\n"]
+        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         #[cxx_name = "MyObject"]
         type MyObjectQt;
     }
@@ -38,6 +44,12 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc = "Notify signal for the Q_PROPERTY"]
+        #[doc = "primitive"]
+        #[doc = "\n"]
+        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+        #[doc = "primitive_mut"]
+        #[doc = ", is used."]
         #[rust_name = "primitive_changed"]
         fn primitiveChanged(self: Pin<&mut MyObjectQt>);
     }
@@ -53,6 +65,12 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc = "Notify signal for the Q_PROPERTY"]
+        #[doc = "trivial"]
+        #[doc = "\n"]
+        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+        #[doc = "trivial_mut"]
+        #[doc = ", is used."]
         #[rust_name = "trivial_changed"]
         fn trivialChanged(self: Pin<&mut MyObjectQt>);
     }
@@ -68,16 +86,32 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc = "Notify signal for the Q_PROPERTY"]
+        #[doc = "opaque"]
+        #[doc = "\n"]
+        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
+        #[doc = "opaque_mut"]
+        #[doc = ", is used."]
         #[rust_name = "opaque_changed"]
         fn opaqueChanged(self: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
+        #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
+        #[doc = r""]
+        #[doc = r" CXX doesn't support having generic types in the function yet"]
+        #[doc = r" so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here"]
+        #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
+        #[doc = r" https://github.com/dtolnay/cxx/issues/683"]
         type MyObjectCxxQtThread;
 
+        #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
 
+        #[doc = r" Create an instance of a CxxQtThread"]
+        #[doc = r""]
+        #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
@@ -88,12 +122,18 @@ mod ffi {
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
         ) -> Result<()>;
 
+        #[doc = "Generated CXX-Qt method which creates a new"]
+        #[doc = "MyObjectQt"]
+        #[doc = "as a UniquePtr with no parent in Qt"]
         #[rust_name = "new_cpp_object_my_object_qt"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
 
     extern "C++" {
+        #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
+        #[doc = r""]
+        #[doc = r" This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually."]
         #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
@@ -125,30 +165,49 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "primitive"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
         pub fn primitive<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.primitive()
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "primitive"]
         pub fn primitive(&self) -> &i32 {
             &self.rust().primitive
         }
     }
 
     impl MyObjectQt {
+        #[doc = "unsafe getter for the Q_PROPERTY "]
+        #[doc = "primitive"]
+        #[doc = "\n"]
+        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+        #[doc = "\n"]
+        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+        #[doc = "primitive_changed"]
         pub unsafe fn primitive_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
             &mut self.rust_mut().get_unchecked_mut().primitive
         }
     }
 
     impl MyObject {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "primitive"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
         pub fn set_primitive(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
             cpp.set_primitive(value);
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "primitive"]
         pub fn set_primitive(mut self: Pin<&mut Self>, value: i32) {
             if self.rust().primitive == value {
                 return;
@@ -161,30 +220,49 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "trivial"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
         pub fn trivial<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
             cpp.trivial()
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "trivial"]
         pub fn trivial(&self) -> &QPoint {
             &self.rust().trivial
         }
     }
 
     impl MyObjectQt {
+        #[doc = "unsafe getter for the Q_PROPERTY "]
+        #[doc = "trivial"]
+        #[doc = "\n"]
+        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+        #[doc = "\n"]
+        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+        #[doc = "trivial_changed"]
         pub unsafe fn trivial_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut QPoint {
             &mut self.rust_mut().get_unchecked_mut().trivial
         }
     }
 
     impl MyObject {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "trivial"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
         pub fn set_trivial(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPoint) {
             cpp.set_trivial(value);
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "trivial"]
         pub fn set_trivial(mut self: Pin<&mut Self>, value: QPoint) {
             if self.rust().trivial == value {
                 return;
@@ -197,30 +275,49 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "opaque"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
         pub fn opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
             cpp.opaque()
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Getter for the Q_PROPERTY "]
+        #[doc = "opaque"]
         pub fn opaque(&self) -> &UniquePtr<Opaque> {
             &self.rust().opaque
         }
     }
 
     impl MyObjectQt {
+        #[doc = "unsafe getter for the Q_PROPERTY "]
+        #[doc = "opaque"]
+        #[doc = "\n"]
+        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
+        #[doc = "\n"]
+        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
+        #[doc = "opaque_changed"]
         pub unsafe fn opaque_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<Opaque> {
             &mut self.rust_mut().get_unchecked_mut().opaque
         }
     }
 
     impl MyObject {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "opaque"]
+        #[doc = "\n"]
+        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
         pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>) {
             cpp.set_opaque(value);
         }
     }
 
     impl MyObjectQt {
+        #[doc = "Setter for the Q_PROPERTY "]
+        #[doc = "opaque"]
         pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
             if self.rust().opaque == value {
                 return;
@@ -275,6 +372,7 @@ mod cxx_qt_ffi {
     unsafe impl Send for MyObjectCxxQtThread {}
 
     impl MyObjectCxxQtThread {
+        #[doc = r" Queue the given closure onto the Qt event loop for this QObject"]
         pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
         where
             F: FnOnce(std::pin::Pin<&mut MyObjectQt>),
@@ -294,15 +392,24 @@ mod cxx_qt_ffi {
         }
     }
 
+    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
 
+    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
 
+    #[doc = r" Generated CXX-Qt module containing type alias to the C++ type of the QObjects"]
     pub mod qobject {
+        #[doc = "The C++ type for the QObject "]
+        #[doc = "MyObject"]
+        #[doc = "\n"]
+        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         pub type MyObject = super::MyObjectQt;
     }
 }

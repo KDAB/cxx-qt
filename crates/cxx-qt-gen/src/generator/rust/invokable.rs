@@ -30,6 +30,7 @@ pub fn generate_rust_invokables(
         let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
         let wrapper_ident_rust = &idents.wrapper.rust;
         let invokable_ident_rust = &idents.name.rust;
+        let invokable_ident_rust_str = invokable_ident_rust.to_string();
         let original_method = &invokable.method;
 
         let cpp_struct = if invokable.mutable {
@@ -94,6 +95,8 @@ pub fn generate_rust_invokables(
                 // TODO: not all methods have a wrapper
                 quote! {
                     impl #rust_struct_name_rust {
+                        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+                        #[doc = #invokable_ident_rust_str]
                         pub #has_unsafe fn #wrapper_ident_rust(#parameter_signatures) #return_type {
                             #has_return cpp.#invokable_ident_rust(#(#parameter_names),*);
                         }
@@ -194,6 +197,8 @@ mod tests {
             &generated.cxx_qt_mod_contents[0],
             quote! {
                 impl MyObject {
+                    #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+                    #[doc = "void_invokable"]
                     pub fn void_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt) {
                         cpp.void_invokable();
                     }
@@ -223,6 +228,8 @@ mod tests {
             &generated.cxx_qt_mod_contents[2],
             quote! {
                 impl MyObject {
+                    #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+                    #[doc = "trivial_invokable"]
                     pub fn trivial_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: i32) -> i32 {
                         return cpp.trivial_invokable(param);
                     }
@@ -252,6 +259,8 @@ mod tests {
             &generated.cxx_qt_mod_contents[4],
             quote! {
                 impl MyObject {
+                    #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+                    #[doc = "opaque_invokable"]
                     pub fn opaque_invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, param: &QColor) -> UniquePtr<QColor> {
                         return cpp.opaque_invokable(param);
                     }
@@ -281,6 +290,8 @@ mod tests {
             &generated.cxx_qt_mod_contents[6],
             quote! {
                 impl MyObject {
+                    #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+                    #[doc = "unsafe_invokable"]
                     pub unsafe fn unsafe_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: *mut T) -> *mut T {
                         return cpp.unsafe_invokable(param);
                     }

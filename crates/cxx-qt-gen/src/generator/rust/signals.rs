@@ -98,8 +98,14 @@ pub fn generate_rust_signals(
     }
 
     // Add the Rust method using the enum to call the methods
+    let qobject_ident_str = qobject_idents.rust_struct.rust.to_string();
+    let signal_enum_ident_str = signal_enum_ident.to_string();
     generated.cxx_qt_mod_contents.push(syn::parse2(quote! {
         impl #cpp_class_name_rust {
+            #[doc = "Emit the signal from the enum "]
+            #[doc = #signal_enum_ident_str]
+            #[doc = " on the QObject "]
+            #[doc = #qobject_ident_str]
             pub fn emit(self: Pin<&mut Self>, signal: #signal_enum_ident) {
                 match signal {
                     #(#signal_matches),*
@@ -214,6 +220,10 @@ mod tests {
             &generated.cxx_qt_mod_contents[1],
             quote! {
                 impl MyObjectQt {
+                    #[doc = "Emit the signal from the enum "]
+                    #[doc = "MySignals"]
+                    #[doc = " on the QObject "]
+                    #[doc = "MyObject"]
                     pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
                         match signal {
                             MySignals::Ready {} => { self.emit_ready() },

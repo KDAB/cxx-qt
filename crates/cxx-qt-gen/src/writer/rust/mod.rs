@@ -21,6 +21,7 @@ fn mangle(name: &str, object: &Ident) -> Ident {
 /// Return common blocks for CXX bridge which the C++ writer adds as well
 fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
+    let cpp_struct_ident_str = cpp_struct_ident.to_string();
     let rust_struct_ident = &qobject.rust_struct_ident;
     let cxx_qt_thread_ident = &qobject.cxx_qt_thread_ident;
     let cxx_qt_thread_queued_fn_ident = &qobject.cxx_qt_thread_queued_fn_ident;
@@ -32,17 +33,21 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
     vec![
         quote! {
             unsafe extern "C++" {
-                // Specialised version of CxxQtThread
-                //
-                // CXX doesn't support having generic types in the function yet
-                // so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
-                // For now we use a type alias on C++ then use it like a normal type here
-                // https://github.com/dtolnay/cxx/issues/683
+                /// Specialised version of CxxQtThread, which can be moved into other threads.
+                ///
+                /// CXX doesn't support having generic types in the function yet
+                /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
+                /// For now we use a type alias in C++ then use it like a normal type here
+                /// https://github.com/dtolnay/cxx/issues/683
                 type #cxx_qt_thread_ident;
 
+                /// Retrieve an immutable reference to the Rust struct backing this C++ object
                 #[cxx_name = "unsafeRust"]
                 fn rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
 
+                /// Create an instance of a CxxQtThread
+                ///
+                /// This allows for queueing closures onto the Qt event loop from a background thread.
                 #[cxx_name = "qtThread"]
                 fn qt_thread(self: &#cpp_struct_ident) -> UniquePtr<#cxx_qt_thread_ident>;
 
@@ -56,6 +61,9 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
                     arg: Box<#cxx_qt_thread_queued_fn_ident>,
                 ) -> Result<()>;
 
+                #[doc = "Generated CXX-Qt method which creates a new"]
+                #[doc = #cpp_struct_ident_str]
+                #[doc = "as a UniquePtr with no parent in Qt"]
                 #[rust_name = #new_cpp_obj_str]
                 #[namespace = #namespace_internals]
                 fn newCppObject() -> UniquePtr<#cpp_struct_ident>;
@@ -63,6 +71,9 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
         },
         quote! {
             extern "C++" {
+                /// Retrieve a mutable reference to the Rust struct backing this C++ object
+                ///
+                /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
                 #[cxx_name = "unsafeRustMut"]
                 unsafe fn rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
             }
@@ -94,6 +105,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
         },
         quote! {
             impl #cxx_qt_thread_ident {
+                /// Queue the given closure onto the Qt event loop for this QObject
                 pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
                 where
                     F: FnOnce(std::pin::Pin<&mut #cpp_struct_ident>),
@@ -115,6 +127,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
             }
         },
         quote! {
+            /// Generated CXX-Qt thread helper for a QObject
             pub struct #cxx_qt_thread_queued_fn_ident {
                 // An opaque Rust type is required to be Sized.
                 // https://github.com/dtolnay/cxx/issues/665
@@ -122,6 +135,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
             }
         },
         quote! {
+            /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
             pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
                 std::default::Default::default()
             }
@@ -178,12 +192,22 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         // Add the type alias to the C++ struct
         let cpp_struct_ident = &qobject.cpp_struct_ident;
         let rust_struct_ident = &qobject.rust_struct_ident;
-        qobject_types.push(quote! { pub type #rust_struct_ident = super::#cpp_struct_ident; })
+        let rust_struct_ident_str = rust_struct_ident.to_string();
+        qobject_types.push(quote! {
+            #[doc = "The C++ type for the QObject "]
+            #[doc = #rust_struct_ident_str]
+            #[doc = "\n"]
+            #[doc = "Use type when referring to the QObject as a pointer"]
+            #[doc = "\n"]
+            #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+            pub type #rust_struct_ident = super::#cpp_struct_ident;
+        })
     }
 
     // Create the qobject block for the type alias
     cxx_qt_mod_contents.push(
         syn::parse2(quote! {
+            /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
             pub mod qobject {
                 #(#qobject_types)*
             }
@@ -397,11 +421,21 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
+                    /// Specialised version of CxxQtThread, which can be moved into other threads.
+                    ///
+                    /// CXX doesn't support having generic types in the function yet
+                    /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
+                    /// For now we use a type alias in C++ then use it like a normal type here
+                    /// https://github.com/dtolnay/cxx/issues/683
                     type MyObjectCxxQtThread;
 
+                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
                     fn rust(self: &MyObjectQt) -> &MyObject;
 
+                    /// Create an instance of a CxxQtThread
+                    ///
+                    /// This allows for queueing closures onto the Qt event loop from a background thread.
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
@@ -412,12 +446,18 @@ mod tests {
                         arg: Box<MyObjectCxxQtThreadQueuedFn>,
                     ) -> Result<()>;
 
+                    #[doc = "Generated CXX-Qt method which creates a new"]
+                    #[doc = "MyObjectQt"]
+                    #[doc = "as a UniquePtr with no parent in Qt"]
                     #[rust_name = "new_cpp_object_my_object_qt"]
                     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
                     fn newCppObject() -> UniquePtr<MyObjectQt>;
                 }
 
                 extern "C++" {
+                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
+                    ///
+                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
                 }
@@ -453,6 +493,7 @@ mod tests {
                 unsafe impl Send for MyObjectCxxQtThread {}
 
                 impl MyObjectCxxQtThread {
+                    /// Queue the given closure onto the Qt event loop for this QObject
                     pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(std::pin::Pin<&mut MyObjectQt>),
@@ -470,15 +511,24 @@ mod tests {
                     }
                 }
 
+                /// Generated CXX-Qt thread helper for a QObject
                 pub struct MyObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
                 }
 
+                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
                 pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
                     std::default::Default::default()
                 }
 
+                /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
                 pub mod qobject {
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = "MyObject"]
+                    #[doc = "\n"]
+                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type MyObject = super::MyObjectQt;
                 }
             }
@@ -514,11 +564,21 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
+                    /// Specialised version of CxxQtThread, which can be moved into other threads.
+                    ///
+                    /// CXX doesn't support having generic types in the function yet
+                    /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
+                    /// For now we use a type alias in C++ then use it like a normal type here
+                    /// https://github.com/dtolnay/cxx/issues/683
                     type FirstObjectCxxQtThread;
 
+                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
                     fn rust(self: &FirstObjectQt) -> &FirstObject;
 
+                    /// Create an instance of a CxxQtThread
+                    ///
+                    /// This allows for queueing closures onto the Qt event loop from a background thread.
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &FirstObjectQt) -> UniquePtr<FirstObjectCxxQtThread>;
 
@@ -529,12 +589,18 @@ mod tests {
                         arg: Box<FirstObjectCxxQtThreadQueuedFn>,
                     ) -> Result<()>;
 
+                    #[doc = "Generated CXX-Qt method which creates a new"]
+                    #[doc = "FirstObjectQt"]
+                    #[doc = "as a UniquePtr with no parent in Qt"]
                     #[rust_name = "new_cpp_object_first_object_qt"]
                     #[namespace = "cxx_qt::cxx_qt_first_object"]
                     fn newCppObject() -> UniquePtr<FirstObjectQt>;
                 }
 
                 extern "C++" {
+                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
+                    ///
+                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
                 }
@@ -558,11 +624,21 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
+                    /// Specialised version of CxxQtThread, which can be moved into other threads.
+                    ///
+                    /// CXX doesn't support having generic types in the function yet
+                    /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
+                    /// For now we use a type alias in C++ then use it like a normal type here
+                    /// https://github.com/dtolnay/cxx/issues/683
                     type SecondObjectCxxQtThread;
 
+                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
                     fn rust(self: &SecondObjectQt) -> &SecondObject;
 
+                    /// Create an instance of a CxxQtThread
+                    ///
+                    /// This allows for queueing closures onto the Qt event loop from a background thread.
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &SecondObjectQt) -> UniquePtr<SecondObjectCxxQtThread>;
 
@@ -573,12 +649,18 @@ mod tests {
                         arg: Box<SecondObjectCxxQtThreadQueuedFn>,
                     ) -> Result<()>;
 
+                    #[doc = "Generated CXX-Qt method which creates a new"]
+                    #[doc = "SecondObjectQt"]
+                    #[doc = "as a UniquePtr with no parent in Qt"]
                     #[rust_name = "new_cpp_object_second_object_qt"]
                     #[namespace = "cxx_qt::cxx_qt_second_object"]
                     fn newCppObject() -> UniquePtr<SecondObjectQt>;
                 }
 
                 extern "C++" {
+                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
+                    ///
+                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
                 }
@@ -614,6 +696,7 @@ mod tests {
                 unsafe impl Send for FirstObjectCxxQtThread {}
 
                 impl FirstObjectCxxQtThread {
+                    /// Queue the given closure onto the Qt event loop for this QObject
                     pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(std::pin::Pin<&mut FirstObjectQt>),
@@ -631,10 +714,12 @@ mod tests {
                     }
                 }
 
+                /// Generated CXX-Qt thread helper for a QObject
                 pub struct FirstObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut FirstObjectQt>) + Send>,
                 }
 
+                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
                 pub fn create_rs_first_object() -> std::boxed::Box<FirstObject> {
                     std::default::Default::default()
                 }
@@ -651,6 +736,7 @@ mod tests {
                 unsafe impl Send for SecondObjectCxxQtThread {}
 
                 impl SecondObjectCxxQtThread {
+                    /// Queue the given closure onto the Qt event loop for this QObject
                     pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(std::pin::Pin<&mut SecondObjectQt>),
@@ -668,16 +754,31 @@ mod tests {
                     }
                 }
 
+                /// Generated CXX-Qt thread helper for a QObject
                 pub struct SecondObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut SecondObjectQt>) + Send>,
                 }
 
+                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
                 pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
                     std::default::Default::default()
                 }
 
+                /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
                 pub mod qobject {
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = "FirstObject"]
+                    #[doc = "\n"]
+                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type FirstObject = super::FirstObjectQt;
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = "SecondObject"]
+                    #[doc = "\n"]
+                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type SecondObject = super::SecondObjectQt;
                 }
             }

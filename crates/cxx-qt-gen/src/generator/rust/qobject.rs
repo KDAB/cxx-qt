@@ -157,10 +157,17 @@ fn generate_qobject_definitions(
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let rust_struct_name_cpp = &qobject_idents.rust_struct.cpp.to_string();
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
+    let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
             quote! {
                 unsafe extern "C++" {
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = #rust_struct_name_rust_str]
+                    #[doc = "\n"]
+                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     #[cxx_name = #cpp_class_name_cpp]
                     type #cpp_class_name_rust;
                 }
@@ -254,6 +261,12 @@ mod tests {
             &rust.blocks.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = "MyObject"]
+                    #[doc = "\n"]
+                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     #[cxx_name = "MyObject"]
                     type MyObjectQt;
                 }
