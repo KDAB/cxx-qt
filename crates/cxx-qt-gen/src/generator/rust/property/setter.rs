@@ -20,6 +20,7 @@ pub fn generate(
     let setter_cpp = idents.setter.cpp.to_string();
     let setter_rust = &idents.setter.rust;
     let ident = &idents.name.rust;
+    let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust;
 
     // Determine if unsafe is required due to an unsafe type
@@ -39,6 +40,10 @@ pub fn generate(
         implementation: vec![
             quote! {
                 impl #rust_struct_name_rust {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = #ident_str]
+                    #[doc = "\n"]
+                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
                     pub fn #setter_rust(&mut self, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty) {
                         cpp.#setter_rust(value);
                     }
@@ -46,6 +51,8 @@ pub fn generate(
             },
             quote! {
                 impl #cpp_class_name_rust {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = #ident_str]
                     pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
                         if self.rust().#ident == value {
                             // don't want to set the value again and reemit the signal,

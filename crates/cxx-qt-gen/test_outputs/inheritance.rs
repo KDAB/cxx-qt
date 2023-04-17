@@ -16,6 +16,12 @@ mod inheritance {
         include!("cxx-qt-gen/inheritance.cxxqt.h");
     }
     unsafe extern "C++" {
+        #[doc = "The C++ type for the QObject "]
+        #[doc = "MyObject"]
+        #[doc = "\n"]
+        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         #[cxx_name = "MyObject"]
         type MyObjectQt;
 
@@ -46,9 +52,19 @@ mod inheritance {
         unsafe fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
     }
     unsafe extern "C++" {
+        #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
+        #[doc = r""]
+        #[doc = r" CXX doesn't support having generic types in the function yet"]
+        #[doc = r" so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here"]
+        #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
+        #[doc = r" https://github.com/dtolnay/cxx/issues/683"]
         type MyObjectCxxQtThread;
+        #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
+        #[doc = r" Create an instance of a CxxQtThread"]
+        #[doc = r""]
+        #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
         #[cxx_name = "queue"]
@@ -57,11 +73,17 @@ mod inheritance {
             func: fn(Pin<&mut MyObjectQt>, Box<MyObjectCxxQtThreadQueuedFn>),
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
         ) -> Result<()>;
+        #[doc = "Generated CXX-Qt method which creates a new"]
+        #[doc = "MyObjectQt"]
+        #[doc = "as a UniquePtr with no parent in Qt"]
         #[rust_name = "new_cpp_object_my_object_qt"]
         #[namespace = "cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
     extern "C++" {
+        #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
+        #[doc = r""]
+        #[doc = r" This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually."]
         #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
@@ -100,6 +122,8 @@ mod cxx_qt_inheritance {
         }
     }
     impl MyObject {
+        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+        #[doc = "data"]
         pub fn data_wrapper(
             self: &MyObject,
             cpp: &MyObjectQt,
@@ -115,6 +139,8 @@ mod cxx_qt_inheritance {
         }
     }
     impl MyObject {
+        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
+        #[doc = "has_children"]
         pub fn has_children_wrapper(
             self: &MyObject,
             cpp: &MyObjectQt,
@@ -130,6 +156,7 @@ mod cxx_qt_inheritance {
     }
     unsafe impl Send for MyObjectCxxQtThread {}
     impl MyObjectCxxQtThread {
+        #[doc = r" Queue the given closure onto the Qt event loop for this QObject"]
         pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
         where
             F: FnOnce(std::pin::Pin<&mut MyObjectQt>),
@@ -148,13 +175,22 @@ mod cxx_qt_inheritance {
             self.queue_boxed_fn(func, std::boxed::Box::new(arg))
         }
     }
+    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
+    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
+    #[doc = r" Generated CXX-Qt module containing type alias to the C++ type of the QObjects"]
     pub mod qobject {
+        #[doc = "The C++ type for the QObject "]
+        #[doc = "MyObject"]
+        #[doc = "\n"]
+        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         pub type MyObject = super::MyObjectQt;
     }
 }

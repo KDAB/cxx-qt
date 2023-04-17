@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Allow associated constants, types and macro invocations within `impl qobject::T` blocks
+- Ensure that generated Rust code works when `#![deny(missing_docs)]` is enabled
 
 ### Changed
 
