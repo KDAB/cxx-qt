@@ -5,8 +5,14 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example provides demostrations of building a Cargo only CXX-Qt application
+
+// Use this crate to test that missing_docs works with our generated code for a Cargo only build
+#![deny(missing_docs)]
+
+/// A module for our Rust defined QObject
 // ANCHOR: book_cargo_imports
-mod cxxqt_object;
+pub mod cxxqt_object;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 // ANCHOR_END: book_cargo_imports

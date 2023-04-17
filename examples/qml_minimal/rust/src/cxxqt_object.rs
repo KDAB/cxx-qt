@@ -8,17 +8,20 @@
 // ANCHOR: book_cxx_qt_module
 // ANCHOR: book_bridge_macro
 
+/// The bridge definition for our QObject
 #[cxx_qt::bridge]
-mod my_object {
+pub mod my_object {
     // ANCHOR_END: book_bridge_macro
 
     // ANCHOR: book_qstring_import
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
+        /// An alias to the QString type
         type QString = cxx_qt_lib::QString;
     }
     // ANCHOR_END: book_qstring_import
 
+    /// The Rust struct for the QObject
     // ANCHOR: book_rustobj_struct
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct MyObject {
@@ -42,12 +45,14 @@ mod my_object {
 
     // ANCHOR: book_rustobj_impl
     impl qobject::MyObject {
+        /// Increment the number Q_PROPERTY
         #[qinvokable]
         pub fn increment_number(self: Pin<&mut Self>) {
             let previous = *self.as_ref().number();
             self.set_number(previous + 1);
         }
 
+        /// Print a log message with the given string and number
         #[qinvokable]
         pub fn say_hi(&self, string: &QString, number: i32) {
             println!("Hi from Rust! String is '{string}' and number is {number}");

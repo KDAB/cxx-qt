@@ -3,16 +3,21 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
+
+/// A CXX-Qt bridge which shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "nested_qobjects")]
-mod ffi {
+pub mod ffi {
     // ANCHOR: book_extern_block
     unsafe extern "C++" {
         #[cxx_name = "InnerObject"]
+        /// THe C++ part of the InnerObject so that it can be referred to
         type CxxInnerObject = super::qobject::InnerObject;
     }
     // ANCHOR_END: book_extern_block
 
+    /// The inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct InnerObject {
@@ -20,6 +25,7 @@ mod ffi {
         counter: i32,
     }
 
+    /// The outer QObject which has a Q_PROPERTY to the inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct OuterObject {
         #[qproperty]
@@ -34,14 +40,23 @@ mod ffi {
         }
     }
 
+    /// Signals for the outer QObject
     #[cxx_qt::qsignals(OuterObject)]
     pub enum OuterSignals {
-        Called { inner: *mut CxxInnerObject },
+        /// A signal showing how to refer to another QObject as an argument
+        Called {
+            /// Inner QObject being referred to
+            inner: *mut CxxInnerObject,
+        },
     }
 
     impl qobject::OuterObject {
+        /// Print the count of the given inner QObject
+        //
+        // This method needs to be unsafe otherwise clippy complains that the
+        // public method might dereference the raw pointer.
         #[qinvokable]
-        pub fn print_count(self: Pin<&mut Self>, inner: *mut CxxInnerObject) {
+        pub unsafe fn print_count(self: Pin<&mut Self>, inner: *mut CxxInnerObject) {
             if let Some(inner) = unsafe { inner.as_ref() } {
                 println!("Inner object's counter property: {}", inner.counter());
             }
@@ -49,6 +64,7 @@ mod ffi {
             self.emit(OuterSignals::Called { inner });
         }
 
+        /// Reset the cont of the inner QObject stored in the Q_PROPERTY
         #[qinvokable]
         pub fn reset(self: Pin<&mut Self>) {
             // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods

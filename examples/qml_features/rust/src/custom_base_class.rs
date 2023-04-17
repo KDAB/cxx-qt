@@ -3,27 +3,35 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how a custom base class and inheritance can be used
+
+/// A CXX-Qt bridge which shows a custom base class and inheritance can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "custom_base_class")]
-mod ffi {
+pub mod ffi {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
         include!(< QAbstractListModel >);
         // ANCHOR_END: book_base_include
 
         include!("cxx-qt-lib/qhash.h");
+        /// QHash<i32, QByteArray> from cxx_qt_lib
         type QHash_i32_QByteArray = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_i32_QByteArray>;
 
         include!("cxx-qt-lib/qvariant.h");
+        /// QVariant from cxx_qt_lib
         type QVariant = cxx_qt_lib::QVariant;
 
         include!("cxx-qt-lib/qmodelindex.h");
+        /// QModelIndex from cxx_qt_lib
         type QModelIndex = cxx_qt_lib::QModelIndex;
 
         include!("cxx-qt-lib/qvector.h");
+        /// QVector<i32> from cxx_qt_lib
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
+    /// A struct which will derive from a QAbstractListModel
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     #[cxx_qt::qobject(
@@ -39,24 +47,31 @@ mod ffi {
     }
     // ANCHOR_END: book_inherit_qalm
 
+    /// The signals for our QAbstractListModel struct
     // ANCHOR: book_qsignals_inherit
     #[cxx_qt::qsignals(CustomBaseClass)]
     pub enum Signals<'a> {
+        /// Inherit the DataChanged signal from the QAbstractListModel base class
         #[inherit]
         DataChanged {
+            /// Top left affected index
             top_left: &'a QModelIndex,
+            /// Bottom right affected index
             bottom_right: &'a QModelIndex,
+            /// Roles that have been modified
             roles: &'a QVector_i32,
         },
     }
     // ANCHOR_END: book_qsignals_inherit
 
     impl qobject::CustomBaseClass {
+        /// Add a new row to the QAbstractListModel on the current thread
         #[qinvokable]
         pub fn add(self: Pin<&mut Self>) {
             self.add_cpp_context();
         }
 
+        /// On a background thread add a given number of rows to the QAbstractListModel
         #[qinvokable]
         pub fn add_on_thread(self: Pin<&mut Self>, mut counter: i32) {
             let qt_thread = self.qt_thread();
@@ -92,6 +107,7 @@ mod ffi {
             }
         }
 
+        /// Clear the rows in the QAbstractListModel
         // ANCHOR: book_inherit_clear
         #[qinvokable]
         pub fn clear(mut self: Pin<&mut Self>) {
@@ -104,6 +120,7 @@ mod ffi {
         }
         // ANCHOR_END: book_inherit_clear
 
+        /// Multiply the number in the row with the given index by the given factor
         #[qinvokable]
         pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
             if let Some((_, value)) = self.as_mut().vector_mut().get_mut(index as usize) {
@@ -121,6 +138,7 @@ mod ffi {
             }
         }
 
+        /// Remove the row with the given index
         #[qinvokable]
         pub fn remove(mut self: Pin<&mut Self>, index: i32) {
             if index < 0 || (index as usize) >= self.vector().len() {
@@ -178,7 +196,9 @@ mod ffi {
 
     // QAbstractListModel implementation
     impl qobject::CustomBaseClass {
+        /// i32 representing the id role
         pub const ID_ROLE: i32 = 0;
+        /// i32 representing the value role
         pub const VALUE_ROLE: i32 = 1;
 
         // ANCHOR: book_inherit_data
@@ -196,6 +216,7 @@ mod ffi {
         }
         // ANCHOR_END: book_inherit_data
 
+        /// Return whether the base class can fetch more
         // ANCHOR: book_inherit_can_fetch_more
         // Example of overriding a C++ virtual method and calling the base class implementation.
         #[qinvokable(cxx_override)]
@@ -204,6 +225,7 @@ mod ffi {
         }
         // ANCHOR_END: book_inherit_can_fetch_more
 
+        /// Return the role names for the QAbstractListModel
         #[qinvokable(cxx_override)]
         pub fn role_names(&self) -> QHash_i32_QByteArray {
             let mut roles = QHash_i32_QByteArray::default();
@@ -212,6 +234,7 @@ mod ffi {
             roles
         }
 
+        /// Return the row count for the QAbstractListModel
         #[qinvokable(cxx_override)]
         pub fn row_count(&self, _parent: &QModelIndex) -> i32 {
             self.rust().vector.len() as i32

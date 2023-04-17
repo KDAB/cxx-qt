@@ -3,23 +3,31 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how a threading can be used
+
+/// A CXX-Qt bridge which shows how a threading can be used
 // ANCHOR: book_macro_code
 // ANCHOR: book_namespace_macro
 #[cxx_qt::bridge(cxx_file_stem = "threading_website", namespace = "cxx_qt::website")]
-mod ffi {
+pub mod ffi {
     // ANCHOR_END: book_namespace_macro
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
-        include!("cxx-qt-lib/qurl.h");
+        /// QString from cxx_qt_lib
         type QString = cxx_qt_lib::QString;
+        include!("cxx-qt-lib/qurl.h");
+        /// QUrl from cxx_qt_lib
         type QUrl = cxx_qt_lib::QUrl;
     }
 
+    /// A QObject which has threading
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct ThreadingWebsite {
+        /// The title Q_PROPERTY
         #[qproperty]
         title: QString,
+        /// The url Q_PROPERTY
         #[qproperty]
         url: QUrl,
 
