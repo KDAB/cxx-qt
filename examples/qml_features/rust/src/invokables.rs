@@ -3,14 +3,19 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how a Q_INVOKABLE can be used
+
+/// A CXX-Qt bridge which shows how a Q_INVOKABLE can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_invokables")]
 pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
+        /// QColor from cxx_qt_lib
         type QColor = cxx_qt_lib::QColor;
     }
 
+    /// A QObject which has Q_INVOKABLEs
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct RustInvokables {
         red: f32,

@@ -3,15 +3,21 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how multiple QObjects can be defined in one module
+
+/// A CXX-Qt bridge which shows multiple QObjects can be defined in one module
 #[cxx_qt::bridge(cxx_file_stem = "multiple_qobjects")]
-mod ffi {
+pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
+        /// QColor from cxx_qt_lib
         type QColor = cxx_qt_lib::QColor;
         include!("cxx-qt-lib/qurl.h");
+        /// QUrl from cxx_qt_lib
         type QUrl = cxx_qt_lib::QUrl;
     }
 
+    /// The first QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct FirstObject {
         #[qproperty]
@@ -29,13 +35,17 @@ mod ffi {
         }
     }
 
+    /// Signals for the first QObject
     #[cxx_qt::qsignals(FirstObject)]
     pub enum FirstSignals {
+        /// Accepted Q_SIGNAL
         Accepted,
+        /// Rejected Q_SIGNAL
         Rejected,
     }
 
     impl qobject::FirstObject {
+        /// A Q_INVOKABLE on the first QObject which increments a counter
         #[qinvokable]
         pub fn increment(mut self: Pin<&mut Self>) {
             let new_value = self.as_ref().counter() + 1;
@@ -51,6 +61,7 @@ mod ffi {
         }
     }
 
+    /// The second QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct SecondObject {
         #[qproperty]
@@ -68,13 +79,17 @@ mod ffi {
         }
     }
 
+    /// Signals for the second QObject
     #[cxx_qt::qsignals(SecondObject)]
     pub enum SecondSignals {
+        /// Accepted Q_SIGNAL
         Accepted,
+        /// Rejected Q_SIGNAL
         Rejected,
     }
 
     impl qobject::SecondObject {
+        /// A Q_INVOKABLE on the second QObject which increments a counter
         #[qinvokable]
         pub fn increment(mut self: Pin<&mut Self>) {
             let new_value = self.as_ref().counter() + 1;

@@ -4,12 +4,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This example shows how a serialisation can be used
+
 // ANCHOR: book_macro_code
 
 use serde::{Deserialize, Serialize};
 
-// TODO: once Qt types support serde again, the Serialisation struct can be used
-// https://github.com/KDAB/cxx-qt/issues/292
+/// A struct representating our serialised form
 #[derive(Deserialize, Serialize)]
 pub struct DataSerde {
     number: i32,
@@ -25,26 +26,36 @@ impl From<&Serialisation> for DataSerde {
     }
 }
 
+/// A CXX-Qt bridge which shows how a serialisation can be used
 #[cxx_qt::bridge(cxx_file_stem = "serialisation")]
-mod ffi {
+pub mod ffi {
     use super::DataSerde;
 
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
+        /// QString from cxx_qt_lib
         type QString = cxx_qt_lib::QString;
     }
 
+    /// A QObject which can be serialised
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct Serialisation {
+        /// The number Q_PROPERTY
         #[qproperty]
         pub number: i32,
+        /// The string Q_PROPERTY
         #[qproperty]
         pub string: QString,
     }
 
+    /// Signals for the QObject
     #[cxx_qt::qsignals(Serialisation)]
     pub enum Connection {
-        Error { message: QString },
+        /// An error signal
+        Error {
+            /// The message of the error
+            message: QString,
+        },
     }
 
     impl Default for Serialisation {
@@ -65,6 +76,7 @@ mod ffi {
     }
 
     impl qobject::Serialisation {
+        /// Retrieve the JSON form of this QObject
         #[qinvokable]
         pub fn as_json_str(self: Pin<&mut Self>) -> QString {
             let data_serde = DataSerde::from(self.rust());
@@ -79,6 +91,7 @@ mod ffi {
             }
         }
 
+        /// From a given JSON string try to load values for the Q_PROPERTYs
         // ANCHOR: book_grab_values
         #[qinvokable]
         pub fn from_json_str(mut self: Pin<&mut Self>, string: &QString) {
