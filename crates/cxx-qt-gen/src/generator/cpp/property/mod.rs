@@ -7,7 +7,7 @@ use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, types::CppType},
     naming::{property::QPropertyName, qobject::QObjectName},
 };
-use crate::parser::{cxxqtdata::ParsedCxxMappings, property::{ParsedQProperty, MaybeCustomFn}};
+use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
 use syn::Result;
 
 mod getter;
@@ -39,10 +39,6 @@ pub fn generate_cpp_properties(
         }
 
         // Setters
-        let default_setter = match property.set {
-            Some(MaybeCustomFn::Default) => true,
-            _ => false,
-        };
         if getter_setter_not_explicit || property.set.is_some() {
             generated
                 .methods

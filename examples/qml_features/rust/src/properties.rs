@@ -26,6 +26,15 @@ mod ffi {
 
         #[qproperty]
         status_message: QString,
+
+        #[qproperty(get)]
+        readonly_prop: QString,
+
+        #[qproperty(get = Self::custom_prop_fn)]
+        custom_prop: bool,
+
+        #[qproperty(get = Self::custom_prop_str_fn)]
+        readonly_prop_str: QString,
     }
     // ANCHOR_END: book_properties_struct
 
@@ -37,6 +46,9 @@ mod ffi {
                 connected_url: QUrl::default(),
                 previous_connected_url: QUrl::default(),
                 status_message: QString::from("Disconnected"),
+                readonly_prop: QString::from("Read only"),
+                custom_prop: false,
+                readonly_prop_str: QString::from("Not read"),
             }
         }
     }
@@ -75,6 +87,14 @@ mod ffi {
             let previous_url = self.as_ref().connected_url().clone();
             self.as_mut().set_previous_connected_url(previous_url);
             self.set_connected_url(QUrl::default());
+        }
+
+        pub fn custom_prop_fn(&self) -> bool {
+            true
+        }
+
+        pub fn custom_prop_str_fn(&self) -> QString {
+            QString::from("hello")
         }
     }
 }

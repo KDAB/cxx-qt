@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{cpp::types::CppType, naming::property::QPropertyName};
-use crate::parser::property::{ParsedQProperty, MaybeCustomFn};
+use crate::parser::property::ParsedQProperty;
 
 /// Generate the metaobject line for a given property
 pub fn generate(idents: &QPropertyName, property: &ParsedQProperty, cxx_ty: &CppType) -> String {
