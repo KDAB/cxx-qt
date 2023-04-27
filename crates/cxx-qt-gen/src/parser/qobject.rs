@@ -6,17 +6,46 @@
 use crate::parser::{
     inherit::ParsedInheritedMethod,
     invokable::ParsedQInvokable,
-    property::{ParsedQProperty, ParsedRustField},
+    property::{ParsedQProperty, ParsedRustField, MaybeCustomFn},
     signals::ParsedSignalsEnum,
 };
 use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
+    attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault, PropertyAttribute},
     fields::fields_to_named_fields_mut,
 };
 use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemMethod, Item, ItemStruct, LitStr,
-    Result, Visibility,
+    Result, Visibility, Attribute, Token,
 };
+
+#[derive(Default, Debug)]
+struct ReceivedAttributes {
+    get: Option<MaybeCustomFn>,
+    set: Option<MaybeCustomFn>,
+    cxx_type: Option<String>,
+}
+
+impl ReceivedAttributes {
+    fn new(attributes: impl IntoIterator<Item = PropertyAttribute>) -> Self {
+        attributes.into_iter().fold(Self::default(), |mut this, attribute| {
+            match attribute {
+                PropertyAttribute::Get(some_fn) => this.get = Some(some_fn.into()),
+                PropertyAttribute::Set(some_fn) => this.set = Some(some_fn.into()),
+                PropertyAttribute::CxxType(cxx_type) => this.cxx_type = Some(cxx_type.value()),
+            };
+            this
+        })
+    }
+}
+
+fn parse_property(attribute: Attribute) -> Result<ReceivedAttributes> {
+    Ok(ReceivedAttributes::new(
+        attribute.parse_args_with(
+            syn::punctuated::Punctuated::<PropertyAttribute, Token![,]>::parse_terminated,
+        )?
+    ))
+}
+
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -227,12 +256,12 @@ impl ParsedQObject {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
                 // Parse any cxx_type in the qproperty macro
-                let cxx_type = attribute_tokens_to_map::<Ident, LitStr>(
-                    &field.attrs[index],
-                    AttributeDefault::None,
-                )?
-                .get(&quote::format_ident!("cxx_type"))
-                .map(|lit_str| lit_str.value());
+
+                let (get, set, cxx_type) = if let Ok(attr) = parse_property(field.attrs[index].clone()) {
+                    (attr.get, attr.set, attr.cxx_type)
+                } else {
+                    (None, None, None)
+                };
 
                 // Remove the #[qproperty] attribute
                 field.attrs.remove(index);
@@ -242,6 +271,8 @@ impl ParsedQObject {
                     ty: field.ty.clone(),
                     vis: field.vis.clone(),
                     cxx_type,
+                    get,
+                    set,
                 });
             } else {
                 rust_fields.push(ParsedRustField {
@@ -407,11 +438,14 @@ pub mod tests {
                 #[qproperty(cxx_type = "f32")]
                 property_with_cxx_type: f64,
 
+                #[qproperty(get = Self::custom_getter_fn)]
+                custom_getter: f64,
+
                 field: f64,
             }
         });
         let properties = ParsedQObject::from_struct(&item, 0).unwrap().properties;
-        assert_eq!(properties.len(), 3);
+        assert_eq!(properties.len(), 4);
         assert_eq!(properties[0].ident, "f64_property");
         assert_eq!(properties[0].ty, f64_type());
         assert!(matches!(properties[0].vis, Visibility::Inherited));
@@ -426,6 +460,12 @@ pub mod tests {
         assert_eq!(properties[2].ty, f64_type());
         assert!(matches!(properties[2].vis, Visibility::Inherited));
         assert_eq!(properties[2].cxx_type.as_ref().unwrap(), "f32");
+
+        assert_eq!(properties[3].ident, "custom_getter");
+        assert_eq!(properties[3].ty, f64_type());
+        assert!(matches!(properties[3].vis, Visibility::Inherited));
+        assert!(properties[3].cxx_type.is_none());
+        assert!(properties[3].get.is_some());
     }
 
     #[test]

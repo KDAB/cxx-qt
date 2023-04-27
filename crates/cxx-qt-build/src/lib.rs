@@ -407,7 +407,7 @@ impl CxxQtBuilder {
         // Use a separate cc::Build for the little amount of code that needs to be linked with +whole-archive
         // to avoid bloating the binary.
         let mut cc_builder_whole_archive = cc::Build::new();
-        cc_builder_whole_archive.link_lib_modifier("+whole-archive");
+        //cc_builder_whole_archive.link_lib_modifier("+whole-archive");
         for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
             builder.cpp(true);
             // MSVC
