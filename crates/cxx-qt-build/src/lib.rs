@@ -411,6 +411,10 @@ impl CxxQtBuilder {
         // to avoid bloating the binary.
         let mut cc_builder_whole_archive = cc::Build::new();
         cc_builder_whole_archive.link_lib_modifier("+whole-archive");
+        // We need to set -bundle otherwise the compiler fails with
+        // link modifiers combination `+bundle,+whole-archive` is unstable when generating rlibs
+        // https://github.com/rust-lang/rust/issues/108081
+        cc_builder_whole_archive.link_lib_modifier("-bundle");
         for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
             builder.cpp(true);
             // MSVC
