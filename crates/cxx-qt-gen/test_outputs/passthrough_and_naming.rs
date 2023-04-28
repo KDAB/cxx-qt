@@ -107,6 +107,7 @@ pub mod ffi {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
         #[rust_name = "on_ready"]
         fn readyConnect(
             self: Pin<&mut MyObjectQt>,
@@ -204,6 +205,7 @@ pub mod ffi {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
         #[rust_name = "on_ready"]
         fn readyConnect(
             self: Pin<&mut SecondObjectQt>,

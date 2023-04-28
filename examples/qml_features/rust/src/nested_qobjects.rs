@@ -66,7 +66,7 @@ pub mod ffi {
         pub fn initialise(self: Pin<&mut Self>) {
             // Example of connecting a signal from one QObject to another QObject
             // this causes OuterObject::Called to trigger InnerObject::Called
-            self.on_called(
+            let _ = self.on_called(
                 |qobject, obj| {
                     // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
                     if let Some(inner) = unsafe { qobject.inner().as_mut() } {
