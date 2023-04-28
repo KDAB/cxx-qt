@@ -83,7 +83,7 @@ pub mod ffi {
         /// Initialise the QObject, creating a connection reacting to the logging enabled property
         #[qinvokable]
         pub fn initialise(self: Pin<&mut Self>) {
-            self.on_logging_enabled_changed(
+            let _ = self.on_logging_enabled_changed(
                 |mut qobject| {
                     // Determine if logging is enabled
                     if *qobject.as_ref().logging_enabled() {

@@ -50,6 +50,7 @@ mod ffi {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
         #[rust_name = "on_ready"]
         fn readyConnect(
             self: Pin<&mut MyObjectQt>,
@@ -72,6 +73,7 @@ mod ffi {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "dataChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
         #[rust_name = "on_data_changed"]
         fn dataChangedConnect(
             self: Pin<&mut MyObjectQt>,
@@ -100,6 +102,7 @@ mod ffi {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "newData"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
         #[rust_name = "on_new_data"]
         fn newDataConnect(
             self: Pin<&mut MyObjectQt>,
