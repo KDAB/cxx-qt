@@ -125,21 +125,21 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
         if receiver.mutability.is_some() {
             return Err(Error::new(
                 receiver.span(),
-                "mut on the `self:` receiver are not supported",
+                "mut on self (i.e. `&mut self`) are not supported, use `self: Pin<&mut T>` instead",
             ));
         }
 
         if receiver.reference.is_some() {
             return Err(Error::new(
                 receiver.span(),
-                "Reference on the `self:` receiver are not supported",
+                "Reference on self (i.e. `&self`) are not supported, use `self: &T` instead",
             ));
         }
 
         if receiver.colon_token.is_none() {
             return Err(Error::new(
                 receiver.span(),
-                "Missing type on the `self:` receiver are not supported",
+                "`self` is not supported as receiver, use `self: T` to indicate a type.",
             ));
         }
 
