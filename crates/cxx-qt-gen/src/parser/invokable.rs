@@ -5,7 +5,7 @@
 
 use crate::{
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::*, implitemfn::is_method_mutable},
+    syntax::{attribute::*, implitemfn::is_method_mutable_pin_of_self},
 };
 use std::collections::HashSet;
 use syn::{Ident, ImplItemFn, LitStr, Result};
@@ -65,7 +65,7 @@ impl ParsedQInvokable {
         }
 
         // Determine if the invokable is mutable
-        let mutable = is_method_mutable(&method.sig);
+        let mutable = is_method_mutable_pin_of_self(&method.sig);
 
         // Read the signal inputs into parameter blocks
         let parameters = ParsedFunctionParameter::parse_all_without_receiver(&method.sig)?;
