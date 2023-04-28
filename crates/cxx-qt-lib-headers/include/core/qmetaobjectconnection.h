@@ -6,15 +6,24 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <memory>
+
 #include <QtCore/QObject>
 
 namespace rust {
 namespace cxxqtlib1 {
 
-using QMetaObjectConnection = ::QMetaObject::Connection;
+class QMetaObjectConnectionGuard
+{
+public:
+  explicit QMetaObjectConnectionGuard(::QMetaObject::Connection inner);
+  ~QMetaObjectConnectionGuard();
+  void disconnect() const;
+  void release();
 
-void
-qmetaobjectconnectionDisconnect(const QMetaObject::Connection& conn);
+private:
+  ::std::unique_ptr<::QMetaObject::Connection> m_inner;
+};
 
 }
 }

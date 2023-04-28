@@ -9,10 +9,29 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-void
-qmetaobjectconnectionDisconnect(const QMetaObject::Connection& conn)
+QMetaObjectConnectionGuard::QMetaObjectConnectionGuard(
+  ::QMetaObject::Connection inner)
+  : m_inner(::std::make_unique<QMetaObject::Connection>(inner))
 {
-  QObject::disconnect(conn);
+}
+
+QMetaObjectConnectionGuard::~QMetaObjectConnectionGuard()
+{
+  disconnect();
+}
+
+void
+QMetaObjectConnectionGuard::disconnect() const
+{
+  if (m_inner) {
+    QObject::disconnect(*m_inner);
+  }
+}
+
+void
+QMetaObjectConnectionGuard::release()
+{
+  m_inner.reset();
 }
 
 }

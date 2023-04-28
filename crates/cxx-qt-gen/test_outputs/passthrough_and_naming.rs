@@ -56,8 +56,8 @@ pub mod ffi {
         include!("cxx-qt-lib/qmetaobjectconnection.h");
         #[doc(hidden)]
         #[namespace = "rust::cxxqtlib1"]
-        #[rust_name = "CxxQtQMetaObjectConnection"]
-        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+        #[rust_name = "CxxQtQMetaObjectConnectionGuard"]
+        type QMetaObjectConnectionGuard = cxx_qt_lib::QMetaObjectConnectionGuard;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/multi_object.cxxqt.h");
@@ -113,7 +113,7 @@ pub mod ffi {
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
             conn_type: CxxQtConnectionType,
-        ) -> UniquePtr<CxxQtQMetaObjectConnection>;
+        ) -> UniquePtr<CxxQtQMetaObjectConnectionGuard>;
     }
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
@@ -211,7 +211,7 @@ pub mod ffi {
             self: Pin<&mut SecondObjectQt>,
             func: fn(Pin<&mut SecondObjectQt>),
             conn_type: CxxQtConnectionType,
-        ) -> UniquePtr<CxxQtQMetaObjectConnection>;
+        ) -> UniquePtr<CxxQtQMetaObjectConnectionGuard>;
     }
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
