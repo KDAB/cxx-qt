@@ -50,7 +50,7 @@ pub mod ffi {
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustSignals {
-        connections: Option<[cxx::UniquePtr<cxx_qt_lib::QMetaObjectConnection>; 3]>,
+        connections: Option<[cxx::UniquePtr<cxx_qt_lib::QMetaObjectConnectionGuard>; 3]>,
 
         #[qproperty]
         logging_enabled: bool,
@@ -83,7 +83,7 @@ pub mod ffi {
         /// Initialise the QObject, creating a connection reacting to the logging enabled property
         #[qinvokable]
         pub fn initialise(self: Pin<&mut Self>) {
-            let _ = self.on_logging_enabled_changed(
+            self.on_logging_enabled_changed(
                 |mut qobject| {
                     // Determine if logging is enabled
                     if *qobject.as_ref().logging_enabled() {
@@ -116,6 +116,8 @@ pub mod ffi {
                     } else {
                         // Disabling logging so disconnect
                         // ANCHOR: book_signals_disconnect
+                        // Could also empty the connections which would cause drop to trigger a disconnect
+                        // qobject.as_mut().set_connections(None);
                         if let Some(connections) = qobject.as_mut().connections_mut().take() {
                             for conn in connections {
                                 conn.disconnect();
@@ -125,7 +127,9 @@ pub mod ffi {
                     }
                 },
                 ConnectionType::AutoConnection,
-            );
+            )
+            .pin_mut()
+            .release();
         }
     }
     // ANCHOR_END: book_rust_obj_impl

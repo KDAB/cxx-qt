@@ -31,7 +31,7 @@ public:
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
   void emitReady();
-  ::std::unique_ptr<QMetaObject::Connection> readyConnect(
+  ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> readyConnect(
     ::rust::Fn<void(MyObject&)> func,
     Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
@@ -42,24 +42,24 @@ public:
                        ::std::unique_ptr<Opaque> second,
                        QPoint third,
                        QPoint const& fourth);
-  ::std::unique_ptr<QMetaObject::Connection> dataChangedConnect(
-    ::rust::Fn<void(MyObject&,
-                    ::std::int32_t first,
-                    ::std::unique_ptr<Opaque> second,
-                    QPoint third,
-                    QPoint const& fourth)> func,
-    Qt::ConnectionType type);
+  ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
+  dataChangedConnect(::rust::Fn<void(MyObject&,
+                                     ::std::int32_t first,
+                                     ::std::unique_ptr<Opaque> second,
+                                     QPoint third,
+                                     QPoint const& fourth)> func,
+                     Qt::ConnectionType type);
   void emitNewData(::std::int32_t first,
                    ::std::unique_ptr<Opaque> second,
                    QPoint third,
                    QPoint const& fourth);
-  ::std::unique_ptr<QMetaObject::Connection> newDataConnect(
-    ::rust::Fn<void(MyObject&,
-                    ::std::int32_t first,
-                    ::std::unique_ptr<Opaque> second,
-                    QPoint third,
-                    QPoint const& fourth)> func,
-    Qt::ConnectionType type);
+  ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
+  newDataConnect(::rust::Fn<void(MyObject&,
+                                 ::std::int32_t first,
+                                 ::std::unique_ptr<Opaque> second,
+                                 QPoint third,
+                                 QPoint const& fourth)> func,
+                 Qt::ConnectionType type);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

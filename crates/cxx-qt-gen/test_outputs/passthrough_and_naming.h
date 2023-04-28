@@ -41,7 +41,7 @@ public:
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();
-  ::std::unique_ptr<QMetaObject::Connection> readyConnect(
+  ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> readyConnect(
     ::rust::Fn<void(MyObject&)> func,
     Qt::ConnectionType type);
 
@@ -84,7 +84,7 @@ public:
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();
-  ::std::unique_ptr<QMetaObject::Connection> readyConnect(
+  ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> readyConnect(
     ::rust::Fn<void(SecondObject&)> func,
     Qt::ConnectionType type);
 

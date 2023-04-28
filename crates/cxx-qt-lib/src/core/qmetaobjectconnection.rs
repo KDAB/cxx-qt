@@ -10,21 +10,17 @@ mod ffi {
         include!("cxx-qt-lib/qmetaobjectconnection.h");
 
         /// Represents a handle to a signal-slot (or signal-functor) connection.
-        type QMetaObjectConnection;
+        ///
+        /// Acts as a guard so when deconstructed the connection is disconnected
+        type QMetaObjectConnectionGuard;
 
-        #[doc(hidden)]
-        #[rust_name = "qmetaobjectconnection_disconnect"]
-        fn qmetaobjectconnectionDisconnect(conn: &QMetaObjectConnection);
+        /// Manually disconnect the signal
+        fn disconnect(self: &QMetaObjectConnectionGuard);
+        /// Release the connection so that it is not disconnected when deconstructed
+        fn release(self: Pin<&mut QMetaObjectConnectionGuard>);
     }
 
-    impl UniquePtr<QMetaObjectConnection> {}
+    impl UniquePtr<QMetaObjectConnectionGuard> {}
 }
 
-pub use ffi::QMetaObjectConnection;
-
-impl QMetaObjectConnection {
-    /// Disconnect a connection.
-    pub fn disconnect(&self) {
-        ffi::qmetaobjectconnection_disconnect(self);
-    }
-}
+pub use ffi::QMetaObjectConnectionGuard;
