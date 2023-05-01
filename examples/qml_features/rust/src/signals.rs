@@ -50,7 +50,7 @@ pub mod ffi {
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustSignals {
-        connections: Option<[cxx::UniquePtr<cxx_qt_lib::QMetaObjectConnectionGuard>; 3]>,
+        connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
 
         #[qproperty]
         logging_enabled: bool,
@@ -116,19 +116,14 @@ pub mod ffi {
                     } else {
                         // Disabling logging so disconnect
                         // ANCHOR: book_signals_disconnect
-                        // Could also empty the connections which would cause drop to trigger a disconnect
-                        // qobject.as_mut().set_connections(None);
-                        if let Some(connections) = qobject.as_mut().connections_mut().take() {
-                            for conn in connections {
-                                conn.disconnect();
-                            }
-                        }
+                        // By making connections None, we trigger a drop on the connections
+                        // this then causes disconnections
+                        qobject.as_mut().set_connections(None);
                         // ANCHOR_END: book_signals_disconnect
                     }
                 },
                 ConnectionType::AutoConnection,
             )
-            .pin_mut()
             .release();
         }
     }

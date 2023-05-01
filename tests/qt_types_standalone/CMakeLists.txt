@@ -52,6 +52,7 @@ add_executable(${APP_NAME}
     cpp/qmap.h
     cpp/qmargins.h
     cpp/qmarginsf.h
+    cpp/qmetaobjectconnection.h
     cpp/qmodelindex.h
     cpp/qpersistentmodelindex.h
     cpp/qpoint.h

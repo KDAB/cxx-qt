@@ -176,10 +176,10 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 include!("cxx-qt-lib/qmetaobjectconnection.h");
                 #[doc(hidden)]
                 #[namespace = "rust::cxxqtlib1"]
-                // Rename to CxxQtQMetaObjectConnectionGuard so the developer can define it
+                // Rename to CxxQtQMetaObjectConnection so the developer can define it
                 // in their bridges without an invisible conflict
-                #[rust_name = "CxxQtQMetaObjectConnectionGuard"]
-                type QMetaObjectConnectionGuard = cxx_qt_lib::QMetaObjectConnectionGuard;
+                #[rust_name = "CxxQtQMetaObjectConnection"]
+                type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
             }
         })
         .expect("Could not build CXX common block"),
@@ -433,8 +433,8 @@ mod tests {
                     include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtlib1"]
-                    #[rust_name = "CxxQtQMetaObjectConnectionGuard"]
-                    type QMetaObjectConnectionGuard = cxx_qt_lib::QMetaObjectConnectionGuard;
+                    #[rust_name = "CxxQtQMetaObjectConnection"]
+                    type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
                 }
 
                 unsafe extern "C++" {
@@ -591,8 +591,8 @@ mod tests {
                     include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtlib1"]
-                    #[rust_name = "CxxQtQMetaObjectConnectionGuard"]
-                    type QMetaObjectConnectionGuard = cxx_qt_lib::QMetaObjectConnectionGuard;
+                    #[rust_name = "CxxQtQMetaObjectConnection"]
+                    type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
                 }
 
                 unsafe extern "C++" {

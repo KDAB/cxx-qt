@@ -104,21 +104,21 @@ pub fn generate_cpp_signals(
 
         generated.methods.push(CppFragment::Pair {
             header: format!(
-                "::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> {connect_ident}(::rust::Fn<void({parameters})> func, Qt::ConnectionType type);",
+                "::QMetaObject::Connection {connect_ident}(::rust::Fn<void({parameters})> func, ::Qt::ConnectionType type);",
                 parameters = parameter_types_rust.join(", ")
             ),
             source: formatdoc! {
                 r#"
-                ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
-                {qobject_ident}::{connect_ident}(::rust::Fn<void({parameters_rust})> func, Qt::ConnectionType type)
+                ::QMetaObject::Connection
+                {qobject_ident}::{connect_ident}(::rust::Fn<void({parameters_rust})> func, ::Qt::ConnectionType type)
                 {{
-                    return ::std::make_unique<::rust::cxxqtlib1::QMetaObjectConnectionGuard>(QObject::connect(this,
+                    return ::QObject::connect(this,
                             &{qobject_ident}::{signal_ident},
                             this,
                             [&, func = ::std::move(func)]({parameters_cpp}) {{
                               {RUST_OBJ_MUTEX_LOCK_GUARD}
                               func({parameter_values});
-                            }}, type));
+                            }}, type);
                 }}
                 "#,
                 connect_ident = connect_ident,
@@ -205,21 +205,21 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func, Qt::ConnectionType type);"
+            "::QMetaObject::Connection dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func, ::Qt::ConnectionType type);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
-            MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func, Qt::ConnectionType type)
+            ::QMetaObject::Connection
+            MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func, ::Qt::ConnectionType type)
             {
-                return ::std::make_unique<::rust::cxxqtlib1::QMetaObjectConnectionGuard>(QObject::connect(this,
+                return ::QObject::connect(this,
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](::std::int32_t trivial, QColor opaque) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, QColor>{}(::std::move(opaque)));
-                        }, type));
+                        }, type);
             }
             "#}
         );
@@ -278,21 +278,21 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func, Qt::ConnectionType type);"
+            "::QMetaObject::Connection dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func, ::Qt::ConnectionType type);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
-            MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func, Qt::ConnectionType type)
+            ::QMetaObject::Connection
+            MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func, ::Qt::ConnectionType type)
             {
-                return ::std::make_unique<::rust::cxxqtlib1::QMetaObjectConnectionGuard>(QObject::connect(this,
+                return ::QObject::connect(this,
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](A1 mapped) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this, ::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
-                        }, type));
+                        }, type);
             }
             "#}
         );
@@ -334,20 +334,20 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(header, "::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard> baseNameConnect(::rust::Fn<void(MyObject&)> func, Qt::ConnectionType type);");
+        assert_str_eq!(header, "::QMetaObject::Connection baseNameConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);");
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::std::unique_ptr<::rust::cxxqtlib1::QMetaObjectConnectionGuard>
-            MyObject::baseNameConnect(::rust::Fn<void(MyObject&)> func, Qt::ConnectionType type)
+            ::QMetaObject::Connection
+            MyObject::baseNameConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
             {
-                return ::std::make_unique<::rust::cxxqtlib1::QMetaObjectConnectionGuard>(QObject::connect(this,
+                return ::QObject::connect(this,
                         &MyObject::baseName,
                         this,
                         [&, func = ::std::move(func)]() {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
                           func(*this);
-                        }, type));
+                        }, type);
             }
             "#}
         );

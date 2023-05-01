@@ -31,7 +31,7 @@ mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
 mod qmetaobjectconnection;
-pub use qmetaobjectconnection::QMetaObjectConnectionGuard;
+pub use qmetaobjectconnection::QMetaObjectConnection;
 
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;

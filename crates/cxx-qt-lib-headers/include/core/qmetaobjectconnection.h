@@ -10,20 +10,20 @@
 
 #include <QtCore/QObject>
 
+#include "rust/cxx.h"
+
+template<>
+struct rust::IsRelocatable<::QMetaObject::Connection> : ::std::true_type
+{
+};
+
 namespace rust {
 namespace cxxqtlib1 {
 
-class QMetaObjectConnectionGuard
-{
-public:
-  explicit QMetaObjectConnectionGuard(::QMetaObject::Connection inner);
-  ~QMetaObjectConnectionGuard();
-  void disconnect() const;
-  void release();
+using QMetaObjectConnection = ::QMetaObject::Connection;
 
-private:
-  ::std::unique_ptr<::QMetaObject::Connection> m_inner;
-};
+void
+qmetaobjectconnectionDisconnect(const ::QMetaObject::Connection& conn);
 
 }
 }

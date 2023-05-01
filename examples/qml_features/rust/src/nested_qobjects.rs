@@ -77,7 +77,6 @@ pub mod ffi {
                 },
                 cxx_qt_lib::ConnectionType::AutoConnection,
             )
-            .pin_mut()
             .release();
         }
 

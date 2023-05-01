@@ -19,8 +19,8 @@ mod ffi {
         include!("cxx-qt-lib/qmetaobjectconnection.h");
         #[doc(hidden)]
         #[namespace = "rust::cxxqtlib1"]
-        #[rust_name = "CxxQtQMetaObjectConnectionGuard"]
-        type QMetaObjectConnectionGuard = cxx_qt_lib::QMetaObjectConnectionGuard;
+        #[rust_name = "CxxQtQMetaObjectConnection"]
+        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
