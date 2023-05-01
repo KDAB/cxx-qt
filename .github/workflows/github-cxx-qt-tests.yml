@@ -113,9 +113,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
-        # 10 GB limit / 6 conditions = 1666 MB
-        # Leave some headroom for Rust tools caches which take ~10-15 MB per OS
-        SCCACHE_CACHE_SIZE: 1500M
+        # sccache is around 250-350M in size for a normal build
+        # set the cache size to double of this to leave some headroom
+        # but don't expand too large as we cache old data and cause cache evictions
+        SCCACHE_CACHE_SIZE: 600M
 
     steps:
     # On Windows, the D drive that the workspace is on by default runs out of space when
