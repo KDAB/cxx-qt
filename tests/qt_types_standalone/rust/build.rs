@@ -18,6 +18,7 @@ fn main() {
         .file("src/qmap.rs")
         .file("src/qmargins.rs")
         .file("src/qmarginsf.rs")
+        .file("src/qmetaobjectconnection.rs")
         .file("src/qmodelindex.rs")
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")

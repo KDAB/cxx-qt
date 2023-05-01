@@ -15,6 +15,7 @@ mod qlist;
 mod qmap;
 mod qmargins;
 mod qmarginsf;
+mod qmetaobjectconnection;
 mod qmodelindex;
 mod qpersistentmodelindex;
 mod qpoint;

@@ -41,7 +41,8 @@ using the signal name `<property>Changed` with no parameters.
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_connect}}
 ```
 
-Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which can be disconnected later by calling its `disconnect` method.
+Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which can be disconnected later by `drop` occurring on the type,
+if you don't want a disconnect to occur call `release`.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_disconnect}}
