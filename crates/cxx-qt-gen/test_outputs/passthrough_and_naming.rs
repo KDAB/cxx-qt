@@ -298,6 +298,14 @@ mod cxx_qt_ffi {
         pub const MY_CONSTANT: i32 = 42;
     }
 
+    impl MyObjectQt {
+        type MyType = i32;
+    }
+
+    impl MyObjectQt {
+        my_macro!();
+    }
+
     pub enum MySignals {
         Ready,
     }

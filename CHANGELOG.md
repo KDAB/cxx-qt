@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Allow associated constants within `qobject::T` blocks
+- Allow associated constants, types and macro invocations within `impl qobject::T` blocks
 
 ### Changed
 

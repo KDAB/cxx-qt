@@ -206,15 +206,8 @@ impl ParsedQObject {
                 ImplItem::Fn(method) => {
                     self.parse_impl_method(method)?;
                 }
-                ImplItem::Const(constant) => {
-                    self.passthrough_impl_items
-                        .push(ImplItem::Const(constant.clone()));
-                }
                 _ => {
-                    return Err(Error::new(
-                        item.span(),
-                        "Only methods and associated constants are supported within a QObject impl block!",
-                    ));
+                    self.passthrough_impl_items.push(item.clone());
                 }
             }
         }
