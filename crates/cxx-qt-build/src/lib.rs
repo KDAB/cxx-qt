@@ -233,12 +233,12 @@ fn generate_cxxqt_cpp_files(
     Ok(generated_file_paths)
 }
 
-/// Run cxx-qt's C++ code generator on Rust modules marked with the [cxx_qt::bridge] macro, compile
-/// the code, and link to Qt. This is the complement of the [cxx_qt::bridge] macro, which the Rust
+/// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
+/// the code, and link to Qt. This is the complement of the `cxx_qt::bridge` macro, which the Rust
 /// compiler uses to generate the corresponding Rust code. No dependencies besides Qt, a C++17 compiler,
 /// and Rust toolchain are required.
 ///
-/// For example, if your [cxx_qt::bridge] module is in a file called `src/lib.rs` within your crate,
+/// For example, if your `cxx_qt::bridge` module is in a file called `src/lib.rs` within your crate,
 /// put this in your [build.rs](https://doc.rust-lang.org/cargo/reference/build-scripts.html):
 ///
 /// ```no_run
