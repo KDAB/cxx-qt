@@ -48,7 +48,7 @@ mod ffi {
         /// This uses an Arc inside the Mutex as well as outside so that the HashMap is only
         /// cloned when required. By using Arc::make_mut on the inner HashMap data is only cloned
         /// when mutating if another thread is still holding onto reference to the data.
-        /// https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut
+        /// <https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut>
         sensors_map: Arc<Mutex<Arc<SensorHashMap>>>,
     }
 

@@ -151,14 +151,14 @@ impl From<&QString> for QStringList {
 }
 
 impl From<&QList<QString>> for QStringList {
-    /// Converts a QList<QString> into QStringList.
+    /// Converts a `QList<QString>` into QStringList.
     fn from(list: &QList<QString>) -> Self {
         ffi::qstringlist_from_qlist_qstring(list)
     }
 }
 
 impl From<&QStringList> for QList<QString> {
-    /// Converts a QStringList into a QList<QString>
+    /// Converts a QStringList into a `QList<QString>`
     fn from(list: &QStringList) -> Self {
         ffi::qstringlist_as_qlist_qstring(list)
     }
