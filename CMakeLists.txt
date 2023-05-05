@@ -194,17 +194,21 @@ endif()
 # from the main build.
 set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
-# Add CMake tests for `cargo test/clippy/fmt`.
+# Add CMake tests for `cargo test/clippy/fmt/doc`.
 add_test(NAME cargo_tests COMMAND cargo test --all-targets --target-dir
                                   ${CARGO_TARGET_DIR})
 add_test(NAME cargo_doc_tests COMMAND cargo test --doc --target-dir
                                       ${CARGO_TARGET_DIR})
+add_test(NAME cargo_doc COMMAND cargo doc --workspace --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_clippy COMMAND cargo clippy --all-targets --target-dir
                                    ${CARGO_TARGET_DIR} -- -D warnings)
 add_test(NAME cargo_fmt COMMAND cargo fmt --all --check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_tests_properties(cargo_tests cargo_doc_tests cargo_clippy cargo_fmt PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
+)
+set_tests_properties(cargo_doc PROPERTIES
+    ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
 )
 
 # Ensure test inputs and outputs are formatted
