@@ -115,6 +115,7 @@ mod ffi {
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &MyObjectCxxQtThread,
@@ -153,6 +154,7 @@ mod cxx_qt_ffi {
     use super::ffi::*;
     use std::pin::Pin;
 
+    #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
@@ -165,10 +167,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "primitive"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn primitive<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.primitive()
         }
@@ -196,10 +195,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "primitive"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn set_primitive(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
             cpp.set_primitive(value);
         }
@@ -220,10 +216,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "trivial"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn trivial<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a QPoint {
             cpp.trivial()
         }
@@ -251,10 +244,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "trivial"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn set_trivial(&mut self, cpp: Pin<&mut MyObjectQt>, value: QPoint) {
             cpp.set_trivial(value);
         }
@@ -275,10 +265,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "opaque"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
             cpp.opaque()
         }
@@ -306,10 +293,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "opaque"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>) {
             cpp.set_opaque(value);
         }
@@ -379,6 +363,7 @@ mod cxx_qt_ffi {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut MyObjectQt>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -392,7 +377,7 @@ mod cxx_qt_ffi {
         }
     }
 
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }

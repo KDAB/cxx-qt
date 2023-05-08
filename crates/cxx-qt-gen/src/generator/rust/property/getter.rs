@@ -34,10 +34,7 @@ pub fn generate(
         implementation: vec![
             quote! {
                 impl #rust_struct_name_rust {
-                    #[doc = "Getter for the Q_PROPERTY "]
-                    #[doc = #ident_str]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn #getter_rust<'a>(&'a self, cpp: &'a #cpp_class_name_rust) -> &'a #ty {
                         cpp.#getter_rust()
                     }

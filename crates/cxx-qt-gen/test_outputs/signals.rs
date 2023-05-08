@@ -39,11 +39,13 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
 
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[rust_name = "emit_data_changed"]
         fn emitDataChanged(
             self: Pin<&mut MyObjectQt>,
@@ -55,6 +57,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[rust_name = "emit_new_data"]
         fn emitNewData(
             self: Pin<&mut MyObjectQt>,
@@ -84,6 +87,7 @@ mod ffi {
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &MyObjectCxxQtThread,
@@ -122,14 +126,14 @@ mod cxx_qt_ffi {
     use super::ffi::*;
     use std::pin::Pin;
 
+    #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     #[derive(Default)]
     pub struct MyObject;
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable"]
+        #[doc(hidden)]
         pub fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable();
         }
@@ -196,6 +200,7 @@ mod cxx_qt_ffi {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut MyObjectQt>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -209,7 +214,7 @@ mod cxx_qt_ffi {
         }
     }
 
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }

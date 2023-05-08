@@ -79,6 +79,7 @@ pub fn generate_rust_signals(
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[rust_name = #emit_ident_rust_str]
                     #has_unsafe fn #emit_ident_cpp(#parameter_signatures);
                 }
@@ -160,6 +161,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[rust_name = "emit_ready"]
                     fn emitReady(self: Pin<&mut MyObjectQt>);
                 }
@@ -171,6 +173,7 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[rust_name = "emit_data_changed"]
                     fn emitDataChanged(self: Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
@@ -182,6 +185,7 @@ mod tests {
             &generated.cxx_mod_contents[2],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[rust_name = "emit_unsafe_signal"]
                     unsafe fn emitUnsafeSignal(self: Pin<&mut MyObjectQt>, param: *mut T);
                 }
@@ -193,6 +197,7 @@ mod tests {
             &generated.cxx_mod_contents[3],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[rust_name = "emit_base_name"]
                     fn emitBaseName(self: Pin<&mut MyObjectQt>);
                 }

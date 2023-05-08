@@ -54,6 +54,7 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
                 // SAFETY:
                 // - Send + 'static: argument closure can be transferred to QObject thread.
                 // - FnOnce: QMetaObject::invokeMethod() should call the function at most once.
+                #[doc(hidden)]
                 #[cxx_name = "queue"]
                 fn queue_boxed_fn(
                     self: &#cxx_qt_thread_ident,
@@ -115,6 +116,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
                     // to work around the cxx limitation.
                     // https://github.com/dtolnay/cxx/issues/114
                     #[allow(clippy::boxed_local)]
+                    #[doc(hidden)]
                     fn func(
                         obj: std::pin::Pin<&mut #cpp_struct_ident>,
                         arg: std::boxed::Box<#cxx_qt_thread_queued_fn_ident>,
@@ -127,7 +129,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
             }
         },
         quote! {
-            /// Generated CXX-Qt thread helper for a QObject
+            #[doc(hidden)]
             pub struct #cxx_qt_thread_queued_fn_ident {
                 // An opaque Rust type is required to be Sized.
                 // https://github.com/dtolnay/cxx/issues/665
@@ -231,6 +233,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
             use super::#cxx_mod_ident::*;
             use std::pin::Pin;
 
+            #[doc(hidden)]
             type UniquePtr<T> = cxx::UniquePtr<T>;
 
             #(#cxx_qt_mod_contents)*
@@ -439,6 +442,7 @@ mod tests {
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
+                    #[doc(hidden)]
                     #[cxx_name = "queue"]
                     fn queue_boxed_fn(
                         self: &MyObjectCxxQtThread,
@@ -477,6 +481,7 @@ mod tests {
                 use super::ffi::*;
                 use std::pin::Pin;
 
+                #[doc(hidden)]
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
                 use module::Struct;
@@ -500,6 +505,7 @@ mod tests {
                         F: Send + 'static,
                     {
                         #[allow(clippy::boxed_local)]
+                        #[doc(hidden)]
                         fn func(
                             obj: std::pin::Pin<&mut MyObjectQt>,
                             arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -511,7 +517,7 @@ mod tests {
                     }
                 }
 
-                /// Generated CXX-Qt thread helper for a QObject
+                #[doc(hidden)]
                 pub struct MyObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
                 }
@@ -582,6 +588,7 @@ mod tests {
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &FirstObjectQt) -> UniquePtr<FirstObjectCxxQtThread>;
 
+                    #[doc(hidden)]
                     #[cxx_name = "queue"]
                     fn queue_boxed_fn(
                         self: &FirstObjectCxxQtThread,
@@ -642,6 +649,7 @@ mod tests {
                     #[cxx_name = "qtThread"]
                     fn qt_thread(self: &SecondObjectQt) -> UniquePtr<SecondObjectCxxQtThread>;
 
+                    #[doc(hidden)]
                     #[cxx_name = "queue"]
                     fn queue_boxed_fn(
                         self: &SecondObjectCxxQtThread,
@@ -680,6 +688,7 @@ mod tests {
                 use super::ffi::*;
                 use std::pin::Pin;
 
+                #[doc(hidden)]
                 type UniquePtr<T> = cxx::UniquePtr<T>;
 
                 use module::Struct;
@@ -703,6 +712,7 @@ mod tests {
                         F: Send + 'static,
                     {
                         #[allow(clippy::boxed_local)]
+                        #[doc(hidden)]
                         fn func(
                             obj: std::pin::Pin<&mut FirstObjectQt>,
                             arg: std::boxed::Box<FirstObjectCxxQtThreadQueuedFn>,
@@ -714,7 +724,7 @@ mod tests {
                     }
                 }
 
-                /// Generated CXX-Qt thread helper for a QObject
+                #[doc(hidden)]
                 pub struct FirstObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut FirstObjectQt>) + Send>,
                 }
@@ -743,6 +753,7 @@ mod tests {
                         F: Send + 'static,
                     {
                         #[allow(clippy::boxed_local)]
+                        #[doc(hidden)]
                         fn func(
                             obj: std::pin::Pin<&mut SecondObjectQt>,
                             arg: std::boxed::Box<SecondObjectCxxQtThreadQueuedFn>,
@@ -754,7 +765,7 @@ mod tests {
                     }
                 }
 
-                /// Generated CXX-Qt thread helper for a QObject
+                #[doc(hidden)]
                 pub struct SecondObjectCxxQtThreadQueuedFn {
                     inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut SecondObjectQt>) + Send>,
                 }

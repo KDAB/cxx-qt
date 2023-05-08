@@ -110,10 +110,7 @@ mod tests {
             generated.cxx_qt_mod_contents[0],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Getter for the Q_PROPERTY "]
-                    #[doc = "trivial_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn trivial_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
                         cpp.trivial_property()
                     }
@@ -164,10 +161,7 @@ mod tests {
             generated.cxx_qt_mod_contents[3],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Setter for the Q_PROPERTY "]
-                    #[doc = "trivial_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn set_trivial_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
                         cpp.set_trivial_property(value);
                     }
@@ -226,10 +220,7 @@ mod tests {
             generated.cxx_qt_mod_contents[5],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Getter for the Q_PROPERTY "]
-                    #[doc = "opaque_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn opaque_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor> {
                         cpp.opaque_property()
                     }
@@ -280,10 +271,7 @@ mod tests {
             generated.cxx_qt_mod_contents[8],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Setter for the Q_PROPERTY "]
-                    #[doc = "opaque_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn set_opaque_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>) {
                         cpp.set_opaque_property(value);
                     }
@@ -342,10 +330,7 @@ mod tests {
             generated.cxx_qt_mod_contents[10],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Getter for the Q_PROPERTY "]
-                    #[doc = "unsafe_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn unsafe_property<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a *mut T {
                         cpp.unsafe_property()
                     }
@@ -396,10 +381,7 @@ mod tests {
             generated.cxx_qt_mod_contents[13],
             parse_quote! {
                 impl MyObject {
-                    #[doc = "Setter for the Q_PROPERTY "]
-                    #[doc = "unsafe_property"]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn set_unsafe_property(&mut self, cpp: Pin<&mut MyObjectQt>, value: *mut T) {
                         cpp.set_unsafe_property(value);
                     }
