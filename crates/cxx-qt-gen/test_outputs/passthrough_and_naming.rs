@@ -117,6 +117,7 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
@@ -140,6 +141,7 @@ pub mod ffi {
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &MyObjectCxxQtThread,
@@ -215,6 +217,7 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut SecondObjectQt>);
     }
@@ -235,6 +238,7 @@ pub mod ffi {
         #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &SecondObjectQt) -> UniquePtr<SecondObjectCxxQtThread>;
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &SecondObjectCxxQtThread,
@@ -271,6 +275,7 @@ mod cxx_qt_ffi {
     use super::ffi::*;
     use std::pin::Pin;
 
+    #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     use super::MyTrait;
@@ -302,10 +307,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn property_name<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a i32 {
             cpp.property_name()
         }
@@ -333,10 +335,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
             cpp.set_property_name(value);
         }
@@ -357,8 +356,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_name"]
+        #[doc(hidden)]
         pub fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable_name();
         }
@@ -409,6 +407,7 @@ mod cxx_qt_ffi {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut MyObjectQt>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -422,7 +421,7 @@ mod cxx_qt_ffi {
         }
     }
 
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
@@ -443,10 +442,7 @@ mod cxx_qt_ffi {
     }
 
     impl SecondObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to retrieve the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn property_name<'a>(&'a self, cpp: &'a SecondObjectQt) -> &'a i32 {
             cpp.property_name()
         }
@@ -473,10 +469,7 @@ mod cxx_qt_ffi {
     }
 
     impl SecondObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+        #[doc(hidden)]
         pub fn set_property_name(&mut self, cpp: Pin<&mut SecondObjectQt>, value: i32) {
             cpp.set_property_name(value);
         }
@@ -497,8 +490,7 @@ mod cxx_qt_ffi {
     }
 
     impl SecondObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_name"]
+        #[doc(hidden)]
         pub fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>) {
             cpp.invokable_name();
         }
@@ -537,6 +529,7 @@ mod cxx_qt_ffi {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut SecondObjectQt>,
                 arg: std::boxed::Box<SecondObjectCxxQtThreadQueuedFn>,
@@ -550,7 +543,7 @@ mod cxx_qt_ffi {
         }
     }
 
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct SecondObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut SecondObjectQt>) + Send>,
     }

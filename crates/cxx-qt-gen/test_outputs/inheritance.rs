@@ -44,10 +44,16 @@ mod inheritance {
         fn has_children_wrapper(self: &MyObject, cpp: &MyObjectQt, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
+        #[doc = "CXX-Qt generated method which calls the C++ method"]
+        #[doc = "hasChildren"]
+        #[doc = "on the base class"]
         #[cxx_name = "hasChildrenCxxQtInherit"]
         fn has_children_super(self: &MyObjectQt, parent: &QModelIndex) -> bool;
     }
     extern "C++" {
+        #[doc = "CXX-Qt generated method which calls the C++ method"]
+        #[doc = "fetchMore"]
+        #[doc = "on the base class"]
         #[cxx_name = "fetchMoreCxxQtInherit"]
         unsafe fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
     }
@@ -67,6 +73,7 @@ mod inheritance {
         #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &MyObjectCxxQtThread,
@@ -99,6 +106,7 @@ pub use self::cxx_qt_inheritance::*;
 mod cxx_qt_inheritance {
     use super::inheritance::*;
     use std::pin::Pin;
+    #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     #[derive(Default)]
     pub struct MyObject {
@@ -122,8 +130,7 @@ mod cxx_qt_inheritance {
         }
     }
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "data"]
+        #[doc(hidden)]
         pub fn data_wrapper(
             self: &MyObject,
             cpp: &MyObjectQt,
@@ -139,8 +146,7 @@ mod cxx_qt_inheritance {
         }
     }
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "has_children"]
+        #[doc(hidden)]
         pub fn has_children_wrapper(
             self: &MyObject,
             cpp: &MyObjectQt,
@@ -163,6 +169,7 @@ mod cxx_qt_inheritance {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut MyObjectQt>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -175,7 +182,7 @@ mod cxx_qt_inheritance {
             self.queue_boxed_fn(func, std::boxed::Box::new(arg))
         }
     }
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }

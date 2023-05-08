@@ -40,10 +40,7 @@ pub fn generate(
         implementation: vec![
             quote! {
                 impl #rust_struct_name_rust {
-                    #[doc = "Setter for the Q_PROPERTY "]
-                    #[doc = #ident_str]
-                    #[doc = "\n"]
-                    #[doc = "This is an internal method used by C++ to set the value of the Q_PROPERTY in the Rust struct"]
+                    #[doc(hidden)]
                     pub fn #setter_rust(&mut self, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty) {
                         cpp.#setter_rust(value);
                     }

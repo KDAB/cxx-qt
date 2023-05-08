@@ -106,6 +106,7 @@ mod ffi {
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
+        #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
             self: &MyObjectCxxQtThread,
@@ -144,6 +145,7 @@ mod cxx_qt_ffi {
     use super::ffi::*;
     use std::pin::Pin;
 
+    #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
 
     impl MyObject {
@@ -156,8 +158,7 @@ mod cxx_qt_ffi {
     pub struct MyObject;
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable"]
+        #[doc(hidden)]
         pub fn invokable_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable();
         }
@@ -170,8 +171,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_mutable"]
+        #[doc(hidden)]
         pub fn invokable_mutable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable_mutable();
         }
@@ -184,8 +184,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_parameters"]
+        #[doc(hidden)]
         pub fn invokable_parameters_wrapper(
             self: &MyObject,
             cpp: &MyObjectQt,
@@ -209,8 +208,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_return_opaque"]
+        #[doc(hidden)]
         pub fn invokable_return_opaque_wrapper(
             self: &mut MyObject,
             cpp: Pin<&mut MyObjectQt>,
@@ -226,8 +224,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_return_trivial"]
+        #[doc(hidden)]
         pub fn invokable_return_trivial_wrapper(
             self: &mut MyObject,
             cpp: Pin<&mut MyObjectQt>,
@@ -243,8 +240,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_final"]
+        #[doc(hidden)]
         pub fn invokable_final_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable_final();
         }
@@ -257,8 +253,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_override"]
+        #[doc(hidden)]
         pub fn invokable_override_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable_override();
         }
@@ -271,8 +266,7 @@ mod cxx_qt_ffi {
     }
 
     impl MyObject {
-        #[doc = "Generated CXX-Qt wrapper method for the Q_INVOKABLE"]
-        #[doc = "invokable_virtual"]
+        #[doc(hidden)]
         pub fn invokable_virtual_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable_virtual();
         }
@@ -312,6 +306,7 @@ mod cxx_qt_ffi {
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
+            #[doc(hidden)]
             fn func(
                 obj: std::pin::Pin<&mut MyObjectQt>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
@@ -325,7 +320,7 @@ mod cxx_qt_ffi {
         }
     }
 
-    #[doc = r" Generated CXX-Qt thread helper for a QObject"]
+    #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
