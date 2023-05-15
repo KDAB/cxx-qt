@@ -224,11 +224,14 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         cxx_mod.content = Some((syn::token::Brace::default(), cxx_mod_contents));
     }
 
+    // Copy the visiblity of the module so we re-export things in the same way
+    let cxx_mod_visiblity = &generated.cxx_mod.vis;
+
     quote! {
         #[cxx::bridge(namespace = #namespace)]
         #cxx_mod
 
-        pub use self::#cxx_qt_mod_ident::*;
+        #cxx_mod_visiblity use self::#cxx_qt_mod_ident::*;
         mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
             use std::pin::Pin;
@@ -476,7 +479,7 @@ mod tests {
                 }
             }
 
-            pub use self::cxx_qt_ffi::*;
+            use self::cxx_qt_ffi::*;
             mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
@@ -683,7 +686,7 @@ mod tests {
                 }
             }
 
-            pub use self::cxx_qt_ffi::*;
+            use self::cxx_qt_ffi::*;
             mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
