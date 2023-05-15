@@ -102,7 +102,7 @@ mod inheritance {
         fn create_rs_my_object() -> Box<MyObject>;
     }
 }
-pub use self::cxx_qt_inheritance::*;
+use self::cxx_qt_inheritance::*;
 mod cxx_qt_inheritance {
     use super::inheritance::*;
     use std::pin::Pin;
