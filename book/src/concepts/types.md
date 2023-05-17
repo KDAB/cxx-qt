@@ -41,6 +41,8 @@ Then the type name `QHash_QString_QVariant` is used to match the C++ side.
 {{#include ../../../tests/qt_types_standalone/rust/src/qhash.rs:book_qhash}}
 ```
 
+Note that type alias such as `QVariantMap` can be used by using the matching type in Rust such as `QMap<QString, QVariant>`.
+
 ## Defining a Custom Type
 
 Any types that are valid CXX types should be usable with CXX-Qt as well.
@@ -63,6 +65,8 @@ To use a custom type with `QVariant` implement the `QVariantValue` trait for you
 ```
 
 A full example of implementing a custom struct with `QVariant` is shown in the [qml_features types example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/types.rs).
+
+Also any custom types or alias in C++ should be registered with Qt using `qRegisterMetaType<T>("TYPE")` to ensure that they work with QML.
 
 ## Opaque Type Conversions
 
