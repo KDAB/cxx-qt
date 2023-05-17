@@ -23,7 +23,7 @@ mod ffi {
         #[doc = "The C++ type for the QObject "]
         #[doc = "MyObject"]
         #[doc = "\n"]
-        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         #[cxx_name = "MyObject"]
@@ -93,7 +93,7 @@ mod ffi {
         #[doc = r" CXX doesn't support having generic types in the function yet"]
         #[doc = r" so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here"]
         #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
-        #[doc = r" https://github.com/dtolnay/cxx/issues/683"]
+        #[doc = r" <https://github.com/dtolnay/cxx/issues/683>"]
         type MyObjectCxxQtThread;
 
         #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
@@ -125,7 +125,8 @@ mod ffi {
     extern "C++" {
         #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
         #[doc = r""]
-        #[doc = r" This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually."]
+        #[doc = r" This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal."]
+        #[doc = r" The property changed signal must be emitted manually."]
         #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
@@ -330,12 +331,12 @@ mod cxx_qt_ffi {
         std::default::Default::default()
     }
 
-    #[doc = r" Generated CXX-Qt module containing type alias to the C++ type of the QObjects"]
+    #[doc = r" Generated CXX-Qt module containing type alias to the C++ types of the QObjects"]
     pub mod qobject {
         #[doc = "The C++ type for the QObject "]
         #[doc = "MyObject"]
         #[doc = "\n"]
-        #[doc = "Use type when referring to the QObject as a pointer"]
+        #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         pub type MyObject = super::MyObjectQt;

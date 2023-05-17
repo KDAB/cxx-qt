@@ -26,7 +26,7 @@ impl From<&Serialisation> for DataSerde {
     }
 }
 
-/// A CXX-Qt bridge which shows how a serialisation can be used
+/// A CXX-Qt bridge which shows how use serde for (de)serialization of the data in a QObjects' QPROPERTY's
 #[cxx_qt::bridge(cxx_file_stem = "serialisation")]
 pub mod ffi {
     use super::DataSerde;

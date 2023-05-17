@@ -12,7 +12,7 @@ pub mod ffi {
     // ANCHOR: book_extern_block
     unsafe extern "C++" {
         #[cxx_name = "InnerObject"]
-        /// THe C++ part of the InnerObject so that it can be referred to
+        /// The C++ part of the InnerObject so that it can be referred to
         type CxxInnerObject = super::qobject::InnerObject;
     }
     // ANCHOR_END: book_extern_block
@@ -25,7 +25,7 @@ pub mod ffi {
         counter: i32,
     }
 
-    /// The outer QObject which has a Q_PROPERTY to the inner QObject
+    /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct OuterObject {
         #[qproperty]
@@ -64,7 +64,7 @@ pub mod ffi {
             self.emit(OuterSignals::Called { inner });
         }
 
-        /// Reset the cont of the inner QObject stored in the Q_PROPERTY
+        /// Reset the counter of the inner QObject stored in the Q_PROPERTY
         #[qinvokable]
         pub fn reset(self: Pin<&mut Self>) {
             // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
