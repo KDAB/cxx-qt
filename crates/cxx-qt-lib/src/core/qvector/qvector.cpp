@@ -61,3 +61,65 @@ CXX_QT_QVECTOR_ASSERTS(::std::uint8_t, u8);
 CXX_QT_QVECTOR_ASSERTS(::std::uint16_t, u16);
 CXX_QT_QVECTOR_ASSERTS(::std::uint32_t, u32);
 CXX_QT_QVECTOR_ASSERTS(::std::uint64_t, u64);
+
+static const int register_QVector_bool =
+  qRegisterMetaType<::QVector_bool>("QVector_bool");
+static const int register_QVector_f32 =
+  qRegisterMetaType<::QVector_f32>("QVector_f32");
+static const int register_QVector_f64 =
+  qRegisterMetaType<::QVector_f64>("QVector_f64");
+static const int register_QVector_i8 =
+  qRegisterMetaType<::QVector_i8>("QVector_i8");
+static const int register_QVector_i16 =
+  qRegisterMetaType<::QVector_i16>("QVector_i16");
+static const int register_QVector_i32 =
+  qRegisterMetaType<::QVector_i32>("QVector_i32");
+static const int register_QVector_i64 =
+  qRegisterMetaType<::QVector_i64>("QVector_i64");
+static const int register_QVector_QByteArray =
+  qRegisterMetaType<::QVector_QByteArray>("QVector_QByteArray");
+#ifdef CXX_QT_GUI_FEATURE
+static const int register_QVector_QColor =
+  qRegisterMetaType<::QVector_QColor>("QVector_QColor");
+#endif
+static const int register_QVector_QDate =
+  qRegisterMetaType<::QVector_QDate>("QVector_QDate");
+static const int register_QVector_QDateTime =
+  qRegisterMetaType<::QVector_QDateTime>("QVector_QDateTime");
+static const int register_QVector_QMargins =
+  qRegisterMetaType<::QVector_QMargins>("QVector_QMargins");
+static const int register_QVector_QMarginsF =
+  qRegisterMetaType<::QVector_QMarginsF>("QVector_QMarginsF");
+static const int register_QVector_QPersistentModelIndex =
+  qRegisterMetaType<::QVector_QPersistentModelIndex>(
+    "QVector_QPersistentModelIndex");
+static const int register_QVector_QPoint =
+  qRegisterMetaType<::QVector_QPoint>("QVector_QPoint");
+static const int register_QVector_QPointF =
+  qRegisterMetaType<::QVector_QPointF>("QVector_QPointF");
+static const int register_QVector_QRect =
+  qRegisterMetaType<::QVector_QRect>("QVector_QRect");
+static const int register_QVector_QRectF =
+  qRegisterMetaType<::QVector_QRectF>("QVector_QRectF");
+static const int register_QVector_QSize =
+  qRegisterMetaType<::QVector_QSize>("QVector_QSize");
+static const int register_QVector_QSizeF =
+  qRegisterMetaType<::QVector_QSizeF>("QVector_QSizeF");
+static const int register_QVector_QString =
+  qRegisterMetaType<::QVector_QString>("QVector_QString");
+static const int register_QVector_QTime =
+  qRegisterMetaType<::QVector_QTime>("QVector_QTime");
+static const int register_QVector_QUrl =
+  qRegisterMetaType<::QVector_QUrl>("QVector_QUrl");
+// Ensure that QVector<QVariant> (aka QVariantList) is registered
+// otherwise it cannot be used in QML
+static const int register_QVector_QVariant =
+  qRegisterMetaType<::QVector_QVariant>("QVector_QVariant");
+static const int register_QVector_u8 =
+  qRegisterMetaType<::QVector_u8>("QVector_u8");
+static const int register_QVector_u16 =
+  qRegisterMetaType<::QVector_u16>("QVector_u16");
+static const int register_QVector_u32 =
+  qRegisterMetaType<::QVector_u32>("QVector_u32");
+static const int register_QVector_u64 =
+  qRegisterMetaType<::QVector_u64>("QVector_u64");

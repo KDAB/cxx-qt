@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.5.2...HEAD)
 
+### Fixed
+
+- Ensure that QVariant{Hash,List,Map} cxx-qt-lib equivalents are registered so that they work in QML
+
 ## [0.5.2](https://github.com/KDAB/cxx-qt/compare/v0.5.1...v0.5.2) - 2023-04-27
 
 ### Fixed

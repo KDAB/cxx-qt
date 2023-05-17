@@ -27,3 +27,8 @@
   static_assert(::std::is_copy_constructible<valueTypeName>::value);
 
 CXX_QT_QMAP_ASSERTS(QString, QVariant, QString_QVariant);
+
+// Ensure that QMap<QString, QVariant> (aka QVariantMap) is registered
+// otherwise it cannot be used in QML
+static const int register_QMap_QString_QVariant =
+  qRegisterMetaType<::QMap_QString_QVariant>("QMap_QString_QVariant");
