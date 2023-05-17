@@ -38,7 +38,7 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
                 /// CXX doesn't support having generic types in the function yet
                 /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
                 /// For now we use a type alias in C++ then use it like a normal type here
-                /// https://github.com/dtolnay/cxx/issues/683
+                /// <https://github.com/dtolnay/cxx/issues/683>
                 type #cxx_qt_thread_ident;
 
                 /// Retrieve an immutable reference to the Rust struct backing this C++ object
@@ -74,7 +74,8 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
             extern "C++" {
                 /// Retrieve a mutable reference to the Rust struct backing this C++ object
                 ///
-                /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
+                /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
+                /// The property changed signal must be emitted manually.
                 #[cxx_name = "unsafeRustMut"]
                 unsafe fn rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
             }
@@ -199,7 +200,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
             #[doc = "The C++ type for the QObject "]
             #[doc = #rust_struct_ident_str]
             #[doc = "\n"]
-            #[doc = "Use type when referring to the QObject as a pointer"]
+            #[doc = "Use this type when referring to the QObject as a pointer"]
             #[doc = "\n"]
             #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
             pub type #rust_struct_ident = super::#cpp_struct_ident;
@@ -209,7 +210,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     // Create the qobject block for the type alias
     cxx_qt_mod_contents.push(
         syn::parse2(quote! {
-            /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
+            /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
             pub mod qobject {
                 #(#qobject_types)*
             }
@@ -432,7 +433,7 @@ mod tests {
                     /// CXX doesn't support having generic types in the function yet
                     /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
                     /// For now we use a type alias in C++ then use it like a normal type here
-                    /// https://github.com/dtolnay/cxx/issues/683
+                    /// <https://github.com/dtolnay/cxx/issues/683>
                     type MyObjectCxxQtThread;
 
                     /// Retrieve an immutable reference to the Rust struct backing this C++ object
@@ -464,7 +465,8 @@ mod tests {
                 extern "C++" {
                     /// Retrieve a mutable reference to the Rust struct backing this C++ object
                     ///
-                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
+                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
+                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
                 }
@@ -530,12 +532,12 @@ mod tests {
                     std::default::Default::default()
                 }
 
-                /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
+                /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
                 pub mod qobject {
                     #[doc = "The C++ type for the QObject "]
                     #[doc = "MyObject"]
                     #[doc = "\n"]
-                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type MyObject = super::MyObjectQt;
@@ -578,7 +580,7 @@ mod tests {
                     /// CXX doesn't support having generic types in the function yet
                     /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
                     /// For now we use a type alias in C++ then use it like a normal type here
-                    /// https://github.com/dtolnay/cxx/issues/683
+                    /// <https://github.com/dtolnay/cxx/issues/683>
                     type FirstObjectCxxQtThread;
 
                     /// Retrieve an immutable reference to the Rust struct backing this C++ object
@@ -610,7 +612,8 @@ mod tests {
                 extern "C++" {
                     /// Retrieve a mutable reference to the Rust struct backing this C++ object
                     ///
-                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
+                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
+                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
                 }
@@ -639,7 +642,7 @@ mod tests {
                     /// CXX doesn't support having generic types in the function yet
                     /// so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here
                     /// For now we use a type alias in C++ then use it like a normal type here
-                    /// https://github.com/dtolnay/cxx/issues/683
+                    /// <https://github.com/dtolnay/cxx/issues/683>
                     type SecondObjectCxxQtThread;
 
                     /// Retrieve an immutable reference to the Rust struct backing this C++ object
@@ -671,7 +674,8 @@ mod tests {
                 extern "C++" {
                     /// Retrieve a mutable reference to the Rust struct backing this C++ object
                     ///
-                    /// This method is unsafe as if a Q_PROPERTY is modified its changed signal must be triggered manually.
+                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
+                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
                     unsafe fn rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
                 }
@@ -778,19 +782,19 @@ mod tests {
                     std::default::Default::default()
                 }
 
-                /// Generated CXX-Qt module containing type alias to the C++ type of the QObjects
+                /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
                 pub mod qobject {
                     #[doc = "The C++ type for the QObject "]
                     #[doc = "FirstObject"]
                     #[doc = "\n"]
-                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type FirstObject = super::FirstObjectQt;
                     #[doc = "The C++ type for the QObject "]
                     #[doc = "SecondObject"]
                     #[doc = "\n"]
-                    #[doc = "Use type when referring to the QObject as a pointer"]
+                    #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     pub type SecondObject = super::SecondObjectQt;

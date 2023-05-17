@@ -55,7 +55,7 @@ pub mod ffi {
         /// CustomStruct which is a custom C++ type
         type CustomStruct = super::CustomStruct;
 
-        /// Return if the given QVariant can be converted into a CustomStruct
+        /// Return whether the given QVariant can be converted into a CustomStruct
         #[rust_name = "qvariant_can_convert_custom_type"]
         fn qvariantCanConvertCustomStruct(variant: &QVariant) -> bool;
     }

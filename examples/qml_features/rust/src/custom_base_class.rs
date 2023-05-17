@@ -31,7 +31,7 @@ pub mod ffi {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
-    /// A struct which will derive from a QAbstractListModel
+    /// A struct which inherits from QAbstractListModel
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     #[cxx_qt::qobject(
@@ -71,7 +71,7 @@ pub mod ffi {
             self.add_cpp_context();
         }
 
-        /// On a background thread add a given number of rows to the QAbstractListModel
+        /// On a background thread, add a given number of rows to the QAbstractListModel
         #[qinvokable]
         pub fn add_on_thread(self: Pin<&mut Self>, mut counter: i32) {
             let qt_thread = self.qt_thread();

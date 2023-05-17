@@ -7,7 +7,7 @@
 // Use this crate to test that missing_docs works with our generated code
 #![deny(missing_docs)]
 
-//! This example provides demostrations of most of the features of CXX-Qt
+//! This example provides demonstrations of most of the features of CXX-Qt
 //! split into separate modules
 
 pub mod containers;

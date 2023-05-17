@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! This example shows how a QML_UNCREATABLE can be used
+//! This example shows how a QML_UNCREATABLE QObject can be used
 
-/// A CXX-Qt bridge which shows how a QML_UNCREATABLE can be used
+/// A CXX-Qt bridge which shows how a QML_UNCREATABLE QObject can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_uncreatable")]
 pub mod ffi {

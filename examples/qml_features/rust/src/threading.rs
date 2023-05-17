@@ -5,7 +5,7 @@
 
 //! This example shows how a threading can be used
 
-/// A CXX-Qt bridge which shows how a threading can be used
+/// This example shows how to send data from a background thread to the Qt event loop to update data in the QObject
 // ANCHOR: book_macro_code
 // ANCHOR: book_namespace_macro
 #[cxx_qt::bridge(cxx_file_stem = "threading_website", namespace = "cxx_qt::website")]

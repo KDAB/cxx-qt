@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! This example shows how container types can be used
+//! This example shows how Qt container types can be used
 
-/// A CXX-Qt bridge which shows container types can be used
+/// A CXX-Qt bridge which shows how to use Qt container types
 #[cxx_qt::bridge(cxx_file_stem = "rust_containers")]
 pub mod ffi {
     unsafe extern "C++" {
@@ -34,7 +34,7 @@ pub mod ffi {
 
     /// A QObject which stores container types internally
     ///
-    /// Then it has Q_PROPERTYs which expose a string of the container to be show in QML
+    /// It has Q_PROPERTYs which expose a string with the container's contents to show in QML
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustContainers {
@@ -57,7 +57,7 @@ pub mod ffi {
     }
 
     impl qobject::RustContainers {
-        /// Reset all the container types
+        /// Reset all the containers
         #[qinvokable]
         pub fn reset(mut self: Pin<&mut Self>) {
             self.as_mut().set_hash(QHash_QString_QVariant::default());
