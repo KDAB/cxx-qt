@@ -82,7 +82,6 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/common.h"), "common.h"),
         (include_str!("../include/convert.h"), "convert.h"),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
-        (include_str!("../include/std_types.h"), "std_types.h"),
     ] {
         let h_path = format!("{}/{file_name}", directory.display());
         let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");

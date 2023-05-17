@@ -230,6 +230,8 @@ fn main() {
     }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
+    builder.file("src/std_types.cpp");
+    println!("cargo:rerun-if-changed=src/std_types.cpp");
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     // Write this library's manually written C++ headers to files and add them to include paths

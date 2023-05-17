@@ -24,26 +24,36 @@ corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
     "QMAKE=${QMAKE}"
 )
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 
-set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/../qml)
-set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
+# Create an interface for our Rust library
+add_library(core_qmlplugin_rust INTERFACE)
 
-# Define our QML plugin library
-add_library(core_qmlplugin SHARED cpp/plugin.cpp)
-# Set directory for our library
-set_target_properties(core_qmlplugin PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUTPUT_DIR}
-)
+# Include the generated headers
+target_include_directories(core_qmlplugin_rust INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 
-# Link to Rust library and Qt
-target_link_libraries(core_qmlplugin PRIVATE
-    ${CRATE}
+target_link_libraries(core_qmlplugin_rust INTERFACE
+    # WHOLE_ARCHIVE is needed for the generated QML plugin to register on startup,
+    # otherwise the linker will discard the static variables that initialize it.
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
     Qt::Core
     Qt::Gui
     Qt::Qml
     Qt::QuickControls2
 )
+
+# Define our QML plugin library
+add_library(core_qmlplugin SHARED cpp/plugin.cpp)
+
+set(QML_IMPORT_DIR ${CMAKE_CURRENT_BINARY_DIR}/../qml)
+set(PLUGIN_OUTPUT_DIR ${QML_IMPORT_DIR}/com/kdab/cxx_qt/demo)
+
+# Set directory for our library
+set_target_properties(core_qmlplugin PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUTPUT_DIR}
+)
+
+# Link our QQmlExtensionPlugin plugin to the Rust library
+target_link_libraries(core_qmlplugin PRIVATE core_qmlplugin_rust)
 
 # Install the qmldir file into the plugin folder
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/qmldir ${PLUGIN_OUTPUT_DIR}/qmldir COPYONLY)
