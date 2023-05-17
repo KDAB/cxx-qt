@@ -93,6 +93,30 @@ TestCase {
         compare(obj.stringMap, "");
     }
 
+    function test_container_map_qvariantmap() {
+        const obj = createTemporaryObject(componentContainers, null, {});
+        const spy = createTemporaryObject(componentSpy, null, {
+            signalName: "mapChanged",
+            target: obj,
+        });
+        compare(spy.count, 0);
+        compare(Object.keys(obj.map).length, 0);
+
+        obj.insertMap("A1", 1);
+        obj.insertMap("A1", 1);
+        obj.insertMap("A3", 3);
+        obj.insertMap("A3", 3);
+
+        compare(spy.count, 4);
+        compare(Object.keys(obj.map).length, 2);
+        compare(obj.map.A1, 1);
+        compare(obj.map.A3, 3);
+
+        obj.reset();
+        compare(spy.count, 5);
+        compare(Object.keys(obj.map).length, 0);
+    }
+
     function test_container_set() {
         const obj = createTemporaryObject(componentContainers, null, {});
         const spy = createTemporaryObject(componentSpy, null, {

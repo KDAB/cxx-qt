@@ -38,6 +38,8 @@ mod ffi {
 
         hash: QHash_QString_QVariant,
         list: QList_i32,
+        // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
+        #[qproperty]
         map: QMap_QString_QVariant,
         set: QSet_i32,
         vector: QVector_i32,
@@ -85,7 +87,11 @@ mod ffi {
 
         #[qinvokable]
         pub fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-            self.as_mut().map_mut().insert(key, value);
+            // SAFETY: map is a Q_PROPERTY so ensure we manually trigger changed
+            unsafe {
+                self.as_mut().map_mut().insert(key, value);
+                self.as_mut().map_changed();
+            }
 
             self.update_strings();
         }
