@@ -88,12 +88,12 @@ mod cxx_qt_inheritance {
         }
     }
     impl MyObjectQt {
-        fn data_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut Vec<i32> {
+        fn data_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut Vec<i32> {
             unsafe { &mut self.rust_mut().get_unchecked_mut().data }
         }
     }
     impl MyObjectQt {
-        fn set_data(mut self: Pin<&mut Self>, value: Vec<i32>) {
+        fn set_data(self: Pin<&mut Self>, value: Vec<i32>) {
             unsafe {
                 self.rust_mut().data = value;
             }
