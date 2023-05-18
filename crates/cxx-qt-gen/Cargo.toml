@@ -11,6 +11,7 @@ edition.workspace = true
 license.workspace = true
 description = "Code generation for integrating `cxx-qt` into higher level tools"
 repository.workspace = true
+exclude = ["update_expected.sh"]
 
 [dependencies]
 proc-macro2.workspace = true

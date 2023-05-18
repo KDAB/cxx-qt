@@ -23,7 +23,6 @@ mod inheritance {
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         #[cxx_name = "MyObject"]
         type MyObjectQt;
-
     }
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
