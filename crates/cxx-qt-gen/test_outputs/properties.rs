@@ -239,13 +239,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        fn private_rust_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+        fn private_rust_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
             unsafe { &mut self.rust_mut().get_unchecked_mut().private_rust_field }
         }
     }
 
     impl MyObjectQt {
-        fn set_private_rust_field(mut self: Pin<&mut Self>, value: i32) {
+        fn set_private_rust_field(self: Pin<&mut Self>, value: i32) {
             unsafe {
                 self.rust_mut().private_rust_field = value;
             }
@@ -259,13 +259,13 @@ mod cxx_qt_ffi {
     }
 
     impl MyObjectQt {
-        pub fn public_rust_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut f64 {
+        pub fn public_rust_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut f64 {
             unsafe { &mut self.rust_mut().get_unchecked_mut().public_rust_field }
         }
     }
 
     impl MyObjectQt {
-        pub fn set_public_rust_field(mut self: Pin<&mut Self>, value: f64) {
+        pub fn set_public_rust_field(self: Pin<&mut Self>, value: f64) {
             unsafe {
                 self.rust_mut().public_rust_field = value;
             }
