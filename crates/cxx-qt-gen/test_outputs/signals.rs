@@ -5,17 +5,14 @@ mod ffi {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
     }
-
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
     }
-
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
     }
-
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
         #[doc = "MyObject"]
@@ -26,23 +23,19 @@ mod ffi {
         #[cxx_name = "MyObject"]
         type MyObjectQt;
     }
-
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
     }
-
     extern "Rust" {
         #[cxx_name = "invokableWrapper"]
         fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
-
     unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "emit_ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
-
     unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "emit_data_changed"]
@@ -54,7 +47,6 @@ mod ffi {
             fourth: &QPoint,
         );
     }
-
     unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "emit_new_data"]
@@ -66,7 +58,6 @@ mod ffi {
             fourth: &QPoint,
         );
     }
-
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
         #[doc = r""]
@@ -75,17 +66,14 @@ mod ffi {
         #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
         #[doc = r" <https://github.com/dtolnay/cxx/issues/683>"]
         type MyObjectCxxQtThread;
-
         #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
         #[cxx_name = "unsafeRust"]
         fn rust(self: &MyObjectQt) -> &MyObject;
-
         #[doc = r" Create an instance of a CxxQtThread"]
         #[doc = r""]
         #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
         #[cxx_name = "qtThread"]
         fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
-
         #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
@@ -93,7 +81,6 @@ mod ffi {
             func: fn(Pin<&mut MyObjectQt>, Box<MyObjectCxxQtThreadQueuedFn>),
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
         ) -> Result<()>;
-
         #[doc = "Generated CXX-Qt method which creates a new"]
         #[doc = "MyObjectQt"]
         #[doc = "as a UniquePtr with no parent in Qt"]
@@ -101,7 +88,6 @@ mod ffi {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
-
     extern "C++" {
         #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
         #[doc = r""]
@@ -110,35 +96,28 @@ mod ffi {
         #[cxx_name = "unsafeRustMut"]
         unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
-
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         type MyObjectCxxQtThreadQueuedFn;
-
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs_my_object() -> Box<MyObject>;
     }
 }
-
 use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
     use std::pin::Pin;
-
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
-
     #[derive(Default)]
     pub struct MyObject;
-
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable();
         }
     }
-
     impl MyObjectQt {
         pub fn invokable(self: Pin<&mut Self>) {
             self.as_mut().emit(MySignals::DataChanged {
@@ -149,7 +128,6 @@ mod cxx_qt_ffi {
             });
         }
     }
-
     enum MySignals<'a> {
         Ready,
         DataChanged {
@@ -165,7 +143,6 @@ mod cxx_qt_ffi {
             fourth: &'a QPoint,
         },
     }
-
     impl MyObjectQt {
         #[doc = "Emit the signal from the enum "]
         #[doc = "MySignals"]
@@ -189,9 +166,7 @@ mod cxx_qt_ffi {
             }
         }
     }
-
     unsafe impl Send for MyObjectCxxQtThread {}
-
     impl MyObjectCxxQtThread {
         #[doc = r" Queue the given closure onto the Qt event loop for this QObject"]
         pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
@@ -213,17 +188,14 @@ mod cxx_qt_ffi {
             self.queue_boxed_fn(func, std::boxed::Box::new(arg))
         }
     }
-
     #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
-
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
     }
-
     #[doc = r" Generated CXX-Qt module containing type alias to the C++ types of the QObjects"]
     pub mod qobject {
         #[doc = "The C++ type for the QObject "]
