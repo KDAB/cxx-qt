@@ -140,7 +140,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
                     #[doc = "trivial_property_changed"]
-                    pub unsafe fn trivial_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+                    pub unsafe fn trivial_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
                         &mut self.rust_mut().get_unchecked_mut().trivial_property
                     }
                 }
@@ -250,7 +250,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
                     #[doc = "opaque_property_changed"]
-                    pub unsafe fn opaque_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
+                    pub unsafe fn opaque_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
                         &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
                 }
@@ -360,7 +360,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
                     #[doc = "unsafe_property_changed"]
-                    pub unsafe fn unsafe_property_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut *mut T {
+                    pub unsafe fn unsafe_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut *mut T {
                         &mut self.rust_mut().get_unchecked_mut().unsafe_property
                     }
                 }
