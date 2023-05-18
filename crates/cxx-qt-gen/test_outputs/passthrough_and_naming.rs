@@ -331,7 +331,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
         #[doc = "property_name_changed"]
-        pub unsafe fn property_name_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+        pub unsafe fn property_name_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
             &mut self.rust_mut().get_unchecked_mut().property_name
         }
     }
@@ -465,7 +465,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
         #[doc = "property_name_changed"]
-        pub unsafe fn property_name_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+        pub unsafe fn property_name_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
             &mut self.rust_mut().get_unchecked_mut().property_name
         }
     }

@@ -58,7 +58,7 @@ pub fn generate(
                     #[doc = "\n"]
                     #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
                     #[doc = #notify_ident_str]
-                    pub unsafe fn #getter_mutable_rust<'a>(mut self: Pin<&'a mut Self>) -> &'a mut #ty {
+                    pub unsafe fn #getter_mutable_rust<'a>(self: Pin<&'a mut Self>) -> &'a mut #ty {
                         &mut self.rust_mut().get_unchecked_mut().#ident
                     }
                 }

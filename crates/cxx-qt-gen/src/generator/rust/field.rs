@@ -41,14 +41,14 @@ pub fn generate_rust_fields(
                 },
                 quote! {
                     impl #cpp_class_name_rust {
-                        #vis fn #getter_mutable_rust<'a>(mut self: Pin<&'a mut Self>) -> &'a mut #ty {
+                        #vis fn #getter_mutable_rust<'a>(self: Pin<&'a mut Self>) -> &'a mut #ty {
                             unsafe { &mut self.rust_mut().get_unchecked_mut().#ident }
                         }
                     }
                 },
                 quote! {
                     impl #cpp_class_name_rust {
-                        #vis fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
+                        #vis fn #setter_rust(self: Pin<&mut Self>, value: #ty) {
                             unsafe {
                                 self.rust_mut().#ident = value;
                             }
@@ -111,7 +111,7 @@ mod tests {
             &generated.cxx_qt_mod_contents[1],
             quote! {
                 impl MyObjectQt {
-                    fn private_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut i32 {
+                    fn private_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
                         unsafe { &mut self.rust_mut().get_unchecked_mut().private_field }
                     }
                 }
@@ -121,7 +121,7 @@ mod tests {
             &generated.cxx_qt_mod_contents[2],
             quote! {
                 impl MyObjectQt {
-                    fn set_private_field(mut self: Pin<&mut Self>, value: i32) {
+                    fn set_private_field(self: Pin<&mut Self>, value: i32) {
                         unsafe {
                             self.rust_mut().private_field = value;
                         }
@@ -145,7 +145,7 @@ mod tests {
             &generated.cxx_qt_mod_contents[4],
             quote! {
                 impl MyObjectQt {
-                    pub fn public_field_mut<'a>(mut self: Pin<&'a mut Self>) -> &'a mut f64 {
+                    pub fn public_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut f64 {
                         unsafe { &mut self.rust_mut().get_unchecked_mut().public_field }
                     }
                 }
@@ -155,7 +155,7 @@ mod tests {
             &generated.cxx_qt_mod_contents[5],
             quote! {
                 impl MyObjectQt {
-                    pub fn set_public_field(mut self: Pin<&mut Self>, value: f64) {
+                    pub fn set_public_field(self: Pin<&mut Self>, value: f64) {
                         unsafe {
                             self.rust_mut().public_field = value;
                         }
