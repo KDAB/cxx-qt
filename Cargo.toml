@@ -27,17 +27,17 @@ members = [
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/KDAB/cxx-qt/"
-version = "0.5.2"
+version = "0.5.3"
 
 # Note a version needs to be specified on dependencies of packages
 # we publish, otherwise crates.io complains as it doesn't know the version.
 [workspace.dependencies]
 cxx-qt = { path = "crates/cxx-qt" }
 cxx-qt-build = { path = "crates/cxx-qt-build" }
-cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.5.2" }
+cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.5.3" }
 cxx-qt-lib = { path = "crates/cxx-qt-lib" }
-cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.5.2" }
-qt-build-utils = { path = "crates/qt-build-utils", version = "0.5.2" }
+cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.5.3" }
+qt-build-utils = { path = "crates/qt-build-utils", version = "0.5.3" }
 
 # Ensure that the example comments are kept in sync
 # examples/cargo_without_cmake/Cargo.toml
