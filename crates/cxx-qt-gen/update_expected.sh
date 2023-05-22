@@ -10,5 +10,7 @@ set -ex
 
 SCRIPT=$(realpath "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT")
+
+cd "${SCRIPT_DIR}"
 CXXQT_UPDATE_EXPECTED="${SCRIPT_DIR}" cargo test tests::generates
 
