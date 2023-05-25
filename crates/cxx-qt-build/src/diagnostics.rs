@@ -50,26 +50,54 @@ impl GeneratedError {
 
     fn span(&self) -> Option<Span> {
         match self {
-            // TODO: CXX doesn't have span available yet
-            // https://github.com/KDAB/cxx-qt/issues/536
-            GeneratedError::Cxx(_) => None,
+            GeneratedError::Cxx(cxx_err) => cxx_err.span(),
             GeneratedError::CxxQt(syn_err) => Some(syn_err.span()),
+        }
+    }
+}
+
+impl std::iter::IntoIterator for GeneratedError {
+    type Item = GeneratedError;
+    type IntoIter = IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        match self {
+            GeneratedError::Cxx(cxx_err) => IntoIter::Cxx(cxx_err.into_iter()),
+            GeneratedError::CxxQt(_) => IntoIter::CxxQt(std::iter::once(self)),
+        }
+    }
+}
+
+pub(crate) enum IntoIter {
+    Cxx(<cxx_gen::Error as std::iter::IntoIterator>::IntoIter),
+    CxxQt(std::iter::Once<GeneratedError>),
+}
+
+impl Iterator for IntoIter {
+    type Item = GeneratedError;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            IntoIter::Cxx(cxx_iter) => cxx_iter.next().map(GeneratedError::from),
+            IntoIter::CxxQt(cxxqt_iter) => cxxqt_iter.next(),
         }
     }
 }
 
 pub(crate) struct Diagnostic {
     file_path: PathBuf,
-    error: GeneratedError,
+    errors: Vec<GeneratedError>,
 }
 
 impl Diagnostic {
     pub(crate) fn new(file_path: PathBuf, error: GeneratedError) -> Self {
-        Self { file_path, error }
+        Self {
+            file_path,
+            errors: error.into_iter().collect(),
+        }
     }
 
-    fn byte_span_in(&self, source: &str) -> Option<Range<usize>> {
-        self.error.span().and_then(|span| {
+    fn byte_span_in(error: &GeneratedError, source: &str) -> Option<Range<usize>> {
+        error.span().and_then(|span| {
             let start_offset = line_column_to_byte_in(span.start(), source)?;
             let end_offset = line_column_to_byte_in(span.end(), source)?;
 
@@ -78,21 +106,30 @@ impl Diagnostic {
     }
 
     fn create_codespan_diagnostic(
-        &self,
         source: &str,
+        error: &GeneratedError,
     ) -> codespan_reporting::diagnostic::Diagnostic<()> {
         use codespan_reporting::diagnostic::Label;
 
-        let syn_err = &self.error;
         let mut diagnostic = codespan_reporting::diagnostic::Diagnostic::error()
-            .with_message(format!("{syn_err}"))
-            .with_code(syn_err.context());
+            .with_message(format!("{error}"))
+            .with_code(error.context());
 
-        if let Some(span) = self.byte_span_in(source) {
+        if let Some(span) = Self::byte_span_in(error, source) {
             diagnostic = diagnostic.with_labels(vec![Label::primary((), span)]);
         }
 
         diagnostic
+    }
+
+    fn create_codespan_diagnostics(
+        &self,
+        source: &str,
+    ) -> Vec<codespan_reporting::diagnostic::Diagnostic<()>> {
+        self.errors
+            .iter()
+            .map(|error| Self::create_codespan_diagnostic(source, error))
+            .collect()
     }
 
     fn try_report(&self) -> Result<(), ()> {
@@ -106,7 +143,7 @@ impl Diagnostic {
         };
         let source_string = std::fs::read_to_string(&self.file_path).map_err(|_| ())?;
 
-        let diagnostic = self.create_codespan_diagnostic(source_string.as_ref());
+        let diagnostics = self.create_codespan_diagnostics(source_string.as_ref());
 
         let file_path = self.file_path.display();
         let file = SimpleFile::new(format!("{file_path}"), source_string);
@@ -114,14 +151,16 @@ impl Diagnostic {
         let stderr = StandardStream::stderr(ColorChoice::Auto);
         let mut writer = stderr.lock();
 
-        term::emit(&mut writer, &Config::default(), &file, &diagnostic).map_err(|_| ())
+        diagnostics.into_iter().try_for_each(|diagnostic| {
+            term::emit(&mut writer, &Config::default(), &file, &diagnostic).map_err(|_| ())
+        })
     }
 
-    pub(crate) fn report(&self) {
+    pub(crate) fn report(self) {
         // If loading the source file fails, or printing to stderr isn't
         // possible, we try panicing as a last resort.
         self.try_report().unwrap_or_else(|_| {
-            panic!("{}", self.error);
+            panic!("{}", self.errors.first().unwrap());
         })
     }
 }
