@@ -11,7 +11,6 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 pub mod threading;
-pub mod types;
 
 use crate::generator::rust::qobject::GeneratedRustQObject;
 use crate::parser::Parser;
