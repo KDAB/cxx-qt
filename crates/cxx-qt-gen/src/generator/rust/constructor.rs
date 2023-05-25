@@ -6,7 +6,8 @@
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
-        rust::{qobject::GeneratedRustQObjectBlocks, types},
+        rust::qobject::GeneratedRustQObjectBlocks,
+        utils::rust::syn_type_is_cxx_bridge_unsafe,
     },
     parser::constructor::Constructor,
 };
@@ -185,7 +186,10 @@ pub fn generate(
                 quote! { #name: #ty }
             })
             .collect();
-        let route_arguments_safety = if constructor.arguments.iter().any(types::is_unsafe_cxx_type)
+        let route_arguments_safety = if constructor
+            .arguments
+            .iter()
+            .any(syn_type_is_cxx_bridge_unsafe)
         {
             quote! { unsafe }
         } else {

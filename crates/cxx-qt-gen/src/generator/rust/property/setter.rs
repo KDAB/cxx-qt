@@ -5,7 +5,8 @@
 
 use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
-    rust::{fragment::RustFragmentPair, types::is_unsafe_cxx_type},
+    rust::fragment::RustFragmentPair,
+    utils::rust::syn_type_is_cxx_bridge_unsafe,
 };
 use quote::quote;
 use syn::Type;
@@ -23,7 +24,7 @@ pub fn generate(
     let notify_ident = &idents.notify.rust;
 
     // Determine if unsafe is required due to an unsafe type
-    let has_unsafe = if is_unsafe_cxx_type(ty) {
+    let has_unsafe = if syn_type_is_cxx_bridge_unsafe(ty) {
         quote! { unsafe }
     } else {
         quote! {}
