@@ -277,7 +277,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
-                    #[rust_name = "emit_base_name"]
+                    #[rust_name = "emit_existing_signal"]
                     fn emitBaseName(self: Pin<&mut MyObjectQt>);
                 }
             },
@@ -290,7 +290,7 @@ mod tests {
                     #[doc = "baseName"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
-                    #[rust_name = "connect_base_name"]
+                    #[rust_name = "connect_existing_signal"]
                     fn baseNameConnect(self: Pin<& mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
@@ -374,9 +374,9 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_base_name(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>)) -> CxxQtQMetaObjectConnection
+                    fn on_existing_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>)) -> CxxQtQMetaObjectConnection
                     {
-                        self.connect_base_name(func, CxxQtConnectionType::AutoConnection)
+                        self.connect_existing_signal(func, CxxQtConnectionType::AutoConnection)
                     }
                 }
             },
@@ -394,7 +394,7 @@ mod tests {
                             MySignals::Ready {} => { self.emit_ready() },
                             MySignals::DataChanged { trivial, opaque } => { self.emit_data_changed(trivial, opaque) },
                             MySignals::UnsafeSignal { param } => unsafe { self.emit_unsafe_signal(param) },
-                            MySignals::ExistingSignal {} => { self.emit_base_name() }
+                            MySignals::ExistingSignal {} => { self.emit_existing_signal() }
                         }
                     }
                 }
