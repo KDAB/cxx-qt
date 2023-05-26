@@ -28,10 +28,10 @@ impl From<&ParsedSignal> for QSignalName {
 
         Self {
             enum_name: signal.ident.clone(),
-            name: CombinedIdent::from_signal(&cxx_ident),
-            emit_name: CombinedIdent::emit_from_signal(&cxx_ident),
-            connect_name: CombinedIdent::connect_from_signal(&cxx_ident),
-            on_name: on_from_signal(&cxx_ident),
+            name: CombinedIdent::from_signal(&signal.ident, &cxx_ident),
+            emit_name: CombinedIdent::emit_from_signal(&signal.ident, &cxx_ident),
+            connect_name: CombinedIdent::connect_from_signal(&signal.ident, &cxx_ident),
+            on_name: on_from_signal(&signal.ident),
         }
     }
 }
@@ -42,29 +42,27 @@ fn on_from_signal(ident: &Ident) -> Ident {
 
 impl CombinedIdent {
     /// For a given signal ident generate the Rust and C++ names
-    fn from_signal(ident: &Ident) -> Self {
+    fn from_signal(ident: &Ident, cxx_ident: &Ident) -> Self {
         Self {
-            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
+            cpp: format_ident!("{}", cxx_ident.to_string().to_case(Case::Camel)),
             // Note that signal names are in camel case so we need to convert to snake and can't clone
             rust: format_ident!("{}", ident.to_string().to_case(Case::Snake)),
         }
     }
 
     /// For a given signal ident generate the Rust and C++ emit name
-    fn emit_from_signal(ident: &Ident) -> Self {
-        // Note that signal names are in camel case so we need to convert to snake first
-        let ident = format_ident!("emit_{}", ident.to_string().to_case(Case::Snake));
+    fn emit_from_signal(ident: &Ident, cxx_ident: &Ident) -> Self {
         Self {
-            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-            rust: ident,
+            cpp: format_ident!("emit{}", cxx_ident.to_string().to_case(Case::Pascal)),
+            rust: format_ident!("emit_{}", ident.to_string().to_case(Case::Snake)),
         }
     }
 
-    fn connect_from_signal(ident: &Ident) -> Self {
+    fn connect_from_signal(ident: &Ident, cxx_ident: &Ident) -> Self {
         Self {
             // Use signalConnect instead of onSignal here so that we don't
             // create a C++ name that is similar to the QML naming scheme for signals
-            cpp: format_ident!("{}Connect", ident.to_string().to_case(Case::Camel)),
+            cpp: format_ident!("{}Connect", cxx_ident.to_string().to_case(Case::Camel)),
             rust: format_ident!("connect_{}", ident.to_string().to_case(Case::Snake)),
         }
     }
@@ -90,7 +88,10 @@ mod tests {
         assert_eq!(names.emit_name.cpp, format_ident!("emitDataChanged"));
         assert_eq!(names.emit_name.rust, format_ident!("emit_data_changed"));
         assert_eq!(names.connect_name.cpp, format_ident!("dataChangedConnect"));
-        assert_eq!(names.connect_name.rust, format_ident!("connect_data_changed"));
+        assert_eq!(
+            names.connect_name.rust,
+            format_ident!("connect_data_changed")
+        );
         assert_eq!(names.on_name, format_ident!("on_data_changed"));
     }
 
@@ -106,11 +107,14 @@ mod tests {
         let names = QSignalName::from(&qsignal);
         assert_eq!(names.enum_name, format_ident!("ExistingSignal"));
         assert_eq!(names.name.cpp, format_ident!("baseName"));
-        assert_eq!(names.name.rust, format_ident!("base_name"));
+        assert_eq!(names.name.rust, format_ident!("existing_signal"));
         assert_eq!(names.emit_name.cpp, format_ident!("emitBaseName"));
-        assert_eq!(names.emit_name.rust, format_ident!("emit_base_name"));
+        assert_eq!(names.emit_name.rust, format_ident!("emit_existing_signal"));
         assert_eq!(names.connect_name.cpp, format_ident!("baseNameConnect"));
-        assert_eq!(names.connect_name.rust, format_ident!("connect_base_name"));
-        assert_eq!(names.on_name, format_ident!("on_base_name"));
+        assert_eq!(
+            names.connect_name.rust,
+            format_ident!("connect_existing_signal")
+        );
+        assert_eq!(names.on_name, format_ident!("on_existing_signal"));
     }
 }

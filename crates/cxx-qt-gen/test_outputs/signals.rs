@@ -89,7 +89,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "emit_new_data"]
+        #[rust_name = "emit_base_class_new_data"]
         fn emitNewData(
             self: Pin<&mut MyObjectQt>,
             first: i32,
@@ -103,7 +103,7 @@ mod ffi {
         #[doc = "newData"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "connect_new_data"]
+        #[rust_name = "connect_base_class_new_data"]
         fn newDataConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(
@@ -248,7 +248,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_new_data(
+        fn on_base_class_new_data(
             self: Pin<&mut MyObjectQt>,
             func: fn(
                 Pin<&mut MyObjectQt>,
@@ -258,7 +258,7 @@ mod cxx_qt_ffi {
                 fourth: &QPoint,
             ),
         ) -> CxxQtQMetaObjectConnection {
-            self.connect_new_data(func, CxxQtConnectionType::AutoConnection)
+            self.connect_base_class_new_data(func, CxxQtConnectionType::AutoConnection)
         }
     }
     impl MyObjectQt {
@@ -280,7 +280,7 @@ mod cxx_qt_ffi {
                     second,
                     third,
                     fourth,
-                } => self.emit_new_data(first, second, third, fourth),
+                } => self.emit_base_class_new_data(first, second, third, fourth),
             }
         }
     }
