@@ -83,6 +83,9 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/convert.h"), "convert.h"),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
     ] {
+        // Note that we do not need rerun-if-changed for these files
+        // as include_str causes a rerun when the header changes
+        // and the files are always written to the target.
         let h_path = format!("{}/{file_name}", directory.display());
         let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
         write!(header, "{file_contents}").expect("Could not write cxx-qt-lib header");
