@@ -84,8 +84,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
     ] {
         let h_path = format!("{}/{file_name}", directory.display());
-        let mut header = File::create(&h_path).expect("Could not create cxx-qt-lib header");
+        let mut header = File::create(h_path).expect("Could not create cxx-qt-lib header");
         write!(header, "{file_contents}").expect("Could not write cxx-qt-lib header");
-        println!("cargo:rerun-if-changed={}", h_path);
     }
 }
