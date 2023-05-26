@@ -29,10 +29,15 @@ Note that `#[cxx_name = "..."]` can also be used on a signal to declare a differ
 
 ## Connecting to a signal
 
-For every signal defined in the enum, a method is generated called `on_<signal_name>`.
-This method takes a function as the first parameter.
-That function's first argument is the qobject and the remaining arguments are the signal parameters.
-The second parameter of the `on_<signal_name>` method is the [Qt connection type](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum).
+For every signal defined in the enum, two methods are generated.
+
+  1. `on_<signal_name>`
+  2. `connect_<signal_name>`
+
+The `on_<signal_name>` method takes a handler function as the parameter, which will be called when the signal is emitted.
+That handler function's first argument is the qobject and the remaining arguments are the signal parameters.
+
+The `connect_<signal_name>` function additionally takes the [Qt connection type](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum) as a parameter.
 
 Note that by using the `#[inherit]` macro on a signal, connections can be made to property changes
 using the signal name `<property>Changed` with no parameters.
@@ -41,8 +46,13 @@ using the signal name `<property>Changed` with no parameters.
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_connect}}
 ```
 
-Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which can be disconnected later by `drop` occurring on the type,
-if you don't want a disconnect to occur call `release`.
+Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which is used to manage the connection.
+
+Note that the `QMetaObjectConnection` returned by CXX-Qt behaves a bit different from the Qt C++ implementation.
+
+When the `QMetaObjectConnection` is dropped, it automatically disconnects the connection, similar to how a C++ `std::unique_ptr` or Rusts `Box` behaves.
+If you don't want to store the QMetaObjectConnection, call `release`, which will drop the object without disconnecting.
+In this case, it is no longer possible to disconnect later.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_disconnect}}
