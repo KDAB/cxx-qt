@@ -51,7 +51,7 @@ mod ffi {
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "on_ready"]
+        #[rust_name = "connect_ready"]
         fn readyConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
@@ -74,7 +74,7 @@ mod ffi {
         #[doc = "dataChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "on_data_changed"]
+        #[rust_name = "connect_data_changed"]
         fn dataChangedConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(
@@ -103,7 +103,7 @@ mod ffi {
         #[doc = "newData"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "on_new_data"]
+        #[rust_name = "connect_new_data"]
         fn newDataConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(
@@ -206,6 +206,60 @@ mod cxx_qt_ffi {
             third: QPoint,
             fourth: &'a QPoint,
         },
+    }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_ready(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "dataChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_data_changed(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(
+                Pin<&mut MyObjectQt>,
+                first: i32,
+                second: UniquePtr<Opaque>,
+                third: QPoint,
+                fourth: &QPoint,
+            ),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "newData"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_new_data(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(
+                Pin<&mut MyObjectQt>,
+                first: i32,
+                second: UniquePtr<Opaque>,
+                third: QPoint,
+                fourth: &QPoint,
+            ),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_new_data(func, CxxQtConnectionType::AutoConnection)
+        }
     }
     impl MyObjectQt {
         #[doc = "Emit the signal from the enum "]

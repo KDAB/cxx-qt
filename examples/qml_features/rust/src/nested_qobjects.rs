@@ -66,17 +66,14 @@ pub mod ffi {
         pub fn initialise(self: Pin<&mut Self>) {
             // Example of connecting a signal from one QObject to another QObject
             // this causes OuterObject::Called to trigger InnerObject::Called
-            self.on_called(
-                |qobject, obj| {
-                    // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
-                    if let Some(inner) = unsafe { qobject.inner().as_mut() } {
-                        let pinned_inner = unsafe { Pin::new_unchecked(inner) };
-                        // Now pinned inner can be used as normal
-                        pinned_inner.emit(InnerSignals::Called { inner: obj });
-                    }
-                },
-                cxx_qt_lib::ConnectionType::AutoConnection,
-            )
+            self.on_called(|qobject, obj| {
+                // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
+                if let Some(inner) = unsafe { qobject.inner().as_mut() } {
+                    let pinned_inner = unsafe { Pin::new_unchecked(inner) };
+                    // Now pinned inner can be used as normal
+                    pinned_inner.emit(InnerSignals::Called { inner: obj });
+                }
+            })
             .release();
         }
 
