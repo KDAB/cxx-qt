@@ -83,47 +83,39 @@ pub mod ffi {
         /// Initialise the QObject, creating a connection reacting to the logging enabled property
         #[qinvokable]
         pub fn initialise(self: Pin<&mut Self>) {
-            self.on_logging_enabled_changed(
-                |mut qobject| {
-                    // Determine if logging is enabled
-                    if *qobject.as_ref().logging_enabled() {
-                        // If no connections have been made, then create them
-                        if qobject.as_ref().connections().is_none() {
-                            // ANCHOR: book_signals_connect
-                            let connections = [
-                                qobject.as_mut().on_connected(
-                                    |_, url| {
-                                        println!("Connected: {}", url);
-                                    },
-                                    ConnectionType::AutoConnection,
-                                ),
-                                qobject.as_mut().on_disconnected(
-                                    |_| {
-                                        println!("Disconnected");
-                                    },
-                                    ConnectionType::AutoConnection,
-                                ),
-                                qobject.as_mut().on_error(
-                                    |_, message| {
-                                        println!("Error: {}", message);
-                                    },
-                                    ConnectionType::AutoConnection,
-                                ),
-                            ];
-                            qobject.as_mut().set_connections(Some(connections));
-                            // ANCHOR_END: book_signals_connect
-                        }
-                    } else {
-                        // Disabling logging so disconnect
-                        // ANCHOR: book_signals_disconnect
-                        // By making connections None, we trigger a drop on the connections
-                        // this then causes disconnections
-                        qobject.as_mut().set_connections(None);
-                        // ANCHOR_END: book_signals_disconnect
+            self.on_logging_enabled_changed(|mut qobject| {
+                // Determine if logging is enabled
+                if *qobject.as_ref().logging_enabled() {
+                    // If no connections have been made, then create them
+                    if qobject.as_ref().connections().is_none() {
+                        // ANCHOR: book_signals_connect
+                        let connections = [
+                            qobject.as_mut().on_connected(|_, url| {
+                                println!("Connected: {}", url);
+                            }),
+                            qobject.as_mut().on_disconnected(|_| {
+                                println!("Disconnected");
+                            }),
+                            // Demonstration of connecting with a different connection type
+                            qobject.as_mut().connect_error(
+                                |_, message| {
+                                    println!("Error: {}", message);
+                                },
+                                ConnectionType::QueuedConnection,
+                            ),
+                        ];
+                        qobject.as_mut().set_connections(Some(connections));
+                        // ANCHOR_END: book_signals_connect
                     }
-                },
-                ConnectionType::AutoConnection,
-            )
+                } else {
+                    // Disabling logging so disconnect
+                    // ANCHOR: book_signals_disconnect
+                    // By making connections None, we trigger a drop on the connections
+                    // this then causes disconnections
+                    qobject.as_mut().set_connections(None);
+                    // ANCHOR_END: book_signals_disconnect
+                }
+            })
             .release();
         }
     }

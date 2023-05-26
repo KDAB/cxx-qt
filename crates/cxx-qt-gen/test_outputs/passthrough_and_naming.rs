@@ -108,7 +108,7 @@ pub mod ffi {
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "on_ready"]
+        #[rust_name = "connect_ready"]
         fn readyConnect(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
@@ -206,7 +206,7 @@ pub mod ffi {
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "on_ready"]
+        #[rust_name = "connect_ready"]
         fn readyConnect(
             self: Pin<&mut SecondObjectQt>,
             func: fn(Pin<&mut SecondObjectQt>),
@@ -356,6 +356,20 @@ mod cxx_qt_ffi {
         Ready,
     }
     impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_ready(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
+    impl MyObjectQt {
         #[doc = "Emit the signal from the enum "]
         #[doc = "MySignals"]
         #[doc = " on the QObject "]
@@ -462,6 +476,20 @@ mod cxx_qt_ffi {
     }
     pub enum SecondSignals {
         Ready,
+    }
+    impl SecondObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "ready"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_ready(
+            self: Pin<&mut SecondObjectQt>,
+            func: fn(Pin<&mut SecondObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        }
     }
     impl SecondObjectQt {
         #[doc = "Emit the signal from the enum "]
