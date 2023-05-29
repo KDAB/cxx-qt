@@ -33,7 +33,7 @@ public:
   Q_INVOKABLE void invokableParameters(QColor const& opaque,
                                        QPoint const& trivial,
                                        ::std::int32_t primitive) const;
-  Q_INVOKABLE Value invokableReturnOpaque();
+  Q_INVOKABLE ::std::unique_ptr<Opaque> invokableReturnOpaque();
   Q_INVOKABLE QPoint invokableReturnTrivial();
   Q_INVOKABLE void invokableFinal() const final;
   Q_INVOKABLE void invokableOverride() const override;

@@ -93,27 +93,6 @@ These setters and getters assure that the changed signal is emitted every time t
 Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
-### `cxx_type`
-
-You can change the C++ type that your property uses by adding the `cxx_type` attribute to the `#[qproperty]` macro.
-
-This is especially useful if your property type is an opaque C++ type and can't be owned directly by Rust.
-Then it might be necessary to wrap it in a [cxx::UniquePtr](https://docs.rs/cxx/latest/cxx/struct.UniquePtr.html).
-
-However, you may still want your `Q_PROPERTY` to use the opaque type directly.
-This can easily be achieved by using `cxx_type`.
-
-``` rust,ignore,noplayground
-#[cxx_qt::qobject]
-struct MyStruct {
-  #[qproperty(cxx_type="OpaqueExampleType")]
-  my_property: cxx::UniquePtr<OpaqueExampleType>
-}
-```
-In this case, CXX-Qt will automatically convert the `::std::unique_ptr<OpaqueExampleType>` to `OpaqueExampleType`.
-
-For details, see the [page on type conversions](../concepts/type-conversions.md).
-
 ## Default
 
 The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[cxx_qt::qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`.

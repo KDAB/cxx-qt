@@ -177,7 +177,6 @@ mod tests {
                 Ready,
                 DataChanged {
                     trivial: i32,
-                    #[cxx_type = "QColor"]
                     opaque: UniquePtr<QColor>
                 },
                 UnsafeSignal {

@@ -23,7 +23,6 @@ class MyObject : public QObject
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
-  Q_PROPERTY(Value opaque READ getOpaque WRITE setOpaque NOTIFY opaqueChanged)
 
 public:
   explicit MyObject(QObject* parent = nullptr);
@@ -39,9 +38,6 @@ public:
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
   Q_SIGNAL void trivialChanged();
-  Value const& getOpaque() const;
-  Q_SLOT void setOpaque(Value const& value);
-  Q_SIGNAL void opaqueChanged();
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

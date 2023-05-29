@@ -15,8 +15,6 @@ pub struct ParsedFunctionParameter {
     pub ident: Ident,
     /// The [syn::Type] of the parameter
     pub ty: Type,
-    /// The name of the C++ type if one has been specified
-    pub cxx_type: Option<String>,
 }
 
 impl ParsedFunctionParameter {
@@ -93,8 +91,6 @@ impl ParsedFunctionParameter {
         Ok(ParsedFunctionParameter {
             ident,
             ty: (*type_pattern.ty).clone(),
-            // TODO: later we might support cxx_type for parameters in invokables
-            cxx_type: None,
         })
     }
 }

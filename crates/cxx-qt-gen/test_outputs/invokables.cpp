@@ -60,11 +60,12 @@ MyObject::invokableParameters(QColor const& opaque,
   m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);
 }
 
-Value
+::std::unique_ptr<Opaque>
 MyObject::invokableReturnOpaque()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<Value, ::std::unique_ptr<Opaque>>{}(
+  return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
+                                           ::std::unique_ptr<Opaque>>{}(
     m_rustObj->invokableReturnOpaqueWrapper(*this));
 }
 

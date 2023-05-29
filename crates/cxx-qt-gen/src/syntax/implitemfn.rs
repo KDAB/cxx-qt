@@ -37,12 +37,12 @@ mod tests {
         assert!(!is_method_mutable_pin_of_self(&item.sig));
 
         let item: ImplItemFn = parse_quote! {
-            fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
+            fn invokable_with_return_type(self: Pin<&mut Self>) -> f64 {}
         };
         assert!(is_method_mutable_pin_of_self(&item.sig));
 
         let item: ImplItemFn = parse_quote! {
-            fn invokable_with_return_cxx_type(mut self: Pin<&mut Self>) -> f64 {}
+            fn invokable_with_return_type(mut self: Pin<&mut Self>) -> f64 {}
         };
         assert!(is_method_mutable_pin_of_self(&item.sig));
     }
@@ -55,17 +55,17 @@ mod tests {
         assert!(!is_method_mutable_pin_of_self(&item.sig));
 
         let item: ImplItemFn = parse_quote! {
-            fn invokable_with_return_cxx_type(value: Pin<&mut T>) -> f64 {}
+            fn invokable_with_return_type(value: Pin<&mut T>) -> f64 {}
         };
         assert!(!is_method_mutable_pin_of_self(&item.sig));
 
         let item: ImplItemFn = parse_quote! {
-            fn invokable_with_return_cxx_type(mut value: Pin<&mut T>) -> f64 {}
+            fn invokable_with_return_type(mut value: Pin<&mut T>) -> f64 {}
         };
         assert!(!is_method_mutable_pin_of_self(&item.sig));
 
         let item: ImplItemFn = parse_quote! {
-            fn invokable_with_return_cxx_type(mut value: T) -> f64 {}
+            fn invokable_with_return_type(mut value: T) -> f64 {}
         };
         assert!(!is_method_mutable_pin_of_self(&item.sig));
     }

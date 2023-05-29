@@ -73,24 +73,6 @@ mod ffi {
         #[rust_name = "trivial_changed"]
         fn trivialChanged(self: Pin<&mut MyObjectQt>);
     }
-    extern "Rust" {
-        #[cxx_name = "getOpaque"]
-        unsafe fn opaque<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque>;
-    }
-    extern "Rust" {
-        #[cxx_name = "setOpaque"]
-        fn set_opaque(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>);
-    }
-    unsafe extern "C++" {
-        #[doc = "Notify signal for the Q_PROPERTY"]
-        #[doc = "opaque"]
-        #[doc = "\n"]
-        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-        #[doc = "opaque_mut"]
-        #[doc = ", is used."]
-        #[rust_name = "opaque_changed"]
-        fn opaqueChanged(self: Pin<&mut MyObjectQt>);
-    }
     unsafe extern "C++" {
         #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
         #[doc = r""]
@@ -239,48 +221,21 @@ mod cxx_qt_ffi {
             self.as_mut().trivial_changed();
         }
     }
-    impl MyObject {
-        #[doc(hidden)]
-        pub fn opaque<'a>(&'a self, cpp: &'a MyObjectQt) -> &'a UniquePtr<Opaque> {
-            cpp.opaque()
-        }
-    }
     impl MyObjectQt {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "opaque"]
-        pub fn opaque(&self) -> &UniquePtr<Opaque> {
+        fn opaque(&self) -> &UniquePtr<Opaque> {
             &self.rust().opaque
         }
     }
     impl MyObjectQt {
-        #[doc = "unsafe getter for the Q_PROPERTY "]
-        #[doc = "opaque"]
-        #[doc = "\n"]
-        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-        #[doc = "\n"]
-        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-        #[doc = "opaque_changed"]
-        pub unsafe fn opaque_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut UniquePtr<Opaque> {
-            &mut self.rust_mut().get_unchecked_mut().opaque
-        }
-    }
-    impl MyObject {
-        #[doc(hidden)]
-        pub fn set_opaque(&mut self, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<Opaque>) {
-            cpp.set_opaque(value);
+        fn opaque_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut UniquePtr<Opaque> {
+            unsafe { &mut self.rust_mut().get_unchecked_mut().opaque }
         }
     }
     impl MyObjectQt {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "opaque"]
-        pub fn set_opaque(mut self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
-            if self.rust().opaque == value {
-                return;
-            }
+        fn set_opaque(self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
             unsafe {
-                self.as_mut().rust_mut().opaque = value;
+                self.rust_mut().opaque = value;
             }
-            self.as_mut().opaque_changed();
         }
     }
     impl MyObjectQt {

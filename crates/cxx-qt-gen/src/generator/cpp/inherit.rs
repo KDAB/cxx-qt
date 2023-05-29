@@ -22,9 +22,7 @@ pub fn generate(
 
     for method in inherited_methods {
         let return_type = if let ReturnType::Type(_, ty) = &method.method.sig.output {
-            CppType::from(ty, &None, cxx_mappings)?
-                .as_cxx_ty()
-                .to_owned()
+            CppType::from(ty, cxx_mappings)?.as_cxx_ty().to_owned()
         } else {
             "void".to_owned()
         };

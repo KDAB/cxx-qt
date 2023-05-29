@@ -91,7 +91,6 @@ pub mod tests {
             ident: format_ident!("my_property"),
             ty,
             vis: syn::Visibility::Inherited,
-            cxx_type: None,
         };
         QPropertyName::from(&property)
     }

@@ -72,25 +72,6 @@ MyObject::setTrivial(QPoint const& value)
     *this, ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint const&>{}(value));
 }
 
-Value const&
-MyObject::getOpaque() const
-{
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<Value const&,
-                                           ::std::unique_ptr<Opaque> const&>{}(
-    m_rustObj->getOpaque(*this));
-}
-
-void
-MyObject::setOpaque(Value const& value)
-{
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setOpaque(
-    *this,
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                      Value const&>{}(value));
-}
-
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object::cxx_qt_my_object {

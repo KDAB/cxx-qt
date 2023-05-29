@@ -59,7 +59,6 @@ mod tests {
             method: item,
             mutable: false,
             parameters: vec![],
-            return_cxx_type: None,
             specifiers: HashSet::new(),
         };
 

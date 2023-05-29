@@ -10,25 +10,14 @@ use syn::{
 };
 
 /// A helper for describing a C++ type
-///
-/// If a cxx_type has been specified in the attribute then use it
-/// otherwise parse the Rust type as the C++ type.
-///
-/// This is useful where you have UniquePtr<T> as the Rust type but
-/// need T as the C++ type.
 pub struct CppType {
-    cxx_type: Option<String>,
     ty: String,
 }
 
 impl CppType {
-    /// Retrieve either the cxx_type attribute value or the Rust type
+    /// Retrieve the Rust type in C++ form
     pub fn as_cxx_ty(&self) -> &str {
-        if let Some(cxx_type) = &self.cxx_type {
-            cxx_type.as_str()
-        } else {
-            self.as_rust_ty()
-        }
+        &self.ty
     }
 
     /// Retrieve the Rust type in C++ form
@@ -36,14 +25,9 @@ impl CppType {
         &self.ty
     }
 
-    /// Construct a [CppType] from a given [syn::Type] and the contents of the cxx_type attribute
-    pub fn from(
-        ty: &Type,
-        cxx_type: &Option<String>,
-        cxx_mapping: &ParsedCxxMappings,
-    ) -> Result<CppType> {
+    /// Construct a [CppType] from a given [syn::Type] and [ParsedCxxMappings].
+    pub fn from(ty: &Type, cxx_mapping: &ParsedCxxMappings) -> Result<CppType> {
         Ok(CppType {
-            cxx_type: cxx_type.clone(),
             ty: to_cpp_string(ty, cxx_mapping)?,
         })
     }
@@ -279,22 +263,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cxx_type_with_attribute() {
+    fn test_cxx_type() {
         let ty = parse_quote! { UniquePtr<QColor> };
-        let cxx_ty = CppType::from(
-            &ty,
-            &Some("QColor".to_owned()),
-            &ParsedCxxMappings::default(),
-        )
-        .unwrap();
-        assert_eq!(cxx_ty.as_cxx_ty(), "QColor");
-        assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
-    }
-
-    #[test]
-    fn test_cxx_type_without_attribute() {
-        let ty = parse_quote! { UniquePtr<QColor> };
-        let cxx_ty = CppType::from(&ty, &None, &ParsedCxxMappings::default()).unwrap();
+        let cxx_ty = CppType::from(&ty, &ParsedCxxMappings::default()).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "::std::unique_ptr<QColor>");
         assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
     }
@@ -306,20 +277,8 @@ mod tests {
         cxx_mappings
             .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
-        let cxx_ty = CppType::from(&ty, &None, &cxx_mappings).unwrap();
+        let cxx_ty = CppType::from(&ty, &cxx_mappings).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "A1");
-        assert_eq!(cxx_ty.as_rust_ty(), "A1");
-    }
-
-    #[test]
-    fn test_cxx_type_mapped_with_attribute() {
-        let ty = parse_quote! { A };
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
-            .cxx_names
-            .insert("A".to_owned(), "A1".to_owned());
-        let cxx_ty = CppType::from(&ty, &Some("B1".to_owned()), &cxx_mappings).unwrap();
-        assert_eq!(cxx_ty.as_cxx_ty(), "B1");
         assert_eq!(cxx_ty.as_rust_ty(), "A1");
     }
 

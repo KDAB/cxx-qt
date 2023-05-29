@@ -31,7 +31,7 @@ pub fn generate_cpp_invokables(
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
         let cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
-            Some(CppType::from(ty, &invokable.return_cxx_type, cxx_mappings)?)
+            Some(CppType::from(ty, cxx_mappings)?)
         } else {
             None
         };
@@ -56,7 +56,7 @@ pub fn generate_cpp_invokables(
                     } else {
                         Ok(Some(CppNamedType {
                             ident: ident.to_string(),
-                            ty: CppType::from(ty, &None, cxx_mappings)?,
+                            ty: CppType::from(ty, cxx_mappings)?,
                         }))
                     }
                 } else {
@@ -169,7 +169,6 @@ mod tests {
                 method: parse_quote! { fn void_invokable(&self) {} },
                 mutable: false,
                 parameters: vec![],
-                return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -178,9 +177,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
-                    cxx_type: None,
                 }],
-                return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -189,9 +186,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
-                    cxx_type: None,
                 }],
-                return_cxx_type: Some("QColor".to_owned()),
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -200,9 +195,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
-                    cxx_type: None,
                 }],
-                return_cxx_type: None,
                 specifiers: {
                     let mut specifiers = HashSet::new();
                     specifiers.insert(ParsedQInvokableSpecifiers::Final);
@@ -267,16 +260,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_INVOKABLE QColor opaqueInvokable(QColor const& param);"
+            "Q_INVOKABLE ::std::unique_ptr<QColor> opaqueInvokable(QColor const& param);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            QColor
+            ::std::unique_ptr<QColor>
             MyObject::opaqueInvokable(QColor const& param)
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
+                return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
             }
             "#}
         );
@@ -311,9 +304,7 @@ mod tests {
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("param"),
                 ty: parse_quote! { i32 },
-                cxx_type: None,
             }],
-            return_cxx_type: None,
             specifiers: HashSet::new(),
         }];
         let qobject_idents = create_qobjectname();

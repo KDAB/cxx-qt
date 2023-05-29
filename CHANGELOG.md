@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Always call `qt_build_utils::setup_linker()` in `CxxQtBuilder` and remove the proxy method
 - Moved to `syn` 2.0 internally and for any exported `syn` types
 
+### Removed
+
+- Removed support for `cxx_type` and `cxx_return_type` and related conversion methods.
+
 ## [0.5.3](https://github.com/KDAB/cxx-qt/compare/v0.5.2...v0.5.3) - 2023-05-19
 
 ### Fixed

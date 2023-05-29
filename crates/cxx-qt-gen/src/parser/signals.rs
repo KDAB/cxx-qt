@@ -45,22 +45,9 @@ impl ParsedSignal {
         let parameters = fields_to_named_fields_mut(&mut variant.fields)?
             .into_iter()
             .map(|field| {
-                // Parse any cxx_type for the signal
-                let cxx_type = if let Some(index) = attribute_find_path(&field.attrs, &["cxx_type"])
-                {
-                    let str = expr_to_string(&field.attrs[index].meta.require_name_value()?.value)?;
-                    // Remove the attribute from the original enum
-                    // so that it doesn't end up in the Rust generation
-                    field.attrs.remove(index);
-                    Some(str)
-                } else {
-                    None
-                };
-
                 Ok(ParsedFunctionParameter {
                     ident: field.ident.clone().unwrap(),
                     ty: field.ty.clone(),
-                    cxx_type,
                 })
             })
             .collect::<Result<Vec<ParsedFunctionParameter>>>()?;
@@ -93,7 +80,7 @@ impl ParsedSignalsEnum {
 
         let signals = item
             .variants
-            // Note we use mut here so that any cxx_type attributes can be removed
+            // Note we use mut here so that any attributes can be removed
             .iter_mut()
             .map(ParsedSignal::from)
             .collect::<Result<Vec<ParsedSignal>>>()?;
@@ -157,7 +144,6 @@ mod tests {
                 Ready,
                 PointChanged {
                     x: f64,
-                    #[cxx_type = "f32"]
                     y: f64
                 },
                 #[cxx_name = "baseName"]
@@ -177,13 +163,8 @@ mod tests {
         assert!(signals.signals[1].cxx_name.is_none());
         assert_eq!(signals.signals[1].ident, "PointChanged");
         assert_eq!(signals.signals[1].parameters.len(), 2);
-        assert!(signals.signals[1].parameters[0].cxx_type.is_none());
         assert_eq!(signals.signals[1].parameters[0].ident, "x");
         assert_eq!(signals.signals[1].parameters[0].ty, f64_type());
-        assert_eq!(
-            signals.signals[1].parameters[1].cxx_type.as_ref().unwrap(),
-            "f32"
-        );
         assert_eq!(signals.signals[1].parameters[1].ident, "y");
         assert_eq!(signals.signals[1].parameters[1].ty, f64_type());
         assert!(signals.signals[2].inherit);

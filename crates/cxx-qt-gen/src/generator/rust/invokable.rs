@@ -137,7 +137,6 @@ mod tests {
                 method: parse_quote! { fn void_invokable(&self) {} },
                 mutable: false,
                 parameters: vec![],
-                return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -146,9 +145,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
-                    cxx_type: None,
                 }],
-                return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -157,9 +154,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
-                    cxx_type: None,
                 }],
-                return_cxx_type: Some("QColor".to_owned()),
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
@@ -168,9 +163,7 @@ mod tests {
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { *mut T },
-                    cxx_type: None,
                 }],
-                return_cxx_type: None,
                 specifiers: HashSet::new(),
             },
         ];

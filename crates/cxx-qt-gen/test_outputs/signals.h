@@ -34,7 +34,7 @@ public:
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
                                          ::Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
-                            Value second,
+                            ::std::unique_ptr<Opaque> second,
                             QPoint third,
                             QPoint const& fourth);
   void emitDataChanged(::std::int32_t first,
