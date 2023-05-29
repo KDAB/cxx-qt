@@ -64,17 +64,14 @@ MyObject::invokableParameters(QColor const& opaque,
 MyObject::invokableReturnOpaque()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                           ::std::unique_ptr<Opaque>>{}(
-    m_rustObj->invokableReturnOpaqueWrapper(*this));
+  return m_rustObj->invokableReturnOpaqueWrapper(*this);
 }
 
 QPoint
 MyObject::invokableReturnTrivial()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(
-    m_rustObj->invokableReturnTrivialWrapper(*this));
+  return m_rustObj->invokableReturnTrivialWrapper(*this);
 }
 
 void

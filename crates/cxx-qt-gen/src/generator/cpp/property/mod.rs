@@ -91,7 +91,7 @@ mod tests {
             MyObject::getTrivialProperty() const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&, ::std::int32_t const&>{}(m_rustObj->getTrivialProperty(*this));
+                return m_rustObj->getTrivialProperty(*this);
             }
             "#}
         );
@@ -112,7 +112,7 @@ mod tests {
                 MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
                     const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                    m_rustObj->setTrivialProperty(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(value));
+                    m_rustObj->setTrivialProperty(*this, value);
                 }
                 "#}
         );
@@ -138,7 +138,7 @@ mod tests {
             MyObject::getOpaqueProperty() const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor> const&, ::std::unique_ptr<QColor> const&>{}(m_rustObj->getOpaqueProperty(*this));
+                return m_rustObj->getOpaqueProperty(*this);
             }
             "#}
         );
@@ -159,7 +159,7 @@ mod tests {
             MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                m_rustObj->setOpaqueProperty(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor> const&>{}(value));
+                m_rustObj->setOpaqueProperty(*this, value);
             }
             "#}
         );
@@ -208,7 +208,7 @@ mod tests {
             MyObject::getMappedProperty() const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<A1 const&, A1 const&>{}(m_rustObj->getMappedProperty(*this));
+                return m_rustObj->getMappedProperty(*this);
             }
             "#}
         );
@@ -226,7 +226,7 @@ mod tests {
                 MyObject::setMappedProperty(A1 const& value)
                 {
                     const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                    m_rustObj->setMappedProperty(*this, ::rust::cxxqtlib1::cxx_qt_convert<A1, A1 const&>{}(value));
+                    m_rustObj->setMappedProperty(*this, value);
                 }
                 "#}
         );

@@ -7,7 +7,6 @@ mod ffi {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/convert.h");
         include!("cxx-qt-lib/cxxqt_thread.h");
         include!("cxx-qt-lib/qt.h");
         #[doc(hidden)]

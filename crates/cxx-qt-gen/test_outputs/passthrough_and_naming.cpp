@@ -41,19 +41,14 @@ MyObject::qtThread() const
 MyObject::getPropertyName() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
-                                           ::std::int32_t const&>{}(
-    m_rustObj->getPropertyName(*this));
+  return m_rustObj->getPropertyName(*this);
 }
 
 void
 MyObject::setPropertyName(::std::int32_t const& value)
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(
-    *this,
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
-      value));
+  m_rustObj->setPropertyName(*this, value);
 }
 
 void
@@ -135,19 +130,14 @@ SecondObject::qtThread() const
 SecondObject::getPropertyName() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t const&,
-                                           ::std::int32_t const&>{}(
-    m_rustObj->getPropertyName(*this));
+  return m_rustObj->getPropertyName(*this);
 }
 
 void
 SecondObject::setPropertyName(::std::int32_t const& value)
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(
-    *this,
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t const&>{}(
-      value));
+  m_rustObj->setPropertyName(*this, value);
 }
 
 void

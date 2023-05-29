@@ -17,7 +17,6 @@ use syn::Result;
 
 pub const RUST_OBJ_MUTEX_LOCK_GUARD: &str =
     "const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);";
-pub const CXX_QT_CONVERT: &str = "::rust::cxxqtlib1::cxx_qt_convert";
 
 /// Representation of the generated C++ code for a group of QObjects
 pub struct GeneratedCppBlocks {

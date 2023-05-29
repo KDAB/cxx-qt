@@ -9,7 +9,7 @@ use crate::{
             fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
             types::CppType,
-            CXX_QT_CONVERT, RUST_OBJ_MUTEX_LOCK_GUARD,
+            RUST_OBJ_MUTEX_LOCK_GUARD,
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
     },
@@ -30,7 +30,7 @@ pub fn generate_cpp_invokables(
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
-        let cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
+        let return_cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
             Some(CppType::from(ty, cxx_mappings)?)
         } else {
             None
@@ -90,9 +90,9 @@ pub fn generate_cpp_invokables(
 
         generated.methods.push(CppFragment::Pair {
             header: format!(
-                "Q_INVOKABLE {is_virtual}{cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
-                cxx_ty = if let Some(cxx_ty) = &cxx_ty {
-                    cxx_ty.as_cxx_ty()
+                "Q_INVOKABLE {is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
+                return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
+                    return_cxx_ty.as_cxx_ty()
                 } else {
                     "void"
                 },
@@ -116,15 +116,15 @@ pub fn generate_cpp_invokables(
             ),
             source: formatdoc! {
                 r#"
-                    {cxx_ty}
+                    {return_cxx_ty}
                     {qobject_ident}::{ident}({parameter_types}){is_const}
                     {{
                         {rust_obj_guard}
                         {body};
                     }}
                     "#,
-                cxx_ty = if let Some(cxx_ty) = &cxx_ty {
-                    cxx_ty.as_cxx_ty()
+                return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
+                    return_cxx_ty.as_cxx_ty()
                 } else {
                     "void"
                 },
@@ -133,13 +133,8 @@ pub fn generate_cpp_invokables(
                 parameter_types = parameter_types,
                 qobject_ident = qobject_ident,
                 rust_obj_guard = RUST_OBJ_MUTEX_LOCK_GUARD,
-                body = if let Some(cxx_ty) = &cxx_ty {
-                    format!("return {convert}<{cxx_ty}, {rust_ty}>{{}}({body})",
-                        convert = CXX_QT_CONVERT,
-                        cxx_ty = cxx_ty.as_cxx_ty(),
-                        rust_ty = cxx_ty.as_rust_ty(),
-                        body = body
-                    )
+                body = if return_cxx_ty.is_some() {
+                    format!("return {body}", body = body)
                 } else {
                     body
                 },
@@ -248,7 +243,7 @@ mod tests {
             MyObject::trivialInvokable(::std::int32_t param) const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->trivialInvokableWrapper(*this, param));
+                return m_rustObj->trivialInvokableWrapper(*this, param);
             }
             "#}
         );
@@ -269,7 +264,7 @@ mod tests {
             MyObject::opaqueInvokable(QColor const& param)
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(m_rustObj->opaqueInvokableWrapper(*this, param));
+                return m_rustObj->opaqueInvokableWrapper(*this, param);
             }
             "#}
         );
@@ -290,7 +285,7 @@ mod tests {
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(m_rustObj->specifiersInvokableWrapper(*this, param));
+                return m_rustObj->specifiersInvokableWrapper(*this, param);
             }
             "#}
         );
@@ -336,7 +331,7 @@ mod tests {
             MyObject::trivialInvokable(A1 param) const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<B2, B2>{}(m_rustObj->trivialInvokableWrapper(*this, param));
+                return m_rustObj->trivialInvokableWrapper(*this, param);
             }
             "#}
         );

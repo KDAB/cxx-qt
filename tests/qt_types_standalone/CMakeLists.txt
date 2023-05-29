@@ -39,7 +39,6 @@ target_link_libraries(${CRATE} INTERFACE
 )
 
 add_executable(${APP_NAME}
-    cpp/cxxqtconvert.h
     cpp/main.cpp
     cpp/qbytearray.h
     cpp/qcolor.h
