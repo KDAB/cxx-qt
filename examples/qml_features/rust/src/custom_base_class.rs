@@ -48,6 +48,7 @@ pub mod ffi {
     // ANCHOR_END: book_inherit_qalm
 
     // Enabling threading on the qobject
+    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::CustomBaseClass {}
 
     // ANCHOR: book_qsignals_inherit

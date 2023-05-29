@@ -48,3 +48,19 @@ pub trait CxxQtType {
 pub trait Locking {
     // empty
 }
+
+/// Indicates that the object implements threading and has a method which returns a CxxQtThread
+pub trait Threading {
+    /// Specialised version of CxxQtThread, which can be moved into other threads.
+    ///
+    /// CXX doesn't support having generic types in the function yet
+    /// so we cannot have `CxxQtThread<T>` in cxx-qt-lib and then use that here
+    /// For now we use a type alias in C++ then use it like a normal type here
+    /// <https://github.com/dtolnay/cxx/issues/683>
+    type Item;
+
+    /// Create an instance of a CxxQtThread
+    ///
+    /// This allows for queueing closures onto the Qt event loop from a background thread.
+    fn qt_thread(&self) -> Self::Item;
+}

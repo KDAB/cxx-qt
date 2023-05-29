@@ -36,11 +36,9 @@ pub fn generate(
                     type #cxx_qt_thread_ident;
                     include!("cxx-qt-common/cxxqt_thread.h");
 
-                    /// Create an instance of a CxxQtThread
-                    ///
-                    /// This allows for queueing closures onto the Qt event loop from a background thread.
+                    #[doc(hidden)]
                     #[cxx_name = "qtThread"]
-                    fn qt_thread(self: &#cpp_struct_ident) -> UniquePtr<#cxx_qt_thread_ident>;
+                    fn cxx_qt_ffi_qt_thread(self: &#cpp_struct_ident) -> UniquePtr<#cxx_qt_thread_ident>;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -64,6 +62,16 @@ pub fn generate(
         implementation: vec![
             quote! {
                 unsafe impl Send for #cxx_qt_thread_ident {}
+            },
+            quote! {
+                impl cxx_qt::Threading for #cpp_struct_ident {
+                    type Item = cxx::UniquePtr<#cxx_qt_thread_ident>;
+
+                    fn qt_thread(&self) -> Self::Item
+                    {
+                        self.cxx_qt_ffi_qt_thread()
+                    }
+                }
             },
             quote! {
                 impl #cxx_qt_thread_ident {
@@ -127,7 +135,7 @@ mod tests {
         let generated = generate(&qobject_idents, &namespace_ident).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 3);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 4);
 
         // CXX bridges
 
@@ -144,11 +152,9 @@ mod tests {
                     type MyObjectCxxQtThread;
                     include!("cxx-qt-common/cxxqt_thread.h");
 
-                    /// Create an instance of a CxxQtThread
-                    ///
-                    /// This allows for queueing closures onto the Qt event loop from a background thread.
+                    #[doc(hidden)]
                     #[cxx_name = "qtThread"]
-                    fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+                    fn cxx_qt_ffi_qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -183,6 +189,19 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[1],
             quote! {
+                impl cxx_qt::Threading for MyObjectQt {
+                    type Item = cxx::UniquePtr<MyObjectCxxQtThread>;
+
+                    fn qt_thread(&self) -> Self::Item
+                    {
+                        self.cxx_qt_ffi_qt_thread()
+                    }
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[2],
+            quote! {
                 impl MyObjectCxxQtThread {
                     /// Queue the given closure onto the Qt event loop for this QObject
                     pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
@@ -208,7 +227,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[2],
+            &generated.cxx_qt_mod_contents[3],
             quote! {
                 #[doc(hidden)]
                 pub struct MyObjectCxxQtThreadQueuedFn {

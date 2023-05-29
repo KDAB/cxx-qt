@@ -38,6 +38,7 @@ mod ffi {
     }
 
     // Enabling threading on the qobject
+    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::MyObject {}
 
     impl qobject::MyObject {
