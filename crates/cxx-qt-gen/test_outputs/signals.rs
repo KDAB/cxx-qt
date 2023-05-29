@@ -41,7 +41,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
-        fn emitReady(self: Pin<&mut MyObjectQt>);
+        fn ready(self: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -57,7 +57,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[rust_name = "data_changed"]
-        fn emitDataChanged(
+        fn dataChanged(
             self: Pin<&mut MyObjectQt>,
             first: i32,
             second: UniquePtr<Opaque>,
@@ -85,7 +85,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[rust_name = "base_class_new_data"]
-        fn emitNewData(
+        fn newData(
             self: Pin<&mut MyObjectQt>,
             first: i32,
             second: UniquePtr<Opaque>,

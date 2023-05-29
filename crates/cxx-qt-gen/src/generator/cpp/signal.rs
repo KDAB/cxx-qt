@@ -40,7 +40,6 @@ pub fn generate_cpp_signals(
 
         // Prepare the idents
         let idents = QSignalName::from(signal);
-        let emit_ident = idents.emit_name.cpp.to_string();
         let signal_ident = idents.name.cpp.to_string();
         let connect_ident = idents.connect_name.cpp.to_string();
 
@@ -52,29 +51,6 @@ pub fn generate_cpp_signals(
                 parameters = parameter_types_cpp.join(", "),
             )));
         }
-
-        // Generate the emitters
-        generated.methods.push(CppFragment::Pair {
-            header: format!(
-                "void {ident}({parameters});",
-                ident = emit_ident,
-                parameters = parameter_types_cpp.join(", "),
-            ),
-            source: formatdoc! {
-                r#"
-                void
-                {qobject_ident}::{emit_ident}({parameters})
-                {{
-                    Q_EMIT {ident}({parameter_values});
-                }}
-                "#,
-                ident = signal_ident,
-                parameters = parameter_types_cpp.join(", "),
-                parameter_values = parameter_values_emitter.join(", "),
-                emit_ident = emit_ident,
-                qobject_ident = qobject_ident,
-            },
-        });
 
         // Generate connection
         let mut parameter_types_rust = parameter_types_cpp.clone();
@@ -159,7 +135,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(generated.methods.len(), 3);
+        assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
             header
         } else {
@@ -171,26 +147,6 @@ mod tests {
         );
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(
-            header,
-            "void emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque);"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)
-            {
-                Q_EMIT dataChanged(::std::move(trivial), ::std::move(opaque));
-            }
-            "#}
-        );
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
             (header, source)
         } else {
             panic!("Expected Pair")
@@ -251,7 +207,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(generated.methods.len(), 3);
+        assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
             header
         } else {
@@ -260,23 +216,6 @@ mod tests {
         assert_str_eq!(header, "Q_SIGNAL void dataChanged(A1 mapped);");
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(header, "void emitDataChanged(A1 mapped);");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitDataChanged(A1 mapped)
-            {
-                Q_EMIT dataChanged(::std::move(mapped));
-            }
-            "#}
-        );
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
             (header, source)
         } else {
             panic!("Expected Pair")
@@ -330,25 +269,9 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(generated.methods.len(), 2);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(header, "void emitBaseName();");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitBaseName()
-            {
-                Q_EMIT baseName();
-            }
-            "#}
-        );
+        assert_eq!(generated.methods.len(), 1);
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
             panic!("Expected Pair")

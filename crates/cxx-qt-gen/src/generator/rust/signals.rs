@@ -24,9 +24,10 @@ pub fn generate_rust_signals(
     // Create the methods for the other signals
     for signal in signals {
         let idents = QSignalName::from(signal);
-        let signal_ident_cpp_str = idents.name.cpp.to_string();
-        let emit_ident_cpp = &idents.emit_name.cpp;
-        let emit_ident_rust_str = idents.emit_name.rust.to_string();
+        let signal_name_rust = idents.name.rust;
+        let signal_name_rust_str = signal_name_rust.to_string();
+        let signal_name_cpp = idents.name.cpp;
+        let signal_name_cpp_str = signal_name_cpp.to_string();
         let connect_ident_cpp = idents.connect_name.cpp;
         let connect_ident_rust = idents.connect_name.rust;
         let connect_ident_rust_str = connect_ident_rust.to_string();
@@ -58,18 +59,17 @@ pub fn generate_rust_signals(
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![
-                // TODO: this will not call our wrapper in the future
                 quote! {
                     #unsafe_block extern "C++" {
                         #(#attrs)*
-                        #[rust_name = #emit_ident_rust_str]
-                        #unsafe_call fn #emit_ident_cpp(self: #self_type, #(#parameters),*);
+                        #[rust_name = #signal_name_rust_str]
+                        #unsafe_call fn #signal_name_cpp(self: #self_type, #(#parameters),*);
                     }
                 },
                 quote! {
                     unsafe extern "C++" {
                         #[doc = "Connect the given function pointer to the signal "]
-                        #[doc = #signal_ident_cpp_str]
+                        #[doc = #signal_name_cpp_str]
                         #[doc = ", so that when the signal is emitted the function pointer is executed."]
                         #[must_use]
                         #[rust_name = #connect_ident_rust_str]
@@ -80,7 +80,7 @@ pub fn generate_rust_signals(
             implementation: vec![quote! {
                 impl #qobject_name {
                     #[doc = "Connect the given function pointer to the signal "]
-                    #[doc = #signal_ident_cpp_str]
+                    #[doc = #signal_name_cpp_str]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
@@ -142,7 +142,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[rust_name = "ready"]
-                    fn emitReady(self: Pin<&mut MyObjectQt>, );
+                    fn ready(self: Pin<&mut MyObjectQt>, );
                 }
             },
         );
@@ -217,7 +217,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[attribute]
                     #[rust_name = "data_changed"]
-                    fn emitDataChanged(self: Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>);
+                    fn dataChanged(self: Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
             },
         );
@@ -284,7 +284,7 @@ mod tests {
             quote! {
                 extern "C++" {
                     #[rust_name = "unsafe_signal"]
-                    unsafe fn emitUnsafeSignal(self: Pin<&mut MyObjectQt>, param: *mut T);
+                    unsafe fn unsafeSignal(self: Pin<&mut MyObjectQt>, param: *mut T);
                 }
             },
         );
@@ -350,7 +350,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[inherit]
                     #[rust_name = "existing_signal"]
-                    fn emitBaseName(self: Pin<&mut MyObjectQt>, );
+                    fn baseName(self: Pin<&mut MyObjectQt>, );
                 }
             },
         );

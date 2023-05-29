@@ -29,17 +29,12 @@ public:
 public:
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
-  void emitReady();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
                                          ::Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             ::std::unique_ptr<Opaque> second,
                             QPoint third,
                             QPoint const& fourth);
-  void emitDataChanged(::std::int32_t first,
-                       ::std::unique_ptr<Opaque> second,
-                       QPoint third,
-                       QPoint const& fourth);
   ::QMetaObject::Connection dataChangedConnect(
     ::rust::Fn<void(MyObject&,
                     ::std::int32_t first,
@@ -47,10 +42,6 @@ public:
                     QPoint third,
                     QPoint const& fourth)> func,
     ::Qt::ConnectionType type);
-  void emitNewData(::std::int32_t first,
-                   ::std::unique_ptr<Opaque> second,
-                   QPoint third,
-                   QPoint const& fourth);
   ::QMetaObject::Connection newDataConnect(
     ::rust::Fn<void(MyObject&,
                     ::std::int32_t first,

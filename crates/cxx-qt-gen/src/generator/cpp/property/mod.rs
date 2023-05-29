@@ -97,7 +97,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(::std::unique_ptr<QColor> opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 10);
+        assert_eq!(generated.methods.len(), 8);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -191,23 +191,6 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(header, "void emitTrivialPropertyChanged();");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitTrivialPropertyChanged()
-            {
-                Q_EMIT trivialPropertyChanged();
-            }
-            "#}
-        );
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[6] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
         assert_str_eq!(
             header,
             "::QMetaObject::Connection trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
@@ -229,31 +212,14 @@ mod tests {
             "#}
         );
 
-        let header = if let CppFragment::Header(header) = &generated.methods[7] {
+        let header = if let CppFragment::Header(header) = &generated.methods[6] {
             header
         } else {
             panic!("Expected header!")
         };
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[8] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(header, "void emitOpaquePropertyChanged();");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitOpaquePropertyChanged()
-            {
-                Q_EMIT opaquePropertyChanged();
-            }
-            "#}
-        );
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[9] {
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[7] {
             (header, source)
         } else {
             panic!("Expected Pair")
@@ -307,7 +273,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(A1 mappedProperty READ getMappedProperty WRITE setMappedProperty NOTIFY mappedPropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 5);
+        assert_eq!(generated.methods.len(), 4);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -351,23 +317,6 @@ mod tests {
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(header, "void emitMappedPropertyChanged();");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::emitMappedPropertyChanged()
-            {
-                Q_EMIT mappedPropertyChanged();
-            }
-            "#}
-        );
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
             (header, source)
         } else {
             panic!("Expected Pair")

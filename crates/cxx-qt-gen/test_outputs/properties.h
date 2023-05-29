@@ -36,12 +36,10 @@ public:
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
   Q_SIGNAL void primitiveChanged();
-  void emitPrimitiveChanged();
   ::QMetaObject::Connection primitiveChangedConnect(
     ::rust::Fn<void(MyObject&)> func,
     ::Qt::ConnectionType type);
   Q_SIGNAL void trivialChanged();
-  void emitTrivialChanged();
   ::QMetaObject::Connection trivialChangedConnect(
     ::rust::Fn<void(MyObject&)> func,
     ::Qt::ConnectionType type);

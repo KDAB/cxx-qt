@@ -30,12 +30,6 @@ MyObject::invokable()
   m_rustObj->invokableWrapper(*this);
 }
 
-void
-MyObject::emitReady()
-{
-  Q_EMIT ready();
-}
-
 ::QMetaObject::Connection
 MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
                        ::Qt::ConnectionType type)
@@ -49,18 +43,6 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
       func(*this);
     },
     type);
-}
-
-void
-MyObject::emitDataChanged(::std::int32_t first,
-                          ::std::unique_ptr<Opaque> second,
-                          QPoint third,
-                          QPoint const& fourth)
-{
-  Q_EMIT dataChanged(::std::move(first),
-                     ::std::move(second),
-                     ::std::move(third),
-                     ::std::move(fourth));
 }
 
 ::QMetaObject::Connection
@@ -87,18 +69,6 @@ MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
            ::std::move(fourth));
     },
     type);
-}
-
-void
-MyObject::emitNewData(::std::int32_t first,
-                      ::std::unique_ptr<Opaque> second,
-                      QPoint third,
-                      QPoint const& fourth)
-{
-  Q_EMIT newData(::std::move(first),
-                 ::std::move(second),
-                 ::std::move(third),
-                 ::std::move(fourth));
 }
 
 ::QMetaObject::Connection

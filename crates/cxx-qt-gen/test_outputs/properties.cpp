@@ -51,12 +51,6 @@ MyObject::setTrivial(QPoint const& value)
   m_rustObj->setTrivial(*this, value);
 }
 
-void
-MyObject::emitPrimitiveChanged()
-{
-  Q_EMIT primitiveChanged();
-}
-
 ::QMetaObject::Connection
 MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
                                   ::Qt::ConnectionType type)
@@ -70,12 +64,6 @@ MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
       func(*this);
     },
     type);
-}
-
-void
-MyObject::emitTrivialChanged()
-{
-  Q_EMIT trivialChanged();
 }
 
 ::QMetaObject::Connection
