@@ -67,6 +67,9 @@ mod ffi {
         }
     }
 
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::EnergyUsage {}
+
     /// Define Q_SIGNALS that are created on the QObject
     #[cxx_qt::qsignals(EnergyUsage)]
     #[allow(clippy::enum_variant_names)]

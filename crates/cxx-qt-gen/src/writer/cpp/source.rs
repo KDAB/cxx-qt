@@ -26,16 +26,13 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
 
             {ident}::{ident}(QObject* parent)
               : {base_class}(parent)
-              , m_rustObj({namespace_internals}::createRs())
-              , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-              , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))
+              {members}
             {{
             }}
 
             {ident}::~{ident}()
             {{
-              const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-              m_cxxQtThreadObj->ptr = nullptr;
+            {deconstructors}
             }}
 
             {rust_ident} const&
@@ -50,12 +47,6 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
               return *m_rustObj;
             }}
 
-            ::std::unique_ptr<{cxx_qt_thread_ident}>
-            {ident}::qtThread() const
-            {{
-              return ::std::make_unique<{cxx_qt_thread_ident}>(m_cxxQtThreadObj, m_rustObjMutex);
-            }}
-
             {methods}
             {namespace_end}
 
@@ -68,13 +59,22 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
             }} // namespace {namespace_internals}
         "#,
         ident = qobject.ident,
-        cxx_qt_thread_ident = qobject.cxx_qt_thread_ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
         namespace_internals = qobject.namespace_internals,
         base_class = qobject.base_class,
         rust_ident = qobject.rust_ident,
         methods = qobject.blocks.methods.iter().filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
+        members = {
+            let mut members = vec![
+                format!(", m_rustObj({namespace_internals}::createRs())", namespace_internals = qobject.namespace_internals),
+                ", m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string(),
+            ];
+
+            members.extend(qobject.blocks.members.iter().filter_map(pair_as_source).collect::<Vec<String>>());
+            members.join("\n  ")
+        },
+        deconstructors = qobject.blocks.deconstructors.join("\n  "),
         }
   }).collect::<Vec<String>>()
 }

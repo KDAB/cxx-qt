@@ -10,12 +10,12 @@ class CxxQtThread;
 
 namespace cxx_qt::multi_object {
 class MyObject;
-using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
+
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object {
 class SecondObject;
-using SecondObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<SecondObject>;
+
 } // namespace cxx_qt::multi_object
 
 #include "cxx-qt-gen/multi_object.cxx.h"
@@ -32,7 +32,6 @@ public:
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
-  ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   ::std::int32_t const& getPropertyName() const;
@@ -47,8 +46,6 @@ public:
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-  ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
-    m_cxxQtThreadObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -74,7 +71,6 @@ public:
   ~SecondObject();
   SecondObjectRust const& unsafeRust() const;
   SecondObjectRust& unsafeRustMut();
-  ::std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
 public:
   ::std::int32_t const& getPropertyName() const;
@@ -89,8 +85,6 @@ public:
 private:
   ::rust::Box<SecondObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-  ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>
-    m_cxxQtThreadObj;
 };
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,

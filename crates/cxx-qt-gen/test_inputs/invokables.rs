@@ -76,4 +76,6 @@ mod ffi {
             println!("QML or C++ can't call this :)");
         }
     }
+
+    impl cxx_qt::Threading for qobject::MyObject {}
 }

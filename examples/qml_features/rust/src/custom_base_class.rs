@@ -47,6 +47,9 @@ pub mod ffi {
     }
     // ANCHOR_END: book_inherit_qalm
 
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::CustomBaseClass {}
+
     /// The signals for our QAbstractListModel struct
     // ANCHOR: book_qsignals_inherit
     #[cxx_qt::qsignals(CustomBaseClass)]

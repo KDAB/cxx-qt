@@ -57,10 +57,12 @@ mod tests {
                 GeneratedCppQObject {
                     ident: "MyObject".to_owned(),
                     rust_ident: "MyObjectRust".to_owned(),
-                    cxx_qt_thread_ident: "MyObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
+                        deconstructors: vec![],
+                        forward_declares: vec![],
+                        members: vec![],
                         metaobjects: vec![
                             "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
                             "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
@@ -155,10 +157,12 @@ mod tests {
                 GeneratedCppQObject {
                     ident: "FirstObject".to_owned(),
                     rust_ident: "FirstObjectRust".to_owned(),
-                    cxx_qt_thread_ident: "FirstObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
+                        deconstructors: vec![],
+                        forward_declares: vec![],
+                        members: vec![],
                         metaobjects: vec![
                             "Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
@@ -192,10 +196,12 @@ mod tests {
                 GeneratedCppQObject {
                     ident: "SecondObject".to_owned(),
                     rust_ident: "SecondObjectRust".to_owned(),
-                    cxx_qt_thread_ident: "SecondObjectCxxQtThread".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
+                        deconstructors: vec![],
+                        forward_declares: vec![],
+                        members: vec![],
                         metaobjects: vec![
                             "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
@@ -253,7 +259,7 @@ mod tests {
 
         namespace cxx_qt::my_object {
         class MyObject;
-        using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
+
         } // namespace cxx_qt::my_object
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -270,7 +276,6 @@ mod tests {
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
-          ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -285,7 +290,6 @@ mod tests {
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
           ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -316,12 +320,12 @@ mod tests {
 
         namespace cxx_qt {
         class FirstObject;
-        using FirstObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<FirstObject>;
+
         } // namespace cxx_qt
 
         namespace cxx_qt {
         class SecondObject;
-        using SecondObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<SecondObject>;
+
         } // namespace cxx_qt
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -337,7 +341,6 @@ mod tests {
           ~FirstObject();
           FirstObjectRust const& unsafeRust() const;
           FirstObjectRust& unsafeRustMut();
-          ::std::unique_ptr<FirstObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -347,7 +350,6 @@ mod tests {
         private:
           ::rust::Box<FirstObjectRust> m_rustObj;
           ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>> m_cxxQtThreadObj;
         };
 
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
@@ -371,7 +373,6 @@ mod tests {
           ~SecondObject();
           SecondObjectRust const& unsafeRust() const;
           SecondObjectRust& unsafeRustMut();
-          ::std::unique_ptr<SecondObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -381,7 +382,6 @@ mod tests {
         private:
           ::rust::Box<SecondObjectRust> m_rustObj;
           ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>> m_cxxQtThreadObj;
         };
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
@@ -412,7 +412,7 @@ mod tests {
 
 
         class MyObject;
-        using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
+
 
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -429,7 +429,6 @@ mod tests {
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
-          ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
         public:
           int count() const;
@@ -444,7 +443,6 @@ mod tests {
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
           ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-          ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -471,14 +469,12 @@ mod tests {
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
           , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }
 
         MyObject::~MyObject()
         {
-          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-          m_cxxQtThreadObj->ptr = nullptr;
+
         }
 
         MyObjectRust const&
@@ -491,12 +487,6 @@ mod tests {
         MyObject::unsafeRustMut()
         {
           return *m_rustObj;
-        }
-
-        ::std::unique_ptr<MyObjectCxxQtThread>
-        MyObject::qtThread() const
-        {
-          return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -559,14 +549,12 @@ mod tests {
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_first_object::createRs())
           , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<FirstObject>>(this))
         {
         }
 
         FirstObject::~FirstObject()
         {
-          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-          m_cxxQtThreadObj->ptr = nullptr;
+
         }
 
         FirstObjectRust const&
@@ -579,12 +567,6 @@ mod tests {
         FirstObject::unsafeRustMut()
         {
           return *m_rustObj;
-        }
-
-        ::std::unique_ptr<FirstObjectCxxQtThread>
-        FirstObject::qtThread() const
-        {
-          return ::std::make_unique<FirstObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -615,14 +597,12 @@ mod tests {
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_second_object::createRs())
           , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<SecondObject>>(this))
         {
         }
 
         SecondObject::~SecondObject()
         {
-          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-          m_cxxQtThreadObj->ptr = nullptr;
+
         }
 
         SecondObjectRust const&
@@ -635,12 +615,6 @@ mod tests {
         SecondObject::unsafeRustMut()
         {
           return *m_rustObj;
-        }
-
-        ::std::unique_ptr<SecondObjectCxxQtThread>
-        SecondObject::qtThread() const
-        {
-          return ::std::make_unique<SecondObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int
@@ -679,14 +653,12 @@ mod tests {
           : QStringListModel(parent)
           , m_rustObj(cxx_qt_my_object::createRs())
           , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-          , m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))
         {
         }
 
         MyObject::~MyObject()
         {
-          const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-          m_cxxQtThreadObj->ptr = nullptr;
+
         }
 
         MyObjectRust const&
@@ -699,12 +671,6 @@ mod tests {
         MyObject::unsafeRustMut()
         {
           return *m_rustObj;
-        }
-
-        ::std::unique_ptr<MyObjectCxxQtThread>
-        MyObject::qtThread() const
-        {
-          return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
         }
 
         int

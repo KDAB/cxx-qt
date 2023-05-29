@@ -8,16 +8,16 @@ use crate::writer::cpp::namespace_pair;
 use indoc::formatdoc;
 
 /// Extract the header from a given CppFragment
-fn pair_as_header(pair: &CppFragment) -> Option<&str> {
+fn pair_as_header(pair: &CppFragment) -> Option<String> {
     match pair {
-        CppFragment::Pair { header, source: _ } => Some(header),
-        CppFragment::Header(header) => Some(header),
+        CppFragment::Pair { header, source: _ } => Some(header.clone()),
+        CppFragment::Header(header) => Some(header.clone()),
         CppFragment::Source(_) => None,
     }
 }
 
 /// With a given block name, join the given items and add them under the block
-fn create_block(block: &str, items: &[&str]) -> String {
+fn create_block(block: &str, items: &[String]) -> String {
     if items.is_empty() {
         "".to_owned()
     } else {
@@ -31,7 +31,6 @@ fn create_block(block: &str, items: &[&str]) -> String {
                 // Remove any empty entries from the blocks
                 .filter(|item| !item.is_empty())
                 .cloned()
-                .map(String::from)
                 .collect::<Vec<String>>()
                 .join("\n  "),
         }
@@ -49,11 +48,11 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
             formatdoc! { r#"
                 {namespace_start}
                 class {ident};
-                using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{ident}>;
+                {forward_declares}
                 {namespace_end}
             "#,
-            ident = qobject.ident,
-            cxx_qt_thread_ident = qobject.cxx_qt_thread_ident,
+            ident = &qobject.ident,
+            forward_declares = qobject.blocks.forward_declares.join("\n"),
             namespace_start = namespace_start,
             namespace_end = namespace_end,
             }
@@ -78,13 +77,10 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
               ~{ident}();
               {rust_ident} const& unsafeRust() const;
               {rust_ident}& unsafeRustMut();
-              ::std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;
 
             {methods}
             private:
-              ::rust::Box<{rust_ident}> m_rustObj;
-              ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-              ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;
+              {members}
             }};
 
             static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
@@ -98,14 +94,22 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             Q_DECLARE_METATYPE({metatype}*)
         "#,
         ident = qobject.ident,
-        cxx_qt_thread_ident = qobject.cxx_qt_thread_ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
         namespace_internals = qobject.namespace_internals,
         rust_ident = qobject.rust_ident,
         base_class = qobject.base_class,
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
-        methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<&str>>()),
+        methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+        members = {
+            let mut members = vec![
+                format!("::rust::Box<{rust_ident}> m_rustObj;", rust_ident = qobject.rust_ident),
+                "::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;".to_string(),
+            ];
+
+            members.extend(qobject.blocks.members.iter().filter_map(pair_as_header).collect::<Vec<String>>());
+            members.join("\n  ")
+        },
         metatype = if generated.namespace.is_empty() {
             qobject.ident.clone()
         } else {
@@ -156,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_create_block() {
-        let block = create_block("block", &["line1", "line2"]);
+        let block = create_block("block", &["line1".to_string(), "line2".to_string()]);
         let expected = indoc! {"
         block:
           line1
@@ -167,7 +171,10 @@ mod tests {
 
     #[test]
     fn test_create_block_with_empty() {
-        let block = create_block("block", &["line1", "", "line2"]);
+        let block = create_block(
+            "block",
+            &["line1".to_string(), "".to_string(), "line2".to_string()],
+        );
         let expected = indoc! {"
         block:
           line1

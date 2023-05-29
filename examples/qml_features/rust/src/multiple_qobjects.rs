@@ -35,6 +35,9 @@ pub mod ffi {
         }
     }
 
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::FirstObject {}
+
     /// Signals for the first QObject
     #[cxx_qt::qsignals(FirstObject)]
     pub enum FirstSignals {
@@ -78,6 +81,9 @@ pub mod ffi {
             }
         }
     }
+
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::SecondObject {}
 
     /// Signals for the second QObject
     #[cxx_qt::qsignals(SecondObject)]
