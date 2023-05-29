@@ -68,6 +68,7 @@ mod ffi {
     }
 
     // Enabling threading on the qobject
+    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::EnergyUsage {}
 
     unsafe extern "RustQt" {

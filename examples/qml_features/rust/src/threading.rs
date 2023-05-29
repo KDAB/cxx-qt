@@ -47,6 +47,7 @@ pub mod ffi {
 
     // ANCHOR: book_threading_trait
     // Enabling threading on the qobject
+    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::ThreadingWebsite {}
     // ANCHOR_END: book_threading_trait
 

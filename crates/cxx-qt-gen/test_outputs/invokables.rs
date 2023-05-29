@@ -90,11 +90,9 @@ mod ffi {
         #[doc = r" <https://github.com/dtolnay/cxx/issues/683>"]
         type MyObjectCxxQtThread;
         include!("cxx-qt-common/cxxqt_thread.h");
-        #[doc = r" Create an instance of a CxxQtThread"]
-        #[doc = r""]
-        #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]
+        #[doc(hidden)]
         #[cxx_name = "qtThread"]
-        fn qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+        fn cxx_qt_ffi_qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
         #[doc(hidden)]
         #[cxx_name = "queue"]
         fn queue_boxed_fn(
@@ -258,6 +256,12 @@ mod cxx_qt_ffi {
         }
     }
     unsafe impl Send for MyObjectCxxQtThread {}
+    impl cxx_qt::Threading for MyObjectQt {
+        type Item = cxx::UniquePtr<MyObjectCxxQtThread>;
+        fn qt_thread(&self) -> Self::Item {
+            self.cxx_qt_ffi_qt_thread()
+        }
+    }
     impl MyObjectCxxQtThread {
         #[doc = r" Queue the given closure onto the Qt event loop for this QObject"]
         pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
