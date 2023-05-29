@@ -377,7 +377,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
                     #[rust_name = "trivial_property_changed"]
-                    fn emitTrivialPropertyChanged(self: Pin<&mut MyObjectQt>, );
+                    fn trivialPropertyChanged(self: Pin<&mut MyObjectQt>, );
                 }
             },
         );
@@ -418,7 +418,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
                     #[rust_name = "opaque_property_changed"]
-                    fn emitOpaquePropertyChanged(self: Pin<&mut MyObjectQt>, );
+                    fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>, );
                 }
             },
         );
@@ -459,7 +459,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
                     #[rust_name = "unsafe_property_changed"]
-                    fn emitUnsafePropertyChanged(self: Pin<&mut MyObjectQt>, );
+                    fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>, );
                 }
             },
         );

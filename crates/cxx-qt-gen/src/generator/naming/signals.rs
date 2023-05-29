@@ -11,7 +11,6 @@ use syn::Ident;
 /// Names for parts of a Q_SIGNAL
 pub struct QSignalName {
     pub name: CombinedIdent,
-    pub emit_name: CombinedIdent,
     pub connect_name: CombinedIdent,
     pub on_name: Ident,
 }
@@ -20,7 +19,6 @@ impl From<&ParsedSignal> for QSignalName {
     fn from(signal: &ParsedSignal) -> Self {
         Self {
             name: signal.ident.clone(),
-            emit_name: CombinedIdent::emit_from_signal(&signal.ident),
             connect_name: CombinedIdent::connect_from_signal(&signal.ident),
             on_name: on_from_signal(&signal.ident.rust),
         }
@@ -32,16 +30,6 @@ fn on_from_signal(ident: &Ident) -> Ident {
 }
 
 impl CombinedIdent {
-    /// For a given signal ident generate the Rust and C++ emit name
-    fn emit_from_signal(ident: &CombinedIdent) -> Self {
-        Self {
-            cpp: format_ident!("emit{}", ident.cpp.to_string().to_case(Case::Pascal)),
-            // Note that the Rust emit name is the same name as the signal for now
-            // in the future this emit wrapper in C++ will be removed.
-            rust: format_ident!("{}", ident.rust.to_string().to_case(Case::Snake)),
-        }
-    }
-
     fn connect_from_signal(ident: &CombinedIdent) -> Self {
         Self {
             // Use signalConnect instead of onSignal here so that we don't
@@ -78,8 +66,6 @@ mod tests {
         let names = QSignalName::from(&qsignal);
         assert_eq!(names.name.cpp, format_ident!("dataChanged"));
         assert_eq!(names.name.rust, format_ident!("data_changed"));
-        assert_eq!(names.emit_name.cpp, format_ident!("emitDataChanged"));
-        assert_eq!(names.emit_name.rust, format_ident!("data_changed"));
         assert_eq!(names.connect_name.cpp, format_ident!("dataChangedConnect"));
         assert_eq!(
             names.connect_name.rust,
@@ -109,8 +95,6 @@ mod tests {
         let names = QSignalName::from(&qsignal);
         assert_eq!(names.name.cpp, format_ident!("baseName"));
         assert_eq!(names.name.rust, format_ident!("existing_signal"));
-        assert_eq!(names.emit_name.cpp, format_ident!("emitBaseName"));
-        assert_eq!(names.emit_name.rust, format_ident!("existing_signal"));
         assert_eq!(names.connect_name.cpp, format_ident!("baseNameConnect"));
         assert_eq!(
             names.connect_name.rust,

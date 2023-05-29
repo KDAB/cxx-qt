@@ -37,12 +37,6 @@ MyObject::setPropertyName(::std::int32_t const& value)
   m_rustObj->setPropertyName(*this, value);
 }
 
-void
-MyObject::emitPropertyNameChanged()
-{
-  Q_EMIT propertyNameChanged();
-}
-
 ::QMetaObject::Connection
 MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
                                      ::Qt::ConnectionType type)
@@ -63,12 +57,6 @@ MyObject::invokableName()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableNameWrapper(*this);
-}
-
-void
-MyObject::emitReady()
-{
-  Q_EMIT ready();
 }
 
 ::QMetaObject::Connection
@@ -124,12 +112,6 @@ SecondObject::setPropertyName(::std::int32_t const& value)
   m_rustObj->setPropertyName(*this, value);
 }
 
-void
-SecondObject::emitPropertyNameChanged()
-{
-  Q_EMIT propertyNameChanged();
-}
-
 ::QMetaObject::Connection
 SecondObject::propertyNameChangedConnect(::rust::Fn<void(SecondObject&)> func,
                                          ::Qt::ConnectionType type)
@@ -147,12 +129,6 @@ SecondObject::invokableName()
 {
 
   m_rustObj->invokableNameWrapper(*this);
-}
-
-void
-SecondObject::emitReady()
-{
-  Q_EMIT ready();
 }
 
 ::QMetaObject::Connection
