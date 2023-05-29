@@ -114,9 +114,9 @@ pub mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
         #[cxx_name = "unsafeRust"]
-        fn rust(self: &MyObjectQt) -> &MyObject;
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
         #[doc = "Generated CXX-Qt method which creates a new"]
         #[doc = "MyObjectQt"]
         #[doc = "as a UniquePtr with no parent in Qt"]
@@ -125,12 +125,9 @@ pub mod ffi {
         fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
     extern "C++" {
-        #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
-        #[doc = r""]
-        #[doc = r" This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal."]
-        #[doc = r" The property changed signal must be emitted manually."]
         #[cxx_name = "unsafeRustMut"]
-        unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+        #[doc(hidden)]
+        unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -191,9 +188,9 @@ pub mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[doc = r" Retrieve an immutable reference to the Rust struct backing this C++ object"]
         #[cxx_name = "unsafeRust"]
-        fn rust(self: &SecondObjectQt) -> &SecondObject;
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
         #[doc = "Generated CXX-Qt method which creates a new"]
         #[doc = "SecondObjectQt"]
         #[doc = "as a UniquePtr with no parent in Qt"]
@@ -202,12 +199,9 @@ pub mod ffi {
         fn newCppObject() -> UniquePtr<SecondObjectQt>;
     }
     extern "C++" {
-        #[doc = r" Retrieve a mutable reference to the Rust struct backing this C++ object"]
-        #[doc = r""]
-        #[doc = r" This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal."]
-        #[doc = r" The property changed signal must be emitted manually."]
         #[cxx_name = "unsafeRustMut"]
-        unsafe fn rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
+        #[doc(hidden)]
+        unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -218,6 +212,7 @@ pub mod ffi {
 pub use self::cxx_qt_ffi::*;
 mod cxx_qt_ffi {
     use super::ffi::*;
+    use cxx_qt::CxxQtType;
     use std::pin::Pin;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -336,6 +331,15 @@ mod cxx_qt_ffi {
             }
         }
     }
+    impl cxx_qt::CxxQtType for MyObjectQt {
+        type Rust = MyObject;
+        fn rust(&self) -> &Self::Rust {
+            self.cxx_qt_ffi_rust()
+        }
+        unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+            self.cxx_qt_ffi_rust_mut()
+        }
+    }
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
@@ -430,6 +434,15 @@ mod cxx_qt_ffi {
             match signal {
                 SecondSignals::Ready {} => self.emit_ready(),
             }
+        }
+    }
+    impl cxx_qt::CxxQtType for SecondObjectQt {
+        type Rust = SecondObject;
+        fn rust(&self) -> &Self::Rust {
+            self.cxx_qt_ffi_rust()
+        }
+        unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+            self.cxx_qt_ffi_rust_mut()
         }
     }
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
