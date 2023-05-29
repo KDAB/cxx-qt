@@ -33,6 +33,7 @@ version = "0.5.3"
 # we publish, otherwise crates.io complains as it doesn't know the version.
 [workspace.dependencies]
 cxx-qt = { path = "crates/cxx-qt" }
+cxx-qt-macro = { path = "crates/cxx-qt-macro" }
 cxx-qt-build = { path = "crates/cxx-qt-build" }
 cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.5.3" }
 cxx-qt-lib = { path = "crates/cxx-qt-lib" }

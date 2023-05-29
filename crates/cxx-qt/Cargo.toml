@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 # SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 # SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+# SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
@@ -16,14 +17,5 @@ readme = "README.md"
 keywords = ["cxx", "ffi", "QML", "Qt"]
 categories = ["api-bindings", "gui"]
 
-[lib]
-proc-macro = true
-
 [dependencies]
-cxx-qt-gen.workspace = true
-proc-macro2.workspace = true
-syn.workspace = true
-
-[dev-dependencies]
-cxx.workspace = true
-cxx-qt-lib.workspace = true
+cxx-qt-macro.workspace = true
