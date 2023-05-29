@@ -47,6 +47,7 @@ pub fn generate_rust_invokables(
                 .collect::<Vec<TokenStream>>();
             quote! { self: #cpp_struct, #(#parameters),* }
         };
+
         let return_type = &invokable.method.sig.output;
 
         let mut unsafe_block = None;

@@ -9,6 +9,47 @@ use syn::{
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
 };
 
+/// For a given Rust return type attempt to generate a C++ string
+///
+/// Note that return types are allowed to have a Result<T>
+pub(crate) fn syn_type_to_cpp_return_type(
+    return_ty: &ReturnType,
+    cxx_mapping: &ParsedCxxMappings,
+) -> Result<Option<String>> {
+    if let ReturnType::Type(_, ty) = return_ty {
+        // If we are a Result<T> then we just become T for C++
+        if let Type::Path(ty_path) = &**ty {
+            if let Some(segment) = ty_path.path.segments.first() {
+                if segment.ident == "Result" {
+                    let mut args = path_argument_to_string(&segment.arguments, cxx_mapping)?
+                        .unwrap_or_default();
+                    if args.len() != 1 {
+                        return Err(Error::new(
+                            return_ty.span(),
+                            "Result must have one argument",
+                        ));
+                    }
+
+                    if let Some(arg) = args.pop() {
+                        // Map void to None
+                        if arg == "void" {
+                            return Ok(None);
+                        }
+
+                        return Ok(Some(arg));
+                    } else {
+                        unreachable!("Args should be of length 1");
+                    }
+                }
+            }
+        }
+
+        syn_type_to_cpp_type(ty, cxx_mapping).map(|v| if v == "void" { None } else { Some(v) })
+    } else {
+        Ok(None)
+    }
+}
+
 /// For a given Rust type attempt to generate a C++ string
 ///
 /// This is similar to the parsing in CXX
@@ -106,12 +147,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
                 )),
             }
         }
-        // TODO: consider Type::Tuple with an empty tuple mapping to void
-        //
-        // TODO: handling Result<T> is tricky, as we need Result<T> in the CXX bridge
-        // but potentially Result<T, E> on the method. Then we need to detect that we have
-        // Result<()> and notice that that is a void return, otherwise we try to convert
-        // void which fails in C++
+        Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_string()),
         _others => Err(Error::new(
             ty.span(),
             format!("Unsupported type: {_others:?}"),
@@ -162,13 +198,21 @@ fn path_segment_to_string(
     let mut ident = segment.ident.to_string();
 
     // If we are a Pin<T> then for C++ it becomes just T
-    let args = if ident == "Pin" {
-        ident = path_argument_to_string(&segment.arguments, cxx_mapping)?
-            .map_or_else(|| "".to_owned(), |values| values.join(", "));
+    let args = match ident.as_str() {
+        "Pin" => {
+            ident = path_argument_to_string(&segment.arguments, cxx_mapping)?
+                .map_or_else(|| "".to_owned(), |values| values.join(", "));
 
-        None
-    } else {
-        path_argument_to_string(&segment.arguments, cxx_mapping)?.map(|values| values.join(", "))
+            None
+        }
+        "Result" => {
+            return Err(Error::new(segment.span(), "Result is not supported"));
+        }
+        "Option" => {
+            return Err(Error::new(segment.span(), "Option is not supported"));
+        }
+        _others => path_argument_to_string(&segment.arguments, cxx_mapping)?
+            .map(|values| values.join(", ")),
     };
 
     // If there are template args check that we aren't a recognised A of A<B>
@@ -552,6 +596,69 @@ mod tests {
         assert_eq!(
             syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
             "::rust::Fn<void, ()>"
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_tuple_empty() {
+        let ty = parse_quote! { () };
+        assert_eq!(
+            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            "void"
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_tuple_multiple() {
+        let ty = parse_quote! { (i32, ) };
+        assert!(syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_none() {
+        let ty = parse_quote! {};
+        assert_eq!(
+            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_normal() {
+        let ty = parse_quote! { -> bool };
+        assert_eq!(
+            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            Some("bool".to_string())
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_result_bool() {
+        let ty = parse_quote! { -> Result<bool> };
+        assert_eq!(
+            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            Some("bool".to_string())
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_result_empty() {
+        let ty = parse_quote! { -> Result<> };
+        assert!(syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_result_multiple() {
+        let ty = parse_quote! { -> Result<A, B, C> };
+        assert!(syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_result_tuple() {
+        let ty = parse_quote! { -> Result<()> };
+        assert_eq!(
+            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            None
         );
     }
 }
