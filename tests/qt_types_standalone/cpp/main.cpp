@@ -7,7 +7,6 @@
 #include <QtCore/QScopedPointer>
 #include <QtTest/QTest>
 
-#include "cxxqtconvert.h"
 #include "qbytearray.h"
 #include "qcolor.h"
 #include "qcoreapplication.h"
@@ -54,7 +53,6 @@ main(int argc, char* argv[])
     }
   };
 
-  runTest(QScopedPointer<QObject>(new CxxQtConvertTest));
   runTest(QScopedPointer<QObject>(new QByteArrayTest));
   runTest(QScopedPointer<QObject>(new QColorTest));
   runTest(QScopedPointer<QObject>(new QCoreApplicationTest));

@@ -71,15 +71,10 @@ MyObject::emitDataChanged(::std::int32_t first,
                           QPoint third,
                           QPoint const& fourth)
 {
-  Q_EMIT dataChanged(
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
-      ::std::move(first)),
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                      ::std::unique_ptr<Opaque>>{}(
-      ::std::move(second)),
-    ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
-    ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
-      ::std::move(fourth)));
+  Q_EMIT dataChanged(::std::move(first),
+                     ::std::move(second),
+                     ::std::move(third),
+                     ::std::move(fourth));
 }
 
 ::QMetaObject::Connection
@@ -99,16 +94,11 @@ MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
                                   QPoint third,
                                   QPoint const& fourth) {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-      func(
-        *this,
-        ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
-          ::std::move(first)),
-        ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                          ::std::unique_ptr<Opaque>>{}(
-          ::std::move(second)),
-        ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
-        ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
-          ::std::move(fourth)));
+      func(*this,
+           ::std::move(first),
+           ::std::move(second),
+           ::std::move(third),
+           ::std::move(fourth));
     },
     type);
 }
@@ -119,15 +109,10 @@ MyObject::emitNewData(::std::int32_t first,
                       QPoint third,
                       QPoint const& fourth)
 {
-  Q_EMIT newData(
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
-      ::std::move(first)),
-    ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                      ::std::unique_ptr<Opaque>>{}(
-      ::std::move(second)),
-    ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
-    ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
-      ::std::move(fourth)));
+  Q_EMIT newData(::std::move(first),
+                 ::std::move(second),
+                 ::std::move(third),
+                 ::std::move(fourth));
 }
 
 ::QMetaObject::Connection
@@ -147,16 +132,11 @@ MyObject::newDataConnect(::rust::Fn<void(MyObject&,
                                   QPoint third,
                                   QPoint const& fourth) {
       const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-      func(
-        *this,
-        ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(
-          ::std::move(first)),
-        ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<Opaque>,
-                                          ::std::unique_ptr<Opaque>>{}(
-          ::std::move(second)),
-        ::rust::cxxqtlib1::cxx_qt_convert<QPoint, QPoint>{}(::std::move(third)),
-        ::rust::cxxqtlib1::cxx_qt_convert<QPoint const&, QPoint const&>{}(
-          ::std::move(fourth)));
+      func(*this,
+           ::std::move(first),
+           ::std::move(second),
+           ::std::move(third),
+           ::std::move(fourth));
     },
     type);
 }

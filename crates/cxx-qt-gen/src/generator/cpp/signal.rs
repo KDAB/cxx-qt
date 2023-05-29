@@ -7,7 +7,7 @@ use crate::{
     generator::{
         cpp::{
             fragment::CppFragment, qobject::GeneratedCppQObjectBlocks, types::CppType,
-            CXX_QT_CONVERT, RUST_OBJ_MUTEX_LOCK_GUARD,
+            RUST_OBJ_MUTEX_LOCK_GUARD,
         },
         naming::{qobject::QObjectName, signals::QSignalName},
     },
@@ -45,18 +45,12 @@ pub fn generate_cpp_signals(
                 rust_ty = cxx_ty.as_rust_ty(),
             ));
             parameter_values_emitter.push(format!(
-                "{convert}<{cxx_ty}, {rust_ty}>{{}}(::std::move({ident}))",
-                convert = CXX_QT_CONVERT,
-                cxx_ty = cxx_ty.as_cxx_ty(),
+                "::std::move({ident})",
                 ident = ident_str,
-                rust_ty = cxx_ty.as_rust_ty(),
             ));
             parameter_values_connection.push(format!(
-                "{convert}<{rust_ty}, {cxx_ty}>{{}}(::std::move({ident}))",
-                convert = CXX_QT_CONVERT,
-                cxx_ty = cxx_ty.as_cxx_ty(),
+                "::std::move({ident})",
                 ident = ident_str,
-                rust_ty = cxx_ty.as_rust_ty(),
             ));
         }
 
@@ -191,7 +185,7 @@ mod tests {
             void
             MyObject::emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)
             {
-                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
+                Q_EMIT dataChanged(::std::move(trivial), ::std::move(opaque));
             }
             "#}
         );
@@ -216,7 +210,7 @@ mod tests {
                         this,
                         [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                          func(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
+                          func(*this, ::std::move(trivial), ::std::move(opaque));
                         }, type);
             }
             "#}
@@ -263,7 +257,7 @@ mod tests {
             void
             MyObject::emitDataChanged(A1 mapped)
             {
-                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
+                Q_EMIT dataChanged(::std::move(mapped));
             }
             "#}
         );
@@ -288,7 +282,7 @@ mod tests {
                         this,
                         [&, func = ::std::move(func)](A1 mapped) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                          func(*this, ::rust::cxxqtlib1::cxx_qt_convert<A1, A1>{}(::std::move(mapped)));
+                          func(*this, ::std::move(mapped));
                         }, type);
             }
             "#}

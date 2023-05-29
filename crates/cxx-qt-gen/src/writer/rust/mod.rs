@@ -164,7 +164,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         syn::parse2(quote! {
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
-                include!("cxx-qt-lib/convert.h");
                 include!("cxx-qt-lib/cxxqt_thread.h");
 
                 include!("cxx-qt-lib/qt.h");
@@ -421,7 +420,6 @@ mod tests {
             mod ffi {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
-                    include!("cxx-qt-lib/convert.h");
                     include!("cxx-qt-lib/cxxqt_thread.h");
 
                     include!("cxx-qt-lib/qt.h");
@@ -579,7 +577,6 @@ mod tests {
             mod ffi {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
-                    include!("cxx-qt-lib/convert.h");
                     include!("cxx-qt-lib/cxxqt_thread.h");
 
                     include!("cxx-qt-lib/qt.h");
