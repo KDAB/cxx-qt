@@ -25,7 +25,6 @@ public:
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
-  ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   Q_INVOKABLE void invokable() const;
@@ -38,6 +37,7 @@ public:
   Q_INVOKABLE void invokableFinal() const final;
   Q_INVOKABLE void invokableOverride() const override;
   Q_INVOKABLE virtual void invokableVirtual() const;
+  ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

@@ -3,19 +3,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    inherit::ParsedInheritedMethod,
-    invokable::ParsedQInvokable,
-    property::{ParsedQProperty, ParsedRustField},
-    signals::ParsedSignalsEnum,
-};
 use crate::syntax::{
     attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
     fields::fields_to_named_fields_mut,
 };
+use crate::{
+    parser::{
+        inherit::ParsedInheritedMethod,
+        invokable::ParsedQInvokable,
+        property::{ParsedQProperty, ParsedRustField},
+        signals::ParsedSignalsEnum,
+    },
+    syntax::path::path_compare_str,
+};
 use syn::{
-    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemFn, Item, ItemStruct, LitStr, Result,
-    Visibility,
+    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemFn, Item, ItemImpl, ItemStruct,
+    LitStr, Result, Visibility,
 };
 
 /// Metadata for registering QML element
@@ -61,6 +64,8 @@ pub struct ParsedQObject {
     pub fields: Vec<ParsedRustField>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
+    /// Whether threading has been enabled for this QObject
+    pub threading: bool,
     /// Items that we don't need to generate anything for CXX or C++
     /// eg impls on the Rust object or Default implementations
     pub others: Vec<Item>,
@@ -114,6 +119,7 @@ impl ParsedQObject {
             properties,
             fields,
             qml_metadata,
+            threading: false,
             others: vec![],
         })
     }
@@ -213,6 +219,38 @@ impl ParsedQObject {
         }
 
         Ok(())
+    }
+
+    pub fn parse_trait_impl(&mut self, imp: ItemImpl) -> Result<()> {
+        let (not, trait_path, _) = &imp
+            .trait_
+            .as_ref()
+            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
+
+        if let Some(attr) = imp.attrs.first() {
+            return Err(Error::new_spanned(
+                attr,
+                "Attributes are not allowed on trait impls in cxx_qt::bridge",
+            ));
+        }
+
+        if path_compare_str(trait_path, &["cxx_qt", "Threading"]) {
+            if not.is_some() {
+                return Err(Error::new_spanned(
+                    trait_path,
+                    "Negative impls for cxx_qt::Threading are not allowed",
+                ));
+            }
+
+            self.threading = true;
+            Ok(())
+        } else {
+            // TODO: Give suggestions on which trait might have been meant
+            Err(Error::new_spanned(
+                trait_path,
+                "Unsupported trait!\nCxxQt currently only supports: cxx_qt::Threading\nNote that the trait must always be fully-qualified."
+            ))
+        }
     }
 
     /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
@@ -373,6 +411,48 @@ pub mod tests {
             }
         };
         assert!(qobject.parse_impl_items(&item.items).is_err());
+    }
+
+    #[test]
+    fn test_parse_trait_impl_valid() {
+        let mut qobject = create_parsed_qobject();
+        let item: ItemImpl = parse_quote! {
+            impl cxx_qt::Threading for qobject::MyObject {}
+        };
+        assert!(!qobject.threading);
+        assert!(qobject.parse_trait_impl(item).is_ok());
+        assert!(qobject.threading);
+    }
+
+    #[test]
+    fn test_parse_trait_impl_invalid() {
+        let mut qobject = create_parsed_qobject();
+
+        // must be a trait
+        let item: ItemImpl = parse_quote! {
+            impl qobject::T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
+
+        // no attribute allowed
+        let item: ItemImpl = parse_quote! {
+            #[attr]
+            impl cxx_qt::Threading for qobject::T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
+
+        // Threading cannot be negative
+        let item: ItemImpl = parse_quote! {
+            impl !cxx_qt::Threading for qobject::T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
+
+        // must be a known trait
+        let item: ItemImpl = parse_quote! {
+            #[attr]
+            impl cxx_qt::ABC for qobject::T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
     }
 
     #[test]

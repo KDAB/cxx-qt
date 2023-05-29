@@ -45,6 +45,11 @@ pub mod ffi {
         }
     }
 
+    // ANCHOR: book_threading_trait
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::ThreadingWebsite {}
+    // ANCHOR_END: book_threading_trait
+
     impl qobject::ThreadingWebsite {
         /// Swap the URL between kdab.com and github.com
         #[qinvokable]

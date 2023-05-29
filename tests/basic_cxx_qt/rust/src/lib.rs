@@ -36,6 +36,9 @@ mod ffi {
         }
     }
 
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for qobject::MyObject {}
+
     impl qobject::MyObject {
         #[qinvokable]
         pub fn double_number_self(self: Pin<&mut Self>) {

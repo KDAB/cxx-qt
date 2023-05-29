@@ -30,13 +30,6 @@ MyObject::unsafeRustMut()
   return *m_rustObj;
 }
 
-::std::unique_ptr<MyObjectCxxQtThread>
-MyObject::qtThread() const
-{
-  return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
-                                                 m_rustObjMutex);
-}
-
 void
 MyObject::invokable() const
 {
@@ -93,6 +86,13 @@ MyObject::invokableVirtual() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   m_rustObj->invokableVirtualWrapper(*this);
+}
+
+::std::unique_ptr<MyObjectCxxQtThread>
+MyObject::qtThread() const
+{
+  return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
+                                                 m_rustObjMutex);
 }
 
 } // namespace cxx_qt::my_object

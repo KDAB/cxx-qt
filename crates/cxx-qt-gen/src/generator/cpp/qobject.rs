@@ -6,7 +6,7 @@
 use crate::generator::{
     cpp::{
         fragment::CppFragment, inherit, invokable::generate_cpp_invokables,
-        property::generate_cpp_properties, signal::generate_cpp_signals,
+        property::generate_cpp_properties, signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
@@ -15,16 +15,25 @@ use syn::Result;
 
 #[derive(Default)]
 pub struct GeneratedCppQObjectBlocks {
+    /// List of forward declares before the class and include of the generated CXX header
+    pub forward_declares: Vec<String>,
     /// List of Qt Meta Object items (eg Q_PROPERTY)
     pub metaobjects: Vec<String>,
     /// List of public methods for the QObject
     pub methods: Vec<CppFragment>,
+    /// List of members for the QObject
+    pub members: Vec<CppFragment>,
+    /// List of deconstructor source
+    pub deconstructors: Vec<String>,
 }
 
 impl GeneratedCppQObjectBlocks {
     pub fn append(&mut self, other: &mut Self) {
+        self.forward_declares.append(&mut other.forward_declares);
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
+        self.members.append(&mut other.members);
+        self.deconstructors.append(&mut other.deconstructors);
     }
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
@@ -59,8 +68,6 @@ pub struct GeneratedCppQObject {
     pub ident: String,
     /// Ident of the Rust object
     pub rust_ident: String,
-    /// Ident of the CxxQtThread object
-    pub cxx_qt_thread_ident: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
     /// Base class of the QObject
@@ -80,7 +87,6 @@ impl GeneratedCppQObject {
         let mut generated = GeneratedCppQObject {
             ident: qobject_idents.cpp_class.cpp.to_string(),
             rust_ident: qobject_idents.rust_struct.cpp.to_string(),
-            cxx_qt_thread_ident: qobject_idents.cxx_qt_thread_class.to_string(),
             namespace_internals: namespace_idents.internal,
             base_class: qobject
                 .base_class
@@ -113,6 +119,13 @@ impl GeneratedCppQObject {
             cxx_mappings,
         )?);
 
+        // If this type has threading enabled then add generation
+        if qobject.threading {
+            generated
+                .blocks
+                .append(&mut threading::generate(&qobject_idents)?);
+        }
+
         Ok(generated)
     }
 }
@@ -142,7 +155,6 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
-        assert_eq!(cpp.cxx_qt_thread_ident, "MyObjectCxxQtThread");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
         assert_eq!(cpp.base_class, "QObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);

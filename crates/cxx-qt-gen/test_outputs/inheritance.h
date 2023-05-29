@@ -9,7 +9,6 @@ class CxxQtThread;
 }
 
 class MyObject;
-using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 
 #include "cxx-qt-gen/inheritance.cxx.h"
 
@@ -22,7 +21,6 @@ public:
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
-  ::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;
 
 public:
   Q_INVOKABLE QVariant data(QModelIndex const& _index,
@@ -42,8 +40,6 @@ public:
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
-  ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
-    m_cxxQtThreadObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

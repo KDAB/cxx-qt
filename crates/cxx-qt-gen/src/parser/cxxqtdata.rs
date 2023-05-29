@@ -279,8 +279,12 @@ impl ParsedCxxQtData {
             // Find if we are a impl qobject::T
             if path.segments.len() == 2 && path.segments[0].ident == "qobject" {
                 if let Some(qobject) = self.qobjects.get_mut(&path.segments[1].ident) {
-                    // Extract the ImplItem's from each Impl block
-                    qobject.parse_impl_items(&imp.items)?;
+                    if imp.trait_.is_some() {
+                        qobject.parse_trait_impl(imp)?;
+                    } else {
+                        // Extract the ImplItem's from each Impl block
+                        qobject.parse_impl_items(&imp.items)?;
+                    }
                 } else {
                     return Err(Error::new(
                         imp.span(),
@@ -586,6 +590,19 @@ mod tests {
     }
 
     #[test]
+    fn test_find_and_merge_cxx_qt_item_threading() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+        assert!(!cxx_qt_data.qobjects[&qobject_ident()].threading);
+
+        let item: Item = parse_quote! {
+            impl cxx_qt::Threading for qobject::MyObject {}
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+        assert!(cxx_qt_data.qobjects[&qobject_ident()].threading);
+    }
+
+    #[test]
     fn test_cxx_mappings_cxx_name_empty() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -820,5 +837,22 @@ mod tests {
         assert_eq!(inherited[1].parameters[0].ident, "arg");
         assert_eq!(inherited[2].parameters.len(), 1);
         assert_eq!(inherited[2].parameters[0].ident, "arg");
+    }
+
+    #[test]
+    fn test_parse_threading() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+
+        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+        assert!(!qobject.threading);
+
+        let threading_block: Item = parse_quote! {
+            impl cxx_qt::Threading for qobject::MyObject {}
+        };
+
+        cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
+
+        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+        assert!(qobject.threading);
     }
 }
