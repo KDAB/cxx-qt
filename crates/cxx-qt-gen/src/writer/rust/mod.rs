@@ -31,9 +31,9 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
     vec![
         quote! {
             unsafe extern "C++" {
-                /// Retrieve an immutable reference to the Rust struct backing this C++ object
                 #[cxx_name = "unsafeRust"]
-                fn rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
+                #[doc(hidden)]
+                fn cxx_qt_ffi_rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
 
                 #[doc = "Generated CXX-Qt method which creates a new"]
                 #[doc = #cpp_struct_ident_str]
@@ -45,12 +45,9 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
         },
         quote! {
             extern "C++" {
-                /// Retrieve a mutable reference to the Rust struct backing this C++ object
-                ///
-                /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
-                /// The property changed signal must be emitted manually.
                 #[cxx_name = "unsafeRustMut"]
-                unsafe fn rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+                #[doc(hidden)]
+                unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
             }
         },
         quote! {
@@ -65,15 +62,31 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
 
 /// Return common blocks for CXX-Qt implementation which the C++ writer adds as well
 fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
+    let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
     let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
-    vec![quote! {
-        /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
-        pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
-            std::default::Default::default()
-        }
-    }]
+    vec![
+        quote! {
+            impl cxx_qt::CxxQtType for #cpp_struct_ident {
+                type Rust = #rust_struct_ident;
+
+                fn rust(&self) -> &Self::Rust {
+                    self.cxx_qt_ffi_rust()
+                }
+
+                unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    self.cxx_qt_ffi_rust_mut()
+                }
+            }
+        },
+        quote! {
+            /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
+            pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
+                std::default::Default::default()
+            }
+        },
+    ]
 }
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
@@ -177,6 +190,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
             use std::pin::Pin;
+            use cxx_qt::CxxQtType;
 
             #[doc(hidden)]
             type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -372,9 +386,9 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
-                    fn rust(self: &MyObjectQt) -> &MyObject;
+                    #[doc(hidden)]
+                    fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
 
                     #[doc = "Generated CXX-Qt method which creates a new"]
                     #[doc = "MyObjectQt"]
@@ -385,12 +399,9 @@ mod tests {
                 }
 
                 extern "C++" {
-                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
-                    ///
-                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
-                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
-                    unsafe fn rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+                    #[doc(hidden)]
+                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
                 }
 
                 extern "Rust" {
@@ -404,6 +415,7 @@ mod tests {
             mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
+                use cxx_qt::CxxQtType;
 
                 #[doc(hidden)]
                 type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -416,6 +428,16 @@ mod tests {
                 impl MyObject {
                     fn rust_method(&self) {
 
+                    }
+                }
+
+                impl cxx_qt::CxxQtType for MyObjectQt {
+                    type Rust = MyObject;
+                    fn rust(&self) -> &Self::Rust {
+                        self.cxx_qt_ffi_rust()
+                    }
+                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                        self.cxx_qt_ffi_rust_mut()
                     }
                 }
 
@@ -476,9 +498,9 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
-                    fn rust(self: &FirstObjectQt) -> &FirstObject;
+                    #[doc(hidden)]
+                    fn cxx_qt_ffi_rust(self: &FirstObjectQt) -> &FirstObject;
 
                     #[doc = "Generated CXX-Qt method which creates a new"]
                     #[doc = "FirstObjectQt"]
@@ -489,12 +511,9 @@ mod tests {
                 }
 
                 extern "C++" {
-                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
-                    ///
-                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
-                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
-                    unsafe fn rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
+                    #[doc(hidden)]
+                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
                 }
 
                 extern "Rust" {
@@ -513,9 +532,9 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    /// Retrieve an immutable reference to the Rust struct backing this C++ object
                     #[cxx_name = "unsafeRust"]
-                    fn rust(self: &SecondObjectQt) -> &SecondObject;
+                    #[doc(hidden)]
+                    fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
 
                     #[doc = "Generated CXX-Qt method which creates a new"]
                     #[doc = "SecondObjectQt"]
@@ -526,12 +545,9 @@ mod tests {
                 }
 
                 extern "C++" {
-                    /// Retrieve a mutable reference to the Rust struct backing this C++ object
-                    ///
-                    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
-                    /// The property changed signal must be emitted manually.
                     #[cxx_name = "unsafeRustMut"]
-                    unsafe fn rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
+                    #[doc(hidden)]
+                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
                 }
 
                 extern "Rust" {
@@ -545,6 +561,7 @@ mod tests {
             mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
+                use cxx_qt::CxxQtType;
 
                 #[doc(hidden)]
                 type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -560,6 +577,16 @@ mod tests {
                     }
                 }
 
+                impl cxx_qt::CxxQtType for FirstObjectQt {
+                    type Rust = FirstObject;
+                    fn rust(&self) -> &Self::Rust {
+                        self.cxx_qt_ffi_rust()
+                    }
+                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                        self.cxx_qt_ffi_rust_mut()
+                    }
+                }
+
                 /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
                 pub fn create_rs_first_object() -> std::boxed::Box<FirstObject> {
                     std::default::Default::default()
@@ -571,6 +598,16 @@ mod tests {
                 impl SecondObject {
                     fn rust_method(&self) {
 
+                    }
+                }
+
+                impl cxx_qt::CxxQtType for SecondObjectQt {
+                    type Rust = SecondObject;
+                    fn rust(&self) -> &Self::Rust {
+                        self.cxx_qt_ffi_rust()
+                    }
+                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                        self.cxx_qt_ffi_rust_mut()
                     }
                 }
 
