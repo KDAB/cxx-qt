@@ -33,8 +33,7 @@ mod ffi {
             );
         }
 
-        // Value and Opaque are not real types that would compile; these are only testing the code generation
-        #[qinvokable(return_cxx_type = "Value")]
+        #[qinvokable]
         pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<Opaque> {
             Opaque::new()
         }

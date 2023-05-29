@@ -24,8 +24,6 @@ pub struct ParsedQInvokable {
     pub method: ImplItemFn,
     /// Whether this invokable is mutable
     pub mutable: bool,
-    /// The name of the C++ type for the return type if one has been specified
-    pub return_cxx_type: Option<String>,
     /// The parameters of the invokable
     pub parameters: Vec<ParsedFunctionParameter>,
     /// Any specifiers that declared on the invokable
@@ -43,17 +41,12 @@ impl ParsedQInvokable {
     }
 
     fn parse(method: &ImplItemFn, index: usize) -> Result<Self> {
-        // Parse any return_cxx_type in the qproperty macro
+        // Parse any C++ specifiers
+        let mut specifiers = HashSet::new();
         let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
             &method.attrs[index],
             AttributeDefault::Some(|span| LitStr::new("", span)),
         )?;
-        let return_cxx_type = attrs_map
-            .get(&quote::format_ident!("return_cxx_type"))
-            .map(|lit_str| lit_str.value());
-
-        // Parse any C++ specifiers
-        let mut specifiers = HashSet::new();
         if attrs_map.contains_key(&quote::format_ident!("cxx_final")) {
             specifiers.insert(ParsedQInvokableSpecifiers::Final);
         }
@@ -77,7 +70,6 @@ impl ParsedQInvokable {
             method,
             mutable,
             parameters,
-            return_cxx_type,
             specifiers,
         })
     }

@@ -195,7 +195,7 @@ mod tests {
             #[cxx_qt::bridge(a = "b", namespace = "my::namespace")]
             #[cxx_qt::bridge(a = "b", namespace = "my::namespace", namespace = "my::namespace")]
             #[cxx_qt::bridge()]
-            #[qinvokable(cxx_override, return_cxx_type = "T")]
+            #[qinvokable(cxx_override)]
             mod module;
         };
 
@@ -256,8 +256,7 @@ mod tests {
             AttributeDefault::Some(|span| LitStr::new("", span)),
         )
         .unwrap();
-        assert_eq!(result.len(), 2);
+        assert_eq!(result.len(), 1);
         assert!(result.contains_key(&format_ident!("cxx_override")));
-        assert!(result.contains_key(&format_ident!("return_cxx_type")));
     }
 }

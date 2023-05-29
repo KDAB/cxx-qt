@@ -36,7 +36,7 @@ mod ffi {
     pub struct MyData {
         #[qproperty]
         pub number: i32,
-        #[qproperty(cxx_type = "QString")]
+        #[qproperty]
         pub string: QString,
     }
 

@@ -224,14 +224,6 @@ impl ParsedQObject {
         for field in fields_to_named_fields_mut(fields)? {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
-                // Parse any cxx_type in the qproperty macro
-                let cxx_type = attribute_tokens_to_map::<Ident, LitStr>(
-                    &field.attrs[index],
-                    AttributeDefault::None,
-                )?
-                .get(&quote::format_ident!("cxx_type"))
-                .map(|lit_str| lit_str.value());
-
                 // Remove the #[qproperty] attribute
                 field.attrs.remove(index);
 
@@ -239,7 +231,6 @@ impl ParsedQObject {
                     ident: field.ident.clone().unwrap(),
                     ty: field.ty.clone(),
                     vis: field.vis.clone(),
-                    cxx_type,
                 });
             } else {
                 rust_fields.push(ParsedRustField {
@@ -334,8 +325,8 @@ pub mod tests {
                 #[qinvokable]
                 fn invokable(&self, a: f64, b: f64) {}
 
-                #[qinvokable(return_cxx_type = "f32")]
-                fn invokable_with_return_cxx_type(self: Pin<&mut Self>) -> f64 {}
+                #[qinvokable]
+                fn invokable_with_return_type(self: Pin<&mut Self>) -> f64 {}
 
                 #[qinvokable(cxx_final, cxx_override, cxx_virtual)]
                 fn invokable_with_specifiers(&self) -> f64 {}
@@ -346,17 +337,12 @@ pub mod tests {
         assert!(qobject.parse_impl_items(&item.items).is_ok());
         assert_eq!(qobject.invokables.len(), 3);
         assert_eq!(qobject.passthrough_impl_items.len(), 1);
-        assert!(qobject.invokables[0].return_cxx_type.is_none());
         assert!(!qobject.invokables[0].mutable);
         assert_eq!(qobject.invokables[0].parameters.len(), 2);
         assert_eq!(qobject.invokables[0].parameters[0].ident, "a");
         assert_eq!(qobject.invokables[0].parameters[0].ty, f64_type());
         assert_eq!(qobject.invokables[0].parameters[1].ident, "b");
         assert_eq!(qobject.invokables[0].parameters[1].ty, f64_type());
-        assert_eq!(
-            qobject.invokables[1].return_cxx_type.as_ref().unwrap(),
-            "f32"
-        );
         assert!(qobject.invokables[1].mutable);
         assert!(qobject.invokables[2]
             .specifiers
@@ -400,28 +386,19 @@ pub mod tests {
                 #[qproperty]
                 pub public_property: f64,
 
-                #[qproperty(cxx_type = "f32")]
-                property_with_cxx_type: f64,
-
                 field: f64,
             }
         };
         let properties = ParsedQObject::from_struct(&item, 0).unwrap().properties;
-        assert_eq!(properties.len(), 3);
+        assert_eq!(properties.len(), 2);
+
         assert_eq!(properties[0].ident, "f64_property");
         assert_eq!(properties[0].ty, f64_type());
         assert!(matches!(properties[0].vis, Visibility::Inherited));
-        assert!(properties[0].cxx_type.is_none());
 
         assert_eq!(properties[1].ident, "public_property");
         assert_eq!(properties[1].ty, f64_type());
         assert!(matches!(properties[1].vis, Visibility::Public(_)));
-        assert!(properties[1].cxx_type.is_none());
-
-        assert_eq!(properties[2].ident, "property_with_cxx_type");
-        assert_eq!(properties[2].ty, f64_type());
-        assert!(matches!(properties[2].vis, Visibility::Inherited));
-        assert_eq!(properties[2].cxx_type.as_ref().unwrap(), "f32");
     }
 
     #[test]

@@ -25,7 +25,7 @@ pub fn generate_cpp_properties(
     for property in properties {
         // Cache the idents as they are used in multiple places
         let idents = QPropertyName::from(property);
-        let cxx_ty = CppType::from(&property.ty, &property.cxx_type, cxx_mappings)?;
+        let cxx_ty = CppType::from(&property.ty, cxx_mappings)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
         generated
@@ -58,13 +58,11 @@ mod tests {
                 ident: format_ident!("trivial_property"),
                 ty: parse_quote! { i32 },
                 vis: syn::Visibility::Inherited,
-                cxx_type: None,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: parse_quote! { UniquePtr<QColor> },
                 vis: syn::Visibility::Inherited,
-                cxx_type: Some("QColor".to_owned()),
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -76,7 +74,7 @@ mod tests {
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
         assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(::std::int32_t trivialProperty READ getTrivialProperty WRITE setTrivialProperty NOTIFY trivialPropertyChanged)");
-        assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(QColor opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
+        assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(::std::unique_ptr<QColor> opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
         assert_eq!(generated.methods.len(), 6);
@@ -129,15 +127,18 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
-        assert_str_eq!(header, "QColor const& getOpaqueProperty() const;");
+        assert_str_eq!(
+            header,
+            "::std::unique_ptr<QColor> const& getOpaqueProperty() const;"
+        );
         assert_str_eq!(
             source,
             indoc! {r#"
-            QColor const&
+            ::std::unique_ptr<QColor> const&
             MyObject::getOpaqueProperty() const
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                return ::rust::cxxqtlib1::cxx_qt_convert<QColor const&, ::std::unique_ptr<QColor> const&>{}(m_rustObj->getOpaqueProperty(*this));
+                return ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor> const&, ::std::unique_ptr<QColor> const&>{}(m_rustObj->getOpaqueProperty(*this));
             }
             "#}
         );
@@ -149,16 +150,16 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SLOT void setOpaqueProperty(QColor const& value);"
+            "Q_SLOT void setOpaqueProperty(::std::unique_ptr<QColor> const& value);"
         );
         assert_str_eq!(
             source,
             indoc! {r#"
             void
-            MyObject::setOpaqueProperty(QColor const& value)
+            MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
                 const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                m_rustObj->setOpaqueProperty(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, QColor const&>{}(value));
+                m_rustObj->setOpaqueProperty(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor> const&>{}(value));
             }
             "#}
         );
@@ -177,7 +178,6 @@ mod tests {
             ident: format_ident!("mapped_property"),
             ty: parse_quote! { A1 },
             vis: syn::Visibility::Inherited,
-            cxx_type: None,
         }];
         let qobject_idents = create_qobjectname();
 

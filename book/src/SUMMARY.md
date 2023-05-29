@@ -27,7 +27,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Bridge](./concepts/bridge.md)
     - [Qt](./concepts/qt.md)
     - [Types](./concepts/types.md)
-    - [Type Conversions](./concepts/type-conversions.md)
     - [Build Systems](./concepts/build_systems.md)
     - [Threading](./concepts/threading.md)
     - [Nested Objects](./concepts/nested_objects.md)

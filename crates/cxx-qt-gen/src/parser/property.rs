@@ -23,6 +23,4 @@ pub struct ParsedQProperty {
     pub ty: Type,
     /// The [syn::Visibility] of the property
     pub vis: Visibility,
-    /// The name of the C++ type if one has been specified
-    pub cxx_type: Option<String>,
 }

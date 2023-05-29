@@ -32,7 +32,7 @@ pub fn generate_cpp_signals(
         let mut parameter_values_connection = vec![];
 
         for parameter in &signal.parameters {
-            let cxx_ty = CppType::from(&parameter.ty, &parameter.cxx_type, cxx_mappings)?;
+            let cxx_ty = CppType::from(&parameter.ty, cxx_mappings)?;
             let ident_str = parameter.ident.to_string();
             parameter_types_cpp.push(format!(
                 "{cxx_ty} {ident}",
@@ -153,12 +153,10 @@ mod tests {
                 ParsedFunctionParameter {
                     ident: format_ident!("trivial"),
                     ty: parse_quote! { i32 },
-                    cxx_type: None,
                 },
                 ParsedFunctionParameter {
                     ident: format_ident!("opaque"),
                     ty: parse_quote! { UniquePtr<QColor> },
-                    cxx_type: Some("QColor".to_owned()),
                 },
             ],
         }];
@@ -175,7 +173,7 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "Q_SIGNAL void dataChanged(::std::int32_t trivial, QColor opaque);"
+            "Q_SIGNAL void dataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque);"
         );
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
@@ -193,7 +191,7 @@ mod tests {
             void
             MyObject::emitDataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)
             {
-                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<QColor, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
+                Q_EMIT dataChanged(::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
             }
             "#}
         );
@@ -216,9 +214,9 @@ mod tests {
                 return ::QObject::connect(this,
                         &MyObject::dataChanged,
                         this,
-                        [&, func = ::std::move(func)](::std::int32_t trivial, QColor opaque) {
+                        [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
                           const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-                          func(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, QColor>{}(::std::move(opaque)));
+                          func(*this, ::rust::cxxqtlib1::cxx_qt_convert<::std::int32_t, ::std::int32_t>{}(::std::move(trivial)), ::rust::cxxqtlib1::cxx_qt_convert<::std::unique_ptr<QColor>, ::std::unique_ptr<QColor>>{}(::std::move(opaque)));
                         }, type);
             }
             "#}
@@ -234,7 +232,6 @@ mod tests {
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
                 ty: parse_quote! { A1 },
-                cxx_type: None,
             }],
         }];
         let qobject_idents = create_qobjectname();
