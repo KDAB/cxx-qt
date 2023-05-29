@@ -11,6 +11,7 @@ use crate::{
             types::CppType,
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
+        utils::cpp::syn_type_to_cpp_return_type,
     },
     parser::{
         cxxqtdata::ParsedCxxMappings,
@@ -18,7 +19,7 @@ use crate::{
     },
 };
 use indoc::formatdoc;
-use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result, ReturnType};
+use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 
 pub fn generate_cpp_invokables(
     invokables: &Vec<ParsedQInvokable>,
@@ -30,11 +31,8 @@ pub fn generate_cpp_invokables(
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
-        let return_cxx_ty = if let ReturnType::Type(_, ty) = &invokable.method.sig.output {
-            Some(CppType::from(ty, cxx_mappings)?)
-        } else {
-            None
-        };
+        let return_cxx_ty =
+            syn_type_to_cpp_return_type(&invokable.method.sig.output, cxx_mappings)?;
 
         let parameters: Vec<CppNamedType> = invokable
             .method
@@ -92,7 +90,7 @@ pub fn generate_cpp_invokables(
             header: format!(
                 "Q_INVOKABLE {is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
                 return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                    return_cxx_ty.as_cxx_ty()
+                    return_cxx_ty
                 } else {
                     "void"
                 },
@@ -124,7 +122,7 @@ pub fn generate_cpp_invokables(
                     }}
                     "#,
                 return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                    return_cxx_ty.as_cxx_ty()
+                    return_cxx_ty
                 } else {
                     "void"
                 },
@@ -150,7 +148,7 @@ pub fn generate_cpp_invokables(
         generated.private_methods.push(CppFragment::Header(format!(
             "{return_cxx_ty} {ident}({parameter_types}){is_const} noexcept;",
             return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                return_cxx_ty.as_cxx_ty()
+                return_cxx_ty
             } else {
                 "void"
             },

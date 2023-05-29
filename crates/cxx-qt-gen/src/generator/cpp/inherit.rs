@@ -5,13 +5,14 @@
 use indoc::formatdoc;
 
 use crate::{
-    generator::cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+    generator::{
+        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+        utils::cpp::syn_type_to_cpp_return_type,
+    },
     parser::{cxxqtdata::ParsedCxxMappings, inherit::ParsedInheritedMethod},
 };
 
-use syn::{Result, ReturnType};
-
-use super::types::CppType;
+use syn::Result;
 
 pub fn generate(
     inherited_methods: &[ParsedInheritedMethod],
@@ -21,12 +22,7 @@ pub fn generate(
     let mut result = GeneratedCppQObjectBlocks::default();
 
     for method in inherited_methods {
-        let return_type = if let ReturnType::Type(_, ty) = &method.method.sig.output {
-            CppType::from(ty, cxx_mappings)?.as_cxx_ty().to_owned()
-        } else {
-            "void".to_owned()
-        };
-
+        let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, cxx_mappings)?;
         let base_class = base_class.as_deref().unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {
@@ -39,7 +35,7 @@ pub fn generate(
         mutability = if method.mutable { "" } else { " const" },
         func_ident = method.ident.cpp,
         wrapper_ident = method.wrapper_ident(),
-        return_type = return_type,
+        return_type = return_type.unwrap_or_else(|| "void".to_string()),
         base_class = base_class
         }));
     }
