@@ -27,9 +27,7 @@ pub fn generate_cpp_signals(
     for signal in signals {
         // Generate the parameters
         let mut parameter_types_cpp = vec![];
-        let mut parameter_types_rust = vec![];
         let mut parameter_values_emitter = vec![];
-        let mut parameter_values_connection = vec![];
 
         for parameter in &signal.parameters {
             let cxx_ty = CppType::from(&parameter.ty, cxx_mappings)?;
@@ -39,19 +37,7 @@ pub fn generate_cpp_signals(
                 ident = parameter.ident,
                 cxx_ty = cxx_ty.as_cxx_ty(),
             ));
-            parameter_types_rust.push(format!(
-                "{rust_ty} {ident}",
-                ident = parameter.ident,
-                rust_ty = cxx_ty.as_rust_ty(),
-            ));
-            parameter_values_emitter.push(format!(
-                "::std::move({ident})",
-                ident = ident_str,
-            ));
-            parameter_values_connection.push(format!(
-                "::std::move({ident})",
-                ident = ident_str,
-            ));
+            parameter_values_emitter.push(format!("::std::move({ident})", ident = ident_str,));
         }
 
         // Prepare the idents
@@ -74,7 +60,7 @@ pub fn generate_cpp_signals(
             header: format!(
                 "void {ident}({parameters});",
                 ident = emit_ident,
-                parameters = parameter_types_rust.join(", "),
+                parameters = parameter_types_cpp.join(", "),
             ),
             source: formatdoc! {
                 r#"
@@ -85,7 +71,7 @@ pub fn generate_cpp_signals(
                 }}
                 "#,
                 ident = signal_ident,
-                parameters = parameter_types_rust.join(", "),
+                parameters = parameter_types_cpp.join(", "),
                 parameter_values = parameter_values_emitter.join(", "),
                 emit_ident = emit_ident,
                 qobject_ident = qobject_ident,
@@ -93,6 +79,8 @@ pub fn generate_cpp_signals(
         });
 
         // Generate connection
+        let mut parameter_types_rust = parameter_types_cpp.clone();
+        let mut parameter_values_connection = parameter_values_emitter.clone();
         parameter_types_rust.insert(0, format!("{qobject_ident}&"));
         parameter_values_connection.insert(0, "*this".to_owned());
 

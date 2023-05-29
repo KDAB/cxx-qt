@@ -20,11 +20,6 @@ impl CppType {
         &self.ty
     }
 
-    /// Retrieve the Rust type in C++ form
-    pub fn as_rust_ty(&self) -> &str {
-        &self.ty
-    }
-
     /// Construct a [CppType] from a given [syn::Type] and [ParsedCxxMappings].
     pub fn from(ty: &Type, cxx_mapping: &ParsedCxxMappings) -> Result<CppType> {
         Ok(CppType {
@@ -267,7 +262,6 @@ mod tests {
         let ty = parse_quote! { UniquePtr<QColor> };
         let cxx_ty = CppType::from(&ty, &ParsedCxxMappings::default()).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "::std::unique_ptr<QColor>");
-        assert_eq!(cxx_ty.as_rust_ty(), "::std::unique_ptr<QColor>");
     }
 
     #[test]
@@ -279,7 +273,6 @@ mod tests {
             .insert("A".to_owned(), "A1".to_owned());
         let cxx_ty = CppType::from(&ty, &cxx_mappings).unwrap();
         assert_eq!(cxx_ty.as_cxx_ty(), "A1");
-        assert_eq!(cxx_ty.as_rust_ty(), "A1");
     }
 
     #[test]
