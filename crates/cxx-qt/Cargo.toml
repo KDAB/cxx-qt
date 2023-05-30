@@ -20,3 +20,7 @@ categories = ["api-bindings", "gui"]
 [dependencies]
 cxx.workspace = true
 cxx-qt-macro.workspace = true
+
+[dev-dependencies]
+cxx.workspace = true
+cxx-qt-lib.workspace = true
