@@ -28,7 +28,6 @@ class MyObject : public QStringListModel
                setPropertyName NOTIFY propertyNameChanged)
 
 public:
-  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
@@ -44,6 +43,7 @@ public:
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
                                          ::Qt::ConnectionType type);
+  explicit MyObject(QObject* parent = nullptr);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
@@ -64,7 +64,6 @@ class SecondObject : public QObject
                setPropertyName NOTIFY propertyNameChanged)
 
 public:
-  explicit SecondObject(QObject* parent = nullptr);
   ~SecondObject();
   SecondObjectRust const& unsafeRust() const;
   SecondObjectRust& unsafeRustMut();
@@ -80,6 +79,7 @@ public:
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(SecondObject&)> func,
                                          ::Qt::ConnectionType type);
+  explicit SecondObject(QObject* parent = nullptr);
 
 private:
   ::rust::Box<SecondObjectRust> m_rustObj;

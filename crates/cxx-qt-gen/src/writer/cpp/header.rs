@@ -73,12 +73,12 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
               {metaobjects}
 
             public:
-              explicit {ident}(QObject* parent = nullptr);
               ~{ident}();
               {rust_ident} const& unsafeRust() const;
               {rust_ident}& unsafeRustMut();
 
-            {methods}
+            {public_methods}
+            {private_methods}
             private:
               {members}
             }};
@@ -94,7 +94,8 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         rust_ident = qobject.rust_ident,
         base_class = qobject.base_class,
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
-        methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+        public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+        private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         members = {
             let mut members = vec![
                 format!("::rust::Box<{rust_ident}> m_rustObj;", rust_ident = qobject.rust_ident),
@@ -106,7 +107,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
                 ]);
             }
 
-            members.extend(qobject.blocks.members.iter().filter_map(pair_as_header).collect::<Vec<String>>());
+            members.extend(qobject.blocks.members.iter().cloned());
             members.join("\n  ")
         },
         metatype = if generated.namespace.is_empty() {

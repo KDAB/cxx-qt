@@ -25,7 +25,6 @@ class MyObject : public QObject
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
 
 public:
-  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
@@ -43,6 +42,7 @@ public:
   ::QMetaObject::Connection trivialChangedConnect(
     ::rust::Fn<void(MyObject&)> func,
     ::Qt::ConnectionType type);
+  explicit MyObject(QObject* parent = nullptr);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

@@ -21,7 +21,6 @@ class MyObject : public QObject
   Q_OBJECT
 
 public:
-  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
@@ -49,6 +48,7 @@ public:
                     QPoint third,
                     QPoint const& fourth)> func,
     ::Qt::ConnectionType type);
+  explicit MyObject(QObject* parent = nullptr);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

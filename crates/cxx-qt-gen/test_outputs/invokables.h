@@ -21,7 +21,6 @@ class MyObject : public QObject
   Q_OBJECT
 
 public:
-  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
@@ -38,6 +37,11 @@ public:
   Q_INVOKABLE void invokableOverride() const override;
   Q_INVOKABLE virtual void invokableVirtual() const;
   MyObjectCxxQtThread qtThread() const;
+  explicit MyObject(::std::int32_t arg0, QObject* arg1);
+
+private:
+  explicit MyObject(
+    cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

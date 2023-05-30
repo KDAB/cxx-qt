@@ -24,12 +24,6 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         formatdoc! { r#"
             {namespace_start}
 
-            {ident}::{ident}(QObject* parent)
-              : {base_class}(parent)
-              {members}
-            {{
-            }}
-
             {ident}::~{ident}()
             {{
             {deconstructors}
@@ -53,23 +47,8 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
-        base_class = qobject.base_class,
         rust_ident = qobject.rust_ident,
-        methods = qobject.blocks.methods.iter().filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
-        members = {
-            let mut members = vec![
-                format!(", m_rustObj({namespace_internals}::createRs())", namespace_internals = qobject.namespace_internals),
-            ];
-
-            if qobject.locking {
-                members.extend(vec![
-                    ", m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string(),
-                ]);
-            }
-
-            members.extend(qobject.blocks.members.iter().filter_map(pair_as_source).collect::<Vec<String>>());
-            members.join("\n  ")
-        },
+        methods = qobject.blocks.methods.iter().chain(qobject.blocks.private_methods.iter()).filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
         deconstructors = qobject.blocks.deconstructors.join("\n  "),
         }
   }).collect::<Vec<String>>()

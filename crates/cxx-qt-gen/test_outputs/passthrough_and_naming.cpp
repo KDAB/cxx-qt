@@ -2,13 +2,6 @@
 
 namespace cxx_qt::multi_object {
 
-MyObject::MyObject(QObject* parent)
-  : QStringListModel(parent)
-  , m_rustObj(cxx_qt::multi_object::cxx_qt_my_object::createRs())
-  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-{
-}
-
 MyObject::~MyObject() {}
 
 MyObjectRust const&
@@ -74,15 +67,16 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
     type);
 }
 
+MyObject::MyObject(QObject* parent)
+  : QStringListModel(parent)
+  , m_rustObj(cxx_qt::multi_object::cxx_qt_my_object::createRs())
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+{
+}
+
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object {
-
-SecondObject::SecondObject(QObject* parent)
-  : QObject(parent)
-  , m_rustObj(cxx_qt::multi_object::cxx_qt_second_object::createRs())
-{
-}
 
 SecondObject::~SecondObject() {}
 
@@ -141,6 +135,13 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
     this,
     [&, func = ::std::move(func)]() { func(*this); },
     type);
+}
+
+SecondObject::SecondObject(QObject* parent)
+  : QObject(parent)
+  , m_rustObj(cxx_qt::multi_object::cxx_qt_second_object::createRs())
+
+{
 }
 
 } // namespace cxx_qt::multi_object

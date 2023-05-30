@@ -10,7 +10,7 @@ use crate::generator::{
 use indoc::formatdoc;
 use syn::Result;
 
-pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlocks> {
+pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     let ident = &qobject_idents.cpp_class.cpp;
@@ -27,10 +27,9 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlock
         static_assert(sizeof({cxx_qt_thread_ident}) == sizeof(::std::size_t[4]), "unexpected size");
         "#
     }));
-    result.members.push(CppFragment::Pair {
-        header: format!("::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;"),
-        source: format!(", m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))"),
-    });
+    result.members.push(format!(
+        "::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;"
+    ));
     result.methods.push(CppFragment::Pair {
         header: format!("{cxx_qt_thread_ident} qtThread() const;"),
         source: formatdoc! {
@@ -50,7 +49,9 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlock
         "#
     });
 
-    Ok(result)
+    let member_initializer = format!("m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))");
+
+    Ok((member_initializer, result))
 }
 
 #[cfg(test)]
@@ -65,7 +66,7 @@ mod tests {
     fn test_generate_cpp_threading() {
         let qobject_idents = create_qobjectname();
 
-        let generated = generate(&qobject_idents).unwrap();
+        let (initializer, generated) = generate(&qobject_idents).unwrap();
 
         // forward declares
         assert_eq!(generated.forward_declares.len(), 1);
@@ -77,19 +78,13 @@ mod tests {
 
         // members
         assert_eq!(generated.members.len(), 1);
-
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.members[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
         assert_str_eq!(
-            header,
+            &generated.members[0],
             "::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;"
         );
         assert_str_eq!(
-            source,
-            ", m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))"
+            initializer,
+            "m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))"
         );
 
         // methods
