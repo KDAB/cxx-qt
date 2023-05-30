@@ -143,6 +143,23 @@ mod tests {
                                 "Q_SIGNAL void toggleChanged();".to_owned(),
                             ),
                         ],
+                        private_methods: vec![CppFragment::Pair{
+                                header: "void privateMethod() const;".to_owned(),
+                                source: indoc! {r#"
+                                    void MyObject::privateMethod() const {
+                                        // private method
+                                    }
+                                    "#}.to_owned(),
+                            },
+                        CppFragment::Pair{
+                                header: "void privateMethod();".to_owned(),
+                                source: indoc! {r#"
+                                    void MyObject::privateMethod()
+                                    {
+                                        // non-const private method
+                                    }
+                                    "#}.to_owned(),
+                            }]
                     }
                 }
             ],
@@ -193,6 +210,7 @@ mod tests {
                         },
                         CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
                         ],
+                        private_methods: vec![],
                     }
                 },
                 GeneratedCppQObject {
@@ -233,6 +251,15 @@ mod tests {
                         },
                         CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
                         ],
+                        private_methods: vec![
+                            CppFragment::Pair{
+                                header: "void privateMethod() const;".to_owned(),
+                                source: indoc! {r#"
+                                    void SecondObject::privateMethod() const {
+                                        // private method
+                                    }
+                                    "#}.to_owned(),
+                            }]
                     },
                 }
             ]
@@ -275,7 +302,6 @@ mod tests {
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
         public:
-          explicit MyObject(QObject* parent = nullptr);
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
@@ -289,6 +315,10 @@ mod tests {
           Q_SLOT void setToggle(bool toggle);
           Q_SIGNAL void countChanged();
           Q_SIGNAL void toggleChanged();
+
+        private:
+          void privateMethod() const;
+          void privateMethod();
 
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
@@ -335,7 +365,6 @@ mod tests {
           Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)
 
         public:
-          explicit FirstObject(QObject* parent = nullptr);
           ~FirstObject();
           FirstObjectRust const& unsafeRust() const;
           FirstObjectRust& unsafeRustMut();
@@ -344,6 +373,7 @@ mod tests {
           int count() const;
           Q_SLOT void setCount(int count);
           Q_SIGNAL void countChanged();
+
 
         private:
           ::rust::Box<FirstObjectRust> m_rustObj;
@@ -362,7 +392,6 @@ mod tests {
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
 
         public:
-          explicit SecondObject(QObject* parent = nullptr);
           ~SecondObject();
           SecondObjectRust const& unsafeRust() const;
           SecondObjectRust& unsafeRustMut();
@@ -371,6 +400,9 @@ mod tests {
           int count() const;
           Q_SLOT void setCount(int count);
           Q_SIGNAL void countChanged();
+
+        private:
+          void privateMethod() const;
 
         private:
           ::rust::Box<SecondObjectRust> m_rustObj;
@@ -412,7 +444,6 @@ mod tests {
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
         public:
-          explicit MyObject(QObject* parent = nullptr);
           ~MyObject();
           MyObjectRust const& unsafeRust() const;
           MyObjectRust& unsafeRustMut();
@@ -426,6 +457,10 @@ mod tests {
           Q_SLOT void setToggle(bool toggle);
           Q_SIGNAL void countChanged();
           Q_SIGNAL void toggleChanged();
+
+        private:
+          void privateMethod() const;
+          void privateMethod();
 
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
@@ -446,13 +481,6 @@ mod tests {
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
         namespace cxx_qt::my_object {
-
-        MyObject::MyObject(QObject* parent)
-          : QStringListModel(parent)
-          , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-        {
-        }
 
         MyObject::~MyObject()
         {
@@ -507,6 +535,15 @@ mod tests {
           // setter
         }
 
+        void MyObject::privateMethod() const {
+            // private method
+        }
+
+        void MyObject::privateMethod()
+        {
+            // non-const private method
+        }
+
         } // namespace cxx_qt::my_object
 
         "#}
@@ -518,13 +555,6 @@ mod tests {
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
         namespace cxx_qt {
-
-        FirstObject::FirstObject(QObject* parent)
-          : QStringListModel(parent)
-          , m_rustObj(cxx_qt::cxx_qt_first_object::createRs())
-          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-        {
-        }
 
         FirstObject::~FirstObject()
         {
@@ -559,12 +589,6 @@ mod tests {
 
         namespace cxx_qt {
 
-        SecondObject::SecondObject(QObject* parent)
-          : QStringListModel(parent)
-          , m_rustObj(cxx_qt::cxx_qt_second_object::createRs())
-        {
-        }
-
         SecondObject::~SecondObject()
         {
 
@@ -594,24 +618,21 @@ mod tests {
           // setter
         }
 
+        void SecondObject::privateMethod() const {
+            // private method
+        }
+
         } // namespace cxx_qt
 
         "#}
     }
 
-    /// Helper for the expected header with no namespace
+    /// Helper for the expected source with no namespace
     pub fn expected_source_no_namespace() -> &'static str {
         indoc! {r#"
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
 
-
-        MyObject::MyObject(QObject* parent)
-          : QStringListModel(parent)
-          , m_rustObj(cxx_qt_my_object::createRs())
-          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-        {
-        }
 
         MyObject::~MyObject()
         {
@@ -664,6 +685,15 @@ mod tests {
         MyObject::setToggle(bool toggle) const
         {
           // setter
+        }
+
+        void MyObject::privateMethod() const {
+            // private method
+        }
+
+        void MyObject::privateMethod()
+        {
+            // non-const private method
         }
 
 

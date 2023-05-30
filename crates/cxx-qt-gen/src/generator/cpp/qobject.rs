@@ -5,7 +5,7 @@
 
 use crate::generator::{
     cpp::{
-        fragment::CppFragment, inherit, invokable::generate_cpp_invokables,
+        constructor, fragment::CppFragment, inherit, invokable::generate_cpp_invokables,
         property::generate_cpp_properties, signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -21,8 +21,10 @@ pub struct GeneratedCppQObjectBlocks {
     pub metaobjects: Vec<String>,
     /// List of public methods for the QObject
     pub methods: Vec<CppFragment>,
+    /// List of private methods for the QObject
+    pub private_methods: Vec<CppFragment>,
     /// List of members for the QObject
-    pub members: Vec<CppFragment>,
+    pub members: Vec<String>,
     /// List of deconstructor source
     pub deconstructors: Vec<String>,
 }
@@ -32,6 +34,7 @@ impl GeneratedCppQObjectBlocks {
         self.forward_declares.append(&mut other.forward_declares);
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
+        self.private_methods.append(&mut other.private_methods);
         self.members.append(&mut other.members);
         self.deconstructors.append(&mut other.deconstructors);
     }
@@ -128,12 +131,23 @@ impl GeneratedCppQObject {
             cxx_mappings,
         )?);
 
+        let mut member_initializers = if qobject.locking {
+            vec!["m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string()]
+        } else {
+            vec![]
+        };
         // If this type has threading enabled then add generation
         if qobject.threading {
-            generated
-                .blocks
-                .append(&mut threading::generate(&qobject_idents)?);
+            let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
+            generated.blocks.append(&mut blocks);
+            member_initializers.push(initializer);
         }
+        generated.blocks.append(&mut constructor::generate(
+            &generated,
+            &qobject.constructors,
+            &member_initializers,
+            cxx_mappings,
+        )?);
 
         Ok(generated)
     }

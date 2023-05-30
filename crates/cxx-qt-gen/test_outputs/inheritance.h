@@ -17,7 +17,6 @@ class MyObject : public QAbstractItemModel
   Q_OBJECT
 
 public:
-  explicit MyObject(QObject* parent = nullptr);
   ~MyObject();
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
@@ -36,6 +35,7 @@ public:
   {
     return QAbstractItemModel::fetchMore(args...);
   }
+  explicit MyObject(QObject* parent = nullptr);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

@@ -2,13 +2,6 @@
 
 namespace cxx_qt::my_object {
 
-MyObject::MyObject(QObject* parent)
-  : QObject(parent)
-  , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
-  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
-{
-}
-
 MyObject::~MyObject() {}
 
 MyObjectRust const&
@@ -79,6 +72,13 @@ MyObject::trivialChangedConnect(::rust::Fn<void(MyObject&)> func,
       func(*this);
     },
     type);
+}
+
+MyObject::MyObject(QObject* parent)
+  : QObject(parent)
+  , m_rustObj(cxx_qt::my_object::cxx_qt_my_object::createRs())
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+{
 }
 
 } // namespace cxx_qt::my_object
