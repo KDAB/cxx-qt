@@ -34,7 +34,7 @@ pub fn generate(
                     /// For now we use a type alias in C++ then use it like a normal type here
                     /// <https://github.com/dtolnay/cxx/issues/683>
                     type #cxx_qt_thread_ident;
-                    include!("cxx-qt-lib/cxxqt_thread.h");
+                    include!("cxx-qt-common/cxxqt_thread.h");
 
                     /// Create an instance of a CxxQtThread
                     ///
@@ -142,7 +142,7 @@ mod tests {
                     /// For now we use a type alias in C++ then use it like a normal type here
                     /// <https://github.com/dtolnay/cxx/issues/683>
                     type MyObjectCxxQtThread;
-                    include!("cxx-qt-lib/cxxqt_thread.h");
+                    include!("cxx-qt-common/cxxqt_thread.h");
 
                     /// Create an instance of a CxxQtThread
                     ///

@@ -16,7 +16,21 @@ pub use parser::{qobject::QmlElementMetadata, Parser};
 pub use syntax::{parse_qt_file, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
+use std::{fs::File, io::Write, path::Path};
 pub use syn::{Error, Result};
+
+/// Write the cxx-qt-gen headers to the specified directory.
+pub fn write_headers(directory: impl AsRef<Path>) {
+    let directory = directory.as_ref();
+    std::fs::create_dir_all(directory).expect("Could not create cxx-qt-gen header directory");
+    let (file_contents, file_name) = (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h");
+    // Note that we do not need rerun-if-changed for these files
+    // as include_str causes a rerun when the header changes
+    // and the files are always written to the target.
+    let h_path = format!("{}/{file_name}", directory.display());
+    let mut header = File::create(h_path).expect("Could not create cxx-qt-gen header");
+    write!(header, "{file_contents}").expect("Could not write cxx-qt-gen header");
+}
 
 #[cfg(test)]
 mod tests {

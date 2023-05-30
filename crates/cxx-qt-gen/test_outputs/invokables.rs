@@ -89,7 +89,7 @@ mod ffi {
         #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
         #[doc = r" <https://github.com/dtolnay/cxx/issues/683>"]
         type MyObjectCxxQtThread;
-        include!("cxx-qt-lib/cxxqt_thread.h");
+        include!("cxx-qt-common/cxxqt_thread.h");
         #[doc = r" Create an instance of a CxxQtThread"]
         #[doc = r""]
         #[doc = r" This allows for queueing closures onto the Qt event loop from a background thread."]

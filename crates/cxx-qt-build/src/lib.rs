@@ -402,7 +402,8 @@ impl CxxQtBuilder {
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries();
 
-        // Write cxx-qt-lib and cxx headers
+        // Write cxx-qt-gen, cxx-qt-lib and cxx headers
+        cxx_qt_gen::write_headers(format!("{header_root}/cxx-qt-common"));
         cxx_qt_lib_headers::write_headers(format!("{header_root}/cxx-qt-lib"));
         std::fs::create_dir_all(format!("{header_root}/rust"))
             .expect("Could not create cxx header directory");
