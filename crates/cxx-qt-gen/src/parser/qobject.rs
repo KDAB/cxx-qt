@@ -3,16 +3,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
-    fields::fields_to_named_fields_mut,
-};
 use crate::{
     parser::{
-        inherit::ParsedInheritedMethod, invokable::ParsedQInvokable, property::ParsedQProperty,
-        signals::ParsedSignal,
+        constructor::Constructor, inherit::ParsedInheritedMethod, invokable::ParsedQInvokable,
+        property::ParsedQProperty, signals::ParsedSignal,
     },
-    syntax::path::path_compare_str,
+    syntax::{
+        attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
+        fields::fields_to_named_fields_mut,
+        path::path_compare_str,
+    },
 };
 use syn::{
     spanned::Spanned, Error, Fields, Ident, ImplItem, Item, ItemImpl, ItemStruct, LitStr, Result,
@@ -54,6 +54,8 @@ pub struct ParsedQObject {
     ///
     /// Note that they will only be visible on the Rust side
     pub passthrough_impl_items: Vec<ImplItem>,
+    /// Any user-defined constructors
+    pub constructors: Vec<Constructor>,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
@@ -114,6 +116,7 @@ impl ParsedQObject {
             invokables: vec![],
             inherited_methods: vec![],
             passthrough_impl_items: vec![],
+            constructors: vec![],
             properties,
             qml_metadata,
             locking: true,
@@ -246,11 +249,14 @@ impl ParsedQObject {
 
             self.threading = true;
             Ok(())
+        } else if path_compare_str(trait_path, &["cxx_qt", "Constructor"]) {
+            self.constructors.push(Constructor::parse(imp)?);
+            Ok(())
         } else {
             // TODO: Give suggestions on which trait might have been meant
             Err(Error::new_spanned(
                 trait_path,
-                "Unsupported trait!\nCxxQt currently only supports: cxx_qt::Threading\nNote that the trait must always be fully-qualified."
+                "Unsupported trait!\nCXX-Qt currently only supports:\n- cxx_qt::Threading\n- cxx_qt::Constructor\n- cxx_qt::Locking\nNote that the trait must always be fully-qualified."
             ))
         }
     }
