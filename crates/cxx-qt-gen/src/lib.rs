@@ -139,9 +139,9 @@ mod tests {
         let rust = sanitize_code(format_rs_source(&write_rust(&generated_rust).to_string()));
 
         if !update_expected(test_name, &rust, &header, &source) {
-            assert_str_eq!(header, sanitize_code(expected_cpp_header.to_owned()));
-            assert_str_eq!(source, sanitize_code(expected_cpp_source.to_owned()));
-            assert_str_eq!(rust, sanitize_code(expected_rust_output.to_owned()));
+            assert_str_eq!(sanitize_code(expected_cpp_header.to_owned()), header);
+            assert_str_eq!(sanitize_code(expected_cpp_source.to_owned()), source);
+            assert_str_eq!(sanitize_code(expected_rust_output.to_owned()), rust);
         }
     }
 
