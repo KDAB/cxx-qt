@@ -19,6 +19,7 @@ pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
+    lock_guard: Option<&str>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -28,12 +29,18 @@ pub fn generate_cpp_properties(
         let cxx_ty = CppType::from(&property.ty, cxx_mappings)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .methods
-            .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+        generated.methods.push(getter::generate(
+            &idents,
+            &qobject_ident,
+            &cxx_ty,
+            lock_guard,
+        ));
+        generated.methods.push(setter::generate(
+            &idents,
+            &qobject_ident,
+            &cxx_ty,
+            lock_guard,
+        ));
         generated.methods.push(signal::generate(&idents));
     }
 
@@ -67,9 +74,13 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &ParsedCxxMappings::default())
-                .unwrap();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &ParsedCxxMappings::default(),
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -90,7 +101,7 @@ mod tests {
             ::std::int32_t const&
             MyObject::getTrivialProperty() const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->getTrivialProperty(*this);
             }
             "#}
@@ -111,7 +122,7 @@ mod tests {
                 void
                 MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
-                    const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                    // ::std::lock_guard
                     m_rustObj->setTrivialProperty(*this, value);
                 }
                 "#}
@@ -137,7 +148,7 @@ mod tests {
             ::std::unique_ptr<QColor> const&
             MyObject::getOpaqueProperty() const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->getOpaqueProperty(*this);
             }
             "#}
@@ -158,7 +169,7 @@ mod tests {
             void
             MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 m_rustObj->setOpaqueProperty(*this, value);
             }
             "#}
@@ -186,8 +197,13 @@ mod tests {
             .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
 
-        let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &cxx_mapping).unwrap();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &cxx_mapping,
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 1);
@@ -207,7 +223,7 @@ mod tests {
             A1 const&
             MyObject::getMappedProperty() const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->getMappedProperty(*this);
             }
             "#}
@@ -225,7 +241,7 @@ mod tests {
                 void
                 MyObject::setMappedProperty(A1 const& value)
                 {
-                    const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                    // ::std::lock_guard
                     m_rustObj->setMappedProperty(*this, value);
                 }
                 "#}

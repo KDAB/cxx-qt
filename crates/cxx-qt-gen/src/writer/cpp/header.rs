@@ -104,8 +104,13 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         members = {
             let mut members = vec![
                 format!("::rust::Box<{rust_ident}> m_rustObj;", rust_ident = qobject.rust_ident),
-                "::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;".to_string(),
             ];
+
+            if qobject.locking {
+                members.extend(vec![
+                    "::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;".to_string(),
+                ]);
+            }
 
             members.extend(qobject.blocks.members.iter().filter_map(pair_as_header).collect::<Vec<String>>());
             members.join("\n  ")

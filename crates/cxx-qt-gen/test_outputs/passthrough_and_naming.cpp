@@ -80,7 +80,6 @@ namespace cxx_qt::multi_object {
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
   , m_rustObj(cxx_qt::multi_object::cxx_qt_second_object::createRs())
-  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
 {
 }
 
@@ -101,21 +100,21 @@ SecondObject::unsafeRustMut()
 ::std::int32_t const&
 SecondObject::getPropertyName() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+
   return m_rustObj->getPropertyName(*this);
 }
 
 void
 SecondObject::setPropertyName(::std::int32_t const& value)
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+
   m_rustObj->setPropertyName(*this, value);
 }
 
 void
 SecondObject::invokableName()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+
   m_rustObj->invokableNameWrapper(*this);
 }
 
@@ -133,10 +132,7 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
     this,
     &SecondObject::ready,
     this,
-    [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-      func(*this);
-    },
+    [&, func = ::std::move(func)]() { func(*this); },
     type);
 }
 

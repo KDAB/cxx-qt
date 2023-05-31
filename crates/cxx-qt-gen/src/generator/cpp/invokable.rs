@@ -9,7 +9,6 @@ use crate::{
             fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
             types::CppType,
-            RUST_OBJ_MUTEX_LOCK_GUARD,
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
     },
@@ -25,6 +24,7 @@ pub fn generate_cpp_invokables(
     invokables: &Vec<ParsedQInvokable>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
+    lock_guard: Option<&str>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -132,7 +132,7 @@ pub fn generate_cpp_invokables(
                 is_const = is_const,
                 parameter_types = parameter_types,
                 qobject_ident = qobject_ident,
-                rust_obj_guard = RUST_OBJ_MUTEX_LOCK_GUARD,
+                rust_obj_guard = lock_guard.unwrap_or_default(),
                 body = if return_cxx_ty.is_some() {
                     format!("return {body}", body = body)
                 } else {
@@ -202,9 +202,13 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_invokables(&invokables, &qobject_idents, &ParsedCxxMappings::default())
-                .unwrap();
+        let generated = generate_cpp_invokables(
+            &invokables,
+            &qobject_idents,
+            &ParsedCxxMappings::default(),
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 4);
@@ -221,7 +225,7 @@ mod tests {
             void
             MyObject::voidInvokable() const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 m_rustObj->voidInvokableWrapper(*this);
             }
             "#}
@@ -242,7 +246,7 @@ mod tests {
             ::std::int32_t
             MyObject::trivialInvokable(::std::int32_t param) const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->trivialInvokableWrapper(*this, param);
             }
             "#}
@@ -263,7 +267,7 @@ mod tests {
             ::std::unique_ptr<QColor>
             MyObject::opaqueInvokable(QColor const& param)
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->opaqueInvokableWrapper(*this, param);
             }
             "#}
@@ -284,7 +288,7 @@ mod tests {
             ::std::int32_t
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->specifiersInvokableWrapper(*this, param);
             }
             "#}
@@ -312,8 +316,13 @@ mod tests {
             .cxx_names
             .insert("B".to_owned(), "B2".to_owned());
 
-        let generated =
-            generate_cpp_invokables(&invokables, &qobject_idents, &cxx_mappings).unwrap();
+        let generated = generate_cpp_invokables(
+            &invokables,
+            &qobject_idents,
+            &cxx_mappings,
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);
@@ -330,7 +339,7 @@ mod tests {
             B2
             MyObject::trivialInvokable(A1 param) const
             {
-                const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                // ::std::lock_guard
                 return m_rustObj->trivialInvokableWrapper(*this, param);
             }
             "#}

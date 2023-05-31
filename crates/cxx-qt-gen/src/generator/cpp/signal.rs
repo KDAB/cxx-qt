@@ -5,10 +5,7 @@
 
 use crate::{
     generator::{
-        cpp::{
-            fragment::CppFragment, qobject::GeneratedCppQObjectBlocks, types::CppType,
-            RUST_OBJ_MUTEX_LOCK_GUARD,
-        },
+        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks, types::CppType},
         naming::{qobject::QObjectName, signals::QSignalName},
     },
     parser::{cxxqtdata::ParsedCxxMappings, signals::ParsedSignal},
@@ -20,6 +17,7 @@ pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
+    lock_guard: Option<&str>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -98,7 +96,7 @@ pub fn generate_cpp_signals(
                             &{qobject_ident}::{signal_ident},
                             this,
                             [&, func = ::std::move(func)]({parameters_cpp}) {{
-                              {RUST_OBJ_MUTEX_LOCK_GUARD}
+                              {rust_obj_guard}
                               func({parameter_values});
                             }}, type);
                 }}
@@ -107,6 +105,7 @@ pub fn generate_cpp_signals(
                 parameters_cpp = parameter_types_cpp.join(", "),
                 parameters_rust = parameter_types_rust.join(", "),
                 parameter_values = parameter_values_connection.join(", "),
+                rust_obj_guard = lock_guard.unwrap_or_default(),
             },
         });
     }
@@ -144,8 +143,13 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &ParsedCxxMappings::default(),
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 3);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -197,7 +201,7 @@ mod tests {
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
-                          const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                          // ::std::lock_guard
                           func(*this, ::std::move(trivial), ::std::move(opaque));
                         }, type);
             }
@@ -223,7 +227,13 @@ mod tests {
             .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_mappings).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &cxx_mappings,
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 3);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -269,7 +279,7 @@ mod tests {
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](A1 mapped) {
-                          const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                          // ::std::lock_guard
                           func(*this, ::std::move(mapped));
                         }, type);
             }
@@ -287,8 +297,13 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &ParsedCxxMappings::default(),
+            Some("// ::std::lock_guard"),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
@@ -324,7 +339,7 @@ mod tests {
                         &MyObject::baseName,
                         this,
                         [&, func = ::std::move(func)]() {
-                          const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+                          // ::std::lock_guard
                           func(*this);
                         }, type);
             }

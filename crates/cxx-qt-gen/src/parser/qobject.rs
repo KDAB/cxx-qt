@@ -64,6 +64,8 @@ pub struct ParsedQObject {
     pub fields: Vec<ParsedRustField>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
+    /// Whether locking is enabled for this QObject
+    pub locking: bool,
     /// Whether threading has been enabled for this QObject
     pub threading: bool,
     /// Items that we don't need to generate anything for CXX or C++
@@ -119,6 +121,7 @@ impl ParsedQObject {
             properties,
             fields,
             qml_metadata,
+            locking: true,
             threading: false,
             others: vec![],
         })
@@ -234,11 +237,44 @@ impl ParsedQObject {
             ));
         }
 
-        if path_compare_str(trait_path, &["cxx_qt", "Threading"]) {
+        if path_compare_str(trait_path, &["cxx_qt", "Locking"]) {
+            if imp.unsafety.is_none() {
+                return Err(Error::new_spanned(
+                    trait_path,
+                    "cxx_qt::Locking must be an unsafe impl",
+                ));
+            }
+
+            if not.is_none() {
+                return Err(Error::new_spanned(
+                    trait_path,
+                    "cxx_qt::Locking is enabled by default, it can only be negated.",
+                ));
+            }
+
+            // Check that cxx_qt::Threading is not enabled
+            if self.threading {
+                return Err(Error::new_spanned(
+                    trait_path,
+                    "cxx_qt::Locking must be enabled if cxx_qt::Threading is enabled",
+                ));
+            }
+
+            self.locking = false;
+            Ok(())
+        } else if path_compare_str(trait_path, &["cxx_qt", "Threading"]) {
             if not.is_some() {
                 return Err(Error::new_spanned(
                     trait_path,
                     "Negative impls for cxx_qt::Threading are not allowed",
+                ));
+            }
+
+            // Check that cxx_qt::Locking is not disabled
+            if !self.locking {
+                return Err(Error::new_spanned(
+                    trait_path,
+                    "cxx_qt::Locking must be enabled if cxx_qt::Threading is enabled",
                 ));
             }
 

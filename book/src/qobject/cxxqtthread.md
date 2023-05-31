@@ -21,6 +21,8 @@ First threading needs to be enabled for the [`qobject::T`](./generated-qobject.m
 {{#include ../../../examples/qml_features/rust/src/threading.rs:book_qt_thread}}
 ```
 
+Note that locking must not be disabled for the object (eg `unsafe impl cxx_qt::Locking for qobject::T`) for `cxx_qt::Threading` to be allowed.
+
 Then to access the `CxxQtThread<T>` use the `qt_thread(&self)` method on a [`qobject::T`](./generated-qobject.md).
 
 ```rust,ignore,noplayground

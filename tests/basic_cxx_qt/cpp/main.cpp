@@ -5,14 +5,33 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include <QtCore/QThread>
 #include <QtCore/QTimer>
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTest>
 
 #include "cxx-qt-gen/empty.cxxqt.h"
+#include "cxx-qt-gen/locking.cxxqt.h"
 #include "cxx-qt-gen/my_data.cxxqt.h"
 #include "cxx-qt-gen/my_object.cxxqt.h"
 #include "cxx-qt-gen/my_types.cxxqt.h"
+
+class LockingWorkerThread : public QThread
+{
+  Q_OBJECT
+
+public:
+  LockingWorkerThread(std::function<void()> lambda, QObject* parent = nullptr)
+    : QThread(parent)
+    , m_lambda(lambda)
+  {
+  }
+
+  void run() override { m_lambda(); }
+
+private:
+  std::function<void()> m_lambda;
+};
 
 class CxxQtTest : public QObject
 {
@@ -88,6 +107,54 @@ private Q_SLOTS:
     // Check that initial value of the deserialised data
     QCOMPARE(data.asJsonStr(),
              QStringLiteral("{\"number\":16,\"string\":\"Hello\"}"));
+  }
+
+  // Ensure that locking can be disabled
+  void test_locking_disabled()
+  {
+    RustLockingDisabled lockingDisabled;
+    QCOMPARE(lockingDisabled.getCounter(), 0);
+
+    QVector<LockingWorkerThread*> threads;
+    for (int i = 0; i < 10; i++) {
+      threads.push_back(new LockingWorkerThread(
+        [&lockingDisabled]() { lockingDisabled.increment(); }, this));
+    }
+
+    for (auto& thread : threads) {
+      thread->start();
+    }
+
+    for (auto& thread : threads) {
+      thread->wait();
+    }
+
+    // We should expect some increments but not all
+    QVERIFY(lockingDisabled.getCounter() > 0);
+    QVERIFY(lockingDisabled.getCounter() < 10);
+  }
+
+  // Ensure that locking works when enabled
+  void test_locking_enabled()
+  {
+    RustLockingEnabled lockingEnabled;
+    QCOMPARE(lockingEnabled.getCounter(), 0);
+
+    QVector<LockingWorkerThread*> threads;
+    for (int i = 0; i < 10; i++) {
+      threads.push_back(new LockingWorkerThread(
+        [&lockingEnabled]() { lockingEnabled.increment(); }, this));
+    }
+
+    for (auto& thread : threads) {
+      thread->start();
+    }
+
+    for (auto& thread : threads) {
+      thread->wait();
+    }
+
+    QCOMPARE(lockingEnabled.getCounter(), 10);
   }
 
   // CXX-Qt allows Rust code to queue a request

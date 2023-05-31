@@ -132,6 +132,8 @@ pub mod ffi {
         property_name: i32,
     }
 
+    unsafe impl !cxx_qt::Locking for qobject::SecondObject {}
+
     impl Default for SecondObject {
         fn default() -> Self {
             Self { property_name: 32 }

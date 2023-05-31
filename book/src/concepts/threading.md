@@ -15,6 +15,14 @@ This means that Rust code, such as invokables and properties, which are directly
 
 Note that a recursive mutex is used internally, this allows for signals to be emitted and then call slots on the same object without deadlocks.
 
+### Locking
+
+In certain scenarios it might be useful to disable locking that occurs when the context switches from C++ to Rust.
+
+To disable the generation of locking use an unsafe negation `unsafe impl !cxx_qt::Locking for qobject::T {}`.
+
+However if locking is disabled the `cxx_qt::Threading` trait can not be enabled on the object.
+
 ## Multi threading
 
 To achieve safe multi-threading on the Rust side we use an [`CxxQtThread<T>`](../qobject/cxxqtthread.md).
