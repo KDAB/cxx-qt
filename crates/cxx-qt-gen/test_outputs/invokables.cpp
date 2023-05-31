@@ -88,11 +88,15 @@ MyObject::invokableVirtual() const
   m_rustObj->invokableVirtualWrapper(*this);
 }
 
-::std::unique_ptr<MyObjectCxxQtThread>
+static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),
+              "unexpected aligment");
+static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[4]),
+              "unexpected size");
+
+MyObjectCxxQtThread
 MyObject::qtThread() const
 {
-  return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj,
-                                                 m_rustObjMutex);
+  return MyObjectCxxQtThread(m_cxxQtThreadObj, m_rustObjMutex);
 }
 
 } // namespace cxx_qt::my_object

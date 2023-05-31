@@ -4,11 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{
-    constants::SENSOR_MAXIMUM_COUNT,
-    ffi::{EnergyUsageCxxQtThread, EnergyUsageQt},
-    network::NetworkChannel,
-};
+use crate::{constants::SENSOR_MAXIMUM_COUNT, network::NetworkChannel, qobject};
+use cxx_qt::CxxQtThread;
 use cxx_qt_lib::QString;
 use std::{
     collections::HashMap,
@@ -68,7 +65,7 @@ impl SensorsWorker {
         network_rx: Receiver<NetworkChannel>,
         sensors: Arc<Mutex<Arc<SensorHashMap>>>,
         sensors_changed: Arc<AtomicBool>,
-        qt_thread: cxx::UniquePtr<EnergyUsageCxxQtThread>,
+        qt_thread: CxxQtThread<qobject::EnergyUsage>,
     ) {
         loop {
             // Wait for a valid network request
@@ -88,7 +85,9 @@ impl SensorsWorker {
                         // Queue a Signal that the sensor has been removed to Qt
                         qt_thread
                             .queue(
-                                move |qobject_energy_usage: std::pin::Pin<&mut EnergyUsageQt>| {
+                                move |qobject_energy_usage: std::pin::Pin<
+                                    &mut qobject::EnergyUsage,
+                                >| {
                                     qobject_energy_usage
                                         .sensor_removed(QString::from(&uuid.to_string()));
                                 },
@@ -120,7 +119,7 @@ impl SensorsWorker {
                                 qt_thread
                                     .queue(
                                         move |qobject_energy_usage: std::pin::Pin<
-                                            &mut EnergyUsageQt,
+                                            &mut qobject::EnergyUsage,
                                         >| {
                                             qobject_energy_usage
                                                 .sensor_changed(QString::from(&uuid.to_string()));
@@ -131,7 +130,7 @@ impl SensorsWorker {
                                 qt_thread
                                     .queue(
                                         move |qobject_energy_usage: std::pin::Pin<
-                                            &mut EnergyUsageQt,
+                                            &mut qobject::EnergyUsage,
                                         >| {
                                             qobject_energy_usage
                                                 .sensor_added(QString::from(&uuid.to_string()));

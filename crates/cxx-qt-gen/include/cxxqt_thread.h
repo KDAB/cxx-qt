@@ -43,6 +43,11 @@ public:
   {
   }
 
+  ~CxxQtThread() = default;
+  // Disable copy support for now
+  CxxQtThread(CxxQtThread<T>& other) = delete;
+  CxxQtThread(CxxQtThread<T>&& other) = default;
+
   template<typename A>
   void queue(::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
              ::rust::Box<A> arg) const
@@ -88,5 +93,26 @@ private:
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
+template<typename T>
+void
+cxxQtThreadDrop(CxxQtThread<T>& cxxQtThread)
+{
+  cxxQtThread.~CxxQtThread<T>();
+}
+
+template<typename A, typename T>
+void
+cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
+                 ::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
+                 ::rust::Box<A> arg)
+{
+  cxxQtThread.queue(::std::move(func), ::std::move(arg));
+}
+
 } // namespace cxxqtlib1
 } // namespace rust
+
+template<typename T>
+struct rust::IsRelocatable<::rust::cxxqtlib1::CxxQtThread<T>> : ::std::true_type
+{
+};
