@@ -9,8 +9,12 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
+mod cxxqtthread;
+
 pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::qobject;
+
+pub use cxxqtthread::CxxQtThread;
 
 /// This trait is automatically implemented for all types which are marked as `#[cxx_qt::qobject]`.
 /// It provides information about the type that is wrapped by the QObject, as well as the methods
@@ -49,18 +53,27 @@ pub trait Locking {
     // empty
 }
 
-/// Indicates that the object implements threading and has a method which returns a CxxQtThread
-pub trait Threading {
-    /// Specialised version of CxxQtThread, which can be moved into other threads.
-    ///
-    /// CXX doesn't support having generic types in the function yet
-    /// so we cannot have `CxxQtThread<T>` in cxx-qt-lib and then use that here
-    /// For now we use a type alias in C++ then use it like a normal type here
-    /// <https://github.com/dtolnay/cxx/issues/683>
-    type Item;
+/// Indicates that the object implements threading and has a method which returns a [CxxQtThread].
+///
+/// This trait is implemented by CxxQt automatically.
+/// To enable this for a `qobject::T`, add `impl cxx_qt::Threading for qobject::T {}` to your [`#[cxx_qt::bridge]`](bridge).
+pub trait Threading: Sized {
+    #[doc(hidden)]
+    type BoxedQueuedFn;
+    #[doc(hidden)]
+    type ThreadingTypeId;
 
-    /// Create an instance of a CxxQtThread
+    /// Create an instance of a [CxxQtThread]
     ///
     /// This allows for queueing closures onto the Qt event loop from a background thread.
-    fn qt_thread(&self) -> Self::Item;
+    fn qt_thread(&self) -> CxxQtThread<Self>;
+
+    #[doc(hidden)]
+    fn queue<F>(cxx_qt_thread: &CxxQtThread<Self>, f: F) -> Result<(), cxx::Exception>
+    where
+        F: FnOnce(core::pin::Pin<&mut Self>),
+        F: Send + 'static;
+
+    #[doc(hidden)]
+    fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }

@@ -82,24 +82,24 @@ mod ffi {
         fn invokable_virtual_wrapper(self: &MyObject, cpp: &MyObjectQt);
     }
     unsafe extern "C++" {
-        #[doc = r" Specialised version of CxxQtThread, which can be moved into other threads."]
-        #[doc = r""]
-        #[doc = r" CXX doesn't support having generic types in the function yet"]
-        #[doc = r" so we cannot have CxxQtThread<T> in cxx-qt-lib and then use that here"]
-        #[doc = r" For now we use a type alias in C++ then use it like a normal type here"]
-        #[doc = r" <https://github.com/dtolnay/cxx/issues/683>"]
-        type MyObjectCxxQtThread;
+        #[doc(hidden)]
+        type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObjectQt>;
         include!("cxx-qt-common/cxxqt_thread.h");
         #[doc(hidden)]
         #[cxx_name = "qtThread"]
-        fn cxx_qt_ffi_qt_thread(self: &MyObjectQt) -> UniquePtr<MyObjectCxxQtThread>;
+        fn cxx_qt_ffi_qt_thread(self: &MyObjectQt) -> MyObjectCxxQtThread;
         #[doc(hidden)]
-        #[cxx_name = "queue"]
-        fn queue_boxed_fn(
-            self: &MyObjectCxxQtThread,
+        #[namespace = "rust::cxxqtlib1"]
+        #[cxx_name = "cxxQtThreadQueue"]
+        fn cxx_qt_ffi_my_object_queue_boxed_fn(
+            cxx_qt_thread: &MyObjectCxxQtThread,
             func: fn(Pin<&mut MyObjectQt>, Box<MyObjectCxxQtThreadQueuedFn>),
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
         ) -> Result<()>;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
+        #[cxx_name = "cxxQtThreadDrop"]
+        fn cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
     }
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -255,16 +255,17 @@ mod cxx_qt_ffi {
             Opaque::new()
         }
     }
-    unsafe impl Send for MyObjectCxxQtThread {}
     impl cxx_qt::Threading for MyObjectQt {
-        type Item = cxx::UniquePtr<MyObjectCxxQtThread>;
-        fn qt_thread(&self) -> Self::Item {
+        type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
+        type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
+        fn qt_thread(&self) -> MyObjectCxxQtThread {
             self.cxx_qt_ffi_qt_thread()
         }
-    }
-    impl MyObjectCxxQtThread {
-        #[doc = r" Queue the given closure onto the Qt event loop for this QObject"]
-        pub fn queue<F>(&self, f: F) -> std::result::Result<(), cxx::Exception>
+        #[doc(hidden)]
+        fn queue<F>(
+            cxx_qt_thread: &MyObjectCxxQtThread,
+            f: F,
+        ) -> std::result::Result<(), cxx::Exception>
         where
             F: FnOnce(std::pin::Pin<&mut MyObjectQt>),
             F: Send + 'static,
@@ -280,7 +281,11 @@ mod cxx_qt_ffi {
             let arg = MyObjectCxxQtThreadQueuedFn {
                 inner: std::boxed::Box::new(f),
             };
-            self.queue_boxed_fn(func, std::boxed::Box::new(arg))
+            cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+        }
+        #[doc(hidden)]
+        fn threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread) {
+            cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
         }
     }
     #[doc(hidden)]

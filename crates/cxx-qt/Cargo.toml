@@ -18,4 +18,5 @@ keywords = ["cxx", "ffi", "QML", "Qt"]
 categories = ["api-bindings", "gui"]
 
 [dependencies]
+cxx.workspace = true
 cxx-qt-macro.workspace = true

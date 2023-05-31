@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::sensors::{SensorHashMap, SensorsWorker};
-use crate::{constants::SENSOR_UPDATE_POLL_RATE, ffi::EnergyUsageCxxQtThread};
+use crate::{constants::SENSOR_UPDATE_POLL_RATE, qobject};
+use cxx_qt::CxxQtThread;
 use futures_timer::Delay;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -24,7 +25,7 @@ impl AccumulatorWorker {
     pub async fn run(
         sensors: Arc<Mutex<Arc<SensorHashMap>>>,
         sensors_changed: Arc<AtomicBool>,
-        qt_thread: cxx::UniquePtr<EnergyUsageCxxQtThread>,
+        qt_thread: CxxQtThread<qobject::EnergyUsage>,
     ) {
         loop {
             // Wait at the given poll rate

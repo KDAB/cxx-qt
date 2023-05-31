@@ -70,7 +70,7 @@ Every `qobject::T` struct provides the following methods:
 
 ### Access to the Qt thread
 ``` rust,ignore,noplayground
-fn qt_thread(&self) -> UniquePtr<CxxQtThread>
+fn qt_thread(&self) -> CxxQtThread<T>
 ```
 This function provides you with a handle to the Qt thread that the QObject resides in.
 This is helpful as the QObject itself does not implement [Send](https://doc.rust-lang.org/std/marker/trait.Send.html) nor [Sync](https://doc.rust-lang.org/std/marker/trait.Sync.html).

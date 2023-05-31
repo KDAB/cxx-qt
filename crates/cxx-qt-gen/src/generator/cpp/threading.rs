@@ -19,18 +19,26 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlock
     result.forward_declares.push(format!(
         "using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{ident}>;"
     ));
+    // Ensure that the CxxQtThread<T> is of the correct size and alignment
+    // which should be two std::shared_ptr which are two size_t each
+    result.methods.push(CppFragment::Source(formatdoc! {
+        r#"
+        static_assert(alignof({cxx_qt_thread_ident}) <= alignof(::std::size_t), "unexpected aligment");
+        static_assert(sizeof({cxx_qt_thread_ident}) == sizeof(::std::size_t[4]), "unexpected size");
+        "#
+    }));
     result.members.push(CppFragment::Pair {
         header: format!("::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;"),
         source: format!(", m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))"),
     });
     result.methods.push(CppFragment::Pair {
-        header: format!("::std::unique_ptr<{cxx_qt_thread_ident}> qtThread() const;"),
+        header: format!("{cxx_qt_thread_ident} qtThread() const;"),
         source: formatdoc! {
             r#"
-            ::std::unique_ptr<{cxx_qt_thread_ident}>
+            {cxx_qt_thread_ident}
             {ident}::qtThread() const
             {{
-            return ::std::make_unique<{cxx_qt_thread_ident}>(m_cxxQtThreadObj, m_rustObjMutex);
+              return {cxx_qt_thread_ident}(m_cxxQtThreadObj, m_rustObjMutex);
             }}
             "#
         },
@@ -85,24 +93,34 @@ mod tests {
         );
 
         // methods
-        assert_eq!(generated.methods.len(), 1);
+        assert_eq!(generated.methods.len(), 2);
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+        let source = if let CppFragment::Source(source) = &generated.methods[0] {
+            source
+        } else {
+            panic!("Expected source")
+        };
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[4]), "unexpected size");
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
             (header, source)
         } else {
             panic!("Expected pair")
         };
-        assert_str_eq!(
-            header,
-            "::std::unique_ptr<MyObjectCxxQtThread> qtThread() const;"
-        );
+        assert_str_eq!(header, "MyObjectCxxQtThread qtThread() const;");
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::std::unique_ptr<MyObjectCxxQtThread>
+            MyObjectCxxQtThread
             MyObject::qtThread() const
             {
-            return ::std::make_unique<MyObjectCxxQtThread>(m_cxxQtThreadObj, m_rustObjMutex);
+              return MyObjectCxxQtThread(m_cxxQtThreadObj, m_rustObjMutex);
             }
             "#}
         );
