@@ -119,6 +119,11 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::multi_object::cxx_qt_my_object"]
+        fn create_rs_my_object() -> Box<MyObject>;
+    }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
@@ -128,11 +133,6 @@ pub mod ffi {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
-    }
-    extern "Rust" {
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_my_object"]
-        fn create_rs_my_object() -> Box<MyObject>;
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
@@ -194,6 +194,11 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::multi_object::cxx_qt_second_object"]
+        fn create_rs_second_object() -> Box<SecondObject>;
+    }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
@@ -203,11 +208,6 @@ pub mod ffi {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
-    }
-    extern "Rust" {
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_second_object"]
-        fn create_rs_second_object() -> Box<SecondObject>;
     }
 }
 pub use self::cxx_qt_ffi::*;
@@ -292,6 +292,10 @@ pub mod cxx_qt_ffi {
         }
     }
     impl cxx_qt::Locking for MyObjectQt {}
+    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
+    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
+        core::default::Default::default()
+    }
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
         fn rust(&self) -> &Self::Rust {
@@ -300,10 +304,6 @@ pub mod cxx_qt_ffi {
         fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
-    }
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
-    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
-        std::default::Default::default()
     }
     pub struct SecondObject {
         property_name: i32,
@@ -372,6 +372,10 @@ pub mod cxx_qt_ffi {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
         }
     }
+    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
+    pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
+        core::default::Default::default()
+    }
     impl cxx_qt::CxxQtType for SecondObjectQt {
         type Rust = SecondObject;
         fn rust(&self) -> &Self::Rust {
@@ -380,10 +384,6 @@ pub mod cxx_qt_ffi {
         fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
-    }
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
-    pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
-        std::default::Default::default()
     }
     #[doc = r" Generated CXX-Qt module containing type alias to the C++ types of the QObjects"]
     pub mod qobject {

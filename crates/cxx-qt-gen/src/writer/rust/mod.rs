@@ -4,27 +4,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::rust::{qobject::GeneratedRustQObject, GeneratedRustBlocks};
-use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::Ident;
-
-/// Mangle an input name with an object name
-///
-/// For now we need to do this to avoid free Rust methods from colliding
-/// Once static methods are possible in CXX this could be removed
-/// https://github.com/dtolnay/cxx/issues/447
-fn mangle(name: &str, object: &Ident) -> Ident {
-    format_ident!("{}", format!("{name}_{object}").to_case(Case::Snake))
-}
 
 /// Return common blocks for CXX bridge which the C++ writer adds as well
 fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
-    let namespace_internals = &qobject.namespace_internals;
-
-    let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
     vec![
         quote! {
@@ -41,13 +27,6 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
                 fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
             }
         },
-        quote! {
-            extern "Rust" {
-                #[cxx_name = "createRs"]
-                #[namespace = #namespace_internals]
-                fn #create_rs_ident() -> Box<#rust_struct_ident>;
-            }
-        },
     ]
 }
 
@@ -55,29 +34,20 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
 fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
-    let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
-    vec![
-        quote! {
-            impl cxx_qt::CxxQtType for #cpp_struct_ident {
-                type Rust = #rust_struct_ident;
+    vec![quote! {
+        impl cxx_qt::CxxQtType for #cpp_struct_ident {
+            type Rust = #rust_struct_ident;
 
-                fn rust(&self) -> &Self::Rust {
-                    self.cxx_qt_ffi_rust()
-                }
-
-                fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
-                    self.cxx_qt_ffi_rust_mut()
-                }
+            fn rust(&self) -> &Self::Rust {
+                self.cxx_qt_ffi_rust()
             }
-        },
-        quote! {
-            /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
-            pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
-                std::default::Default::default()
+
+            fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                self.cxx_qt_ffi_rust_mut()
             }
-        },
-    ]
+        }
+    }]
 }
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
@@ -392,12 +362,6 @@ mod tests {
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
                 }
-
-                extern "Rust" {
-                    #[cxx_name = "createRs"]
-                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-                    fn create_rs_my_object() -> Box<MyObject>;
-                }
             }
 
             use self::cxx_qt_ffi::*;
@@ -429,11 +393,6 @@ mod tests {
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
-                }
-
-                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
-                pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
-                    std::default::Default::default()
                 }
 
                 /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
@@ -498,12 +457,6 @@ mod tests {
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
                 }
-
-                extern "Rust" {
-                    #[cxx_name = "createRs"]
-                    #[namespace = "cxx_qt::cxx_qt_first_object"]
-                    fn create_rs_first_object() -> Box<FirstObject>;
-                }
                 unsafe extern "C++" {
                     #[cxx_name = "SecondObject"]
                     type SecondObjectQt;
@@ -524,12 +477,6 @@ mod tests {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
-                }
-
-                extern "Rust" {
-                    #[cxx_name = "createRs"]
-                    #[namespace = "cxx_qt::cxx_qt_second_object"]
-                    fn create_rs_second_object() -> Box<SecondObject>;
                 }
             }
 
@@ -564,11 +511,6 @@ mod tests {
                     }
                 }
 
-                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
-                pub fn create_rs_first_object() -> std::boxed::Box<FirstObject> {
-                    std::default::Default::default()
-                }
-
                 #[derive(Default)]
                 pub struct SecondObject;
 
@@ -586,11 +528,6 @@ mod tests {
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
-                }
-
-                /// Generated CXX-Qt method which creates a boxed rust struct of a QObject
-                pub fn create_rs_second_object() -> std::boxed::Box<SecondObject> {
-                    std::default::Default::default()
                 }
 
                 /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects

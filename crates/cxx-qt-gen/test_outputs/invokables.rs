@@ -111,6 +111,49 @@ mod ffi {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         type MyObjectCxxQtThreadQueuedFn;
     }
+    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+    #[cxx_name = "CxxQtConstructorArguments0"]
+    #[doc(hidden)]
+    struct CxxQtConstructorArgumentsMyObject0 {
+        baseArguments: CxxQtConstructorBaseArgumentsMyObject0,
+        newArguments: CxxQtConstructorNewArgumentsMyObject0,
+        initializeArguments: CxxQtConstructorInitializeArgumentsMyObject0,
+    }
+    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+    #[cxx_name = "CxxQtConstructorBaseArguments0"]
+    #[doc(hidden)]
+    struct CxxQtConstructorBaseArgumentsMyObject0 {
+        arg0: *mut QObject,
+    }
+    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+    #[cxx_name = "CxxQtConstructorNewArguments0"]
+    #[doc(hidden)]
+    struct CxxQtConstructorNewArgumentsMyObject0 {
+        arg0: i32,
+    }
+    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+    #[cxx_name = "CxxQtConstructorInitializeArguments0"]
+    #[doc(hidden)]
+    struct CxxQtConstructorInitializeArgumentsMyObject0 {
+        not_empty: i8,
+    }
+    extern "Rust" {
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        #[cxx_name = "routeArguments0"]
+        unsafe fn route_arguments_my_object_0(
+            arg0: i32,
+            arg1: *mut QObject,
+        ) -> CxxQtConstructorArgumentsMyObject0;
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        #[cxx_name = "newRs0"]
+        fn new_rs_my_object_0(args: CxxQtConstructorNewArgumentsMyObject0) -> Box<MyObject>;
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        #[cxx_name = "initialize0"]
+        fn initialize_my_object_0(
+            qobject: Pin<&mut MyObjectQt>,
+            args: CxxQtConstructorInitializeArgumentsMyObject0,
+        );
+    }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
@@ -120,11 +163,6 @@ mod ffi {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
-    }
-    extern "Rust" {
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs_my_object() -> Box<MyObject>;
     }
 }
 use self::cxx_qt_ffi::*;
@@ -239,6 +277,49 @@ pub mod cxx_qt_ffi {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
     impl cxx_qt::Locking for MyObjectQt {}
+    #[doc(hidden)]
+    pub fn route_arguments_my_object_0(
+        arg0: i32,
+        arg1: *mut QObject,
+    ) -> CxxQtConstructorArgumentsMyObject0 {
+        #[allow(unused_variables)]
+        #[allow(clippy::let_unit_value)]
+        let (new_arguments, base_arguments, initialize_arguments) =
+            <MyObjectQt as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((arg0, arg1));
+        CxxQtConstructorArgumentsMyObject0 {
+            baseArguments: CxxQtConstructorBaseArgumentsMyObject0 {
+                arg0: base_arguments.0,
+            },
+            initializeArguments: CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+            newArguments: CxxQtConstructorNewArgumentsMyObject0 {
+                arg0: new_arguments.0,
+            },
+        }
+    }
+    #[doc(hidden)]
+    #[allow(unused_variables)]
+    pub fn new_rs_my_object_0(
+        new_arguments: CxxQtConstructorNewArgumentsMyObject0,
+    ) -> std::boxed::Box<MyObject> {
+        #[allow(clippy::let_unit_value)]
+        let new_arguments = (new_arguments.arg0,);
+        std::boxed::Box::new(
+            <MyObjectQt as cxx_qt::Constructor<(i32, *mut QObject)>>::new(new_arguments),
+        )
+    }
+    #[doc(hidden)]
+    #[allow(unused_variables)]
+    pub fn initialize_my_object_0(
+        qobject: core::pin::Pin<&mut MyObjectQt>,
+        initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject0,
+    ) {
+        #[allow(clippy::let_unit_value)]
+        let initialize_arguments = ();
+        <MyObjectQt as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(
+            qobject,
+            initialize_arguments,
+        )
+    }
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
         fn rust(&self) -> &Self::Rust {
@@ -247,10 +328,6 @@ pub mod cxx_qt_ffi {
         fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
-    }
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
-    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
-        std::default::Default::default()
     }
     #[doc = r" Generated CXX-Qt module containing type alias to the C++ types of the QObjects"]
     pub mod qobject {
