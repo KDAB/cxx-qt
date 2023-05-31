@@ -247,6 +247,7 @@ mod cxx_qt_ffi {
             }
         }
     }
+    impl cxx_qt::Locking for MyObjectQt {}
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
         fn rust(&self) -> &Self::Rust {

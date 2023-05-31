@@ -289,6 +289,7 @@ mod cxx_qt_ffi {
     pub struct MyObjectCxxQtThreadQueuedFn {
         inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
     }
+    impl cxx_qt::Locking for MyObjectQt {}
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
         fn rust(&self) -> &Self::Rust {

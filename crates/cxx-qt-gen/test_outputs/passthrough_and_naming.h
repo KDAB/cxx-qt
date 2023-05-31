@@ -84,7 +84,6 @@ public:
 
 private:
   ::rust::Box<SecondObjectRust> m_rustObj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,

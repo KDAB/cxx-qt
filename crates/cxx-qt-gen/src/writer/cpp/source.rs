@@ -68,8 +68,13 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         members = {
             let mut members = vec![
                 format!(", m_rustObj({namespace_internals}::createRs())", namespace_internals = qobject.namespace_internals),
-                ", m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string(),
             ];
+
+            if qobject.locking {
+                members.extend(vec![
+                    ", m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string(),
+                ]);
+            }
 
             members.extend(qobject.blocks.members.iter().filter_map(pair_as_source).collect::<Vec<String>>());
             members.join("\n  ")

@@ -122,6 +122,20 @@ impl GeneratedRustQObject {
             )?);
         }
 
+        // If this type has locking enabling then implement the trait
+        //
+        // This could be implemented using an auto trait in the future once stable
+        // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
+        if qobject.locking {
+            let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+            generated
+                .blocks
+                .cxx_qt_mod_contents
+                .push(syn::parse_quote! {
+                    impl cxx_qt::Locking for #cpp_class_name_rust {}
+                });
+        }
+
         Ok(generated)
     }
 }

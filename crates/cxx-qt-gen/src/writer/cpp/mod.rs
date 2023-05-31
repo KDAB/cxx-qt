@@ -59,6 +59,7 @@ mod tests {
                     rust_ident: "MyObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
+                    locking: true,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
@@ -159,6 +160,7 @@ mod tests {
                     rust_ident: "FirstObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
+                    locking: true,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
@@ -198,6 +200,7 @@ mod tests {
                     rust_ident: "SecondObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
+                    locking: false,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
@@ -381,7 +384,6 @@ mod tests {
 
         private:
           ::rust::Box<SecondObjectRust> m_rustObj;
-          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
         };
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
@@ -596,7 +598,6 @@ mod tests {
         SecondObject::SecondObject(QObject* parent)
           : QStringListModel(parent)
           , m_rustObj(cxx_qt::cxx_qt_second_object::createRs())
-          , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
         {
         }
 

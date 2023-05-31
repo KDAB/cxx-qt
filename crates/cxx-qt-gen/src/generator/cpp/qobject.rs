@@ -74,6 +74,8 @@ pub struct GeneratedCppQObject {
     pub base_class: String,
     /// The blocks of the QObject
     pub blocks: GeneratedCppQObjectBlocks,
+    /// Whether locking is enabled
+    pub locking: bool,
 }
 
 impl GeneratedCppQObject {
@@ -93,6 +95,12 @@ impl GeneratedCppQObject {
                 .clone()
                 .unwrap_or_else(|| "QObject".to_string()),
             blocks: GeneratedCppQObjectBlocks::from(qobject),
+            locking: qobject.locking,
+        };
+        let lock_guard = if qobject.locking {
+            Some("const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);")
+        } else {
+            None
         };
 
         // Generate methods for the properties, invokables, signals
@@ -100,17 +108,20 @@ impl GeneratedCppQObject {
             &qobject.properties,
             &qobject_idents,
             cxx_mappings,
+            lock_guard,
         )?);
         generated.blocks.append(&mut generate_cpp_invokables(
             &qobject.invokables,
             &qobject_idents,
             cxx_mappings,
+            lock_guard,
         )?);
         if let Some(signals_enum) = &qobject.signals {
             generated.blocks.append(&mut generate_cpp_signals(
                 &signals_enum.signals,
                 &qobject_idents,
                 cxx_mappings,
+                lock_guard,
             )?);
         }
         generated.blocks.append(&mut inherit::generate(
