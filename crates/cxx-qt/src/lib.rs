@@ -75,5 +75,8 @@ pub trait Threading: Sized {
         F: Send + 'static;
 
     #[doc(hidden)]
+    fn threading_clone(cxx_qt_thread: &CxxQtThread<Self>) -> CxxQtThread<Self>;
+
+    #[doc(hidden)]
     fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }

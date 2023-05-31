@@ -75,10 +75,11 @@ mod ffi {
                 std::sync::atomic::AtomicUsize::new(0);
 
             let mut handles = Vec::new();
+            let qt_thread = self.qt_thread();
             for _ in 0..N_THREADS {
-                let qt_thread = self.qt_thread();
+                let qt_thread_cloned = qt_thread.clone();
                 handles.push(std::thread::spawn(move || {
-                    qt_thread
+                    qt_thread_cloned
                         .queue(|ctx| {
                             *ctx.update_call_count_mut() += 1;
                         })

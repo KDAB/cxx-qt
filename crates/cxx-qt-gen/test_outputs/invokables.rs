@@ -98,6 +98,12 @@ mod ffi {
         ) -> Result<()>;
         #[doc(hidden)]
         #[namespace = "rust::cxxqtlib1"]
+        #[cxx_name = "cxxQtThreadClone"]
+        fn cxx_qt_ffi_my_object_threading_clone(
+            cxx_qt_thread: &MyObjectCxxQtThread,
+        ) -> MyObjectCxxQtThread;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtlib1"]
         #[cxx_name = "cxxQtThreadDrop"]
         fn cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
     }
@@ -282,6 +288,10 @@ mod cxx_qt_ffi {
                 inner: std::boxed::Box::new(f),
             };
             cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+        }
+        #[doc(hidden)]
+        fn threading_clone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread {
+            cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
         }
         #[doc(hidden)]
         fn threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread) {

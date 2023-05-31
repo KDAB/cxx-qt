@@ -33,6 +33,15 @@ where
     type Kind = cxx::kind::Trivial;
 }
 
+impl<T> Clone for CxxQtThread<T>
+where
+    T: Threading,
+{
+    fn clone(&self) -> Self {
+        T::threading_clone(self)
+    }
+}
+
 impl<T> Drop for CxxQtThread<T>
 where
     T: Threading,
