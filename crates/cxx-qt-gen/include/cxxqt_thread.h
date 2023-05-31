@@ -44,8 +44,7 @@ public:
   }
 
   ~CxxQtThread() = default;
-  // Disable copy support for now
-  CxxQtThread(CxxQtThread<T>& other) = delete;
+  CxxQtThread(const CxxQtThread<T>& other) = default;
   CxxQtThread(CxxQtThread<T>&& other) = default;
 
   template<typename A>
@@ -92,6 +91,13 @@ private:
   ::std::shared_ptr<CxxQtGuardedPointer<T>> m_obj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
+
+template<typename T>
+CxxQtThread<T>
+cxxQtThreadClone(const CxxQtThread<T>& cxxQtThread)
+{
+  return CxxQtThread<T>(cxxQtThread);
+}
 
 template<typename T>
 void

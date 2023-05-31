@@ -10,16 +10,14 @@ use syn::Ident;
 
 /// Names for parts of a Q_OBJECT
 pub struct QObjectName {
+    // Store the ident so that cxx_qt_thread_method can use it later
+    ident: Ident,
     /// The name of the C++ class
     pub cpp_class: CombinedIdent,
     /// The name of the Rust struct
     pub rust_struct: CombinedIdent,
     /// The name of the CxxQtThread
     pub cxx_qt_thread_class: Ident,
-    /// The name of the drop function
-    pub cxx_qt_thread_drop: Ident,
-    /// The name of the queue function
-    pub cxx_qt_thread_queue_fn: Ident,
     /// The name of the Rust closure wrapper to be passed in to CxxQtThread
     pub cxx_qt_thread_queued_fn_struct: Ident,
 }
@@ -33,13 +31,22 @@ impl From<&ParsedQObject> for QObjectName {
 impl From<&Ident> for QObjectName {
     fn from(ident: &Ident) -> Self {
         Self {
+            ident: ident.clone(),
             cpp_class: CombinedIdent::cpp_class_from_rust_struct(ident.clone()),
             rust_struct: CombinedIdent::from_rust_struct(ident.clone()),
             cxx_qt_thread_class: cxx_qt_thread_class_from_ident(ident),
-            cxx_qt_thread_drop: cxx_qt_thread_drop_from_ident(ident),
-            cxx_qt_thread_queue_fn: cxx_qt_thread_queue_fn_from_ident(ident),
             cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(ident),
         }
+    }
+}
+
+impl QObjectName {
+    /// For a given ident generate the mangled threading suffix ident
+    pub fn cxx_qt_thread_method(&self, suffix: &str) -> Ident {
+        format_ident!(
+            "cxx_qt_ffi_{ident}_{suffix}",
+            ident = self.ident.to_string().to_case(Case::Snake)
+        )
     }
 }
 
@@ -51,22 +58,6 @@ fn cxx_qt_thread_class_from_ident(ident: &Ident) -> Ident {
 /// For a given ident generate the CxxQtThreadQueuedFn ident
 fn cxx_qt_thread_queued_fn_struct_from_ident(ident: &Ident) -> Ident {
     format_ident!("{ident}CxxQtThreadQueuedFn")
-}
-
-/// For a given ident generate the mangled threading drop ident
-fn cxx_qt_thread_drop_from_ident(ident: &Ident) -> Ident {
-    format_ident!(
-        "cxx_qt_ffi_{ident}_threading_drop",
-        ident = ident.to_string().to_case(Case::Snake)
-    )
-}
-
-/// For a given ident generate the mangled queue ident
-fn cxx_qt_thread_queue_fn_from_ident(ident: &Ident) -> Ident {
-    format_ident!(
-        "cxx_qt_ffi_{ident}_queue_boxed_fn",
-        ident = ident.to_string().to_case(Case::Snake)
-    )
 }
 
 impl CombinedIdent {
@@ -107,16 +98,21 @@ pub mod tests {
             format_ident!("MyObjectCxxQtThread")
         );
         assert_eq!(
-            names.cxx_qt_thread_drop,
+            names.cxx_qt_thread_queued_fn_struct,
+            format_ident!("MyObjectCxxQtThreadQueuedFn")
+        );
+
+        assert_eq!(
+            names.cxx_qt_thread_method("threading_clone"),
+            "cxx_qt_ffi_my_object_threading_clone"
+        );
+        assert_eq!(
+            names.cxx_qt_thread_method("threading_drop"),
             "cxx_qt_ffi_my_object_threading_drop"
         );
         assert_eq!(
-            names.cxx_qt_thread_queue_fn,
+            names.cxx_qt_thread_method("queue_boxed_fn"),
             "cxx_qt_ffi_my_object_queue_boxed_fn"
-        );
-        assert_eq!(
-            names.cxx_qt_thread_queued_fn_struct,
-            format_ident!("MyObjectCxxQtThreadQueuedFn")
         );
     }
 }
