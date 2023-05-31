@@ -7,7 +7,7 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            fragment::RustFragmentPair, inherit, invokable::generate_rust_invokables,
+            constructor, fragment::RustFragmentPair, inherit, invokable::generate_rust_invokables,
             property::generate_rust_properties, signals::generate_rust_signals, threading,
         },
     },
@@ -129,6 +129,12 @@ impl GeneratedRustQObject {
                     impl cxx_qt::Locking for #cpp_class_name_rust {}
                 });
         }
+
+        generated.blocks.append(&mut constructor::generate(
+            &qobject.constructors,
+            &qobject_idents,
+            &namespace_idents,
+        )?);
 
         Ok(generated)
     }
@@ -256,7 +262,7 @@ mod tests {
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
             .unwrap();
-        assert_eq!(rust.blocks.cxx_mod_contents.len(), 3);
+        assert_eq!(rust.blocks.cxx_mod_contents.len(), 4);
         assert_tokens_eq(
             &rust.blocks.cxx_mod_contents[0],
             quote! {
@@ -286,6 +292,16 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     include!(<QtQml/QQmlEngine>);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[3],
+            quote! {
+                extern "Rust" {
+                    #[cxx_name = "createRs"]
+                    #[namespace = "cxx_qt::cxx_qt_my_object"]
+                    fn create_rs_my_object() -> Box<MyObject>;
                 }
             },
         );

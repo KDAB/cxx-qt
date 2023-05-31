@@ -59,6 +59,11 @@ mod inheritance {
         #[cxx_name = "fetchMoreCxxQtInherit"]
         unsafe fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
     }
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt_my_object"]
+        fn create_rs_my_object() -> Box<MyObject>;
+    }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
@@ -68,11 +73,6 @@ mod inheritance {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
-    }
-    extern "Rust" {
-        #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt_my_object"]
-        fn create_rs_my_object() -> Box<MyObject>;
     }
 }
 use self::cxx_qt_inheritance::*;
@@ -109,6 +109,10 @@ pub mod cxx_qt_inheritance {
         }
     }
     impl cxx_qt::Locking for MyObjectQt {}
+    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
+    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
+        core::default::Default::default()
+    }
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
         fn rust(&self) -> &Self::Rust {
@@ -117,10 +121,6 @@ pub mod cxx_qt_inheritance {
         fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
-    }
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
-    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
-        std::default::Default::default()
     }
     #[doc = r" Generated CXX-Qt module containing type alias to the C++ types of the QObjects"]
     pub mod qobject {

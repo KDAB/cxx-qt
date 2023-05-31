@@ -45,9 +45,12 @@ mod ffi {
 
     impl cxx_qt::Threading for qobject::MyObject {}
 
-    impl cxx_qt::Constructor<(i32, *mut QObject)> for qobject::MyObject {
-        type BaseArguments = (*mut QObject,);
-        type NewArguments = (i32,);
-        type InitializeArguments = (i32,);
+    impl
+        cxx_qt::Constructor<
+            (i32, *mut QObject),
+            BaseArguments = (*mut QObject,),
+            NewArguments = (i32,),
+        > for qobject::MyObject
+    {
     }
 }
