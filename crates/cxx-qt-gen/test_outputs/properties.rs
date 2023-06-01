@@ -43,16 +43,6 @@ mod ffi {
         #[cxx_name = "setPrimitive"]
         fn set_primitive(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
-    unsafe extern "C++" {
-        #[doc = "Notify signal for the Q_PROPERTY"]
-        #[doc = "primitive"]
-        #[doc = "\n"]
-        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-        #[doc = "primitive_mut"]
-        #[doc = ", is used."]
-        #[rust_name = "primitive_changed"]
-        fn primitiveChanged(self: Pin<&mut MyObjectQt>);
-    }
     extern "Rust" {
         #[cxx_name = "getTrivial"]
         unsafe fn trivial<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a QPoint;
@@ -62,14 +52,38 @@ mod ffi {
         fn set_trivial(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: QPoint);
     }
     unsafe extern "C++" {
-        #[doc = "Notify signal for the Q_PROPERTY"]
-        #[doc = "trivial"]
-        #[doc = "\n"]
-        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-        #[doc = "trivial_mut"]
-        #[doc = ", is used."]
+        #[doc = "Notify for the Q_PROPERTY"]
+        #[rust_name = "primitive_changed"]
+        fn emitPrimitiveChanged(self: Pin<&mut MyObjectQt>);
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "primitiveChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
+        #[rust_name = "connect_primitive_changed"]
+        fn primitiveChangedConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    unsafe extern "C++" {
+        #[doc = "Notify for the Q_PROPERTY"]
         #[rust_name = "trivial_changed"]
-        fn trivialChanged(self: Pin<&mut MyObjectQt>);
+        fn emitTrivialChanged(self: Pin<&mut MyObjectQt>);
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "trivialChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
+        #[rust_name = "connect_trivial_changed"]
+        fn trivialChangedConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
@@ -188,6 +202,34 @@ mod cxx_qt_ffi {
                 self.as_mut().rust_mut().trivial = value;
             }
             self.as_mut().trivial_changed();
+        }
+    }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "primitiveChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_primitive_changed(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_primitive_changed(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "trivialChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_trivial_changed(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_trivial_changed(func, CxxQtConnectionType::AutoConnection)
         }
     }
     impl MyObjectQt {

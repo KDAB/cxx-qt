@@ -48,14 +48,10 @@ pub mod ffi {
         pub string: QString,
     }
 
-    /// Signals for the QObject
-    #[cxx_qt::qsignals(Serialisation)]
-    pub enum Connection {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
         /// An error signal
-        Error {
-            /// The message of the error
-            message: QString,
-        },
+        fn error(self: Pin<&mut qobject::Serialisation>, message: QString);
     }
 
     impl Default for Serialisation {
@@ -83,9 +79,7 @@ pub mod ffi {
             match serde_json::to_string(&data_serde) {
                 Ok(data_string) => QString::from(&data_string),
                 Err(err) => {
-                    self.emit(Connection::Error {
-                        message: QString::from(&err.to_string()),
-                    });
+                    self.error(QString::from(&err.to_string()));
                     QString::default()
                 }
             }
@@ -101,9 +95,7 @@ pub mod ffi {
                     self.as_mut().set_string(QString::from(&data_serde.string));
                 }
                 Err(err) => {
-                    self.emit(Connection::Error {
-                        message: QString::from(&err.to_string()),
-                    });
+                    self.error(QString::from(&err.to_string()));
                 }
             }
         }

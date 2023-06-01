@@ -8,7 +8,6 @@ use crate::{
     constants::SENSOR_MAXIMUM_COUNT,
     ffi::{EnergyUsageCxxQtThread, EnergyUsageQt},
     network::NetworkChannel,
-    EnergySignals,
 };
 use cxx_qt_lib::QString;
 use std::{
@@ -89,14 +88,9 @@ impl SensorsWorker {
                         // Queue a Signal that the sensor has been removed to Qt
                         qt_thread
                             .queue(
-                                move |mut qobject_energy_usage: std::pin::Pin<
-                                    &mut EnergyUsageQt,
-                                >| {
-                                    qobject_energy_usage.as_mut().emit(
-                                        EnergySignals::SensorRemoved {
-                                            uuid: QString::from(&uuid.to_string()),
-                                        },
-                                    );
+                                move |qobject_energy_usage: std::pin::Pin<&mut EnergyUsageQt>| {
+                                    qobject_energy_usage
+                                        .sensor_removed(QString::from(&uuid.to_string()));
                                 },
                             )
                             .unwrap();
@@ -125,28 +119,22 @@ impl SensorsWorker {
                             if is_occupied {
                                 qt_thread
                                     .queue(
-                                        move |mut qobject_energy_usage: std::pin::Pin<
+                                        move |qobject_energy_usage: std::pin::Pin<
                                             &mut EnergyUsageQt,
                                         >| {
-                                            qobject_energy_usage.as_mut().emit(
-                                                EnergySignals::SensorChanged {
-                                                    uuid: QString::from(&uuid.to_string()),
-                                                },
-                                            );
+                                            qobject_energy_usage
+                                                .sensor_changed(QString::from(&uuid.to_string()));
                                         },
                                     )
                                     .unwrap();
                             } else {
                                 qt_thread
                                     .queue(
-                                        move |mut qobject_energy_usage: std::pin::Pin<
+                                        move |qobject_energy_usage: std::pin::Pin<
                                             &mut EnergyUsageQt,
                                         >| {
-                                            qobject_energy_usage.as_mut().emit(
-                                                EnergySignals::SensorAdded {
-                                                    uuid: QString::from(&uuid.to_string()),
-                                                },
-                                            );
+                                            qobject_energy_usage
+                                                .sensor_added(QString::from(&uuid.to_string()));
                                         },
                                     )
                                     .unwrap();

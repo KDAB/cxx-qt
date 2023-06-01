@@ -6,23 +6,27 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
-    #[cxx_qt::qsignals(MyObject)]
-    enum MySignals<'a> {
-        Ready,
-        DataChanged {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
+        fn ready(self: Pin<&mut qobject::MyObject>);
+
+        fn data_changed(
+            self: Pin<&mut qobject::MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
             fourth: &'a QPoint,
-        },
+        );
+
         #[cxx_name = "newData"]
         #[inherit]
-        BaseClassNewData {
+        fn base_class_new_data(
+            self: Pin<&mut qobject::MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
             fourth: &'a QPoint,
-        },
+        );
     }
 
     #[cxx_qt::qobject]
@@ -38,12 +42,8 @@ mod ffi {
                 },
                 cxx_qt_lib::ConnectionType::AutoConnection,
             );
-            self.as_mut().emit(MySignals::DataChanged {
-                first: 1,
-                second: Opaque::new(),
-                third: QPoint::new(1, 2),
-                fourth: &QPoint::new(1, 2),
-            });
+            self.as_mut()
+                .data_changed(1, Opaque::new(), QPoint::new(1, 2), &QPoint::new(1, 2));
         }
     }
 }

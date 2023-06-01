@@ -51,4 +51,46 @@ MyObject::setTrivial(QPoint const& value)
   m_rustObj->setTrivial(*this, value);
 }
 
+void
+MyObject::emitPrimitiveChanged()
+{
+  Q_EMIT primitiveChanged();
+}
+
+::QMetaObject::Connection
+MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
+                                  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    this,
+    &MyObject::primitiveChanged,
+    this,
+    [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    },
+    type);
+}
+
+void
+MyObject::emitTrivialChanged()
+{
+  Q_EMIT trivialChanged();
+}
+
+::QMetaObject::Connection
+MyObject::trivialChangedConnect(::rust::Fn<void(MyObject&)> func,
+                                ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    this,
+    &MyObject::trivialChanged,
+    this,
+    [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    },
+    type);
+}
+
 } // namespace cxx_qt::my_object

@@ -19,4 +19,4 @@ Properties can be defined using the [QObject struct](../qobject/qobject_struct.m
 
 ## Signals
 
-Signals can be defined using the [Signals enum](../qobject/signals_enum.md), these will be exposed as `Q_SIGNALS` on the C++ class and therefore to QML as well.
+Signals can be defined using the [QSignals macros](../qobject/signals.md), these will be exposed as `Q_SIGNALS` on the C++ class and therefore to QML as well.

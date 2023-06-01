@@ -91,9 +91,9 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qsignals(MyObject)]
-    pub enum MySignals {
-        Ready,
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
+        fn ready(self: Pin<&mut qobject::MyObject>);
     }
 
     impl qobject::MyObject {
@@ -140,9 +140,10 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qsignals(SecondObject)]
-    pub enum SecondSignals {
-        Ready,
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
+        #[my_attribute]
+        fn ready(self: Pin<&mut qobject::SecondObject>);
     }
 
     impl qobject::SecondObject {

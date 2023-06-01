@@ -162,9 +162,9 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals(MyObject)]
-                enum MySignals {
-                    Ready,
+                #[cxx_qt::qsignals]
+                unsafe extern "C++" {
+                    fn ready(self: Pin<&mut qobject::MyObject>);
                 }
             }
         };
@@ -187,9 +187,9 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals(MyObject)]
-                enum MySignals {
-                    Ready,
+                #[cxx_qt::qsignals]
+                unsafe extern "C++" {
+                    fn ready(self: Pin<&mut qobject::MyObject>);
                 }
 
                 extern "Rust" {
@@ -216,9 +216,9 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals(UnknownObj)]
-                enum MySignals {
-                    Ready,
+                #[cxx_qt::qsignals]
+                unsafe extern "C++" {
+                    fn ready(self: Pin<&mut qobject::UnknownObject>);
                 }
             }
         };

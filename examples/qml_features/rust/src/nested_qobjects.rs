@@ -25,14 +25,10 @@ pub mod ffi {
         counter: i32,
     }
 
-    /// Signals for the inner QObject
-    #[cxx_qt::qsignals(InnerObject)]
-    pub enum InnerSignals {
+    #[cxx_qt::qsignals]
+    extern "C++" {
         /// A signal showing how to refer to another QObject as an argument
-        Called {
-            /// Inner QObject being referred to
-            inner: *mut CxxInnerObject,
-        },
+        unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut CxxInnerObject);
     }
 
     /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
@@ -50,14 +46,10 @@ pub mod ffi {
         }
     }
 
-    /// Signals for the outer QObject
-    #[cxx_qt::qsignals(OuterObject)]
-    pub enum OuterSignals {
+    #[cxx_qt::qsignals]
+    extern "C++" {
         /// A signal showing how to refer to another QObject as an argument
-        Called {
-            /// Inner QObject being referred to
-            inner: *mut CxxInnerObject,
-        },
+        unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut CxxInnerObject);
     }
 
     impl qobject::OuterObject {
@@ -71,7 +63,9 @@ pub mod ffi {
                 if let Some(inner) = unsafe { qobject.inner().as_mut() } {
                     let pinned_inner = unsafe { Pin::new_unchecked(inner) };
                     // Now pinned inner can be used as normal
-                    pinned_inner.emit(InnerSignals::Called { inner: obj });
+                    unsafe {
+                        pinned_inner.called(obj);
+                    }
                 }
             })
             .release();
@@ -87,7 +81,9 @@ pub mod ffi {
                 println!("Inner object's counter property: {}", inner.counter());
             }
 
-            self.emit(OuterSignals::Called { inner });
+            unsafe {
+                self.called(inner);
+            }
         }
 
         /// Reset the counter of the inner QObject stored in the Q_PROPERTY
@@ -102,7 +98,7 @@ pub mod ffi {
 
             // Retrieve *mut T
             let inner = *self.inner();
-            self.emit(OuterSignals::Called { inner });
+            unsafe { self.called(inner) };
         }
     }
 }

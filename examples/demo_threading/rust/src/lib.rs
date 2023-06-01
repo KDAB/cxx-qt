@@ -70,16 +70,14 @@ mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::EnergyUsage {}
 
-    /// Define Q_SIGNALS that are created on the QObject
-    #[cxx_qt::qsignals(EnergyUsage)]
-    #[allow(clippy::enum_variant_names)]
-    pub enum EnergySignals {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
         /// A new sensor has been detected
-        SensorAdded { uuid: QString },
+        fn sensor_added(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
         /// A value on an existing sensor has changed
-        SensorChanged { uuid: QString },
+        fn sensor_changed(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
         /// An existing sensor has been removed
-        SensorRemoved { uuid: QString },
+        fn sensor_removed(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
     }
 
     impl qobject::EnergyUsage {
