@@ -80,14 +80,6 @@ The closure also takes a pinned mutable reference to the QObject, so that it can
 
 See the [CxxQtThread page](./cxxqtthread.md) for more details.
 
-### Signal emission
-``` rust,ignore,noplayground
-fn emit(self: Pin<&mut Self>, signal: /*Your Signals enum goes here*/)
-```
-If there is a [Signals enum](./signals_enum.md) defined, CXX-Qt will generate the appropriate `emit` function to allow you to emit signals.
-
-See the [Signals enum page](./signals_enum.md) for more details.
-
 ### Access to internal Rust struct
 For every field in the Rust struct, CXX-Qt will generate appropriate getters and setters.
 See the [QObject page](./qobject_struct.md#properties) for details.

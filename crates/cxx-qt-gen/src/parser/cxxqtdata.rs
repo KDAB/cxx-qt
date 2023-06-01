@@ -4,15 +4,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
-use crate::syntax::{
-    attribute::{attribute_find_path, attribute_tokens_to_ident},
-    path::path_to_single_ident,
-};
+use crate::syntax::{attribute::attribute_find_path, path::path_to_single_ident};
 use crate::{
     parser::{
-        inherit::{InheritMethods, ParsedInheritedMethod},
+        inherit::{InheritMethods, MaybeInheritMethods, ParsedInheritedMethod},
         qobject::ParsedQObject,
-        signals::ParsedSignalsEnum,
+        signals::{MaybeSignalMethods, ParsedSignal, SignalMethods},
     },
     syntax::expr::expr_to_string,
 };
@@ -20,11 +17,9 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
-    Type, TypePath,
+    spanned::Spanned, Attribute, Error, Ident, Item, ItemForeignMod, ItemImpl, Result, Type,
+    TypePath,
 };
-
-use super::inherit::MaybeInheritMethods;
 
 #[derive(Default)]
 pub struct ParsedCxxMappings {
@@ -184,7 +179,6 @@ impl ParsedCxxQtData {
     /// Otherwise return the [syn::Item] to pass through to CXX
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
         match item {
-            Item::Enum(item_enum) => self.parse_enum(item_enum),
             Item::Impl(imp) => self.parse_impl(imp),
             // Ignore structs which are qobjects
             Item::Struct(s) if self.qobjects.contains_key(&s.ident) => Ok(None),
@@ -193,21 +187,31 @@ impl ParsedCxxQtData {
                 self.uses.push(item);
                 Ok(None)
             }
-            Item::Verbatim(tokens) => self.try_parse_inherit_verbatim(tokens),
+            Item::Verbatim(tokens) => self.try_parse_verbatim(tokens),
             Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
             _ => Ok(Some(item)),
         }
     }
 
-    fn try_parse_inherit_verbatim(&mut self, tokens: TokenStream) -> Result<Option<Item>> {
-        let try_parse: MaybeInheritMethods = syn::parse2(tokens)?;
+    fn try_parse_verbatim(&mut self, tokens: TokenStream) -> Result<Option<Item>> {
+        let try_parse: MaybeInheritMethods = syn::parse2(tokens.clone())?;
 
         match try_parse {
             MaybeInheritMethods::Found(inherited) => {
                 self.add_inherited_methods(inherited)?;
                 Ok(None)
             }
-            MaybeInheritMethods::PassThrough(item) => Ok(Some(item)),
+            MaybeInheritMethods::PassThrough(_item) => {
+                let try_parse: MaybeSignalMethods = syn::parse2(tokens)?;
+
+                match try_parse {
+                    MaybeSignalMethods::Found(signals) => {
+                        self.add_signal_methods(signals)?;
+                        Ok(None)
+                    }
+                    MaybeSignalMethods::PassThrough(item) => Ok(Some(item)),
+                }
+            }
         }
     }
 
@@ -236,6 +240,30 @@ impl ParsedCxxQtData {
         Ok(())
     }
 
+    fn parse_signals_mod(&mut self, tokens: TokenStream) -> Result<()> {
+        let signals: SignalMethods = syn::parse2(tokens)?;
+
+        self.add_signal_methods(signals)
+    }
+
+    fn add_signal_methods(&mut self, signals: SignalMethods) -> Result<()> {
+        for method in signals.base_functions.into_iter() {
+            let parsed_signal_method = ParsedSignal::parse(method, signals.safety)?;
+
+            if let Some(ref mut qobject) =
+                self.qobjects.get_mut(&parsed_signal_method.qobject_ident)
+            {
+                qobject.signals.push(parsed_signal_method);
+            } else {
+                return Err(Error::new_spanned(
+                    parsed_signal_method.qobject_ident,
+                    "No QObject with this name found.",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     fn parse_foreign_mod(&mut self, mut foreign_mod: ItemForeignMod) -> Result<Option<Item>> {
         // Check if the foreign mod has cxx_qt::inherit on it
         if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["cxx_qt", "inherit"]) {
@@ -245,29 +273,17 @@ impl ParsedCxxQtData {
             self.parse_inherit_mod(foreign_mod.into_token_stream())?;
             return Ok(None);
         }
-        Ok(Some(Item::ForeignMod(foreign_mod)))
-    }
 
-    /// Parse a [syn::ItemEnum] into the qobjects if it's a CXX-Qt signal
-    /// otherwise return as a [syn::Item] to pass through.
-    fn parse_enum(&mut self, item_enum: ItemEnum) -> Result<Option<Item>> {
-        // Check if the enum has cxx_qt::qsignals(T)
-        if let Some(index) = attribute_find_path(&item_enum.attrs, &["cxx_qt", "qsignals"]) {
-            let ident = attribute_tokens_to_ident(&item_enum.attrs[index])?;
-            // Find the matching QObject for the enum
-            if let Some(qobject) = self.qobjects.get_mut(&ident) {
-                qobject.signals = Some(ParsedSignalsEnum::from(&item_enum, index)?);
-                return Ok(None);
-            } else {
-                return Err(Error::new(
-                    item_enum.span(),
-                    "No matching QObject found for the given cxx_qt::qsignals<T> enum.",
-                ));
-            }
+        // Check if the foreign mod has cxx_qt::qsignals on it
+        if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["cxx_qt", "qsignals"]) {
+            // Remove the signals attribute
+            foreign_mod.attrs.remove(index);
+
+            self.parse_signals_mod(foreign_mod.into_token_stream())?;
+            return Ok(None);
         }
 
-        // Passthrough this unknown enum
-        Ok(Some(Item::Enum(item_enum)))
+        Ok(Some(Item::ForeignMod(foreign_mod)))
     }
 
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
@@ -308,7 +324,7 @@ impl ParsedCxxQtData {
 mod tests {
     use super::*;
 
-    use crate::parser::qobject::tests::create_parsed_qobject;
+    use crate::{generator::naming::CombinedIdent, parser::qobject::tests::create_parsed_qobject};
     use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
@@ -417,63 +433,6 @@ mod tests {
         let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 0);
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_enum_valid_signals() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            #[cxx_qt::qsignals(MyObject)]
-            enum MySignals {
-                Ready,
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].signals.is_some());
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_enum_unknown_qobject() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        // Valid signals enum but missing QObject
-        let item: Item = parse_quote! {
-            #[cxx_qt::qsignals(UnknownObj)]
-            enum MySignals {
-                Ready,
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_enum_passthrough() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            enum MySignals {
-                Ready,
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_enum_error() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            #[cxx_qt::qsignals]
-            enum MySignals {
-                Ready,
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
     }
 
     #[test]
@@ -837,6 +796,91 @@ mod tests {
         assert_eq!(inherited[1].parameters[0].ident, "arg");
         assert_eq!(inherited[2].parameters.len(), 1);
         assert_eq!(inherited[2].parameters[0].ident, "arg");
+    }
+
+    #[test]
+    fn test_parse_qsignals_safe() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+        let block: Item = parse_quote! {
+            #[cxx_qt::qsignals]
+            unsafe extern "C++" {
+                fn ready(self: Pin<&mut qobject::MyObject>);
+
+                #[cxx_name="cppDataChanged"]
+                #[inherit]
+                fn data_changed(self: Pin<&mut qobject::MyObject>, data: i32);
+            }
+        };
+        cxxqtdata.parse_cxx_qt_item(block).unwrap();
+
+        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+
+        let signals = &qobject.signals;
+        assert_eq!(signals.len(), 2);
+        assert!(signals[0].mutable);
+        assert!(signals[1].mutable);
+        assert!(signals[0].safe);
+        assert!(signals[1].safe);
+        assert_eq!(signals[0].parameters.len(), 0);
+        assert_eq!(signals[1].parameters.len(), 1);
+        assert_eq!(signals[1].parameters[0].ident, "data");
+        assert_eq!(
+            signals[0].ident,
+            CombinedIdent {
+                cpp: format_ident!("ready"),
+                rust: format_ident!("ready")
+            }
+        );
+        assert_eq!(
+            signals[1].ident,
+            CombinedIdent {
+                cpp: format_ident!("cppDataChanged"),
+                rust: format_ident!("data_changed")
+            }
+        );
+        assert!(!signals[0].inherit);
+        assert!(signals[1].inherit);
+    }
+
+    #[test]
+    fn test_parse_qsignals_unknown_obj() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+        let block: Item = parse_quote! {
+            #[cxx_qt::qsignals]
+            unsafe extern "C++" {
+                fn ready(self: Pin<&mut qobject::UnknownObj>);
+            }
+        };
+        assert!(cxxqtdata.parse_cxx_qt_item(block).is_err());
+    }
+
+    #[test]
+    fn test_parse_qsignals_unsafe() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+        let block: Item = parse_quote! {
+            #[cxx_qt::qsignals]
+            extern "C++" {
+                unsafe fn unsafe_signal(self: Pin<&mut qobject::MyObject>, arg: *mut T);
+            }
+        };
+        cxxqtdata.parse_cxx_qt_item(block).unwrap();
+
+        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+
+        let signals = &qobject.signals;
+        assert_eq!(signals.len(), 1);
+        assert!(signals[0].mutable);
+        assert!(!signals[0].safe);
+        assert_eq!(signals[0].parameters.len(), 1);
+        assert_eq!(signals[0].parameters[0].ident, "arg");
+        assert_eq!(
+            signals[0].ident,
+            CombinedIdent {
+                cpp: format_ident!("unsafeSignal"),
+                rust: format_ident!("unsafe_signal")
+            }
+        );
+        assert!(!signals[0].inherit);
     }
 
     #[test]

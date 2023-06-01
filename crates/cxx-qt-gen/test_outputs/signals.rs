@@ -40,8 +40,7 @@ mod ffi {
         fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "emit_ready"]
+        #[rust_name = "ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
@@ -57,14 +56,13 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "emit_data_changed"]
+        #[rust_name = "data_changed"]
         fn emitDataChanged(
             self: Pin<&mut MyObjectQt>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
-            fourth: &QPoint,
+            fourth: &'a QPoint,
         );
     }
     unsafe extern "C++" {
@@ -80,20 +78,19 @@ mod ffi {
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
-                fourth: &QPoint,
+                fourth: &'a QPoint,
             ),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "emit_base_class_new_data"]
+        #[rust_name = "base_class_new_data"]
         fn emitNewData(
             self: Pin<&mut MyObjectQt>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
-            fourth: &QPoint,
+            fourth: &'a QPoint,
         );
     }
     unsafe extern "C++" {
@@ -109,7 +106,7 @@ mod ffi {
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
-                fourth: &QPoint,
+                fourth: &'a QPoint,
             ),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
@@ -153,28 +150,9 @@ mod cxx_qt_ffi {
                 },
                 cxx_qt_lib::ConnectionType::AutoConnection,
             );
-            self.as_mut().emit(MySignals::DataChanged {
-                first: 1,
-                second: Opaque::new(),
-                third: QPoint::new(1, 2),
-                fourth: &QPoint::new(1, 2),
-            });
+            self.as_mut()
+                .data_changed(1, Opaque::new(), QPoint::new(1, 2), &QPoint::new(1, 2));
         }
-    }
-    enum MySignals<'a> {
-        Ready,
-        DataChanged {
-            first: i32,
-            second: UniquePtr<Opaque>,
-            third: QPoint,
-            fourth: &'a QPoint,
-        },
-        BaseClassNewData {
-            first: i32,
-            second: UniquePtr<Opaque>,
-            third: QPoint,
-            fourth: &'a QPoint,
-        },
     }
     impl MyObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
@@ -204,7 +182,7 @@ mod cxx_qt_ffi {
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
-                fourth: &QPoint,
+                fourth: &'a QPoint,
             ),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
@@ -224,33 +202,10 @@ mod cxx_qt_ffi {
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
-                fourth: &QPoint,
+                fourth: &'a QPoint,
             ),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_base_class_new_data(func, CxxQtConnectionType::AutoConnection)
-        }
-    }
-    impl MyObjectQt {
-        #[doc = "Emit the signal from the enum "]
-        #[doc = "MySignals"]
-        #[doc = " on the QObject "]
-        #[doc = "MyObject"]
-        pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
-            match signal {
-                MySignals::Ready {} => self.emit_ready(),
-                MySignals::DataChanged {
-                    first,
-                    second,
-                    third,
-                    fourth,
-                } => self.emit_data_changed(first, second, third, fourth),
-                MySignals::BaseClassNewData {
-                    first,
-                    second,
-                    third,
-                    fourth,
-                } => self.emit_base_class_new_data(first, second, third, fourth),
-            }
         }
     }
     impl cxx_qt::Locking for MyObjectQt {}

@@ -38,6 +38,27 @@ MyObject::setPropertyName(::std::int32_t const& value)
 }
 
 void
+MyObject::emitPropertyNameChanged()
+{
+  Q_EMIT propertyNameChanged();
+}
+
+::QMetaObject::Connection
+MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
+                                     ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    this,
+    &MyObject::propertyNameChanged,
+    this,
+    [&, func = ::std::move(func)]() {
+      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      func(*this);
+    },
+    type);
+}
+
+void
 MyObject::invokableName()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
@@ -101,6 +122,24 @@ SecondObject::setPropertyName(::std::int32_t const& value)
 {
 
   m_rustObj->setPropertyName(*this, value);
+}
+
+void
+SecondObject::emitPropertyNameChanged()
+{
+  Q_EMIT propertyNameChanged();
+}
+
+::QMetaObject::Connection
+SecondObject::propertyNameChangedConnect(::rust::Fn<void(SecondObject&)> func,
+                                         ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    this,
+    &SecondObject::propertyNameChanged,
+    this,
+    [&, func = ::std::move(func)]() { func(*this); },
+    type);
 }
 
 void

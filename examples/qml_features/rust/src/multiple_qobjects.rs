@@ -38,13 +38,13 @@ pub mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::FirstObject {}
 
-    /// Signals for the first QObject
-    #[cxx_qt::qsignals(FirstObject)]
-    pub enum FirstSignals {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
         /// Accepted Q_SIGNAL
-        Accepted,
+        fn accepted(self: Pin<&mut qobject::FirstObject>);
+
         /// Rejected Q_SIGNAL
-        Rejected,
+        fn rejected(self: Pin<&mut qobject::FirstObject>);
     }
 
     impl qobject::FirstObject {
@@ -56,10 +56,10 @@ pub mod ffi {
 
             if new_value % 2 == 0 {
                 self.as_mut().set_color(QColor::from_rgb(0, 0, 255));
-                self.emit(FirstSignals::Accepted);
+                self.accepted();
             } else {
                 self.as_mut().set_color(QColor::from_rgb(255, 0, 0));
-                self.emit(FirstSignals::Rejected);
+                self.rejected();
             }
         }
     }
@@ -85,13 +85,13 @@ pub mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::SecondObject {}
 
-    /// Signals for the second QObject
-    #[cxx_qt::qsignals(SecondObject)]
-    pub enum SecondSignals {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
         /// Accepted Q_SIGNAL
-        Accepted,
+        fn accepted(self: Pin<&mut qobject::SecondObject>);
+
         /// Rejected Q_SIGNAL
-        Rejected,
+        fn rejected(self: Pin<&mut qobject::SecondObject>);
     }
 
     impl qobject::SecondObject {
@@ -104,10 +104,10 @@ pub mod ffi {
             if new_value % 5 == 0 {
                 self.as_mut()
                     .set_url(QUrl::from("https://github.com/kdab/cxx-qt"));
-                self.emit(SecondSignals::Accepted);
+                self.accepted();
             } else {
                 self.as_mut().set_url(QUrl::from("https://kdab.com"));
-                self.emit(SecondSignals::Rejected);
+                self.rejected();
             }
         }
     }

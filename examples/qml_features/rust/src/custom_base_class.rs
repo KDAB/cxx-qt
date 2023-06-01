@@ -50,20 +50,17 @@ pub mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::CustomBaseClass {}
 
-    /// The signals for our QAbstractListModel struct
     // ANCHOR: book_qsignals_inherit
-    #[cxx_qt::qsignals(CustomBaseClass)]
-    pub enum Signals<'a> {
+    #[cxx_qt::qsignals]
+    unsafe extern "C++" {
         /// Inherit the DataChanged signal from the QAbstractListModel base class
         #[inherit]
-        DataChanged {
-            /// Top left affected index
-            top_left: &'a QModelIndex,
-            /// Bottom right affected index
-            bottom_right: &'a QModelIndex,
-            /// Roles that have been modified
-            roles: &'a QVector_i32,
-        },
+        fn data_changed(
+            self: Pin<&mut qobject::CustomBaseClass>,
+            top_left: &QModelIndex,
+            bottom_right: &QModelIndex,
+            roles: &QVector_i32,
+        );
     }
     // ANCHOR_END: book_qsignals_inherit
 
@@ -133,11 +130,8 @@ pub mod ffi {
                 let model_index = self.index(index, 0, &QModelIndex::default());
                 let mut vector_roles = QVector_i32::default();
                 vector_roles.append(1);
-                self.as_mut().emit(Signals::DataChanged {
-                    top_left: &model_index,
-                    bottom_right: &model_index,
-                    roles: &vector_roles,
-                });
+                self.as_mut()
+                    .data_changed(&model_index, &model_index, &vector_roles);
             }
         }
 

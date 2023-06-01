@@ -7,17 +7,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Signals enum
 
-The `cxx_qt::qsignals(T)` attribute is used on an [enum](https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html) to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the QObject `T`.
+The `cxx_qt::qsignals` attribute is used on an `extern "C++"` block to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the a QObject.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_enum}}
+{{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_block}}
 ```
 
-For every enum variant, CXX-Qt will generate a signal on the corresponding QObject.
-If the enum variant has members, they will become the parameters for the corresponding signal.
-
-Because CXX-Qt needs to know the names of each parameter, only enum variants with named members are supported.
-The signal parameters are generated in order of appearance in the enum variant.
+For every function signature in the extern block, CXX-Qt will generate a signal on the corresponding QObject.
+If the function has parameters, they will become the parameters for the corresponding signal.
 
 If a signal is defined on the base class of the QObject then `#[inherit]` can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
 
@@ -60,18 +57,16 @@ In this case, it is no longer possible to disconnect later.
 
 ## Emitting a signal
 
-For every generated QObject [`qobject::T`](./generated-qobject.md) that has a signals enum, CXX-Qt will generate an `emit` function:
-``` rust,ignore,noplayground
-fn emit(self: Pin<&mut Self>, signal: /*Signals enum*/)
-```
-`emit` can therefore be called from any mutable `#[qinvokable]`.
+Call the function signature defined in the `extern "C++` block to emit the signal.
 
-The `emit` function will immediately emit the signal.
+Note that these are defined on the generated QObject [`qobject::T`](./generated-qobject.md), so can be called from any mutable `#[qinvokable]`.
+
+The function will immediately emit the signal.
 Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
-To queue the call to `emit` until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](./cxxqtthread.md).
+To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](./cxxqtthread.md).
 
 ### [Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs)
+
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_macro_code}}
 ```
-

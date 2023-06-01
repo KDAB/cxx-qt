@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{
-    cpp::{qobject::GeneratedCppQObjectBlocks, types::CppType},
+    cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals, types::CppType},
     naming::{property::QPropertyName, qobject::QObjectName},
 };
 use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
@@ -22,7 +22,9 @@ pub fn generate_cpp_properties(
     lock_guard: Option<&str>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
+    let mut signals = vec![];
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
+
     for property in properties {
         // Cache the idents as they are used in multiple places
         let idents = QPropertyName::from(property);
@@ -41,8 +43,15 @@ pub fn generate_cpp_properties(
             &cxx_ty,
             lock_guard,
         ));
-        generated.methods.push(signal::generate(&idents));
+        signals.push(signal::generate(&idents, qobject_idents));
     }
+
+    generated.append(&mut generate_cpp_signals(
+        &signals,
+        qobject_idents,
+        cxx_mappings,
+        lock_guard,
+    )?);
 
     Ok(generated)
 }
@@ -88,7 +97,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(::std::unique_ptr<QColor> opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 6);
+        assert_eq!(generated.methods.len(), 10);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -127,13 +136,8 @@ mod tests {
                 }
                 "#}
         );
-        let header = if let CppFragment::Header(header) = &generated.methods[2] {
-            header
-        } else {
-            panic!("Expected header!")
-        };
-        assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
             (header, source)
         } else {
             panic!("Expected pair!")
@@ -154,7 +158,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
             (header, source)
         } else {
             panic!("Expected pair!")
@@ -175,12 +179,105 @@ mod tests {
             "#}
         );
 
-        let header = if let CppFragment::Header(header) = &generated.methods[5] {
+        let header = if let CppFragment::Header(header) = &generated.methods[4] {
+            header
+        } else {
+            panic!("Expected header!")
+        };
+        assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[5] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, "void emitTrivialPropertyChanged();");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::emitTrivialPropertyChanged()
+            {
+                Q_EMIT trivialPropertyChanged();
+            }
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[6] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(
+            header,
+            "::QMetaObject::Connection trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
+        );
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            ::QMetaObject::Connection
+            MyObject::trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(this,
+                        &MyObject::trivialPropertyChanged,
+                        this,
+                        [&, func = ::std::move(func)]() {
+                          // ::std::lock_guard
+                          func(*this);
+                        }, type);
+            }
+            "#}
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.methods[7] {
             header
         } else {
             panic!("Expected header!")
         };
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[8] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, "void emitOpaquePropertyChanged();");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::emitOpaquePropertyChanged()
+            {
+                Q_EMIT opaquePropertyChanged();
+            }
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[9] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(
+            header,
+            "::QMetaObject::Connection opaquePropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
+        );
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            ::QMetaObject::Connection
+            MyObject::opaquePropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(this,
+                        &MyObject::opaquePropertyChanged,
+                        this,
+                        [&, func = ::std::move(func)]() {
+                          // ::std::lock_guard
+                          func(*this);
+                        }, type);
+            }
+            "#}
+        );
     }
 
     #[test]
@@ -210,7 +307,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(A1 mappedProperty READ getMappedProperty WRITE setMappedProperty NOTIFY mappedPropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 3);
+        assert_eq!(generated.methods.len(), 5);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -252,5 +349,48 @@ mod tests {
             panic!("Expected header!")
         };
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(header, "void emitMappedPropertyChanged();");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::emitMappedPropertyChanged()
+            {
+                Q_EMIT mappedPropertyChanged();
+            }
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(
+            header,
+            "::QMetaObject::Connection mappedPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
+        );
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            ::QMetaObject::Connection
+            MyObject::mappedPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(this,
+                        &MyObject::mappedPropertyChanged,
+                        this,
+                        [&, func = ::std::move(func)]() {
+                          // ::std::lock_guard
+                          func(*this);
+                        }, type);
+            }
+            "#}
+        );
     }
 }

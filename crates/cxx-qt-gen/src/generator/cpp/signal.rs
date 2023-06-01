@@ -117,7 +117,7 @@ pub fn generate_cpp_signals(
 mod tests {
     use super::*;
 
-    use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::generator::naming::{qobject::tests::create_qobjectname, CombinedIdent};
     use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
@@ -127,9 +127,11 @@ mod tests {
     #[test]
     fn test_generate_cpp_signals() {
         let signals = vec![ParsedSignal {
-            ident: format_ident!("data_changed"),
-            cxx_name: None,
-            inherit: false,
+            method: parse_quote! {
+                fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+            },
+            qobject_ident: format_ident!("MyObject"),
+            mutable: true,
             parameters: vec![
                 ParsedFunctionParameter {
                     ident: format_ident!("trivial"),
@@ -140,6 +142,12 @@ mod tests {
                     ty: parse_quote! { UniquePtr<QColor> },
                 },
             ],
+            ident: CombinedIdent {
+                cpp: format_ident!("dataChanged"),
+                rust: format_ident!("data_changed"),
+            },
+            safe: true,
+            inherit: false,
         }];
         let qobject_idents = create_qobjectname();
 
@@ -212,13 +220,21 @@ mod tests {
     #[test]
     fn test_generate_cpp_signals_mapped_cxx_name() {
         let signals = vec![ParsedSignal {
-            ident: format_ident!("data_changed"),
-            cxx_name: None,
-            inherit: false,
+            method: parse_quote! {
+                fn data_changed(self: Pin<&mut MyObject>, mapped: A1);
+            },
+            qobject_ident: format_ident!("MyObject"),
+            mutable: true,
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
                 ty: parse_quote! { A1 },
             }],
+            ident: CombinedIdent {
+                cpp: format_ident!("dataChanged"),
+                rust: format_ident!("data_changed"),
+            },
+            safe: true,
+            inherit: false,
         }];
         let qobject_idents = create_qobjectname();
 
@@ -290,10 +306,19 @@ mod tests {
     #[test]
     fn test_generate_cpp_signals_existing_cxx_name() {
         let signals = vec![ParsedSignal {
-            ident: format_ident!("ExistingSignal"),
-            cxx_name: Some("baseName".to_owned()),
-            inherit: true,
+            method: parse_quote! {
+                #[cxx_name = "baseName"]
+                fn existing_signal(self: Pin<&mut MyObject>);
+            },
+            qobject_ident: format_ident!("MyObject"),
+            mutable: true,
             parameters: vec![],
+            ident: CombinedIdent {
+                cpp: format_ident!("baseName"),
+                rust: format_ident!("existing_signal"),
+            },
+            safe: true,
+            inherit: true,
         }];
         let qobject_idents = create_qobjectname();
 

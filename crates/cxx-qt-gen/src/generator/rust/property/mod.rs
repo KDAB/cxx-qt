@@ -16,11 +16,14 @@ use crate::{
 };
 use syn::Result;
 
+use super::signals::generate_rust_signals;
+
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut generated = GeneratedRustQObjectBlocks::default();
+    let mut signals = vec![];
 
     for property in properties {
         let idents = QPropertyName::from(property);
@@ -44,14 +47,10 @@ pub fn generate_rust_properties(
             .append(&mut setter.implementation_as_items()?);
 
         // Signals
-        let notify = signal::generate(&idents, qobject_idents);
-        generated
-            .cxx_mod_contents
-            .append(&mut notify.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut notify.implementation_as_items()?);
+        signals.push(signal::generate(&idents, qobject_idents));
     }
+
+    generated.append(&mut generate_rust_signals(&signals, qobject_idents)?);
 
     Ok(generated)
 }
@@ -60,7 +59,7 @@ pub fn generate_rust_properties(
 mod tests {
     use super::*;
 
-    use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use quote::format_ident;
     use syn::parse_quote;
 
@@ -88,23 +87,23 @@ mod tests {
         let generated = generate_rust_properties(&properties, &qobject_idents).unwrap();
 
         // Check that we have the expected number of blocks
-        assert_eq!(generated.cxx_mod_contents.len(), 9);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 15);
+        assert_eq!(generated.cxx_mod_contents.len(), 12);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 18);
 
         // Trivial Property
 
         // Getter
-        assert_eq!(
-            generated.cxx_mod_contents[0],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getTrivialProperty"]
                     unsafe fn trivial_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a i32;
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[0],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[0],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -112,10 +111,10 @@ mod tests {
                         cpp.trivial_property()
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[1],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[1],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -124,10 +123,10 @@ mod tests {
                         &self.rust().trivial_property
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[2],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[2],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "unsafe getter for the Q_PROPERTY "]
@@ -141,21 +140,21 @@ mod tests {
                         &mut self.rust_mut().get_unchecked_mut().trivial_property
                     }
                 }
-            }
+            },
         );
 
         // Setters
-        assert_eq!(
-            generated.cxx_mod_contents[1],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[1],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setTrivialProperty"]
                     fn set_trivial_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[3],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[3],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -163,10 +162,10 @@ mod tests {
                         cpp.set_trivial_property(value);
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[4],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[4],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -181,40 +180,23 @@ mod tests {
                         self.as_mut().trivial_property_changed();
                     }
                 }
-            }
-        );
-
-        // Notify
-        assert_eq!(
-            generated.cxx_mod_contents[2],
-            parse_quote! {
-                unsafe extern "C++" {
-                    #[doc = "Notify signal for the Q_PROPERTY"]
-                    #[doc = "trivial_property"]
-                    #[doc = "\n"]
-                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-                    #[doc = "trivial_property_mut"]
-                    #[doc = ", is used."]
-                    #[rust_name = "trivial_property_changed"]
-                    fn trivialPropertyChanged(self: Pin<&mut MyObjectQt>);
-                }
-            }
+            },
         );
 
         // Opaque Property
 
         // Getter
-        assert_eq!(
-            generated.cxx_mod_contents[3],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[2],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getOpaqueProperty"]
                     unsafe fn opaque_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a UniquePtr<QColor>;
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[5],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[5],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -222,10 +204,10 @@ mod tests {
                         cpp.opaque_property()
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[6],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[6],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -234,10 +216,10 @@ mod tests {
                         &self.rust().opaque_property
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[7],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[7],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "unsafe getter for the Q_PROPERTY "]
@@ -251,21 +233,21 @@ mod tests {
                         &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
                 }
-            }
+            },
         );
 
         // Setters
-        assert_eq!(
-            generated.cxx_mod_contents[4],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[3],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setOpaqueProperty"]
                     fn set_opaque_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: UniquePtr<QColor>);
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[8],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[8],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -273,10 +255,10 @@ mod tests {
                         cpp.set_opaque_property(value);
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[9],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[9],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -291,40 +273,23 @@ mod tests {
                         self.as_mut().opaque_property_changed();
                     }
                 }
-            }
-        );
-
-        // Notify
-        assert_eq!(
-            generated.cxx_mod_contents[5],
-            parse_quote! {
-                unsafe extern "C++" {
-                    #[doc = "Notify signal for the Q_PROPERTY"]
-                    #[doc = "opaque_property"]
-                    #[doc = "\n"]
-                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-                    #[doc = "opaque_property_mut"]
-                    #[doc = ", is used."]
-                    #[rust_name = "opaque_property_changed"]
-                    fn opaquePropertyChanged(self: Pin<&mut MyObjectQt>);
-                }
-            }
+            },
         );
 
         // Unsafe Property
 
         // Getter
-        assert_eq!(
-            generated.cxx_mod_contents[6],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[4],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "getUnsafeProperty"]
                     unsafe fn unsafe_property<'a>(self: &'a MyObject, cpp: &'a MyObjectQt) -> &'a *mut T;
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[10],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[10],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -332,10 +297,10 @@ mod tests {
                         cpp.unsafe_property()
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[11],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[11],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -344,10 +309,10 @@ mod tests {
                         &self.rust().unsafe_property
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[12],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[12],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "unsafe getter for the Q_PROPERTY "]
@@ -361,21 +326,21 @@ mod tests {
                         &mut self.rust_mut().get_unchecked_mut().unsafe_property
                     }
                 }
-            }
+            },
         );
 
         // Setters
-        assert_eq!(
-            generated.cxx_mod_contents[7],
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[5],
             parse_quote! {
                 extern "Rust" {
                     #[cxx_name = "setUnsafeProperty"]
                     unsafe fn set_unsafe_property(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: *mut T);
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[13],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[13],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -383,10 +348,10 @@ mod tests {
                         cpp.set_unsafe_property(value);
                     }
                 }
-            }
+            },
         );
-        assert_eq!(
-            generated.cxx_qt_mod_contents[14],
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[14],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -401,24 +366,132 @@ mod tests {
                         self.as_mut().unsafe_property_changed();
                     }
                 }
-            }
+            },
         );
 
-        // Notify
-        assert_eq!(
-            generated.cxx_mod_contents[8],
+        // Signals
+
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[6],
             parse_quote! {
                 unsafe extern "C++" {
-                    #[doc = "Notify signal for the Q_PROPERTY"]
-                    #[doc = "unsafe_property"]
-                    #[doc = "\n"]
-                    #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-                    #[doc = "unsafe_property_mut"]
-                    #[doc = ", is used."]
-                    #[rust_name = "unsafe_property_changed"]
-                    fn unsafePropertyChanged(self: Pin<&mut MyObjectQt>);
+                    #[doc = "Notify for the Q_PROPERTY"]
+                    #[rust_name = "trivial_property_changed"]
+                    fn emitTrivialPropertyChanged(self: Pin<&mut MyObjectQt>, );
                 }
-            }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[7],
+            parse_quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "trivialPropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    #[rust_name = "connect_trivial_property_changed"]
+                    fn trivialPropertyChangedConnect(self: Pin <&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[15],
+            parse_quote! {
+                impl MyObjectQt {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "trivialPropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    fn on_trivial_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    {
+                        self.connect_trivial_property_changed(func, CxxQtConnectionType::AutoConnection)
+                    }
+                }
+            },
+        );
+
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[8],
+            parse_quote! {
+                unsafe extern "C++" {
+                    #[doc = "Notify for the Q_PROPERTY"]
+                    #[rust_name = "opaque_property_changed"]
+                    fn emitOpaquePropertyChanged(self: Pin<&mut MyObjectQt>, );
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[9],
+            parse_quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "opaquePropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    #[rust_name = "connect_opaque_property_changed"]
+                    fn opaquePropertyChangedConnect(self: Pin <&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[16],
+            parse_quote! {
+                impl MyObjectQt {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "opaquePropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    fn on_opaque_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    {
+                        self.connect_opaque_property_changed(func, CxxQtConnectionType::AutoConnection)
+                    }
+                }
+            },
+        );
+
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[10],
+            parse_quote! {
+                unsafe extern "C++" {
+                    #[doc = "Notify for the Q_PROPERTY"]
+                    #[rust_name = "unsafe_property_changed"]
+                    fn emitUnsafePropertyChanged(self: Pin<&mut MyObjectQt>, );
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[11],
+            parse_quote! {
+                unsafe extern "C++" {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "unsafePropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    #[rust_name = "connect_unsafe_property_changed"]
+                    fn unsafePropertyChangedConnect(self: Pin <&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[17],
+            parse_quote! {
+                impl MyObjectQt {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "unsafePropertyChanged"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    fn on_unsafe_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    {
+                        self.connect_unsafe_property_changed(func, CxxQtConnectionType::AutoConnection)
+                    }
+                }
+            },
         );
     }
 }

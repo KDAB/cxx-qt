@@ -7,10 +7,14 @@ use crate::syntax::path::path_compare_str;
 use proc_macro2::Span;
 use std::collections::HashMap;
 use syn::{
-    ext::IdentExt,
+    // ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Attribute, Error, Ident, Meta, Result, Token,
+    Attribute,
+    Error,
+    Meta,
+    Result,
+    Token,
 };
 
 /// Representation of a key and an optional value in an attribute, eg `attribute(key = value)` or `attribute(key)`
@@ -41,32 +45,6 @@ pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> 
     }
 
     None
-}
-
-/// Returns the [syn::Ident] T from attribute(T) and errors if there is none or many
-pub fn attribute_tokens_to_ident(attr: &Attribute) -> Result<Ident> {
-    let attrs = attribute_tokens_to_list(attr)?;
-    if attrs.len() == 1 {
-        Ok(attrs[0].clone())
-    } else {
-        Err(Error::new(
-            attr.span(),
-            "Expected only one ident in the attribute",
-        ))
-    }
-}
-
-/// Returns the list of [syn::Ident]'s A, B, C from attribute(A, B, C)
-/// and errors if there is a parser error
-pub fn attribute_tokens_to_list(attr: &Attribute) -> Result<Vec<Ident>> {
-    attr.meta
-        .require_list()?
-        .parse_args_with(|input: ParseStream| -> Result<Vec<Ident>> {
-            Ok(input
-                .parse_terminated(Ident::parse_any, Token![,])?
-                .into_iter()
-                .collect::<Vec<Ident>>())
-        })
 }
 
 /// Whether the attribute has a default value if there is one missing
@@ -128,60 +106,6 @@ mod tests {
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "qsignals"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "missing"]).is_none());
-    }
-
-    #[test]
-    fn test_attribute_tokens_to_ident() {
-        let module: ItemMod = parse_quote! {
-            #[qinvokable]
-            #[cxx_qt::bridge]
-            #[cxx_qt::qsignals(MyObject)]
-            #[cxx_qt::bridge(namespace = "my::namespace")]
-            #[cxx_qt::list(A, B, C)]
-            #[cxx_qt::empty()]
-            mod module;
-        };
-
-        assert!(attribute_tokens_to_ident(&module.attrs[0]).is_err());
-        assert!(attribute_tokens_to_ident(&module.attrs[1]).is_err());
-        assert!(attribute_tokens_to_ident(&module.attrs[2]).is_ok());
-        assert_eq!(
-            attribute_tokens_to_ident(&module.attrs[2]).unwrap(),
-            "MyObject"
-        );
-        assert!(attribute_tokens_to_ident(&module.attrs[3]).is_err());
-        assert!(attribute_tokens_to_ident(&module.attrs[4]).is_err());
-        assert!(attribute_tokens_to_ident(&module.attrs[5]).is_err());
-    }
-
-    #[test]
-    fn test_attribute_tokens_to_list() {
-        let module: ItemMod = parse_quote! {
-            #[qinvokable]
-            #[cxx_qt::bridge]
-            #[cxx_qt::qsignals(MyObject)]
-            #[cxx_qt::bridge(namespace = "my::namespace")]
-            #[cxx_qt::list(A, B, C)]
-            #[cxx_qt::list()]
-            mod module;
-        };
-
-        assert!(attribute_tokens_to_list(&module.attrs[0]).is_err());
-        assert!(attribute_tokens_to_list(&module.attrs[1]).is_err());
-        assert!(attribute_tokens_to_list(&module.attrs[2]).is_ok());
-        assert_eq!(attribute_tokens_to_list(&module.attrs[2]).unwrap().len(), 1);
-        assert_eq!(
-            attribute_tokens_to_list(&module.attrs[2]).unwrap()[0],
-            "MyObject"
-        );
-        assert!(attribute_tokens_to_list(&module.attrs[3]).is_err());
-        assert!(attribute_tokens_to_list(&module.attrs[4]).is_ok());
-        assert_eq!(attribute_tokens_to_list(&module.attrs[4]).unwrap().len(), 3);
-        assert_eq!(attribute_tokens_to_list(&module.attrs[4]).unwrap()[0], "A");
-        assert_eq!(attribute_tokens_to_list(&module.attrs[4]).unwrap()[1], "B");
-        assert_eq!(attribute_tokens_to_list(&module.attrs[4]).unwrap()[2], "C");
-        assert!(attribute_tokens_to_list(&module.attrs[5]).is_ok());
-        assert_eq!(attribute_tokens_to_list(&module.attrs[5]).unwrap().len(), 0);
     }
 
     #[test]

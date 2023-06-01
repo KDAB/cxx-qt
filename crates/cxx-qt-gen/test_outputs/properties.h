@@ -33,10 +33,18 @@ public:
 public:
   ::std::int32_t const& getPrimitive() const;
   Q_SLOT void setPrimitive(::std::int32_t const& value);
-  Q_SIGNAL void primitiveChanged();
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
+  Q_SIGNAL void primitiveChanged();
+  void emitPrimitiveChanged();
+  ::QMetaObject::Connection primitiveChangedConnect(
+    ::rust::Fn<void(MyObject&)> func,
+    ::Qt::ConnectionType type);
   Q_SIGNAL void trivialChanged();
+  void emitTrivialChanged();
+  ::QMetaObject::Connection trivialChangedConnect(
+    ::rust::Fn<void(MyObject&)> func,
+    ::Qt::ConnectionType type);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

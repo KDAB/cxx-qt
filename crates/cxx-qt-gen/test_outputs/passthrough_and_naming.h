@@ -37,6 +37,10 @@ public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
+  void emitPropertyNameChanged();
+  ::QMetaObject::Connection propertyNameChangedConnect(
+    ::rust::Fn<void(MyObject&)> func,
+    ::Qt::ConnectionType type);
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();
@@ -71,6 +75,10 @@ public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
+  void emitPropertyNameChanged();
+  ::QMetaObject::Connection propertyNameChangedConnect(
+    ::rust::Fn<void(SecondObject&)> func,
+    ::Qt::ConnectionType type);
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   void emitReady();

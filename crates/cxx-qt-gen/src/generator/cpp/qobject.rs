@@ -116,14 +116,12 @@ impl GeneratedCppQObject {
             cxx_mappings,
             lock_guard,
         )?);
-        if let Some(signals_enum) = &qobject.signals {
-            generated.blocks.append(&mut generate_cpp_signals(
-                &signals_enum.signals,
-                &qobject_idents,
-                cxx_mappings,
-                lock_guard,
-            )?);
-        }
+        generated.blocks.append(&mut generate_cpp_signals(
+            &qobject.signals,
+            &qobject_idents,
+            cxx_mappings,
+            lock_guard,
+        )?);
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,
             &qobject.base_class,

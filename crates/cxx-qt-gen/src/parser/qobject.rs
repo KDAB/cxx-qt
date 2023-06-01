@@ -12,7 +12,7 @@ use crate::{
         inherit::ParsedInheritedMethod,
         invokable::ParsedQInvokable,
         property::{ParsedQProperty, ParsedRustField},
-        signals::ParsedSignalsEnum,
+        signals::ParsedSignal,
     },
     syntax::path::path_compare_str,
 };
@@ -44,8 +44,8 @@ pub struct ParsedQObject {
     /// The namespace of the QObject. If one isn't specified for the QObject,
     /// this will be the same as the module
     pub namespace: String,
-    /// Representation of the Signals enum that defines the Q_SIGNALS for the QObject
-    pub signals: Option<ParsedSignalsEnum>,
+    /// Representation of the Q_SIGNALS for the QObject
+    pub signals: Vec<ParsedSignal>,
     /// List of invokables that need to be implemented on the C++ object in Rust
     ///
     /// These will also be exposed as Q_INVOKABLE on the C++ object
@@ -114,7 +114,7 @@ impl ParsedQObject {
             base_class,
             qobject_struct,
             namespace,
-            signals: None,
+            signals: vec![],
             invokables: vec![],
             inherited_methods: vec![],
             passthrough_impl_items: vec![],

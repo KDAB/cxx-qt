@@ -71,9 +71,9 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 ///     # // Note that we can't use properties as this confuses the linker on Windows
 ///     pub struct MyObject;
 ///
-///     #[cxx_qt::qsignals(MyObject)]
-///     pub enum MySignals {
-///         Ready,
+///     #[cxx_qt::qsignals]
+///     unsafe extern "C++" {
+///         fn ready(self: Pin<&mut qobject::MyObject>);
 ///     }
 /// }
 ///

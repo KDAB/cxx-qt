@@ -83,22 +83,28 @@ pub mod ffi {
         fn set_property_name(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, value: i32);
     }
     unsafe extern "C++" {
-        #[doc = "Notify signal for the Q_PROPERTY"]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-        #[doc = "property_name_mut"]
-        #[doc = ", is used."]
+        #[doc = "Notify for the Q_PROPERTY"]
         #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut MyObjectQt>);
+        fn emitPropertyNameChanged(self: Pin<&mut MyObjectQt>);
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "propertyNameChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
+        #[rust_name = "connect_property_name_changed"]
+        fn propertyNameChangedConnect(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
         fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "emit_ready"]
+        #[rust_name = "ready"]
         fn emitReady(self: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
@@ -151,22 +157,29 @@ pub mod ffi {
         fn set_property_name(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>, value: i32);
     }
     unsafe extern "C++" {
-        #[doc = "Notify signal for the Q_PROPERTY"]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This can be used to manually notify a change when the unsafe mutable getter,"]
-        #[doc = "property_name_mut"]
-        #[doc = ", is used."]
+        #[doc = "Notify for the Q_PROPERTY"]
         #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut SecondObjectQt>);
+        fn emitPropertyNameChanged(self: Pin<&mut SecondObjectQt>);
+    }
+    unsafe extern "C++" {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "propertyNameChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[must_use]
+        #[rust_name = "connect_property_name_changed"]
+        fn propertyNameChangedConnect(
+            self: Pin<&mut SecondObjectQt>,
+            func: fn(Pin<&mut SecondObjectQt>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
         fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>);
     }
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "emit_ready"]
+        #[my_attribute]
+        #[rust_name = "ready"]
         fn emitReady(self: Pin<&mut SecondObjectQt>);
     }
     unsafe extern "C++" {
@@ -270,6 +283,20 @@ mod cxx_qt_ffi {
             self.as_mut().property_name_changed();
         }
     }
+    impl MyObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "propertyNameChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_property_name_changed(
+            self: Pin<&mut MyObjectQt>,
+            func: fn(Pin<&mut MyObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
@@ -291,9 +318,6 @@ mod cxx_qt_ffi {
     impl MyObjectQt {
         my_macro!();
     }
-    pub enum MySignals {
-        Ready,
-    }
     impl MyObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
@@ -306,17 +330,6 @@ mod cxx_qt_ffi {
             func: fn(Pin<&mut MyObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
-        }
-    }
-    impl MyObjectQt {
-        #[doc = "Emit the signal from the enum "]
-        #[doc = "MySignals"]
-        #[doc = " on the QObject "]
-        #[doc = "MyObject"]
-        pub fn emit(self: Pin<&mut Self>, signal: MySignals) {
-            match signal {
-                MySignals::Ready {} => self.emit_ready(),
-            }
         }
     }
     impl cxx_qt::Locking for MyObjectQt {}
@@ -385,6 +398,20 @@ mod cxx_qt_ffi {
             self.as_mut().property_name_changed();
         }
     }
+    impl SecondObjectQt {
+        #[doc = "Connect the given function pointer to the signal "]
+        #[doc = "propertyNameChanged"]
+        #[doc = ", so that when the signal is emitted the function pointer is executed."]
+        #[doc = "\n"]
+        #[doc = "Note that this method uses a AutoConnection connection type."]
+        #[must_use]
+        fn on_property_name_changed(
+            self: Pin<&mut SecondObjectQt>,
+            func: fn(Pin<&mut SecondObjectQt>),
+        ) -> CxxQtQMetaObjectConnection {
+            self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
     impl SecondObject {
         #[doc(hidden)]
         pub fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>) {
@@ -396,9 +423,6 @@ mod cxx_qt_ffi {
             println!("Bye from second Rust!");
             self.as_mut().set_property_name(5);
         }
-    }
-    pub enum SecondSignals {
-        Ready,
     }
     impl SecondObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
@@ -412,17 +436,6 @@ mod cxx_qt_ffi {
             func: fn(Pin<&mut SecondObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
-        }
-    }
-    impl SecondObjectQt {
-        #[doc = "Emit the signal from the enum "]
-        #[doc = "SecondSignals"]
-        #[doc = " on the QObject "]
-        #[doc = "SecondObject"]
-        pub fn emit(self: Pin<&mut Self>, signal: SecondSignals) {
-            match signal {
-                SecondSignals::Ready {} => self.emit_ready(),
-            }
         }
     }
     impl cxx_qt::CxxQtType for SecondObjectQt {

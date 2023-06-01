@@ -12,6 +12,7 @@ pub mod signals;
 use syn::Ident;
 
 /// Describes an ident which potentially has a different name in C++ and Rust
+#[derive(Clone, Debug, PartialEq)]
 pub struct CombinedIdent {
     /// The ident for C++
     pub cpp: Ident,

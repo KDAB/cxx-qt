@@ -10,6 +10,7 @@ use syn::{
 };
 
 /// Describes a single parameter for a function
+#[derive(Debug, PartialEq)]
 pub struct ParsedFunctionParameter {
     /// The [syn::Ident] of the parameter
     pub ident: Ident,

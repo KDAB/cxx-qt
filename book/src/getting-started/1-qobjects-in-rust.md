@@ -47,7 +47,7 @@ Then you can use the afformentioned features with the help of more macros.
 - `#[cxx_qt::qobject]` - Expose a Rust struct to Qt as a QObject subclass.
     - `#[qproperty]` - Expose a field of the Rust struct to QML/C++ as a [`Q_PROPERTY`](https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html#exposing-properties).
     - `#[qinvokable]` - Expose a function on the QObject to QML and C++ as a [`Q_INVOKABLE`](https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html#exposing-methods-including-qt-slots).
-- `#[cxx_qt::qsignals(T)]` - Use an enum to define the [Signals](https://doc.qt.io/qt-6/signalsandslots.html#signals) of a QObject T.
+- `#[cxx_qt::qsignals]` - Define the [Signals](https://doc.qt.io/qt-6/signalsandslots.html#signals) of a QObject T.
 
 CXX-Qt will then expand this Rust module into two separate parts:
 - C++ files that define a QObject subclass for each `#[cxx_qt::qobject]` marked struct.

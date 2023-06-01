@@ -89,12 +89,10 @@ impl GeneratedRustQObject {
             &qobject_idents,
             &qobject.inherited_methods,
         )?);
-
-        if let Some(signals_enum) = &qobject.signals {
-            generated
-                .blocks
-                .append(&mut generate_rust_signals(signals_enum, &qobject_idents)?);
-        }
+        generated.blocks.append(&mut generate_rust_signals(
+            &qobject.signals,
+            &qobject_idents,
+        )?);
 
         // If this type is a singleton then we need to add an include
         if let Some(qml_metadata) = &qobject.qml_metadata {
