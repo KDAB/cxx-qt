@@ -32,7 +32,6 @@ pub fn generate(
                 .collect::<Vec<TokenStream>>();
             let ident = &method.method.sig.ident;
             let cxx_name_string = &method.wrapper_ident().to_string();
-            let ident_cpp_str = method.ident.cpp.to_string();
             let self_param = if method.mutable {
                 quote! { self: Pin<&mut #qobject_name> }
             } else {
@@ -45,11 +44,10 @@ pub fn generate(
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
+            let attrs = &method.method.attrs;
             syn::parse2(quote! {
                 #unsafe_block extern "C++" {
-                    #[doc = "CXX-Qt generated method which calls the C++ method"]
-                    #[doc = #ident_cpp_str]
-                    #[doc = "on the base class"]
+                    #(#attrs)*
                     #[cxx_name = #cxx_name_string]
                     #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
                 }
@@ -82,7 +80,7 @@ mod tests {
     fn test_mutable() {
         let generated = generate_from_foreign(
             parse_quote! {
-                    fn test(self: Pin<&mut qobject::MyObject>, a: B, b: C);
+                fn test(self: Pin<&mut qobject::MyObject>, a: B, b: C);
             },
             Safety::Safe,
         )
@@ -95,9 +93,6 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[doc = "CXX-Qt generated method which calls the C++ method"]
-                    #[doc = "test"]
-                    #[doc = "on the base class"]
                     #[cxx_name = "testCxxQtInherit"]
                     fn test(self: Pin<&mut MyObjectQt>, a: B, b: C);
                 }
@@ -122,9 +117,6 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[doc = "CXX-Qt generated method which calls the C++ method"]
-                    #[doc = "test"]
-                    #[doc = "on the base class"]
                     #[cxx_name = "testCxxQtInherit"]
                     fn test(self: &MyObjectQt, a: B, b: C);
                 }
@@ -150,9 +142,6 @@ mod tests {
             // TODO: Maybe remove the trailing comma after self?
             quote! {
                 extern "C++" {
-                    #[doc = "CXX-Qt generated method which calls the C++ method"]
-                    #[doc = "test"]
-                    #[doc = "on the base class"]
                     #[cxx_name = "testCxxQtInherit"]
                     unsafe fn test(self: &MyObjectQt,);
                 }
