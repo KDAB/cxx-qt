@@ -50,16 +50,12 @@ mod inheritance {
         fn has_children_wrapper(self: &MyObject, cpp: &MyObjectQt, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
-        #[doc = "CXX-Qt generated method which calls the C++ method"]
-        #[doc = "hasChildren"]
-        #[doc = "on the base class"]
+        #[doc = " Inherited hasChildren from the base class"]
         #[cxx_name = "hasChildrenCxxQtInherit"]
         fn has_children_super(self: &MyObjectQt, parent: &QModelIndex) -> bool;
     }
     extern "C++" {
-        #[doc = "CXX-Qt generated method which calls the C++ method"]
-        #[doc = "fetchMore"]
-        #[doc = "on the base class"]
+        #[doc = " Inherited fetchMore from the base class"]
         #[cxx_name = "fetchMoreCxxQtInherit"]
         unsafe fn fetch_more(self: Pin<&mut MyObjectQt>, index: &QModelIndex);
     }

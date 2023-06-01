@@ -53,6 +53,17 @@ impl Parse for InheritMethods {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut base_functions = Vec::new();
 
+        // Ensure that any attributes on the block have been removed
+        //
+        // Otherwise parsing of unsafe can fail due to #[doc]
+        let attrs = input.call(Attribute::parse_outer)?;
+        if !attrs.is_empty() {
+            return Err(Error::new(
+                attrs.first().span(),
+                "Unexpected attribute on #[cxx_qt::qsignals] block.",
+            ));
+        }
+
         // This looks somewhat counter-intuitive, but if we add `unsafe`
         // to the `extern "C++"` block, the contained functions will be safe to call.
         let safety = if input.peek(Token![unsafe]) {
@@ -110,7 +121,7 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
-    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
             return Err(Error::new(
                 method.span(),
@@ -125,19 +136,16 @@ impl ParsedInheritedMethod {
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
         let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
-        for attribute in &method.attrs {
-            if !attribute.meta.path().is_ident(&format_ident!("cxx_name")) {
-                return Err(Error::new(
-                    attribute.span(),
-                    "Unsupported attribute in #[cxx_qt::inherit]",
-                ));
-            }
 
+        if let Some(index) = attribute_find_path(&method.attrs, &["cxx_name"]) {
             ident.cpp = format_ident!(
                 "{}",
-                expr_to_string(&attribute.meta.require_name_value()?.value)?
+                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
             );
+
+            method.attrs.remove(index);
         }
+
         let safe = method.sig.unsafety.is_none();
 
         Ok(Self {
@@ -195,6 +203,19 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_parse_attributes() {
+        let module = quote! {
+            unsafe extern "C++" {
+                #[attribute]
+                fn test(self: &qobject::T);
+            }
+        };
+        let parsed: InheritMethods = syn::parse2(module).unwrap();
+        assert_eq!(parsed.base_functions.len(), 1);
+        assert_eq!(parsed.base_functions[0].attrs.len(), 1);
+    }
+
     fn assert_parse_error(function: ForeignItemFn) {
         let result = ParsedInheritedMethod::parse(function, Safety::Safe);
         assert!(result.is_err());
@@ -231,10 +252,6 @@ mod tests {
             fn test(self: &mut T);
         });
         // Attributes
-        assert_parse_error(parse_quote! {
-            #[myattribute]
-            fn test(self: &qobject::T);
-        });
         assert_parse_error(parse_quote! {
             fn test(#[test] self: &qobject::T);
         });
