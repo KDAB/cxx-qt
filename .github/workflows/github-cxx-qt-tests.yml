@@ -144,7 +144,7 @@ jobs:
         key: ${{ matrix.os }}_sccache-0.4.1_mdbook-0.4.28_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
-      run: cargo install sccache mdbook mdbook-linkcheck
+      run: cargo install --locked sccache mdbook mdbook-linkcheck
 
     - name: "Compiler cache"
       uses: actions/cache@v3
