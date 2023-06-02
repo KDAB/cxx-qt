@@ -86,17 +86,11 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
             {namespace_end}
 
-            namespace {namespace_internals} {{
-            ::std::unique_ptr<{ident}>
-            newCppObject();
-            }} // namespace {namespace_internals}
-
             Q_DECLARE_METATYPE({metatype}*)
         "#,
         ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
-        namespace_internals = qobject.namespace_internals,
         rust_ident = qobject.rust_ident,
         base_class = qobject.base_class,
         metaobjects = qobject.blocks.metaobjects.join("\n  "),

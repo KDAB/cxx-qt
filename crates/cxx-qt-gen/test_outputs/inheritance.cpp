@@ -34,11 +34,3 @@ MyObject::hasChildren(QModelIndex const& _parent) const
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
   return m_rustObj->hasChildrenWrapper(*this, _parent);
 }
-
-namespace cxx_qt_my_object {
-::std::unique_ptr<MyObject>
-newCppObject()
-{
-  return ::std::make_unique<MyObject>();
-}
-} // namespace cxx_qt_my_object

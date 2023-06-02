@@ -96,11 +96,3 @@ MyObject::qtThread() const
 }
 
 } // namespace cxx_qt::my_object
-
-namespace cxx_qt::my_object::cxx_qt_my_object {
-::std::unique_ptr<MyObject>
-newCppObject()
-{
-  return ::std::make_unique<MyObject>();
-}
-} // namespace cxx_qt::my_object::cxx_qt_my_object

@@ -21,11 +21,9 @@ fn mangle(name: &str, object: &Ident) -> Ident {
 /// Return common blocks for CXX bridge which the C++ writer adds as well
 fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
-    let cpp_struct_ident_str = cpp_struct_ident.to_string();
     let rust_struct_ident = &qobject.rust_struct_ident;
     let namespace_internals = &qobject.namespace_internals;
 
-    let new_cpp_obj_str = mangle("new_cpp_object", cpp_struct_ident).to_string();
     let create_rs_ident = mangle("create_rs", rust_struct_ident);
 
     vec![
@@ -34,13 +32,6 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
                 #[cxx_name = "unsafeRust"]
                 #[doc(hidden)]
                 fn cxx_qt_ffi_rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
-
-                #[doc = "Generated CXX-Qt method which creates a new"]
-                #[doc = #cpp_struct_ident_str]
-                #[doc = "as a UniquePtr with no parent in Qt"]
-                #[rust_name = #new_cpp_obj_str]
-                #[namespace = #namespace_internals]
-                fn newCppObject() -> UniquePtr<#cpp_struct_ident>;
             }
         },
         quote! {
@@ -389,13 +380,6 @@ mod tests {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
-
-                    #[doc = "Generated CXX-Qt method which creates a new"]
-                    #[doc = "MyObjectQt"]
-                    #[doc = "as a UniquePtr with no parent in Qt"]
-                    #[rust_name = "new_cpp_object_my_object_qt"]
-                    #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-                    fn newCppObject() -> UniquePtr<MyObjectQt>;
                 }
 
                 extern "C++" {
@@ -501,13 +485,6 @@ mod tests {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust(self: &FirstObjectQt) -> &FirstObject;
-
-                    #[doc = "Generated CXX-Qt method which creates a new"]
-                    #[doc = "FirstObjectQt"]
-                    #[doc = "as a UniquePtr with no parent in Qt"]
-                    #[rust_name = "new_cpp_object_first_object_qt"]
-                    #[namespace = "cxx_qt::cxx_qt_first_object"]
-                    fn newCppObject() -> UniquePtr<FirstObjectQt>;
                 }
 
                 extern "C++" {
@@ -535,13 +512,6 @@ mod tests {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
                     fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
-
-                    #[doc = "Generated CXX-Qt method which creates a new"]
-                    #[doc = "SecondObjectQt"]
-                    #[doc = "as a UniquePtr with no parent in Qt"]
-                    #[rust_name = "new_cpp_object_second_object_qt"]
-                    #[namespace = "cxx_qt::cxx_qt_second_object"]
-                    fn newCppObject() -> UniquePtr<SecondObjectQt>;
                 }
 
                 extern "C++" {
