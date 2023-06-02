@@ -67,14 +67,6 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
 
 } // namespace cxx_qt::multi_object
 
-namespace cxx_qt::multi_object::cxx_qt_my_object {
-::std::unique_ptr<MyObject>
-newCppObject()
-{
-  return ::std::make_unique<MyObject>();
-}
-} // namespace cxx_qt::multi_object::cxx_qt_my_object
-
 namespace cxx_qt::multi_object {
 
 SecondObject::SecondObject(QObject* parent)
@@ -137,11 +129,3 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
 }
 
 } // namespace cxx_qt::multi_object
-
-namespace cxx_qt::multi_object::cxx_qt_second_object {
-::std::unique_ptr<SecondObject>
-newCppObject()
-{
-  return ::std::make_unique<SecondObject>();
-}
-} // namespace cxx_qt::multi_object::cxx_qt_second_object

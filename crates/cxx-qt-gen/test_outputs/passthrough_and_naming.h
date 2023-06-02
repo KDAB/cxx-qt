@@ -52,11 +52,6 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
               "MyObject must inherit from QObject");
 } // namespace cxx_qt::multi_object
 
-namespace cxx_qt::multi_object::cxx_qt_my_object {
-::std::unique_ptr<MyObject>
-newCppObject();
-} // namespace cxx_qt::multi_object::cxx_qt_my_object
-
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
 
 namespace cxx_qt::multi_object {
@@ -89,10 +84,5 @@ private:
 static_assert(::std::is_base_of<QObject, SecondObject>::value,
               "SecondObject must inherit from QObject");
 } // namespace cxx_qt::multi_object
-
-namespace cxx_qt::multi_object::cxx_qt_second_object {
-::std::unique_ptr<SecondObject>
-newCppObject();
-} // namespace cxx_qt::multi_object::cxx_qt_second_object
 
 Q_DECLARE_METATYPE(cxx_qt::multi_object::SecondObject*)

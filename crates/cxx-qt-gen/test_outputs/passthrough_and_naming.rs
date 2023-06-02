@@ -117,12 +117,6 @@ pub mod ffi {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
-        #[doc = "Generated CXX-Qt method which creates a new"]
-        #[doc = "MyObjectQt"]
-        #[doc = "as a UniquePtr with no parent in Qt"]
-        #[rust_name = "new_cpp_object_my_object_qt"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_my_object"]
-        fn newCppObject() -> UniquePtr<MyObjectQt>;
     }
     extern "C++" {
         #[cxx_name = "unsafeRustMut"]
@@ -191,12 +185,6 @@ pub mod ffi {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
         fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
-        #[doc = "Generated CXX-Qt method which creates a new"]
-        #[doc = "SecondObjectQt"]
-        #[doc = "as a UniquePtr with no parent in Qt"]
-        #[rust_name = "new_cpp_object_second_object_qt"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_second_object"]
-        fn newCppObject() -> UniquePtr<SecondObjectQt>;
     }
     extern "C++" {
         #[cxx_name = "unsafeRustMut"]

@@ -49,19 +49,10 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
 
             {methods}
             {namespace_end}
-
-            namespace {namespace_internals} {{
-            ::std::unique_ptr<{ident}>
-            newCppObject()
-            {{
-              return ::std::make_unique<{ident}>();
-            }}
-            }} // namespace {namespace_internals}
         "#,
         ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
-        namespace_internals = qobject.namespace_internals,
         base_class = qobject.base_class,
         rust_ident = qobject.rust_ident,
         methods = qobject.blocks.methods.iter().filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),

@@ -298,11 +298,6 @@ mod tests {
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
         } // namespace cxx_qt::my_object
 
-        namespace cxx_qt::my_object::cxx_qt_my_object {
-        ::std::unique_ptr<MyObject>
-        newCppObject();
-        } // namespace cxx_qt::my_object::cxx_qt_my_object
-
         Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 
         "#}
@@ -358,11 +353,6 @@ mod tests {
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
         } // namespace cxx_qt
 
-        namespace cxx_qt::cxx_qt_first_object {
-        ::std::unique_ptr<FirstObject>
-        newCppObject();
-        } // namespace cxx_qt::cxx_qt_first_object
-
         Q_DECLARE_METATYPE(cxx_qt::FirstObject*)
 
         namespace cxx_qt {
@@ -388,11 +378,6 @@ mod tests {
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
         } // namespace cxx_qt
-
-        namespace cxx_qt::cxx_qt_second_object {
-        ::std::unique_ptr<SecondObject>
-        newCppObject();
-        } // namespace cxx_qt::cxx_qt_second_object
 
         Q_DECLARE_METATYPE(cxx_qt::SecondObject*)
 
@@ -449,11 +434,6 @@ mod tests {
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
 
-
-        namespace cxx_qt_my_object {
-        ::std::unique_ptr<MyObject>
-        newCppObject();
-        } // namespace cxx_qt_my_object
 
         Q_DECLARE_METATYPE(MyObject*)
 
@@ -529,14 +509,6 @@ mod tests {
 
         } // namespace cxx_qt::my_object
 
-        namespace cxx_qt::my_object::cxx_qt_my_object {
-        ::std::unique_ptr<MyObject>
-        newCppObject()
-        {
-          return ::std::make_unique<MyObject>();
-        }
-        } // namespace cxx_qt::my_object::cxx_qt_my_object
-
         "#}
     }
 
@@ -585,14 +557,6 @@ mod tests {
 
         } // namespace cxx_qt
 
-        namespace cxx_qt::cxx_qt_first_object {
-        ::std::unique_ptr<FirstObject>
-        newCppObject()
-        {
-          return ::std::make_unique<FirstObject>();
-        }
-        } // namespace cxx_qt::cxx_qt_first_object
-
         namespace cxx_qt {
 
         SecondObject::SecondObject(QObject* parent)
@@ -631,14 +595,6 @@ mod tests {
         }
 
         } // namespace cxx_qt
-
-        namespace cxx_qt::cxx_qt_second_object {
-        ::std::unique_ptr<SecondObject>
-        newCppObject()
-        {
-          return ::std::make_unique<SecondObject>();
-        }
-        } // namespace cxx_qt::cxx_qt_second_object
 
         "#}
     }
@@ -711,14 +667,6 @@ mod tests {
         }
 
 
-
-        namespace cxx_qt_my_object {
-        ::std::unique_ptr<MyObject>
-        newCppObject()
-        {
-          return ::std::make_unique<MyObject>();
-        }
-        } // namespace cxx_qt_my_object
 
         "#}
     }

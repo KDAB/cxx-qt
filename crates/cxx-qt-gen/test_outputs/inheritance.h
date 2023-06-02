@@ -45,9 +45,4 @@ private:
 static_assert(::std::is_base_of<QObject, MyObject>::value,
               "MyObject must inherit from QObject");
 
-namespace cxx_qt_my_object {
-::std::unique_ptr<MyObject>
-newCppObject();
-} // namespace cxx_qt_my_object
-
 Q_DECLARE_METATYPE(MyObject*)
