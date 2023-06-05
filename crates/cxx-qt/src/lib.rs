@@ -57,7 +57,7 @@ pub trait Locking {
 ///
 /// This trait is implemented by CxxQt automatically.
 /// To enable this for a `qobject::T`, add `impl cxx_qt::Threading for qobject::T {}` to your [`#[cxx_qt::bridge]`](bridge).
-pub trait Threading: Sized {
+pub trait Threading: Locking + Sized {
     #[doc(hidden)]
     type BoxedQueuedFn;
     #[doc(hidden)]
