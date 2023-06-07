@@ -14,33 +14,8 @@ use syn::Attribute;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Error, ForeignItem, ForeignItemFn, Ident, Item, ItemForeignMod, LitStr, Result, Token,
+    Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, LitStr, Result, Token,
 };
-
-/// Used when parsing a syn::Item::Verbatim, that we suspect may be a `#[cxx_qt::qsignals]` block,
-/// but we don't yet know whether this is actually the case.
-/// This is the case if `#[cxx_qt::qsignals]` is used with `unsafe extern "C++"`.
-pub enum MaybeSignalMethods {
-    /// We found a `#[cxx_qt::qsignals]` block
-    Found(SignalMethods),
-    /// `#[cxx_qt::qsignals]` block not found, pass this Item through to outside code!
-    PassThrough(Item),
-}
-
-impl Parse for MaybeSignalMethods {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let lookahead = input.fork();
-        if let Ok(attribute) = lookahead.call(Attribute::parse_outer) {
-            if attribute_find_path(attribute.as_slice(), &["cxx_qt", "qsignals"]).is_some() {
-                input.call(Attribute::parse_outer)?;
-                let methods = input.parse::<SignalMethods>()?;
-                return Ok(Self::Found(methods));
-            }
-        }
-
-        Ok(Self::PassThrough(input.parse()?))
-    }
-}
 
 /// This type is used when parsing the `#[cxx_qt::qsignals]` macro contents into raw ForeignItemFn items
 pub struct SignalMethods {

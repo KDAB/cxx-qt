@@ -14,34 +14,8 @@ use quote::format_ident;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Attribute, Error, ForeignItem, ForeignItemFn, Ident, Item, ItemForeignMod, LitStr, Result,
-    Token,
+    Attribute, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, LitStr, Result, Token,
 };
-
-/// Used when parsing a syn::Item::Verbatim, that we suspect may be a `#[cxx_qt::inherit]` block,
-/// but we don't yet know whether this is actually the case.
-/// This is the case if `#[cxx_qt::inherit]` is used with `unsafe extern "C++"`.
-pub enum MaybeInheritMethods {
-    /// We found a `#[cxx_qt::inherit]` block
-    Found(InheritMethods),
-    /// `#[cxx_qt::inherit]` block not found, pass this Item through to outside code!
-    PassThrough(Item),
-}
-
-impl Parse for MaybeInheritMethods {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let lookahead = input.fork();
-        if let Ok(attribute) = lookahead.call(Attribute::parse_outer) {
-            if attribute_find_path(attribute.as_slice(), &["cxx_qt", "inherit"]).is_some() {
-                input.call(Attribute::parse_outer)?;
-                let methods = input.parse::<InheritMethods>()?;
-                return Ok(Self::Found(methods));
-            }
-        }
-
-        Ok(Self::PassThrough(input.parse()?))
-    }
-}
 
 /// This type is used when parsing the `#[cxx_qt::inherit]` macro contents into raw ForeignItemFn items
 pub struct InheritMethods {
@@ -185,22 +159,14 @@ mod tests {
     #[test]
     fn test_parse_safe_mod() {
         let module = quote! {
-            #[cxx_qt::inherit]
             unsafe extern "C++" {
                 fn test(self: &qobject::T);
                 unsafe fn test2(self: &qobject::T);
             }
         };
-        let parsed: MaybeInheritMethods = syn::parse2(module).unwrap();
-        match parsed {
-            MaybeInheritMethods::Found(inherit) => {
-                assert_eq!(inherit.base_functions.len(), 2);
-                assert_eq!(inherit.safety, Safety::Safe);
-            }
-            MaybeInheritMethods::PassThrough(item) => {
-                panic!("Expected InheritMethods, got {item:?}");
-            }
-        }
+        let parsed: InheritMethods = syn::parse2(module).unwrap();
+        assert_eq!(parsed.base_functions.len(), 2);
+        assert_eq!(parsed.safety, Safety::Safe);
     }
 
     #[test]
