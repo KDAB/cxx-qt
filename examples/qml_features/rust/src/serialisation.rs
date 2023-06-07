@@ -48,9 +48,9 @@ pub mod ffi {
         pub string: QString,
     }
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// An error signal
+        #[qsignal]
         fn error(self: Pin<&mut qobject::Serialisation>, message: QString);
     }
 

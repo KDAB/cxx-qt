@@ -57,34 +57,6 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     extract_and_generate(module)
 }
 
-/// A macro which describes that an enum defines the signals for a QObject.
-///
-/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
-///
-/// # Example
-///
-/// ```rust
-/// #[cxx_qt::bridge]
-/// mod my_object {
-///     #[cxx_qt::qobject]
-///     #[derive(Default)]
-///     # // Note that we can't use properties as this confuses the linker on Windows
-///     pub struct MyObject;
-///
-///     #[cxx_qt::qsignals]
-///     unsafe extern "C++" {
-///         fn ready(self: Pin<&mut qobject::MyObject>);
-///     }
-/// }
-///
-/// # // Note that we need a fake main for doc tests to build
-/// # fn main() {}
-/// ```
-#[proc_macro_attribute]
-pub fn qsignals(_args: TokenStream, _input: TokenStream) -> TokenStream {
-    unreachable!("cxx_qt::qsignals should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
-}
-
 /// A macro which describes that a struct should be made into a QObject.
 ///
 /// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
@@ -127,48 +99,6 @@ pub fn qsignals(_args: TokenStream, _input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("cxx_qt::qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
-}
-
-/// A macro which allows you to access base class methods from within Rust.
-///
-/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
-/// Furthermore, the macro must be placed within the `impl` block of a `qobject::T`.
-/// See [the book page](https://kdab.github.io/cxx-qt/book/concepts/inheritance.html) for more
-/// details.
-///
-/// # Example
-/// ``` rust
-/// #[cxx_qt::bridge]
-/// mod my_object {
-///     extern "C++" {
-///         include!("cxx-qt-lib/qmodelindex.h");
-///         type QModelIndex = cxx_qt_lib::QModelIndex;
-///     }
-///
-///     #[cxx_qt::qobject(base="QAbstractListModel")]
-///     #[derive(Default)]
-///     # // Note that we can't use properties as this confuses the linker on Windows
-///     pub struct MyObject;
-///
-///     #[cxx_qt::inherit]
-///     extern "C++" {
-///         // Unsafe to call
-///         unsafe fn begin_insert_rows(self: Pin<&mut qobject::MyObject>, parent: &QModelIndex, first: i32, last: i32);
-///     }
-///
-///     #[cxx_qt::inherit]
-///     unsafe extern "C++" {
-///         // Safe to call - you are responsible to ensure this is true!
-///         fn end_insert_rows(self: Pin<&mut qobject::MyObject>);
-///     }
-/// }
-///
-/// # // Note that we need a fake main for doc tests to build
-/// # fn main() {}
-/// ```
-#[proc_macro_attribute]
-pub fn inherit(_args: TokenStream, _input: TokenStream) -> TokenStream {
-    unreachable!("cxx_qt::inherit should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
 // Take the module and C++ namespace and generate the rust code

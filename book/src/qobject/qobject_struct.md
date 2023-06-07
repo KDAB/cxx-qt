@@ -27,7 +27,7 @@ The macro does multiple other things for you though:
 - Expose the generated QObject subclass to Rust as [`qobject::MyObject`](./generated-qobject.md)
 - Generate getters/setters for all fields.
 - Generate `Q_PROPERTY`s for all fields that are marked as `#[qproperty]`.
-- Generate signals if paired with a [`#[cxx_qt::qsignals]` macro](./signals.md).
+- Generate signals if paired with a [`#[qsignal]` macro](./signals.md).
 
 ## Exposing to QML
 `#[cxx_qt::qobject]` supports registering the Qt object as a QML type directly at build time.

@@ -4,18 +4,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::foreignmod::foreign_mod_to_foreign_item_types;
+use crate::syntax::safety::Safety;
 use crate::syntax::{attribute::attribute_find_path, path::path_to_single_ident};
 use crate::{
-    parser::{
-        inherit::{InheritMethods, ParsedInheritedMethod},
-        qobject::ParsedQObject,
-        signals::{ParsedSignal, SignalMethods},
-    },
+    parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject, signals::ParsedSignal},
     syntax::expr::expr_to_string,
 };
-use proc_macro2::TokenStream;
-use quote::ToTokens;
 use std::collections::BTreeMap;
+use syn::ForeignItem;
 use syn::{
     spanned::Spanned, Attribute, Error, Ident, Item, ItemForeignMod, ItemImpl, Result, Type,
     TypePath,
@@ -184,75 +180,60 @@ impl ParsedCxxQtData {
         }
     }
 
-    fn parse_inherit_mod(&mut self, tokens: TokenStream) -> Result<()> {
-        let inherited: InheritMethods = syn::parse2(tokens)?;
-
-        self.add_inherited_methods(inherited)
-    }
-
-    fn add_inherited_methods(&mut self, inherited: InheritMethods) -> Result<()> {
-        for method in inherited.base_functions.into_iter() {
-            let parsed_inherited_method = ParsedInheritedMethod::parse(method, inherited.safety)?;
-
-            if let Some(ref mut qobject) = self
-                .qobjects
-                .get_mut(&parsed_inherited_method.qobject_ident)
-            {
-                qobject.inherited_methods.push(parsed_inherited_method);
-            } else {
-                return Err(Error::new_spanned(
-                    parsed_inherited_method.qobject_ident,
-                    "No QObject with this name found.",
-                ));
+    fn parse_foreign_mod(&mut self, foreign_mod: ItemForeignMod) -> Result<Option<Item>> {
+        if let Some(lit_str) = &foreign_mod.abi.name {
+            match lit_str.value().as_str() {
+                "RustQt" => {
+                    self.parse_foreign_mod_rust_qt(foreign_mod)?;
+                    return Ok(None);
+                }
+                // TODO: look for "C++Qt" later
+                _others => {}
             }
-        }
-        Ok(())
-    }
-
-    fn parse_signals_mod(&mut self, tokens: TokenStream) -> Result<()> {
-        let signals: SignalMethods = syn::parse2(tokens)?;
-
-        self.add_signal_methods(signals)
-    }
-
-    fn add_signal_methods(&mut self, signals: SignalMethods) -> Result<()> {
-        for method in signals.base_functions.into_iter() {
-            let parsed_signal_method = ParsedSignal::parse(method, signals.safety)?;
-
-            if let Some(ref mut qobject) =
-                self.qobjects.get_mut(&parsed_signal_method.qobject_ident)
-            {
-                qobject.signals.push(parsed_signal_method);
-            } else {
-                return Err(Error::new_spanned(
-                    parsed_signal_method.qobject_ident,
-                    "No QObject with this name found.",
-                ));
-            }
-        }
-        Ok(())
-    }
-
-    fn parse_foreign_mod(&mut self, mut foreign_mod: ItemForeignMod) -> Result<Option<Item>> {
-        // Check if the foreign mod has cxx_qt::inherit on it
-        if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["cxx_qt", "inherit"]) {
-            // Remove the inherit attribute
-            foreign_mod.attrs.remove(index);
-
-            self.parse_inherit_mod(foreign_mod.into_token_stream())?;
-            return Ok(None);
-        }
-
-        // Check if the foreign mod has cxx_qt::qsignals on it
-        if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["cxx_qt", "qsignals"]) {
-            // Remove the signals attribute
-            foreign_mod.attrs.remove(index);
-
-            self.parse_signals_mod(foreign_mod.into_token_stream())?;
-            return Ok(None);
         }
 
         Ok(Some(Item::ForeignMod(foreign_mod)))
+    }
+
+    fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
+        let safe_call = if foreign_mod.unsafety.is_some() {
+            Safety::Safe
+        } else {
+            Safety::Unsafe
+        };
+
+        for item in foreign_mod.items.drain(..) {
+            if let ForeignItem::Fn(mut foreign_fn) = item {
+                // Test if the function is a signal
+                if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qsignal"]) {
+                    // Remove the signals attribute
+                    foreign_fn.attrs.remove(index);
+
+                    let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
+
+                    self.with_qobject(&parsed_signal_method.qobject_ident)?
+                        .signals
+                        .push(parsed_signal_method);
+                // Test if the function is an inheritance method
+                //
+                // Note that we need to test for qsignal first as qsignals have their own inherit meaning
+                } else if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["inherit"]) {
+                    // Remove the inherit attribute
+                    foreign_fn.attrs.remove(index);
+
+                    let parsed_inherited_method =
+                        ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
+
+                    self.with_qobject(&parsed_inherited_method.qobject_ident)?
+                        .inherited_methods
+                        .push(parsed_inherited_method);
+                }
+
+                // TODO: test for qinvokable later
+            }
+        }
+
+        Ok(())
     }
 
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
@@ -286,6 +267,17 @@ impl ParsedCxxQtData {
         }
 
         Ok(Some(Item::Impl(imp)))
+    }
+
+    fn with_qobject(&mut self, qobject_ident: &Ident) -> Result<&mut ParsedQObject> {
+        if let Some(qobject) = self.qobjects.get_mut(qobject_ident) {
+            Ok(qobject)
+        } else {
+            Err(Error::new_spanned(
+                qobject_ident,
+                "No QObject with this name found.",
+            ))
+        }
     }
 }
 
@@ -732,17 +724,18 @@ mod tests {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
 
         let unsafe_block: Item = parse_quote! {
-            #[cxx_qt::inherit]
-            unsafe extern "C++" {
+            unsafe extern "RustQt" {
+                #[inherit]
                 fn test(self: &qobject::MyObject);
 
+                #[inherit]
                 fn with_args(self: &qobject::MyObject, arg: i32);
             }
         };
         let safe_block: Item = parse_quote! {
-            #[cxx_qt::inherit]
-            extern "C++" {
+            extern "RustQt" {
                 #[cxx_name="withRename"]
+                #[inherit]
                 unsafe fn with_rename(self: Pin<&mut qobject::MyObject>, arg: i32);
             }
         };
@@ -771,12 +764,13 @@ mod tests {
     fn test_parse_qsignals_safe() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
         let block: Item = parse_quote! {
-            #[cxx_qt::qsignals]
-            unsafe extern "C++" {
+            unsafe extern "RustQt" {
+                #[qsignal]
                 fn ready(self: Pin<&mut qobject::MyObject>);
 
                 #[cxx_name="cppDataChanged"]
                 #[inherit]
+                #[qsignal]
                 fn data_changed(self: Pin<&mut qobject::MyObject>, data: i32);
             }
         };
@@ -815,8 +809,8 @@ mod tests {
     fn test_parse_qsignals_unknown_obj() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
         let block: Item = parse_quote! {
-            #[cxx_qt::qsignals]
-            unsafe extern "C++" {
+            unsafe extern "RustQt" {
+                #[qsignal]
                 fn ready(self: Pin<&mut qobject::UnknownObj>);
             }
         };
@@ -827,8 +821,8 @@ mod tests {
     fn test_parse_qsignals_unsafe() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
         let block: Item = parse_quote! {
-            #[cxx_qt::qsignals]
-            extern "C++" {
+            extern "RustQt" {
+                #[qsignal]
                 unsafe fn unsafe_signal(self: Pin<&mut qobject::MyObject>, arg: *mut T);
             }
         };

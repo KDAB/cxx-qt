@@ -38,12 +38,13 @@ pub mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::FirstObject {}
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL
+        #[qsignal]
         fn accepted(self: Pin<&mut qobject::FirstObject>);
 
         /// Rejected Q_SIGNAL
+        #[qsignal]
         fn rejected(self: Pin<&mut qobject::FirstObject>);
     }
 
@@ -85,12 +86,13 @@ pub mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::SecondObject {}
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL
+        #[qsignal]
         fn accepted(self: Pin<&mut qobject::SecondObject>);
 
         /// Rejected Q_SIGNAL
+        #[qsignal]
         fn rejected(self: Pin<&mut qobject::SecondObject>);
     }
 

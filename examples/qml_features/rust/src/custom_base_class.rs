@@ -51,10 +51,10 @@ pub mod ffi {
     impl cxx_qt::Threading for qobject::CustomBaseClass {}
 
     // ANCHOR: book_qsignals_inherit
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// Inherit the DataChanged signal from the QAbstractListModel base class
         #[inherit]
+        #[qsignal]
         fn data_changed(
             self: Pin<&mut qobject::CustomBaseClass>,
             top_left: &QModelIndex,
@@ -153,9 +153,9 @@ pub mod ffi {
 
     // ANCHOR: book_inherit_qalm_impl_unsafe
     // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
-    #[cxx_qt::inherit]
-    extern "C++" {
+    extern "RustQt" {
         /// Inherited beginInsertRows from the base class
+        #[inherit]
         unsafe fn begin_insert_rows(
             self: Pin<&mut qobject::CustomBaseClass>,
             parent: &QModelIndex,
@@ -163,9 +163,11 @@ pub mod ffi {
             last: i32,
         );
         /// Inherited endInsertRows from the base class
+        #[inherit]
         unsafe fn end_insert_rows(self: Pin<&mut qobject::CustomBaseClass>);
 
         /// Inherited beginRemoveRows from the base class
+        #[inherit]
         unsafe fn begin_remove_rows(
             self: Pin<&mut qobject::CustomBaseClass>,
             parent: &QModelIndex,
@@ -173,23 +175,27 @@ pub mod ffi {
             last: i32,
         );
         /// Inherited endRemoveRows from the base class
+        #[inherit]
         unsafe fn end_remove_rows(self: Pin<&mut qobject::CustomBaseClass>);
 
         /// Inherited beginResetModel from the base class
+        #[inherit]
         unsafe fn begin_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
         /// Inherited endResetModel from the base class
+        #[inherit]
         unsafe fn end_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_qalm_impl_unsafe
 
     // ANCHOR: book_inherit_qalm_impl_safe
-    #[cxx_qt::inherit]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// Inherited canFetchMore from the base class
         #[cxx_name = "canFetchMore"]
+        #[inherit]
         fn base_can_fetch_more(self: &qobject::CustomBaseClass, parent: &QModelIndex) -> bool;
 
         /// Inherited index from the base class
+        #[inherit]
         fn index(
             self: &qobject::CustomBaseClass,
             row: i32,

@@ -6,10 +6,11 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
+        #[qsignal]
         fn ready(self: Pin<&mut qobject::MyObject>);
 
+        #[qsignal]
         fn data_changed(
             self: Pin<&mut qobject::MyObject>,
             first: i32,
@@ -20,6 +21,7 @@ mod ffi {
 
         #[cxx_name = "newData"]
         #[inherit]
+        #[qsignal]
         fn base_class_new_data(
             self: Pin<&mut qobject::MyObject>,
             first: i32,

@@ -91,8 +91,8 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
+        #[qsignal]
         fn ready(self: Pin<&mut qobject::MyObject>);
     }
 
@@ -140,9 +140,9 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         #[my_attribute]
+        #[qsignal]
         fn ready(self: Pin<&mut qobject::SecondObject>);
     }
 
