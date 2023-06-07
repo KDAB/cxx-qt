@@ -162,8 +162,8 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals]
-                unsafe extern "C++" {
+                unsafe extern "RustQt" {
+                    #[qsignal]
                     fn ready(self: Pin<&mut qobject::MyObject>);
                 }
             }
@@ -187,8 +187,8 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals]
-                unsafe extern "C++" {
+                unsafe extern "RustQt" {
+                    #[qsignal]
                     fn ready(self: Pin<&mut qobject::MyObject>);
                 }
 
@@ -216,8 +216,8 @@ mod tests {
                 #[cxx_qt::qobject]
                 pub struct MyObject;
 
-                #[cxx_qt::qsignals]
-                unsafe extern "C++" {
+                unsafe extern "RustQt" {
+                    #[qsignal]
                     fn ready(self: Pin<&mut qobject::UnknownObject>);
                 }
             }

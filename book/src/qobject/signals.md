@@ -5,9 +5,9 @@ SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-# Signals enum
+# Signals
 
-The `cxx_qt::qsignals` attribute is used on an `extern "C++"` block to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the a QObject.
+The `qsignal` attribute is used in an `extern "RustQt"` block to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the a QObject.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_block}}
@@ -57,7 +57,7 @@ In this case, it is no longer possible to disconnect later.
 
 ## Emitting a signal
 
-Call the function signature defined in the `extern "C++` block to emit the signal.
+Call the function signature defined in the `extern "RustQt"` block to emit the signal.
 
 Note that these are defined on the generated QObject [`qobject::T`](./generated-qobject.md), so can be called from any mutable `#[qinvokable]`.
 

@@ -21,15 +21,17 @@ pub mod ffi {
     }
 
     // ANCHOR: book_signals_block
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// A Q_SIGNAL emitted when a connection occurs
+        #[qsignal]
         fn connected(self: Pin<&mut qobject::RustSignals>, url: &QUrl);
 
         /// A Q_SIGNAL emitted when a disconnect occurs
+        #[qsignal]
         fn disconnected(self: Pin<&mut qobject::RustSignals>);
 
         /// A Q_SIGNAL emitted when an error occurs
+        #[qsignal]
         fn error(self: Pin<&mut qobject::RustSignals>, message: QString);
     }
     // ANCHOR_END: book_signals_block

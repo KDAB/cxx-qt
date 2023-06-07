@@ -25,9 +25,9 @@ pub mod ffi {
         counter: i32,
     }
 
-    #[cxx_qt::qsignals]
-    extern "C++" {
+    extern "RustQt" {
         /// A signal showing how to refer to another QObject as an argument
+        #[qsignal]
         unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut CxxInnerObject);
     }
 
@@ -46,9 +46,9 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qsignals]
-    extern "C++" {
+    extern "RustQt" {
         /// A signal showing how to refer to another QObject as an argument
+        #[qsignal]
         unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut CxxInnerObject);
     }
 

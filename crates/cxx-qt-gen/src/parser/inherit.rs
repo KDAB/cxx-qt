@@ -11,74 +11,9 @@ use crate::{
     },
 };
 use quote::format_ident;
-use syn::{
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Attribute, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, LitStr, Result, Token,
-};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
 
-/// This type is used when parsing the `#[cxx_qt::inherit]` macro contents into raw ForeignItemFn items
-pub struct InheritMethods {
-    pub safety: Safety,
-    pub base_functions: Vec<ForeignItemFn>,
-}
-
-impl Parse for InheritMethods {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let mut base_functions = Vec::new();
-
-        // Ensure that any attributes on the block have been removed
-        //
-        // Otherwise parsing of unsafe can fail due to #[doc]
-        let attrs = input.call(Attribute::parse_outer)?;
-        if !attrs.is_empty() {
-            return Err(Error::new(
-                attrs.first().span(),
-                "Unexpected attribute on #[cxx_qt::qsignals] block.",
-            ));
-        }
-
-        // This looks somewhat counter-intuitive, but if we add `unsafe`
-        // to the `extern "C++"` block, the contained functions will be safe to call.
-        let safety = if input.peek(Token![unsafe]) {
-            Safety::Safe
-        } else {
-            Safety::Unsafe
-        };
-        if safety == Safety::Safe {
-            input.parse::<Token![unsafe]>()?;
-        }
-
-        let extern_block = input.parse::<ItemForeignMod>()?;
-        if extern_block.abi.name != Some(LitStr::new("C++", extern_block.abi.span())) {
-            return Err(Error::new(
-                extern_block.abi.span(),
-                "Inherit blocks must be marked with `extern \"C++\"`",
-            ));
-        }
-
-        for item in extern_block.items {
-            match item {
-                ForeignItem::Fn(function) => {
-                    base_functions.push(function);
-                }
-                _ => {
-                    return Err(Error::new(
-                        item.span(),
-                        "Only functions are allowed in #[cxx_qt::inherit] blocks",
-                    ))
-                }
-            }
-        }
-
-        Ok(InheritMethods {
-            safety,
-            base_functions,
-        })
-    }
-}
-
-/// Describes a method found in #[cxx_qt::inherit]
+/// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
     /// The original [syn::ForeignItemFn] of the inherited method declaration
     pub method: ForeignItemFn,
@@ -141,46 +76,8 @@ impl ParsedInheritedMethod {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quote::quote;
+
     use syn::parse_quote;
-
-    #[test]
-    fn test_parse_unsafe_mod() {
-        let module = quote! {
-            extern "C++" {
-                unsafe fn test(self: &qobject::T);
-            }
-        };
-        let parsed: InheritMethods = syn::parse2(module).unwrap();
-        assert_eq!(parsed.base_functions.len(), 1);
-        assert_eq!(parsed.safety, Safety::Unsafe);
-    }
-
-    #[test]
-    fn test_parse_safe_mod() {
-        let module = quote! {
-            unsafe extern "C++" {
-                fn test(self: &qobject::T);
-                unsafe fn test2(self: &qobject::T);
-            }
-        };
-        let parsed: InheritMethods = syn::parse2(module).unwrap();
-        assert_eq!(parsed.base_functions.len(), 2);
-        assert_eq!(parsed.safety, Safety::Safe);
-    }
-
-    #[test]
-    fn test_parse_attributes() {
-        let module = quote! {
-            unsafe extern "C++" {
-                #[attribute]
-                fn test(self: &qobject::T);
-            }
-        };
-        let parsed: InheritMethods = syn::parse2(module).unwrap();
-        assert_eq!(parsed.base_functions.len(), 1);
-        assert_eq!(parsed.base_functions[0].attrs.len(), 1);
-    }
 
     fn assert_parse_error(function: ForeignItemFn) {
         let result = ParsedInheritedMethod::parse(function, Safety::Safe);

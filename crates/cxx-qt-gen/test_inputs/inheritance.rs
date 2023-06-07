@@ -13,16 +13,16 @@ mod inheritance {
         data: Vec<i32>,
     }
 
-    #[cxx_qt::inherit]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// Inherited hasChildren from the base class
         #[cxx_name = "hasChildren"]
+        #[inherit]
         fn has_children_super(self: &qobject::MyObject, parent: &QModelIndex) -> bool;
     }
 
-    #[cxx_qt::inherit]
-    extern "C++" {
+    extern "RustQt" {
         /// Inherited fetchMore from the base class
+        #[inherit]
         unsafe fn fetch_more(self: Pin<&mut qobject::MyObject>, index: &QModelIndex);
     }
 

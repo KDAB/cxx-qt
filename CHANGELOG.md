@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Always call `qt_build_utils::setup_linker()` in `CxxQtBuilder` and remove the proxy method
 - Moved to `syn` 2.0 internally and for any exported `syn` types
 - `impl cxx_qt::Threading for qobject::T` now needs to be specified for `qt_thread()` to be available
+- `#[cxx_qt::qsignals]` and `#[cxx_qt::inherit]` are now used in an `extern "RustQt"` block as `#[qsignal]` and `#[inherit]`
 
 ### Removed
 

@@ -70,13 +70,15 @@ mod ffi {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for qobject::EnergyUsage {}
 
-    #[cxx_qt::qsignals]
-    unsafe extern "C++" {
+    unsafe extern "RustQt" {
         /// A new sensor has been detected
+        #[qsignal]
         fn sensor_added(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
         /// A value on an existing sensor has changed
+        #[qsignal]
         fn sensor_changed(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
         /// An existing sensor has been removed
+        #[qsignal]
         fn sensor_removed(self: Pin<&mut qobject::EnergyUsage>, uuid: QString);
     }
 

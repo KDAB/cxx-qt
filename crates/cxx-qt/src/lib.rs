@@ -10,9 +10,7 @@
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
 pub use cxx_qt_macro::bridge;
-pub use cxx_qt_macro::inherit;
 pub use cxx_qt_macro::qobject;
-pub use cxx_qt_macro::qsignals;
 
 /// This trait is automatically implemented for all types which are marked as `#[cxx_qt::qobject]`.
 /// It provides information about the type that is wrapped by the QObject, as well as the methods

@@ -10,73 +10,7 @@ use crate::syntax::foreignmod;
 use crate::syntax::safety::Safety;
 use crate::{generator::naming::CombinedIdent, syntax::types};
 use quote::format_ident;
-use syn::Attribute;
-use syn::{
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, LitStr, Result, Token,
-};
-
-/// This type is used when parsing the `#[cxx_qt::qsignals]` macro contents into raw ForeignItemFn items
-pub struct SignalMethods {
-    pub safety: Safety,
-    pub base_functions: Vec<ForeignItemFn>,
-}
-
-impl Parse for SignalMethods {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let mut base_functions = Vec::new();
-
-        // Ensure that any attributes on the block have been removed
-        //
-        // Otherwise parsing of unsafe can fail due to #[doc]
-        let attrs = input.call(Attribute::parse_outer)?;
-        if !attrs.is_empty() {
-            return Err(Error::new(
-                attrs.first().span(),
-                "Unexpected attribute on #[cxx_qt::inherit] block.",
-            ));
-        }
-
-        // This looks somewhat counter-intuitive, but if we add `unsafe`
-        // to the `extern "C++"` block, the contained functions will be safe to call.
-        let safety = if input.peek(Token![unsafe]) {
-            Safety::Safe
-        } else {
-            Safety::Unsafe
-        };
-        if safety == Safety::Safe {
-            input.parse::<Token![unsafe]>()?;
-        }
-
-        let extern_block = input.parse::<ItemForeignMod>()?;
-        if extern_block.abi.name != Some(LitStr::new("C++", extern_block.abi.span())) {
-            return Err(Error::new(
-                extern_block.abi.span(),
-                "qsignals blocks must be marked with `extern \"C++\"`",
-            ));
-        }
-
-        for item in extern_block.items {
-            match item {
-                ForeignItem::Fn(function) => {
-                    base_functions.push(function);
-                }
-                _ => {
-                    return Err(Error::new(
-                        item.span(),
-                        "Only functions are allowed in #[cxx_qt::qsignals] blocks",
-                    ))
-                }
-            }
-        }
-
-        Ok(SignalMethods {
-            safety,
-            base_functions,
-        })
-    }
-}
+use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
 
 /// Describes an individual Signal
 pub struct ParsedSignal {
