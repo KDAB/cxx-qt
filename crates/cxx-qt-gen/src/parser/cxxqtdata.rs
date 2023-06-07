@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, verbatim_to_foreign_mod};
+use crate::syntax::foreignmod::foreign_mod_to_foreign_item_types;
 use crate::syntax::{attribute::attribute_find_path, path::path_to_single_ident};
 use crate::{
     parser::{
-        inherit::{InheritMethods, MaybeInheritMethods, ParsedInheritedMethod},
+        inherit::{InheritMethods, ParsedInheritedMethod},
         qobject::ParsedQObject,
-        signals::{MaybeSignalMethods, ParsedSignal, SignalMethods},
+        signals::{ParsedSignal, SignalMethods},
     },
     syntax::expr::expr_to_string,
 };
@@ -111,16 +111,8 @@ impl ParsedCxxQtData {
             _others => {}
         }
 
-        // Extract the foreign mod (extern "ABI" { ... })
-        let foreign_mod = match item {
-            Item::ForeignMod(foreign_mod) => Some(foreign_mod.clone()),
-            // Could be Verbatim TokenStream when it's an unsafe block, the remainder of the blocks are a normal ForeignMod though
-            Item::Verbatim(tokens) => verbatim_to_foreign_mod(tokens)?,
-            _others => None,
-        };
-
         // If there is a foreign mod then process it
-        if let Some(foreign_mod) = &foreign_mod {
+        if let Item::ForeignMod(foreign_mod) = &item {
             // Retrieve a namespace from the mod or the bridge
             let block_namespace =
                 if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
@@ -187,31 +179,8 @@ impl ParsedCxxQtData {
                 self.uses.push(item);
                 Ok(None)
             }
-            Item::Verbatim(tokens) => self.try_parse_verbatim(tokens),
             Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
             _ => Ok(Some(item)),
-        }
-    }
-
-    fn try_parse_verbatim(&mut self, tokens: TokenStream) -> Result<Option<Item>> {
-        let try_parse: MaybeInheritMethods = syn::parse2(tokens.clone())?;
-
-        match try_parse {
-            MaybeInheritMethods::Found(inherited) => {
-                self.add_inherited_methods(inherited)?;
-                Ok(None)
-            }
-            MaybeInheritMethods::PassThrough(_item) => {
-                let try_parse: MaybeSignalMethods = syn::parse2(tokens)?;
-
-                match try_parse {
-                    MaybeSignalMethods::Found(signals) => {
-                        self.add_signal_methods(signals)?;
-                        Ok(None)
-                    }
-                    MaybeSignalMethods::PassThrough(item) => Ok(Some(item)),
-                }
-            }
         }
     }
 
@@ -594,7 +563,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cxx_mappings_cxx_name_verbatim() {
+    fn test_cxx_mappings_cxx_name_unsafe() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {

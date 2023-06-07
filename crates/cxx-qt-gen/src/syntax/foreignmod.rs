@@ -42,38 +42,6 @@ pub(crate) fn foreign_mod_to_foreign_item_types(
         .collect::<Result<Vec<ForeignItemType>>>()
 }
 
-/// For a given verbatim [proc_macro2::TokenStream] return a [syn::ItemForegnMod] if there is one
-///
-/// And ignore any unsafe token before the extern block
-pub(crate) fn verbatim_to_foreign_mod(tokens: &TokenStream) -> Result<Option<ItemForeignMod>> {
-    |input: ParseStream| -> Result<Option<ItemForeignMod>> {
-        // Parse any namespace attributes on the outside of the unsafe extern block
-        let mut attrs = input.call(Attribute::parse_outer)?;
-
-        // If we are an unsafe then extern block try to parse it
-        if input.peek(Token![unsafe]) && input.peek2(Token![extern]) {
-            input.parse::<Token![unsafe]>()?;
-            let mut foreign_mod = input.parse::<ItemForeignMod>()?;
-            // Inject the attributes from the outside of the unsafe block into the foreign mod
-            attrs.append(&mut foreign_mod.attrs);
-            foreign_mod.attrs = attrs;
-            Ok(Some(foreign_mod))
-        } else {
-            // Move the cursor past all remaining tokens, otherwise parse2 fails
-            input.step(|cursor| {
-                let mut rest = *cursor;
-                while let Some((_, next)) = rest.token_tree() {
-                    rest = next;
-                }
-                Ok(((), rest))
-            })?;
-
-            Ok(None)
-        }
-    }
-    .parse2(tokens.clone())
-}
-
 /// For a given verbatim [proc_macro2::TokenStream] return the [syn::ForeignItemType] if there is one
 ///
 /// And ignore any extra syntax after the = in type A = ...
@@ -176,20 +144,6 @@ mod tests {
 
         assert_eq!(result[1].attrs.len(), 1);
         assert_eq!(result[1].ident, "B");
-    }
-
-    #[test]
-    fn test_verbatim_to_foreign_mod() {
-        let tokens = quote! {
-            #[namespace = "a"]
-            unsafe extern "C++" {
-                type A;
-            }
-        };
-        let result = verbatim_to_foreign_mod(&tokens).unwrap();
-        let result = result.unwrap();
-        assert_eq!(result.attrs.len(), 1);
-        assert_eq!(result.items.len(), 1);
     }
 
     #[test]
