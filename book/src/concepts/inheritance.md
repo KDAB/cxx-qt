@@ -20,9 +20,11 @@ It can be placed in front of a function in a `extern "RustQt"` block in a `#[cxx
 
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl_unsafe}}
 
-    impl qobject::CustomBaseClass {
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_clear_signature}}
+```
+
+```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_clear}}
-    }
 ```
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
@@ -51,10 +53,11 @@ The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmod
 ```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm}}
 
-    impl qobject::CustomBaseClass {
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_data_signature}}
+```
 
+```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_data}}
-    }
 ```
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
@@ -67,8 +70,10 @@ Example:
 
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm_impl_safe}}
 
-    impl qobject::CustomBaseClass {
+{{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_can_fetch_more_signature}}
+```
+
+```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_can_fetch_more}}
-    }
 ```
 [Full example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)

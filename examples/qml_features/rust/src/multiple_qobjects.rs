@@ -48,21 +48,10 @@ pub mod ffi {
         fn rejected(self: Pin<&mut qobject::FirstObject>);
     }
 
-    impl qobject::FirstObject {
+    unsafe extern "RustQt" {
         /// A Q_INVOKABLE on the first QObject which increments a counter
         #[qinvokable]
-        pub fn increment(mut self: Pin<&mut Self>) {
-            let new_value = self.as_ref().counter() + 1;
-            self.as_mut().set_counter(new_value);
-
-            if new_value % 2 == 0 {
-                self.as_mut().set_color(QColor::from_rgb(0, 0, 255));
-                self.accepted();
-            } else {
-                self.as_mut().set_color(QColor::from_rgb(255, 0, 0));
-                self.rejected();
-            }
-        }
+        fn increment(self: Pin<&mut qobject::FirstObject>);
     }
 
     /// The second QObject
@@ -96,21 +85,49 @@ pub mod ffi {
         fn rejected(self: Pin<&mut qobject::SecondObject>);
     }
 
-    impl qobject::SecondObject {
+    unsafe extern "RustQt" {
         /// A Q_INVOKABLE on the second QObject which increments a counter
         #[qinvokable]
-        pub fn increment(mut self: Pin<&mut Self>) {
-            let new_value = self.as_ref().counter() + 1;
-            self.as_mut().set_counter(new_value);
+        fn increment(self: Pin<&mut qobject::SecondObject>);
+    }
+}
 
-            if new_value % 5 == 0 {
-                self.as_mut()
-                    .set_url(QUrl::from("https://github.com/kdab/cxx-qt"));
-                self.accepted();
-            } else {
-                self.as_mut().set_url(QUrl::from("https://kdab.com"));
-                self.rejected();
-            }
+use core::pin::Pin;
+use cxx_qt_lib::{QColor, QUrl};
+
+// TODO: this will change to qobject::FirstObject once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::FirstObjectQt {
+    /// A Q_INVOKABLE on the first QObject which increments a counter
+    fn increment(mut self: Pin<&mut Self>) {
+        let new_value = self.as_ref().counter() + 1;
+        self.as_mut().set_counter(new_value);
+
+        if new_value % 2 == 0 {
+            self.as_mut().set_color(QColor::from_rgb(0, 0, 255));
+            self.accepted();
+        } else {
+            self.as_mut().set_color(QColor::from_rgb(255, 0, 0));
+            self.rejected();
+        }
+    }
+}
+
+// TODO: this will change to qobject::SecondObject once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::SecondObjectQt {
+    /// A Q_INVOKABLE on the second QObject which increments a counter
+    fn increment(mut self: Pin<&mut Self>) {
+        let new_value = self.as_ref().counter() + 1;
+        self.as_mut().set_counter(new_value);
+
+        if new_value % 5 == 0 {
+            self.as_mut()
+                .set_url(QUrl::from("https://github.com/kdab/cxx-qt"));
+            self.accepted();
+        } else {
+            self.as_mut().set_url(QUrl::from("https://kdab.com"));
+            self.rejected();
         }
     }
 }

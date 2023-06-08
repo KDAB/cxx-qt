@@ -17,6 +17,8 @@ use syn::{
     TypePath,
 };
 
+use super::invokable::ParsedQInvokable;
+
 #[derive(Default)]
 pub struct ParsedCxxMappings {
     /// Map of the cxx_name of any types defined in CXX extern blocks
@@ -227,9 +229,17 @@ impl ParsedCxxQtData {
                     self.with_qobject(&parsed_inherited_method.qobject_ident)?
                         .inherited_methods
                         .push(parsed_inherited_method);
+                // Test if the function is an invokable
+                } else if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qinvokable"])
+                {
+                    let parsed_invokable_method =
+                        ParsedQInvokable::parse(foreign_fn, safe_call, index)?;
+                    self.with_qobject(&parsed_invokable_method.qobject_ident)?
+                        .invokables
+                        .push(parsed_invokable_method);
                 }
 
-                // TODO: test for qinvokable later
+                // TODO: non-signal/inherit/invokable functions should be exposed as C++ only methods
             }
         }
 
@@ -247,18 +257,16 @@ impl ParsedCxxQtData {
                 if let Some(qobject) = self.qobjects.get_mut(&path.segments[1].ident) {
                     if imp.trait_.is_some() {
                         qobject.parse_trait_impl(imp)?;
-                    } else {
-                        // Extract the ImplItem's from each Impl block
-                        qobject.parse_impl_items(&imp.items)?;
+                        return Ok(None);
                     }
+
+                    // non trait impls fall through
                 } else {
                     return Err(Error::new(
                         imp.span(),
                         "No matching QObject found for the given qobject::T impl block.",
                     ));
                 }
-
-                return Ok(None);
             // Find if we are an impl block for a qobject
             } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
                 qobject.others.push(Item::Impl(imp));
@@ -424,21 +432,22 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            impl qobject::MyObject {
+            unsafe extern "RustQt" {
                 #[qinvokable]
-                fn invokable(&self) {}
+                fn invokable(self: &qobject::MyObject);
 
-                fn cpp_context() {}
+                fn cpp_context();
             }
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
+        // TODO: later we should support C++ context methods somewhere
         assert_eq!(
             cxx_qt_data.qobjects[&qobject_ident()]
                 .passthrough_impl_items
                 .len(),
-            1
+            0
         );
     }
 
@@ -447,9 +456,9 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            impl qobject::MyObject::Bad {
+            unsafe extern "RustQt" {
                 #[qinvokable]
-                fn invokable() {}
+                fn invokable(self: &qobject::MyObject::Bad);
             }
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item);

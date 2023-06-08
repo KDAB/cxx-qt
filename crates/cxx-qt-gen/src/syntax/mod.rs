@@ -7,7 +7,6 @@ pub mod attribute;
 pub mod expr;
 pub mod fields;
 pub mod foreignmod;
-pub mod implitemfn;
 pub mod path;
 mod qtfile;
 mod qtitem;

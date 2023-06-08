@@ -7,6 +7,46 @@ mod ffi {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
     }
+    impl qobject::MyObject {
+        pub fn invokable(&self) {
+            println!("invokable");
+        }
+        pub fn invokable_mutable(self: Pin<&mut Self>) {
+            println!("This method is mutable!");
+        }
+        pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
+            println!(
+                "Red: {}, Point X: {}, Number: {}",
+                opaque.red(),
+                trivial.x(),
+                primitive,
+            );
+        }
+        pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<Opaque> {
+            Opaque::new()
+        }
+        pub fn invokable_return_trivial(self: Pin<&mut Self>) -> QPoint {
+            QPoint::new(1, 2)
+        }
+        pub fn invokable_final(&self) {
+            println!("Final");
+        }
+        pub fn invokable_override(&self) {
+            println!("Override");
+        }
+        pub fn invokable_virtual(&self) {
+            println!("Virtual");
+        }
+        pub fn cpp_context_method(&self) {
+            println!("C++ context method");
+        }
+        pub fn cpp_context_method_mutable(self: Pin<&mut Self>) {
+            println!("mutable method");
+        }
+        pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<Opaque> {
+            Opaque::new()
+        }
+    }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/qt.h");
@@ -128,7 +168,8 @@ mod ffi {
     }
 }
 use self::cxx_qt_ffi::*;
-mod cxx_qt_ffi {
+#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
+pub mod cxx_qt_ffi {
     use super::ffi::*;
     use cxx_qt::CxxQtType;
     use std::pin::Pin;
@@ -147,20 +188,10 @@ mod cxx_qt_ffi {
             cpp.invokable();
         }
     }
-    impl MyObjectQt {
-        pub fn invokable(&self) {
-            println!("invokable");
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_mutable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
             cpp.invokable_mutable();
-        }
-    }
-    impl MyObjectQt {
-        pub fn invokable_mutable(self: Pin<&mut Self>) {
-            println!("This method is mutable!");
         }
     }
     impl MyObject {
@@ -175,16 +206,6 @@ mod cxx_qt_ffi {
             cpp.invokable_parameters(opaque, trivial, primitive);
         }
     }
-    impl MyObjectQt {
-        pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
-            println!(
-                "Red: {}, Point X: {}, Number: {}",
-                opaque.red(),
-                trivial.x(),
-                primitive,
-            );
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_return_opaque_wrapper(
@@ -192,11 +213,6 @@ mod cxx_qt_ffi {
             cpp: Pin<&mut MyObjectQt>,
         ) -> UniquePtr<Opaque> {
             return cpp.invokable_return_opaque();
-        }
-    }
-    impl MyObjectQt {
-        pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<Opaque> {
-            Opaque::new()
         }
     }
     impl MyObject {
@@ -208,20 +224,10 @@ mod cxx_qt_ffi {
             return cpp.invokable_return_trivial();
         }
     }
-    impl MyObjectQt {
-        pub fn invokable_return_trivial(self: Pin<&mut Self>) -> QPoint {
-            QPoint::new(1, 2)
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_final_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable_final();
-        }
-    }
-    impl MyObjectQt {
-        pub fn invokable_final(&self) {
-            println!("Final");
         }
     }
     impl MyObject {
@@ -230,35 +236,10 @@ mod cxx_qt_ffi {
             cpp.invokable_override();
         }
     }
-    impl MyObjectQt {
-        pub fn invokable_override(&self) {
-            println!("Override");
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn invokable_virtual_wrapper(self: &MyObject, cpp: &MyObjectQt) {
             cpp.invokable_virtual();
-        }
-    }
-    impl MyObjectQt {
-        pub fn invokable_virtual(&self) {
-            println!("Virtual");
-        }
-    }
-    impl MyObjectQt {
-        pub fn cpp_context_method(&self) {
-            println!("C++ context method");
-        }
-    }
-    impl MyObjectQt {
-        pub fn cpp_context_method_mutable(self: Pin<&mut Self>) {
-            println!("mutable method");
-        }
-    }
-    impl MyObjectQt {
-        pub fn cpp_context_method_return_opaque(&self) -> UniquePtr<Opaque> {
-            Opaque::new()
         }
     }
     impl cxx_qt::Threading for MyObjectQt {

@@ -404,7 +404,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_trivial_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_trivial_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_trivial_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -445,7 +445,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_opaque_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_opaque_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_opaque_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -486,7 +486,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_unsafe_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_property_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_unsafe_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }

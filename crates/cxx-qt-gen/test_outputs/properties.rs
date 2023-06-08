@@ -102,7 +102,8 @@ mod ffi {
     }
 }
 use self::cxx_qt_ffi::*;
-mod cxx_qt_ffi {
+#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
+pub mod cxx_qt_ffi {
     use super::ffi::*;
     use cxx_qt::CxxQtType;
     use std::pin::Pin;
@@ -211,7 +212,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_primitive_changed(
+        pub fn on_primitive_changed(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
@@ -225,7 +226,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_trivial_changed(
+        pub fn on_trivial_changed(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
         ) -> CxxQtQMetaObjectConnection {

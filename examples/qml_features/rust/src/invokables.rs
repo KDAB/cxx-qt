@@ -18,9 +18,9 @@ pub mod ffi {
     /// A QObject which has Q_INVOKABLEs
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     pub struct RustInvokables {
-        red: f32,
-        green: f32,
-        blue: f32,
+        pub(crate) red: f32,
+        pub(crate) green: f32,
+        pub(crate) blue: f32,
     }
 
     impl Default for RustInvokables {
@@ -33,44 +33,64 @@ pub mod ffi {
         }
     }
 
-    // ANCHOR: book_impl_qobject
-    impl qobject::RustInvokables {
+    // ANCHOR: book_invokable_signature
+    unsafe extern "RustQt" {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
-        pub fn load_color(&self) -> QColor {
-            self.rust().as_qcolor()
-        }
+        fn load_color(self: &qobject::RustInvokables) -> QColor;
 
         /// Mutable invokable method that stores a color
         #[qinvokable]
-        pub fn store_color(self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
-            self.store_helper(red, green, blue);
-        }
+        fn store_color(self: Pin<&mut qobject::RustInvokables>, red: f32, green: f32, blue: f32);
 
         /// Mutable invokable method with no parameters that resets the color
         #[qinvokable]
-        pub fn reset(self: Pin<&mut Self>) {
-            self.store_helper(0.0, 0.4667, 0.7843);
-        }
-
-        /// Mutable C++ context method that helps to store the color
-        pub fn store_helper(mut self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
-            self.as_mut().set_red(red);
-            self.as_mut().set_green(green);
-            self.as_mut().set_blue(blue);
-        }
+        fn reset(self: Pin<&mut qobject::RustInvokables>);
     }
-    // ANCHOR_END: book_impl_qobject
+    // ANCHOR_END: book_invokable_signature
+}
 
-    impl RustInvokables {
-        /// Immutable Rust context method that returns the QColor
-        fn as_qcolor(&self) -> QColor {
-            QColor::from_rgb(
-                (self.red * 255.0).round() as i32,
-                (self.green * 255.0).round() as i32,
-                (self.blue * 255.0).round() as i32,
-            )
-        }
+use core::pin::Pin;
+use cxx_qt::CxxQtType;
+use cxx_qt_lib::QColor;
+
+// TODO: this will change to qobject::RustInvokables once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+//
+// ANCHOR: book_invokable_impl
+impl ffi::RustInvokablesQt {
+    /// Immutable invokable method that returns the QColor
+    fn load_color(&self) -> QColor {
+        self.rust().as_qcolor()
+    }
+
+    /// Mutable invokable method that stores a color
+    fn store_color(self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
+        self.store_helper(red, green, blue);
+    }
+
+    /// Mutable invokable method with no parameters that resets the color
+    fn reset(self: Pin<&mut Self>) {
+        self.store_helper(0.0, 0.4667, 0.7843);
+    }
+
+    /// Mutable C++ context method that helps to store the color
+    fn store_helper(mut self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
+        self.as_mut().set_red(red);
+        self.as_mut().set_green(green);
+        self.as_mut().set_blue(blue);
+    }
+}
+// ANCHOR_END: book_invokable_impl
+
+impl RustInvokables {
+    /// Immutable Rust context method that returns the QColor
+    fn as_qcolor(&self) -> QColor {
+        QColor::from_rgb(
+            (self.red * 255.0).round() as i32,
+            (self.green * 255.0).round() as i32,
+            (self.blue * 255.0).round() as i32,
+        )
     }
 }
 // ANCHOR_END: book_macro_code

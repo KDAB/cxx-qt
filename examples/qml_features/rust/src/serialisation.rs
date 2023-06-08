@@ -71,35 +71,51 @@ pub mod ffi {
         }
     }
 
-    impl qobject::Serialisation {
+    unsafe extern "RustQt" {
         /// Retrieve the JSON form of this QObject
         #[qinvokable]
-        pub fn as_json_str(self: Pin<&mut Self>) -> QString {
-            let data_serde = DataSerde::from(self.rust());
-            match serde_json::to_string(&data_serde) {
-                Ok(data_string) => QString::from(&data_string),
-                Err(err) => {
-                    self.error(QString::from(&err.to_string()));
-                    QString::default()
-                }
-            }
-        }
+        fn as_json_str(self: Pin<&mut qobject::Serialisation>) -> QString;
 
         /// From a given JSON string try to load values for the Q_PROPERTYs
         // ANCHOR: book_grab_values
         #[qinvokable]
-        pub fn from_json_str(mut self: Pin<&mut Self>, string: &QString) {
-            match serde_json::from_str::<DataSerde>(&string.to_string()) {
-                Ok(data_serde) => {
-                    self.as_mut().set_number(data_serde.number);
-                    self.as_mut().set_string(QString::from(&data_serde.string));
-                }
-                Err(err) => {
-                    self.error(QString::from(&err.to_string()));
-                }
-            }
-        }
+        fn from_json_str(self: Pin<&mut qobject::Serialisation>, string: &QString);
         // ANCHOR_END: book_grab_values
     }
+}
+
+use core::pin::Pin;
+use cxx_qt::CxxQtType;
+use cxx_qt_lib::QString;
+
+// TODO: this will change to qobject::Serialisation once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::SerialisationQt {
+    /// Retrieve the JSON form of this QObject
+    fn as_json_str(self: Pin<&mut Self>) -> QString {
+        let data_serde = DataSerde::from(self.rust());
+        match serde_json::to_string(&data_serde) {
+            Ok(data_string) => QString::from(&data_string),
+            Err(err) => {
+                self.error(QString::from(&err.to_string()));
+                QString::default()
+            }
+        }
+    }
+
+    /// From a given JSON string try to load values for the Q_PROPERTYs
+    // ANCHOR: book_grab_values
+    fn from_json_str(mut self: Pin<&mut Self>, string: &QString) {
+        match serde_json::from_str::<DataSerde>(&string.to_string()) {
+            Ok(data_serde) => {
+                self.as_mut().set_number(data_serde.number);
+                self.as_mut().set_string(QString::from(&data_serde.string));
+            }
+            Err(err) => {
+                self.error(QString::from(&err.to_string()));
+            }
+        }
+    }
+    // ANCHOR_END: book_grab_values
 }
 // ANCHOR_END: book_macro_code

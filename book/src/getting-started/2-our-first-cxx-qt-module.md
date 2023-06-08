@@ -96,9 +96,14 @@ For any Rust struct `T` that is marked with `#[cxx_qt::qobject]`, CXX-Qt will ex
 In our case, this means we can refer to the C++ QObject for our `MyObject` struct, as `qobject::MyObject`.
 
 This type can be used like any other CXX opaque type.
-Additionally, CXX-Qt allows us to add functionality to this QObject by using `impl qobject::MyObject` together with `#[qinvokable]`.
+Additionally, CXX-Qt allows us to add functionality to this QObject by referring to the type as the self type of functions in an `extern "RustQt"` block in together with `#[qinvokable]`.
 ```rust,ignore
-{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_impl}}
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_invokable_signature}}
+```
+
+And then implementing the invokables outside the bridge using `impl qobject::MyObject`.
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_invokable_impl}}
 ```
 
 In our case, we define two new functions:

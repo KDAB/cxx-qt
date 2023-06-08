@@ -5,10 +5,10 @@
 
 use crate::{
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::*, implitemfn::is_method_mutable_pin_of_self},
+    syntax::{attribute::*, foreignmod, safety::Safety, types},
 };
 use std::collections::HashSet;
-use syn::{Ident, ImplItemFn, LitStr, Result};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, LitStr, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -21,9 +21,13 @@ pub enum ParsedQInvokableSpecifiers {
 /// Describes a single Q_INVOKABLE for a struct
 pub struct ParsedQInvokable {
     /// The original [syn::ImplItemFn] of the invokable
-    pub method: ImplItemFn,
+    pub method: ForeignItemFn,
+    /// The type of the self argument
+    pub qobject_ident: Ident,
     /// Whether this invokable is mutable
     pub mutable: bool,
+    /// Whether the method is safe to call.
+    pub safe: bool,
     /// The parameters of the invokable
     pub parameters: Vec<ParsedFunctionParameter>,
     /// Any specifiers that declared on the invokable
@@ -31,16 +35,14 @@ pub struct ParsedQInvokable {
 }
 
 impl ParsedQInvokable {
-    pub fn try_parse(method: &ImplItemFn) -> Result<Option<Self>> {
-        let index = attribute_find_path(&method.attrs, &["qinvokable"]);
-
-        if index.is_none() {
-            return Ok(None);
+    pub fn parse(mut method: ForeignItemFn, safety: Safety, index: usize) -> Result<Self> {
+        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
+            return Err(Error::new(
+                method.span(),
+                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"C++\"` block!",
+            ));
         }
-        Ok(Some(Self::parse(method, index.unwrap())?))
-    }
 
-    fn parse(method: &ImplItemFn, index: usize) -> Result<Self> {
         // Parse any C++ specifiers
         let mut specifiers = HashSet::new();
         let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
@@ -56,21 +58,24 @@ impl ParsedQInvokable {
         if attrs_map.contains_key(&quote::format_ident!("cxx_virtual")) {
             specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
         }
+        method.attrs.remove(index);
 
         // Determine if the invokable is mutable
-        let mutable = is_method_mutable_pin_of_self(&method.sig);
+        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
+        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
+        let mutable = mutability.is_some();
 
-        // Read the signal inputs into parameter blocks
-        let parameters = ParsedFunctionParameter::parse_all_without_receiver(&method.sig)?;
+        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
-        // Remove the invokable attribute
-        let mut method = method.clone();
-        method.attrs.remove(index);
+        let safe = method.sig.unsafety.is_none();
+
         Ok(ParsedQInvokable {
             method,
+            qobject_ident,
             mutable,
             parameters,
             specifiers,
+            safe,
         })
     }
 }

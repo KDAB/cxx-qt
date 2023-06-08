@@ -17,8 +17,8 @@ use crate::{
     syntax::path::path_compare_str,
 };
 use syn::{
-    spanned::Spanned, Error, Fields, Ident, ImplItem, ImplItemFn, Item, ItemImpl, ItemStruct,
-    LitStr, Result, Visibility,
+    spanned::Spanned, Error, Fields, Ident, ImplItem, Item, ItemImpl, ItemStruct, LitStr, Result,
+    Visibility,
 };
 
 /// Metadata for registering QML element
@@ -195,35 +195,6 @@ impl ParsedQObject {
         }
     }
 
-    fn parse_impl_method(&mut self, method: &ImplItemFn) -> Result<()> {
-        if let Some(invokable) = ParsedQInvokable::try_parse(method)? {
-            self.invokables.push(invokable);
-        } else {
-            self.passthrough_impl_items
-                .push(ImplItem::Fn(method.clone()));
-        }
-        Ok(())
-    }
-
-    /// Extract all methods (both invokable and non-invokable) from [syn::ImplItem]'s from each Impl block
-    ///
-    /// These will have come from a impl qobject::T block
-    pub fn parse_impl_items(&mut self, items: &[ImplItem]) -> Result<()> {
-        for item in items {
-            // Check if this item is a method
-            match item {
-                ImplItem::Fn(method) => {
-                    self.parse_impl_method(method)?;
-                }
-                _ => {
-                    self.passthrough_impl_items.push(item.clone());
-                }
-            }
-        }
-
-        Ok(())
-    }
-
     pub fn parse_trait_impl(&mut self, imp: ItemImpl) -> Result<()> {
         let (not, trait_path, _) = &imp
             .trait_
@@ -323,7 +294,7 @@ impl ParsedQObject {
 pub mod tests {
     use super::*;
 
-    use crate::parser::{invokable::ParsedQInvokableSpecifiers, tests::f64_type};
+    use crate::parser::tests::f64_type;
     use syn::{parse_quote, ItemImpl, Visibility};
 
     pub fn create_parsed_qobject() -> ParsedQObject {
@@ -389,64 +360,6 @@ pub mod tests {
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 0);
         assert_eq!(qobject.qobject_struct.fields.len(), 1);
-    }
-
-    #[test]
-    fn test_parse_impl_items_valid() {
-        let mut qobject = create_parsed_qobject();
-        let item: ItemImpl = parse_quote! {
-            impl T {
-                #[qinvokable]
-                fn invokable(&self, a: f64, b: f64) {}
-
-                #[qinvokable]
-                fn invokable_with_return_type(self: Pin<&mut Self>) -> f64 {}
-
-                #[qinvokable(cxx_final, cxx_override, cxx_virtual)]
-                fn invokable_with_specifiers(&self) -> f64 {}
-
-                fn cpp_context(&self) {}
-            }
-        };
-        assert!(qobject.parse_impl_items(&item.items).is_ok());
-        assert_eq!(qobject.invokables.len(), 3);
-        assert_eq!(qobject.passthrough_impl_items.len(), 1);
-        assert!(!qobject.invokables[0].mutable);
-        assert_eq!(qobject.invokables[0].parameters.len(), 2);
-        assert_eq!(qobject.invokables[0].parameters[0].ident, "a");
-        assert_eq!(qobject.invokables[0].parameters[0].ty, f64_type());
-        assert_eq!(qobject.invokables[0].parameters[1].ident, "b");
-        assert_eq!(qobject.invokables[0].parameters[1].ty, f64_type());
-        assert!(qobject.invokables[1].mutable);
-        assert!(qobject.invokables[2]
-            .specifiers
-            .contains(&ParsedQInvokableSpecifiers::Final));
-        assert!(qobject.invokables[2]
-            .specifiers
-            .contains(&ParsedQInvokableSpecifiers::Override));
-        assert!(qobject.invokables[2]
-            .specifiers
-            .contains(&ParsedQInvokableSpecifiers::Virtual));
-    }
-
-    #[test]
-    fn test_parse_impl_items_invalid() {
-        let mut qobject = create_parsed_qobject();
-        let item: ItemImpl = parse_quote! {
-            impl T {
-                const VALUE: i32 = 1;
-
-                macro_code!();
-
-                type A = i32;
-
-                #[qinvokable]
-                fn invokable() {}
-
-                fn cpp_context() {}
-            }
-        };
-        assert!(qobject.parse_impl_items(&item.items).is_err());
     }
 
     #[test]

@@ -57,21 +57,33 @@ mod ffi {
         }
     }
 
-    impl qobject::MyData {
+    unsafe extern "RustQt" {
         #[qinvokable]
-        pub fn as_json_str(&self) -> QString {
-            let data_serde = DataSerde::from(self.rust());
-            let data_string = serde_json::to_string(&data_serde).unwrap();
-            QString::from(&data_string)
-        }
+        fn as_json_str(self: &qobject::MyData) -> QString;
 
         #[qinvokable]
-        pub fn grab_values(mut self: Pin<&mut Self>) {
-            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            self.as_mut().set_number(data_serde.number);
-            self.as_mut().set_string(QString::from(&data_serde.string));
-        }
+        fn grab_values(self: Pin<&mut qobject::MyData>);
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt::CxxQtType;
+use cxx_qt_lib::QString;
+
+// TODO: this will change to qobject::MyData once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::MyDataQt {
+    pub fn as_json_str(&self) -> QString {
+        let data_serde = DataSerde::from(self.rust());
+        let data_string = serde_json::to_string(&data_serde).unwrap();
+        QString::from(&data_string)
+    }
+
+    pub fn grab_values(mut self: Pin<&mut Self>) {
+        let string = r#"{"number": 2, "string": "Goodbye!"}"#;
+        let data_serde: DataSerde = serde_json::from_str(string).unwrap();
+        self.as_mut().set_number(data_serde.number);
+        self.as_mut().set_string(QString::from(&data_serde.string));
     }
 }
 // ANCHOR_END: book_macro_code

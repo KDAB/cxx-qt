@@ -10,7 +10,7 @@
 
 /// The bridge definition for our QObject
 #[cxx_qt::bridge]
-pub mod my_object {
+pub mod ffi {
     // ANCHOR_END: book_bridge_macro
 
     // ANCHOR: book_qstring_import
@@ -43,21 +43,36 @@ pub mod my_object {
     }
     // ANCHOR_END: book_rustobj_default
 
-    // ANCHOR: book_rustobj_impl
-    impl qobject::MyObject {
-        /// Increment the number Q_PROPERTY
+    // ANCHOR: book_rustobj_invokable_signature
+    unsafe extern "RustQt" {
         #[qinvokable]
-        pub fn increment_number(self: Pin<&mut Self>) {
-            let previous = *self.as_ref().number();
-            self.set_number(previous + 1);
-        }
+        fn increment_number(self: Pin<&mut qobject::MyObject>);
 
-        /// Print a log message with the given string and number
         #[qinvokable]
-        pub fn say_hi(&self, string: &QString, number: i32) {
-            println!("Hi from Rust! String is '{string}' and number is {number}");
-        }
+        fn say_hi(self: &qobject::MyObject, string: &QString, number: i32);
     }
-    // ANCHOR_END: book_rustobj_impl
+    // ANCHOR_END: book_rustobj_invokable_signature
 }
+
+use core::pin::Pin;
+use cxx_qt_lib::QString;
+
+// TODO: this will change to qobject::MyObject once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+//
+// ANCHOR: book_rustobj_invokable_impl
+impl ffi::MyObjectQt {
+    /// Increment the number Q_PROPERTY
+    pub fn increment_number(self: Pin<&mut Self>) {
+        let previous = *self.as_ref().number();
+        self.set_number(previous + 1);
+    }
+
+    /// Print a log message with the given string and number
+    pub fn say_hi(&self, string: &QString, number: i32) {
+        println!("Hi from Rust! String is '{string}' and number is {number}");
+    }
+}
+// ANCHOR_END: book_rustobj_invokable_impl
+
 // ANCHOR_END: book_cxx_qt_module
