@@ -12,18 +12,46 @@ mod ffi {
     #[derive(Default)]
     pub struct MyObject;
 
-    impl qobject::MyObject {
+    unsafe extern "RustQt" {
         #[qinvokable]
+        fn invokable(self: &qobject::MyObject);
+
+        #[qinvokable]
+        fn invokable_mutable(self: Pin<&mut qobject::MyObject>);
+
+        #[qinvokable]
+        fn invokable_parameters(
+            self: &qobject::MyObject,
+            opaque: &QColor,
+            trivial: &QPoint,
+            primitive: i32,
+        );
+
+        #[qinvokable]
+        fn invokable_return_opaque(self: Pin<&mut qobject::MyObject>) -> UniquePtr<Opaque>;
+
+        #[qinvokable]
+        fn invokable_return_trivial(self: Pin<&mut qobject::MyObject>) -> QPoint;
+
+        #[qinvokable(cxx_final)]
+        fn invokable_final(self: &qobject::MyObject);
+
+        #[qinvokable(cxx_override)]
+        fn invokable_override(self: &qobject::MyObject);
+
+        #[qinvokable(cxx_virtual)]
+        fn invokable_virtual(self: &qobject::MyObject);
+    }
+
+    impl qobject::MyObject {
         pub fn invokable(&self) {
             println!("invokable");
         }
 
-        #[qinvokable]
         pub fn invokable_mutable(self: Pin<&mut Self>) {
             println!("This method is mutable!");
         }
 
-        #[qinvokable]
         pub fn invokable_parameters(&self, opaque: &QColor, trivial: &QPoint, primitive: i32) {
             println!(
                 "Red: {}, Point X: {}, Number: {}",
@@ -33,27 +61,22 @@ mod ffi {
             );
         }
 
-        #[qinvokable]
         pub fn invokable_return_opaque(self: Pin<&mut Self>) -> UniquePtr<Opaque> {
             Opaque::new()
         }
 
-        #[qinvokable]
         pub fn invokable_return_trivial(self: Pin<&mut Self>) -> QPoint {
             QPoint::new(1, 2)
         }
 
-        #[qinvokable(cxx_final)]
         pub fn invokable_final(&self) {
             println!("Final");
         }
 
-        #[qinvokable(cxx_override)]
         pub fn invokable_override(&self) {
             println!("Override");
         }
 
-        #[qinvokable(cxx_virtual)]
         pub fn invokable_virtual(&self) {
             println!("Virtual");
         }

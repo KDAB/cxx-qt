@@ -178,7 +178,12 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         #cxx_mod
 
         #cxx_mod_visiblity use self::#cxx_qt_mod_ident::*;
-        mod #cxx_qt_mod_ident {
+        // TODO: for now mark as public
+        // as we need to reach the generated getters and setters
+        // but later we'll likely implement things outside the module
+        //
+        /// Internal CXX-Qt module, made public temporarily between API changes
+        pub mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
             use std::pin::Pin;
             use cxx_qt::CxxQtType;
@@ -396,7 +401,8 @@ mod tests {
             }
 
             use self::cxx_qt_ffi::*;
-            mod cxx_qt_ffi {
+            #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
+            pub mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
                 use cxx_qt::CxxQtType;
@@ -528,7 +534,8 @@ mod tests {
             }
 
             use self::cxx_qt_ffi::*;
-            mod cxx_qt_ffi {
+            #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
+            pub mod cxx_qt_ffi {
                 use super::ffi::*;
                 use std::pin::Pin;
                 use cxx_qt::CxxQtType;

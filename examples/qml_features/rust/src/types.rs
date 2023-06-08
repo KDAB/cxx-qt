@@ -97,29 +97,42 @@ pub mod ffi {
         }
     }
 
-    impl qobject::Types {
+    unsafe extern "RustQt" {
         /// Load the value from a QVariant
         #[qinvokable]
-        pub fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
-            if let Some(boolean) = variant.value::<bool>() {
-                self.set_boolean(boolean);
-            } else if let Some(point) = variant.value::<QPointF>() {
-                self.set_point(point);
-            } else if let Some(url) = variant.value::<QUrl>() {
-                self.set_url(url);
-            } else if let Some(custom) = variant.value::<CustomStruct>() {
-                self.set_custom_value(custom.value);
-            } else {
-                println!("Unknown QVariant type to load from");
-            }
-        }
+        fn load_from_variant(self: Pin<&mut qobject::Types>, variant: &QVariant);
 
         /// Toggle the boolean Q_PROPERTY
         #[qinvokable]
-        pub fn toggle_boolean(self: Pin<&mut Self>) {
-            let new_boolean = !self.as_ref().boolean();
-            self.set_boolean(new_boolean);
+        fn toggle_boolean(self: Pin<&mut qobject::Types>);
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt_lib::{QPointF, QUrl, QVariant};
+
+// TODO: this will change to qobject::Types once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::TypesQt {
+    /// Load the value from a QVariant
+    fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
+        if let Some(boolean) = variant.value::<bool>() {
+            self.set_boolean(boolean);
+        } else if let Some(point) = variant.value::<QPointF>() {
+            self.set_point(point);
+        } else if let Some(url) = variant.value::<QUrl>() {
+            self.set_url(url);
+        } else if let Some(custom) = variant.value::<CustomStruct>() {
+            self.set_custom_value(custom.value);
+        } else {
+            println!("Unknown QVariant type to load from");
         }
+    }
+
+    /// Toggle the boolean Q_PROPERTY
+    fn toggle_boolean(self: Pin<&mut Self>) {
+        let new_boolean = !self.as_ref().boolean();
+        self.set_boolean(new_boolean);
     }
 }
 // ANCHOR_END: book_macro_code

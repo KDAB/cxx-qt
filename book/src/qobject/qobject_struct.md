@@ -120,11 +120,15 @@ For details on this, see the [`qobject::T` page](./generated-qobject.md).
 The important part for invokables is that they need to be implemented on the `qobject::T`, not `T`.
 Therefore they have access to both C++ and Rust methods. CXX-Qt adds wrapper code around your invokables to automatically convert between the [C++ and Rust types](../concepts/types.md).
 
-To mark a method as invokable, simply add the `#[qinvokable]` attribute to the Rust method. This tells CXX-Qt to expose the method on the generated C++ class.
+To mark a method as invokable, simply add the `#[qinvokable]` attribute to the Rust function in the `extern "RustQt"` block. This tells CXX-Qt to expose the method on the generated C++ class.
 `Q_INVOKABLE` will be added to the C++ definition of the method, allowing QML to call the invokable.
 
 ``` rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/invokables.rs:book_impl_qobject}}
+{{#include ../../../examples/qml_features/rust/src/invokables.rs:book_invokable_signature}}
+```
+
+``` rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/invokables.rs:book_invokable_impl}}
 ```
 
 Note that an invokable may only use `self: Pin<&mut Self>` or `&self` as self types.

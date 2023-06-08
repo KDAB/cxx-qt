@@ -18,12 +18,21 @@ pub mod ffi {
         persistent_value: i32,
     }
 
-    impl qobject::RustSingleton {
+    unsafe extern "RustQt" {
         /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON
         #[qinvokable]
-        pub fn increment(self: Pin<&mut Self>) {
-            let new_value = self.persistent_value() + 1;
-            self.set_persistent_value(new_value);
-        }
+        fn increment(self: Pin<&mut qobject::RustSingleton>);
+    }
+}
+
+use core::pin::Pin;
+
+// TODO: this will change to qobject::RustSingleton once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::RustSingletonQt {
+    /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON
+    fn increment(self: Pin<&mut Self>) {
+        let new_value = self.persistent_value() + 1;
+        self.set_persistent_value(new_value);
     }
 }

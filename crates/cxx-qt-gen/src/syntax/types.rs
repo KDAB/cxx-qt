@@ -19,26 +19,6 @@ fn pin_path(ty: &Type) -> Option<Path> {
     None
 }
 
-/// Determine if a given [syn::Type] has a mutable T in Pin<T>
-pub fn is_pin_mut(ty: &Type) -> bool {
-    if let Some(path) = pin_path(ty) {
-        // Read the contents of the T
-        if let Some(last) = path.segments.last() {
-            if let PathArguments::AngleBracketed(args) = &last.arguments {
-                if let Some(GenericArgument::Type(Type::Reference(TypeReference {
-                    mutability: Some(_),
-                    ..
-                }))) = args.args.first()
-                {
-                    return true;
-                }
-            }
-        }
-    }
-
-    false
-}
-
 /// Checks if the given type is a `Pin<&Self>` or `Pin<&mut Self>`.
 /// `Pin<Box<Self>>` is currently not supported.
 pub fn is_pin_of_self(ty: &Type) -> bool {
@@ -162,18 +142,6 @@ mod tests {
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<Self> }));
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<&Foo> }));
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<&mut Foo> }));
-    }
-
-    #[test]
-    fn test_is_pin_mut() {
-        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Self> }));
-        assert!(super::is_pin_mut(&parse_quote! { Pin<&mut Self> }));
-        assert!(!super::is_pin_mut(&parse_quote! { Pin<Box<Self>> }));
-        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Self, Foo> }));
-        assert!(!super::is_pin_mut(&parse_quote! { Pin }));
-        assert!(!super::is_pin_mut(&parse_quote! { Pin<Self> }));
-        assert!(!super::is_pin_mut(&parse_quote! { Pin<&Foo> }));
-        assert!(super::is_pin_mut(&parse_quote! { Pin<&mut Foo> }));
     }
 
     fn assert_qobject_ident(ty: Type, expected_ident: &str, expected_mutability: bool) {

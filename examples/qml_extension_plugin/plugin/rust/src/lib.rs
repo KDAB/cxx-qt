@@ -60,33 +60,49 @@ mod ffi {
         }
     }
 
-    impl qobject::MyObject {
+    unsafe extern "RustQt" {
         #[qinvokable]
-        pub fn increment(self: Pin<&mut Self>) {
-            let new_number = self.number() + 1;
-            self.set_number(new_number);
-        }
+        pub fn increment(self: Pin<&mut qobject::MyObject>);
 
         #[qinvokable]
-        pub fn reset(mut self: Pin<&mut Self>) {
-            let data: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
-            self.as_mut().set_number(data.number);
-            self.as_mut().set_string(QString::from(&data.string));
-        }
+        pub fn reset(self: Pin<&mut qobject::MyObject>);
 
         #[qinvokable]
-        pub fn serialize(&self) -> QString {
-            let data_serde = DataSerde::from(self.rust());
-            let data_string = serde_json::to_string(&data_serde).unwrap();
-            QString::from(&data_string)
-        }
+        pub fn serialize(self: &qobject::MyObject) -> QString;
 
         #[qinvokable]
-        pub fn grab_values(mut self: Pin<&mut Self>) {
-            let string = r#"{"number": 2, "string": "Goodbye!"}"#;
-            let data: DataSerde = serde_json::from_str(string).unwrap();
-            self.as_mut().set_number(data.number);
-            self.as_mut().set_string(QString::from(&data.string));
-        }
+        pub fn grab_values(self: Pin<&mut qobject::MyObject>);
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt::CxxQtType;
+use cxx_qt_lib::QString;
+
+// TODO: this will change to qobject::MyObject once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::MyObjectQt {
+    pub fn increment(self: Pin<&mut Self>) {
+        let new_number = self.number() + 1;
+        self.set_number(new_number);
+    }
+
+    pub fn reset(mut self: Pin<&mut Self>) {
+        let data: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
+        self.as_mut().set_number(data.number);
+        self.as_mut().set_string(QString::from(&data.string));
+    }
+
+    pub fn serialize(&self) -> QString {
+        let data_serde = DataSerde::from(self.rust());
+        let data_string = serde_json::to_string(&data_serde).unwrap();
+        QString::from(&data_string)
+    }
+
+    pub fn grab_values(mut self: Pin<&mut Self>) {
+        let string = r#"{"number": 2, "string": "Goodbye!"}"#;
+        let data: DataSerde = serde_json::from_str(string).unwrap();
+        self.as_mut().set_number(data.number);
+        self.as_mut().set_string(QString::from(&data.string));
     }
 }

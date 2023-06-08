@@ -49,123 +49,153 @@ pub mod ffi {
         #[qproperty]
         string_vector: QString,
 
-        hash: QHash_QString_QVariant,
-        list: QList_i32,
+        pub(crate) hash: QHash_QString_QVariant,
+        pub(crate) list: QList_i32,
         // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
         #[qproperty]
         map: QMap_QString_QVariant,
-        set: QSet_i32,
-        vector: QVector_i32,
+        pub(crate) set: QSet_i32,
+        pub(crate) vector: QVector_i32,
     }
 
-    impl qobject::RustContainers {
+    unsafe extern "RustQt" {
         /// Reset all the containers
         #[qinvokable]
-        pub fn reset(mut self: Pin<&mut Self>) {
-            self.as_mut().set_hash(QHash_QString_QVariant::default());
-            self.as_mut().set_list(QList_i32::default());
-            self.as_mut().set_map(QMap_QString_QVariant::default());
-            self.as_mut().set_set(QSet_i32::default());
-            self.as_mut().set_vector(QVector_i32::default());
-
-            self.update_strings();
-        }
+        fn reset(self: Pin<&mut qobject::RustContainers>);
 
         /// Append the given number to the vector container
         #[qinvokable]
-        pub fn append_vector(mut self: Pin<&mut Self>, value: i32) {
-            self.as_mut().vector_mut().append(value);
-
-            self.update_strings();
-        }
+        fn append_vector(self: Pin<&mut qobject::RustContainers>, value: i32);
 
         /// Append the given number to the list container
         #[qinvokable]
-        pub fn append_list(mut self: Pin<&mut Self>, value: i32) {
-            self.as_mut().list_mut().append(value);
-
-            self.update_strings();
-        }
+        fn append_list(self: Pin<&mut qobject::RustContainers>, value: i32);
 
         /// Insert the given number into the set container
         #[qinvokable]
-        pub fn insert_set(mut self: Pin<&mut Self>, value: i32) {
-            self.as_mut().set_mut().insert(value);
-
-            self.update_strings();
-        }
+        fn insert_set(self: Pin<&mut qobject::RustContainers>, value: i32);
 
         /// Insert the given string and variant to the hash container
         #[qinvokable]
-        pub fn insert_hash(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-            self.as_mut().hash_mut().insert(key, value);
-
-            self.update_strings();
-        }
+        fn insert_hash(self: Pin<&mut qobject::RustContainers>, key: QString, value: QVariant);
 
         /// Insert the given string and variant to the map container
         #[qinvokable]
-        pub fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-            // SAFETY: map is a Q_PROPERTY so ensure we manually trigger changed
-            unsafe {
-                self.as_mut().map_mut().insert(key, value);
-                self.as_mut().map_changed();
-            }
+        fn insert_map(self: Pin<&mut qobject::RustContainers>, key: QString, value: QVariant);
+    }
+}
 
-            self.update_strings();
+use core::pin::Pin;
+use cxx_qt_lib::{
+    QHash, QHashPair_QString_QVariant, QList, QMap, QMapPair_QString_QVariant, QSet, QString,
+    QVariant, QVector,
+};
+
+// TODO: this will change to qobject::RustContainers once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::RustContainersQt {
+    /// Reset all the containers
+    fn reset(mut self: Pin<&mut Self>) {
+        self.as_mut()
+            .set_hash(QHash::<QHashPair_QString_QVariant>::default());
+        self.as_mut().set_list(QList::<i32>::default());
+        self.as_mut()
+            .set_map(QMap::<QMapPair_QString_QVariant>::default());
+        self.as_mut().set_set(QSet::<i32>::default());
+        self.as_mut().set_vector(QVector::<i32>::default());
+
+        self.update_strings();
+    }
+
+    /// Append the given number to the vector container
+    fn append_vector(mut self: Pin<&mut Self>, value: i32) {
+        self.as_mut().vector_mut().append(value);
+
+        self.update_strings();
+    }
+
+    /// Append the given number to the list container
+    fn append_list(mut self: Pin<&mut Self>, value: i32) {
+        self.as_mut().list_mut().append(value);
+
+        self.update_strings();
+    }
+
+    /// Insert the given number into the set container
+    fn insert_set(mut self: Pin<&mut Self>, value: i32) {
+        self.as_mut().set_mut().insert(value);
+
+        self.update_strings();
+    }
+
+    /// Insert the given string and variant to the hash container
+    fn insert_hash(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
+        self.as_mut().hash_mut().insert(key, value);
+
+        self.update_strings();
+    }
+
+    /// Insert the given string and variant to the map container
+    fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
+        // SAFETY: map is a Q_PROPERTY so ensure we manually trigger changed
+        unsafe {
+            self.as_mut().map_mut().insert(key, value);
+            self.as_mut().map_changed();
         }
 
-        fn update_strings(mut self: Pin<&mut Self>) {
-            let hash_items = self
-                .as_ref()
-                .hash()
-                .iter()
-                .map(|(key, value)| {
-                    let value = value.value::<i32>().unwrap_or(0);
-                    format!("{key} => {value}")
-                })
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.as_mut().set_string_hash(QString::from(&hash_items));
+        self.update_strings();
+    }
 
-            let list_items = self
-                .as_ref()
-                .list()
-                .iter()
-                .map(|value| value.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.as_mut().set_string_list(QString::from(&list_items));
+    fn update_strings(mut self: Pin<&mut Self>) {
+        let hash_items = self
+            .as_ref()
+            .hash()
+            .iter()
+            .map(|(key, value)| {
+                let value = value.value::<i32>().unwrap_or(0);
+                format!("{key} => {value}")
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+        self.as_mut().set_string_hash(QString::from(&hash_items));
 
-            let map_items = self
-                .as_ref()
-                .map()
-                .iter()
-                .map(|(key, value)| {
-                    let value = value.value::<i32>().unwrap_or(0);
-                    format!("{key} => {value}")
-                })
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.as_mut().set_string_map(QString::from(&map_items));
+        let list_items = self
+            .as_ref()
+            .list()
+            .iter()
+            .map(|value| value.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+        self.as_mut().set_string_list(QString::from(&list_items));
 
-            let set_items = self
-                .as_ref()
-                .set()
-                .iter()
-                .map(|value| value.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.as_mut().set_string_set(QString::from(&set_items));
+        let map_items = self
+            .as_ref()
+            .map()
+            .iter()
+            .map(|(key, value)| {
+                let value = value.value::<i32>().unwrap_or(0);
+                format!("{key} => {value}")
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+        self.as_mut().set_string_map(QString::from(&map_items));
 
-            let vector_items = self
-                .as_ref()
-                .vector()
-                .iter()
-                .map(|value| value.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-            self.set_string_vector(QString::from(&vector_items));
-        }
+        let set_items = self
+            .as_ref()
+            .set()
+            .iter()
+            .map(|value| value.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+        self.as_mut().set_string_set(QString::from(&set_items));
+
+        let vector_items = self
+            .as_ref()
+            .vector()
+            .iter()
+            .map(|value| value.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+        self.set_string_vector(QString::from(&vector_items));
     }
 }

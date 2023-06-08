@@ -31,7 +31,7 @@ pub mod ffi {
         #[qproperty]
         url: QUrl,
 
-        loading: std::sync::atomic::AtomicBool,
+        pub(crate) loading: std::sync::atomic::AtomicBool,
     }
 
     impl Default for ThreadingWebsite {
@@ -47,80 +47,93 @@ pub mod ffi {
 
     // ANCHOR: book_threading_trait
     // Enabling threading on the qobject
-    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::ThreadingWebsite {}
     // ANCHOR_END: book_threading_trait
 
-    impl qobject::ThreadingWebsite {
+    unsafe extern "RustQt" {
         /// Swap the URL between kdab.com and github.com
         #[qinvokable]
-        pub fn change_url(self: Pin<&mut Self>) {
-            let new_url = if self.url().to_string() == "https://kdab.com" {
-                "https://github.com/kdab/cxx-qt"
-            } else {
-                "https://kdab.com"
-            };
-            self.set_url(QUrl::from(new_url));
-        }
+        fn change_url(self: Pin<&mut qobject::ThreadingWebsite>);
 
         /// Simulate delay of a network request to retrieve the title of the website
         #[qinvokable]
-        pub fn fetch_title(mut self: Pin<&mut Self>) {
-            // Check that we aren't already retrieving a title
-            if self
-                .rust()
-                .loading
-                .compare_exchange(
-                    false,
-                    true,
-                    std::sync::atomic::Ordering::SeqCst,
-                    std::sync::atomic::Ordering::SeqCst,
-                )
-                .is_err()
-            {
-                println!("Already fetching a title.");
-                return;
-            }
+        fn fetch_title(self: Pin<&mut qobject::ThreadingWebsite>);
+    }
+}
 
-            // Indicate that we are loading
-            self.as_mut().set_title(QString::from("Loading..."));
+use core::pin::Pin;
+use cxx_qt::{CxxQtType, Threading};
+use cxx_qt_lib::{QString, QUrl};
 
-            // Fetch items we need to move into the thread
-            // ANCHOR: book_qt_thread
-            let qt_thread = self.qt_thread();
-            // ANCHOR_END: book_qt_thread
-            let url = self.url().to_string();
+// TODO: this will change to qobject::ThreadingWebsite once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::ThreadingWebsiteQt {
+    /// Swap the URL between kdab.com and github.com
+    fn change_url(self: Pin<&mut Self>) {
+        let new_url = if self.url().to_string() == "https://kdab.com" {
+            "https://github.com/kdab/cxx-qt"
+        } else {
+            "https://kdab.com"
+        };
+        self.set_url(QUrl::from(new_url));
+    }
 
-            // Spawn a Rust thread to simulate the slow network request
-            std::thread::spawn(move || {
-                // Wait for 1 second
-                std::thread::sleep(std::time::Duration::from_secs(1));
-
-                // Build the new title
-                let title = if url == "https://kdab.com" {
-                    "KDAB".to_owned()
-                } else {
-                    "GitHub".to_owned()
-                };
-
-                // ANCHOR: book_qt_thread_queue
-                // Queue a Rust closure to the Qt thread
-                qt_thread
-                    .queue(move |mut qobject_website| {
-                        // Update the title property of the QObject
-                        qobject_website.as_mut().set_title(QString::from(&title));
-
-                        // Indicate that we have finished loading the title
-                        qobject_website
-                            .as_ref()
-                            .rust()
-                            .loading
-                            .store(false, std::sync::atomic::Ordering::Relaxed);
-                    })
-                    .unwrap();
-                // ANCHOR_END: book_qt_thread_queue
-            });
+    /// Simulate delay of a network request to retrieve the title of the website
+    fn fetch_title(mut self: Pin<&mut Self>) {
+        // Check that we aren't already retrieving a title
+        if self
+            .rust()
+            .loading
+            .compare_exchange(
+                false,
+                true,
+                std::sync::atomic::Ordering::SeqCst,
+                std::sync::atomic::Ordering::SeqCst,
+            )
+            .is_err()
+        {
+            println!("Already fetching a title.");
+            return;
         }
+
+        // Indicate that we are loading
+        self.as_mut().set_title(QString::from("Loading..."));
+
+        // Fetch items we need to move into the thread
+        // ANCHOR: book_qt_thread
+        let qt_thread = self.qt_thread();
+        // ANCHOR_END: book_qt_thread
+        let url = self.url().to_string();
+
+        // Spawn a Rust thread to simulate the slow network request
+        std::thread::spawn(move || {
+            // Wait for 1 second
+            std::thread::sleep(std::time::Duration::from_secs(1));
+
+            // Build the new title
+            let title = if url == "https://kdab.com" {
+                "KDAB".to_owned()
+            } else {
+                "GitHub".to_owned()
+            };
+
+            // ANCHOR: book_qt_thread_queue
+            // Queue a Rust closure to the Qt thread
+            qt_thread
+                .queue(move |mut qobject_website| {
+                    // Update the title property of the QObject
+                    qobject_website.as_mut().set_title(QString::from(&title));
+
+                    // Indicate that we have finished loading the title
+                    qobject_website
+                        .as_ref()
+                        .rust()
+                        .loading
+                        .store(false, std::sync::atomic::Ordering::Relaxed);
+                })
+                .unwrap();
+            // ANCHOR_END: book_qt_thread_queue
+        });
     }
 }
 // ANCHOR_END: book_macro_code

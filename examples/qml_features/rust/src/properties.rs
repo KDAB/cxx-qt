@@ -27,7 +27,7 @@ pub mod ffi {
 
         /// A connected_url Q_PROPERTY
         #[qproperty]
-        connected_url: QUrl,
+        pub(crate) connected_url: QUrl,
 
         /// A previous_connected_url Q_PROPERTY
         #[qproperty]
@@ -52,41 +52,55 @@ pub mod ffi {
     }
     // ANCHOR_END: book_properties_default
 
-    impl qobject::RustProperties {
+    unsafe extern "RustQt" {
         /// Connect to the given url
         #[qinvokable]
-        pub fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
-            // Check that the url starts with kdab
-            if url.to_string().starts_with("https://kdab.com") {
-                self.as_mut().set_connected(true);
-                self.as_mut().set_status_message(QString::from("Connected"));
-
-                // Safety:
-                // We are directly modifying the Rust struct to avoid creating an extra QUrl.
-                // But using rust_mut() is unsafe as this does not trigger a signal change for the property
-                // So we need to manually call this ourselves.
-                unsafe {
-                    std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
-                    self.as_mut().connected_url_changed();
-                }
-                // Then we can store the old url without having to temporarily store it
-                self.set_previous_connected_url(url);
-            } else {
-                self.as_mut().set_connected(false);
-                self.set_status_message(QString::from("URL does not start with https://kdab.com"));
-            }
-        }
+        fn connect(self: Pin<&mut qobject::RustProperties>, mut url: QUrl);
 
         /// Disconnect from the stored url
         #[qinvokable]
-        pub fn disconnect(mut self: Pin<&mut Self>) {
+        fn disconnect(self: Pin<&mut qobject::RustProperties>);
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt::CxxQtType;
+use cxx_qt_lib::{QString, QUrl};
+
+// TODO: this will change to qobject::RustProperties once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::RustPropertiesQt {
+    /// Connect to the given url
+    fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
+        // Check that the url starts with kdab
+        if url.to_string().starts_with("https://kdab.com") {
+            self.as_mut().set_connected(true);
+            self.as_mut().set_status_message(QString::from("Connected"));
+
+            // Safety:
+            // We are directly modifying the Rust struct to avoid creating an extra QUrl.
+            // But using rust_mut() is unsafe as this does not trigger a signal change for the property
+            // So we need to manually call this ourselves.
+            unsafe {
+                std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
+                self.as_mut().connected_url_changed();
+            }
+            // Then we can store the old url without having to temporarily store it
+            self.set_previous_connected_url(url);
+        } else {
             self.as_mut().set_connected(false);
-            self.as_mut()
-                .set_status_message(QString::from("Disconnected"));
-            // Here we show how data can be cloned instead of using the unsafe API to swap the values
-            let previous_url = self.as_ref().connected_url().clone();
-            self.as_mut().set_previous_connected_url(previous_url);
-            self.set_connected_url(QUrl::default());
+            self.set_status_message(QString::from("URL does not start with https://kdab.com"));
         }
+    }
+
+    /// Disconnect from the stored url
+    fn disconnect(mut self: Pin<&mut Self>) {
+        self.as_mut().set_connected(false);
+        self.as_mut()
+            .set_status_message(QString::from("Disconnected"));
+        // Here we show how data can be cloned instead of using the unsafe API to swap the values
+        let previous_url = self.as_ref().connected_url().clone();
+        self.as_mut().set_previous_connected_url(previous_url);
+        self.set_connected_url(QUrl::default());
     }
 }

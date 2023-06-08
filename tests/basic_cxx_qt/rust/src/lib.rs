@@ -24,7 +24,7 @@ mod ffi {
         #[qproperty]
         string: QString,
 
-        update_call_count: i32,
+        pub(crate) update_call_count: i32,
     }
 
     impl Default for MyObject {
@@ -38,70 +38,88 @@ mod ffi {
     }
 
     // Enabling threading on the qobject
-    use cxx_qt::Threading;
     impl cxx_qt::Threading for qobject::MyObject {}
 
-    impl qobject::MyObject {
+    unsafe extern "RustQt" {
         #[qinvokable]
-        pub fn double_number_self(self: Pin<&mut Self>) {
-            let value = self.number() * 2;
-            self.set_number(value);
-        }
+        fn double_number_self(self: Pin<&mut qobject::MyObject>);
 
         #[qinvokable]
-        pub fn double_number(&self, number: i32) -> i32 {
-            number * 2
-        }
+        fn double_number(self: &qobject::MyObject, number: i32) -> i32;
 
         #[qinvokable]
-        pub fn say_hi(&self, string: &QString, number: i32) {
-            println!("Hi from Rust! String is {string} and number is {number}");
-        }
+        fn say_hi(self: &qobject::MyObject, string: &QString, number: i32);
 
         #[qinvokable]
-        pub fn queue_test(self: Pin<&mut Self>) {
-            let qt_thread = self.qt_thread();
-            qt_thread
-                .queue(|ctx| {
-                    *ctx.update_call_count_mut() += 1;
-                })
-                .unwrap();
-        }
+        fn queue_test(self: Pin<&mut qobject::MyObject>);
 
         #[qinvokable]
-        pub fn queue_test_multi_thread(self: Pin<&mut Self>) {
-            static N_THREADS: usize = 100;
-            static N_REQUESTS: std::sync::atomic::AtomicUsize =
-                std::sync::atomic::AtomicUsize::new(0);
-
-            let mut handles = Vec::new();
-            let qt_thread = self.qt_thread();
-            for _ in 0..N_THREADS {
-                let qt_thread_cloned = qt_thread.clone();
-                handles.push(std::thread::spawn(move || {
-                    qt_thread_cloned
-                        .queue(|ctx| {
-                            *ctx.update_call_count_mut() += 1;
-                        })
-                        .unwrap();
-                    N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                }));
-            }
-
-            for h in handles {
-                h.join().unwrap();
-            }
-
-            // Make sure we actually ran all the threads
-            assert_eq!(
-                N_REQUESTS.load(std::sync::atomic::Ordering::Relaxed),
-                N_THREADS
-            );
-        }
+        fn queue_test_multi_thread(self: Pin<&mut qobject::MyObject>);
 
         #[qinvokable]
-        pub fn fetch_update_call_count(&self) -> i32 {
-            self.rust().update_call_count
+        fn fetch_update_call_count(self: &qobject::MyObject) -> i32;
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt::{CxxQtType, Threading};
+use cxx_qt_lib::QString;
+
+// TODO: this will change to qobject::MyObject once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::MyObjectQt {
+    fn double_number_self(self: Pin<&mut Self>) {
+        let value = self.number() * 2;
+        self.set_number(value);
+    }
+
+    fn double_number(&self, number: i32) -> i32 {
+        number * 2
+    }
+
+    fn say_hi(&self, string: &QString, number: i32) {
+        println!("Hi from Rust! String is {string} and number is {number}");
+    }
+
+    fn queue_test(self: Pin<&mut Self>) {
+        let qt_thread = self.qt_thread();
+        qt_thread
+            .queue(|ctx| {
+                *ctx.update_call_count_mut() += 1;
+            })
+            .unwrap();
+    }
+
+    fn queue_test_multi_thread(self: Pin<&mut Self>) {
+        static N_THREADS: usize = 100;
+        static N_REQUESTS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+        let mut handles = Vec::new();
+        let qt_thread = self.qt_thread();
+        for _ in 0..N_THREADS {
+            let qt_thread_cloned = qt_thread.clone();
+            handles.push(std::thread::spawn(move || {
+                qt_thread_cloned
+                    .queue(|ctx| {
+                        *ctx.update_call_count_mut() += 1;
+                    })
+                    .unwrap();
+                N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            }));
         }
+
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        // Make sure we actually ran all the threads
+        assert_eq!(
+            N_REQUESTS.load(std::sync::atomic::Ordering::Relaxed),
+            N_THREADS
+        );
+    }
+
+    fn fetch_update_call_count(&self) -> i32 {
+        self.rust().update_call_count
     }
 }

@@ -9,8 +9,6 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_signals")]
 pub mod ffi {
-    use cxx_qt_lib::ConnectionType;
-
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         /// QString from cxx_qt_lib
@@ -41,73 +39,89 @@ pub mod ffi {
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
     pub struct RustSignals {
-        connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
+        pub(crate) connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
 
         #[qproperty]
         logging_enabled: bool,
     }
 
     // ANCHOR: book_rust_obj_impl
-    impl qobject::RustSignals {
+    unsafe extern "RustQt" {
         /// Connect to the given url
         #[qinvokable]
-        pub fn connect(self: Pin<&mut Self>, url: &QUrl) {
-            // Check that the url starts with kdab
-            if url.to_string().starts_with("https://kdab.com") {
-                // Emit a signal to QML stating that we have connected
-                self.connected(url);
-            } else {
-                // Emit a signal to QML stating that the url was incorrect
-                self.error(QString::from("URL does not start with https://kdab.com"));
-            }
-        }
+        fn connect(self: Pin<&mut qobject::RustSignals>, url: &QUrl);
 
         /// Disconnect
         #[qinvokable]
-        pub fn disconnect(self: Pin<&mut Self>) {
-            // Emit a signal to QML stating that we have disconnected
-            self.disconnected();
-        }
+        fn disconnect(self: Pin<&mut qobject::RustSignals>);
 
         /// Initialise the QObject, creating a connection reacting to the logging enabled property
         #[qinvokable]
-        pub fn initialise(self: Pin<&mut Self>) {
-            self.on_logging_enabled_changed(|mut qobject| {
-                // Determine if logging is enabled
-                if *qobject.as_ref().logging_enabled() {
-                    // If no connections have been made, then create them
-                    if qobject.as_ref().connections().is_none() {
-                        // ANCHOR: book_signals_connect
-                        let connections = [
-                            qobject.as_mut().on_connected(|_, url| {
-                                println!("Connected: {}", url);
-                            }),
-                            qobject.as_mut().on_disconnected(|_| {
-                                println!("Disconnected");
-                            }),
-                            // Demonstration of connecting with a different connection type
-                            qobject.as_mut().connect_error(
-                                |_, message| {
-                                    println!("Error: {}", message);
-                                },
-                                ConnectionType::QueuedConnection,
-                            ),
-                        ];
-                        qobject.as_mut().set_connections(Some(connections));
-                        // ANCHOR_END: book_signals_connect
-                    }
-                } else {
-                    // Disabling logging so disconnect
-                    // ANCHOR: book_signals_disconnect
-                    // By making connections None, we trigger a drop on the connections
-                    // this then causes disconnections
-                    qobject.as_mut().set_connections(None);
-                    // ANCHOR_END: book_signals_disconnect
-                }
-            })
-            .release();
-        }
+        fn initialise(self: Pin<&mut qobject::RustSignals>);
     }
     // ANCHOR_END: book_rust_obj_impl
+}
+
+use core::pin::Pin;
+use cxx_qt_lib::{ConnectionType, QString, QUrl};
+
+// TODO: this will change to qobject::RustSignals once
+// https://github.com/KDAB/cxx-qt/issues/559 is done
+impl ffi::RustSignalsQt {
+    /// Connect to the given url
+    fn connect(self: Pin<&mut Self>, url: &QUrl) {
+        // Check that the url starts with kdab
+        if url.to_string().starts_with("https://kdab.com") {
+            // Emit a signal to QML stating that we have connected
+            self.connected(url);
+        } else {
+            // Emit a signal to QML stating that the url was incorrect
+            self.error(QString::from("URL does not start with https://kdab.com"));
+        }
+    }
+
+    /// Disconnect
+    fn disconnect(self: Pin<&mut Self>) {
+        // Emit a signal to QML stating that we have disconnected
+        self.disconnected();
+    }
+
+    /// Initialise the QObject, creating a connection reacting to the logging enabled property
+    fn initialise(self: Pin<&mut Self>) {
+        self.on_logging_enabled_changed(|mut qobject| {
+            // Determine if logging is enabled
+            if *qobject.as_ref().logging_enabled() {
+                // If no connections have been made, then create them
+                if qobject.as_ref().connections().is_none() {
+                    // ANCHOR: book_signals_connect
+                    let connections = [
+                        qobject.as_mut().on_connected(|_, url| {
+                            println!("Connected: {}", url);
+                        }),
+                        qobject.as_mut().on_disconnected(|_| {
+                            println!("Disconnected");
+                        }),
+                        // Demonstration of connecting with a different connection type
+                        qobject.as_mut().connect_error(
+                            |_, message| {
+                                println!("Error: {}", message);
+                            },
+                            ConnectionType::QueuedConnection,
+                        ),
+                    ];
+                    qobject.as_mut().set_connections(Some(connections));
+                    // ANCHOR_END: book_signals_connect
+                }
+            } else {
+                // Disabling logging so disconnect
+                // ANCHOR: book_signals_disconnect
+                // By making connections None, we trigger a drop on the connections
+                // this then causes disconnections
+                qobject.as_mut().set_connections(None);
+                // ANCHOR_END: book_signals_disconnect
+            }
+        })
+        .release();
+    }
 }
 // ANCHOR_END: book_macro_code

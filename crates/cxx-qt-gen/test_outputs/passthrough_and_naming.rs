@@ -44,6 +44,23 @@ pub mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
     }
+    impl qobject::MyObject {
+        pub const MY_CONSTANT: i32 = 42;
+        type MyType = i32;
+        my_macro!();
+        #[qinvokable]
+        pub fn invokable_name(self: Pin<&mut Self>) {
+            println!("Bye from Rust!");
+            self.as_mut().set_property_name(5);
+        }
+    }
+    impl qobject::SecondObject {
+        #[qinvokable]
+        pub fn invokable_name(self: Pin<&mut Self>) {
+            println!("Bye from second Rust!");
+            self.as_mut().set_property_name(5);
+        }
+    }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/qt.h");
@@ -98,10 +115,6 @@ pub mod ffi {
             func: fn(Pin<&mut MyObjectQt>),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
-    }
-    extern "Rust" {
-        #[cxx_name = "invokableNameWrapper"]
-        fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
@@ -173,10 +186,6 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    extern "Rust" {
-        #[cxx_name = "invokableNameWrapper"]
-        fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>);
-    }
     unsafe extern "C++" {
         #[my_attribute]
         #[rust_name = "ready"]
@@ -211,7 +220,8 @@ pub mod ffi {
     }
 }
 pub use self::cxx_qt_ffi::*;
-mod cxx_qt_ffi {
+#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
+pub mod cxx_qt_ffi {
     use super::ffi::*;
     use cxx_qt::CxxQtType;
     use std::pin::Pin;
@@ -290,33 +300,12 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_property_name_changed(
+        pub fn on_property_name_changed(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
         }
-    }
-    impl MyObject {
-        #[doc(hidden)]
-        pub fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
-            cpp.invokable_name();
-        }
-    }
-    impl MyObjectQt {
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from Rust!");
-            self.as_mut().set_property_name(5);
-        }
-    }
-    impl MyObjectQt {
-        pub const MY_CONSTANT: i32 = 42;
-    }
-    impl MyObjectQt {
-        type MyType = i32;
-    }
-    impl MyObjectQt {
-        my_macro!();
     }
     impl MyObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
@@ -325,7 +314,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_ready(
+        pub fn on_ready(
             self: Pin<&mut MyObjectQt>,
             func: fn(Pin<&mut MyObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
@@ -405,23 +394,11 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_property_name_changed(
+        pub fn on_property_name_changed(
             self: Pin<&mut SecondObjectQt>,
             func: fn(Pin<&mut SecondObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
-        }
-    }
-    impl SecondObject {
-        #[doc(hidden)]
-        pub fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>) {
-            cpp.invokable_name();
-        }
-    }
-    impl SecondObjectQt {
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from second Rust!");
-            self.as_mut().set_property_name(5);
         }
     }
     impl SecondObjectQt {
@@ -431,7 +408,7 @@ mod cxx_qt_ffi {
         #[doc = "\n"]
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
-        fn on_ready(
+        pub fn on_ready(
             self: Pin<&mut SecondObjectQt>,
             func: fn(Pin<&mut SecondObjectQt>),
         ) -> CxxQtQMetaObjectConnection {

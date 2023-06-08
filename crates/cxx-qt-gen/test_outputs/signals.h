@@ -27,7 +27,6 @@ public:
   MyObjectRust& unsafeRustMut();
 
 public:
-  Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
                                          ::Qt::ConnectionType type);

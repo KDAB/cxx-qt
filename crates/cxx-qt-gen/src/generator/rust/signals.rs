@@ -85,7 +85,7 @@ pub fn generate_rust_signals(
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn #on_ident_rust(self: #self_type, func: fn(#self_type, #(#parameters),*)) -> CxxQtQMetaObjectConnection
+                    pub fn #on_ident_rust(self: #self_type, func: fn(#self_type, #(#parameters),*)) -> CxxQtQMetaObjectConnection
                     {
                         self.#connect_ident_rust(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -169,7 +169,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_ready(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_ready(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_ready(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -244,7 +244,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_data_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
+                    pub fn on_data_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -311,7 +311,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_unsafe_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, param: *mut T)) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, param: *mut T)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_unsafe_signal(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -377,7 +377,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    fn on_existing_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_existing_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_existing_signal(func, CxxQtConnectionType::AutoConnection)
                     }

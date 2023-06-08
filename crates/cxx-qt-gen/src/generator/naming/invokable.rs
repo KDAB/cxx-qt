@@ -5,7 +5,7 @@
 use crate::{generator::naming::CombinedIdent, parser::invokable::ParsedQInvokable};
 use convert_case::{Case, Casing};
 use quote::format_ident;
-use syn::{Ident, ImplItemFn};
+use syn::{ForeignItemFn, Ident};
 
 /// Names for parts of a Q_INVOKABLE
 pub struct QInvokableName {
@@ -19,8 +19,8 @@ impl From<&ParsedQInvokable> for QInvokableName {
     }
 }
 
-impl From<&ImplItemFn> for QInvokableName {
-    fn from(method: &ImplItemFn) -> Self {
+impl From<&ForeignItemFn> for QInvokableName {
+    fn from(method: &ForeignItemFn) -> Self {
         let ident = &method.sig.ident;
         Self {
             name: CombinedIdent::from_rust_function(ident.clone()),
@@ -50,14 +50,13 @@ mod tests {
 
     #[test]
     fn test_from_impl_method() {
-        let item: ImplItemFn = parse_quote! {
-            fn my_invokable() {
-
-            }
-        };
         let parsed = ParsedQInvokable {
-            method: item,
+            method: parse_quote! {
+                fn my_invokable(self: &qobject::MyObject);
+            },
+            qobject_ident: format_ident!("MyObject"),
             mutable: false,
+            safe: true,
             parameters: vec![],
             specifiers: HashSet::new(),
         };

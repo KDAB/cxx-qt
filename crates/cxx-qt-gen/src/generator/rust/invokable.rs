@@ -6,10 +6,7 @@
 use crate::{
     generator::{
         naming::{invokable::QInvokableName, qobject::QObjectName},
-        rust::{
-            fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks,
-            types::is_unsafe_cxx_type,
-        },
+        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
     },
     parser::invokable::ParsedQInvokable,
 };
@@ -30,7 +27,6 @@ pub fn generate_rust_invokables(
         let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
         let wrapper_ident_rust = &idents.wrapper.rust;
         let invokable_ident_rust = &idents.name.rust;
-        let original_method = &invokable.method;
 
         let cpp_struct = if invokable.mutable {
             quote! {  Pin<&mut #cpp_class_name_rust> }
@@ -62,21 +58,13 @@ pub fn generate_rust_invokables(
         } else {
             quote! { return }
         };
-        // Determine if unsafe is required due to an unsafe parameter or return type
-        let has_unsafe_param = invokable
-            .parameters
-            .iter()
-            .any(|parameter| is_unsafe_cxx_type(&parameter.ty));
-        let has_unsafe_return = if let ReturnType::Type(_, ty) = return_type {
-            is_unsafe_cxx_type(ty)
-        } else {
-            false
-        };
-        let has_unsafe = if has_unsafe_param || has_unsafe_return {
-            quote! { unsafe }
-        } else {
-            quote! {}
-        };
+
+        let mut unsafe_block = None;
+        let mut unsafe_call = Some(quote! { unsafe });
+        if invokable.safe {
+            std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+        }
+
         let parameter_names = invokable
             .parameters
             .iter()
@@ -85,9 +73,10 @@ pub fn generate_rust_invokables(
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
+                // TODO: is an unsafe block valid?
                 extern "Rust" {
                     #[cxx_name = #wrapper_ident_cpp]
-                    #has_unsafe fn #wrapper_ident_rust(#parameter_signatures) #return_type;
+                    #unsafe_call fn #wrapper_ident_rust(#parameter_signatures) #return_type;
                 }
             }],
             implementation: vec![
@@ -95,14 +84,9 @@ pub fn generate_rust_invokables(
                 quote! {
                     impl #rust_struct_name_rust {
                         #[doc(hidden)]
-                        pub #has_unsafe fn #wrapper_ident_rust(#parameter_signatures) #return_type {
+                        pub #unsafe_call fn #wrapper_ident_rust(#parameter_signatures) #return_type {
                             #has_return cpp.#invokable_ident_rust(#(#parameter_names),*);
                         }
-                    }
-                },
-                quote! {
-                    impl #cpp_class_name_rust {
-                        #original_method
                     }
                 },
             ],
@@ -134,14 +118,18 @@ mod tests {
     fn test_generate_rust_invokables() {
         let invokables = vec![
             ParsedQInvokable {
-                method: parse_quote! { fn void_invokable(&self) {} },
+                method: parse_quote! { fn void_invokable(self: &qobject::MyObject); },
+                qobject_ident: format_ident!("MyObject"),
                 mutable: false,
+                safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn trivial_invokable(&self, param: i32) -> i32 {} },
+                method: parse_quote! { fn trivial_invokable(self: &qobject::MyObject, param: i32) -> i32; },
+                qobject_ident: format_ident!("MyObject"),
                 mutable: false,
+                safe: true,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
@@ -149,8 +137,10 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {} },
+                method: parse_quote! { fn opaque_invokable(self: Pin<&mut qobject::MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                qobject_ident: format_ident!("MyObject"),
                 mutable: true,
+                safe: true,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
@@ -158,8 +148,10 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn unsafe_invokable(&self, param: *mut T) -> *mut T {} },
+                method: parse_quote! { unsafe fn unsafe_invokable(self: &qobject::MyObject, param: *mut T) -> *mut T; },
+                qobject_ident: format_ident!("MyObject"),
                 mutable: false,
+                safe: false,
                 parameters: vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { *mut T },
@@ -172,7 +164,7 @@ mod tests {
         let generated = generate_rust_invokables(&invokables, &qobject_idents).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 4);
 
         // void_invokable
         assert_tokens_eq(
@@ -195,14 +187,6 @@ mod tests {
                 }
             },
         );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[1],
-            quote! {
-                impl MyObjectQt {
-                    fn void_invokable(&self) {}
-                }
-            },
-        );
 
         // trivial_invokable
         assert_tokens_eq(
@@ -215,21 +199,13 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[2],
+            &generated.cxx_qt_mod_contents[1],
             quote! {
                 impl MyObject {
                     #[doc(hidden)]
                     pub fn trivial_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: i32) -> i32 {
                         return cpp.trivial_invokable(param);
                     }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[3],
-            quote! {
-                impl MyObjectQt {
-                    fn trivial_invokable(&self, param: i32) -> i32 {}
                 }
             },
         );
@@ -245,21 +221,13 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[4],
+            &generated.cxx_qt_mod_contents[2],
             quote! {
                 impl MyObject {
                     #[doc(hidden)]
                     pub fn opaque_invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, param: &QColor) -> UniquePtr<QColor> {
                         return cpp.opaque_invokable(param);
                     }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[5],
-            quote! {
-                impl MyObjectQt {
-                    fn opaque_invokable(self: Pin<&mut Self>, param: &QColor) -> UniquePtr<QColor> {}
                 }
             },
         );
@@ -275,21 +243,13 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[6],
+            &generated.cxx_qt_mod_contents[3],
             quote! {
                 impl MyObject {
                     #[doc(hidden)]
                     pub unsafe fn unsafe_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: *mut T) -> *mut T {
                         return cpp.unsafe_invokable(param);
                     }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[7],
-            quote! {
-                impl MyObjectQt {
-                    fn unsafe_invokable(&self, param: *mut T) -> *mut T {}
                 }
             },
         );
