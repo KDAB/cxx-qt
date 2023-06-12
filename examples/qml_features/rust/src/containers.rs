@@ -37,22 +37,22 @@ pub mod ffi {
     /// It has Q_PROPERTYs which expose a string with the container's contents to show in QML
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
+    #[qproperty(QString, string_hash)]
+    #[qproperty(QString, string_list)]
+    #[qproperty(QString, string_map)]
+    #[qproperty(QString, string_set)]
+    #[qproperty(QString, string_vector)]
+    // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
+    #[qproperty(QMap_QString_QVariant, map)]
     pub struct RustContainers {
-        #[qproperty]
         string_hash: QString,
-        #[qproperty]
         string_list: QString,
-        #[qproperty]
         string_map: QString,
-        #[qproperty]
         string_set: QString,
-        #[qproperty]
         string_vector: QString,
 
         pub(crate) hash: QHash_QString_QVariant,
         pub(crate) list: QList_i32,
-        // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
-        #[qproperty]
         pub(crate) map: QMap_QString_QVariant,
         pub(crate) set: QSet_i32,
         pub(crate) vector: QVector_i32,

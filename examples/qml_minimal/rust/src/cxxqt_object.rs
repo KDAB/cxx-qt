@@ -24,10 +24,10 @@ pub mod ffi {
     /// The Rust struct for the QObject
     // ANCHOR: book_rustobj_struct
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(i32, number)]
+    #[qproperty(QString, string)]
     pub struct MyObject {
-        #[qproperty]
         number: i32,
-        #[qproperty]
         string: QString,
     }
     // ANCHOR_END: book_rustobj_struct

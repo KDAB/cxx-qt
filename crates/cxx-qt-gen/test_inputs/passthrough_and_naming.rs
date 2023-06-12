@@ -80,8 +80,8 @@ pub mod ffi {
     }
 
     #[cxx_qt::qobject(base = "QStringListModel")]
+    #[qproperty(i32, property_name)]
     pub struct MyObject {
-        #[qproperty]
         property_name: i32,
     }
 
@@ -100,8 +100,8 @@ pub mod ffi {
     }
 
     #[cxx_qt::qobject]
+    #[qproperty(i32, property_name)]
     pub struct SecondObject {
-        #[qproperty]
         property_name: i32,
     }
 

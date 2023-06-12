@@ -75,14 +75,14 @@ pub mod ffi {
 
     /// A QObject which shows custom types
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(bool, boolean)]
+    #[qproperty(QPointF, point)]
+    #[qproperty(QUrl, url)]
+    #[qproperty(i32, custom_value)]
     pub struct Types {
-        #[qproperty]
         boolean: bool,
-        #[qproperty]
         point: QPointF,
-        #[qproperty]
         url: QUrl,
-        #[qproperty]
         custom_value: i32,
     }
 

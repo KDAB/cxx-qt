@@ -71,7 +71,7 @@ Typically this will be instantiated by QML and the lifetime will be directly ass
 
 The generated QObject subclass will then defer to the Rust struct for any behavior, which is then defined in Rust.
 For example, using the `#[qinvokable]` attribute, we can define functions that will be exposed to C++, but will execute Rust code.
-Also, any fields in the Rust struct marked with `#[qproperty]` will be exposed to Qt as `Q_PROPERTY` fields.
+Also, any fields in the Rust struct can be exposed to Qt as `Q_PROPERTY` fields by using the `#[qproperty(T, NAME)]` attribute on the struct.
 Therefore allowing you to assign them from QML as well.
 
 But enough theory for now, lets jump in and write [our first CXX-Qt module](./2-our-first-cxx-qt-module.md).

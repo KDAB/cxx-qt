@@ -8,10 +8,10 @@ mod ffi {
 
     #[cxx_qt::qobject]
     #[derive(Default)]
+    #[qproperty(i32, primitive)]
+    #[qproperty(QPoint, trivial)]
     pub struct MyObject {
-        #[qproperty]
         primitive: i32,
-        #[qproperty]
         trivial: QPoint,
         opaque: UniquePtr<Opaque>,
 

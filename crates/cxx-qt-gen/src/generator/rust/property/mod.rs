@@ -69,17 +69,14 @@ mod tests {
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
                 ty: parse_quote! { i32 },
-                vis: syn::Visibility::Inherited,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: parse_quote! { UniquePtr<QColor> },
-                vis: parse_quote! { pub },
             },
             ParsedQProperty {
                 ident: format_ident!("unsafe_property"),
                 ty: parse_quote! { *mut T },
-                vis: syn::Visibility::Inherited,
             },
         ];
         let qobject_idents = create_qobjectname();

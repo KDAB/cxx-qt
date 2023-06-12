@@ -39,12 +39,12 @@ pub mod ffi {
 
     /// A QObject which can be serialised
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(i32, number)]
+    #[qproperty(QString, string)]
     pub struct Serialisation {
         /// The number Q_PROPERTY
-        #[qproperty]
         pub number: i32,
         /// The string Q_PROPERTY
-        #[qproperty]
         pub string: QString,
     }
 

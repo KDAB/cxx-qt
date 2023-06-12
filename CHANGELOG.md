@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[cxx_qt::qsignals]` and `#[cxx_qt::inherit]` are now used in an `extern "RustQt"` block as `#[qsignal]` and `#[inherit]`
 - `#[qinvokable]` is now defined as a signature in `extern "RustQt"`
 - `rust_mut` is now safe to call
+- `#[qproperty]` is now defined as an attribute on the qobject rather than the field
 
 ### Fixed
 

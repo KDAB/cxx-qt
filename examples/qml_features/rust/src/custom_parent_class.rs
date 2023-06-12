@@ -50,9 +50,9 @@ mod ffi {
         qml_uri = "com.kdab.cxx_qt.demo",
         qml_version = "1.0"
     )]
+    #[qproperty(QColor, color)]
     #[derive(Default)]
     pub struct CustomParentClass {
-        #[qproperty]
         color: QColor,
     }
 

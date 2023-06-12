@@ -26,7 +26,7 @@ The macro does multiple other things for you though:
 - Generate a C++ QObject subclass that wraps the `MyObject` Rust struct.
 - Expose the generated QObject subclass to Rust as [`qobject::MyObject`](./generated-qobject.md)
 - Generate getters/setters for all fields.
-- Generate `Q_PROPERTY`s for all fields that are marked as `#[qproperty]`.
+- Generate `Q_PROPERTY`s for all fields that are tagged as `#[qproperty]`.
 - Generate signals if paired with a [`#[qsignal]` macro](./signals.md).
 
 ## Exposing to QML
@@ -71,7 +71,7 @@ Fields within the `#[cxx_qt::qobject]` marked struct can be tagged with `#[qprop
 {{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_struct}}
 ```
 
-Any type that CXX supports may be marked as a `#[qproperty]`.
+Any type that CXX supports may be tagged as a `#[qproperty]`.
 See the [Types page](../concepts/types.md) for a list of supported types.
 
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
@@ -90,7 +90,7 @@ where `<Property>` is the name of the property.
 
 These setters and getters assure that the changed signal is emitted every time the property is edited.
 
-Any field that's not marked as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
+Any field that's not tagged as `#[qproperty]` won't be accessible from C++, but it will be accessible from Rust.
 See the [Private fields section](#private-methods-and-fields)
 
 ## Default

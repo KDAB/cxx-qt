@@ -12,9 +12,9 @@ pub mod ffi {
     /// A QObject which is a QML_UNCREATABLE
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0", qml_uncreatable)]
     #[derive(Default)]
+    #[qproperty(i32, value)]
     pub struct RustUncreatable {
         /// A value Q_PROPERTY
-        #[qproperty]
         value: i32,
     }
 }

@@ -23,12 +23,12 @@ pub mod ffi {
 
     /// A QObject which has threading
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(QString, title)]
+    #[qproperty(QUrl, url)]
     pub struct ThreadingWebsite {
         /// The title Q_PROPERTY
-        #[qproperty]
         title: QString,
         /// The url Q_PROPERTY
-        #[qproperty]
         url: QUrl,
 
         pub(crate) loading: std::sync::atomic::AtomicBool,
