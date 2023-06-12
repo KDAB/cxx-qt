@@ -69,13 +69,13 @@ Additionally, we need to either `impl Default` or `#[derive(Default)]` for our s
 ```
 
 The Rust struct can be defined just like a normal Rust struct and can contain any kind of field, even Rust-only types.
-If a field is marked as `#[qproperty]` it will be exposed to the C++ side as a `Q_PROPERTY`.
+If a field is tagged as `#[qproperty]` it will be exposed to the C++ side as a `Q_PROPERTY`.
 
 That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will automatically rename the field from snake_case to camelCase to fit with C++/QML naming conventions (e.g. `myNumber`).
 
 ### Types
 
-Do note though that any fields marked as `#[qproperty]` must be types that CXX can translate to C++ types.
+Do note though that any fields tagged as `#[qproperty]` must be types that CXX can translate to C++ types.
 In our case that means:
 - `number: i32` -> `::std::int32_t number`
 - `string: QString` -> `QString string`

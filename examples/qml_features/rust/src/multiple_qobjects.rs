@@ -19,10 +19,10 @@ pub mod ffi {
 
     /// The first QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(i32, counter)]
+    #[qproperty(QColor, color)]
     pub struct FirstObject {
-        #[qproperty]
         counter: i32,
-        #[qproperty]
         color: QColor,
     }
 
@@ -56,10 +56,10 @@ pub mod ffi {
 
     /// The second QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(i32, counter)]
+    #[qproperty(QUrl, url)]
     pub struct SecondObject {
-        #[qproperty]
         counter: i32,
-        #[qproperty]
         url: QUrl,
     }
 

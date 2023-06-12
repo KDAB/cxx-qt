@@ -33,10 +33,10 @@ mod ffi {
     }
 
     #[cxx_qt::qobject]
+    #[qproperty(i32, number)]
+    #[qproperty(QString, string)]
     pub struct MyData {
-        #[qproperty]
         pub number: i32,
-        #[qproperty]
         pub string: QString,
     }
 

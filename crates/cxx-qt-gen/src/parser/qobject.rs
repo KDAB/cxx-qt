@@ -10,13 +10,12 @@ use crate::{
     },
     syntax::{
         attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
-        fields::fields_to_named_fields_mut,
         path::path_compare_str,
     },
 };
 use syn::{
-    spanned::Spanned, Error, Fields, Ident, ImplItem, Item, ItemImpl, ItemStruct, LitStr, Result,
-    Visibility,
+    spanned::Spanned, Attribute, Error, Ident, ImplItem, Item, ItemImpl, ItemStruct, LitStr,
+    Result, Visibility,
 };
 
 /// Metadata for registering QML element
@@ -97,7 +96,7 @@ impl ParsedQObject {
 
         // Parse any properties in the struct
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_struct_fields(&mut qobject_struct.fields)?;
+        let properties = Self::parse_struct_attributes(&mut qobject_struct.attrs)?;
 
         // Ensure that the QObject is marked as pub otherwise the error is non obvious
         // https://github.com/KDAB/cxx-qt/issues/457
@@ -261,21 +260,15 @@ impl ParsedQObject {
         }
     }
 
-    /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
-    fn parse_struct_fields(fields: &mut Fields) -> Result<Vec<ParsedQProperty>> {
+    fn parse_struct_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
         let mut properties = vec![];
-        for field in fields_to_named_fields_mut(fields)? {
-            // Try to find any properties defined within the struct
-            if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
-                // Remove the #[qproperty] attribute
-                field.attrs.remove(index);
 
-                properties.push(ParsedQProperty {
-                    ident: field.ident.clone().unwrap(),
-                    ty: field.ty.clone(),
-                    vis: field.vis.clone(),
-                });
-            }
+        // Note that once extract_if is stable, this would allow for comparing all the
+        // elements once using path_compare_str and then building ParsedQProperty
+        // from the extracted elements.
+        // https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html#method.extract_if
+        while let Some(index) = attribute_find_path(attrs, &["qproperty"]) {
+            properties.push(ParsedQProperty::parse(attrs.remove(index))?);
         }
 
         Ok(properties)
@@ -287,7 +280,7 @@ pub mod tests {
     use super::*;
 
     use crate::parser::tests::f64_type;
-    use syn::{parse_quote, ItemImpl, Visibility};
+    use syn::{parse_quote, ItemImpl};
 
     pub fn create_parsed_qobject() -> ParsedQObject {
         let qobject_struct: ItemStruct = parse_quote! {
@@ -324,11 +317,10 @@ pub mod tests {
     fn test_from_struct_properties_and_fields() {
         let qobject_struct: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
+            #[qproperty(i32, int_property)]
+            #[qproperty(i32, public_property)]
             pub struct MyObject {
-                #[qproperty]
                 int_property: i32,
-
-                #[qproperty]
                 pub public_property: i32,
 
                 field: i32,
@@ -398,11 +390,10 @@ pub mod tests {
     fn test_parse_struct_fields_valid() {
         let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
+            #[qproperty(f64, f64_property)]
+            #[qproperty(f64, public_property)]
             pub struct T {
-                #[qproperty]
                 f64_property: f64,
-
-                #[qproperty]
                 pub public_property: f64,
 
                 field: f64,
@@ -413,20 +404,18 @@ pub mod tests {
 
         assert_eq!(properties[0].ident, "f64_property");
         assert_eq!(properties[0].ty, f64_type());
-        assert!(matches!(properties[0].vis, Visibility::Inherited));
 
         assert_eq!(properties[1].ident, "public_property");
         assert_eq!(properties[1].ty, f64_type());
-        assert!(matches!(properties[1].vis, Visibility::Public(_)));
     }
 
     #[test]
-    fn test_parse_struct_fields_invalid() {
+    fn test_parse_struct_fields() {
         let item: ItemStruct = parse_quote! {
             #[cxx_qt::qobject]
             pub struct T(f64);
         };
-        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+        assert!(ParsedQObject::from_struct(&item, 0).is_ok());
     }
 
     #[test]

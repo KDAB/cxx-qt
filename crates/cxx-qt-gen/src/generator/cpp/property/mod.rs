@@ -73,12 +73,10 @@ mod tests {
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
                 ty: parse_quote! { i32 },
-                vis: syn::Visibility::Inherited,
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: parse_quote! { UniquePtr<QColor> },
-                vis: syn::Visibility::Inherited,
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -251,7 +249,6 @@ mod tests {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
             ty: parse_quote! { A1 },
-            vis: syn::Visibility::Inherited,
         }];
         let qobject_idents = create_qobjectname();
 

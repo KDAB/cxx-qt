@@ -20,21 +20,21 @@ pub mod ffi {
     /// A QObject which has Q_PROPERTYs
     // ANCHOR: book_properties_struct
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(bool, connected)]
+    #[qproperty(QUrl, connected_url)]
+    #[qproperty(QUrl, previous_connected_url)]
+    #[qproperty(QString, status_message)]
     pub struct RustProperties {
         /// A connected Q_PROPERTY
-        #[qproperty]
         connected: bool,
 
         /// A connected_url Q_PROPERTY
-        #[qproperty]
         pub(crate) connected_url: QUrl,
 
         /// A previous_connected_url Q_PROPERTY
-        #[qproperty]
         previous_connected_url: QUrl,
 
         /// A status_message Q_PROPERTY
-        #[qproperty]
         status_message: QString,
     }
     // ANCHOR_END: book_properties_struct

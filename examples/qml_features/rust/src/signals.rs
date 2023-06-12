@@ -38,10 +38,10 @@ pub mod ffi {
     // ANCHOR: book_signals_struct
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
+    #[qproperty(bool, logging_enabled)]
     pub struct RustSignals {
         pub(crate) connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
 
-        #[qproperty]
         logging_enabled: bool,
     }
 

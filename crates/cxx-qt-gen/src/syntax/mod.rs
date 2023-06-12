@@ -5,7 +5,6 @@
 
 pub mod attribute;
 pub mod expr;
-pub mod fields;
 pub mod foreignmod;
 pub mod path;
 mod qtfile;

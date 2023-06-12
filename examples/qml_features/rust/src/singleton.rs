@@ -12,9 +12,9 @@ pub mod ffi {
     /// A QObject which is a QML_SINGLETON
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0", qml_singleton)]
     #[derive(Default)]
+    #[qproperty(i32, persistent_value)]
     pub struct RustSingleton {
         /// A Q_PROPERTY with a persistent value
-        #[qproperty]
         persistent_value: i32,
     }
 

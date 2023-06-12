@@ -24,15 +24,15 @@ mod ffi {
     }
 
     #[cxx_qt::qobject(qml_uri = "com.kdab.energy", qml_version = "1.0")]
+    #[qproperty(f64, average_use)]
+    #[qproperty(u32, sensors)]
+    #[qproperty(f64, total_use)]
     pub struct EnergyUsage {
         /// The average power usage of the connected sensors
-        #[qproperty]
         average_use: f64,
         /// The count of connected sensors
-        #[qproperty]
         sensors: u32,
         /// The total power usage of the connected sensors
-        #[qproperty]
         total_use: f64,
 
         /// The join handles of the running threads

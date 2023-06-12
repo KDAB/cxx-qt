@@ -80,7 +80,6 @@ pub mod tests {
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,
-            vis: syn::Visibility::Inherited,
         };
         QPropertyName::from(&property)
     }

@@ -20,8 +20,8 @@ pub mod ffi {
     /// The inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
     #[derive(Default)]
+    #[qproperty(i32, counter)]
     pub struct InnerObject {
-        #[qproperty]
         counter: i32,
     }
 
@@ -33,8 +33,8 @@ pub mod ffi {
 
     /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
     #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+    #[qproperty(*mut CxxInnerObject, inner)]
     pub struct OuterObject {
-        #[qproperty]
         inner: *mut CxxInnerObject,
     }
 
