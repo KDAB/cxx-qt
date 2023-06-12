@@ -99,7 +99,7 @@ impl ParsedQObject {
 
         // Parse any properties in the struct
         // and remove the #[qproperty] attribute
-        let (properties, fields) = Self::parse_struct_fields(&mut qobject_struct.fields)?;
+        let (properties, _) = Self::parse_struct_fields(&mut qobject_struct.fields)?;
 
         // Ensure that the QObject is marked as pub otherwise the error is non obvious
         // https://github.com/KDAB/cxx-qt/issues/457
@@ -119,7 +119,11 @@ impl ParsedQObject {
             inherited_methods: vec![],
             passthrough_impl_items: vec![],
             properties,
-            fields,
+            // Do not generate helpers for fields as they are going to move out of the bridge
+            //
+            // TODO: we may bring #[field(T, NAME)] as a way of doing this
+            // if we want to keep the unsafety vs safety of property changes with or without notify
+            fields: vec![],
             qml_metadata,
             locking: true,
             threading: false,

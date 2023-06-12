@@ -84,23 +84,6 @@ pub mod cxx_qt_inheritance {
     pub struct MyObject {
         data: Vec<i32>,
     }
-    impl MyObjectQt {
-        fn data(&self) -> &Vec<i32> {
-            &self.rust().data
-        }
-    }
-    impl MyObjectQt {
-        fn data_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut Vec<i32> {
-            unsafe { &mut self.rust_mut().get_unchecked_mut().data }
-        }
-    }
-    impl MyObjectQt {
-        fn set_data(self: Pin<&mut Self>, value: Vec<i32>) {
-            unsafe {
-                self.rust_mut().data = value;
-            }
-        }
-    }
     impl cxx_qt::Locking for MyObjectQt {}
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;

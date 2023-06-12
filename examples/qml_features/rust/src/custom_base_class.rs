@@ -207,15 +207,20 @@ impl ffi::CustomBaseClassQt {
     }
 
     fn add_cpp_context(mut self: Pin<&mut Self>) {
-        let count = self.vector().len();
+        let count = self.as_ref().rust().vector.len();
         unsafe {
             self.as_mut()
                 .begin_insert_rows(&QModelIndex::default(), count as i32, count as i32);
-            let id = *self.id();
-            self.as_mut().set_id(id + 1);
+            let id = self.as_ref().rust().id;
+            self.as_mut().rust_mut().id = id + 1;
             self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
             self.as_mut().end_insert_rows();
         }
+    }
+
+    /// Safe helper to access mutate the vector field
+    pub fn vector_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut Vec<(u32, f64)> {
+        &mut unsafe { self.rust_mut().get_unchecked_mut() }.vector
     }
 }
 
@@ -225,7 +230,7 @@ impl ffi::CustomBaseClassQt {
     pub fn clear(mut self: Pin<&mut Self>) {
         unsafe {
             self.as_mut().begin_reset_model();
-            self.as_mut().set_id(0);
+            self.as_mut().rust_mut().id = 0;
             self.as_mut().vector_mut().clear();
             self.as_mut().end_reset_model();
         }
@@ -250,7 +255,7 @@ impl ffi::CustomBaseClassQt {
 
     /// Remove the row with the given index
     pub fn remove(mut self: Pin<&mut Self>, index: i32) {
-        if index < 0 || (index as usize) >= self.vector().len() {
+        if index < 0 || (index as usize) >= self.as_ref().rust().vector.len() {
             return;
         }
 

@@ -63,6 +63,7 @@ pub mod ffi {
 }
 
 use core::pin::Pin;
+use cxx_qt::CxxQtType;
 use cxx_qt_lib::{ConnectionType, QString, QUrl};
 
 // TODO: this will change to qobject::RustSignals once
@@ -92,7 +93,7 @@ impl ffi::RustSignalsQt {
             // Determine if logging is enabled
             if *qobject.as_ref().logging_enabled() {
                 // If no connections have been made, then create them
-                if qobject.as_ref().connections().is_none() {
+                if qobject.as_ref().rust().connections.is_none() {
                     // ANCHOR: book_signals_connect
                     let connections = [
                         qobject.as_mut().on_connected(|_, url| {
@@ -109,7 +110,7 @@ impl ffi::RustSignalsQt {
                             ConnectionType::QueuedConnection,
                         ),
                     ];
-                    qobject.as_mut().set_connections(Some(connections));
+                    unsafe { qobject.as_mut().rust_mut() }.connections = Some(connections);
                     // ANCHOR_END: book_signals_connect
                 }
             } else {
@@ -117,7 +118,7 @@ impl ffi::RustSignalsQt {
                 // ANCHOR: book_signals_disconnect
                 // By making connections None, we trigger a drop on the connections
                 // this then causes disconnections
-                qobject.as_mut().set_connections(None);
+                unsafe { qobject.as_mut().rust_mut() }.connections = None;
                 // ANCHOR_END: book_signals_disconnect
             }
         })
