@@ -76,9 +76,10 @@ impl ffi::RustInvokablesQt {
 
     /// Mutable C++ context method that helps to store the color
     fn store_helper(mut self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
-        self.as_mut().set_red(red);
-        self.as_mut().set_green(green);
-        self.as_mut().set_blue(blue);
+        let mut rust_mut = unsafe { self.as_mut().rust_mut() };
+        rust_mut.red = red;
+        rust_mut.green = green;
+        rust_mut.blue = blue;
     }
 }
 // ANCHOR_END: book_invokable_impl

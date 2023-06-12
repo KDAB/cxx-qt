@@ -84,8 +84,8 @@ impl ffi::MyObjectQt {
     fn queue_test(self: Pin<&mut Self>) {
         let qt_thread = self.qt_thread();
         qt_thread
-            .queue(|ctx| {
-                *ctx.update_call_count_mut() += 1;
+            .queue(|qobject| {
+                unsafe { qobject.rust_mut() }.update_call_count += 1;
             })
             .unwrap();
     }
@@ -100,8 +100,8 @@ impl ffi::MyObjectQt {
             let qt_thread_cloned = qt_thread.clone();
             handles.push(std::thread::spawn(move || {
                 qt_thread_cloned
-                    .queue(|ctx| {
-                        *ctx.update_call_count_mut() += 1;
+                    .queue(|qobject| {
+                        unsafe { qobject.rust_mut() }.update_call_count += 1;
                     })
                     .unwrap();
                 N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

@@ -53,7 +53,7 @@ pub mod ffi {
         pub(crate) list: QList_i32,
         // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
         #[qproperty]
-        map: QMap_QString_QVariant,
+        pub(crate) map: QMap_QString_QVariant,
         pub(crate) set: QSet_i32,
         pub(crate) vector: QVector_i32,
     }
@@ -86,6 +86,7 @@ pub mod ffi {
 }
 
 use core::pin::Pin;
+use cxx_qt::CxxQtType;
 use cxx_qt_lib::{
     QHash, QHashPair_QString_QVariant, QList, QMap, QMapPair_QString_QVariant, QSet, QString,
     QVariant, QVector,
@@ -96,41 +97,45 @@ use cxx_qt_lib::{
 impl ffi::RustContainersQt {
     /// Reset all the containers
     fn reset(mut self: Pin<&mut Self>) {
-        self.as_mut()
-            .set_hash(QHash::<QHashPair_QString_QVariant>::default());
-        self.as_mut().set_list(QList::<i32>::default());
+        // Update the private rust fields via the rust_mut
+        {
+            let mut rust_mut = unsafe { self.as_mut().rust_mut() };
+            rust_mut.hash = QHash::<QHashPair_QString_QVariant>::default();
+            rust_mut.list = QList::<i32>::default();
+            rust_mut.set = QSet::<i32>::default();
+            rust_mut.vector = QVector::<i32>::default();
+        }
+
         self.as_mut()
             .set_map(QMap::<QMapPair_QString_QVariant>::default());
-        self.as_mut().set_set(QSet::<i32>::default());
-        self.as_mut().set_vector(QVector::<i32>::default());
 
         self.update_strings();
     }
 
     /// Append the given number to the vector container
     fn append_vector(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().vector_mut().append(value);
+        unsafe { self.as_mut().rust_mut() }.vector.append(value);
 
         self.update_strings();
     }
 
     /// Append the given number to the list container
     fn append_list(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().list_mut().append(value);
+        unsafe { self.as_mut().rust_mut() }.list.append(value);
 
         self.update_strings();
     }
 
     /// Insert the given number into the set container
     fn insert_set(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().set_mut().insert(value);
+        unsafe { self.as_mut().rust_mut() }.set.insert(value);
 
         self.update_strings();
     }
 
     /// Insert the given string and variant to the hash container
     fn insert_hash(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-        self.as_mut().hash_mut().insert(key, value);
+        unsafe { self.as_mut().rust_mut() }.hash.insert(key, value);
 
         self.update_strings();
     }
@@ -139,7 +144,7 @@ impl ffi::RustContainersQt {
     fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
         // SAFETY: map is a Q_PROPERTY so ensure we manually trigger changed
         unsafe {
-            self.as_mut().map_mut().insert(key, value);
+            self.as_mut().rust_mut().map.insert(key, value);
             self.as_mut().map_changed();
         }
 
@@ -149,7 +154,8 @@ impl ffi::RustContainersQt {
     fn update_strings(mut self: Pin<&mut Self>) {
         let hash_items = self
             .as_ref()
-            .hash()
+            .rust()
+            .hash
             .iter()
             .map(|(key, value)| {
                 let value = value.value::<i32>().unwrap_or(0);
@@ -161,7 +167,8 @@ impl ffi::RustContainersQt {
 
         let list_items = self
             .as_ref()
-            .list()
+            .rust()
+            .list
             .iter()
             .map(|value| value.to_string())
             .collect::<Vec<String>>()
@@ -170,7 +177,8 @@ impl ffi::RustContainersQt {
 
         let map_items = self
             .as_ref()
-            .map()
+            .rust()
+            .map
             .iter()
             .map(|(key, value)| {
                 let value = value.value::<i32>().unwrap_or(0);
@@ -182,7 +190,8 @@ impl ffi::RustContainersQt {
 
         let set_items = self
             .as_ref()
-            .set()
+            .rust()
+            .set
             .iter()
             .map(|value| value.to_string())
             .collect::<Vec<String>>()
@@ -191,7 +200,8 @@ impl ffi::RustContainersQt {
 
         let vector_items = self
             .as_ref()
-            .vector()
+            .rust()
+            .vector
             .iter()
             .map(|value| value.to_string())
             .collect::<Vec<String>>()

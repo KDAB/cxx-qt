@@ -42,19 +42,20 @@ pub mod ffi {
 }
 
 use core::pin::Pin;
+use cxx_qt::CxxQtType;
 use std::{sync::atomic::Ordering, thread, time::Duration};
 
 // TODO: this will change to qobject::RustLockingEnabled once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
 impl ffi::RustLockingEnabledQt {
     fn get_counter(&self) -> u32 {
-        self.counter().load(Ordering::Acquire)
+        self.rust().counter.load(Ordering::Acquire)
     }
 
     fn increment(self: Pin<&mut Self>) {
         let counter = self.as_ref().get_counter();
         thread::sleep(Duration::from_millis(100));
-        self.counter().store(counter + 1, Ordering::Release);
+        self.rust().counter.store(counter + 1, Ordering::Release);
     }
 }
 
@@ -62,12 +63,12 @@ impl ffi::RustLockingEnabledQt {
 // https://github.com/KDAB/cxx-qt/issues/559 is done
 impl ffi::RustLockingDisabledQt {
     fn get_counter(&self) -> u32 {
-        self.counter().load(Ordering::Acquire)
+        self.rust().counter.load(Ordering::Acquire)
     }
 
     fn increment(self: Pin<&mut Self>) {
         let counter = self.as_ref().get_counter();
         thread::sleep(Duration::from_millis(100));
-        self.counter().store(counter + 1, Ordering::Release);
+        self.rust().counter.store(counter + 1, Ordering::Release);
     }
 }

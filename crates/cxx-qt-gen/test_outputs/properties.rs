@@ -233,57 +233,6 @@ pub mod cxx_qt_ffi {
             self.connect_trivial_changed(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    impl MyObjectQt {
-        fn opaque(&self) -> &UniquePtr<Opaque> {
-            &self.rust().opaque
-        }
-    }
-    impl MyObjectQt {
-        fn opaque_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut UniquePtr<Opaque> {
-            unsafe { &mut self.rust_mut().get_unchecked_mut().opaque }
-        }
-    }
-    impl MyObjectQt {
-        fn set_opaque(self: Pin<&mut Self>, value: UniquePtr<Opaque>) {
-            unsafe {
-                self.rust_mut().opaque = value;
-            }
-        }
-    }
-    impl MyObjectQt {
-        fn private_rust_field(&self) -> &i32 {
-            &self.rust().private_rust_field
-        }
-    }
-    impl MyObjectQt {
-        fn private_rust_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
-            unsafe { &mut self.rust_mut().get_unchecked_mut().private_rust_field }
-        }
-    }
-    impl MyObjectQt {
-        fn set_private_rust_field(self: Pin<&mut Self>, value: i32) {
-            unsafe {
-                self.rust_mut().private_rust_field = value;
-            }
-        }
-    }
-    impl MyObjectQt {
-        pub fn public_rust_field(&self) -> &f64 {
-            &self.rust().public_rust_field
-        }
-    }
-    impl MyObjectQt {
-        pub fn public_rust_field_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut f64 {
-            unsafe { &mut self.rust_mut().get_unchecked_mut().public_rust_field }
-        }
-    }
-    impl MyObjectQt {
-        pub fn set_public_rust_field(self: Pin<&mut Self>, value: f64) {
-            unsafe {
-                self.rust_mut().public_rust_field = value;
-            }
-        }
-    }
     impl cxx_qt::Locking for MyObjectQt {}
     impl cxx_qt::CxxQtType for MyObjectQt {
         type Rust = MyObject;
