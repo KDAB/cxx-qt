@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed support for `cxx_type` and `cxx_return_type` and related conversion methods.
 - Removed `newCppObject` function that allowed creation of default-constructed QObject from Rust.
 - Generation of getter and setter for private Rust fields
+- Generation of mutable getter for properties, instead use `rust_mut`
 
 ## [0.5.3](https://github.com/KDAB/cxx-qt/compare/v0.5.2...v0.5.3) - 2023-05-19
 

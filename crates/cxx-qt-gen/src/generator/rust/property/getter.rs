@@ -19,10 +19,8 @@ pub fn generate(
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let getter_cpp = idents.getter.cpp.to_string();
     let getter_rust = &idents.getter.rust;
-    let getter_mutable_rust = &idents.getter_mutable.rust;
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
-    let notify_ident_str = idents.notify.rust.to_string();
 
     RustFragmentPair {
         cxx_bridge: vec![quote! {
@@ -46,20 +44,6 @@ pub fn generate(
                     #[doc = #ident_str]
                     pub fn #getter_rust(&self) -> &#ty {
                         &self.rust().#ident
-                    }
-                }
-            },
-            quote! {
-                impl #cpp_class_name_rust {
-                    #[doc = "unsafe getter for the Q_PROPERTY "]
-                    #[doc = #ident_str]
-                    #[doc = "\n"]
-                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-                    #[doc = "\n"]
-                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-                    #[doc = #notify_ident_str]
-                    pub unsafe fn #getter_mutable_rust<'a>(self: Pin<&'a mut Self>) -> &'a mut #ty {
-                        &mut self.rust_mut().get_unchecked_mut().#ident
                     }
                 }
             },

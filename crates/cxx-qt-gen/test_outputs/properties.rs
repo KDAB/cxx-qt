@@ -130,18 +130,6 @@ pub mod cxx_qt_ffi {
             &self.rust().primitive
         }
     }
-    impl MyObjectQt {
-        #[doc = "unsafe getter for the Q_PROPERTY "]
-        #[doc = "primitive"]
-        #[doc = "\n"]
-        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-        #[doc = "\n"]
-        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-        #[doc = "primitive_changed"]
-        pub unsafe fn primitive_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
-            &mut self.rust_mut().get_unchecked_mut().primitive
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn set_primitive(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
@@ -170,18 +158,6 @@ pub mod cxx_qt_ffi {
         #[doc = "trivial"]
         pub fn trivial(&self) -> &QPoint {
             &self.rust().trivial
-        }
-    }
-    impl MyObjectQt {
-        #[doc = "unsafe getter for the Q_PROPERTY "]
-        #[doc = "trivial"]
-        #[doc = "\n"]
-        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-        #[doc = "\n"]
-        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-        #[doc = "trivial_changed"]
-        pub unsafe fn trivial_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut QPoint {
-            &mut self.rust_mut().get_unchecked_mut().trivial
         }
     }
     impl MyObject {
