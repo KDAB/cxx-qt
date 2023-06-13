@@ -87,17 +87,12 @@ See the [QObject page](./qobject_struct.md#properties) for details.
 There is also an advanced way to access the data in the internal Rust struct:
 ``` rust,ignore,noplayground
 fn rust(&self) -> &T
-unsafe fn rust_mut(self: Pin<&mut Self>) -> &mut T
+fn rust_mut(self: Pin<&mut Self>) -> &mut T
 ```
 Where `T` is the struct with the `#[cxx_qt::qobject]` macro.
 
 This allows you to directly manipulate the internal Rust struct without having to use the generated accessor methods.
 
-You may notice that the mutable version of this is `unsafe` to call.
-This is by design.
-Modifying a field that corresponds to a `#[qproperty]` without calling the appropriate changed signal may cause a logic error in C++/QML code.
-Therefore all direct access to a struct that is wrapped in a QObject is unsafe!
-
 You may modify the struct and then manually call the required changed signals.
 
-For safe access, prefer using the generated accessor methods for both [properties](./qobject_struct.md#properties), as well as [normal fields](./qobject_struct.md#private-methods-and-fields).
+For normal access, prefer using the generated accessor methods for [properties](./qobject_struct.md#properties).

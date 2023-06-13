@@ -85,7 +85,7 @@ impl ffi::MyObjectQt {
         let qt_thread = self.qt_thread();
         qt_thread
             .queue(|qobject| {
-                unsafe { qobject.rust_mut() }.update_call_count += 1;
+                qobject.rust_mut().update_call_count += 1;
             })
             .unwrap();
     }
@@ -101,7 +101,7 @@ impl ffi::MyObjectQt {
             handles.push(std::thread::spawn(move || {
                 qt_thread_cloned
                     .queue(|qobject| {
-                        unsafe { qobject.rust_mut() }.update_call_count += 1;
+                        qobject.rust_mut().update_call_count += 1;
                     })
                     .unwrap();
                 N_REQUESTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

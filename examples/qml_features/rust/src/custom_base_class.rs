@@ -213,14 +213,12 @@ impl ffi::CustomBaseClassQt {
                 .begin_insert_rows(&QModelIndex::default(), count as i32, count as i32);
             let id = self.as_ref().rust().id;
             self.as_mut().rust_mut().id = id + 1;
-            self.as_mut().vector_mut().push((id, (id as f64) / 3.0));
+            self.as_mut()
+                .rust_mut()
+                .vector
+                .push((id, (id as f64) / 3.0));
             self.as_mut().end_insert_rows();
         }
-    }
-
-    /// Safe helper to access mutate the vector field
-    pub fn vector_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut Vec<(u32, f64)> {
-        &mut unsafe { self.rust_mut().get_unchecked_mut() }.vector
     }
 }
 
@@ -231,7 +229,7 @@ impl ffi::CustomBaseClassQt {
         unsafe {
             self.as_mut().begin_reset_model();
             self.as_mut().rust_mut().id = 0;
-            self.as_mut().vector_mut().clear();
+            self.as_mut().rust_mut().vector.clear();
             self.as_mut().end_reset_model();
         }
     }
@@ -241,7 +239,7 @@ impl ffi::CustomBaseClassQt {
 impl ffi::CustomBaseClassQt {
     /// Multiply the number in the row with the given index by the given factor
     pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
-        if let Some((_, value)) = self.as_mut().vector_mut().get_mut(index as usize) {
+        if let Some((_, value)) = self.as_mut().rust_mut().vector.get_mut(index as usize) {
             *value *= factor;
 
             // Emit dataChanged for the index and value role
@@ -262,7 +260,7 @@ impl ffi::CustomBaseClassQt {
         unsafe {
             self.as_mut()
                 .begin_remove_rows(&QModelIndex::default(), index, index);
-            self.as_mut().vector_mut().remove(index as usize);
+            self.as_mut().rust_mut().vector.remove(index as usize);
             self.as_mut().end_remove_rows();
         }
     }

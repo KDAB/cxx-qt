@@ -125,10 +125,10 @@ mod ffi {
         #[doc(hidden)]
         fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
     }
-    extern "C++" {
+    unsafe extern "C++" {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
-        unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -206,7 +206,7 @@ pub mod cxx_qt_ffi {
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
-        unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+        fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
     }

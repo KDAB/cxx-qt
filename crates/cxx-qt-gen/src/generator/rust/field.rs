@@ -49,9 +49,7 @@ pub fn generate_rust_fields(
                 quote! {
                     impl #cpp_class_name_rust {
                         #vis fn #setter_rust(self: Pin<&mut Self>, value: #ty) {
-                            unsafe {
-                                self.rust_mut().#ident = value;
-                            }
+                            self.rust_mut().#ident = value;
                         }
                     }
                 },
@@ -122,9 +120,7 @@ mod tests {
             quote! {
                 impl MyObjectQt {
                     fn set_private_field(self: Pin<&mut Self>, value: i32) {
-                        unsafe {
-                            self.rust_mut().private_field = value;
-                        }
+                        self.rust_mut().private_field = value;
                     }
                 }
             },
@@ -156,9 +152,7 @@ mod tests {
             quote! {
                 impl MyObjectQt {
                     pub fn set_public_field(self: Pin<&mut Self>, value: f64) {
-                        unsafe {
-                            self.rust_mut().public_field = value;
-                        }
+                        self.rust_mut().public_field = value;
                     }
                 }
             },

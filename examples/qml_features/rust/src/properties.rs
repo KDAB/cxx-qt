@@ -77,14 +77,11 @@ impl ffi::RustPropertiesQt {
             self.as_mut().set_connected(true);
             self.as_mut().set_status_message(QString::from("Connected"));
 
-            // Safety:
             // We are directly modifying the Rust struct to avoid creating an extra QUrl.
-            // But using rust_mut() is unsafe as this does not trigger a signal change for the property
-            // So we need to manually call this ourselves.
-            unsafe {
-                std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
-                self.as_mut().connected_url_changed();
-            }
+            // So we need to manually call the notify signal for the property ourselves.
+            std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
+            self.as_mut().connected_url_changed();
+
             // Then we can store the old url without having to temporarily store it
             self.set_previous_connected_url(url);
         } else {

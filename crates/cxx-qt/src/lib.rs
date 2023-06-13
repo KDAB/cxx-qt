@@ -27,11 +27,7 @@ pub trait CxxQtType {
     fn rust(&self) -> &Self::Rust;
 
     /// Retrieve a mutable reference to the Rust struct backing this C++ object
-    ///
-    /// # Safety
-    /// This method is unsafe because it allows a Q_PROPERTY to be modified without emitting its changed signal.
-    /// The property changed signal must be emitted manually.
-    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust>;
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust>;
 }
 
 /// Types which implement the `Locking` trait are guarded from concurrent access in C++ (the default in CxxQt).

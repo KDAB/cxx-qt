@@ -35,10 +35,10 @@ fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> 
             }
         },
         quote! {
-            extern "C++" {
+            unsafe extern "C++" {
                 #[cxx_name = "unsafeRustMut"]
                 #[doc(hidden)]
-                unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+                fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
             }
         },
         quote! {
@@ -66,7 +66,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
                     self.cxx_qt_ffi_rust()
                 }
 
-                unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                     self.cxx_qt_ffi_rust_mut()
                 }
             }
@@ -387,10 +387,10 @@ mod tests {
                     fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
                 }
 
-                extern "C++" {
+                unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
                 }
 
                 extern "Rust" {
@@ -426,7 +426,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
@@ -493,10 +493,10 @@ mod tests {
                     fn cxx_qt_ffi_rust(self: &FirstObjectQt) -> &FirstObject;
                 }
 
-                extern "C++" {
+                unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
                 }
 
                 extern "Rust" {
@@ -520,10 +520,10 @@ mod tests {
                     fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
                 }
 
-                extern "C++" {
+                unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    unsafe fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
                 }
 
                 extern "Rust" {
@@ -559,7 +559,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
@@ -583,7 +583,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    unsafe fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
