@@ -9,9 +9,7 @@ use crate::syntax::{
 };
 use crate::{
     parser::{
-        inherit::ParsedInheritedMethod,
-        invokable::ParsedQInvokable,
-        property::{ParsedQProperty, ParsedRustField},
+        inherit::ParsedInheritedMethod, invokable::ParsedQInvokable, property::ParsedQProperty,
         signals::ParsedSignal,
     },
     syntax::path::path_compare_str,
@@ -60,8 +58,6 @@ pub struct ParsedQObject {
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
-    /// List of Rust fields on the struct that need getters and setters generated
-    pub fields: Vec<ParsedRustField>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
     /// Whether locking is enabled for this QObject
@@ -99,7 +95,7 @@ impl ParsedQObject {
 
         // Parse any properties in the struct
         // and remove the #[qproperty] attribute
-        let (properties, _) = Self::parse_struct_fields(&mut qobject_struct.fields)?;
+        let properties = Self::parse_struct_fields(&mut qobject_struct.fields)?;
 
         // Ensure that the QObject is marked as pub otherwise the error is non obvious
         // https://github.com/KDAB/cxx-qt/issues/457
@@ -119,11 +115,6 @@ impl ParsedQObject {
             inherited_methods: vec![],
             passthrough_impl_items: vec![],
             properties,
-            // Do not generate helpers for fields as they are going to move out of the bridge
-            //
-            // TODO: we may bring #[field(T, NAME)] as a way of doing this
-            // if we want to keep the unsafety vs safety of property changes with or without notify
-            fields: vec![],
             qml_metadata,
             locking: true,
             threading: false,
@@ -265,11 +256,8 @@ impl ParsedQObject {
     }
 
     /// Extract all the properties from [syn::Fields] from a [syn::ItemStruct]
-    fn parse_struct_fields(
-        fields: &mut Fields,
-    ) -> Result<(Vec<ParsedQProperty>, Vec<ParsedRustField>)> {
+    fn parse_struct_fields(fields: &mut Fields) -> Result<Vec<ParsedQProperty>> {
         let mut properties = vec![];
-        let mut rust_fields = vec![];
         for field in fields_to_named_fields_mut(fields)? {
             // Try to find any properties defined within the struct
             if let Some(index) = attribute_find_path(&field.attrs, &["qproperty"]) {
@@ -281,16 +269,10 @@ impl ParsedQObject {
                     ty: field.ty.clone(),
                     vis: field.vis.clone(),
                 });
-            } else {
-                rust_fields.push(ParsedRustField {
-                    ident: field.ident.clone().unwrap(),
-                    ty: field.ty.clone(),
-                    vis: field.vis.clone(),
-                })
             }
         }
 
-        Ok((properties, rust_fields))
+        Ok(properties)
     }
 }
 
@@ -349,7 +331,6 @@ pub mod tests {
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 2);
-        assert_eq!(qobject.qobject_struct.fields.len(), 3);
     }
 
     #[test]
@@ -363,7 +344,6 @@ pub mod tests {
 
         let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 0);
-        assert_eq!(qobject.qobject_struct.fields.len(), 1);
     }
 
     #[test]
