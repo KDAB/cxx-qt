@@ -146,15 +146,7 @@ These are normal Rust methods, so they aren't restricted to CXX-compatible types
 
 Fields within your `#[cxx_qt::qobject]` struct that aren't tagged as `#[qproperty]` are not exposed as properties to Qt. These can be considered as "private to Rust" fields, and are useful for storing channels for threading or internal information for the QObject.
 Because they aren't available from C++, they also don't have any special type requirements and can be any Rust type.
-For convenience, CXX-Qt generates getters and setters on the `qobject::T` for these fields.
-
-These use the convention:
-  * setter: `set_<Property>`
-  * getter: `<Property>`
-  * mutable accessor: `<Property>_mut`
-
-In comparison to properties, CXX-Qt generates a mutable accessor to the field.
-Because the field doesn't correspond to a property, no changed signal has to be emitted and therefore the field can be mutated freely.
+Use the `rust` and `rust_mut` methods to access the struct and therefore the fields.
 
 Methods implemented using `impl T` (and not `impl qobject::T`) are just normal Rust member methods.
 Therefore they do not have access to any C++ or QObject functionality (e.g. emitting signals, changing properties, etc.)
