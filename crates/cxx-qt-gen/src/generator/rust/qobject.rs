@@ -7,9 +7,8 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            field::generate_rust_fields, fragment::RustFragmentPair, inherit,
-            invokable::generate_rust_invokables, property::generate_rust_properties,
-            signals::generate_rust_signals, threading,
+            fragment::RustFragmentPair, inherit, invokable::generate_rust_invokables,
+            property::generate_rust_properties, signals::generate_rust_signals, threading,
         },
     },
     parser::qobject::ParsedQObject,
@@ -69,14 +68,11 @@ impl GeneratedRustQObject {
             .cxx_qt_mod_contents
             .push(syn::Item::Struct(qobject.qobject_struct.clone()));
 
-        // Generate methods for the properties, fields, invokables, signals
+        // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
         )?);
-        generated
-            .blocks
-            .append(&mut generate_rust_fields(&qobject.fields, &qobject_idents)?);
         generated.blocks.append(&mut generate_rust_invokables(
             &qobject.invokables,
             &qobject_idents,
