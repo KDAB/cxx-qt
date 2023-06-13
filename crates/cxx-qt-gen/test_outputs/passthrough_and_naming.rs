@@ -262,18 +262,6 @@ pub mod cxx_qt_ffi {
             &self.rust().property_name
         }
     }
-    impl MyObjectQt {
-        #[doc = "unsafe getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-        #[doc = "\n"]
-        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-        #[doc = "property_name_changed"]
-        pub unsafe fn property_name_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
-            &mut self.rust_mut().get_unchecked_mut().property_name
-        }
-    }
     impl MyObject {
         #[doc(hidden)]
         pub fn set_property_name(&mut self, cpp: Pin<&mut MyObjectQt>, value: i32) {
@@ -352,18 +340,6 @@ pub mod cxx_qt_ffi {
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
             &self.rust().property_name
-        }
-    }
-    impl SecondObjectQt {
-        #[doc = "unsafe getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        #[doc = "\n"]
-        #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-        #[doc = "\n"]
-        #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-        #[doc = "property_name_changed"]
-        pub unsafe fn property_name_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
-            &mut self.rust_mut().get_unchecked_mut().property_name
         }
     }
     impl SecondObject {

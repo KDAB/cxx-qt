@@ -142,11 +142,9 @@ impl ffi::RustContainersQt {
 
     /// Insert the given string and variant to the map container
     fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-        // SAFETY: map is a Q_PROPERTY so ensure we manually trigger changed
-        unsafe {
-            self.as_mut().map_mut().insert(key, value);
-            self.as_mut().map_changed();
-        }
+        // Note: map is a Q_PROPERTY so ensure we manually trigger changed
+        self.as_mut().rust_mut().map.insert(key, value);
+        self.as_mut().map_changed();
 
         self.update_strings();
     }

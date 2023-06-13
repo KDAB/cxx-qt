@@ -88,7 +88,7 @@ mod tests {
 
         // Check that we have the expected number of blocks
         assert_eq!(generated.cxx_mod_contents.len(), 12);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 18);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 15);
 
         // Trivial Property
 
@@ -125,23 +125,6 @@ mod tests {
                 }
             },
         );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[2],
-            parse_quote! {
-                impl MyObjectQt {
-                    #[doc = "unsafe getter for the Q_PROPERTY "]
-                    #[doc = "trivial_property"]
-                    #[doc = "\n"]
-                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-                    #[doc = "\n"]
-                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-                    #[doc = "trivial_property_changed"]
-                    pub unsafe fn trivial_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut i32 {
-                        &mut self.rust_mut().get_unchecked_mut().trivial_property
-                    }
-                }
-            },
-        );
 
         // Setters
         assert_tokens_eq(
@@ -154,7 +137,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[3],
+            &generated.cxx_qt_mod_contents[2],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -165,7 +148,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[4],
+            &generated.cxx_qt_mod_contents[3],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -194,7 +177,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[5],
+            &generated.cxx_qt_mod_contents[4],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -205,30 +188,13 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[6],
+            &generated.cxx_qt_mod_contents[5],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
                     pub fn opaque_property(&self) -> &UniquePtr<QColor> {
                         &self.rust().opaque_property
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[7],
-            parse_quote! {
-                impl MyObjectQt {
-                    #[doc = "unsafe getter for the Q_PROPERTY "]
-                    #[doc = "opaque_property"]
-                    #[doc = "\n"]
-                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-                    #[doc = "\n"]
-                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-                    #[doc = "opaque_property_changed"]
-                    pub unsafe fn opaque_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut UniquePtr<QColor> {
-                        &mut self.rust_mut().get_unchecked_mut().opaque_property
                     }
                 }
             },
@@ -245,7 +211,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[8],
+            &generated.cxx_qt_mod_contents[6],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -256,7 +222,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[9],
+            &generated.cxx_qt_mod_contents[7],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -285,7 +251,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[10],
+            &generated.cxx_qt_mod_contents[8],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -296,30 +262,13 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[11],
+            &generated.cxx_qt_mod_contents[9],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "unsafe_property"]
                     pub fn unsafe_property(&self) -> &*mut T {
                         &self.rust().unsafe_property
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[12],
-            parse_quote! {
-                impl MyObjectQt {
-                    #[doc = "unsafe getter for the Q_PROPERTY "]
-                    #[doc = "unsafe_property"]
-                    #[doc = "\n"]
-                    #[doc = "This allows for modifying the Q_PROPERTY without calling the property changed Q_SIGNAL"]
-                    #[doc = "\n"]
-                    #[doc = "After modifying the property, make sure to call the corresponding changed signal: "]
-                    #[doc = "unsafe_property_changed"]
-                    pub unsafe fn unsafe_property_mut<'a>(self: Pin<&'a mut Self>) -> &'a mut *mut T {
-                        &mut self.rust_mut().get_unchecked_mut().unsafe_property
                     }
                 }
             },
@@ -336,7 +285,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[13],
+            &generated.cxx_qt_mod_contents[10],
             parse_quote! {
                 impl MyObject {
                     #[doc(hidden)]
@@ -347,7 +296,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[14],
+            &generated.cxx_qt_mod_contents[11],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -389,7 +338,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[15],
+            &generated.cxx_qt_mod_contents[12],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -430,7 +379,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[16],
+            &generated.cxx_qt_mod_contents[13],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -471,7 +420,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[17],
+            &generated.cxx_qt_mod_contents[14],
             parse_quote! {
                 impl MyObjectQt {
                     #[doc = "Connect the given function pointer to the signal "]
