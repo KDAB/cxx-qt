@@ -110,7 +110,7 @@ impl ffi::RustSignalsQt {
                             ConnectionType::QueuedConnection,
                         ),
                     ];
-                    unsafe { qobject.as_mut().rust_mut() }.connections = Some(connections);
+                    qobject.as_mut().rust_mut().connections = Some(connections);
                     // ANCHOR_END: book_signals_connect
                 }
             } else {
@@ -118,7 +118,7 @@ impl ffi::RustSignalsQt {
                 // ANCHOR: book_signals_disconnect
                 // By making connections None, we trigger a drop on the connections
                 // this then causes disconnections
-                unsafe { qobject.as_mut().rust_mut() }.connections = None;
+                qobject.as_mut().rust_mut().connections = None;
                 // ANCHOR_END: book_signals_disconnect
             }
         })

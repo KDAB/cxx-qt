@@ -56,10 +56,7 @@ pub fn generate(
                             // as this can cause binding loops
                             return;
                         }
-
-                        unsafe {
-                            self.as_mut().rust_mut().#ident = value;
-                        }
+                        self.as_mut().rust_mut().#ident = value;
                         self.as_mut().#notify_ident();
                     }
                 }

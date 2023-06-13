@@ -174,9 +174,7 @@ mod tests {
                         if self.rust().trivial_property == value {
                             return;
                         }
-                        unsafe {
-                            self.as_mut().rust_mut().trivial_property = value;
-                        }
+                        self.as_mut().rust_mut().trivial_property = value;
                         self.as_mut().trivial_property_changed();
                     }
                 }
@@ -267,9 +265,7 @@ mod tests {
                         if self.rust().opaque_property == value {
                             return;
                         }
-                        unsafe {
-                            self.as_mut().rust_mut().opaque_property = value;
-                        }
+                        self.as_mut().rust_mut().opaque_property = value;
                         self.as_mut().opaque_property_changed();
                     }
                 }
@@ -360,9 +356,7 @@ mod tests {
                         if self.rust().unsafe_property == value {
                             return;
                         }
-                        unsafe {
-                            self.as_mut().rust_mut().unsafe_property = value;
-                        }
+                        self.as_mut().rust_mut().unsafe_property = value;
                         self.as_mut().unsafe_property_changed();
                     }
                 }
