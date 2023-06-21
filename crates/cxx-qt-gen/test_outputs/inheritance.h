@@ -23,6 +23,9 @@ public:
   MyObjectRust& unsafeRustMut();
 
 public:
+  Q_INVOKABLE QVariant data(QModelIndex const& _index,
+                            ::std::int32_t _role) const override;
+  Q_INVOKABLE bool hasChildren(QModelIndex const& _parent) const override;
   template<class... Args>
   bool hasChildrenCxxQtInherit(Args... args) const
   {

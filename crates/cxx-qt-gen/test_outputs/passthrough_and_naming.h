@@ -40,6 +40,7 @@ public:
   ::QMetaObject::Connection propertyNameChangedConnect(
     ::rust::Fn<void(MyObject&)> func,
     ::Qt::ConnectionType type);
+  Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
                                          ::Qt::ConnectionType type);
@@ -75,6 +76,7 @@ public:
   ::QMetaObject::Connection propertyNameChangedConnect(
     ::rust::Fn<void(SecondObject&)> func,
     ::Qt::ConnectionType type);
+  Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(SecondObject&)> func,
                                          ::Qt::ConnectionType type);
