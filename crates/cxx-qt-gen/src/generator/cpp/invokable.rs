@@ -8,10 +8,11 @@ use crate::{
         cpp::{
             fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
-            types::CppType,
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
-        utils::cpp::{syn_return_type_to_cpp_except, syn_type_to_cpp_return_type},
+        utils::cpp::{
+            syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
+        },
     },
     parser::{
         cxxqtdata::ParsedCxxMappings,
@@ -54,7 +55,7 @@ pub fn generate_cpp_invokables(
                     } else {
                         Ok(Some(CppNamedType {
                             ident: ident.to_string(),
-                            ty: CppType::from(ty, cxx_mappings)?,
+                            ty: syn_type_to_cpp_type(ty, cxx_mappings)?,
                         }))
                     }
                 } else {
@@ -75,13 +76,7 @@ pub fn generate_cpp_invokables(
         );
         let parameter_types = parameters
             .iter()
-            .map(|parameter| {
-                format!(
-                    "{ty} {ident}",
-                    ident = parameter.ident,
-                    ty = parameter.ty.as_cxx_ty()
-                )
-            })
+            .map(|parameter| format!("{ty} {ident}", ident = parameter.ident, ty = parameter.ty))
             .collect::<Vec<String>>()
             .join(", ");
         let is_const = if !invokable.mutable { " const" } else { "" };

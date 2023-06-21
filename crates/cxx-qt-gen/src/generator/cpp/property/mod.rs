@@ -4,8 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{
-    cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals, types::CppType},
+    cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
     naming::{property::QPropertyName, qobject::QObjectName},
+    utils::cpp::syn_type_to_cpp_type,
 };
 use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
 use syn::Result;
@@ -28,7 +29,7 @@ pub fn generate_cpp_properties(
     for property in properties {
         // Cache the idents as they are used in multiple places
         let idents = QPropertyName::from(property);
-        let cxx_ty = CppType::from(&property.ty, cxx_mappings)?;
+        let cxx_ty = syn_type_to_cpp_type(&property.ty, cxx_mappings)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
         generated.methods.push(getter::generate(

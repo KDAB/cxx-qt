@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::cpp::types::CppType;
-
 pub enum CppFragment {
     Pair { header: String, source: String },
     Header(String),
@@ -22,5 +20,5 @@ impl Default for CppFragment {
 
 pub struct CppNamedType {
     pub ident: String,
-    pub ty: CppType,
+    pub ty: String,
 }

@@ -3,22 +3,19 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{
-    cpp::{fragment::CppFragment, types::CppType},
-    naming::property::QPropertyName,
-};
+use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyName};
 use indoc::formatdoc;
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_ident: &str,
-    cxx_ty: &CppType,
+    cxx_ty: &str,
     lock_guard: Option<&str>,
 ) -> CppFragment {
     CppFragment::Pair {
         header: format!(
             "{return_cxx_ty} const& {ident_getter}() const;",
-            return_cxx_ty = cxx_ty.as_cxx_ty(),
+            return_cxx_ty = cxx_ty,
             ident_getter = idents.getter.cpp
         ),
         source: formatdoc!(
@@ -30,7 +27,7 @@ pub fn generate(
                 return {ident_getter_wrapper}();
             }}
             "#,
-            return_cxx_ty = cxx_ty.as_cxx_ty(),
+            return_cxx_ty = cxx_ty,
             ident_getter = idents.getter.cpp.to_string(),
             ident_getter_wrapper = idents.getter_wrapper.cpp.to_string(),
             qobject_ident = qobject_ident,
@@ -39,10 +36,9 @@ pub fn generate(
     }
 }
 
-pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &CppType) -> CppFragment {
+pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &str) -> CppFragment {
     CppFragment::Header(format!(
-        "{return_cxx_ty} const& {ident_getter_wrapper}() const noexcept;",
-        return_cxx_ty = cxx_ty.as_cxx_ty(),
+        "{cxx_ty} const& {ident_getter_wrapper}() const noexcept;",
         ident_getter_wrapper = idents.getter_wrapper.cpp
     ))
 }
