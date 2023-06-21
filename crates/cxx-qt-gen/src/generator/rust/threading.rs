@@ -93,7 +93,7 @@ pub fn generate(
                     #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
                     where
-                        F: FnOnce(std::pin::Pin<&mut #cpp_struct_ident>),
+                        F: FnOnce(core::pin::Pin<&mut #cpp_struct_ident>),
                         F: Send + 'static,
                     {
                         // Wrap the given closure and pass in to C++ function as an opaque type
@@ -102,7 +102,7 @@ pub fn generate(
                         #[allow(clippy::boxed_local)]
                         #[doc(hidden)]
                         fn func(
-                            obj: std::pin::Pin<&mut #cpp_struct_ident>,
+                            obj: core::pin::Pin<&mut #cpp_struct_ident>,
                             arg: std::boxed::Box<#cxx_qt_thread_queued_fn_ident>,
                         ) {
                             (arg.inner)(obj)
@@ -129,7 +129,7 @@ pub fn generate(
                 pub struct #cxx_qt_thread_queued_fn_ident {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
-                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut #cpp_struct_ident>) + Send>,
+                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut #cpp_struct_ident>) + Send>,
                 }
             },
         ],
@@ -228,7 +228,7 @@ mod tests {
                     #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
                     where
-                        F: FnOnce(std::pin::Pin<&mut MyObject>),
+                        F: FnOnce(core::pin::Pin<&mut MyObject>),
                         F: Send + 'static,
                     {
                         // Wrap the given closure and pass in to C++ function as an opaque type
@@ -237,7 +237,7 @@ mod tests {
                         #[allow(clippy::boxed_local)]
                         #[doc(hidden)]
                         fn func(
-                            obj: std::pin::Pin<&mut MyObject>,
+                            obj: core::pin::Pin<&mut MyObject>,
                             arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
                         ) {
                             (arg.inner)(obj)
@@ -267,7 +267,7 @@ mod tests {
                 pub struct MyObjectCxxQtThreadQueuedFn {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
-                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObject>) + Send>,
+                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut MyObject>) + Send>,
                 }
             },
         );

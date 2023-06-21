@@ -128,7 +128,7 @@ mod tests {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "trivial_property"]
-                    pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
+                    pub fn set_trivial_property(mut self: core::pin::Pin<&mut Self>, value: i32) {
                         if self.trivial_property == value {
                             return;
                         }
@@ -180,7 +180,7 @@ mod tests {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
-                    pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
+                    pub fn set_opaque_property(mut self: core::pin::Pin<&mut Self>, value: UniquePtr<QColor>) {
                         if self.opaque_property == value {
                             return;
                         }
@@ -232,7 +232,7 @@ mod tests {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "unsafe_property"]
-                    pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
+                    pub fn set_unsafe_property(mut self: core::pin::Pin<&mut Self>, value: *mut T) {
                         if self.unsafe_property == value {
                             return;
                         }
@@ -278,7 +278,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_trivial_property_changed(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_trivial_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_trivial_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -319,7 +319,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_opaque_property_changed(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_opaque_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_opaque_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -360,7 +360,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_unsafe_property_changed(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_unsafe_property_changed(func, CxxQtConnectionType::AutoConnection)
                     }

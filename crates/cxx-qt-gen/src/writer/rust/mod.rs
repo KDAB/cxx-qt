@@ -53,7 +53,7 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
                     self.cxx_qt_ffi_rust()
                 }
 
-                fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
                     self.cxx_qt_ffi_rust_mut()
                 }
             }
@@ -154,7 +154,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         /// Internal CXX-Qt module, made public temporarily between API changes
         pub mod #cxx_qt_mod_ident {
             use super::#cxx_mod_ident::*;
-            use std::pin::Pin;
             use cxx_qt::CxxQtType;
 
             #[doc(hidden)]
@@ -359,7 +358,6 @@ mod tests {
             #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
             pub mod cxx_qt_ffi {
                 use super::ffi::*;
-                use std::pin::Pin;
                 use cxx_qt::CxxQtType;
 
                 #[doc(hidden)]
@@ -389,7 +387,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
@@ -468,7 +466,6 @@ mod tests {
             #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
             pub mod cxx_qt_ffi {
                 use super::ffi::*;
-                use std::pin::Pin;
                 use cxx_qt::CxxQtType;
 
                 #[doc(hidden)]
@@ -498,7 +495,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
@@ -525,7 +522,7 @@ mod tests {
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }

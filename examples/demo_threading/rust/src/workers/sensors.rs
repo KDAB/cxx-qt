@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{constants::SENSOR_MAXIMUM_COUNT, network::NetworkChannel, qobject};
+use core::pin::Pin;
 use cxx_qt::CxxQtThread;
 use cxx_qt_lib::QString;
 use std::{
@@ -85,9 +86,7 @@ impl SensorsWorker {
                         // Queue a Signal that the sensor has been removed to Qt
                         qt_thread
                             .queue(
-                                move |qobject_energy_usage: std::pin::Pin<
-                                    &mut qobject::EnergyUsage,
-                                >| {
+                                move |qobject_energy_usage: Pin<&mut qobject::EnergyUsage>| {
                                     qobject_energy_usage
                                         .sensor_removed(QString::from(&uuid.to_string()));
                                 },
@@ -118,7 +117,7 @@ impl SensorsWorker {
                             if is_occupied {
                                 qt_thread
                                     .queue(
-                                        move |qobject_energy_usage: std::pin::Pin<
+                                        move |qobject_energy_usage: Pin<
                                             &mut qobject::EnergyUsage,
                                         >| {
                                             qobject_energy_usage
@@ -129,7 +128,7 @@ impl SensorsWorker {
                             } else {
                                 qt_thread
                                     .queue(
-                                        move |qobject_energy_usage: std::pin::Pin<
+                                        move |qobject_energy_usage: Pin<
                                             &mut qobject::EnergyUsage,
                                         >| {
                                             qobject_energy_usage

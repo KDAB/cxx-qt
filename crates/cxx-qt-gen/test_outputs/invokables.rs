@@ -176,7 +176,6 @@ use self::cxx_qt_ffi::*;
 pub mod cxx_qt_ffi {
     use super::ffi::*;
     use cxx_qt::CxxQtType;
-    use std::pin::Pin;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
@@ -192,13 +191,13 @@ pub mod cxx_qt_ffi {
             f: F,
         ) -> std::result::Result<(), cxx::Exception>
         where
-            F: FnOnce(std::pin::Pin<&mut MyObject>),
+            F: FnOnce(core::pin::Pin<&mut MyObject>),
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
             #[doc(hidden)]
             fn func(
-                obj: std::pin::Pin<&mut MyObject>,
+                obj: core::pin::Pin<&mut MyObject>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
             ) {
                 (arg.inner)(obj)
@@ -219,7 +218,7 @@ pub mod cxx_qt_ffi {
     }
     #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
-        inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObject>) + Send>,
+        inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut MyObject>) + Send>,
     }
     impl cxx_qt::Locking for MyObject {}
     #[doc(hidden)]
@@ -276,7 +275,7 @@ pub mod cxx_qt_ffi {
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
     }

@@ -43,10 +43,13 @@ pub fn generate_rust_signals(
             })
             .collect::<Vec<TokenStream>>();
 
-        let self_type = if signal.mutable {
-            quote! { Pin<&mut #qobject_name> }
+        let (self_type, self_type_cxx) = if signal.mutable {
+            (
+                quote! { core::pin::Pin<&mut #qobject_name> },
+                quote! { Pin<&mut #qobject_name> },
+            )
         } else {
-            quote! { &#qobject_name }
+            (quote! { &#qobject_name }, quote! { &#qobject_name })
         };
 
         let mut unsafe_block = None;
@@ -63,7 +66,7 @@ pub fn generate_rust_signals(
                     #unsafe_block extern "C++" {
                         #(#attrs)*
                         #[rust_name = #signal_name_rust_str]
-                        #unsafe_call fn #signal_name_cpp(self: #self_type, #(#parameters),*);
+                        #unsafe_call fn #signal_name_cpp(self: #self_type_cxx, #(#parameters),*);
                     }
                 },
                 quote! {
@@ -73,7 +76,7 @@ pub fn generate_rust_signals(
                         #[doc = ", so that when the signal is emitted the function pointer is executed."]
                         #[must_use]
                         #[rust_name = #connect_ident_rust_str]
-                        fn #connect_ident_cpp(self: #self_type, func: #unsafe_call fn(#self_type, #(#parameters),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                        fn #connect_ident_cpp(self: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                     }
                 },
             ],
@@ -169,7 +172,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_ready(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_ready(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_ready(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -244,7 +247,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_data_changed(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
+                    pub fn on_data_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -311,7 +314,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_unsafe_signal(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, param: *mut T)) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_signal(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, param: *mut T)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_unsafe_signal(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -377,7 +380,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_existing_signal(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_existing_signal(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_existing_signal(func, CxxQtConnectionType::AutoConnection)
                     }

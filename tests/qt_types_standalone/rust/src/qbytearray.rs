@@ -38,7 +38,7 @@ fn read_qbytearray(s: &cxx_qt_lib::QByteArray) -> bool {
     rs == "String constructed by C++"
 }
 
-fn modify_qbytearray(mut s: std::pin::Pin<&mut cxx_qt_lib::QByteArray>) {
+fn modify_qbytearray(mut s: core::pin::Pin<&mut cxx_qt_lib::QByteArray>) {
     *s = QByteArray::from("Updated string value");
 }
 

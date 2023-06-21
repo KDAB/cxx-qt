@@ -75,7 +75,6 @@ use self::cxx_qt_inheritance::*;
 pub mod cxx_qt_inheritance {
     use super::inheritance::*;
     use cxx_qt::CxxQtType;
-    use std::pin::Pin;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
@@ -95,7 +94,7 @@ pub mod cxx_qt_inheritance {
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
     }

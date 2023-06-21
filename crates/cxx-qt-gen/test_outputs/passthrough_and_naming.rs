@@ -213,7 +213,6 @@ pub use self::cxx_qt_ffi::*;
 pub mod cxx_qt_ffi {
     use super::ffi::*;
     use cxx_qt::CxxQtType;
-    use std::pin::Pin;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     use super::MyTrait;
@@ -228,7 +227,7 @@ pub mod cxx_qt_ffi {
     impl MyObject {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
-        pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
+        pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
             if self.property_name == value {
                 return;
             }
@@ -244,8 +243,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_property_name_changed(
-            self: Pin<&mut MyObject>,
-            func: fn(Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut MyObject>,
+            func: fn(core::pin::Pin<&mut MyObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
         }
@@ -258,8 +257,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: Pin<&mut MyObject>,
-            func: fn(Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut MyObject>,
+            func: fn(core::pin::Pin<&mut MyObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
         }
@@ -280,7 +279,7 @@ pub mod cxx_qt_ffi {
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
     }
@@ -295,7 +294,7 @@ pub mod cxx_qt_ffi {
     impl SecondObject {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
-        pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
+        pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
             if self.property_name == value {
                 return;
             }
@@ -311,8 +310,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_property_name_changed(
-            self: Pin<&mut SecondObject>,
-            func: fn(Pin<&mut SecondObject>),
+            self: core::pin::Pin<&mut SecondObject>,
+            func: fn(core::pin::Pin<&mut SecondObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
         }
@@ -325,8 +324,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: Pin<&mut SecondObject>,
-            func: fn(Pin<&mut SecondObject>),
+            self: core::pin::Pin<&mut SecondObject>,
+            func: fn(core::pin::Pin<&mut SecondObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
         }
@@ -346,7 +345,7 @@ pub mod cxx_qt_ffi {
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
             self.cxx_qt_ffi_rust_mut()
         }
     }
