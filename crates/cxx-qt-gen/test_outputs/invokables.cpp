@@ -78,6 +78,20 @@ MyObject::invokableVirtual() const
   invokableVirtualWrapper();
 }
 
+void
+MyObject::invokableResultTuple() const
+{
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  invokableResultTupleWrapper();
+}
+
+::rust::String
+MyObject::invokableResultType() const
+{
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  return invokableResultTypeWrapper();
+}
+
 static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),
               "unexpected aligment");
 static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[4]),

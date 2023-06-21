@@ -36,6 +36,8 @@ public:
   Q_INVOKABLE void invokableFinal() const final;
   Q_INVOKABLE void invokableOverride() const override;
   Q_INVOKABLE virtual void invokableVirtual() const;
+  Q_INVOKABLE void invokableResultTuple() const;
+  Q_INVOKABLE ::rust::String invokableResultType() const;
   MyObjectCxxQtThread qtThread() const;
   explicit MyObject(::std::int32_t arg0, QObject* arg1);
 
@@ -50,6 +52,8 @@ private:
   void invokableFinalWrapper() const noexcept;
   void invokableOverrideWrapper() const noexcept;
   void invokableVirtualWrapper() const noexcept;
+  void invokableResultTupleWrapper() const;
+  ::rust::String invokableResultTypeWrapper() const;
   explicit MyObject(
     cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
 

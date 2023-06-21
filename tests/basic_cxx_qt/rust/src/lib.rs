@@ -45,6 +45,9 @@ mod qobject {
 
         #[qinvokable]
         fn fetch_update_call_count(self: &MyObject) -> i32;
+
+        #[qinvokable]
+        fn throw_exception(self: &MyObject) -> Result<i32>;
     }
 }
 
@@ -123,5 +126,9 @@ impl qobject::MyObject {
 
     fn fetch_update_call_count(&self) -> i32 {
         self.update_call_count
+    }
+
+    fn throw_exception(&self) -> Result<i32, String> {
+        Err("RustException".to_string())
     }
 }

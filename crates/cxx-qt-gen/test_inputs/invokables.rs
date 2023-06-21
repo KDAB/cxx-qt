@@ -35,6 +35,12 @@ mod ffi {
 
         #[qinvokable(cxx_virtual)]
         fn invokable_virtual(self: &MyObject);
+
+        #[qinvokable]
+        fn invokable_result_tuple(self: &MyObject) -> Result<()>;
+
+        #[qinvokable]
+        fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
 
     impl cxx_qt::Threading for MyObject {}

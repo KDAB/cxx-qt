@@ -24,7 +24,7 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
-        fn load_color(self: &RustInvokables) -> QColor;
+        fn load_color(self: &RustInvokables) -> Result<QColor>;
 
         /// Mutable invokable method that stores a color
         #[qinvokable]
@@ -61,8 +61,8 @@ impl Default for RustInvokablesRust {
 // ANCHOR: book_invokable_impl
 impl qobject::RustInvokables {
     /// Immutable invokable method that returns the QColor
-    fn load_color(&self) -> QColor {
-        self.as_qcolor()
+    fn load_color(&self) -> Result<QColor, i32> {
+        Ok(self.as_qcolor())
     }
 
     /// Mutable invokable method that stores a color
