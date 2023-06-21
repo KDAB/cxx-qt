@@ -122,6 +122,6 @@ impl qobject::MyObject {
     }
 
     fn fetch_update_call_count(&self) -> i32 {
-        self.rust().update_call_count
+        self.update_call_count
     }
 }

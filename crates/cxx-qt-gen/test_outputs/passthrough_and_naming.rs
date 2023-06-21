@@ -226,7 +226,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
-            &self.rust().property_name
+            &self.property_name
         }
     }
     impl MyObjectRust {
@@ -239,7 +239,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
-            if self.rust().property_name == value {
+            if self.property_name == value {
                 return;
             }
             self.as_mut().rust_mut().property_name = value;
@@ -285,6 +285,12 @@ pub mod cxx_qt_ffi {
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         core::default::Default::default()
     }
+    impl core::ops::Deref for MyObject {
+        type Target = MyObjectRust;
+        fn deref(&self) -> &Self::Target {
+            self.cxx_qt_ffi_rust()
+        }
+    }
     impl cxx_qt::CxxQtType for MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {
@@ -305,7 +311,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
-            &self.rust().property_name
+            &self.property_name
         }
     }
     impl SecondObjectRust {
@@ -318,7 +324,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: Pin<&mut Self>, value: i32) {
-            if self.rust().property_name == value {
+            if self.property_name == value {
                 return;
             }
             self.as_mut().rust_mut().property_name = value;
@@ -362,6 +368,12 @@ pub mod cxx_qt_ffi {
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
         core::default::Default::default()
+    }
+    impl core::ops::Deref for SecondObject {
+        type Target = SecondObjectRust;
+        fn deref(&self) -> &Self::Target {
+            self.cxx_qt_ffi_rust()
+        }
     }
     impl cxx_qt::CxxQtType for SecondObject {
         type Rust = SecondObjectRust;

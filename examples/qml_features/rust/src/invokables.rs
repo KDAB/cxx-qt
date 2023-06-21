@@ -62,7 +62,7 @@ impl Default for RustInvokablesRust {
 impl qobject::RustInvokables {
     /// Immutable invokable method that returns the QColor
     fn load_color(&self) -> QColor {
-        self.rust().as_qcolor()
+        self.as_qcolor()
     }
 
     /// Mutable invokable method that stores a color

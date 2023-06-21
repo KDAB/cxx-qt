@@ -209,11 +209,11 @@ impl qobject::CustomBaseClass {
     }
 
     fn add_cpp_context(mut self: Pin<&mut Self>) {
-        let count = self.as_ref().rust().vector.len();
+        let count = self.vector.len();
         unsafe {
             self.as_mut()
                 .begin_insert_rows(&QModelIndex::default(), count as i32, count as i32);
-            let id = self.as_ref().rust().id;
+            let id = self.id;
             self.as_mut().rust_mut().id = id + 1;
             self.as_mut()
                 .rust_mut()
@@ -255,7 +255,7 @@ impl qobject::CustomBaseClass {
 
     /// Remove the row with the given index
     pub fn remove(mut self: Pin<&mut Self>, index: i32) {
-        if index < 0 || (index as usize) >= self.as_ref().rust().vector.len() {
+        if index < 0 || (index as usize) >= self.vector.len() {
             return;
         }
 
@@ -278,7 +278,7 @@ impl qobject::CustomBaseClass {
     pub const VALUE_ROLE: i32 = 1;
 
     fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
-        if let Some((id, value)) = self.rust().vector.get(index.row() as usize) {
+        if let Some((id, value)) = self.vector.get(index.row() as usize) {
             return match role {
                 Self::ID_ROLE => QVariant::from(id),
                 Self::VALUE_ROLE => QVariant::from(value),
@@ -312,7 +312,7 @@ impl qobject::CustomBaseClass {
 
     /// Return the row count for the QAbstractListModel
     pub fn row_count(&self, _parent: &QModelIndex) -> i32 {
-        self.rust().vector.len() as i32
+        self.vector.len() as i32
     }
 }
 // ANCHOR_END: book_macro_code

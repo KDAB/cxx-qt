@@ -43,7 +43,7 @@ pub fn generate(
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = #ident_str]
                     pub fn #getter_rust(&self) -> &#ty {
-                        &self.rust().#ident
+                        &self.#ident
                     }
                 }
             },

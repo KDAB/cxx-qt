@@ -319,6 +319,12 @@ pub mod cxx_qt_ffi {
             initialize_arguments,
         )
     }
+    impl core::ops::Deref for MyObject {
+        type Target = MyObjectRust;
+        fn deref(&self) -> &Self::Target {
+            self.cxx_qt_ffi_rust()
+        }
+    }
     impl cxx_qt::CxxQtType for MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {

@@ -35,19 +35,30 @@ fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
     let cpp_struct_ident = &qobject.cpp_struct_ident;
     let rust_struct_ident = &qobject.rust_struct_ident;
 
-    vec![quote! {
-        impl cxx_qt::CxxQtType for #cpp_struct_ident {
-            type Rust = #rust_struct_ident;
+    vec![
+        quote! {
+            impl core::ops::Deref for #cpp_struct_ident {
+                type Target = #rust_struct_ident;
 
-            fn rust(&self) -> &Self::Rust {
-                self.cxx_qt_ffi_rust()
+                fn deref(&self) -> &Self::Target {
+                    self.cxx_qt_ffi_rust()
+                }
             }
+        },
+        quote! {
+            impl cxx_qt::CxxQtType for #cpp_struct_ident {
+                type Rust = #rust_struct_ident;
 
-            fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
-                self.cxx_qt_ffi_rust_mut()
+                fn rust(&self) -> &Self::Rust {
+                    self.cxx_qt_ffi_rust()
+                }
+
+                fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
+                    self.cxx_qt_ffi_rust_mut()
+                }
             }
-        }
-    }]
+        },
+    ]
 }
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
@@ -365,6 +376,14 @@ mod tests {
                     }
                 }
 
+                impl core::ops::Deref for MyObject {
+                    type Target = MyObjectRust;
+
+                    fn deref(&self) -> &Self::Target {
+                        self.cxx_qt_ffi_rust()
+                    }
+                }
+
                 impl cxx_qt::CxxQtType for MyObject {
                     type Rust = MyObjectRust;
                     fn rust(&self) -> &Self::Rust {
@@ -466,6 +485,14 @@ mod tests {
                     }
                 }
 
+                impl core::ops::Deref for FirstObject {
+                    type Target = FirstObjectRust;
+
+                    fn deref(&self) -> &Self::Target {
+                        self.cxx_qt_ffi_rust()
+                    }
+                }
+
                 impl cxx_qt::CxxQtType for FirstObject {
                     type Rust = FirstObjectRust;
                     fn rust(&self) -> &Self::Rust {
@@ -482,6 +509,14 @@ mod tests {
                 impl SecondObjectRust {
                     fn rust_method(&self) {
 
+                    }
+                }
+
+                impl core::ops::Deref for SecondObject {
+                    type Target = SecondObjectRust;
+
+                    fn deref(&self) -> &Self::Target {
+                        self.cxx_qt_ffi_rust()
                     }
                 }
 

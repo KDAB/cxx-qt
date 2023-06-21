@@ -113,7 +113,7 @@ impl cxx_qt::Constructor<()> for qobject::RustSignals {
             // Determine if logging is enabled
             if *qobject.as_ref().logging_enabled() {
                 // If no connections have been made, then create them
-                if qobject.as_ref().rust().connections.is_none() {
+                if qobject.as_ref().connections.is_none() {
                     // ANCHOR: book_signals_connect
                     let connections = [
                         qobject.as_mut().on_connected(|_, url| {

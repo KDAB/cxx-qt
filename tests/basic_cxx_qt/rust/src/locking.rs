@@ -34,7 +34,6 @@ pub mod qobject {
 }
 
 use core::pin::Pin;
-use cxx_qt::CxxQtType;
 use std::{
     sync::atomic::{AtomicU32, Ordering},
     thread,
@@ -48,13 +47,13 @@ pub struct RustLockingEnabledRust {
 
 impl qobject::RustLockingEnabled {
     fn get_counter(&self) -> u32 {
-        self.rust().counter.load(Ordering::Acquire)
+        self.counter.load(Ordering::Acquire)
     }
 
     fn increment(self: Pin<&mut Self>) {
-        let counter = self.as_ref().get_counter();
+        let counter = self.get_counter();
         thread::sleep(Duration::from_millis(100));
-        self.rust().counter.store(counter + 1, Ordering::Release);
+        self.counter.store(counter + 1, Ordering::Release);
     }
 }
 
@@ -65,12 +64,12 @@ pub struct RustLockingDisabledRust {
 
 impl qobject::RustLockingDisabled {
     fn get_counter(&self) -> u32 {
-        self.rust().counter.load(Ordering::Acquire)
+        self.counter.load(Ordering::Acquire)
     }
 
     fn increment(self: Pin<&mut Self>) {
-        let counter = self.as_ref().get_counter();
+        let counter = self.get_counter();
         thread::sleep(Duration::from_millis(100));
-        self.rust().counter.store(counter + 1, Ordering::Release);
+        self.counter.store(counter + 1, Ordering::Release);
     }
 }

@@ -118,7 +118,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "primitive"]
         pub fn primitive(&self) -> &i32 {
-            &self.rust().primitive
+            &self.primitive
         }
     }
     impl MyObjectRust {
@@ -131,7 +131,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "primitive"]
         pub fn set_primitive(mut self: Pin<&mut Self>, value: i32) {
-            if self.rust().primitive == value {
+            if self.primitive == value {
                 return;
             }
             self.as_mut().rust_mut().primitive = value;
@@ -148,7 +148,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "trivial"]
         pub fn trivial(&self) -> &QPoint {
-            &self.rust().trivial
+            &self.trivial
         }
     }
     impl MyObjectRust {
@@ -161,7 +161,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "trivial"]
         pub fn set_trivial(mut self: Pin<&mut Self>, value: QPoint) {
-            if self.rust().trivial == value {
+            if self.trivial == value {
                 return;
             }
             self.as_mut().rust_mut().trivial = value;
@@ -200,6 +200,12 @@ pub mod cxx_qt_ffi {
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         core::default::Default::default()
+    }
+    impl core::ops::Deref for MyObject {
+        type Target = MyObjectRust;
+        fn deref(&self) -> &Self::Target {
+            self.cxx_qt_ffi_rust()
+        }
     }
     impl cxx_qt::CxxQtType for MyObject {
         type Rust = MyObjectRust;
