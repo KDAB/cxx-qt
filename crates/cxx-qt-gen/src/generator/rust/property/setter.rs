@@ -41,7 +41,7 @@ pub fn generate(
             impl #cpp_class_name_rust {
                 #[doc = "Setter for the Q_PROPERTY "]
                 #[doc = #ident_str]
-                pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
+                pub fn #setter_rust(mut self: core::pin::Pin<&mut Self>, value: #ty) {
                     if self.#ident == value {
                         // don't want to set the value again and reemit the signal,
                         // as this can cause binding loops

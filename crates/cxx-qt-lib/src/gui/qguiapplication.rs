@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{QByteArray, QString, QStringList, QVector};
-use std::pin::Pin;
+use core::pin::Pin;
 
 #[cxx::bridge]
 mod ffi {

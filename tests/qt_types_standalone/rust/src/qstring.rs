@@ -37,7 +37,7 @@ fn read_qstring(s: &cxx_qt_lib::QString) -> bool {
     rs == "String constructed by C++"
 }
 
-fn modify_qstring(mut s: std::pin::Pin<&mut cxx_qt_lib::QString>) {
+fn modify_qstring(mut s: core::pin::Pin<&mut cxx_qt_lib::QString>) {
     *s = QString::from("Updated string value");
 }
 

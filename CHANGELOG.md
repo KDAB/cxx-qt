@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Do not use -bundle otherwise CMake builds are missing qt-static-initalizers (note this is broken in rustc 1.69)
+- Do not import `Pin` in hidden module as invokables are outside now, resolving IDE integration
 
 ### Removed
 
