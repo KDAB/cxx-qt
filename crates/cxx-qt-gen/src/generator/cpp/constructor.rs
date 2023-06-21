@@ -5,7 +5,7 @@
 
 use super::qobject::GeneratedCppQObjectBlocks;
 use crate::{
-    generator::cpp::{types::CppType, GeneratedCppQObject},
+    generator::{cpp::GeneratedCppQObject, utils::cpp::syn_type_to_cpp_type},
     parser::{constructor::Constructor, cxxqtdata::ParsedCxxMappings},
     CppFragment,
 };
@@ -53,9 +53,7 @@ fn expand_arguments(arguments: &[Type], cxx_mappings: &ParsedCxxMappings) -> Res
     Ok(arguments
         .iter()
         .zip(argument_names(arguments).into_iter())
-        .map(|(ty, name)| {
-            CppType::from(ty, cxx_mappings).map(|ty| format!("{ty} {name}", ty = ty.as_cxx_ty()))
-        })
+        .map(|(ty, name)| syn_type_to_cpp_type(ty, cxx_mappings).map(|ty| format!("{ty} {name}")))
         .collect::<Result<Vec<_>>>()?
         .join(", "))
 }

@@ -3,22 +3,19 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{
-    cpp::{fragment::CppFragment, types::CppType},
-    naming::property::QPropertyName,
-};
+use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyName};
 use indoc::formatdoc;
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_ident: &str,
-    cxx_ty: &CppType,
+    cxx_ty: &str,
     lock_guard: Option<&str>,
 ) -> CppFragment {
     CppFragment::Pair {
         header: format!(
             "Q_SLOT void {ident_setter}({cxx_ty} const& value);",
-            cxx_ty = cxx_ty.as_cxx_ty(),
+            cxx_ty = cxx_ty,
             ident_setter = idents.setter.cpp,
         ),
         source: formatdoc! {
@@ -30,7 +27,7 @@ pub fn generate(
                 {ident_setter_wrapper}(value);
             }}
             "#,
-            cxx_ty = cxx_ty.as_cxx_ty(),
+            cxx_ty = cxx_ty,
             ident_setter = idents.setter.cpp,
             ident_setter_wrapper = idents.setter_wrapper.cpp.to_string(),
             qobject_ident = qobject_ident,
@@ -39,12 +36,11 @@ pub fn generate(
     }
 }
 
-pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &CppType) -> CppFragment {
+pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &str) -> CppFragment {
     CppFragment::Header(format!(
         // Note that we pass T not const T& to Rust so that it is by-value
         // https://github.com/KDAB/cxx-qt/issues/463
         "void {ident_setter_wrapper}({cxx_ty} value) noexcept;",
-        cxx_ty = cxx_ty.as_cxx_ty(),
         ident_setter_wrapper = idents.setter_wrapper.cpp
     ))
 }

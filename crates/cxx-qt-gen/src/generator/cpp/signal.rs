@@ -5,8 +5,9 @@
 
 use crate::{
     generator::{
-        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks, types::CppType},
+        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         naming::{qobject::QObjectName, signals::QSignalName},
+        utils::cpp::syn_type_to_cpp_type,
     },
     parser::{cxxqtdata::ParsedCxxMappings, signals::ParsedSignal},
 };
@@ -28,12 +29,12 @@ pub fn generate_cpp_signals(
         let mut parameter_values_emitter = vec![];
 
         for parameter in &signal.parameters {
-            let cxx_ty = CppType::from(&parameter.ty, cxx_mappings)?;
+            let cxx_ty = syn_type_to_cpp_type(&parameter.ty, cxx_mappings)?;
             let ident_str = parameter.ident.to_string();
             parameter_types_cpp.push(format!(
                 "{cxx_ty} {ident}",
                 ident = parameter.ident,
-                cxx_ty = cxx_ty.as_cxx_ty(),
+                cxx_ty = cxx_ty,
             ));
             parameter_values_emitter.push(format!("::std::move({ident})", ident = ident_str,));
         }
