@@ -131,9 +131,8 @@ impl cxx_qt::Constructor<()> for qobject::EnergyUsage {
         EnergyUsageRust::default()
     }
 
-    /// A Q_INVOKABLE which starts the TCP server
     fn initialize(mut self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
-        if self.rust().join_handles.is_some() {
+        if self.join_handles.is_some() {
             println!("Already running a server!");
             return;
         }

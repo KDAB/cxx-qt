@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ensure that generated Rust code works when `#![deny(missing_docs)]` is enabled
 - Ability to connect and disconnect from signals in Rust triggering a function pointer
 - `unsafe impl !cxx_qt::Locking for qobject::T` to disable internal locking
+- `Deref` is now implemented for `qobject::T` to reach the `T` Rust struct
 
 ### Changed
 

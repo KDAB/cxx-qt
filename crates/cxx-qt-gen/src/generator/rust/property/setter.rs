@@ -51,7 +51,7 @@ pub fn generate(
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = #ident_str]
                     pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
-                        if self.rust().#ident == value {
+                        if self.#ident == value {
                             // don't want to set the value again and reemit the signal,
                             // as this can cause binding loops
                             return;

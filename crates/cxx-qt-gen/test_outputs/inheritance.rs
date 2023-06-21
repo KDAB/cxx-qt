@@ -109,6 +109,12 @@ pub mod cxx_qt_inheritance {
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         core::default::Default::default()
     }
+    impl core::ops::Deref for MyObject {
+        type Target = MyObjectRust;
+        fn deref(&self) -> &Self::Target {
+            self.cxx_qt_ffi_rust()
+        }
+    }
     impl cxx_qt::CxxQtType for MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {

@@ -117,7 +117,7 @@ mod tests {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "trivial_property"]
                     pub fn trivial_property(&self) -> &i32 {
-                        &self.rust().trivial_property
+                        &self.trivial_property
                     }
                 }
             },
@@ -151,7 +151,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "trivial_property"]
                     pub fn set_trivial_property(mut self: Pin<&mut Self>, value: i32) {
-                        if self.rust().trivial_property == value {
+                        if self.trivial_property == value {
                             return;
                         }
                         self.as_mut().rust_mut().trivial_property = value;
@@ -191,7 +191,7 @@ mod tests {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
                     pub fn opaque_property(&self) -> &UniquePtr<QColor> {
-                        &self.rust().opaque_property
+                        &self.opaque_property
                     }
                 }
             },
@@ -225,7 +225,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
                     pub fn set_opaque_property(mut self: Pin<&mut Self>, value: UniquePtr<QColor>) {
-                        if self.rust().opaque_property == value {
+                        if self.opaque_property == value {
                             return;
                         }
                         self.as_mut().rust_mut().opaque_property = value;
@@ -265,7 +265,7 @@ mod tests {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "unsafe_property"]
                     pub fn unsafe_property(&self) -> &*mut T {
-                        &self.rust().unsafe_property
+                        &self.unsafe_property
                     }
                 }
             },
@@ -299,7 +299,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "unsafe_property"]
                     pub fn set_unsafe_property(mut self: Pin<&mut Self>, value: *mut T) {
-                        if self.rust().unsafe_property == value {
+                        if self.unsafe_property == value {
                             return;
                         }
                         self.as_mut().rust_mut().unsafe_property = value;
