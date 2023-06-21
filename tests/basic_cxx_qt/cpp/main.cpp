@@ -260,6 +260,21 @@ private Q_SLOTS:
 
   // Tests that we can build an empty QObject end to end
   void testEmpty() { Empty empty; }
+
+  void testThrowException()
+  {
+    cxx_qt::my_object::MyObject obj;
+    bool thrown = false;
+    try {
+      obj.throwException();
+      Q_UNREACHABLE();
+    } catch (const rust::Error& e) {
+      QCOMPARE(e.what(), "RustException");
+      thrown = true;
+    }
+
+    QCOMPARE(thrown, true);
+  }
 };
 
 QTEST_MAIN(CxxQtTest)

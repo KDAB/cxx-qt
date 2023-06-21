@@ -75,6 +75,16 @@ mod ffi {
         #[cxx_name = "invokableVirtualWrapper"]
         fn invokable_virtual(self: &MyObject);
     }
+    extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "invokableResultTupleWrapper"]
+        fn invokable_result_tuple(self: &MyObject) -> Result<()>;
+    }
+    extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "invokableResultTypeWrapper"]
+        fn invokable_result_type(self: &MyObject) -> Result<String>;
+    }
     unsafe extern "C++" {
         #[doc(hidden)]
         type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
