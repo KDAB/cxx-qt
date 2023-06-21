@@ -6,16 +6,6 @@ mod inheritance {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
     }
-    impl qobject::MyObject {
-        #[qinvokable(cxx_override)]
-        pub fn data(&self, _index: &QModelIndex, _role: i32) -> QVariant {
-            QVariant::default()
-        }
-        #[qinvokable(cxx_override)]
-        pub fn has_children(&self, _parent: &QModelIndex) -> bool {
-            false
-        }
-    }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/qt.h");
@@ -45,6 +35,19 @@ mod inheritance {
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
+    extern "Rust" {
+        #[cxx_name = "dataWrapper"]
+        fn data_wrapper(
+            self: &MyObject,
+            cpp: &MyObjectQt,
+            _index: &QModelIndex,
+            _role: i32,
+        ) -> QVariant;
+    }
+    extern "Rust" {
+        #[cxx_name = "hasChildrenWrapper"]
+        fn has_children_wrapper(self: &MyObject, cpp: &MyObjectQt, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
         #[doc = " Inherited hasChildren from the base class"]
@@ -83,6 +86,27 @@ pub mod cxx_qt_inheritance {
     #[derive(Default)]
     pub struct MyObject {
         data: Vec<i32>,
+    }
+    impl MyObject {
+        #[doc(hidden)]
+        pub fn data_wrapper(
+            self: &MyObject,
+            cpp: &MyObjectQt,
+            _index: &QModelIndex,
+            _role: i32,
+        ) -> QVariant {
+            return cpp.data(_index, _role);
+        }
+    }
+    impl MyObject {
+        #[doc(hidden)]
+        pub fn has_children_wrapper(
+            self: &MyObject,
+            cpp: &MyObjectQt,
+            _parent: &QModelIndex,
+        ) -> bool {
+            return cpp.has_children(_parent);
+        }
     }
     impl cxx_qt::Locking for MyObjectQt {}
     impl cxx_qt::CxxQtType for MyObjectQt {

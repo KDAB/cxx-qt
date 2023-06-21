@@ -85,39 +85,12 @@ pub mod ffi {
         property_name: i32,
     }
 
-    impl Default for MyObject {
-        fn default() -> Self {
-            Self { property_name: 32 }
-        }
-    }
-
     unsafe extern "RustQt" {
         #[qsignal]
         fn ready(self: Pin<&mut qobject::MyObject>);
-    }
-
-    impl qobject::MyObject {
-        pub const MY_CONSTANT: i32 = 42; // the answer to everything ;)
-
-        type MyType = i32;
-
-        my_macro!();
 
         #[qinvokable]
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from Rust!");
-            self.as_mut().set_property_name(5);
-        }
-    }
-
-    impl MyObject {
-        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
-            optional
-        }
-
-        fn test_unknown(&self, unknown: MyType) -> MyType {
-            unknown
-        }
+        fn invokable_name(self: Pin<&mut qobject::MyObject>);
     }
 
     impl MyTrait for MyObject {
@@ -134,23 +107,12 @@ pub mod ffi {
 
     unsafe impl !cxx_qt::Locking for qobject::SecondObject {}
 
-    impl Default for SecondObject {
-        fn default() -> Self {
-            Self { property_name: 32 }
-        }
-    }
-
     unsafe extern "RustQt" {
         #[my_attribute]
         #[qsignal]
         fn ready(self: Pin<&mut qobject::SecondObject>);
-    }
 
-    impl qobject::SecondObject {
         #[qinvokable]
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from second Rust!");
-            self.as_mut().set_property_name(5);
-        }
+        fn invokable_name(self: Pin<&mut qobject::SecondObject>);
     }
 }

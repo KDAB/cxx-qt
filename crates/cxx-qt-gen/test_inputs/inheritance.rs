@@ -26,15 +26,11 @@ mod inheritance {
         unsafe fn fetch_more(self: Pin<&mut qobject::MyObject>, index: &QModelIndex);
     }
 
-    impl qobject::MyObject {
+    unsafe extern "RustQt" {
         #[qinvokable(cxx_override)]
-        pub fn data(&self, _index: &QModelIndex, _role: i32) -> QVariant {
-            QVariant::default()
-        }
+        fn data(self: &qobject::MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
 
         #[qinvokable(cxx_override)]
-        pub fn has_children(&self, _parent: &QModelIndex) -> bool {
-            false
-        }
+        fn has_children(self: &qobject::MyObject, _parent: &QModelIndex) -> bool;
     }
 }

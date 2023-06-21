@@ -5,19 +5,6 @@ mod ffi {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
     }
-    impl qobject::MyObject {
-        #[qinvokable]
-        pub fn invokable(self: Pin<&mut Self>) {
-            self.as_mut().on_data_changed(
-                |_sender, _first, _second, _third, _fourth| {
-                    println!("DataChanged");
-                },
-                cxx_qt_lib::ConnectionType::AutoConnection,
-            );
-            self.as_mut()
-                .data_changed(1, Opaque::new(), QPoint::new(1, 2), &QPoint::new(1, 2));
-        }
-    }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/qt.h");
@@ -47,6 +34,10 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "MyObjectRust"]
         type MyObject;
+    }
+    extern "Rust" {
+        #[cxx_name = "invokableWrapper"]
+        fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
@@ -146,6 +137,12 @@ pub mod cxx_qt_ffi {
     type UniquePtr<T> = cxx::UniquePtr<T>;
     #[derive(Default)]
     pub struct MyObject;
+    impl MyObject {
+        #[doc(hidden)]
+        pub fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
+            cpp.invokable();
+        }
+    }
     impl MyObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]

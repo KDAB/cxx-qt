@@ -29,23 +29,12 @@ mod ffi {
             third: QPoint,
             fourth: &'a QPoint,
         );
+
+        #[qinvokable]
+        fn invokable(self: Pin<&mut qobject::MyObject>);
     }
 
     #[cxx_qt::qobject]
     #[derive(Default)]
     pub struct MyObject;
-
-    impl qobject::MyObject {
-        #[qinvokable]
-        pub fn invokable(self: Pin<&mut Self>) {
-            self.as_mut().on_data_changed(
-                |_sender, _first, _second, _third, _fourth| {
-                    println!("DataChanged");
-                },
-                cxx_qt_lib::ConnectionType::AutoConnection,
-            );
-            self.as_mut()
-                .data_changed(1, Opaque::new(), QPoint::new(1, 2), &QPoint::new(1, 2));
-        }
-    }
 }

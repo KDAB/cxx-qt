@@ -23,6 +23,13 @@ MyObject::unsafeRustMut()
   return *m_rustObj;
 }
 
+void
+MyObject::invokable()
+{
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  m_rustObj->invokableWrapper(*this);
+}
+
 ::QMetaObject::Connection
 MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
                        ::Qt::ConnectionType type)

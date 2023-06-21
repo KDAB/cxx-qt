@@ -44,23 +44,6 @@ pub mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
     }
-    impl qobject::MyObject {
-        pub const MY_CONSTANT: i32 = 42;
-        type MyType = i32;
-        my_macro!();
-        #[qinvokable]
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from Rust!");
-            self.as_mut().set_property_name(5);
-        }
-    }
-    impl qobject::SecondObject {
-        #[qinvokable]
-        pub fn invokable_name(self: Pin<&mut Self>) {
-            println!("Bye from second Rust!");
-            self.as_mut().set_property_name(5);
-        }
-    }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
         include!("cxx-qt-lib/qt.h");
@@ -115,6 +98,10 @@ pub mod ffi {
             func: fn(Pin<&mut MyObjectQt>),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
+    }
+    extern "Rust" {
+        #[cxx_name = "invokableNameWrapper"]
+        fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
@@ -186,6 +173,10 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
+    extern "Rust" {
+        #[cxx_name = "invokableNameWrapper"]
+        fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>);
+    }
     unsafe extern "C++" {
         #[my_attribute]
         #[rust_name = "ready"]
@@ -228,19 +219,6 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     use super::MyTrait;
-    impl Default for MyObject {
-        fn default() -> Self {
-            Self { property_name: 32 }
-        }
-    }
-    impl MyObject {
-        fn test_angled(&self, optional: Option<bool>) -> Option<bool> {
-            optional
-        }
-        fn test_unknown(&self, unknown: MyType) -> MyType {
-            unknown
-        }
-    }
     impl MyTrait for MyObject {
         fn my_func() -> String {
             "Hello".to_owned()
@@ -293,6 +271,12 @@ pub mod cxx_qt_ffi {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
         }
     }
+    impl MyObject {
+        #[doc(hidden)]
+        pub fn invokable_name_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
+            cpp.invokable_name();
+        }
+    }
     impl MyObjectQt {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
@@ -320,11 +304,6 @@ pub mod cxx_qt_ffi {
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
         std::default::Default::default()
-    }
-    impl Default for SecondObject {
-        fn default() -> Self {
-            Self { property_name: 32 }
-        }
     }
     pub struct SecondObject {
         property_name: i32,
@@ -371,6 +350,12 @@ pub mod cxx_qt_ffi {
             func: fn(Pin<&mut SecondObjectQt>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
+        }
+    }
+    impl SecondObject {
+        #[doc(hidden)]
+        pub fn invokable_name_wrapper(self: &mut SecondObject, cpp: Pin<&mut SecondObjectQt>) {
+            cpp.invokable_name();
         }
     }
     impl SecondObjectQt {
