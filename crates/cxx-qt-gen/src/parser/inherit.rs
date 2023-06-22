@@ -34,7 +34,7 @@ impl ParsedInheritedMethod {
         if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
             return Err(Error::new(
                 method.span(),
-                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"C++\"` block!",
+                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
             ));
         }
 
