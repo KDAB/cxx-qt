@@ -20,7 +20,7 @@ void
 MyObject::invokable()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableWrapper(*this);
+  invokableWrapper();
 }
 
 ::QMetaObject::Connection

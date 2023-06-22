@@ -34,8 +34,9 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
+        fn invokable(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
@@ -134,12 +135,6 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>) {
-            cpp.invokable();
-        }
-    }
     impl MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]

@@ -67,11 +67,11 @@ pub fn generate_cpp_invokables(
             .collect::<Result<Vec<CppNamedType>>>()?;
 
         let body = format!(
-            "m_rustObj->{ident}({parameter_names})",
+            "{ident}({parameter_names})",
             ident = idents.wrapper.cpp,
-            parameter_names = vec!["*this"]
-                .into_iter()
-                .chain(parameters.iter().map(|parameter| parameter.ident.as_str()))
+            parameter_names = parameters
+                .iter()
+                .map(|parameter| parameter.ident.as_str())
                 .collect::<Vec<&str>>()
                 .join(", "),
         );
@@ -140,6 +140,23 @@ pub fn generate_cpp_invokables(
                 },
             },
         });
+
+        // Note that we are generating a header to match the extern "Rust" method
+        // in Rust for our invokable.
+        //
+        // CXX generates the source and we just need the matching header.
+        //
+        // TODO: will this always be noexcept ? If the return type is Result is this then removed?
+        generated.private_methods.push(CppFragment::Header(format!(
+            "{return_cxx_ty} {ident}({parameter_types}){is_const} noexcept;",
+            return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
+                return_cxx_ty.as_cxx_ty()
+            } else {
+                "void"
+            },
+            ident = idents.wrapper.cpp,
+            parameter_types = parameter_types,
+        )));
     }
 
     Ok(generated)
@@ -234,7 +251,7 @@ mod tests {
             MyObject::voidInvokable() const
             {
                 // ::std::lock_guard
-                m_rustObj->voidInvokableWrapper(*this);
+                voidInvokableWrapper();
             }
             "#}
         );
@@ -255,7 +272,7 @@ mod tests {
             MyObject::trivialInvokable(::std::int32_t param) const
             {
                 // ::std::lock_guard
-                return m_rustObj->trivialInvokableWrapper(*this, param);
+                return trivialInvokableWrapper(param);
             }
             "#}
         );
@@ -276,7 +293,7 @@ mod tests {
             MyObject::opaqueInvokable(QColor const& param)
             {
                 // ::std::lock_guard
-                return m_rustObj->opaqueInvokableWrapper(*this, param);
+                return opaqueInvokableWrapper(param);
             }
             "#}
         );
@@ -297,9 +314,49 @@ mod tests {
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
                 // ::std::lock_guard
-                return m_rustObj->specifiersInvokableWrapper(*this, param);
+                return specifiersInvokableWrapper(param);
             }
             "#}
+        );
+
+        // private methods
+        assert_eq!(generated.private_methods.len(), 4);
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(header, "void voidInvokableWrapper() const noexcept;");
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "::std::int32_t trivialInvokableWrapper(::std::int32_t param) const noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[2] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "::std::unique_ptr<QColor> opaqueInvokableWrapper(QColor const& param) noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[3] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "::std::int32_t specifiersInvokableWrapper(::std::int32_t param) const noexcept;"
         );
     }
 
@@ -350,9 +407,22 @@ mod tests {
             MyObject::trivialInvokable(A1 param) const
             {
                 // ::std::lock_guard
-                return m_rustObj->trivialInvokableWrapper(*this, param);
+                return trivialInvokableWrapper(param);
             }
             "#}
+        );
+
+        // private methods
+        assert_eq!(generated.private_methods.len(), 1);
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "B2 trivialInvokableWrapper(A1 param) const noexcept;"
         );
     }
 }

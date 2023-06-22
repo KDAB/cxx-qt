@@ -24,14 +24,14 @@ void
 MyObject::invokable() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableWrapper(*this);
+  invokableWrapper();
 }
 
 void
 MyObject::invokableMutable()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableMutableWrapper(*this);
+  invokableMutableWrapper();
 }
 
 void
@@ -40,42 +40,42 @@ MyObject::invokableParameters(QColor const& opaque,
                               ::std::int32_t primitive) const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableParametersWrapper(*this, opaque, trivial, primitive);
+  invokableParametersWrapper(opaque, trivial, primitive);
 }
 
 ::std::unique_ptr<Opaque>
 MyObject::invokableReturnOpaque()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->invokableReturnOpaqueWrapper(*this);
+  return invokableReturnOpaqueWrapper();
 }
 
 QPoint
 MyObject::invokableReturnTrivial()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->invokableReturnTrivialWrapper(*this);
+  return invokableReturnTrivialWrapper();
 }
 
 void
 MyObject::invokableFinal() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableFinalWrapper(*this);
+  invokableFinalWrapper();
 }
 
 void
 MyObject::invokableOverride() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableOverrideWrapper(*this);
+  invokableOverrideWrapper();
 }
 
 void
 MyObject::invokableVirtual() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableVirtualWrapper(*this);
+  invokableVirtualWrapper();
 }
 
 static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),

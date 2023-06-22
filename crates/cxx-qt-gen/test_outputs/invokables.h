@@ -40,6 +40,16 @@ public:
   explicit MyObject(::std::int32_t arg0, QObject* arg1);
 
 private:
+  void invokableWrapper() const noexcept;
+  void invokableMutableWrapper() noexcept;
+  void invokableParametersWrapper(QColor const& opaque,
+                                  QPoint const& trivial,
+                                  ::std::int32_t primitive) const noexcept;
+  ::std::unique_ptr<Opaque> invokableReturnOpaqueWrapper() noexcept;
+  QPoint invokableReturnTrivialWrapper() noexcept;
+  void invokableFinalWrapper() const noexcept;
+  void invokableOverrideWrapper() const noexcept;
+  void invokableVirtualWrapper() const noexcept;
   explicit MyObject(
     cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
 

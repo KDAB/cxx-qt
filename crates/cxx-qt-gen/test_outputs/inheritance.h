@@ -38,6 +38,11 @@ public:
   explicit MyObject(QObject* parent = nullptr);
 
 private:
+  QVariant dataWrapper(QModelIndex const& _index,
+                       ::std::int32_t _role) const noexcept;
+  bool hasChildrenWrapper(QModelIndex const& _parent) const noexcept;
+
+private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };

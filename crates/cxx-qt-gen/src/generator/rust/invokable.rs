@@ -12,7 +12,7 @@ use crate::{
 };
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Result, ReturnType};
+use syn::Result;
 
 pub fn generate_rust_invokables(
     invokables: &Vec<ParsedQInvokable>,
@@ -20,26 +20,21 @@ pub fn generate_rust_invokables(
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut generated = GeneratedRustQObjectBlocks::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
-    let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
 
     for invokable in invokables {
         let idents = QInvokableName::from(invokable);
         let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
-        let wrapper_ident_rust = &idents.wrapper.rust;
         let invokable_ident_rust = &idents.name.rust;
 
+        // TODO: once we aren't using qobject::T in the extern "RustQt"
+        // we can just pass through the original ExternFn block and add the attribute?
         let cpp_struct = if invokable.mutable {
-            quote! {  Pin<&mut #cpp_class_name_rust> }
+            quote! { Pin<&mut #cpp_class_name_rust> }
         } else {
             quote! { &#cpp_class_name_rust }
         };
-        let rust_struct = if invokable.mutable {
-            quote! {  &mut #rust_struct_name_rust }
-        } else {
-            quote! {  &#rust_struct_name_rust }
-        };
         let parameter_signatures = if invokable.parameters.is_empty() {
-            quote! { self: #rust_struct, cpp: #cpp_struct }
+            quote! { self: #cpp_struct }
         } else {
             let parameters = invokable
                 .parameters
@@ -50,14 +45,9 @@ pub fn generate_rust_invokables(
                     quote! { #ident: #ty }
                 })
                 .collect::<Vec<TokenStream>>();
-            quote! { self: #rust_struct, cpp: #cpp_struct, #(#parameters),* }
+            quote! { self: #cpp_struct, #(#parameters),* }
         };
         let return_type = &invokable.method.sig.output;
-        let has_return = if matches!(invokable.method.sig.output, ReturnType::Default) {
-            quote! {}
-        } else {
-            quote! { return }
-        };
 
         let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
@@ -65,31 +55,19 @@ pub fn generate_rust_invokables(
             std::mem::swap(&mut unsafe_call, &mut unsafe_block);
         }
 
-        let parameter_names = invokable
-            .parameters
-            .iter()
-            .map(|parameter| parameter.ident.clone())
-            .collect::<Vec<Ident>>();
-
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
-                // TODO: is an unsafe block valid?
+                // Note: extern "Rust" block does not need to be unsafe
                 extern "Rust" {
+                    // Note that we are exposing a Rust method on the C++ type to C++
+                    //
+                    // CXX ends up generating the source, then we generate the matching header.
+                    #[doc(hidden)]
                     #[cxx_name = #wrapper_ident_cpp]
-                    #unsafe_call fn #wrapper_ident_rust(#parameter_signatures) #return_type;
+                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
             }],
-            implementation: vec![
-                // TODO: not all methods have a wrapper
-                quote! {
-                    impl #rust_struct_name_rust {
-                        #[doc(hidden)]
-                        pub #unsafe_call fn #wrapper_ident_rust(#parameter_signatures) #return_type {
-                            #has_return cpp.#invokable_ident_rust(#(#parameter_names),*);
-                        }
-                    }
-                },
-            ],
+            implementation: vec![],
         };
 
         generated
@@ -164,26 +142,16 @@ mod tests {
         let generated = generate_rust_invokables(&invokables, &qobject_idents).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 4);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 0);
 
         // void_invokable
         assert_tokens_eq(
             &generated.cxx_mod_contents[0],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "voidInvokableWrapper"]
-                    fn void_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject);
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[0],
-            quote! {
-                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn void_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject) {
-                        cpp.void_invokable();
-                    }
+                    #[cxx_name = "voidInvokableWrapper"]
+                    fn void_invokable(self: &MyObject);
                 }
             },
         );
@@ -193,19 +161,9 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "trivialInvokableWrapper"]
-                    fn trivial_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: i32) -> i32;
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[1],
-            quote! {
-                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn trivial_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: i32) -> i32 {
-                        return cpp.trivial_invokable(param);
-                    }
+                    #[cxx_name = "trivialInvokableWrapper"]
+                    fn trivial_invokable(self: &MyObject, param: i32) -> i32;
                 }
             },
         );
@@ -215,19 +173,9 @@ mod tests {
             &generated.cxx_mod_contents[2],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "opaqueInvokableWrapper"]
-                    fn opaque_invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[2],
-            quote! {
-                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn opaque_invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor> {
-                        return cpp.opaque_invokable(param);
-                    }
+                    #[cxx_name = "opaqueInvokableWrapper"]
+                    fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
                 }
             },
         );
@@ -237,19 +185,9 @@ mod tests {
             &generated.cxx_mod_contents[3],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "unsafeInvokableWrapper"]
-                    unsafe fn unsafe_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: *mut T) -> *mut T;
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[3],
-            quote! {
-                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub unsafe fn unsafe_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: *mut T) -> *mut T {
-                        return cpp.unsafe_invokable(param);
-                    }
+                    #[cxx_name = "unsafeInvokableWrapper"]
+                    unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T;
                 }
             },
         );

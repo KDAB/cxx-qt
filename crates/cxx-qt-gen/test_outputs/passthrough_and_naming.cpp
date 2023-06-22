@@ -49,7 +49,7 @@ void
 MyObject::invokableName()
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->invokableNameWrapper(*this);
+  invokableNameWrapper();
 }
 
 ::QMetaObject::Connection
@@ -122,7 +122,7 @@ void
 SecondObject::invokableName()
 {
 
-  m_rustObj->invokableNameWrapper(*this);
+  invokableNameWrapper();
 }
 
 ::QMetaObject::Connection

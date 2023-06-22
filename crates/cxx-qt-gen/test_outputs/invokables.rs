@@ -36,48 +36,44 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &MyObjectRust, cpp: &MyObject);
+        fn invokable(self: &MyObject);
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableMutableWrapper"]
-        fn invokable_mutable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
+        fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableParametersWrapper"]
-        fn invokable_parameters_wrapper(
-            self: &MyObjectRust,
-            cpp: &MyObject,
-            opaque: &QColor,
-            trivial: &QPoint,
-            primitive: i32,
-        );
+        fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableReturnOpaqueWrapper"]
-        fn invokable_return_opaque_wrapper(
-            self: &mut MyObjectRust,
-            cpp: Pin<&mut MyObject>,
-        ) -> UniquePtr<Opaque>;
+        fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableReturnTrivialWrapper"]
-        fn invokable_return_trivial_wrapper(
-            self: &mut MyObjectRust,
-            cpp: Pin<&mut MyObject>,
-        ) -> QPoint;
+        fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableFinalWrapper"]
-        fn invokable_final_wrapper(self: &MyObjectRust, cpp: &MyObject);
+        fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableOverrideWrapper"]
-        fn invokable_override_wrapper(self: &MyObjectRust, cpp: &MyObject);
+        fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableVirtualWrapper"]
-        fn invokable_virtual_wrapper(self: &MyObjectRust, cpp: &MyObject);
+        fn invokable_virtual(self: &MyObject);
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -174,66 +170,6 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_wrapper(self: &MyObjectRust, cpp: &MyObject) {
-            cpp.invokable();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_mutable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>) {
-            cpp.invokable_mutable();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_parameters_wrapper(
-            self: &MyObjectRust,
-            cpp: &MyObject,
-            opaque: &QColor,
-            trivial: &QPoint,
-            primitive: i32,
-        ) {
-            cpp.invokable_parameters(opaque, trivial, primitive);
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_return_opaque_wrapper(
-            self: &mut MyObjectRust,
-            cpp: Pin<&mut MyObject>,
-        ) -> UniquePtr<Opaque> {
-            return cpp.invokable_return_opaque();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_return_trivial_wrapper(
-            self: &mut MyObjectRust,
-            cpp: Pin<&mut MyObject>,
-        ) -> QPoint {
-            return cpp.invokable_return_trivial();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_final_wrapper(self: &MyObjectRust, cpp: &MyObject) {
-            cpp.invokable_final();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_override_wrapper(self: &MyObjectRust, cpp: &MyObject) {
-            cpp.invokable_override();
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_virtual_wrapper(self: &MyObjectRust, cpp: &MyObject) {
-            cpp.invokable_virtual();
-        }
-    }
     impl cxx_qt::Threading for MyObject {
         type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
         type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
