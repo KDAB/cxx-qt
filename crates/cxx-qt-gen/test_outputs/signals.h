@@ -51,6 +51,9 @@ public:
   explicit MyObject(QObject* parent = nullptr);
 
 private:
+  void invokableWrapper() noexcept;
+
+private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };

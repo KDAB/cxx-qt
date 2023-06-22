@@ -18,14 +18,14 @@ QVariant
 MyObject::data(QModelIndex const& _index, ::std::int32_t _role) const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->dataWrapper(*this, _index, _role);
+  return dataWrapper(_index, _role);
 }
 
 bool
 MyObject::hasChildren(QModelIndex const& _parent) const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->hasChildrenWrapper(*this, _parent);
+  return hasChildrenWrapper(_parent);
 }
 
 MyObject::MyObject(QObject* parent)

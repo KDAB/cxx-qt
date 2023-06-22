@@ -98,8 +98,9 @@ pub mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableNameWrapper"]
-        fn invokable_name_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
+        fn invokable_name(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
@@ -170,8 +171,9 @@ pub mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableNameWrapper"]
-        fn invokable_name_wrapper(self: &mut SecondObjectRust, cpp: Pin<&mut SecondObject>);
+        fn invokable_name(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
         #[my_attribute]
@@ -260,12 +262,6 @@ pub mod cxx_qt_ffi {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_name_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>) {
-            cpp.invokable_name();
-        }
-    }
     impl MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
@@ -343,12 +339,6 @@ pub mod cxx_qt_ffi {
             func: fn(Pin<&mut SecondObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
-        }
-    }
-    impl SecondObjectRust {
-        #[doc(hidden)]
-        pub fn invokable_name_wrapper(self: &mut SecondObjectRust, cpp: Pin<&mut SecondObject>) {
-            cpp.invokable_name();
         }
     }
     impl SecondObject {

@@ -35,18 +35,14 @@ mod inheritance {
         type MyObjectRust;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "dataWrapper"]
-        fn data_wrapper(
-            self: &MyObjectRust,
-            cpp: &MyObject,
-            _index: &QModelIndex,
-            _role: i32,
-        ) -> QVariant;
+        fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
     }
     extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "hasChildrenWrapper"]
-        fn has_children_wrapper(self: &MyObjectRust, cpp: &MyObject, _parent: &QModelIndex)
-            -> bool;
+        fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
         #[doc = " Inherited hasChildren from the base class"]
@@ -83,27 +79,6 @@ pub mod cxx_qt_inheritance {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn data_wrapper(
-            self: &MyObjectRust,
-            cpp: &MyObject,
-            _index: &QModelIndex,
-            _role: i32,
-        ) -> QVariant {
-            return cpp.data(_index, _role);
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn has_children_wrapper(
-            self: &MyObjectRust,
-            cpp: &MyObject,
-            _parent: &QModelIndex,
-        ) -> bool {
-            return cpp.has_children(_parent);
-        }
-    }
     impl cxx_qt::Locking for MyObject {}
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {

@@ -46,6 +46,9 @@ public:
   explicit MyObject(QObject* parent = nullptr);
 
 private:
+  void invokableNameWrapper() noexcept;
+
+private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
@@ -80,6 +83,9 @@ public:
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(SecondObject&)> func,
                                          ::Qt::ConnectionType type);
   explicit SecondObject(QObject* parent = nullptr);
+
+private:
+  void invokableNameWrapper() noexcept;
 
 private:
   ::rust::Box<SecondObjectRust> m_rustObj;
