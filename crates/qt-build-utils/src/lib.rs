@@ -254,7 +254,7 @@ impl QtBuild {
         }
 
         // Fedora 36 renames Qt5's qmake to qmake-qt5
-        let candidate_executable_names = ["qmake6", "qmake-qt5", "qmake"];
+        let candidate_executable_names = ["qmake", "qmake6", "qmake-qt5"];
         for (index, executable_name) in candidate_executable_names.iter().enumerate() {
             match verify_candidate(executable_name) {
                 Ok((executable_name, version)) => {
@@ -267,10 +267,9 @@ impl QtBuild {
                         qt_modules,
                     });
                 }
-                // If QT_VERSION_MAJOR is specified, it is expected that one of the versioned
-                // executable names will not match, so the unversioned `qmake` needs to be
-                // attempted last and QtVersionMajorDoesNotMatch should only be returned if
-                // none of the candidate executable names match.
+                // If QT_VERSION_MAJOR is specified, it is expected that some of the versioned
+                // executable names will not match. QtVersionMajorDoesNotMatch should only be
+                // returned if none of the candidates match.
                 Err(QtBuildError::QtVersionMajorDoesNotMatch {
                     qmake_version,
                     qt_version_major,
