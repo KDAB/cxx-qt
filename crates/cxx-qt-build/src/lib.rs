@@ -11,8 +11,6 @@
 //! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
-extern crate version_check as rustc;
-
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
@@ -391,12 +389,11 @@ impl CxxQtBuilder {
         // Ensure that the linker is setup correctly for Cargo builds
         qt_build_utils::setup_linker();
 
-        let out_dir = env::var("OUT_DIR").unwrap();
         // The include directory needs to be namespaced by crate name when exporting for a C++ build system,
         // but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
         let header_root = match env::var("CXXQT_EXPORT_DIR") {
             Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
-            Err(_) => out_dir,
+            Err(_) => env::var("OUT_DIR").unwrap(),
         };
         let generated_header_dir = format!("{header_root}/cxx-qt-gen");
 
@@ -428,7 +425,7 @@ impl CxxQtBuilder {
         cc_builder_whole_archive.link_lib_modifier("+whole-archive");
 
         // Ensure we are not using rustc 1.69
-        if let Some(version) = rustc::Version::read() {
+        if let Some(version) = version_check::Version::read() {
             let (major, minor, _) = version.to_mmp();
             if major == 1 && minor == 69 {
                 // rustc 1.69 had a regression where +whole-archive wouldn't
@@ -448,6 +445,7 @@ impl CxxQtBuilder {
         }
 
         for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
+            // Note, ensure our settings stay in sync across cxx-qt-build and cxx-qt-lib
             builder.cpp(true);
             // MSVC
             builder.flag_if_supported("/std:c++17");
@@ -525,6 +523,36 @@ impl CxxQtBuilder {
             cc_builder_whole_archive.file(qtbuild.qrc(&qrc_file));
             cc_builder_whole_archive_files_added = true;
         }
+
+        // If we are using Qt 5 then write the std_types source
+        // This registers std numbers as a type for use in QML
+        //
+        // Note that we need this to be compiled into the whole_archive builder
+        // as they are stored in statics in the source.
+        //
+        // TODO: once +whole-archive and +bundle are allowed together in rlibs
+        // we should be able to move this into cxx-qt so that it's only built
+        // once rather than for every cxx-qt-build. When this happens also
+        // ensure that in a multi project that numbers work everywhere.
+        //
+        // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
+        // as path for cc::Build rather than copying the .cpp file
+        //
+        // https://github.com/rust-lang/rust/issues/108081
+        // https://github.com/KDAB/cxx-qt/pull/598
+        if qtbuild.version().major == 5 {
+            let std_types_contents = include_str!("std_types_qt5.cpp");
+            let std_types_path = format!(
+                "{out_dir}/std_types_qt5.cpp",
+                out_dir = env::var("OUT_DIR").unwrap()
+            );
+            let mut source =
+                File::create(&std_types_path).expect("Could not create std_types source");
+            write!(source, "{std_types_contents}").expect("Could not write std_types source");
+            cc_builder_whole_archive.file(&std_types_path);
+            cc_builder_whole_archive_files_added = true;
+        }
+
         if cc_builder_whole_archive_files_added {
             cc_builder_whole_archive.compile("qt-static-initializers");
         }
