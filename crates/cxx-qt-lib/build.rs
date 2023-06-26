@@ -232,8 +232,6 @@ fn main() {
     }
     builder.file("src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
-    builder.file("src/std_types.cpp");
-    println!("cargo:rerun-if-changed=src/std_types.cpp");
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     // Write this library's manually written C++ headers to files and add them to include paths
@@ -251,11 +249,14 @@ fn main() {
         builder.define("CXX_QT_QML_FEATURE", None);
     }
 
+    // Note, ensure our settings stay in sync across cxx-qt-build and cxx-qt-lib
+    builder.cpp(true);
     // MSVC
     builder.flag_if_supported("/std:c++17");
     builder.flag_if_supported("/Zc:__cplusplus");
     builder.flag_if_supported("/permissive-");
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
+
     builder.compile("cxx-qt-lib");
 }
