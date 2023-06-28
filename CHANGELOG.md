@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[qinvokable]` is now defined as a signature in `extern "RustQt"`
 - `rust_mut` is now safe to call
 
+### Fixed
+
+- Do not use -bundle otherwise CMake builds are missing qt-static-initalizers (note this is broken in rustc 1.69)
+
 ### Removed
 
 - Removed support for `cxx_type` and `cxx_return_type` and related conversion methods.

@@ -11,6 +11,8 @@
 //! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
+extern crate version_check as rustc;
+
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
@@ -424,10 +426,27 @@ impl CxxQtBuilder {
         // to avoid bloating the binary.
         let mut cc_builder_whole_archive = cc::Build::new();
         cc_builder_whole_archive.link_lib_modifier("+whole-archive");
-        // Workaround for spurious compiler error in Rust 1.69. The bug has been fixed, but keeping this
-        // workaround seems to be harmless.
-        // https://github.com/rust-lang/rust/issues/110912
-        cc_builder_whole_archive.link_lib_modifier("-bundle");
+
+        // Ensure we are not using rustc 1.69
+        if let Some(version) = rustc::Version::read() {
+            let (major, minor, _) = version.to_mmp();
+            if major == 1 && minor == 69 {
+                // rustc 1.69 had a regression where +whole-archive wouldn't
+                // work without specifying -bundle.
+                // https://github.com/rust-lang/rust/pull/110917
+                //
+                // However, we need to not have -bundle for qt-static-initializers to work
+                // with CMake builds, otherwise the statement below occurs where it's missing
+                // from the final binary.
+                //
+                // When building a staticlib -bundle means that the native static library
+                // is simply not included into the archive and some higher level build
+                // system will need to add it later during linking of the final binary.
+                // https://doc.rust-lang.org/rustc/command-line-arguments.html#option-l-link-lib
+                panic!("rustc 1.69.x is not supported with CXX-Qt due to a compiler bug.\nSee: https://github.com/rust-lang/rust/pull/110917\nPlease update your compiler using 'rustup update' or use an older compiler.");
+            }
+        }
+
         for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
             builder.cpp(true);
             // MSVC
