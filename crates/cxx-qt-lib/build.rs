@@ -6,6 +6,10 @@
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
     let feature_qt_qml_enabled = std::env::var("CARGO_FEATURE_QT_QML").is_ok();
+    let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
+        Ok(val) => val == "emscripten",
+        Err(_) => false,
+    };
 
     let mut qt_modules = vec!["Core".to_owned()];
     if feature_qt_gui_enabled {
@@ -31,7 +35,6 @@ fn main() {
         "core/qbytearray",
         "core/qcoreapplication",
         "core/qdate",
-        "core/qdatetime",
         "core/qhash/qhash_i32_qbytearray",
         "core/qhash/qhash_qstring_qvariant",
         "core/qlist/qlist_bool",
@@ -43,7 +46,6 @@ fn main() {
         "core/qlist/qlist_i64",
         "core/qlist/qlist_qbytearray",
         "core/qlist/qlist_qdate",
-        "core/qlist/qlist_qdatetime",
         "core/qlist/qlist_qmargins",
         "core/qlist/qlist_qmarginsf",
         "core/qlist/qlist_qpersistentmodelindex",
@@ -80,7 +82,6 @@ fn main() {
         "core/qset/qset_i64",
         "core/qset/qset_qbytearray",
         "core/qset/qset_qdate",
-        "core/qset/qset_qdatetime",
         "core/qset/qset_qpersistentmodelindex",
         "core/qset/qset_qstring",
         "core/qset/qset_qtime",
@@ -95,7 +96,6 @@ fn main() {
         "core/qstringlist",
         "core/qt",
         "core/qtime",
-        "core/qtimezone",
         "core/qurl",
         "core/qvariant/mod",
         "core/qvariant/qvariant_bool",
@@ -107,7 +107,6 @@ fn main() {
         "core/qvariant/qvariant_i64",
         "core/qvariant/qvariant_qbytearray",
         "core/qvariant/qvariant_qdate",
-        "core/qvariant/qvariant_qdatetime",
         "core/qvariant/qvariant_qmodelindex",
         "core/qvariant/qvariant_qpersistentmodelindex",
         "core/qvariant/qvariant_qpoint",
@@ -133,7 +132,6 @@ fn main() {
         "core/qvector/qvector_i64",
         "core/qvector/qvector_qbytearray",
         "core/qvector/qvector_qdate",
-        "core/qvector/qvector_qdatetime",
         "core/qvector/qvector_qmargins",
         "core/qvector/qvector_qmarginsf",
         "core/qvector/qvector_qpersistentmodelindex",
@@ -170,6 +168,17 @@ fn main() {
         rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
+    if !emscripten_targeted {
+        rust_bridges.extend([
+            "core/qdatetime",
+            "core/qtimezone",
+            "core/qlist/qlist_qdatetime",
+            "core/qset/qset_qdatetime",
+            "core/qvariant/qvariant_qdatetime",
+            "core/qvector/qvector_qdatetime",
+        ]);
+    }
+
     for bridge in &rust_bridges {
         println!("cargo:rerun-if-changed=src/{bridge}.rs");
     }
@@ -187,7 +196,6 @@ fn main() {
         "core/qbytearray",
         "core/qcoreapplication",
         "core/qdate",
-        "core/qdatetime",
         "core/qhash/qhash",
         "core/qlist/qlist",
         "core/qmap/qmap",
@@ -206,7 +214,6 @@ fn main() {
         "core/qstring",
         "core/qstringlist",
         "core/qtime",
-        "core/qtimezone",
         "core/qurl",
         "core/qvariant/qvariant",
         "core/qvector/qvector",
@@ -224,6 +231,10 @@ fn main() {
 
     if feature_qt_qml_enabled {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+    }
+
+    if !emscripten_targeted {
+        cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
     for cpp_file in &cpp_files {

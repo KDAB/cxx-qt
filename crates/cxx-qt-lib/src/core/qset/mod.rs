@@ -2,7 +2,9 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QByteArray, QDate, QDateTime, QPersistentModelIndex, QString, QTime, QUrl};
+#[cfg(not(target_os = "emscripten"))]
+use crate::QDateTime;
+use crate::{QByteArray, QDate, QPersistentModelIndex, QString, QTime, QUrl};
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
@@ -250,6 +252,7 @@ impl_qset_element!(i32, qset_i32, "QSet_i32");
 impl_qset_element!(i64, qset_i64, "QSet_i64");
 impl_qset_element!(QByteArray, qset_qbytearray, "QSet_QByteArray");
 impl_qset_element!(QDate, qset_qdate, "QSet_QDate");
+#[cfg(not(target_os = "emscripten"))]
 impl_qset_element!(QDateTime, qset_qdatetime, "QSet_QDateTime");
 impl_qset_element!(
     QPersistentModelIndex,
