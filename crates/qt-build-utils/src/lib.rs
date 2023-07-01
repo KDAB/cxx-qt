@@ -340,6 +340,36 @@ impl QtBuild {
         }
     }
 
+    /// Some prl files don't follow a consistent naming scheme. Try to find it by looking at all files in lib_path.
+    fn find_qt_module_prl(&self, lib_path: &str, prefix: &str, version_major: u32, qt_module: &str) -> String {
+        match Path::new(lib_path).read_dir() {
+            Ok(lib_dir) => {
+                for entry in lib_dir {
+                    match entry {
+                        Ok(entry) => {
+                            let file_name = entry.file_name();
+                            let file_name = file_name.to_string_lossy();
+                            let prl_file = file_name.ends_with(".prl");
+                            let matches_module = file_name
+                                .contains(&format!("Qt{}{}", self.version.major, qt_module));
+                            if prl_file && matches_module {
+                                return entry.path().display().to_string();
+                            }
+                        }
+                        Err(e) => {
+                            println!("cargo:warning=Could not read {} entry: {}", lib_path, e);
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                println!("cargo:warning=Could not read dir {}: {}", lib_path, e);
+            }
+        }
+
+        format!("{}/{}Qt{}{}.prl",lib_path, prefix, version_major, qt_module)
+    }
+
     /// Tell Cargo to link each Qt module.
     pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
         let prefix_path = self.qmake_query("QT_INSTALL_PREFIX");
@@ -378,10 +408,7 @@ impl QtBuild {
             } else {
                 (
                     format!("Qt{}{qt_module}", self.version.major),
-                    format!(
-                        "{}/{}Qt{}{}.prl",
-                        lib_path, prefix, self.version.major, qt_module
-                    ),
+                    self.find_qt_module_prl(&lib_path, prefix, self.version.major, qt_module),
                 )
             };
 
