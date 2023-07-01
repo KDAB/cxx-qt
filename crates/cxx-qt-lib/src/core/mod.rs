@@ -12,7 +12,9 @@ pub use qcoreapplication::QCoreApplication;
 mod qdate;
 pub use qdate::QDate;
 
+#[cfg(not(target_os = "emscripten"))]
 mod qdatetime;
+#[cfg(not(target_os = "emscripten"))]
 pub use qdatetime::QDateTime;
 
 mod qhash;
@@ -68,7 +70,9 @@ pub use qt::{
 mod qtime;
 pub use qtime::QTime;
 
+#[cfg(not(target_os = "emscripten"))]
 mod qtimezone;
+#[cfg(not(target_os = "emscripten"))]
 pub use qtimezone::QTimeZone;
 
 mod qpoint;

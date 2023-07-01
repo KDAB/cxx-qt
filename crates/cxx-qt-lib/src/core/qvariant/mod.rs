@@ -167,6 +167,7 @@ impl_qvariant_value!(crate::QByteArray, qvariant_qbytearray);
 #[cfg(feature = "qt_gui")]
 impl_qvariant_value!(crate::QColor, qvariant_qcolor);
 impl_qvariant_value!(crate::QDate, qvariant_qdate);
+#[cfg(not(target_os = "emscripten"))]
 impl_qvariant_value!(crate::QDateTime, qvariant_qdatetime);
 impl_qvariant_value!(crate::QModelIndex, qvariant_qmodelindex);
 impl_qvariant_value!(crate::QPersistentModelIndex, qvariant_qpersistentmodelindex);
