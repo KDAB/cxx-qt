@@ -28,3 +28,4 @@ version_check = "0.9"
 default = ["qt_gui", "qt_qml"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]
+include_qt_objects = ["qt-build-utils/include_qt_objects"]

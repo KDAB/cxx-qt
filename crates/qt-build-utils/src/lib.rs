@@ -306,8 +306,43 @@ impl QtBuild {
         .to_string()
     }
 
+    fn cargo_link_qt_library(
+        &self,
+        builder: &mut cc::Build,
+        name: &str,
+        prefix_path: &str,
+        lib_path: &str,
+        link_lib: &str,
+        prl_path: &str,
+    ) {
+        println!("cargo:rustc-link-lib={link_lib}");
+
+        match std::fs::read_to_string(&prl_path) {
+            Ok(prl) => {
+                for line in prl.lines() {
+                    if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
+                        parse_cflags::parse_libs_cflags(
+                            builder,
+                            name,
+                            line.replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
+                                .replace(r"$$[QT_INSTALL_PREFIX]", &prefix_path)
+                                .as_bytes(),
+                        );
+                    }
+                }
+            }
+            Err(e) => {
+                println!(
+                    "cargo:warning=Could not open {} file to read libraries to link: {}",
+                    &prl_path, e
+                );
+            }
+        }
+    }
+
     /// Tell Cargo to link each Qt module.
-    pub fn cargo_link_libraries(&self) {
+    pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
+        let prefix_path = self.qmake_query("QT_INSTALL_PREFIX");
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={lib_path}");
 
@@ -350,28 +385,14 @@ impl QtBuild {
                 )
             };
 
-            println!("cargo:rustc-link-lib={link_lib}");
-
-            match std::fs::read_to_string(&prl_path) {
-                Ok(prl) => {
-                    for line in prl.lines() {
-                        if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
-                            parse_cflags::parse_libs_cflags(
-                                &format!("Qt{}{qt_module}", self.version.major),
-                                line.replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
-                                    .replace(r"$$[QT_INSTALL_PREFIX]", &lib_path)
-                                    .as_bytes(),
-                            );
-                        }
-                    }
-                }
-                Err(e) => {
-                    println!(
-                        "cargo:warning=Could not open {} file to read libraries to link: {}",
-                        &prl_path, e
-                    );
-                }
-            }
+            self.cargo_link_qt_library(
+                builder,
+                &format!("Qt{}{qt_module}", self.version.major),
+                &prefix_path,
+                &lib_path,
+                &link_lib,
+                &prl_path,
+            );
         }
     }
 
