@@ -421,6 +421,23 @@ impl QtBuild {
                 &prl_path,
             );
         }
+
+        let emscripten_targeted = match env::var("CARGO_CFG_TARGET_OS") {
+            Ok(val) => val == "emscripten",
+            Err(_) => false,
+        };
+        if emscripten_targeted {
+            let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
+            println!("cargo:rustc-link-search={platforms_path}");
+            self.cargo_link_qt_library(
+                builder,
+                "qwasm",
+                &prefix_path,
+                &lib_path,
+                "qwasm",
+                &format!("{platforms_path}/libqwasm.prl"),
+            );
+        }
     }
 
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
