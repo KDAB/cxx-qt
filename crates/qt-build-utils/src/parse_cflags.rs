@@ -103,7 +103,7 @@ fn split_flags(link_args: &[u8]) -> Vec<String> {
     words
 }
 
-pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
+pub(crate) fn parse_libs_cflags(_builder: &mut cc::Build, name: &str, link_args: &[u8]) {
     let mut is_msvc = false;
     let target = env::var("TARGET");
     if let Ok(target) = &target {
@@ -167,13 +167,18 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8]) {
                     if let (Some(dir), Some(file_name), Ok(target)) =
                         (path.parent(), path.file_name(), &target)
                     {
-                        match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
-                            Some(lib_basename) => {
-                                println!("cargo:rustc-link-search={}", dir.display());
-                                println!("cargo:rustc-link-lib={lib_basename}");
-                            }
-                            None => {
-                                println!("cargo:warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
+                        if file_name.to_string_lossy().ends_with(".o") {
+                            #[cfg(feature = "include_qt_objects")]
+                            _builder.object(path);
+                        } else {
+                            match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
+                                Some(lib_basename) => {
+                                    println!("cargo:rustc-link-search={}", dir.display());
+                                    println!("cargo:rustc-link-lib={lib_basename}");
+                                }
+                                None => {
+                                    println!("cargo:warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
+                                }
                             }
                         }
                     }
