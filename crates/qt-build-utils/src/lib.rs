@@ -450,6 +450,8 @@ impl QtBuild {
     /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The return value contains the path to the generated C++ file, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file),
     /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_types](Self::register_qml_types).
+    ///
+    /// * uris - An iterator of uri's that the moc compiler is working on. This is required because some moc compilers require this to be specified.
     pub fn moc<'a>(
         &mut self,
         input_file: impl AsRef<Path>,
@@ -478,6 +480,7 @@ impl QtBuild {
             uri_args += &format!("-Muri={} ", uri);
         }
 
+        // FIXME when uris is empty the moc compiler fails
         let cmd = Command::new(self.moc_executable.as_ref().unwrap())
             .args([
                 &include_args,
