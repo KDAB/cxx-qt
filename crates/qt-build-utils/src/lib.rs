@@ -317,15 +317,15 @@ impl QtBuild {
     ) {
         println!("cargo:rustc-link-lib={link_lib}");
 
-        match std::fs::read_to_string(&prl_path) {
+        match std::fs::read_to_string(prl_path) {
             Ok(prl) => {
                 for line in prl.lines() {
                     if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
                         parse_cflags::parse_libs_cflags(
                             builder,
                             name,
-                            line.replace(r"$$[QT_INSTALL_LIBS]", &lib_path)
-                                .replace(r"$$[QT_INSTALL_PREFIX]", &prefix_path)
+                            line.replace(r"$$[QT_INSTALL_LIBS]", lib_path)
+                                .replace(r"$$[QT_INSTALL_PREFIX]", prefix_path)
                                 .as_bytes(),
                         );
                     }
@@ -341,7 +341,13 @@ impl QtBuild {
     }
 
     /// Some prl files don't follow a consistent naming scheme. Try to find it by looking at all files in lib_path.
-    fn find_qt_module_prl(&self, lib_path: &str, prefix: &str, version_major: u32, qt_module: &str) -> String {
+    fn find_qt_module_prl(
+        &self,
+        lib_path: &str,
+        prefix: &str,
+        version_major: u32,
+        qt_module: &str,
+    ) -> String {
         match Path::new(lib_path).read_dir() {
             Ok(lib_dir) => {
                 for entry in lib_dir {
@@ -367,7 +373,10 @@ impl QtBuild {
             }
         }
 
-        format!("{}/{}Qt{}{}.prl",lib_path, prefix, version_major, qt_module)
+        format!(
+            "{}/{}Qt{}{}.prl",
+            lib_path, prefix, version_major, qt_module
+        )
     }
 
     /// Tell Cargo to link each Qt module.
