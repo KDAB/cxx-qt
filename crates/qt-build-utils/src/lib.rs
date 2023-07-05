@@ -308,12 +308,12 @@ impl QtBuild {
 
     fn cargo_link_qt_library(
         &self,
-        builder: &mut cc::Build,
         name: &str,
         prefix_path: &str,
         lib_path: &str,
         link_lib: &str,
         prl_path: &str,
+        builder: &mut cc::Build,
     ) {
         println!("cargo:rustc-link-lib={link_lib}");
 
@@ -322,11 +322,11 @@ impl QtBuild {
                 for line in prl.lines() {
                     if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
                         parse_cflags::parse_libs_cflags(
-                            builder,
                             name,
                             line.replace(r"$$[QT_INSTALL_LIBS]", lib_path)
                                 .replace(r"$$[QT_INSTALL_PREFIX]", prefix_path)
                                 .as_bytes(),
+                            builder,
                         );
                     }
                 }
@@ -422,12 +422,12 @@ impl QtBuild {
             };
 
             self.cargo_link_qt_library(
-                builder,
                 &format!("Qt{}{qt_module}", self.version.major),
                 &prefix_path,
                 &lib_path,
                 &link_lib,
                 &prl_path,
+                builder,
             );
         }
 
@@ -439,12 +439,12 @@ impl QtBuild {
             let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
             println!("cargo:rustc-link-search={platforms_path}");
             self.cargo_link_qt_library(
-                builder,
                 "qwasm",
                 &prefix_path,
                 &lib_path,
                 "qwasm",
                 &format!("{platforms_path}/libqwasm.prl"),
+                builder,
             );
         }
     }
