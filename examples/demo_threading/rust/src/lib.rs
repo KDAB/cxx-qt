@@ -80,11 +80,9 @@ mod ffi {
         /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
         fn sensor_power(self: Pin<&mut qobject::EnergyUsage>, uuid: &QString) -> f64;
-
-        /// A Q_INVOKABLE which starts the TCP server
-        #[qinvokable]
-        fn start_server(self: Pin<&mut qobject::EnergyUsage>);
     }
+
+    impl cxx_qt::Constructor<()> for qobject::EnergyUsage {}
 }
 
 use crate::{
@@ -113,9 +111,29 @@ impl ffi::EnergyUsageQt {
             0.0
         }
     }
+}
+
+impl cxx_qt::Constructor<()> for qobject::EnergyUsage {
+    type NewArguments = ();
+    type BaseArguments = ();
+    type InitializeArguments = ();
+
+    fn route_arguments(
+        _args: (),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), (), ())
+    }
+
+    fn new((): ()) -> EnergyUsage {
+        EnergyUsage::default()
+    }
 
     /// A Q_INVOKABLE which starts the TCP server
-    fn start_server(mut self: Pin<&mut Self>) {
+    fn initialize(mut self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
         if self.rust().join_handles.is_some() {
             println!("Already running a server!");
             return;
