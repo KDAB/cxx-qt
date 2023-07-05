@@ -26,10 +26,6 @@ Window {
 
     EnergyUsage {
         id: energyUsage
-
-        // FIXME: have the ability to HandleInit so we can start the server
-        // https://github.com/KDAB/cxx-qt/issues/13
-        Component.onCompleted: startServer()
     }
 
     Image {
