@@ -341,6 +341,8 @@ impl QtBuild {
     }
 
     /// Some prl files don't follow a consistent naming scheme. Try to find it by looking at all files in lib_path.
+    /// The android libraries adds its architecture at the end of it prl files eg liQt6Core_{arch}.prl.
+    /// The arch placeholder is somewhat different for each architecture preventing the use of a simple format.
     fn find_qt_module_prl(
         &self,
         lib_path: &str,
