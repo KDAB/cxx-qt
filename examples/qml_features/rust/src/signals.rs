@@ -54,12 +54,10 @@ pub mod ffi {
         /// Disconnect
         #[qinvokable]
         fn disconnect(self: Pin<&mut qobject::RustSignals>);
-
-        /// Initialise the QObject, creating a connection reacting to the logging enabled property
-        #[qinvokable]
-        fn initialise(self: Pin<&mut qobject::RustSignals>);
     }
     // ANCHOR_END: book_rust_obj_impl
+
+    impl cxx_qt::Constructor<()> for qobject::RustSignals {}
 }
 
 use core::pin::Pin;
@@ -86,9 +84,29 @@ impl ffi::RustSignalsQt {
         // Emit a signal to QML stating that we have disconnected
         self.disconnected();
     }
+}
+
+impl cxx_qt::Constructor<()> for qobject::RustSignals {
+    type BaseArguments = ();
+    type NewArguments = ();
+    type InitializeArguments = ();
+
+    fn route_arguments(
+        _: (),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), (), ())
+    }
+
+    fn new(_: Self::NewArguments) -> <Self as CxxQtType>::Rust {
+        Default::default()
+    }
 
     /// Initialise the QObject, creating a connection reacting to the logging enabled property
-    fn initialise(self: Pin<&mut Self>) {
+    fn initialize(self: core::pin::Pin<&mut Self>, _: Self::InitializeArguments) {
         self.on_logging_enabled_changed(|mut qobject| {
             // Determine if logging is enabled
             if *qobject.as_ref().logging_enabled() {
