@@ -53,10 +53,6 @@ pub mod ffi {
     }
 
     unsafe extern "RustQt" {
-        /// Initialise the QObject, creating a connection from one signal to another
-        #[qinvokable]
-        fn initialise(self: Pin<&mut qobject::OuterObject>);
-
         /// Print the count of the given inner QObject
         //
         // This method needs to be unsafe otherwise clippy complains that the
@@ -68,6 +64,8 @@ pub mod ffi {
         #[qinvokable]
         fn reset(self: Pin<&mut qobject::OuterObject>);
     }
+
+    impl cxx_qt::Constructor<()> for qobject::OuterObject {}
 }
 
 use core::pin::Pin;
@@ -75,23 +73,6 @@ use core::pin::Pin;
 // TODO: this will change to qobject::OuterObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
 impl ffi::OuterObjectQt {
-    /// Initialise the QObject, creating a connection from one signal to another
-    fn initialise(self: Pin<&mut Self>) {
-        // Example of connecting a signal from one QObject to another QObject
-        // this causes OuterObject::Called to trigger InnerObject::Called
-        self.on_called(|qobject, obj| {
-            // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
-            if let Some(inner) = unsafe { qobject.inner().as_mut() } {
-                let pinned_inner = unsafe { Pin::new_unchecked(inner) };
-                // Now pinned inner can be used as normal
-                unsafe {
-                    pinned_inner.called(obj);
-                }
-            }
-        })
-        .release();
-    }
-
     /// Print the count of the given inner QObject
     //
     // This method needs to be unsafe otherwise clippy complains that the
@@ -120,4 +101,42 @@ impl ffi::OuterObjectQt {
         unsafe { self.called(inner) };
     }
 }
+
+impl cxx_qt::Constructor<()> for qobject::OuterObject {
+    type InitializeArguments = ();
+    type NewArguments = ();
+    type BaseArguments = ();
+
+    fn route_arguments(
+        _: (),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), (), ())
+    }
+
+    fn new(_: Self::NewArguments) -> <Self as cxx_qt::CxxQtType>::Rust {
+        Default::default()
+    }
+
+    /// Initialise the QObject, creating a connection from one signal to another
+    fn initialize(self: core::pin::Pin<&mut Self>, _: Self::InitializeArguments) {
+        // Example of connecting a signal from one QObject to another QObject
+        // this causes OuterObject::Called to trigger InnerObject::Called
+        self.on_called(|qobject, obj| {
+            // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
+            if let Some(inner) = unsafe { qobject.inner().as_mut() } {
+                let pinned_inner = unsafe { Pin::new_unchecked(inner) };
+                // Now pinned inner can be used as normal
+                unsafe {
+                    pinned_inner.called(obj);
+                }
+            }
+        })
+        .release();
+    }
+}
+
 // ANCHOR_END: book_macro_code

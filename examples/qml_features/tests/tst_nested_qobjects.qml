@@ -19,9 +19,7 @@ TestCase {
 
     Component {
         id: componentOuterObject
-        OuterObject {
-            Component.onCompleted: initialise()
-        }
+        OuterObject { }
     }
 
     Component {
