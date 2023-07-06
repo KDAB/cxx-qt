@@ -42,8 +42,6 @@ Page {
 
     RustSignals {
         id: rustSignals
-
-        Component.onCompleted: initialise()
     }
 
     ColumnLayout {
