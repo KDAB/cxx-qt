@@ -41,6 +41,8 @@ Page {
     InnerObject {
         id: innerObject
         counter: 10
+
+        onCalled: () => console.warn("Inner signal called")
     }
 
     OuterObject {
@@ -48,8 +50,6 @@ Page {
         inner: innerObject
 
         onCalled: (inner) => console.warn("Signal called, inner value: ", inner.counter)
-
-        Component.onCompleted: initialise()
     }
 
     Label {
