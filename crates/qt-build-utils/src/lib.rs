@@ -480,16 +480,16 @@ impl QtBuild {
             uri_args += &format!("-Muri={} ", uri);
         }
 
-        // FIXME when uris is empty the moc compiler fails
-        let cmd = Command::new(self.moc_executable.as_ref().unwrap())
-            .args([
-                &include_args,
-                uri_args.trim_end(),
-                input_path.to_str().unwrap(),
-                "-o",
-                output_path.to_str().unwrap(),
-                "--output-json",
-            ])
+        let mut cmd = Command::new(self.moc_executable.as_ref().unwrap());
+        cmd.args(include_args.trim_end().split(' '));
+        if !uri_args.is_empty() {
+            cmd.args(uri_args.trim_end().split(' '));
+        }
+        cmd.arg(input_path.to_str().unwrap())
+            .arg("-o")
+            .arg(output_path.to_str().unwrap())
+            .arg("--output-json");
+        let cmd = cmd
             .output()
             .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
 
