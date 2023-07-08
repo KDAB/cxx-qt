@@ -105,7 +105,11 @@ fn split_flags(link_args: &[u8]) -> Vec<String> {
     words
 }
 
-pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], builder: &mut cc::Build) {
+pub(crate) fn parse_libs_cflags(
+    name: &str,
+    link_args: &[u8],
+    builder: &mut Option<&mut cc::Build>,
+) {
     let mut is_msvc = false;
     let target = env::var("TARGET");
     if let Ok(target) = &target {
@@ -168,22 +172,24 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], builder: &mut cc::
                         (path.parent(), path.file_name(), &target)
                     {
                         if file_name.to_string_lossy().ends_with(".o") {
-                            let path_string = path.to_string_lossy().to_string();
-                            unsafe {
-                                // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
-                                // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
-                                let already_linked_object_files =
-                                    LINKED_OBJECT_FILES.get_or_init(|| HashSet::new());
-                                if !already_linked_object_files.contains(&path_string) {
-                                    // Cargo doesn't have a means to directly specify an object to link,
-                                    // so use the cc crate to specify it instead.
-                                    // TODO: pass file path directly when link-arg library type is stabilized
-                                    // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
-                                    // TODO: remove builder argument when it's not used anymore to link object files.
-                                    // also remove the dependency on cc when this is done
-                                    builder.object(path);
+                            if let Some(builder) = builder {
+                                let path_string = path.to_string_lossy().to_string();
+                                unsafe {
+                                    // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
+                                    // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
+                                    let already_linked_object_files =
+                                        LINKED_OBJECT_FILES.get_or_init(HashSet::new);
+                                    if !already_linked_object_files.contains(&path_string) {
+                                        // Cargo doesn't have a means to directly specify an object to link,
+                                        // so use the cc crate to specify it instead.
+                                        // TODO: pass file path directly when link-arg library type is stabilized
+                                        // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
+                                        // TODO: remove builder argument when it's not used anymore to link object files.
+                                        // also remove the dependency on cc when this is done
+                                        builder.object(path);
+                                    }
+                                    LINKED_OBJECT_FILES.get_mut().unwrap().insert(path_string);
                                 }
-                                LINKED_OBJECT_FILES.get_mut().unwrap().insert(path_string);
                             }
                         } else {
                             match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
