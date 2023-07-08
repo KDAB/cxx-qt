@@ -340,9 +340,8 @@ impl QtBuild {
         }
     }
 
-    /// Some prl files don't follow a consistent naming scheme. Try to find it by looking at all files in lib_path.
-    /// The android libraries adds its architecture at the end of it prl files eg liQt6Core_{arch}.prl.
-    /// The arch placeholder is somewhat different for each architecture preventing the use of a simple format.
+    /// Some prl files include their architecture in their naming scheme.
+    /// Just try all known architectures and fallback to non when they all failed.
     fn find_qt_module_prl(
         &self,
         lib_path: &str,
@@ -350,28 +349,23 @@ impl QtBuild {
         version_major: u32,
         qt_module: &str,
     ) -> String {
-        match Path::new(lib_path).read_dir() {
-            Ok(lib_dir) => {
-                for entry in lib_dir {
-                    match entry {
-                        Ok(entry) => {
-                            let file_name = entry.file_name();
-                            let file_name = file_name.to_string_lossy();
-                            let prl_file = file_name.ends_with(".prl");
-                            let matches_module = file_name
-                                .contains(&format!("Qt{}{}", self.version.major, qt_module));
-                            if prl_file && matches_module {
-                                return entry.path().display().to_string();
-                            }
-                        }
-                        Err(e) => {
-                            println!("cargo:warning=Could not read {} entry: {}", lib_path, e);
-                        }
+        for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
+            let prl_path = format!(
+                "{}/{}Qt{}{}{}.prl",
+                lib_path, prefix, version_major, qt_module, arch
+            );
+            match Path::new(&prl_path).try_exists() {
+                Ok(exists) => {
+                    if exists {
+                        return prl_path;
                     }
                 }
-            }
-            Err(e) => {
-                println!("cargo:warning=Could not read dir {}: {}", lib_path, e);
+                Err(e) => {
+                    println!(
+                        "cargo:warning=failed checking for existence of {}: {}",
+                        prl_path, e
+                    );
+                }
             }
         }
 
