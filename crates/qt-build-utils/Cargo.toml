@@ -16,6 +16,3 @@ repository.workspace = true
 cc = "1.0.74"
 versions = "4.1.0"
 thiserror = "1.0"
-
-[features]
-include_qt_objects = []

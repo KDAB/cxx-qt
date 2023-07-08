@@ -313,7 +313,7 @@ impl QtBuild {
         lib_path: &str,
         link_lib: &str,
         prl_path: &str,
-        builder: &mut cc::Build,
+        builder: &mut Option<&mut cc::Build>,
     ) {
         println!("cargo:rustc-link-lib={link_lib}");
 
@@ -382,7 +382,7 @@ impl QtBuild {
     }
 
     /// Tell Cargo to link each Qt module.
-    pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
+    pub fn cargo_link_libraries(&self, mut builder: Option<&mut cc::Build>) {
         let prefix_path = self.qmake_query("QT_INSTALL_PREFIX");
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={lib_path}");
@@ -429,7 +429,7 @@ impl QtBuild {
                 &lib_path,
                 &link_lib,
                 &prl_path,
-                builder,
+                &mut builder,
             );
         }
 
@@ -446,7 +446,7 @@ impl QtBuild {
                 &lib_path,
                 "qwasm",
                 &format!("{platforms_path}/libqwasm.prl"),
-                builder,
+                &mut builder,
             );
         }
     }
