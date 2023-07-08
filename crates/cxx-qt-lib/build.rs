@@ -182,7 +182,7 @@ fn main() {
     let mut builder =
         cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
 
-    qtbuild.cargo_link_libraries(&mut builder);
+    qtbuild.cargo_link_libraries(None);
     // Required for tests
     qt_build_utils::setup_linker();
 
