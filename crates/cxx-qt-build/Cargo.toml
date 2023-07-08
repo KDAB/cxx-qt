@@ -27,3 +27,4 @@ codespan-reporting = "0.11"
 default = ["qt_gui", "qt_qml"]
 qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]
+link_qt_external = []
