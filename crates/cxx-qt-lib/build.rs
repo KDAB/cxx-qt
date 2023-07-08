@@ -19,6 +19,18 @@ fn main() {
         qt_modules.push("Qml".to_owned());
     }
 
+    let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
+    qtbuild.cargo_link_libraries(None);
+    // Required for tests
+    qt_build_utils::setup_linker();
+
+    // Find the Qt version and tell the Rust compiler
+    // this allows us to have conditional Rust code
+    println!(
+        "cargo:rustc-cfg=qt_version_major=\"{}\"",
+        qtbuild.version().major
+    );
+
     let mut rust_bridges = vec![
         "core/qbytearray",
         "core/qcoreapplication",
@@ -171,8 +183,6 @@ fn main() {
         println!("cargo:rerun-if-changed=src/{bridge}.rs");
     }
 
-    let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
-
     for include_path in qtbuild.include_paths() {
         cxx_build::CFG
             .exported_header_dirs
@@ -181,17 +191,6 @@ fn main() {
 
     let mut builder =
         cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
-
-    qtbuild.cargo_link_libraries(None);
-    // Required for tests
-    qt_build_utils::setup_linker();
-
-    // Find the Qt version and tell the Rust compiler
-    // this allows us to have conditional Rust code
-    println!(
-        "cargo:rustc-cfg=qt_version_major=\"{}\"",
-        qtbuild.version().major
-    );
 
     let mut cpp_files = vec![
         "core/qbytearray",
