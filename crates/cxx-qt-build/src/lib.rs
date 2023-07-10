@@ -399,13 +399,7 @@ impl CxxQtBuilder {
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");
-        // some external build systems will include object files found by cargo_link_libraries and
-        // are hard to remove. instead instruct this function to not include these object files.
-        if cfg!(feature = "link_qt_external") {
-            qtbuild.cargo_link_libraries(None);
-        } else {
-            qtbuild.cargo_link_libraries(Some(&mut self.cc_builder));
-        }
+        qtbuild.cargo_link_libraries(Some(&mut self.cc_builder));
 
         // Write cxx-qt-gen, cxx-qt-lib and cxx headers
         cxx_qt_gen::write_headers(format!("{header_root}/cxx-qt-common"));
