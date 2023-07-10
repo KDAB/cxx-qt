@@ -8,8 +8,12 @@
 //! It has been decoupled from the pkg-config crate because qt-build-utils reads Qt's .prl files instead, which
 //! does not require a pkg-config executable to be available.
 
-use std::{collections::HashSet, env, sync::OnceLock};
+use std::env;
 
+#[cfg(feature = "link_qt_object_files")]
+use std::{collections::HashSet, sync::OnceLock};
+
+#[cfg(feature = "link_qt_object_files")]
 static mut LINKED_OBJECT_FILES: OnceLock<HashSet<String>> = OnceLock::new();
 
 /// Extract the &str to pass to cargo:rustc-link-lib from a filename (just the file name, not including directories)
@@ -108,7 +112,7 @@ fn split_flags(link_args: &[u8]) -> Vec<String> {
 pub(crate) fn parse_libs_cflags(
     name: &str,
     link_args: &[u8],
-    builder: &mut Option<&mut cc::Build>,
+    _builder: &mut Option<&mut cc::Build>,
 ) {
     let mut is_msvc = false;
     let target = env::var("TARGET");
@@ -171,8 +175,10 @@ pub(crate) fn parse_libs_cflags(
                     if let (Some(dir), Some(file_name), Ok(target)) =
                         (path.parent(), path.file_name(), &target)
                     {
-                        if file_name.to_string_lossy().ends_with(".o") {
-                            if let Some(builder) = builder {
+                        let file_name = file_name.to_string_lossy();
+                        if file_name.ends_with(".o") {
+                            #[cfg(feature = "link_qt_object_files")]
+                            if let Some(builder) = _builder {
                                 let path_string = path.to_string_lossy().to_string();
                                 unsafe {
                                     // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
@@ -192,7 +198,7 @@ pub(crate) fn parse_libs_cflags(
                                 }
                             }
                         } else {
-                            match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
+                            match extract_lib_from_filename(target, &file_name) {
                                 Some(lib_basename) => {
                                     println!("cargo:rustc-link-search={}", dir.display());
                                     println!("cargo:rustc-link-lib={lib_basename}");
