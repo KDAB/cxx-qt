@@ -16,3 +16,16 @@ repository.workspace = true
 cc = "1.0.74"
 versions = "4.1.0"
 thiserror = "1.0"
+
+[features]
+# When Cargo links an executable, whether a bin crate or test executable,
+# and Qt 6 is linked statically, this feature must be enabled to link
+# unarchived .o files with static symbols that Qt ships (for example
+# to initialize Qt resources embedded within Qt libraries).
+#
+# CMake also links those .o files when linking Qt's targets, so this
+# feature must be disabled for staticlib crates. Otherwise, linking
+# will fail with duplicate symbol errors.
+#
+# When linking Qt dynamically, this makes no difference.
+link_qt_object_files = []
