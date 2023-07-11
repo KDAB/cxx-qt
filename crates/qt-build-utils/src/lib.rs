@@ -450,7 +450,13 @@ impl QtBuild {
     /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The return value contains the path to the generated C++ file, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file),
     /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_types](Self::register_qml_types).
-    pub fn moc(&mut self, input_file: impl AsRef<Path>) -> MocProducts {
+    ///
+    /// * uris - An iterator of uri's that the moc compiler is working on. This is required because some moc compilers require this to be specified.
+    pub fn moc<'a>(
+        &mut self,
+        input_file: impl AsRef<Path>,
+        uris: impl Iterator<Item = &'a str>,
+    ) -> MocProducts {
         if self.moc_executable.is_none() {
             self.moc_executable = Some(self.get_qt_tool("moc").expect("Could not find moc"));
         }
@@ -469,14 +475,21 @@ impl QtBuild {
             include_args += &format!("-I {} ", include_path.display());
         }
 
-        let cmd = Command::new(self.moc_executable.as_ref().unwrap())
-            .args([
-                &include_args,
-                input_path.to_str().unwrap(),
-                "-o",
-                output_path.to_str().unwrap(),
-                "--output-json",
-            ])
+        let mut uri_args = String::new();
+        for uri in uris {
+            uri_args += &format!("-Muri={} ", uri);
+        }
+
+        let mut cmd = Command::new(self.moc_executable.as_ref().unwrap());
+        cmd.args(include_args.trim_end().split(' '));
+        if !uri_args.is_empty() {
+            cmd.args(uri_args.trim_end().split(' '));
+        }
+        cmd.arg(input_path.to_str().unwrap())
+            .arg("-o")
+            .arg(output_path.to_str().unwrap())
+            .arg("--output-json");
+        let cmd = cmd
             .output()
             .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
 
@@ -575,7 +588,7 @@ public:
 "#
         )
         .unwrap();
-        self.moc(&qml_plugin_cpp_path);
+        self.moc(&qml_plugin_cpp_path, std::iter::once(import_name));
 
         let qml_plugin_init_path = PathBuf::from(format!("{out_dir}/{plugin_class_name}_init.cpp"));
         let mut qml_plugin_init = File::create(&qml_plugin_init_path).unwrap();

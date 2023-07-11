@@ -496,7 +496,11 @@ impl CxxQtBuilder {
         let mut cc_builder_whole_archive_files_added = false;
         // Run moc on C++ headers with Q_OBJECT macro
         for qobject_header in self.qobject_headers {
-            let moc_products = qtbuild.moc(&qobject_header.path);
+            let uris = qobject_header
+                .qml_metadata
+                .iter()
+                .map(|qml_metadata| qml_metadata.uri.as_str());
+            let moc_products = qtbuild.moc(&qobject_header.path, uris);
             self.cc_builder.file(moc_products.cpp);
             for qml_metadata in qobject_header.qml_metadata {
                 self.cc_builder.define("QT_STATICPLUGIN", None);
