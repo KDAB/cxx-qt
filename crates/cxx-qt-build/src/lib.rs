@@ -399,7 +399,7 @@ impl CxxQtBuilder {
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");
-        qtbuild.cargo_link_libraries(Some(&mut self.cc_builder));
+        qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
         // Write cxx-qt-gen, cxx-qt-lib and cxx headers
         cxx_qt_gen::write_headers(format!("{header_root}/cxx-qt-common"));

@@ -109,11 +109,7 @@ fn split_flags(link_args: &[u8]) -> Vec<String> {
     words
 }
 
-pub(crate) fn parse_libs_cflags(
-    name: &str,
-    link_args: &[u8],
-    _builder: &mut Option<&mut cc::Build>,
-) {
+pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc::Build) {
     let mut is_msvc = false;
     let target = env::var("TARGET");
     if let Ok(target) = &target {
@@ -178,7 +174,7 @@ pub(crate) fn parse_libs_cflags(
                         let file_name = file_name.to_string_lossy();
                         if file_name.ends_with(".o") {
                             #[cfg(feature = "link_qt_object_files")]
-                            if let Some(builder) = _builder {
+                            {
                                 let path_string = path.to_string_lossy().to_string();
                                 unsafe {
                                     // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
@@ -192,7 +188,7 @@ pub(crate) fn parse_libs_cflags(
                                         // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
                                         // TODO: remove builder argument when it's not used anymore to link object files.
                                         // also remove the dependency on cc when this is done
-                                        builder.object(path);
+                                        _builder.object(path);
                                     }
                                     LINKED_OBJECT_FILES.get_mut().unwrap().insert(path_string);
                                 }
