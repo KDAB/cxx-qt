@@ -106,7 +106,7 @@ impl SensorsWorker {
                         // Validate that we would still be below the sensors max count
                         if sensors_len < SENSOR_MAXIMUM_COUNT || is_occupied {
                             // Insert or modify the sensor entry to have the power and last seen
-                            let mut sensor = entry.or_default();
+                            let sensor = entry.or_default();
                             sensor.power = value;
                             sensor.last_seen = SystemTime::now();
                             drop(sensors_lock);
