@@ -52,6 +52,11 @@ set_target_properties(core_qmlplugin PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUTPUT_DIR}
 )
 
+# TODO: test
+if(WIN32)
+    target_link_libraries(core_qmlplugin_rust INTERFACE ws2_32 wsock32)
+endif()
+
 # Link our QQmlExtensionPlugin plugin to the Rust library
 target_link_libraries(core_qmlplugin PRIVATE core_qmlplugin_rust)
 
