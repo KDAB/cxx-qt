@@ -206,9 +206,11 @@ add_test(NAME cargo_fmt COMMAND cargo fmt --all --check WORKING_DIRECTORY ${CMAK
 
 set_tests_properties(cargo_tests cargo_doc_tests cargo_clippy cargo_fmt PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 set_tests_properties(cargo_doc PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 # Ensure test inputs and outputs are formatted

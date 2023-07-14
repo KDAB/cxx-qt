@@ -106,9 +106,12 @@ you run CMake). If you already have Qt installed, you can disable this by adding
 CXX-Qt defaults to building with Qt6. If you want to build with Qt5 when both are installed,
 or you want to tell vcpkg to use Qt5, add `-D USE_QT5=ON` to the CMake configure step.
 
+On Windows, the CMake build directory needs to be outside of the code repository to work
+around a [Cargo bug](https://github.com/rust-lang/cargo/issues/12360).
+
 ```bash
-cmake -S . -B build
-cmake --build build
+cmake -S . -B path/to/build/dir/of/your/choice
+cmake --build path/to/build/dir/of/your/choice
 ```
 
 ### Run the basic QML example

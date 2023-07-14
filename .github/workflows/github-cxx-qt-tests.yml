@@ -32,7 +32,8 @@ jobs:
                 qml-module-qtquick2
                 qml-module-qtquick-controls2
                 qml-module-qttest
-            workspace: /home/runner/cxx-qt
+            repository: /home/runner/cxx-qt
+            build_dir: /home/runner/cxx-qt/build
           - name: Ubuntu 22.04 (gcc) Qt6
             os: ubuntu-22.04
             qt_version: 6
@@ -53,7 +54,8 @@ jobs:
                 libgl1-mesa-dev
                 libvulkan-dev
                 libxkbcommon-dev
-            workspace: /home/runner/cxx-qt
+            repository: /home/runner/cxx-qt
+            build_dir: /home/runner/cxx-qt/build
 
           - name: macOS 11 (clang) Qt5
             os: macos-11
@@ -69,7 +71,8 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
-            workspace: /Users/runner/cxx-qt
+            repository: /Users/runner/cxx-qt
+            build_dir: /Users/runner/cxx-qt/build
             cc: clang
             cxx: clang++
           - name: macOS 11 (clang) Qt6
@@ -81,7 +84,8 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
-            workspace: /Users/runner/cxx-qt
+            repository: /Users/runner/cxx-qt
+            build_dir: /Users/runner/cxx-qt/build
             cc: clang
             cxx: clang++
 
@@ -96,7 +100,10 @@ jobs:
             cc: cl
             cxx: cl
             # The D drive runs out of space when building dependencies with vcpkg.
-            workspace: C:\cxx-qt
+            repository: C:\cxx-qt
+            # The build directory needs to be outside of the repository to workaround
+            # https://github.com/rust-lang/cargo/issues/12360
+            build_dir: C:\build
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
@@ -108,7 +115,10 @@ jobs:
             cc: cl
             cxx: cl
             # The D drive runs out of space when building dependencies with vcpkg.
-            workspace: C:\cxx-qt
+            repository: C:\cxx-qt
+            # The build directory needs to be outside of the repository to workaround
+            # https://github.com/rust-lang/cargo/issues/12360
+            build_dir: C:\build
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -119,14 +129,14 @@ jobs:
         SCCACHE_CACHE_SIZE: 600M
 
     steps:
-    # On Windows, the D drive that the workspace is on by default runs out of space when
+    # On Windows, the D drive that the repository is on by default runs out of space when
     # vcpkg builds Qt, so the repo needs to be cloned to the C drive. GitHub's checkout
     # action does not support cloning to a path outside GITHUB_WORKSPACE:
     # https://github.com/actions/checkout/issues/197
     - name: "Clone Git repository"
       uses: LebedevRI/checkout@issue197
       with:
-        path: ${{ matrix.workspace }}
+        path: ${{ matrix.repository }}
     - name: "Install Rust toolchain"
       uses: actions-rs/toolchain@v1
       with:
@@ -206,20 +216,20 @@ jobs:
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
         -G Ninja
-        -S . -B build
-      working-directory: ${{ matrix.workspace }}
+        -S . -B ${{ matrix.build_dir }}
+      working-directory: ${{ matrix.repository }}
       env:
         RUSTC_WRAPPER: sccache
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
-      run: cmake --build build --config Release --parallel 2
-      working-directory: ${{ matrix.workspace }}
+      run: cmake --build ${{ matrix.build_dir }} --config Release --parallel 2
+      working-directory: ${{ matrix.repository }}
       env:
         RUSTC_WRAPPER: sccache
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel 2
-      working-directory: ${{ matrix.workspace }}/build
+      working-directory: ${{ matrix.build_dir }}
       env:
         RUSTC_WRAPPER: sccache
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
@@ -234,8 +244,8 @@ jobs:
       with:
         name: vcpkg-logs-${{ matrix.name }}
         path: |
-          ${{ matrix.workspace }}/vcpkg/buildtrees/**/*.log
-          ${{ matrix.workspace }}/build/vcpkg-bootstrap.log
-          ${{ matrix.workspace }}/build/vcpkg-manifest-install.log
-          ${{ matrix.workspace }}/build/vcpkg_installed/vcpkg/issue_body.md
+          ${{ matrix.repository }}/vcpkg/buildtrees/**/*.log
+          ${{ matrix.repository }}/build/vcpkg-bootstrap.log
+          ${{ matrix.repository }}/build/vcpkg-manifest-install.log
+          ${{ matrix.repository }}/build/vcpkg_installed/vcpkg/issue_body.md
         if-no-files-found: ignore
