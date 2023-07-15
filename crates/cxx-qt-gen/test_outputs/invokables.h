@@ -55,7 +55,7 @@ private:
   void invokableResultTupleWrapper() const;
   ::rust::String invokableResultTypeWrapper() const;
   explicit MyObject(
-    cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
+    ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

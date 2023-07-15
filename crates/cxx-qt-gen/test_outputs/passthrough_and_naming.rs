@@ -264,9 +264,9 @@ pub mod cxx_qt_ffi {
         }
     }
     impl cxx_qt::Locking for MyObject {}
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
+    #[doc(hidden)]
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
-        core::default::Default::default()
+        std::boxed::Box::new(core::default::Default::default())
     }
     impl core::ops::Deref for MyObject {
         type Target = MyObjectRust;
@@ -330,9 +330,9 @@ pub mod cxx_qt_ffi {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
+    #[doc(hidden)]
     pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
-        core::default::Default::default()
+        std::boxed::Box::new(core::default::Default::default())
     }
     impl core::ops::Deref for SecondObject {
         type Target = SecondObjectRust;
