@@ -24,19 +24,24 @@ pub struct QObjectName {
 
 impl From<&ParsedQObject> for QObjectName {
     fn from(qobject: &ParsedQObject) -> Self {
-        let ident_left = &qobject.qobject_ty.ident_left;
-        Self {
-            ident: ident_left.clone(),
-            // TODO: later we may support cxx_name or rust_name so keep these are CombinedIdents for now
-            cpp_class: CombinedIdent::from_ident(ident_left.clone()),
-            rust_struct: CombinedIdent::from_ident(qobject.qobject_ty.ident_right.clone()),
-            cxx_qt_thread_class: cxx_qt_thread_class_from_ident(ident_left),
-            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(ident_left),
-        }
+        Self::from_idents(
+            qobject.qobject_ty.ident_left.clone(),
+            qobject.qobject_ty.ident_right.clone(),
+        )
     }
 }
 
 impl QObjectName {
+    pub fn from_idents(ident_left: Ident, ident_right: Ident) -> Self {
+        Self {
+            cpp_class: CombinedIdent::from_ident(ident_left.clone()),
+            rust_struct: CombinedIdent::from_ident(ident_right),
+            cxx_qt_thread_class: cxx_qt_thread_class_from_ident(&ident_left),
+            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(&ident_left),
+            ident: ident_left,
+        }
+    }
+
     /// For a given ident generate the mangled threading suffix ident
     pub fn cxx_qt_thread_method(&self, suffix: &str) -> Ident {
         format_ident!(

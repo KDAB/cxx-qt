@@ -118,46 +118,45 @@ mod ffi {
     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
     #[cxx_name = "CxxQtConstructorArguments0"]
     #[doc(hidden)]
-    struct CxxQtConstructorArgumentsMyObjectRust0 {
-        baseArguments: CxxQtConstructorBaseArgumentsMyObjectRust0,
-        newArguments: CxxQtConstructorNewArgumentsMyObjectRust0,
-        initializeArguments: CxxQtConstructorInitializeArgumentsMyObjectRust0,
+    struct CxxQtConstructorArgumentsMyObject0 {
+        base: CxxQtConstructorBaseArgumentsMyObject0,
+        #[cxx_name = "new_"]
+        new: CxxQtConstructorNewArgumentsMyObject0,
+        initialize: CxxQtConstructorInitializeArgumentsMyObject0,
     }
     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
     #[cxx_name = "CxxQtConstructorBaseArguments0"]
     #[doc(hidden)]
-    struct CxxQtConstructorBaseArgumentsMyObjectRust0 {
+    struct CxxQtConstructorBaseArgumentsMyObject0 {
         arg0: *mut QObject,
     }
     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
     #[cxx_name = "CxxQtConstructorNewArguments0"]
     #[doc(hidden)]
-    struct CxxQtConstructorNewArgumentsMyObjectRust0 {
+    struct CxxQtConstructorNewArgumentsMyObject0 {
         arg0: i32,
     }
     #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
     #[cxx_name = "CxxQtConstructorInitializeArguments0"]
     #[doc(hidden)]
-    struct CxxQtConstructorInitializeArgumentsMyObjectRust0 {
+    struct CxxQtConstructorInitializeArgumentsMyObject0 {
         not_empty: i8,
     }
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         #[cxx_name = "routeArguments0"]
-        unsafe fn route_arguments_my_object_rust_0(
+        unsafe fn route_arguments_my_object_0(
             arg0: i32,
             arg1: *mut QObject,
-        ) -> CxxQtConstructorArgumentsMyObjectRust0;
+        ) -> CxxQtConstructorArgumentsMyObject0;
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         #[cxx_name = "newRs0"]
-        fn new_rs_my_object_rust_0(
-            args: CxxQtConstructorNewArgumentsMyObjectRust0,
-        ) -> Box<MyObjectRust>;
+        fn new_rs_my_object_0(args: CxxQtConstructorNewArgumentsMyObject0) -> Box<MyObjectRust>;
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         #[cxx_name = "initialize0"]
-        fn initialize_my_object_rust_0(
+        fn initialize_my_object_0(
             qobject: Pin<&mut MyObject>,
-            args: CxxQtConstructorInitializeArgumentsMyObjectRust0,
+            args: CxxQtConstructorInitializeArgumentsMyObject0,
         );
     }
     unsafe extern "C++" {
@@ -222,47 +221,40 @@ pub mod cxx_qt_ffi {
     }
     impl cxx_qt::Locking for MyObject {}
     #[doc(hidden)]
-    pub fn route_arguments_my_object_rust_0(
+    pub fn route_arguments_my_object_0(
         arg0: i32,
         arg1: *mut QObject,
-    ) -> CxxQtConstructorArgumentsMyObjectRust0 {
+    ) -> CxxQtConstructorArgumentsMyObject0 {
         #[allow(unused_variables)]
         #[allow(clippy::let_unit_value)]
         let (new_arguments, base_arguments, initialize_arguments) =
             <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((arg0, arg1));
-        CxxQtConstructorArgumentsMyObjectRust0 {
-            baseArguments: CxxQtConstructorBaseArgumentsMyObjectRust0 {
+        CxxQtConstructorArgumentsMyObject0 {
+            base: CxxQtConstructorBaseArgumentsMyObject0 {
                 arg0: base_arguments.0,
             },
-            initializeArguments: CxxQtConstructorInitializeArgumentsMyObjectRust0 { not_empty: 0 },
-            newArguments: CxxQtConstructorNewArgumentsMyObjectRust0 {
+            initialize: CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+            new: CxxQtConstructorNewArgumentsMyObject0 {
                 arg0: new_arguments.0,
             },
         }
     }
     #[doc(hidden)]
     #[allow(unused_variables)]
-    pub fn new_rs_my_object_rust_0(
-        new_arguments: CxxQtConstructorNewArgumentsMyObjectRust0,
+    pub fn new_rs_my_object_0(
+        new_arguments: CxxQtConstructorNewArgumentsMyObject0,
     ) -> std::boxed::Box<MyObjectRust> {
-        #[allow(clippy::let_unit_value)]
-        let new_arguments = (new_arguments.arg0,);
         std::boxed::Box::new(<MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::new(
-            new_arguments,
+            (new_arguments.arg0,),
         ))
     }
     #[doc(hidden)]
     #[allow(unused_variables)]
-    pub fn initialize_my_object_rust_0(
+    pub fn initialize_my_object_0(
         qobject: core::pin::Pin<&mut MyObject>,
-        initialize_arguments: CxxQtConstructorInitializeArgumentsMyObjectRust0,
+        initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject0,
     ) {
-        #[allow(clippy::let_unit_value)]
-        let initialize_arguments = ();
-        <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(
-            qobject,
-            initialize_arguments,
-        )
+        <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
     }
     impl core::ops::Deref for MyObject {
         type Target = MyObjectRust;

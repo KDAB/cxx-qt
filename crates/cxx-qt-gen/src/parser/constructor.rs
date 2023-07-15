@@ -26,12 +26,12 @@ pub struct Constructor {
 
     /// Arguments to the new function.
     /// The `new` function needs to return the inner Rust struct for the QObject.
-    pub new_arguments: Option<Vec<Type>>,
+    pub new_arguments: Vec<Type>,
     /// Arguments to be passed to the base class constructor.
-    pub base_arguments: Option<Vec<Type>>,
+    pub base_arguments: Vec<Type>,
     /// Arguments to the initialize function.
     /// The `initialize` function is run after the QObject is created.
-    pub initialize_arguments: Option<Vec<Type>>,
+    pub initialize_arguments: Vec<Type>,
 
     /// The original impl that this constructor was parse from.
     pub imp: ItemImpl,
@@ -150,10 +150,121 @@ impl Constructor {
         let (argument_list, arguments) = Self::parse_arguments(trait_path)?;
         Ok(Constructor {
             arguments: argument_list,
-            new_arguments: arguments.new,
-            base_arguments: arguments.base,
-            initialize_arguments: arguments.initialize,
+            new_arguments: arguments.new.unwrap_or_default(),
+            base_arguments: arguments.base.unwrap_or_default(),
+            initialize_arguments: arguments.initialize.unwrap_or_default(),
             imp,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use syn::parse_quote;
+
+    use super::*;
+
+    fn assert_parse_error(item: ItemImpl, message: &str) {
+        assert!(
+            Constructor::parse(item).is_err(),
+            "Constructor shouldn't have parsed because '{message}'."
+        );
+    }
+
+    #[test]
+    fn parse_invalid_constructors() {
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor for X {}
+            },
+            "missing type arguments",
+        );
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<NewArguments=()> for X {}
+            },
+            "missing main argument list",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<()> for X {
+                    fn some_impl() {}
+                }
+            },
+            "item in impl block",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                impl<T> cxx_qt::Constructor<()> for T {}
+            },
+            "generics on impl block",
+        );
+        // TODO This should be allowed at some point if the lifetime is actually used.
+        assert_parse_error(
+            parse_quote! {
+                impl<'a> cxx_qt::Constructor<()> for T {}
+            },
+            "lifetime on impl block",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<(), UnknownArguments=()> for X {}
+            },
+            "unknown named type argument",
+        );
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<(), NewArguments=(), NewArguments=()> for X {}
+            },
+            "duplicate named type argument",
+        );
+
+        // Not a tuple, missing `,`
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<(i32)> for X {}
+            },
+            "type argument is not a tuple",
+        );
+    }
+
+    #[test]
+    fn parse_arguments_with_default_associated_types() {
+        let constructor = Constructor::parse(parse_quote! {
+            impl cxx_qt::Constructor<(i32, QString)> for X {}
+        })
+        .unwrap();
+
+        assert_eq!(
+            constructor.arguments,
+            vec![parse_quote!(i32), parse_quote!(QString)]
+        );
+        assert!(constructor.new_arguments.is_empty());
+        assert!(constructor.base_arguments.is_empty());
+        assert!(constructor.initialize_arguments.is_empty());
+    }
+
+    #[test]
+    fn parse_full_argument_list() {
+        let constructor = Constructor::parse(parse_quote! {
+            impl cxx_qt::Constructor<
+                (i32,),
+                NewArguments=(i8,QString),
+                InitializeArguments=(),
+                BaseArguments=(i64,)
+            > for X {}
+        })
+        .unwrap();
+
+        assert_eq!(constructor.arguments, vec![parse_quote!(i32)]);
+        assert_eq!(
+            constructor.new_arguments,
+            vec![parse_quote!(i8), parse_quote!(QString)]
+        );
+        assert!(constructor.initialize_arguments.is_empty());
+        assert_eq!(constructor.base_arguments, vec![parse_quote!(i64)]);
     }
 }

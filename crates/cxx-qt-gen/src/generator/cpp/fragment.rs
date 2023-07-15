@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[derive(PartialEq, Eq, Debug)]
 pub enum CppFragment {
     Pair { header: String, source: String },
     Header(String),
