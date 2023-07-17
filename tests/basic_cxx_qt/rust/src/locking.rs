@@ -5,7 +5,7 @@
 
 /// Two QObject that allow for testing that locking works
 #[cxx_qt::bridge(cxx_file_stem = "locking")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "RustQt" {
         /// A QObject which has cxx_qt::Locking
         #[cxx_qt::qobject]
@@ -46,9 +46,7 @@ pub struct RustLockingEnabledRust {
     pub(crate) counter: AtomicU32,
 }
 
-// TODO: this will change to qobject::RustLockingEnabled once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustLockingEnabled {
+impl qobject::RustLockingEnabled {
     fn get_counter(&self) -> u32 {
         self.rust().counter.load(Ordering::Acquire)
     }
@@ -65,9 +63,7 @@ pub struct RustLockingDisabledRust {
     pub(crate) counter: AtomicU32,
 }
 
-// TODO: this will change to qobject::RustLockingDisabled once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustLockingDisabled {
+impl qobject::RustLockingDisabled {
     fn get_counter(&self) -> u32 {
         self.rust().counter.load(Ordering::Acquire)
     }

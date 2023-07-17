@@ -92,7 +92,7 @@ pub trait Threading: Locking + Sized {
 /// # Minimal Example
 /// ```
 /// #[cxx_qt::bridge]
-/// mod ffi {
+/// mod qobject {
 ///     extern "RustQt" {
 ///         #[cxx_qt::qobject]
 ///         type MyStruct = super::MyStructRust;

@@ -10,7 +10,7 @@ mod locking;
 mod types;
 
 #[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "cxx_qt::my_object")]
-mod ffi {
+mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
@@ -69,9 +69,7 @@ impl Default for MyObjectRust {
     }
 }
 
-// TODO: this will change to qobject::MyObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyObject {
+impl qobject::MyObject {
     fn double_number_self(self: Pin<&mut Self>) {
         let value = self.number() * 2;
         self.set_number(value);

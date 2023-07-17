@@ -11,7 +11,7 @@ Rust Qt objects can be nested as properties or parameters of each other.
 
 A nested object is referred to by using a pointer to its QObject representation.
 
-First define a type with an extern block for your bridge, this should point to the `qobject::T` of the QObject and the `cxx_name` should match the QObject name.
+First define a type within an extern block for your bridge as normal.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/nested_qobjects.rs:book_extern_block}}

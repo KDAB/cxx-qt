@@ -8,7 +8,7 @@
 /// A CXX-Qt bridge which shows how a QML_SINGLETON can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_singleton")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "RustQt" {
         #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0", qml_singleton)]
         #[qproperty(i32, persistent_value)]
@@ -29,9 +29,7 @@ pub struct RustSingletonRust {
     persistent_value: i32,
 }
 
-// TODO: this will change to qobject::RustSingleton once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustSingleton {
+impl qobject::RustSingleton {
     /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON
     fn increment(self: Pin<&mut Self>) {
         let new_value = self.persistent_value() + 1;

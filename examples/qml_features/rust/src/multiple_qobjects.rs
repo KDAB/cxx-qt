@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows multiple QObjects can be defined in one module
 #[cxx_qt::bridge(cxx_file_stem = "multiple_qobjects")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
         /// QColor from cxx_qt_lib
@@ -88,9 +88,7 @@ impl Default for FirstObjectRust {
     }
 }
 
-// TODO: this will change to qobject::FirstObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::FirstObject {
+impl qobject::FirstObject {
     /// A Q_INVOKABLE on the first QObject which increments a counter
     fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;
@@ -121,9 +119,7 @@ impl Default for SecondObjectRust {
     }
 }
 
-// TODO: this will change to qobject::SecondObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::SecondObject {
+impl qobject::SecondObject {
     /// A Q_INVOKABLE on the second QObject which increments a counter
     fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;
