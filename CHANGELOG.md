@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rust_mut` is now safe to call
 - `#[qproperty]` is now defined as an attribute on the qobject rather than the field
 - QObject struct is now split between the bridge and implementation outside via a type alias
+- `qobject` module is no longer generated
 
 ### Fixed
 

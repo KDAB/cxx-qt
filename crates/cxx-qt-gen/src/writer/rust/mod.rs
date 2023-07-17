@@ -121,17 +121,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         })
     }
 
-    // Create the qobject block for the type alias
-    cxx_qt_mod_contents.push(
-        syn::parse2(quote! {
-            /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
-            pub mod qobject {
-                #(#qobject_types)*
-            }
-        })
-        .expect("Could not build qobject block"),
-    );
-
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
         items.extend(cxx_mod_contents.into_iter());
@@ -385,17 +374,6 @@ mod tests {
                         self.cxx_qt_ffi_rust_mut()
                     }
                 }
-
-                /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
-                pub mod qobject {
-                    #[doc = "The C++ type for the QObject "]
-                    #[doc = "MyObject"]
-                    #[doc = "\n"]
-                    #[doc = "Use this type when referring to the QObject as a pointer"]
-                    #[doc = "\n"]
-                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type MyObject = super::MyObject;
-                }
             }
         }
         .into_token_stream()
@@ -515,24 +493,6 @@ mod tests {
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> Pin<&mut Self::Rust> {
                         self.cxx_qt_ffi_rust_mut()
                     }
-                }
-
-                /// Generated CXX-Qt module containing type alias to the C++ types of the QObjects
-                pub mod qobject {
-                    #[doc = "The C++ type for the QObject "]
-                    #[doc = "FirstObject"]
-                    #[doc = "\n"]
-                    #[doc = "Use this type when referring to the QObject as a pointer"]
-                    #[doc = "\n"]
-                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type FirstObject = super::FirstObject;
-                    #[doc = "The C++ type for the QObject "]
-                    #[doc = "SecondObject"]
-                    #[doc = "\n"]
-                    #[doc = "Use this type when referring to the QObject as a pointer"]
-                    #[doc = "\n"]
-                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type SecondObject = super::SecondObject;
                 }
             }
         }

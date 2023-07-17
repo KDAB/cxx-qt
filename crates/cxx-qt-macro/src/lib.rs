@@ -18,7 +18,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 ///
 /// ```rust
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-/// mod ffi {
+/// mod qobject {
 ///     unsafe extern "RustQt" {
 ///         #[cxx_qt::qobject]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
@@ -32,9 +32,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 /// #[derive(Default)]
 /// pub struct MyObjectRust;
 ///
-/// # // TODO: this will change to qobject::MyObject once
-/// # // https://github.com/KDAB/cxx-qt/issues/559 is done
-/// impl ffi::MyObject {
+/// impl qobject::MyObject {
 ///     fn invokable(&self, a: i32, b: i32) -> i32 {
 ///         a + b
 ///     }

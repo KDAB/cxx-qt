@@ -27,7 +27,7 @@ impl From<&MyObjectRust> for DataSerde {
 const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
 #[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "core")]
-mod ffi {
+mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
@@ -79,9 +79,7 @@ impl From<DataSerde> for MyObjectRust {
     }
 }
 
-// TODO: this will change to qobject::MyObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyObject {
+impl qobject::MyObject {
     pub fn increment(self: Pin<&mut Self>) {
         let new_number = self.number() + 1;
         self.set_number(new_number);

@@ -10,7 +10,7 @@
 
 /// The bridge definition for our QObject
 #[cxx_qt::bridge]
-pub mod ffi {
+pub mod qobject {
     // ANCHOR_END: book_bridge_macro
 
     // ANCHOR: book_qstring_import
@@ -63,11 +63,8 @@ impl Default for MyObjectRust {
 }
 // ANCHOR_END: book_rustobj_default
 
-// TODO: this will change to qobject::MyObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-//
 // ANCHOR: book_rustobj_invokable_impl
-impl ffi::MyObject {
+impl qobject::MyObject {
     /// Increment the number Q_PROPERTY
     pub fn increment_number(self: Pin<&mut Self>) {
         let previous = *self.as_ref().number();

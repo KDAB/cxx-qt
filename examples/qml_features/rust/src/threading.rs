@@ -9,7 +9,7 @@
 // ANCHOR: book_macro_code
 // ANCHOR: book_namespace_macro
 #[cxx_qt::bridge(cxx_file_stem = "threading_website", namespace = "cxx_qt::website")]
-pub mod ffi {
+pub mod qobject {
     // ANCHOR_END: book_namespace_macro
     #[namespace = ""]
     unsafe extern "C++" {
@@ -69,9 +69,7 @@ impl Default for ThreadingWebsiteRust {
     }
 }
 
-// TODO: this will change to qobject::ThreadingWebsite once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::ThreadingWebsite {
+impl qobject::ThreadingWebsite {
     /// Swap the URL between kdab.com and github.com
     fn change_url(self: Pin<&mut Self>) {
         let new_url = if self.url().to_string() == "https://kdab.com" {

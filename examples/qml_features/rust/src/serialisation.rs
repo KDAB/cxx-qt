@@ -28,7 +28,7 @@ impl From<&SerialisationRust> for DataSerde {
 
 /// A CXX-Qt bridge which shows how use serde for (de)serialization of the data in a QObjects' QPROPERTY's
 #[cxx_qt::bridge(cxx_file_stem = "serialisation")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         /// QString from cxx_qt_lib
@@ -86,9 +86,7 @@ impl From<DataSerde> for SerialisationRust {
     }
 }
 
-// TODO: this will change to qobject::Serialisation once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::Serialisation {
+impl qobject::Serialisation {
     /// Retrieve the JSON form of this QObject
     fn as_json_str(self: Pin<&mut Self>) -> QString {
         let data_serde = DataSerde::from(self.rust());

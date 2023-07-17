@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows how a Q_PROPERTY can be used
 #[cxx_qt::bridge(cxx_file_stem = "rust_properties")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         /// QString from cxx_qt_lib
@@ -69,9 +69,7 @@ impl Default for RustPropertiesRust {
 }
 // ANCHOR_END: book_properties_default
 
-// TODO: this will change to qobject::RustProperties once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustProperties {
+impl qobject::RustProperties {
     /// Connect to the given url
     fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
         // Check that the url starts with kdab

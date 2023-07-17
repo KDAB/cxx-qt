@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows how to use Qt container types
 #[cxx_qt::bridge(cxx_file_stem = "rust_containers")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         /// QHash<QString, QVariant> from cxx_qt_lib
@@ -94,9 +94,7 @@ pub struct RustContainersRust {
     pub(crate) vector: QVector<i32>,
 }
 
-// TODO: this will change to qobject::RustContainers once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustContainers {
+impl qobject::RustContainers {
     /// Reset all the containers
     fn reset(mut self: Pin<&mut Self>) {
         // Update the private rust fields via the rust_mut

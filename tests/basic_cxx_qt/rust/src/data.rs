@@ -23,7 +23,7 @@ impl From<&MyDataRust> for DataSerde {
 }
 
 #[cxx_qt::bridge(cxx_file_stem = "my_data", namespace = "cxx_qt::my_data")]
-mod ffi {
+mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
@@ -70,9 +70,7 @@ impl From<DataSerde> for MyDataRust {
     }
 }
 
-// TODO: this will change to qobject::MyData once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyData {
+impl qobject::MyData {
     pub fn as_json_str(&self) -> QString {
         let data_serde = DataSerde::from(self.rust());
         let data_string = serde_json::to_string(&data_serde).unwrap();

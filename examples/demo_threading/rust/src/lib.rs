@@ -10,7 +10,7 @@ mod workers;
 
 // This mod defines our QObject called EnergyUsage
 #[cxx_qt::bridge(cxx_file_stem = "energy_usage", namespace = "cxx_qt::energy_usage")]
-mod ffi {
+mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
@@ -99,9 +99,7 @@ impl Default for EnergyUsageRust {
     }
 }
 
-// TODO: this will change to qobject::EnergyUsage once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::EnergyUsage {
+impl qobject::EnergyUsage {
     /// A Q_INVOKABLE that returns the current power usage for a given uuid
     fn sensor_power(self: Pin<&mut Self>, uuid: &QString) -> f64 {
         let sensors = SensorsWorker::read_sensors(&self.rust_mut().sensors_map);

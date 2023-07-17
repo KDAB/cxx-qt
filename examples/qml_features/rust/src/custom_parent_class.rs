@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows a custom parent class can be used
 #[cxx_qt::bridge(cxx_file_stem = "custom_parent_class")]
-mod ffi {
+mod qobject {
     unsafe extern "C++" {
         /// QColor from cxx_qt_lib
         type QColor = cxx_qt_lib::QColor;
@@ -78,11 +78,9 @@ pub struct CustomParentClassRust {
     color: QColor,
 }
 
-// TODO: this will change to qobject::RustInvokables once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::CustomParentClass {
+impl qobject::CustomParentClass {
     /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
-    fn paint(self: Pin<&mut Self>, painter: *mut ffi::QPainter) {
+    fn paint(self: Pin<&mut Self>, painter: *mut qobject::QPainter) {
         // We need to convert the *mut QPainter to a Pin<&mut QPainter> so that we can reach the methods
         if let Some(painter) = unsafe { painter.as_mut() } {
             let mut pinned_painter = unsafe { Pin::new_unchecked(painter) };
@@ -103,9 +101,9 @@ impl ffi::CustomParentClass {
     }
 }
 
-impl cxx_qt::Constructor<()> for ffi::CustomParentClass {
+impl cxx_qt::Constructor<()> for qobject::CustomParentClass {
     type NewArguments = ();
-    type BaseArguments = (*mut ffi::QQuickItem,);
+    type BaseArguments = (*mut qobject::QQuickItem,);
     type InitializeArguments = ();
 
     fn route_arguments(

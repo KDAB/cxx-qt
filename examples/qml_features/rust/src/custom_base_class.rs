@@ -8,7 +8,7 @@
 /// A CXX-Qt bridge which shows a custom base class and inheritance can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "custom_base_class")]
-pub mod ffi {
+pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
         include!(< QAbstractListModel >);
@@ -182,9 +182,7 @@ pub struct CustomBaseClassRust {
     pub(crate) vector: Vec<(u32, f64)>,
 }
 
-// TODO: this will change to qobject::RustContainers once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// Add a new row to the QAbstractListModel on the current thread
     pub fn add(self: Pin<&mut Self>) {
         self.add_cpp_context();
@@ -227,7 +225,7 @@ impl ffi::CustomBaseClass {
 }
 
 // ANCHOR: book_inherit_clear
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// Clear the rows in the QAbstractListModel
     pub fn clear(mut self: Pin<&mut Self>) {
         unsafe {
@@ -240,7 +238,7 @@ impl ffi::CustomBaseClass {
 }
 // ANCHOR_END: book_inherit_clear
 
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// Multiply the number in the row with the given index by the given factor
     pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
         if let Some((_, value)) = self.as_mut().rust_mut().vector.get_mut(index as usize) {
@@ -270,13 +268,10 @@ impl ffi::CustomBaseClass {
     }
 }
 
-// TODO: this will change to qobject::RustContainers once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-//
 // QAbstractListModel implementation
 //
 // ANCHOR: book_inherit_data
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// i32 representing the id role
     pub const ID_ROLE: i32 = 0;
     /// i32 representing the value role
@@ -297,7 +292,7 @@ impl ffi::CustomBaseClass {
 // ANCHOR_END: book_inherit_data
 
 // ANCHOR: book_inherit_can_fetch_more
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// Return whether the base class can fetch more
     // Example of overriding a C++ virtual method and calling the base class implementation.
     pub fn can_fetch_more(&self, parent: &QModelIndex) -> bool {
@@ -306,7 +301,7 @@ impl ffi::CustomBaseClass {
 }
 // ANCHOR_END: book_inherit_can_fetch_more
 
-impl ffi::CustomBaseClass {
+impl qobject::CustomBaseClass {
     /// Return the role names for the QAbstractListModel
     pub fn role_names(&self) -> QHash<QHashPair_i32_QByteArray> {
         let mut roles = QHash::<QHashPair_i32_QByteArray>::default();

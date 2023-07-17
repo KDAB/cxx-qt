@@ -113,8 +113,6 @@ impl Default for TypesRust {
     }
 }
 
-// TODO: this will change to qobject::Types once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
 impl ffi::Types {
     /// Load the value from a QVariant
     fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {

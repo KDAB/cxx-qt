@@ -8,7 +8,7 @@
 /// A CXX-Qt bridge which shows how a Q_INVOKABLE can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "rust_invokables")]
-pub mod ffi {
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
         /// QColor from cxx_qt_lib
@@ -58,11 +58,8 @@ impl Default for RustInvokablesRust {
     }
 }
 
-// TODO: this will change to qobject::RustInvokables once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-//
 // ANCHOR: book_invokable_impl
-impl ffi::RustInvokables {
+impl qobject::RustInvokables {
     /// Immutable invokable method that returns the QColor
     fn load_color(&self) -> QColor {
         self.rust().as_qcolor()

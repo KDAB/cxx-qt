@@ -8,33 +8,29 @@
 /// A CXX-Qt bridge which shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "nested_qobjects")]
-pub mod ffi {
+pub mod qobject {
     // ANCHOR: book_extern_block
-    unsafe extern "C++" {
-        #[cxx_name = "InnerObject"]
-        /// The C++ part of the InnerObject so that it can be referred to
-        type CxxInnerObject = super::qobject::InnerObject;
-    }
-    // ANCHOR_END: book_extern_block
-
     extern "RustQt" {
         #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
         #[qproperty(i32, counter)]
         type InnerObject = super::InnerObjectRust;
+    }
+    // ANCHOR_END: book_extern_block
 
+    extern "RustQt" {
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
-        unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut CxxInnerObject);
+        unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut InnerObject);
     }
 
     extern "RustQt" {
         #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-        #[qproperty(*mut CxxInnerObject, inner)]
+        #[qproperty(*mut InnerObject, inner)]
         type OuterObject = super::OuterObjectRust;
 
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
-        unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut CxxInnerObject);
+        unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut InnerObject);
     }
 
     unsafe extern "RustQt" {
@@ -43,7 +39,7 @@ pub mod ffi {
         // This method needs to be unsafe otherwise clippy complains that the
         // public method might dereference the raw pointer.
         #[qinvokable]
-        unsafe fn print_count(self: Pin<&mut qobject::OuterObject>, inner: *mut CxxInnerObject);
+        unsafe fn print_count(self: Pin<&mut qobject::OuterObject>, inner: *mut InnerObject);
 
         /// Reset the counter of the inner QObject stored in the Q_PROPERTY
         #[qinvokable]
@@ -63,7 +59,7 @@ pub struct InnerObjectRust {
 
 /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
 pub struct OuterObjectRust {
-    inner: *mut ffi::CxxInnerObject,
+    inner: *mut qobject::InnerObject,
 }
 
 impl Default for OuterObjectRust {
@@ -74,14 +70,12 @@ impl Default for OuterObjectRust {
     }
 }
 
-// TODO: this will change to qobject::OuterObject once
-// https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::OuterObject {
+impl qobject::OuterObject {
     /// Print the count of the given inner QObject
     //
     // This method needs to be unsafe otherwise clippy complains that the
     // public method might dereference the raw pointer.
-    unsafe fn print_count(self: Pin<&mut Self>, inner: *mut ffi::CxxInnerObject) {
+    unsafe fn print_count(self: Pin<&mut Self>, inner: *mut qobject::InnerObject) {
         if let Some(inner) = unsafe { inner.as_ref() } {
             println!("Inner object's counter property: {}", inner.counter());
         }
