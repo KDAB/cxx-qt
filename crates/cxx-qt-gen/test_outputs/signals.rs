@@ -23,25 +23,23 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
-        #[doc = "MyObject"]
+        #[doc = "MyObjectRust"]
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-        #[cxx_name = "MyObject"]
-        type MyObjectQt;
-    }
-    extern "Rust" {
-        #[cxx_name = "MyObjectRust"]
         type MyObject;
     }
     extern "Rust" {
+        type MyObjectRust;
+    }
+    extern "Rust" {
         #[cxx_name = "invokableWrapper"]
-        fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>);
+        fn invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[rust_name = "ready"]
-        fn ready(self: Pin<&mut MyObjectQt>);
+        fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -50,15 +48,15 @@ mod ffi {
         #[must_use]
         #[rust_name = "connect_ready"]
         fn readyConnect(
-            self: Pin<&mut MyObjectQt>,
-            func: fn(Pin<&mut MyObjectQt>),
+            self: Pin<&mut MyObject>,
+            func: fn(Pin<&mut MyObject>),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
         #[rust_name = "data_changed"]
         fn dataChanged(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
@@ -72,9 +70,9 @@ mod ffi {
         #[must_use]
         #[rust_name = "connect_data_changed"]
         fn dataChangedConnect(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             func: fn(
-                Pin<&mut MyObjectQt>,
+                Pin<&mut MyObject>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
@@ -86,7 +84,7 @@ mod ffi {
     unsafe extern "C++" {
         #[rust_name = "base_class_new_data"]
         fn newData(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
@@ -100,9 +98,9 @@ mod ffi {
         #[must_use]
         #[rust_name = "connect_base_class_new_data"]
         fn newDataConnect(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             func: fn(
-                Pin<&mut MyObjectQt>,
+                Pin<&mut MyObject>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
@@ -114,17 +112,17 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs_my_object() -> Box<MyObject>;
+        fn create_rs_my_object_rust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
+        fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRustMut"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
 use self::cxx_qt_ffi::*;
@@ -135,15 +133,14 @@ pub mod cxx_qt_ffi {
     use std::pin::Pin;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
-    #[derive(Default)]
-    pub struct MyObject;
-    impl MyObject {
+    type MyObjectRust = super::MyObjectRust;
+    impl MyObjectRust {
         #[doc(hidden)]
-        pub fn invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>) {
+        pub fn invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>) {
             cpp.invokable();
         }
     }
-    impl MyObjectQt {
+    impl MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -151,13 +148,13 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: Pin<&mut MyObjectQt>,
-            func: fn(Pin<&mut MyObjectQt>),
+            self: Pin<&mut MyObject>,
+            func: fn(Pin<&mut MyObject>),
         ) -> CxxQtQMetaObjectConnection {
             self.connect_ready(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    impl MyObjectQt {
+    impl MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "dataChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -165,9 +162,9 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_data_changed(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             func: fn(
-                Pin<&mut MyObjectQt>,
+                Pin<&mut MyObject>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
@@ -177,7 +174,7 @@ pub mod cxx_qt_ffi {
             self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    impl MyObjectQt {
+    impl MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "newData"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -185,9 +182,9 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_base_class_new_data(
-            self: Pin<&mut MyObjectQt>,
+            self: Pin<&mut MyObject>,
             func: fn(
-                Pin<&mut MyObjectQt>,
+                Pin<&mut MyObject>,
                 first: i32,
                 second: UniquePtr<Opaque>,
                 third: QPoint,
@@ -197,13 +194,13 @@ pub mod cxx_qt_ffi {
             self.connect_base_class_new_data(func, CxxQtConnectionType::AutoConnection)
         }
     }
-    impl cxx_qt::Locking for MyObjectQt {}
+    impl cxx_qt::Locking for MyObject {}
     #[doc = r" Generated CXX-Qt method which creates a boxed rust struct of a QObject"]
-    pub fn create_rs_my_object() -> std::boxed::Box<MyObject> {
+    pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         core::default::Default::default()
     }
-    impl cxx_qt::CxxQtType for MyObjectQt {
-        type Rust = MyObject;
+    impl cxx_qt::CxxQtType for MyObject {
+        type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
         }
@@ -219,6 +216,6 @@ pub mod cxx_qt_ffi {
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-        pub type MyObject = super::MyObjectQt;
+        pub type MyObject = super::MyObject;
     }
 }

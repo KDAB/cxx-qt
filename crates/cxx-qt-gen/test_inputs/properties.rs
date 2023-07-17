@@ -6,16 +6,11 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    #[qproperty(i32, primitive)]
-    #[qproperty(QPoint, trivial)]
-    pub struct MyObject {
-        primitive: i32,
-        trivial: QPoint,
-        opaque: UniquePtr<Opaque>,
-
-        private_rust_field: i32,
-        pub public_rust_field: f64,
+    extern "RustQt" {
+        #[cxx_qt::qobject]
+        #[derive(Default)]
+        #[qproperty(i32, primitive)]
+        #[qproperty(QPoint, trivial)]
+        type MyObject = super::MyObjectRust;
     }
 }

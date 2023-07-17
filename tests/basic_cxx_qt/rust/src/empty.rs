@@ -5,7 +5,11 @@
 
 #[cxx_qt::bridge(cxx_file_stem = "empty")]
 mod ffi {
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct Empty;
+    extern "RustQt" {
+        #[cxx_qt::qobject]
+        type Empty = super::EmptyRust;
+    }
 }
+
+#[derive(Default)]
+pub struct EmptyRust;

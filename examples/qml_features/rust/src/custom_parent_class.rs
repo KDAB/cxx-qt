@@ -42,23 +42,15 @@ mod ffi {
         include!(<QtQuick/QQuickPaintedItem>);
     }
 
-    /// A struct which inherits from QQuickPaintedItem
-    ///
-    /// Which has a parent of the type QQuickItem rather than QObject.
-    #[cxx_qt::qobject(
-        base = "QQuickPaintedItem",
-        qml_uri = "com.kdab.cxx_qt.demo",
-        qml_version = "1.0"
-    )]
-    #[qproperty(QColor, color)]
-    #[derive(Default)]
-    pub struct CustomParentClass {
-        color: QColor,
-    }
-
-    impl cxx_qt::Constructor<()> for qobject::CustomParentClass {}
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject(
+            base = "QQuickPaintedItem",
+            qml_uri = "com.kdab.cxx_qt.demo",
+            qml_version = "1.0"
+        )]
+        #[qproperty(QColor, color)]
+        type CustomParentClass = super::CustomParentClassRust;
+
         /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
         #[qinvokable(cxx_override)]
         unsafe fn paint(self: Pin<&mut qobject::CustomParentClass>, painter: *mut QPainter);
@@ -71,14 +63,24 @@ mod ffi {
         #[inherit]
         fn update(self: Pin<&mut qobject::CustomParentClass>);
     }
+
+    impl cxx_qt::Constructor<()> for qobject::CustomParentClass {}
 }
 
 use core::pin::Pin;
-use cxx_qt_lib::QRectF;
+use cxx_qt_lib::{QColor, QRectF};
+
+/// A struct which inherits from QQuickPaintedItem
+///
+/// Which has a parent of the type QQuickItem rather than QObject.
+#[derive(Default)]
+pub struct CustomParentClassRust {
+    color: QColor,
+}
 
 // TODO: this will change to qobject::RustInvokables once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::CustomParentClassQt {
+impl ffi::CustomParentClass {
     /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
     fn paint(self: Pin<&mut Self>, painter: *mut ffi::QPainter) {
         // We need to convert the *mut QPainter to a Pin<&mut QPainter> so that we can reach the methods
@@ -101,7 +103,7 @@ impl ffi::CustomParentClassQt {
     }
 }
 
-impl cxx_qt::Constructor<()> for qobject::CustomParentClass {
+impl cxx_qt::Constructor<()> for ffi::CustomParentClass {
     type NewArguments = ();
     type BaseArguments = (*mut ffi::QQuickItem,);
     type InitializeArguments = ();
@@ -116,8 +118,8 @@ impl cxx_qt::Constructor<()> for qobject::CustomParentClass {
         ((), (core::ptr::null_mut(),), ())
     }
 
-    fn new((): ()) -> CustomParentClass {
-        CustomParentClass::default()
+    fn new((): ()) -> CustomParentClassRust {
+        CustomParentClassRust::default()
     }
 
     fn initialize(self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {

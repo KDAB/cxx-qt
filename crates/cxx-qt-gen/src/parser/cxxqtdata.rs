@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::foreignmod::foreign_mod_to_foreign_item_types;
+use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
 use crate::syntax::safety::Safety;
 use crate::syntax::{attribute::attribute_find_path, path::path_to_single_ident};
 use crate::{
@@ -66,23 +66,36 @@ pub struct ParsedCxxQtData {
 
 impl ParsedCxxQtData {
     /// Find the QObjects within the module and add into the qobjects BTreeMap
-    pub fn find_qobject_structs(&mut self, items: &[Item]) -> Result<()> {
+    pub fn find_qobject_types(&mut self, items: &[Item]) -> Result<()> {
         for item in items {
-            if let Item::Struct(qobject_struct) = item {
-                if let Some(index) =
-                    attribute_find_path(&qobject_struct.attrs, &["cxx_qt", "qobject"])
+            if let Item::ForeignMod(foreign_mod) = item {
+                if foreign_mod.abi.name.as_ref().map(|lit_str| lit_str.value())
+                    == Some("RustQt".to_string())
                 {
-                    // Load the QObject
-                    let mut qobject = ParsedQObject::from_struct(qobject_struct, index)?;
+                    for foreign_item in &foreign_mod.items {
+                        if let ForeignItem::Verbatim(tokens) = foreign_item {
+                            let foreign_alias: ForeignTypeIdentAlias = syn::parse2(tokens.clone())?;
 
-                    // Inject the bridge namespace if the qobject one is empty
-                    if qobject.namespace.is_empty() && !self.namespace.is_empty() {
-                        qobject.namespace = self.namespace.clone();
+                            // TODO: in the future qobject macro will be removed and all types in RustQt will be QObjects
+                            if let Some(index) =
+                                attribute_find_path(&foreign_alias.attrs, &["cxx_qt", "qobject"])
+                            {
+                                // Load the QObject
+                                let mut qobject =
+                                    ParsedQObject::from_foreign_item_type(&foreign_alias, index)?;
+
+                                // Inject the bridge namespace if the qobject one is empty
+                                if qobject.namespace.is_empty() && !self.namespace.is_empty() {
+                                    qobject.namespace = self.namespace.clone();
+                                }
+
+                                // Note that we assume a compiler error will occur later
+                                // if you had two structs with the same name
+                                self.qobjects
+                                    .insert(foreign_alias.ident_left.clone(), qobject);
+                            }
+                        }
                     }
-
-                    // Note that we assume a compiler error will occur later
-                    // if you had two structs with the same name
-                    self.qobjects.insert(qobject_struct.ident.clone(), qobject);
                 }
             }
         }
@@ -170,8 +183,6 @@ impl ParsedCxxQtData {
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
         match item {
             Item::Impl(imp) => self.parse_impl(imp),
-            // Ignore structs which are qobjects
-            Item::Struct(s) if self.qobjects.contains_key(&s.ident) => Ok(None),
             Item::Use(_) => {
                 // Any use statements go into the CXX-Qt generated block
                 self.uses.push(item);
@@ -318,12 +329,15 @@ mod tests {
 
         let module: ItemMod = parse_quote! {
             mod module {
-                struct Other;
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    type Other = super::OtherRust;
+
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 1);
         assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
@@ -335,14 +349,17 @@ mod tests {
 
         let module: ItemMod = parse_quote! {
             mod module {
-                pub struct Other;
-                #[cxx_qt::qobject]
-                pub struct MyObject;
-                #[cxx_qt::qobject]
-                pub struct SecondObject;
+                extern "RustQt" {
+                    type Other = super::OtherRust;
+
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                    #[cxx_qt::qobject]
+                    type SecondObject = super::SecondObjectRust;
+                }
             }
         };
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 2);
         assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
@@ -360,15 +377,17 @@ mod tests {
 
         let module: ItemMod = parse_quote! {
             mod module {
-                pub struct Other;
-                #[cxx_qt::qobject(namespace = "qobject_namespace")]
-                pub struct MyObject;
-                #[cxx_qt::qobject]
-                pub struct SecondObject;
+                extern "RustQt" {
+                    type Other = super::OtherRust;
+                    #[cxx_qt::qobject(namespace = "qobject_namespace")]
+                    type MyObject = super::MyObjectRust;
+                    #[cxx_qt::qobject]
+                    type SecondObject = super::SecondObjectRust;
+                }
             }
         };
         cxx_qt_data
-            .find_qobject_structs(&module.content.unwrap().1)
+            .find_qobject_types(&module.content.unwrap().1)
             .unwrap();
         assert_eq!(cxx_qt_data.qobjects.len(), 2);
         assert_eq!(
@@ -395,25 +414,26 @@ mod tests {
 
         let module: ItemMod = parse_quote! {
             mod module {
-                pub struct Other;
-                pub struct MyObject;
+                extern "RustQt" {
+                    type Other = super::OtherRust;
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
-        let result = cxx_qt_data.find_qobject_structs(&module.content.unwrap().1);
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 0);
     }
 
     #[test]
-    fn test_find_and_merge_cxx_qt_item_struct_qobject() {
+    fn test_find_and_merge_cxx_qt_item_struct_qobject_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[cxx_qt::qobject]
             pub struct MyObject;
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
+        assert!(result.is_some());
     }
 
     #[test]

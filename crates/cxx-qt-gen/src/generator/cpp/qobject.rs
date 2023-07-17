@@ -165,8 +165,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -188,8 +190,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject(base = "QStringListModel")]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject(base = "QStringListModel")]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -209,8 +213,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_name = "MyQmlElement")]
-                pub struct MyNamedObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_name = "MyQmlElement")]
+                    type MyNamedObject = super::MyNamedObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -233,8 +239,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -258,8 +266,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_uncreatable)]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_uncreatable)]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();

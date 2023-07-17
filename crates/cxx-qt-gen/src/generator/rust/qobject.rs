@@ -14,7 +14,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, ImplItem, Item, Result};
+use syn::{parse_quote, Ident, ImplItem, Item, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -62,11 +62,15 @@ impl GeneratedRustQObject {
             .blocks
             .append(&mut generate_qobject_definitions(&qobject_idents)?);
 
-        // Add our QObject struct to the implementation blocks
-        generated
-            .blocks
-            .cxx_qt_mod_contents
-            .push(syn::Item::Struct(qobject.qobject_struct.clone()));
+        // Add a type alias so that generated code can still find T
+        //
+        // TODO: this should be removed once generated methods aren't in the hidden module
+        generated.blocks.cxx_qt_mod_contents.push({
+            let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
+            parse_quote! {
+                type #rust_struct_name_rust = super::#rust_struct_name_rust;
+            }
+        });
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_rust_properties(
@@ -169,9 +173,7 @@ fn generate_qobject_definitions(
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut generated = GeneratedRustQObjectBlocks::default();
-    let cpp_class_name_cpp = &qobject_idents.cpp_class.cpp.to_string();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
-    let rust_struct_name_cpp = &qobject_idents.rust_struct.cpp.to_string();
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
     let fragment = RustFragmentPair {
@@ -184,13 +186,11 @@ fn generate_qobject_definitions(
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    #[cxx_name = #cpp_class_name_cpp]
                     type #cpp_class_name_rust;
                 }
             },
             quote! {
                 extern "Rust" {
-                    #[cxx_name = #rust_struct_name_cpp]
                     type #rust_struct_name_rust;
                 }
             },
@@ -218,17 +218,19 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
             .unwrap();
-        assert_eq!(rust.cpp_struct_ident, "MyObjectQt");
+        assert_eq!(rust.cpp_struct_ident, "MyObject");
         assert_eq!(rust.namespace_internals, "cxx_qt_my_object");
-        assert_eq!(rust.rust_struct_ident, "MyObject");
+        assert_eq!(rust.rust_struct_ident, "MyObjectRust");
     }
 
     #[test]
@@ -236,17 +238,19 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
             .unwrap();
-        assert_eq!(rust.cpp_struct_ident, "MyObjectQt");
+        assert_eq!(rust.cpp_struct_ident, "MyObject");
         assert_eq!(rust.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(rust.rust_struct_ident, "MyObject");
+        assert_eq!(rust.rust_struct_ident, "MyObjectRust");
     }
 
     #[test]
@@ -254,8 +258,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -268,13 +274,12 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[doc = "The C++ type for the QObject "]
-                    #[doc = "MyObject"]
+                    #[doc = "MyObjectRust"]
                     #[doc = "\n"]
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    #[cxx_name = "MyObject"]
-                    type MyObjectQt;
+                    type MyObject;
                 }
             },
         );
@@ -282,8 +287,7 @@ mod tests {
             &rust.blocks.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "MyObjectRust"]
-                    type MyObject;
+                    type MyObjectRust;
                 }
             },
         );
@@ -301,7 +305,7 @@ mod tests {
                 extern "Rust" {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_my_object"]
-                    fn create_rs_my_object() -> Box<MyObject>;
+                    fn create_rs_my_object_rust() -> Box<MyObjectRust>;
                 }
             },
         );

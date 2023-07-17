@@ -31,20 +31,17 @@ pub mod ffi {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
-    /// A struct which inherits from QAbstractListModel
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
-    #[cxx_qt::qobject(
-        base = "QAbstractListModel",
-        qml_uri = "com.kdab.cxx_qt.demo",
-        qml_version = "1.0"
-    )]
-    #[derive(Default)]
-    pub struct CustomBaseClass {
-        // ANCHOR_END: book_qobject_base
-        pub(crate) id: u32,
-        pub(crate) vector: Vec<(u32, f64)>,
+    extern "RustQt" {
+        #[cxx_qt::qobject(
+            base = "QAbstractListModel",
+            qml_uri = "com.kdab.cxx_qt.demo",
+            qml_version = "1.0"
+        )]
+        type CustomBaseClass = super::CustomBaseClassRust;
     }
+    // ANCHOR_END: book_qobject_base
     // ANCHOR_END: book_inherit_qalm
 
     // Enabling threading on the qobject
@@ -178,9 +175,16 @@ use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
 
+/// A struct which inherits from QAbstractListModel
+#[derive(Default)]
+pub struct CustomBaseClassRust {
+    pub(crate) id: u32,
+    pub(crate) vector: Vec<(u32, f64)>,
+}
+
 // TODO: this will change to qobject::RustContainers once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// Add a new row to the QAbstractListModel on the current thread
     pub fn add(self: Pin<&mut Self>) {
         self.add_cpp_context();
@@ -223,7 +227,7 @@ impl ffi::CustomBaseClassQt {
 }
 
 // ANCHOR: book_inherit_clear
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// Clear the rows in the QAbstractListModel
     pub fn clear(mut self: Pin<&mut Self>) {
         unsafe {
@@ -236,7 +240,7 @@ impl ffi::CustomBaseClassQt {
 }
 // ANCHOR_END: book_inherit_clear
 
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// Multiply the number in the row with the given index by the given factor
     pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
         if let Some((_, value)) = self.as_mut().rust_mut().vector.get_mut(index as usize) {
@@ -272,7 +276,7 @@ impl ffi::CustomBaseClassQt {
 // QAbstractListModel implementation
 //
 // ANCHOR: book_inherit_data
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// i32 representing the id role
     pub const ID_ROLE: i32 = 0;
     /// i32 representing the value role
@@ -293,7 +297,7 @@ impl ffi::CustomBaseClassQt {
 // ANCHOR_END: book_inherit_data
 
 // ANCHOR: book_inherit_can_fetch_more
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// Return whether the base class can fetch more
     // Example of overriding a C++ virtual method and calling the base class implementation.
     pub fn can_fetch_more(&self, parent: &QModelIndex) -> bool {
@@ -302,7 +306,7 @@ impl ffi::CustomBaseClassQt {
 }
 // ANCHOR_END: book_inherit_can_fetch_more
 
-impl ffi::CustomBaseClassQt {
+impl ffi::CustomBaseClass {
     /// Return the role names for the QAbstractListModel
     pub fn role_names(&self) -> QHash<QHashPair_i32_QByteArray> {
         let mut roles = QHash::<QHashPair_i32_QByteArray>::default();

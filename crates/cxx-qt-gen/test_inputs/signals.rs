@@ -7,6 +7,9 @@ mod ffi {
     }
 
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject]
+        type MyObject = super::MyObjectRust;
+
         #[qsignal]
         fn ready(self: Pin<&mut qobject::MyObject>);
 
@@ -33,8 +36,4 @@ mod ffi {
         #[qinvokable]
         fn invokable(self: Pin<&mut qobject::MyObject>);
     }
-
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MyObject;
 }

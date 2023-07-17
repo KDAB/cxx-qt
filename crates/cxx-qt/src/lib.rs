@@ -93,17 +93,21 @@ pub trait Threading: Locking + Sized {
 /// ```
 /// #[cxx_qt::bridge]
 /// mod ffi {
-///     // Struct without `Default` implementation
-///     #[cxx_qt::qobject]
-///     pub struct MyStruct {
-///         pub integer: i32,
-///         pub string: String
+///     extern "RustQt" {
+///         #[cxx_qt::qobject]
+///         type MyStruct = super::MyStructRust;
 ///     }
 ///
 ///     // Declare that we want to use a custom constructor
 ///     // Note that the arguments must be a tuple of CXX types.
 ///     // Any associated types that aren't included here are assumed to be `()`.
 ///     impl cxx_qt::Constructor<(i32, String), NewArguments=(i32, String)> for qobject::MyStruct {}
+/// }
+///
+/// // Struct without `Default` implementation
+/// pub struct MyStructRust {
+///     pub integer: i32,
+///     pub string: String
 /// }
 ///
 /// impl cxx_qt::Constructor<(i32, String)> for qobject::MyStruct {
@@ -119,8 +123,8 @@ pub trait Threading: Locking + Sized {
 ///         (args, (), ())
 ///     }
 ///
-///     fn new((integer, string): (i32, String)) -> MyStruct {
-///         MyStruct {
+///     fn new((integer, string): (i32, String)) -> MyStructRust {
+///         MyStructRust {
 ///             integer,
 ///             string
 ///         }

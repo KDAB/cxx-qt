@@ -15,7 +15,7 @@ pub struct NamespaceName {
 
 impl From<&ParsedQObject> for NamespaceName {
     fn from(qobject: &ParsedQObject) -> Self {
-        NamespaceName::from_pair_str(&qobject.namespace, &qobject.qobject_struct.ident)
+        NamespaceName::from_pair_str(&qobject.namespace, &qobject.qobject_ty.ident_left)
     }
 }
 

@@ -15,8 +15,8 @@ pub struct DataSerde {
     string: String,
 }
 
-impl From<&MyObject> for DataSerde {
-    fn from(value: &MyObject) -> DataSerde {
+impl From<&MyObjectRust> for DataSerde {
+    fn from(value: &MyObjectRust) -> DataSerde {
         DataSerde {
             number: value.number,
             string: value.string.to_string(),
@@ -28,39 +28,18 @@ const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
 #[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "core")]
 mod ffi {
-    use super::{DataSerde, DEFAULT_STR};
-
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
     }
 
-    #[cxx_qt::qobject]
-    #[qproperty(i32, number)]
-    #[qproperty(QString, string)]
-    pub struct MyObject {
-        pub number: i32,
-        pub string: QString,
-    }
-
-    impl Default for MyObject {
-        fn default() -> Self {
-            let data_serde: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
-            data_serde.into()
-        }
-    }
-
-    impl From<DataSerde> for MyObject {
-        fn from(value: DataSerde) -> MyObject {
-            MyObject {
-                number: value.number,
-                string: QString::from(&value.string),
-            }
-        }
-    }
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        type MyObject = super::MyObjectRust;
+
         #[qinvokable]
         pub fn increment(self: Pin<&mut qobject::MyObject>);
 
@@ -79,9 +58,30 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::QString;
 
+pub struct MyObjectRust {
+    pub number: i32,
+    pub string: QString,
+}
+
+impl Default for MyObjectRust {
+    fn default() -> Self {
+        let data_serde: DataSerde = serde_json::from_str(DEFAULT_STR).unwrap();
+        data_serde.into()
+    }
+}
+
+impl From<DataSerde> for MyObjectRust {
+    fn from(value: DataSerde) -> Self {
+        Self {
+            number: value.number,
+            string: QString::from(&value.string),
+        }
+    }
+}
+
 // TODO: this will change to qobject::MyObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyObjectQt {
+impl ffi::MyObject {
     pub fn increment(self: Pin<&mut Self>) {
         let new_number = self.number() + 1;
         self.set_number(new_number);

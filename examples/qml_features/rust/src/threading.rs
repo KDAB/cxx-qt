@@ -21,28 +21,11 @@ pub mod ffi {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
-    /// A QObject which has threading
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(QString, title)]
-    #[qproperty(QUrl, url)]
-    pub struct ThreadingWebsite {
-        /// The title Q_PROPERTY
-        title: QString,
-        /// The url Q_PROPERTY
-        url: QUrl,
-
-        pub(crate) loading: std::sync::atomic::AtomicBool,
-    }
-
-    impl Default for ThreadingWebsite {
-        fn default() -> Self {
-            Self {
-                url: QUrl::from("https://kdab.com"),
-                title: QString::from("KDAB"),
-
-                loading: std::sync::atomic::AtomicBool::new(false),
-            }
-        }
+    extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(QString, title)]
+        #[qproperty(QUrl, url)]
+        type ThreadingWebsite = super::ThreadingWebsiteRust;
     }
 
     // ANCHOR: book_threading_trait
@@ -65,9 +48,30 @@ use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QString, QUrl};
 
+/// A QObject which has threading
+pub struct ThreadingWebsiteRust {
+    /// The title Q_PROPERTY
+    title: QString,
+    /// The url Q_PROPERTY
+    url: QUrl,
+
+    pub(crate) loading: std::sync::atomic::AtomicBool,
+}
+
+impl Default for ThreadingWebsiteRust {
+    fn default() -> Self {
+        Self {
+            url: QUrl::from("https://kdab.com"),
+            title: QString::from("KDAB"),
+
+            loading: std::sync::atomic::AtomicBool::new(false),
+        }
+    }
+}
+
 // TODO: this will change to qobject::ThreadingWebsite once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::ThreadingWebsiteQt {
+impl ffi::ThreadingWebsite {
     /// Swap the URL between kdab.com and github.com
     fn change_url(self: Pin<&mut Self>) {
         let new_url = if self.url().to_string() == "https://kdab.com" {

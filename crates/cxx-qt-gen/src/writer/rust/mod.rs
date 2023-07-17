@@ -109,16 +109,15 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
         // Add the type alias to the C++ struct
         let cpp_struct_ident = &qobject.cpp_struct_ident;
-        let rust_struct_ident = &qobject.rust_struct_ident;
-        let rust_struct_ident_str = rust_struct_ident.to_string();
+        let cpp_struct_ident_str = cpp_struct_ident.to_string();
         qobject_types.push(quote! {
             #[doc = "The C++ type for the QObject "]
-            #[doc = #rust_struct_ident_str]
+            #[doc = #cpp_struct_ident_str]
             #[doc = "\n"]
             #[doc = "Use this type when referring to the QObject as a pointer"]
             #[doc = "\n"]
             #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-            pub type #rust_struct_ident = super::#cpp_struct_ident;
+            pub type #cpp_struct_ident = super::#cpp_struct_ident;
         })
     }
 
@@ -192,31 +191,29 @@ mod tests {
             }],
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![GeneratedRustQObject {
-                cpp_struct_ident: format_ident!("MyObjectQt"),
+                cpp_struct_ident: format_ident!("MyObject"),
                 namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
-                rust_struct_ident: format_ident!("MyObject"),
+                rust_struct_ident: format_ident!("MyObjectRust"),
                 blocks: GeneratedRustQObjectBlocks {
                     cxx_mod_contents: vec![
                         parse_quote! {
                             unsafe extern "C++" {
-                                #[cxx_name = "MyObject"]
-                                type MyObjectQt;
+                                type MyObject;
                             }
                         },
                         parse_quote! {
                             extern "Rust" {
-                                #[cxx_name = "MyObjectRust"]
-                                type MyObject;
+                                type MyObjectRust;
                             }
                         },
                     ],
                     cxx_qt_mod_contents: vec![
                         parse_quote! {
                             #[derive(Default)]
-                            pub struct MyObject;
+                            pub struct MyObjectRust;
                         },
                         parse_quote! {
-                            impl MyObject {
+                            impl MyObjectRust {
                                 fn rust_method(&self) {
 
                                 }
@@ -245,31 +242,29 @@ mod tests {
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
                 GeneratedRustQObject {
-                    cpp_struct_ident: format_ident!("FirstObjectQt"),
+                    cpp_struct_ident: format_ident!("FirstObject"),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
-                    rust_struct_ident: format_ident!("FirstObject"),
+                    rust_struct_ident: format_ident!("FirstObjectRust"),
                     blocks: GeneratedRustQObjectBlocks {
                         cxx_mod_contents: vec![
                             parse_quote! {
                                 unsafe extern "C++" {
-                                    #[cxx_name = "FirstObject"]
-                                    type FirstObjectQt;
+                                    type FirstObject;
                                 }
                             },
                             parse_quote! {
                                 extern "Rust" {
-                                    #[cxx_name = "FirstObjectRust"]
-                                    type FirstObject;
+                                    type FirstObjectRust;
                                 }
                             },
                         ],
                         cxx_qt_mod_contents: vec![
                             parse_quote! {
                                 #[derive(Default)]
-                                pub struct FirstObject;
+                                pub struct FirstObjectRust;
                             },
                             parse_quote! {
-                                impl FirstObject {
+                                impl FirstObjectRust {
                                     fn rust_method(&self) {
 
                                     }
@@ -279,31 +274,29 @@ mod tests {
                     },
                 },
                 GeneratedRustQObject {
-                    cpp_struct_ident: format_ident!("SecondObjectQt"),
+                    cpp_struct_ident: format_ident!("SecondObject"),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
-                    rust_struct_ident: format_ident!("SecondObject"),
+                    rust_struct_ident: format_ident!("SecondObjectRust"),
                     blocks: GeneratedRustQObjectBlocks {
                         cxx_mod_contents: vec![
                             parse_quote! {
                                 unsafe extern "C++" {
-                                    #[cxx_name = "SecondObject"]
-                                    type SecondObjectQt;
+                                    type SecondObject;
                                 }
                             },
                             parse_quote! {
                                 extern "Rust" {
-                                    #[cxx_name = "SecondObjectRust"]
-                                    type SecondObject;
+                                    type SecondObjectRust;
                                 }
                             },
                         ],
                         cxx_qt_mod_contents: vec![
                             parse_quote! {
                                 #[derive(Default)]
-                                pub struct SecondObject;
+                                pub struct SecondObjectRust;
                             },
                             parse_quote! {
-                                impl SecondObject {
+                                impl SecondObjectRust {
                                     fn rust_method(&self) {
 
                                     }
@@ -342,25 +335,23 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    #[cxx_name = "MyObject"]
-                    type MyObjectQt;
+                    type MyObject;
                 }
 
                 extern "Rust" {
-                    #[cxx_name = "MyObjectRust"]
-                    type MyObject;
+                    type MyObjectRust;
                 }
 
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &MyObjectQt) -> &MyObject;
+                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
                 }
 
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObjectQt>) -> Pin<&mut MyObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             }
 
@@ -377,16 +368,16 @@ mod tests {
                 use module::Struct;
 
                 #[derive(Default)]
-                pub struct MyObject;
+                pub struct MyObjectRust;
 
-                impl MyObject {
+                impl MyObjectRust {
                     fn rust_method(&self) {
 
                     }
                 }
 
-                impl cxx_qt::CxxQtType for MyObjectQt {
-                    type Rust = MyObject;
+                impl cxx_qt::CxxQtType for MyObject {
+                    type Rust = MyObjectRust;
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
@@ -403,7 +394,7 @@ mod tests {
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type MyObject = super::MyObjectQt;
+                    pub type MyObject = super::MyObject;
                 }
             }
         }
@@ -437,46 +428,42 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    #[cxx_name = "FirstObject"]
-                    type FirstObjectQt;
-                }
-
-                extern "Rust" {
-                    #[cxx_name = "FirstObjectRust"]
                     type FirstObject;
                 }
 
+                extern "Rust" {
+                    type FirstObjectRust;
+                }
+
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &FirstObjectQt) -> &FirstObject;
+                    fn cxx_qt_ffi_rust(self: &FirstObject) -> &FirstObjectRust;
                 }
 
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObjectQt>) -> Pin<&mut FirstObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObject>) -> Pin<&mut FirstObjectRust>;
                 }
                 unsafe extern "C++" {
-                    #[cxx_name = "SecondObject"]
-                    type SecondObjectQt;
-                }
-
-                extern "Rust" {
-                    #[cxx_name = "SecondObjectRust"]
                     type SecondObject;
                 }
 
+                extern "Rust" {
+                    type SecondObjectRust;
+                }
+
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &SecondObjectQt) -> &SecondObject;
+                    fn cxx_qt_ffi_rust(self: &SecondObject) -> &SecondObjectRust;
                 }
 
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObjectQt>) -> Pin<&mut SecondObject>;
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObject>) -> Pin<&mut SecondObjectRust>;
                 }
             }
 
@@ -493,16 +480,16 @@ mod tests {
                 use module::Struct;
 
                 #[derive(Default)]
-                pub struct FirstObject;
+                pub struct FirstObjectRust;
 
-                impl FirstObject {
+                impl FirstObjectRust {
                     fn rust_method(&self) {
 
                     }
                 }
 
-                impl cxx_qt::CxxQtType for FirstObjectQt {
-                    type Rust = FirstObject;
+                impl cxx_qt::CxxQtType for FirstObject {
+                    type Rust = FirstObjectRust;
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
@@ -512,16 +499,16 @@ mod tests {
                 }
 
                 #[derive(Default)]
-                pub struct SecondObject;
+                pub struct SecondObjectRust;
 
-                impl SecondObject {
+                impl SecondObjectRust {
                     fn rust_method(&self) {
 
                     }
                 }
 
-                impl cxx_qt::CxxQtType for SecondObjectQt {
-                    type Rust = SecondObject;
+                impl cxx_qt::CxxQtType for SecondObject {
+                    type Rust = SecondObjectRust;
                     fn rust(&self) -> &Self::Rust {
                         self.cxx_qt_ffi_rust()
                     }
@@ -538,14 +525,14 @@ mod tests {
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type FirstObject = super::FirstObjectQt;
+                    pub type FirstObject = super::FirstObject;
                     #[doc = "The C++ type for the QObject "]
                     #[doc = "SecondObject"]
                     #[doc = "\n"]
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-                    pub type SecondObject = super::SecondObjectQt;
+                    pub type SecondObject = super::SecondObject;
                 }
             }
         }

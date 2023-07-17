@@ -172,16 +172,16 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "voidInvokableWrapper"]
-                    fn void_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt);
+                    fn void_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject);
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl MyObject {
+                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn void_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt) {
+                    pub fn void_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject) {
                         cpp.void_invokable();
                     }
                 }
@@ -194,16 +194,16 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "trivialInvokableWrapper"]
-                    fn trivial_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: i32) -> i32;
+                    fn trivial_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: i32) -> i32;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[1],
             quote! {
-                impl MyObject {
+                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn trivial_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: i32) -> i32 {
+                    pub fn trivial_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: i32) -> i32 {
                         return cpp.trivial_invokable(param);
                     }
                 }
@@ -216,16 +216,16 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "opaqueInvokableWrapper"]
-                    fn opaque_invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, param: &QColor) -> UniquePtr<QColor>;
+                    fn opaque_invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[2],
             quote! {
-                impl MyObject {
+                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub fn opaque_invokable_wrapper(self: &mut MyObject, cpp: Pin<&mut MyObjectQt>, param: &QColor) -> UniquePtr<QColor> {
+                    pub fn opaque_invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor> {
                         return cpp.opaque_invokable(param);
                     }
                 }
@@ -238,16 +238,16 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "unsafeInvokableWrapper"]
-                    unsafe fn unsafe_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: *mut T) -> *mut T;
+                    unsafe fn unsafe_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: *mut T) -> *mut T;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[3],
             quote! {
-                impl MyObject {
+                impl MyObjectRust {
                     #[doc(hidden)]
-                    pub unsafe fn unsafe_invokable_wrapper(self: &MyObject, cpp: &MyObjectQt, param: *mut T) -> *mut T {
+                    pub unsafe fn unsafe_invokable_wrapper(self: &MyObjectRust, cpp: &MyObject, param: *mut T) -> *mut T {
                         return cpp.unsafe_invokable(param);
                     }
                 }

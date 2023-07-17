@@ -17,22 +17,11 @@ pub mod ffi {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
-    /// The first QObject
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(i32, counter)]
-    #[qproperty(QColor, color)]
-    pub struct FirstObject {
-        counter: i32,
-        color: QColor,
-    }
-
-    impl Default for FirstObject {
-        fn default() -> Self {
-            Self {
-                counter: 10,
-                color: QColor::from_rgb(0, 0, 255),
-            }
-        }
+    extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(i32, counter)]
+        #[qproperty(QColor, color)]
+        type FirstObject = super::FirstObjectRust;
     }
 
     // Enabling threading on the qobject
@@ -54,22 +43,11 @@ pub mod ffi {
         fn increment(self: Pin<&mut qobject::FirstObject>);
     }
 
-    /// The second QObject
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(i32, counter)]
-    #[qproperty(QUrl, url)]
-    pub struct SecondObject {
-        counter: i32,
-        url: QUrl,
-    }
-
-    impl Default for SecondObject {
-        fn default() -> Self {
-            Self {
-                counter: 100,
-                url: QUrl::from("https://github.com/kdab/cxx-qt"),
-            }
-        }
+    extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(i32, counter)]
+        #[qproperty(QUrl, url)]
+        type SecondObject = super::SecondObjectRust;
     }
 
     // Enabling threading on the qobject
@@ -95,9 +73,24 @@ pub mod ffi {
 use core::pin::Pin;
 use cxx_qt_lib::{QColor, QUrl};
 
+/// The first QObject
+pub struct FirstObjectRust {
+    counter: i32,
+    color: QColor,
+}
+
+impl Default for FirstObjectRust {
+    fn default() -> Self {
+        Self {
+            counter: 10,
+            color: QColor::from_rgb(0, 0, 255),
+        }
+    }
+}
+
 // TODO: this will change to qobject::FirstObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::FirstObjectQt {
+impl ffi::FirstObject {
     /// A Q_INVOKABLE on the first QObject which increments a counter
     fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;
@@ -113,9 +106,24 @@ impl ffi::FirstObjectQt {
     }
 }
 
+/// The second QObject
+pub struct SecondObjectRust {
+    counter: i32,
+    url: QUrl,
+}
+
+impl Default for SecondObjectRust {
+    fn default() -> Self {
+        Self {
+            counter: 100,
+            url: QUrl::from("https://github.com/kdab/cxx-qt"),
+        }
+    }
+}
+
 // TODO: this will change to qobject::SecondObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::SecondObjectQt {
+impl ffi::SecondObject {
     /// A Q_INVOKABLE on the second QObject which increments a counter
     fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;

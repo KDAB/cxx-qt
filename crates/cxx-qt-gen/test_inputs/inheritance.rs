@@ -7,10 +7,9 @@ mod inheritance {
         type QVariant = cxx_qt_lib::QVariant;
     }
 
-    #[cxx_qt::qobject(base = "QAbstractItemModel")]
-    #[derive(Default)]
-    pub struct MyObject {
-        data: Vec<i32>,
+    extern "RustQt" {
+        #[cxx_qt::qobject(base = "QAbstractItemModel")]
+        type MyObject = super::MyObjectRust;
     }
 
     unsafe extern "RustQt" {

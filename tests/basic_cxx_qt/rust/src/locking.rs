@@ -6,16 +6,11 @@
 /// Two QObject that allow for testing that locking works
 #[cxx_qt::bridge(cxx_file_stem = "locking")]
 pub mod ffi {
-    use std::sync::atomic::AtomicU32;
-
-    /// A QObject which has cxx_qt::Locking
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct RustLockingEnabled {
-        pub(crate) counter: AtomicU32,
-    }
-
     unsafe extern "RustQt" {
+        /// A QObject which has cxx_qt::Locking
+        #[cxx_qt::qobject]
+        type RustLockingEnabled = super::RustLockingEnabledRust;
+
         #[qinvokable]
         fn get_counter(self: &qobject::RustLockingEnabled) -> u32;
 
@@ -23,31 +18,37 @@ pub mod ffi {
         fn increment(self: Pin<&mut qobject::RustLockingEnabled>);
     }
 
-    /// A QObject which has !cxx_qt::Locking
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct RustLockingDisabled {
-        pub(crate) counter: AtomicU32,
-    }
-
-    unsafe impl !cxx_qt::Locking for qobject::RustLockingDisabled {}
-
     unsafe extern "RustQt" {
+        /// A QObject which has !cxx_qt::Locking
+        #[cxx_qt::qobject]
+        type RustLockingDisabled = super::RustLockingDisabledRust;
+
         #[qinvokable]
         fn get_counter(self: &qobject::RustLockingDisabled) -> u32;
 
         #[qinvokable]
         fn increment(self: Pin<&mut qobject::RustLockingDisabled>);
     }
+
+    unsafe impl !cxx_qt::Locking for qobject::RustLockingDisabled {}
 }
 
 use core::pin::Pin;
 use cxx_qt::CxxQtType;
-use std::{sync::atomic::Ordering, thread, time::Duration};
+use std::{
+    sync::atomic::{AtomicU32, Ordering},
+    thread,
+    time::Duration,
+};
+
+#[derive(Default)]
+pub struct RustLockingEnabledRust {
+    pub(crate) counter: AtomicU32,
+}
 
 // TODO: this will change to qobject::RustLockingEnabled once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustLockingEnabledQt {
+impl ffi::RustLockingEnabled {
     fn get_counter(&self) -> u32 {
         self.rust().counter.load(Ordering::Acquire)
     }
@@ -59,9 +60,14 @@ impl ffi::RustLockingEnabledQt {
     }
 }
 
+#[derive(Default)]
+pub struct RustLockingDisabledRust {
+    pub(crate) counter: AtomicU32,
+}
+
 // TODO: this will change to qobject::RustLockingDisabled once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustLockingDisabledQt {
+impl ffi::RustLockingDisabled {
     fn get_counter(&self) -> u32 {
         self.rust().counter.load(Ordering::Acquire)
     }

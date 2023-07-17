@@ -94,7 +94,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "testCxxQtInherit"]
-                    fn test(self: Pin<&mut MyObjectQt>, a: B, b: C);
+                    fn test(self: Pin<&mut MyObject>, a: B, b: C);
                 }
             },
         );
@@ -118,7 +118,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "testCxxQtInherit"]
-                    fn test(self: &MyObjectQt, a: B, b: C);
+                    fn test(self: &MyObject, a: B, b: C);
                 }
             },
         );
@@ -143,7 +143,7 @@ mod tests {
             quote! {
                 extern "C++" {
                     #[cxx_name = "testCxxQtInherit"]
-                    unsafe fn test(self: &MyObjectQt,);
+                    unsafe fn test(self: &MyObject,);
                 }
             },
         );

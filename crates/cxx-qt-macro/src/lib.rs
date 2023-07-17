@@ -19,22 +19,22 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 /// ```rust
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod ffi {
-///     #[cxx_qt::qobject]
-///     #[derive(Default)]
-///     # // Note that we can't use properties as this confuses the linker on Windows
-///     pub struct MyObject;
-///
 ///     unsafe extern "RustQt" {
+///         #[cxx_qt::qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///
 ///         #[qinvokable]
-///         fn invokable(self: &qobject::MyObject, a: i32, b: i32) -> i32 {
-///             a + b
-///         }
+///         fn invokable(self: &qobject::MyObject, a: i32, b: i32) -> i32;
 ///     }
 /// }
 ///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
+///
 /// # // TODO: this will change to qobject::MyObject once
 /// # // https://github.com/KDAB/cxx-qt/issues/559 is done
-/// impl ffi::MyObjectQt {
+/// impl ffi::MyObject {
 ///     fn invokable(&self, a: i32, b: i32) -> i32 {
 ///         a + b
 ///     }
@@ -74,11 +74,15 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```rust
 /// #[cxx_qt::bridge]
 /// mod my_object {
-///     #[cxx_qt::qobject]
-///     #[derive(Default)]
-///     # // Note that we can't use properties as this confuses the linker on Windows
-///     pub struct MyObject;
+///     extern "RustQt" {
+///         #[cxx_qt::qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///     }
 /// }
+///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
 ///
 /// # // Note that we need a fake main for doc tests to build
 /// # fn main() {}
@@ -91,15 +95,19 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```rust
 /// #[cxx_qt::bridge]
 /// mod my_object {
-///     #[cxx_qt::qobject(base = "QStringListModel")]
-///     #[derive(Default)]
-///     # // Note that we can't use properties as this confuses the linker on Windows
-///     pub struct MyModel;
+///     extern "RustQt" {
+///         #[cxx_qt::qobject(base = "QStringListModel")]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyModel = super::MyModelRust;
+///     }
 ///
 ///     unsafe extern "C++" {
 ///         include!(<QtCore/QStringListModel>);
 ///     }
 /// }
+///
+/// #[derive(Default)]
+/// pub struct MyModelRust;
 ///
 /// # // Note that we need a fake main for doc tests to build
 /// # fn main() {}
