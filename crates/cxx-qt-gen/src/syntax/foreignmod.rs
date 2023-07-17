@@ -6,10 +6,10 @@
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
-    parse::{ParseStream, Parser},
+    parse::{Parse, ParseStream, Parser},
     spanned::Spanned,
-    Attribute, Error, FnArg, ForeignItem, ForeignItemType, Ident, ItemForeignMod, Receiver, Result,
-    Signature, Token, Visibility,
+    Attribute, Error, FnArg, ForeignItem, ForeignItemType, Ident, ItemForeignMod, Path, Receiver,
+    Result, Signature, Token, Visibility,
 };
 
 /// For a given [syn::ForeignItem] return the [syn::ForeignItemType] if there is one
@@ -75,10 +75,95 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
                 .into_token_stream(),
             )?))
         } else {
-            Ok(None)
+            // Error as we have parsed the attributes and visiblity but have an unknown stream
+            //
+            // To return None here we should instead peek
+            Err(Error::new(
+                tokens.span(),
+                "Unsupported verbatim input in ForeignItem",
+            ))
         }
     }
     .parse2(tokens.clone())
+}
+
+/// Representation of a specific type alias for CXX-Qt where we map between two idents with a single super.
+///
+/// `type A = super::B`
+#[derive(Clone)]
+pub struct ForeignTypeIdentAlias {
+    /// Attributes on the alias
+    pub attrs: Vec<Attribute>,
+    /// The left side of the alias
+    pub ident_left: Ident,
+    /// The right side of the alias
+    pub ident_right: Ident,
+}
+
+impl Parse for ForeignTypeIdentAlias {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
+
+        // Note that visibility is ignored for now
+        let _: Visibility = input.parse()?;
+
+        if input.peek(Token![type]) {
+            let _type_token: Token![type] = input.parse()?;
+            let ident_left: Ident = input.parse()?;
+            let _equals_token: Token![=] = input.parse()?;
+            let path: Path = input.parse()?;
+            let _semi_colon: Token![;] = input.parse()?;
+
+            // Convert the path (super::T) to an ident (T)
+            let ident_right = {
+                // We only support super::T for now due to CXX only supporting type T with no alias
+                // as an extern "Rust" type.
+                //
+                // TODO: once CXX does have support for type aliases in extern "Rust" blocks
+                // we can instead pass through the full path of an ident_right.
+                // https://github.com/dtolnay/cxx/issues/1187
+                // https://github.com/dtolnay/cxx/pull/1181
+                //
+                // Note that we would need to still use the last segment as the Rust name internally
+                if path.segments.len() != 2 {
+                    return Err(Error::new(
+                        path.span(),
+                        "Type alias path must have at exactly two segments, super::T",
+                    ));
+                }
+
+                if path.segments[0].ident != "super" {
+                    return Err(Error::new(
+                        path.span(),
+                        "Type alias path must have super as the first segment, super::T",
+                    ));
+                }
+
+                path.segments[1].ident.clone()
+            };
+
+            if ident_left == ident_right {
+                return Err(Error::new(
+                    path.span(),
+                    "Type alias path must have differing idents, type A = super::B. A and B cannot be the same.",
+                ));
+            }
+
+            Ok(Self {
+                attrs,
+                ident_left,
+                ident_right,
+            })
+        } else {
+            // Error as we have parsed the attributes and visiblity but have an unknown stream
+            //
+            // To return None here we should instead peek
+            Err(Error::new(
+                input.span(),
+                "Unsupported verbatim input in ForeignItem",
+            ))
+        }
+    }
 }
 
 pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
@@ -177,5 +262,62 @@ mod tests {
         test! { fn foo(&mut self); }
         // attribute on self type
         test! { fn foo(#[attr] self: T); }
+    }
+
+    #[test]
+    fn test_foreign_type_ident_alias() {
+        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            #[attr]
+            type A = super::B;
+        })
+        .unwrap();
+        assert_eq!(alias.attrs.len(), 1);
+        assert_eq!(alias.ident_left, "A");
+        assert_eq!(alias.ident_right, "B");
+    }
+
+    #[test]
+    fn test_foreign_type_ident_alias_segments_one() {
+        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            type A = B;
+        });
+        assert!(parse.is_err());
+    }
+
+    #[test]
+    fn test_foreign_type_ident_alias_segments_three() {
+        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            type A = super::module::B;
+        });
+        assert!(parse.is_err());
+    }
+
+    #[test]
+    fn test_foreign_type_ident_alias_no_super() {
+        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            type A = crate::B;
+        });
+        assert!(parse.is_err());
+    }
+
+    #[test]
+    fn test_foreign_type_ident_alias_left_is_right() {
+        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            type A = super::A;
+        });
+        assert!(parse.is_err());
+    }
+
+    #[test]
+    fn test_foreign_type_ident_visibility() {
+        // Ensure that visibility does not error, later it might be stored
+        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            #[attr]
+            pub type A = super::B;
+        })
+        .unwrap();
+        assert_eq!(alias.attrs.len(), 1);
+        assert_eq!(alias.ident_left, "A");
+        assert_eq!(alias.ident_right, "B");
     }
 }

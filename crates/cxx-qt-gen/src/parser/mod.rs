@@ -68,7 +68,7 @@ impl Parser {
             let bridge_namespace = cxx_qt_data.namespace.clone();
 
             // Find any QObject structs
-            cxx_qt_data.find_qobject_structs(&items.1)?;
+            cxx_qt_data.find_qobject_types(&items.1)?;
 
             // Loop through any qobjects that were found
             if !cxx_qt_data.qobjects.is_empty() {
@@ -160,8 +160,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
 
                 unsafe extern "RustQt" {
                     #[qsignal]
@@ -185,8 +187,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
 
                 unsafe extern "RustQt" {
                     #[qsignal]
@@ -214,8 +218,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
 
                 unsafe extern "RustQt" {
                     #[qsignal]

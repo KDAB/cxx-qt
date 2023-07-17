@@ -73,31 +73,14 @@ pub mod ffi {
         fn qvariantValueOrDefault(variant: &QVariant) -> CustomStruct;
     }
 
-    /// A QObject which shows custom types
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(bool, boolean)]
-    #[qproperty(QPointF, point)]
-    #[qproperty(QUrl, url)]
-    #[qproperty(i32, custom_value)]
-    pub struct Types {
-        boolean: bool,
-        point: QPointF,
-        url: QUrl,
-        custom_value: i32,
-    }
-
-    impl Default for Types {
-        fn default() -> Self {
-            Self {
-                boolean: false,
-                point: QPointF::new(1.0, 2.0),
-                url: QUrl::from("https://kdab.com"),
-                custom_value: 0,
-            }
-        }
-    }
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(bool, boolean)]
+        #[qproperty(QPointF, point)]
+        #[qproperty(QUrl, url)]
+        #[qproperty(i32, custom_value)]
+        type Types = super::TypesRust;
+
         /// Load the value from a QVariant
         #[qinvokable]
         fn load_from_variant(self: Pin<&mut qobject::Types>, variant: &QVariant);
@@ -111,9 +94,28 @@ pub mod ffi {
 use core::pin::Pin;
 use cxx_qt_lib::{QPointF, QUrl, QVariant};
 
+/// A QObject which shows custom types
+pub struct TypesRust {
+    boolean: bool,
+    point: QPointF,
+    url: QUrl,
+    custom_value: i32,
+}
+
+impl Default for TypesRust {
+    fn default() -> Self {
+        Self {
+            boolean: false,
+            point: QPointF::new(1.0, 2.0),
+            url: QUrl::from("https://kdab.com"),
+            custom_value: 0,
+        }
+    }
+}
+
 // TODO: this will change to qobject::Types once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::TypesQt {
+impl ffi::Types {
     /// Load the value from a QVariant
     fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
         if let Some(boolean) = variant.value::<bool>() {

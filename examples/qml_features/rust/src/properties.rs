@@ -17,42 +17,16 @@ pub mod ffi {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
-    /// A QObject which has Q_PROPERTYs
-    // ANCHOR: book_properties_struct
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(bool, connected)]
-    #[qproperty(QUrl, connected_url)]
-    #[qproperty(QUrl, previous_connected_url)]
-    #[qproperty(QString, status_message)]
-    pub struct RustProperties {
-        /// A connected Q_PROPERTY
-        connected: bool,
-
-        /// A connected_url Q_PROPERTY
-        pub(crate) connected_url: QUrl,
-
-        /// A previous_connected_url Q_PROPERTY
-        previous_connected_url: QUrl,
-
-        /// A status_message Q_PROPERTY
-        status_message: QString,
-    }
-    // ANCHOR_END: book_properties_struct
-
-    // ANCHOR: book_properties_default
-    impl Default for RustProperties {
-        fn default() -> Self {
-            Self {
-                connected: false,
-                connected_url: QUrl::default(),
-                previous_connected_url: QUrl::default(),
-                status_message: QString::from("Disconnected"),
-            }
-        }
-    }
-    // ANCHOR_END: book_properties_default
-
     unsafe extern "RustQt" {
+        // ANCHOR: book_properties_struct
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(bool, connected)]
+        #[qproperty(QUrl, connected_url)]
+        #[qproperty(QUrl, previous_connected_url)]
+        #[qproperty(QString, status_message)]
+        type RustProperties = super::RustPropertiesRust;
+        // ANCHOR_END: book_properties_struct
+
         /// Connect to the given url
         #[qinvokable]
         fn connect(self: Pin<&mut qobject::RustProperties>, mut url: QUrl);
@@ -67,9 +41,37 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::{QString, QUrl};
 
+/// A QObject which has Q_PROPERTYs
+pub struct RustPropertiesRust {
+    /// A connected Q_PROPERTY
+    connected: bool,
+
+    /// A connected_url Q_PROPERTY
+    pub(crate) connected_url: QUrl,
+
+    /// A previous_connected_url Q_PROPERTY
+    previous_connected_url: QUrl,
+
+    /// A status_message Q_PROPERTY
+    status_message: QString,
+}
+
+// ANCHOR: book_properties_default
+impl Default for RustPropertiesRust {
+    fn default() -> Self {
+        Self {
+            connected: false,
+            connected_url: QUrl::default(),
+            previous_connected_url: QUrl::default(),
+            status_message: QString::from("Disconnected"),
+        }
+    }
+}
+// ANCHOR_END: book_properties_default
+
 // TODO: this will change to qobject::RustProperties once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustPropertiesQt {
+impl ffi::RustProperties {
     /// Connect to the given url
     fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
         // Check that the url starts with kdab

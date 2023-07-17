@@ -21,27 +21,14 @@ pub mod ffi {
     }
     // ANCHOR_END: book_qstring_import
 
-    /// The Rust struct for the QObject
-    // ANCHOR: book_rustobj_struct
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(i32, number)]
-    #[qproperty(QString, string)]
-    pub struct MyObject {
-        number: i32,
-        string: QString,
+    // ANCHOR: book_rustobj_struct_signature
+    unsafe extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        type MyObject = super::MyObjectRust;
     }
-    // ANCHOR_END: book_rustobj_struct
-
-    // ANCHOR: book_rustobj_default
-    impl Default for MyObject {
-        fn default() -> Self {
-            Self {
-                number: 0,
-                string: QString::from(""),
-            }
-        }
-    }
-    // ANCHOR_END: book_rustobj_default
+    // ANCHOR_END: book_rustobj_struct_signature
 
     // ANCHOR: book_rustobj_invokable_signature
     unsafe extern "RustQt" {
@@ -57,11 +44,30 @@ pub mod ffi {
 use core::pin::Pin;
 use cxx_qt_lib::QString;
 
+/// The Rust struct for the QObject
+// ANCHOR: book_rustobj_struct
+pub struct MyObjectRust {
+    number: i32,
+    string: QString,
+}
+// ANCHOR_END: book_rustobj_struct
+
+// ANCHOR: book_rustobj_default
+impl Default for MyObjectRust {
+    fn default() -> Self {
+        Self {
+            number: 0,
+            string: QString::from(""),
+        }
+    }
+}
+// ANCHOR_END: book_rustobj_default
+
 // TODO: this will change to qobject::MyObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
 //
 // ANCHOR: book_rustobj_invokable_impl
-impl ffi::MyObjectQt {
+impl ffi::MyObject {
     /// Increment the number Q_PROPERTY
     pub fn increment_number(self: Pin<&mut Self>) {
         let previous = *self.as_ref().number();

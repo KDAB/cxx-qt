@@ -17,8 +17,8 @@ pub struct DataSerde {
     string: String,
 }
 
-impl From<&Serialisation> for DataSerde {
-    fn from(value: &Serialisation) -> DataSerde {
+impl From<&SerialisationRust> for DataSerde {
+    fn from(value: &SerialisationRust) -> DataSerde {
         DataSerde {
             number: value.number,
             string: value.string.to_string(),
@@ -29,49 +29,22 @@ impl From<&Serialisation> for DataSerde {
 /// A CXX-Qt bridge which shows how use serde for (de)serialization of the data in a QObjects' QPROPERTY's
 #[cxx_qt::bridge(cxx_file_stem = "serialisation")]
 pub mod ffi {
-    use super::DataSerde;
-
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         /// QString from cxx_qt_lib
         type QString = cxx_qt_lib::QString;
     }
 
-    /// A QObject which can be serialised
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(i32, number)]
-    #[qproperty(QString, string)]
-    pub struct Serialisation {
-        /// The number Q_PROPERTY
-        pub number: i32,
-        /// The string Q_PROPERTY
-        pub string: QString,
-    }
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        type Serialisation = super::SerialisationRust;
+
         /// An error signal
         #[qsignal]
         fn error(self: Pin<&mut qobject::Serialisation>, message: QString);
-    }
 
-    impl Default for Serialisation {
-        fn default() -> Self {
-            let string = r#"{"number": 4, "string": "Hello World!"}"#;
-            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            data_serde.into()
-        }
-    }
-
-    impl From<DataSerde> for Serialisation {
-        fn from(value: DataSerde) -> Serialisation {
-            Serialisation {
-                number: value.number,
-                string: QString::from(&value.string),
-            }
-        }
-    }
-
-    unsafe extern "RustQt" {
         /// Retrieve the JSON form of this QObject
         #[qinvokable]
         fn as_json_str(self: Pin<&mut qobject::Serialisation>) -> QString;
@@ -88,9 +61,34 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::QString;
 
+/// A QObject which can be serialised
+pub struct SerialisationRust {
+    /// The number Q_PROPERTY
+    pub number: i32,
+    /// The string Q_PROPERTY
+    pub string: QString,
+}
+
+impl Default for SerialisationRust {
+    fn default() -> Self {
+        let string = r#"{"number": 4, "string": "Hello World!"}"#;
+        let data_serde: DataSerde = serde_json::from_str(string).unwrap();
+        data_serde.into()
+    }
+}
+
+impl From<DataSerde> for SerialisationRust {
+    fn from(value: DataSerde) -> Self {
+        Self {
+            number: value.number,
+            string: QString::from(&value.string),
+        }
+    }
+}
+
 // TODO: this will change to qobject::Serialisation once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::SerialisationQt {
+impl ffi::Serialisation {
     /// Retrieve the JSON form of this QObject
     fn as_json_str(self: Pin<&mut Self>) -> QString {
         let data_serde = DataSerde::from(self.rust());

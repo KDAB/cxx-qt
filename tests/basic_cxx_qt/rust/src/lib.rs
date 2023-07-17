@@ -17,24 +17,11 @@ mod ffi {
         type QString = cxx_qt_lib::QString;
     }
 
-    #[cxx_qt::qobject]
-    #[qproperty(i32, number)]
-    #[qproperty(QString, string)]
-    pub struct MyObject {
-        number: i32,
-        string: QString,
-
-        pub(crate) update_call_count: i32,
-    }
-
-    impl Default for MyObject {
-        fn default() -> Self {
-            Self {
-                number: 0,
-                string: QString::from(""),
-                update_call_count: 0,
-            }
-        }
+    unsafe extern "RustQt" {
+        #[cxx_qt::qobject]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        type MyObject = super::MyObjectRust;
     }
 
     // Enabling threading on the qobject
@@ -65,9 +52,26 @@ use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
 
+pub struct MyObjectRust {
+    number: i32,
+    string: QString,
+
+    pub(crate) update_call_count: i32,
+}
+
+impl Default for MyObjectRust {
+    fn default() -> Self {
+        Self {
+            number: 0,
+            string: QString::from(""),
+            update_call_count: 0,
+        }
+    }
+}
+
 // TODO: this will change to qobject::MyObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyObjectQt {
+impl ffi::MyObject {
     fn double_number_self(self: Pin<&mut Self>) {
         let value = self.number() * 2;
         self.set_number(value);

@@ -34,15 +34,11 @@ pub mod ffi {
     }
     // ANCHOR_END: book_signals_block
 
-    /// A QObject which has Q_SIGNALs
-    // ANCHOR: book_signals_struct
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[derive(Default)]
-    #[qproperty(bool, logging_enabled)]
-    pub struct RustSignals {
-        pub(crate) connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
-
-        logging_enabled: bool,
+    unsafe extern "RustQt" {
+        // ANCHOR: book_signals_struct
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(bool, logging_enabled)]
+        type RustSignals = super::RustSignalsRust;
     }
 
     // ANCHOR: book_rust_obj_impl
@@ -64,9 +60,17 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::{ConnectionType, QString, QUrl};
 
+/// A QObject which has Q_SIGNALs
+#[derive(Default)]
+pub struct RustSignalsRust {
+    pub(crate) connections: Option<[cxx_qt_lib::QMetaObjectConnection; 3]>,
+
+    logging_enabled: bool,
+}
+
 // TODO: this will change to qobject::RustSignals once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustSignalsQt {
+impl ffi::RustSignals {
     /// Connect to the given url
     fn connect(self: Pin<&mut Self>, url: &QUrl) {
         // Check that the url starts with kdab

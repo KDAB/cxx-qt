@@ -79,10 +79,10 @@ pub mod ffi {
         include!(<QtCore/QStringListModel>);
     }
 
-    #[cxx_qt::qobject(base = "QStringListModel")]
-    #[qproperty(i32, property_name)]
-    pub struct MyObject {
-        property_name: i32,
+    extern "RustQt" {
+        #[cxx_qt::qobject(base = "QStringListModel")]
+        #[qproperty(i32, property_name)]
+        type MyObject = super::MyObjectRust;
     }
 
     unsafe extern "RustQt" {
@@ -99,10 +99,10 @@ pub mod ffi {
         }
     }
 
-    #[cxx_qt::qobject]
-    #[qproperty(i32, property_name)]
-    pub struct SecondObject {
-        property_name: i32,
+    extern "RustQt" {
+        #[cxx_qt::qobject]
+        #[qproperty(i32, property_name)]
+        type SecondObject = super::SecondObjectRust;
     }
 
     unsafe impl !cxx_qt::Locking for qobject::SecondObject {}

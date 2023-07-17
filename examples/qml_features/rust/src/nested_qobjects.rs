@@ -17,36 +17,21 @@ pub mod ffi {
     }
     // ANCHOR_END: book_extern_block
 
-    /// The inner QObject
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[derive(Default)]
-    #[qproperty(i32, counter)]
-    pub struct InnerObject {
-        counter: i32,
-    }
-
     extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(i32, counter)]
+        type InnerObject = super::InnerObjectRust;
+
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
         unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut CxxInnerObject);
     }
 
-    /// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[qproperty(*mut CxxInnerObject, inner)]
-    pub struct OuterObject {
-        inner: *mut CxxInnerObject,
-    }
-
-    impl Default for OuterObject {
-        fn default() -> Self {
-            Self {
-                inner: std::ptr::null_mut(),
-            }
-        }
-    }
-
     extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(*mut CxxInnerObject, inner)]
+        type OuterObject = super::OuterObjectRust;
+
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
         unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut CxxInnerObject);
@@ -70,9 +55,28 @@ pub mod ffi {
 
 use core::pin::Pin;
 
+/// The inner QObject
+#[derive(Default)]
+pub struct InnerObjectRust {
+    counter: i32,
+}
+
+/// The outer QObject which has a Q_PROPERTY pointing to the inner QObject
+pub struct OuterObjectRust {
+    inner: *mut ffi::CxxInnerObject,
+}
+
+impl Default for OuterObjectRust {
+    fn default() -> Self {
+        Self {
+            inner: std::ptr::null_mut(),
+        }
+    }
+}
+
 // TODO: this will change to qobject::OuterObject once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::OuterObjectQt {
+impl ffi::OuterObject {
     /// Print the count of the given inner QObject
     //
     // This method needs to be unsafe otherwise clippy complains that the

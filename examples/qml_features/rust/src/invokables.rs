@@ -15,22 +15,9 @@ pub mod ffi {
         type QColor = cxx_qt_lib::QColor;
     }
 
-    /// A QObject which has Q_INVOKABLEs
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    pub struct RustInvokables {
-        pub(crate) red: f32,
-        pub(crate) green: f32,
-        pub(crate) blue: f32,
-    }
-
-    impl Default for RustInvokables {
-        fn default() -> Self {
-            Self {
-                red: 0.0,
-                green: 0.4667,
-                blue: 0.7843,
-            }
-        }
+    unsafe extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        type RustInvokables = super::RustInvokablesRust;
     }
 
     // ANCHOR: book_invokable_signature
@@ -54,11 +41,28 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::QColor;
 
+/// A QObject which has Q_INVOKABLEs
+pub struct RustInvokablesRust {
+    pub(crate) red: f32,
+    pub(crate) green: f32,
+    pub(crate) blue: f32,
+}
+
+impl Default for RustInvokablesRust {
+    fn default() -> Self {
+        Self {
+            red: 0.0,
+            green: 0.4667,
+            blue: 0.7843,
+        }
+    }
+}
+
 // TODO: this will change to qobject::RustInvokables once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
 //
 // ANCHOR: book_invokable_impl
-impl ffi::RustInvokablesQt {
+impl ffi::RustInvokables {
     /// Immutable invokable method that returns the QColor
     fn load_color(&self) -> QColor {
         self.rust().as_qcolor()
@@ -84,7 +88,7 @@ impl ffi::RustInvokablesQt {
 }
 // ANCHOR_END: book_invokable_impl
 
-impl RustInvokables {
+impl RustInvokablesRust {
     /// Immutable Rust context method that returns the QColor
     fn as_qcolor(&self) -> QColor {
         QColor::from_rgb(

@@ -13,9 +13,9 @@ pub struct DataSerde {
     string: String,
 }
 
-impl From<&MyData> for DataSerde {
-    fn from(value: &MyData) -> DataSerde {
-        DataSerde {
+impl From<&MyDataRust> for DataSerde {
+    fn from(value: &MyDataRust) -> Self {
+        Self {
             number: value.number,
             string: value.string.to_string(),
         }
@@ -24,40 +24,18 @@ impl From<&MyData> for DataSerde {
 
 #[cxx_qt::bridge(cxx_file_stem = "my_data", namespace = "cxx_qt::my_data")]
 mod ffi {
-    use super::DataSerde;
-
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
     }
 
-    #[cxx_qt::qobject]
-    #[qproperty(i32, number)]
-    #[qproperty(QString, string)]
-    pub struct MyData {
-        pub number: i32,
-        pub string: QString,
-    }
-
-    impl Default for MyData {
-        fn default() -> Self {
-            let string = r#"{"number": 4, "string": "Hello World!"}"#;
-            let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-            data_serde.into()
-        }
-    }
-
-    impl From<DataSerde> for MyData {
-        fn from(value: DataSerde) -> MyData {
-            MyData {
-                number: value.number,
-                string: QString::from(&value.string),
-            }
-        }
-    }
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        type MyData = super::MyDataRust;
+
         #[qinvokable]
         fn as_json_str(self: &qobject::MyData) -> QString;
 
@@ -70,9 +48,31 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::QString;
 
+pub struct MyDataRust {
+    pub number: i32,
+    pub string: QString,
+}
+
+impl Default for MyDataRust {
+    fn default() -> Self {
+        let string = r#"{"number": 4, "string": "Hello World!"}"#;
+        let data_serde: DataSerde = serde_json::from_str(string).unwrap();
+        data_serde.into()
+    }
+}
+
+impl From<DataSerde> for MyDataRust {
+    fn from(value: DataSerde) -> Self {
+        Self {
+            number: value.number,
+            string: QString::from(&value.string),
+        }
+    }
+}
+
 // TODO: this will change to qobject::MyData once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::MyDataQt {
+impl ffi::MyData {
     pub fn as_json_str(&self) -> QString {
         let data_serde = DataSerde::from(self.rust());
         let data_string = serde_json::to_string(&data_serde).unwrap();

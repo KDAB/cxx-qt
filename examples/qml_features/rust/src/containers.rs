@@ -32,33 +32,17 @@ pub mod ffi {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
-    /// A QObject which stores container types internally
-    ///
-    /// It has Q_PROPERTYs which expose a string with the container's contents to show in QML
-    #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
-    #[derive(Default)]
-    #[qproperty(QString, string_hash)]
-    #[qproperty(QString, string_list)]
-    #[qproperty(QString, string_map)]
-    #[qproperty(QString, string_set)]
-    #[qproperty(QString, string_vector)]
-    // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
-    #[qproperty(QMap_QString_QVariant, map)]
-    pub struct RustContainers {
-        string_hash: QString,
-        string_list: QString,
-        string_map: QString,
-        string_set: QString,
-        string_vector: QString,
-
-        pub(crate) hash: QHash_QString_QVariant,
-        pub(crate) list: QList_i32,
-        pub(crate) map: QMap_QString_QVariant,
-        pub(crate) set: QSet_i32,
-        pub(crate) vector: QVector_i32,
-    }
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[qproperty(QString, string_hash)]
+        #[qproperty(QString, string_list)]
+        #[qproperty(QString, string_map)]
+        #[qproperty(QString, string_set)]
+        #[qproperty(QString, string_vector)]
+        // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
+        #[qproperty(QMap_QString_QVariant, map)]
+        type RustContainers = super::RustContainersRust;
+
         /// Reset all the containers
         #[qinvokable]
         fn reset(self: Pin<&mut qobject::RustContainers>);
@@ -92,9 +76,27 @@ use cxx_qt_lib::{
     QVariant, QVector,
 };
 
+/// A QObject which stores container types internally
+///
+/// It has Q_PROPERTYs which expose a string with the container's contents to show in QML
+#[derive(Default)]
+pub struct RustContainersRust {
+    string_hash: QString,
+    string_list: QString,
+    string_map: QString,
+    string_set: QString,
+    string_vector: QString,
+
+    pub(crate) hash: QHash<QHashPair_QString_QVariant>,
+    pub(crate) list: QList<i32>,
+    pub(crate) map: QMap<QMapPair_QString_QVariant>,
+    pub(crate) set: QSet<i32>,
+    pub(crate) vector: QVector<i32>,
+}
+
 // TODO: this will change to qobject::RustContainers once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::RustContainersQt {
+impl ffi::RustContainers {
     /// Reset all the containers
     fn reset(mut self: Pin<&mut Self>) {
         // Update the private rust fields via the rust_mut

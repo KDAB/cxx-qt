@@ -11,54 +11,18 @@ mod workers;
 // This mod defines our QObject called EnergyUsage
 #[cxx_qt::bridge(cxx_file_stem = "energy_usage", namespace = "cxx_qt::energy_usage")]
 mod ffi {
-    use crate::{constants::SENSOR_MAXIMUM_COUNT, workers::SensorHashMap};
-    use std::{
-        sync::{Arc, Mutex},
-        thread::JoinHandle,
-    };
-
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
     }
 
-    #[cxx_qt::qobject(qml_uri = "com.kdab.energy", qml_version = "1.0")]
-    #[qproperty(f64, average_use)]
-    #[qproperty(u32, sensors)]
-    #[qproperty(f64, total_use)]
-    pub struct EnergyUsage {
-        /// The average power usage of the connected sensors
-        average_use: f64,
-        /// The count of connected sensors
-        sensors: u32,
-        /// The total power usage of the connected sensors
-        total_use: f64,
-
-        /// The join handles of the running threads
-        pub(crate) join_handles: Option<[JoinHandle<()>; 4]>,
-        /// A HashMap of the currently connected sensors
-        ///
-        /// This uses an Arc inside the Mutex as well as outside so that the HashMap is only
-        /// cloned when required. By using Arc::make_mut on the inner HashMap data is only cloned
-        /// when mutating if another thread is still holding onto reference to the data.
-        /// <https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut>
-        pub(crate) sensors_map: Arc<Mutex<Arc<SensorHashMap>>>,
-    }
-
-    impl Default for EnergyUsage {
-        fn default() -> Self {
-            Self {
-                average_use: 0.0,
-                sensors: 0,
-                total_use: 0.0,
-
-                join_handles: None,
-                sensors_map: Arc::new(Mutex::new(Arc::new(SensorHashMap::with_capacity(
-                    SENSOR_MAXIMUM_COUNT,
-                )))),
-            }
-        }
+    extern "RustQt" {
+        #[cxx_qt::qobject(qml_uri = "com.kdab.energy", qml_version = "1.0")]
+        #[qproperty(f64, average_use)]
+        #[qproperty(u32, sensors)]
+        #[qproperty(f64, total_use)]
+        type EnergyUsage = super::EnergyUsageRust;
     }
 
     // Enabling threading on the qobject
@@ -86,21 +50,58 @@ mod ffi {
 }
 
 use crate::{
-    constants::CHANNEL_NETWORK_COUNT,
+    constants::{CHANNEL_NETWORK_COUNT, SENSOR_MAXIMUM_COUNT},
     network::NetworkServer,
-    workers::{AccumulatorWorker, SensorsWorker, TimeoutWorker},
+    workers::{AccumulatorWorker, SensorHashMap, SensorsWorker, TimeoutWorker},
 };
 
 use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::QString;
 use futures::executor::block_on;
-use std::sync::{atomic::AtomicBool, mpsc::sync_channel, Arc};
+use std::{
+    sync::{atomic::AtomicBool, mpsc::sync_channel, Arc, Mutex},
+    thread::JoinHandle,
+};
 use uuid::Uuid;
+
+pub struct EnergyUsageRust {
+    /// The average power usage of the connected sensors
+    average_use: f64,
+    /// The count of connected sensors
+    sensors: u32,
+    /// The total power usage of the connected sensors
+    total_use: f64,
+
+    /// The join handles of the running threads
+    pub(crate) join_handles: Option<[JoinHandle<()>; 4]>,
+    /// A HashMap of the currently connected sensors
+    ///
+    /// This uses an Arc inside the Mutex as well as outside so that the HashMap is only
+    /// cloned when required. By using Arc::make_mut on the inner HashMap data is only cloned
+    /// when mutating if another thread is still holding onto reference to the data.
+    /// <https://doc.rust-lang.org/std/sync/struct.Arc.html#method.make_mut>
+    pub(crate) sensors_map: Arc<Mutex<Arc<SensorHashMap>>>,
+}
+
+impl Default for EnergyUsageRust {
+    fn default() -> Self {
+        Self {
+            average_use: 0.0,
+            sensors: 0,
+            total_use: 0.0,
+
+            join_handles: None,
+            sensors_map: Arc::new(Mutex::new(Arc::new(SensorHashMap::with_capacity(
+                SENSOR_MAXIMUM_COUNT,
+            )))),
+        }
+    }
+}
 
 // TODO: this will change to qobject::EnergyUsage once
 // https://github.com/KDAB/cxx-qt/issues/559 is done
-impl ffi::EnergyUsageQt {
+impl ffi::EnergyUsage {
     /// A Q_INVOKABLE that returns the current power usage for a given uuid
     fn sensor_power(self: Pin<&mut Self>, uuid: &QString) -> f64 {
         let sensors = SensorsWorker::read_sensors(&self.rust_mut().sensors_map);
@@ -128,8 +129,8 @@ impl cxx_qt::Constructor<()> for qobject::EnergyUsage {
         ((), (), ())
     }
 
-    fn new((): ()) -> EnergyUsage {
-        EnergyUsage::default()
+    fn new((): ()) -> EnergyUsageRust {
+        EnergyUsageRust::default()
     }
 
     /// A Q_INVOKABLE which starts the TCP server

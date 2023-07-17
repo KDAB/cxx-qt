@@ -10,13 +10,11 @@ use crate::{
     },
     syntax::{
         attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
+        foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
     },
 };
-use syn::{
-    spanned::Spanned, Attribute, Error, Ident, ImplItem, Item, ItemImpl, ItemStruct, LitStr,
-    Result, Visibility,
-};
+use syn::{Attribute, Error, Ident, ImplItem, Item, ItemImpl, LitStr, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -36,8 +34,8 @@ pub struct QmlElementMetadata {
 pub struct ParsedQObject {
     /// The base class of the struct
     pub base_class: Option<String>,
-    /// QObject struct that stores the invokables for the QObject
-    pub qobject_struct: ItemStruct,
+    /// QObject type that stores the invokables for the QObject
+    pub qobject_ty: ForeignTypeIdentAlias,
     /// The namespace of the QObject. If one isn't specified for the QObject,
     /// this will be the same as the module
     pub namespace: String,
@@ -71,12 +69,15 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
-    /// Parse a [syn::ItemStruct] into a [ParsedQObject] with the index of the cxx_qt::qobject specified
-    pub fn from_struct(qobject_struct: &ItemStruct, attr_index: usize) -> Result<Self> {
-        let qml_metadata = Self::parse_qml_metadata(qobject_struct, attr_index)?;
+    /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the cxx_qt::qobject specified
+    pub fn from_foreign_item_type(
+        qobject_ty: &ForeignTypeIdentAlias,
+        attr_index: usize,
+    ) -> Result<Self> {
+        let qml_metadata = Self::parse_qml_metadata(qobject_ty, attr_index)?;
 
         let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-            &qobject_struct.attrs[attr_index],
+            &qobject_ty.attrs[attr_index],
             AttributeDefault::Some(|span| LitStr::new("", span)),
         )?;
 
@@ -90,26 +91,17 @@ impl ParsedQObject {
             .get(&quote::format_ident!("namespace"))
             .map_or_else(|| "".to_owned(), |base| base.value());
 
-        // Remove the macro from the struct
-        let mut qobject_struct = qobject_struct.clone();
-        qobject_struct.attrs.remove(attr_index);
+        // Remove the macro from the type
+        let mut qobject_ty = qobject_ty.clone();
+        qobject_ty.attrs.remove(attr_index);
 
-        // Parse any properties in the struct
+        // Parse any properties in the type
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_struct_attributes(&mut qobject_struct.attrs)?;
-
-        // Ensure that the QObject is marked as pub otherwise the error is non obvious
-        // https://github.com/KDAB/cxx-qt/issues/457
-        if !matches!(qobject_struct.vis, Visibility::Public(..)) {
-            return Err(Error::new(
-                qobject_struct.span(),
-                "qobject marked structs must be public",
-            ));
-        }
+        let properties = Self::parse_property_attributes(&mut qobject_ty.attrs)?;
 
         Ok(Self {
             base_class,
-            qobject_struct,
+            qobject_ty,
             namespace,
             signals: vec![],
             invokables: vec![],
@@ -125,11 +117,11 @@ impl ParsedQObject {
     }
 
     fn parse_qml_metadata(
-        qobject_struct: &ItemStruct,
+        qobject_ty: &ForeignTypeIdentAlias,
         attr_index: usize,
     ) -> Result<Option<QmlElementMetadata>> {
         let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-            &qobject_struct.attrs[attr_index],
+            &qobject_ty.attrs[attr_index],
             AttributeDefault::Some(|span| LitStr::new("", span)),
         )?;
         let qml_uri = attrs_map.get(&quote::format_ident!("qml_uri"));
@@ -148,7 +140,7 @@ impl ParsedQObject {
 
                 let name = match qml_name {
                     Some(qml_name) => qml_name.value(),
-                    None => qobject_struct.ident.to_string(),
+                    None => qobject_ty.ident_left.to_string(),
                 };
 
                 Ok(Some(QmlElementMetadata {
@@ -260,7 +252,7 @@ impl ParsedQObject {
         }
     }
 
-    fn parse_struct_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
+    fn parse_property_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
         let mut properties = vec![];
 
         // Note that once extract_if is stable, this would allow for comparing all the
@@ -283,64 +275,57 @@ pub mod tests {
     use syn::{parse_quote, ItemImpl};
 
     pub fn create_parsed_qobject() -> ParsedQObject {
-        let qobject_struct: ItemStruct = parse_quote! {
+        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        ParsedQObject::from_struct(&qobject_struct, 0).unwrap()
+        ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap()
     }
 
     #[test]
     fn test_from_struct_no_base_class() {
-        let qobject_struct: ItemStruct = parse_quote! {
+        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
         assert!(qobject.base_class.is_none());
         assert!(qobject.qml_metadata.is_none());
     }
 
     #[test]
     fn test_from_struct_base_class() {
-        let qobject_struct: ItemStruct = parse_quote! {
+        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(base = "QStringListModel")]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
     }
 
     #[test]
     fn test_from_struct_properties_and_fields() {
-        let qobject_struct: ItemStruct = parse_quote! {
+        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject]
             #[qproperty(i32, int_property)]
             #[qproperty(i32, public_property)]
-            pub struct MyObject {
-                int_property: i32,
-                pub public_property: i32,
-
-                field: i32,
-            }
+            type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 2);
     }
 
     #[test]
     fn test_from_struct_fields() {
-        let qobject_struct: ItemStruct = parse_quote! {
+        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject]
-            pub struct MyObject {
-                field: i32,
-            }
+            type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_struct(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
         assert_eq!(qobject.properties.len(), 0);
     }
 
@@ -388,18 +373,15 @@ pub mod tests {
 
     #[test]
     fn test_parse_struct_fields_valid() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject]
             #[qproperty(f64, f64_property)]
             #[qproperty(f64, public_property)]
-            pub struct T {
-                f64_property: f64,
-                pub public_property: f64,
-
-                field: f64,
-            }
+            type T = super::TRust;
         };
-        let properties = ParsedQObject::from_struct(&item, 0).unwrap().properties;
+        let properties = ParsedQObject::from_foreign_item_type(&item, 0)
+            .unwrap()
+            .properties;
         assert_eq!(properties.len(), 2);
 
         assert_eq!(properties[0].ident, "f64_property");
@@ -410,21 +392,12 @@ pub mod tests {
     }
 
     #[test]
-    fn test_parse_struct_fields() {
-        let item: ItemStruct = parse_quote! {
-            #[cxx_qt::qobject]
-            pub struct T(f64);
-        };
-        assert!(ParsedQObject::from_struct(&item, 0).is_ok());
-    }
-
-    #[test]
     fn test_qml_metadata() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1.0")]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -440,11 +413,11 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_named() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_name = "MyQmlElement")]
-            pub struct MyNamedObject;
+            type MyNamedObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -460,11 +433,11 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_singleton() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_singleton)]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -480,11 +453,11 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_uncreatable() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_uncreatable)]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_struct(&item, 0).unwrap();
+        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -500,28 +473,28 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_no_version() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_uri = "foo.bar")]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
     }
 
     #[test]
     fn test_qml_metadata_no_uri() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_version = "1.0")]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
     }
 
     #[test]
     fn test_qml_metadata_only_name_no_version_no_uri() {
-        let item: ItemStruct = parse_quote! {
+        let item: ForeignTypeIdentAlias = parse_quote! {
             #[cxx_qt::qobject(qml_name = "MyQmlElement")]
-            pub struct MyObject;
+            type MyObject = super::MyObjectRust;
         };
-        assert!(ParsedQObject::from_struct(&item, 0).is_err());
+        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
     }
 }

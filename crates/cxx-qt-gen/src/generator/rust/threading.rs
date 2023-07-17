@@ -171,12 +171,12 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
-                    type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObjectQt>;
+                    type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
                     include!("cxx-qt-common/cxxqt_thread.h");
 
                     #[doc(hidden)]
                     #[cxx_name = "qtThread"]
-                    fn cxx_qt_ffi_qt_thread(self: &MyObjectQt) -> MyObjectCxxQtThread;
+                    fn cxx_qt_ffi_qt_thread(self: &MyObject) -> MyObjectCxxQtThread;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -186,7 +186,7 @@ mod tests {
                     #[cxx_name = "cxxQtThreadQueue"]
                     fn cxx_qt_ffi_my_object_queue_boxed_fn(
                         cxx_qt_thread: &MyObjectCxxQtThread,
-                        func: fn(Pin<&mut MyObjectQt>, Box<MyObjectCxxQtThreadQueuedFn>),
+                        func: fn(Pin<&mut MyObject>, Box<MyObjectCxxQtThreadQueuedFn>),
                         arg: Box<MyObjectCxxQtThreadQueuedFn>,
                     ) -> Result<()>;
 
@@ -216,7 +216,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl cxx_qt::Threading for MyObjectQt {
+                impl cxx_qt::Threading for MyObject {
                     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
                     type ThreadingTypeId = cxx::type_id!("MyObjectCxxQtThread");
 
@@ -228,7 +228,7 @@ mod tests {
                     #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
                     where
-                        F: FnOnce(std::pin::Pin<&mut MyObjectQt>),
+                        F: FnOnce(std::pin::Pin<&mut MyObject>),
                         F: Send + 'static,
                     {
                         // Wrap the given closure and pass in to C++ function as an opaque type
@@ -237,7 +237,7 @@ mod tests {
                         #[allow(clippy::boxed_local)]
                         #[doc(hidden)]
                         fn func(
-                            obj: std::pin::Pin<&mut MyObjectQt>,
+                            obj: std::pin::Pin<&mut MyObject>,
                             arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
                         ) {
                             (arg.inner)(obj)
@@ -267,7 +267,7 @@ mod tests {
                 pub struct MyObjectCxxQtThreadQueuedFn {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
-                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObjectQt>) + Send>,
+                    inner: std::boxed::Box<dyn FnOnce(std::pin::Pin<&mut MyObject>) + Send>,
                 }
             },
         );

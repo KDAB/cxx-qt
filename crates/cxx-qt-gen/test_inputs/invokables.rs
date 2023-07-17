@@ -8,11 +8,10 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
-    #[cxx_qt::qobject]
-    #[derive(Default)]
-    pub struct MyObject;
-
     unsafe extern "RustQt" {
+        #[cxx_qt::qobject]
+        type MyObject = super::MyObjectRust;
+
         #[qinvokable]
         fn invokable(self: &qobject::MyObject);
 

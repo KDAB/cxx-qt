@@ -73,8 +73,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -100,8 +102,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -121,8 +125,10 @@ mod tests {
             mod ffi {
                 use std::collections::HashMap;
 
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
@@ -140,8 +146,10 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(cxx_file_stem = "my_object")]
             mod ffi {
-                #[cxx_qt::qobject]
-                pub struct MyObject;
+                extern "RustQt" {
+                    #[cxx_qt::qobject]
+                    type MyObject = super::MyObjectRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();

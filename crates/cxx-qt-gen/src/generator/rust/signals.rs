@@ -142,7 +142,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[rust_name = "ready"]
-                    fn ready(self: Pin<&mut MyObjectQt>, );
+                    fn ready(self: Pin<&mut MyObject>, );
                 }
             },
         );
@@ -155,21 +155,21 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_ready"]
-                    fn readyConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn readyConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl MyObjectQt {
+                impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "ready"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_ready(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_ready(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_ready(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -217,7 +217,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[attribute]
                     #[rust_name = "data_changed"]
-                    fn dataChanged(self: Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>);
+                    fn dataChanged(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
             },
         );
@@ -230,21 +230,21 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_data_changed"]
-                    fn dataChangedConnect(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn dataChangedConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl MyObjectQt {
+                impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "dataChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_data_changed(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
+                    pub fn on_data_changed(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -284,7 +284,7 @@ mod tests {
             quote! {
                 extern "C++" {
                     #[rust_name = "unsafe_signal"]
-                    unsafe fn unsafeSignal(self: Pin<&mut MyObjectQt>, param: *mut T);
+                    unsafe fn unsafeSignal(self: Pin<&mut MyObject>, param: *mut T);
                 }
             },
         );
@@ -297,21 +297,21 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_unsafe_signal"]
-                    fn unsafeSignalConnect(self: Pin <&mut MyObjectQt>, func: unsafe fn(Pin<&mut MyObjectQt>, param: *mut T), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn unsafeSignalConnect(self: Pin <&mut MyObject>, func: unsafe fn(Pin<&mut MyObject>, param: *mut T), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl MyObjectQt {
+                impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "unsafeSignal"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_unsafe_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, param: *mut T)) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_signal(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, param: *mut T)) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_unsafe_signal(func, CxxQtConnectionType::AutoConnection)
                     }
@@ -350,7 +350,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[inherit]
                     #[rust_name = "existing_signal"]
-                    fn baseName(self: Pin<&mut MyObjectQt>, );
+                    fn baseName(self: Pin<&mut MyObject>, );
                 }
             },
         );
@@ -363,21 +363,21 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_existing_signal"]
-                    fn baseNameConnect(self: Pin<& mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn baseNameConnect(self: Pin<& mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl MyObjectQt {
+                impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "baseName"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_existing_signal(self: Pin<&mut MyObjectQt>, func: fn(Pin<&mut MyObjectQt>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_existing_signal(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
                     {
                         self.connect_existing_signal(func, CxxQtConnectionType::AutoConnection)
                     }
