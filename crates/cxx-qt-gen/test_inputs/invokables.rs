@@ -42,14 +42,14 @@ mod ffi {
         fn invokable_virtual(self: &qobject::MyObject);
     }
 
-    impl cxx_qt::Threading for qobject::MyObject {}
+    impl cxx_qt::Threading for MyObject {}
 
     impl
         cxx_qt::Constructor<
             (i32, *mut QObject),
             BaseArguments = (*mut QObject,),
             NewArguments = (i32,),
-        > for qobject::MyObject
+        > for MyObject
     {
     }
 }

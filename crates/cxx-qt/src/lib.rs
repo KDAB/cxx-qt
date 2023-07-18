@@ -38,7 +38,7 @@ pub trait CxxQtType {
 ///
 /// By default, CXX-Qt will guard all access to the generated QObject with a recursive mutex.
 /// For performance reasons it may be desirable to disable this behavior for certain QObjects.
-/// You can do so by negative implementing this trait `unsafe impl !cxx_qt::Locking for qobject::T {}`.
+/// You can do so by negative implementing this trait `unsafe impl !cxx_qt::Locking for T {}`.
 ///
 /// However, this is unsafe, as it may lead to concurrent mutable access to the QObject from C++.
 /// You are responsible for ensuring this does not happen!
@@ -52,7 +52,7 @@ pub trait Locking {
 /// Indicates that the object implements threading and has a method which returns a [CxxQtThread].
 ///
 /// This trait is implemented by CxxQt automatically.
-/// To enable this for a `qobject::T`, add `impl cxx_qt::Threading for qobject::T {}` to your [`#[cxx_qt::bridge]`](bridge).
+/// To enable this for a `T`, add `impl cxx_qt::Threading for T {}` to your [`#[cxx_qt::bridge]`](bridge).
 pub trait Threading: Locking + Sized {
     #[doc(hidden)]
     type BoxedQueuedFn;
@@ -101,7 +101,7 @@ pub trait Threading: Locking + Sized {
 ///     // Declare that we want to use a custom constructor
 ///     // Note that the arguments must be a tuple of CXX types.
 ///     // Any associated types that aren't included here are assumed to be `()`.
-///     impl cxx_qt::Constructor<(i32, String), NewArguments=(i32, String)> for qobject::MyStruct {}
+///     impl cxx_qt::Constructor<(i32, String), NewArguments=(i32, String)> for MyStruct {}
 /// }
 ///
 /// // Struct without `Default` implementation

@@ -45,7 +45,7 @@ pub mod qobject {
     // ANCHOR_END: book_inherit_qalm
 
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::CustomBaseClass {}
+    impl cxx_qt::Threading for CustomBaseClass {}
 
     // ANCHOR: book_qsignals_inherit
     unsafe extern "RustQt" {

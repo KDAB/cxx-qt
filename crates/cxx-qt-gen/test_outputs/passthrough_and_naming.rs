@@ -215,11 +215,6 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     use super::MyTrait;
-    impl MyTrait for MyObject {
-        fn my_func() -> String {
-            "Hello".to_owned()
-        }
-    }
     type MyObjectRust = super::MyObjectRust;
     impl MyObjectRust {
         #[doc(hidden)]

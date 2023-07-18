@@ -25,7 +25,7 @@ mod qobject {
     }
 
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::MyObject {}
+    impl cxx_qt::Threading for MyObject {}
 
     unsafe extern "RustQt" {
         #[qinvokable]

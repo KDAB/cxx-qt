@@ -25,7 +25,7 @@ pub mod qobject {
     }
 
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::FirstObject {}
+    impl cxx_qt::Threading for FirstObject {}
 
     unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL
@@ -51,7 +51,7 @@ pub mod qobject {
     }
 
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::SecondObject {}
+    impl cxx_qt::Threading for SecondObject {}
 
     unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL

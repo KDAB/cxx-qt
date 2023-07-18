@@ -26,7 +26,7 @@ mod qobject {
     }
 
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::EnergyUsage {}
+    impl cxx_qt::Threading for EnergyUsage {}
 
     unsafe extern "RustQt" {
         /// A new sensor has been detected
@@ -46,7 +46,7 @@ mod qobject {
         fn sensor_power(self: Pin<&mut qobject::EnergyUsage>, uuid: &QString) -> f64;
     }
 
-    impl cxx_qt::Constructor<()> for qobject::EnergyUsage {}
+    impl cxx_qt::Constructor<()> for EnergyUsage {}
 }
 
 use crate::{
