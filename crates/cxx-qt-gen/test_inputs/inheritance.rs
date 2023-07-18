@@ -16,20 +16,20 @@ mod inheritance {
         /// Inherited hasChildren from the base class
         #[cxx_name = "hasChildren"]
         #[inherit]
-        fn has_children_super(self: &qobject::MyObject, parent: &QModelIndex) -> bool;
+        fn has_children_super(self: &MyObject, parent: &QModelIndex) -> bool;
     }
 
     extern "RustQt" {
         /// Inherited fetchMore from the base class
         #[inherit]
-        unsafe fn fetch_more(self: Pin<&mut qobject::MyObject>, index: &QModelIndex);
+        unsafe fn fetch_more(self: Pin<&mut MyObject>, index: &QModelIndex);
     }
 
     unsafe extern "RustQt" {
         #[qinvokable(cxx_override)]
-        fn data(self: &qobject::MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
+        fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
 
         #[qinvokable(cxx_override)]
-        fn has_children(self: &qobject::MyObject, _parent: &QModelIndex) -> bool;
+        fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
 }

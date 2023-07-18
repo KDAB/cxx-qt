@@ -20,7 +20,7 @@ pub mod qobject {
     extern "RustQt" {
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
-        unsafe fn called(self: Pin<&mut qobject::InnerObject>, inner: *mut InnerObject);
+        unsafe fn called(self: Pin<&mut InnerObject>, inner: *mut InnerObject);
     }
 
     extern "RustQt" {
@@ -30,7 +30,7 @@ pub mod qobject {
 
         /// A signal showing how to refer to another QObject as an argument
         #[qsignal]
-        unsafe fn called(self: Pin<&mut qobject::OuterObject>, inner: *mut InnerObject);
+        unsafe fn called(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
     }
 
     unsafe extern "RustQt" {
@@ -39,11 +39,11 @@ pub mod qobject {
         // This method needs to be unsafe otherwise clippy complains that the
         // public method might dereference the raw pointer.
         #[qinvokable]
-        unsafe fn print_count(self: Pin<&mut qobject::OuterObject>, inner: *mut InnerObject);
+        unsafe fn print_count(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
 
         /// Reset the counter of the inner QObject stored in the Q_PROPERTY
         #[qinvokable]
-        fn reset(self: Pin<&mut qobject::OuterObject>);
+        fn reset(self: Pin<&mut OuterObject>);
     }
 
     impl cxx_qt::Constructor<()> for OuterObject {}

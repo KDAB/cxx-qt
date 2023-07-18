@@ -22,15 +22,15 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// A Q_SIGNAL emitted when a connection occurs
         #[qsignal]
-        fn connected(self: Pin<&mut qobject::RustSignals>, url: &QUrl);
+        fn connected(self: Pin<&mut RustSignals>, url: &QUrl);
 
         /// A Q_SIGNAL emitted when a disconnect occurs
         #[qsignal]
-        fn disconnected(self: Pin<&mut qobject::RustSignals>);
+        fn disconnected(self: Pin<&mut RustSignals>);
 
         /// A Q_SIGNAL emitted when an error occurs
         #[qsignal]
-        fn error(self: Pin<&mut qobject::RustSignals>, message: QString);
+        fn error(self: Pin<&mut RustSignals>, message: QString);
     }
     // ANCHOR_END: book_signals_block
 
@@ -45,11 +45,11 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Connect to the given url
         #[qinvokable]
-        fn connect(self: Pin<&mut qobject::RustSignals>, url: &QUrl);
+        fn connect(self: Pin<&mut RustSignals>, url: &QUrl);
 
         /// Disconnect
         #[qinvokable]
-        fn disconnect(self: Pin<&mut qobject::RustSignals>);
+        fn disconnect(self: Pin<&mut RustSignals>);
     }
     // ANCHOR_END: book_rust_obj_impl
 

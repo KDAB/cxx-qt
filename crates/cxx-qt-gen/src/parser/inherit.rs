@@ -90,15 +90,8 @@ mod tests {
         assert_parse_error(parse_quote! {
             fn test(&self);
         });
-        // Missing qobject::
-        assert_parse_error(parse_quote! {
-            fn test(self: &T);
-        });
         assert_parse_error(parse_quote! {
             fn test(self: &mut T);
-        });
-        assert_parse_error(parse_quote! {
-            fn test(self: Pin<&mut T>);
         });
         // Pointer types
         assert_parse_error(parse_quote! {
@@ -116,20 +109,40 @@ mod tests {
         });
         // Attributes
         assert_parse_error(parse_quote! {
-            fn test(#[test] self: &qobject::T);
+            fn test(#[test] self: &T);
         });
         // Missing "unsafe"
         let function: ForeignItemFn = parse_quote! {
-            fn test(self: &qobject::T);
+            fn test(self: &T);
         };
         assert!(ParsedInheritedMethod::parse(function, Safety::Unsafe).is_err());
+    }
+
+    #[test]
+    fn test_parse_ok() {
+        // T by ref
+        assert!(ParsedInheritedMethod::parse(
+            parse_quote! {
+                fn test(self: &T);
+            },
+            Safety::Safe
+        )
+        .is_ok());
+        // T by Pin
+        assert!(ParsedInheritedMethod::parse(
+            parse_quote! {
+                fn test(self: Pin<&mut T>);
+            },
+            Safety::Safe
+        )
+        .is_ok());
     }
 
     #[test]
     fn test_parse_safe() {
         let function: ForeignItemFn = parse_quote! {
             #[cxx_name="testFunction"]
-            fn test(self: Pin<&mut qobject::T>, a: i32, b: &str);
+            fn test(self: Pin<&mut T>, a: i32, b: &str);
         };
 
         let parsed = ParsedInheritedMethod::parse(function, Safety::Safe).unwrap();

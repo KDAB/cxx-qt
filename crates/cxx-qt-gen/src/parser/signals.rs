@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn test_parse_signal() {
         let method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         let signal = ParsedSignal::parse(method.clone(), Safety::Safe).unwrap();
         assert_eq!(signal.method, method);
@@ -134,12 +134,12 @@ mod tests {
     fn test_parse_signal_cxx_name() {
         let method: ForeignItemFn = parse_quote! {
             #[cxx_name = "cppReady"]
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         assert_eq!(signal.method, expected_method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
@@ -160,12 +160,12 @@ mod tests {
     fn test_parse_signal_inherit() {
         let method: ForeignItemFn = parse_quote! {
             #[inherit]
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         assert_eq!(signal.method, expected_method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     fn test_parse_signal_mutable_err() {
         let method: ForeignItemFn = parse_quote! {
-            fn ready(self: &qobject::MyObject);
+            fn ready(self: &MyObject);
         };
         // Can't be immutable
         assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
@@ -194,7 +194,7 @@ mod tests {
     #[test]
     fn test_parse_signal_parameters() {
         let method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut qobject::MyObject>, x: f64, y: f64);
+            fn ready(self: Pin<&mut MyObject>, x: f64, y: f64);
         };
         let signal = ParsedSignal::parse(method.clone(), Safety::Safe).unwrap();
         assert_eq!(signal.method, method);
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn test_parse_signal_unsafe() {
         let method: ForeignItemFn = parse_quote! {
-            unsafe fn ready(self: Pin<&mut qobject::MyObject>);
+            unsafe fn ready(self: Pin<&mut MyObject>);
         };
         let signal = ParsedSignal::parse(method.clone(), Safety::Unsafe).unwrap();
         assert_eq!(signal.method, method);
@@ -258,7 +258,7 @@ mod tests {
     #[test]
     fn test_parse_signal_unsafe_error() {
         let method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut qobject::MyObject>);
+            fn ready(self: Pin<&mut MyObject>);
         };
         // Can't be safe on the block and the method
         assert!(ParsedSignal::parse(method, Safety::Unsafe).is_err());

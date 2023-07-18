@@ -234,10 +234,10 @@ mod tests {
     #[test]
     fn test_foreign_fn_self() {
         let foreign_fn: ForeignItemFn = parse_quote! {
-            fn foo(self: &qobject::T, a: A) -> B;
+            fn foo(self: &T, a: A) -> B;
         };
         let result = self_type_from_foreign_fn(&foreign_fn.sig).unwrap();
-        assert_eq!(result.ty.to_token_stream().to_string(), "& qobject :: T");
+        assert_eq!(result.ty.to_token_stream().to_string(), "& T");
     }
 
     #[test]

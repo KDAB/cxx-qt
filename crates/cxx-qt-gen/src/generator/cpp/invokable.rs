@@ -161,7 +161,7 @@ mod tests {
     fn test_generate_cpp_invokables() {
         let invokables = vec![
             ParsedQInvokable {
-                method: parse_quote! { fn void_invokable(self: &qobject::MyObject); },
+                method: parse_quote! { fn void_invokable(self: &MyObject); },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -169,7 +169,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn trivial_invokable(self: &qobject::MyObject, param: i32) -> i32; },
+                method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -180,7 +180,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut qobject::MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
                 safe: true,
@@ -191,7 +191,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn specifiers_invokable(self: &qobject::MyObject, param: i32) -> i32; },
+                method: parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -306,7 +306,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
         let invokables = vec![ParsedQInvokable {
-            method: parse_quote! { fn trivial_invokable(self: &qobject::MyObject, param: A) -> B; },
+            method: parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; },
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,

@@ -30,17 +30,17 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL
         #[qsignal]
-        fn accepted(self: Pin<&mut qobject::FirstObject>);
+        fn accepted(self: Pin<&mut FirstObject>);
 
         /// Rejected Q_SIGNAL
         #[qsignal]
-        fn rejected(self: Pin<&mut qobject::FirstObject>);
+        fn rejected(self: Pin<&mut FirstObject>);
     }
 
     unsafe extern "RustQt" {
         /// A Q_INVOKABLE on the first QObject which increments a counter
         #[qinvokable]
-        fn increment(self: Pin<&mut qobject::FirstObject>);
+        fn increment(self: Pin<&mut FirstObject>);
     }
 
     extern "RustQt" {
@@ -56,17 +56,17 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Accepted Q_SIGNAL
         #[qsignal]
-        fn accepted(self: Pin<&mut qobject::SecondObject>);
+        fn accepted(self: Pin<&mut SecondObject>);
 
         /// Rejected Q_SIGNAL
         #[qsignal]
-        fn rejected(self: Pin<&mut qobject::SecondObject>);
+        fn rejected(self: Pin<&mut SecondObject>);
     }
 
     unsafe extern "RustQt" {
         /// A Q_INVOKABLE on the second QObject which increments a counter
         #[qinvokable]
-        fn increment(self: Pin<&mut qobject::SecondObject>);
+        fn increment(self: Pin<&mut SecondObject>);
     }
 }
 

@@ -167,7 +167,7 @@ mod tests {
 
                 unsafe extern "RustQt" {
                     #[qsignal]
-                    fn ready(self: Pin<&mut qobject::MyObject>);
+                    fn ready(self: Pin<&mut MyObject>);
                 }
             }
         };
@@ -194,7 +194,7 @@ mod tests {
 
                 unsafe extern "RustQt" {
                     #[qsignal]
-                    fn ready(self: Pin<&mut qobject::MyObject>);
+                    fn ready(self: Pin<&mut MyObject>);
                 }
 
                 extern "Rust" {
@@ -225,7 +225,7 @@ mod tests {
 
                 unsafe extern "RustQt" {
                     #[qsignal]
-                    fn ready(self: Pin<&mut qobject::UnknownObject>);
+                    fn ready(self: Pin<&mut UnknownObject>);
                 }
             }
         };

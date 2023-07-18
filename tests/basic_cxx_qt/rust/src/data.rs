@@ -37,10 +37,10 @@ mod qobject {
         type MyData = super::MyDataRust;
 
         #[qinvokable]
-        fn as_json_str(self: &qobject::MyData) -> QString;
+        fn as_json_str(self: &MyData) -> QString;
 
         #[qinvokable]
-        fn grab_values(self: Pin<&mut qobject::MyData>);
+        fn grab_values(self: Pin<&mut MyData>);
     }
 }
 

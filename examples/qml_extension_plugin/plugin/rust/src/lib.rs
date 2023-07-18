@@ -41,16 +41,16 @@ mod qobject {
         type MyObject = super::MyObjectRust;
 
         #[qinvokable]
-        pub fn increment(self: Pin<&mut qobject::MyObject>);
+        pub fn increment(self: Pin<&mut MyObject>);
 
         #[qinvokable]
-        pub fn reset(self: Pin<&mut qobject::MyObject>);
+        pub fn reset(self: Pin<&mut MyObject>);
 
         #[qinvokable]
-        pub fn serialize(self: &qobject::MyObject) -> QString;
+        pub fn serialize(self: &MyObject) -> QString;
 
         #[qinvokable]
-        pub fn grab_values(self: Pin<&mut qobject::MyObject>);
+        pub fn grab_values(self: Pin<&mut MyObject>);
     }
 }
 

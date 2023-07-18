@@ -29,11 +29,11 @@ pub mod qobject {
 
         /// Connect to the given url
         #[qinvokable]
-        fn connect(self: Pin<&mut qobject::RustProperties>, mut url: QUrl);
+        fn connect(self: Pin<&mut RustProperties>, mut url: QUrl);
 
         /// Disconnect from the stored url
         #[qinvokable]
-        fn disconnect(self: Pin<&mut qobject::RustProperties>);
+        fn disconnect(self: Pin<&mut RustProperties>);
     }
 }
 

@@ -12,10 +12,10 @@ pub mod qobject {
         type RustLockingEnabled = super::RustLockingEnabledRust;
 
         #[qinvokable]
-        fn get_counter(self: &qobject::RustLockingEnabled) -> u32;
+        fn get_counter(self: &RustLockingEnabled) -> u32;
 
         #[qinvokable]
-        fn increment(self: Pin<&mut qobject::RustLockingEnabled>);
+        fn increment(self: Pin<&mut RustLockingEnabled>);
     }
 
     unsafe extern "RustQt" {
@@ -24,10 +24,10 @@ pub mod qobject {
         type RustLockingDisabled = super::RustLockingDisabledRust;
 
         #[qinvokable]
-        fn get_counter(self: &qobject::RustLockingDisabled) -> u32;
+        fn get_counter(self: &RustLockingDisabled) -> u32;
 
         #[qinvokable]
-        fn increment(self: Pin<&mut qobject::RustLockingDisabled>);
+        fn increment(self: Pin<&mut RustLockingDisabled>);
     }
 
     unsafe impl !cxx_qt::Locking for RustLockingDisabled {}
