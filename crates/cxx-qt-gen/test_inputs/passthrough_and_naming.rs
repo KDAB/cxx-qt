@@ -93,19 +93,13 @@ pub mod ffi {
         fn invokable_name(self: Pin<&mut qobject::MyObject>);
     }
 
-    impl MyTrait for MyObject {
-        fn my_func() -> String {
-            "Hello".to_owned()
-        }
-    }
-
     extern "RustQt" {
         #[cxx_qt::qobject]
         #[qproperty(i32, property_name)]
         type SecondObject = super::SecondObjectRust;
     }
 
-    unsafe impl !cxx_qt::Locking for qobject::SecondObject {}
+    unsafe impl !cxx_qt::Locking for SecondObject {}
 
     unsafe extern "RustQt" {
         #[my_attribute]

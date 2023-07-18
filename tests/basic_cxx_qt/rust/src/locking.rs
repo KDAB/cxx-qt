@@ -30,7 +30,7 @@ pub mod qobject {
         fn increment(self: Pin<&mut qobject::RustLockingDisabled>);
     }
 
-    unsafe impl !cxx_qt::Locking for qobject::RustLockingDisabled {}
+    unsafe impl !cxx_qt::Locking for RustLockingDisabled {}
 }
 
 use core::pin::Pin;

@@ -53,7 +53,7 @@ pub mod qobject {
     }
     // ANCHOR_END: book_rust_obj_impl
 
-    impl cxx_qt::Constructor<()> for qobject::RustSignals {}
+    impl cxx_qt::Constructor<()> for RustSignals {}
 }
 
 use core::pin::Pin;

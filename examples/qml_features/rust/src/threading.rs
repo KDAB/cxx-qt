@@ -30,7 +30,7 @@ pub mod qobject {
 
     // ANCHOR: book_threading_trait
     // Enabling threading on the qobject
-    impl cxx_qt::Threading for qobject::ThreadingWebsite {}
+    impl cxx_qt::Threading for ThreadingWebsite {}
     // ANCHOR_END: book_threading_trait
 
     unsafe extern "RustQt" {

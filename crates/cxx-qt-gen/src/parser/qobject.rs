@@ -333,7 +333,7 @@ pub mod tests {
     fn test_parse_trait_impl_valid() {
         let mut qobject = create_parsed_qobject();
         let item: ItemImpl = parse_quote! {
-            impl cxx_qt::Threading for qobject::MyObject {}
+            impl cxx_qt::Threading for MyObject {}
         };
         assert!(!qobject.threading);
         assert!(qobject.parse_trait_impl(item).is_ok());
@@ -346,27 +346,27 @@ pub mod tests {
 
         // must be a trait
         let item: ItemImpl = parse_quote! {
-            impl qobject::T {}
+            impl T {}
         };
         assert!(qobject.parse_trait_impl(item).is_err());
 
         // no attribute allowed
         let item: ItemImpl = parse_quote! {
             #[attr]
-            impl cxx_qt::Threading for qobject::T {}
+            impl cxx_qt::Threading for T {}
         };
         assert!(qobject.parse_trait_impl(item).is_err());
 
         // Threading cannot be negative
         let item: ItemImpl = parse_quote! {
-            impl !cxx_qt::Threading for qobject::T {}
+            impl !cxx_qt::Threading for T {}
         };
         assert!(qobject.parse_trait_impl(item).is_err());
 
         // must be a known trait
         let item: ItemImpl = parse_quote! {
             #[attr]
-            impl cxx_qt::ABC for qobject::T {}
+            impl cxx_qt::ABC for T {}
         };
         assert!(qobject.parse_trait_impl(item).is_err());
     }

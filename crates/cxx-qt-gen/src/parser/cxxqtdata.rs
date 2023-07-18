@@ -12,10 +12,7 @@ use crate::{
 };
 use std::collections::BTreeMap;
 use syn::ForeignItem;
-use syn::{
-    spanned::Spanned, Attribute, Error, Ident, Item, ItemForeignMod, ItemImpl, Result, Type,
-    TypePath,
-};
+use syn::{Attribute, Error, Ident, Item, ItemForeignMod, ItemImpl, Result, Type, TypePath};
 
 use super::invokable::ParsedQInvokable;
 
@@ -260,27 +257,18 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
-        // If the implementation has a qobject::T
+        // If the implementation has a T
         // then this is the block of methods to be implemented on the C++ object
         if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            // Find if we are a impl qobject::T
-            if path.segments.len() == 2 && path.segments[0].ident == "qobject" {
-                if let Some(qobject) = self.qobjects.get_mut(&path.segments[1].ident) {
-                    if imp.trait_.is_some() {
-                        qobject.parse_trait_impl(imp)?;
-                        return Ok(None);
-                    }
-
-                    // non trait impls fall through
-                } else {
-                    return Err(Error::new(
-                        imp.span(),
-                        "No matching QObject found for the given qobject::T impl block.",
-                    ));
-                }
             // Find if we are an impl block for a qobject
-            } else if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
-                qobject.others.push(Item::Impl(imp));
+            if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
+                // If we are a trait then process it otherwise add to others
+                if imp.trait_.is_some() {
+                    qobject.parse_trait_impl(imp)?;
+                } else {
+                    qobject.others.push(Item::Impl(imp));
+                }
+
                 return Ok(None);
             }
         }
@@ -490,13 +478,13 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            impl qobject::UnknownObj {
+            impl UnknownObj {
                 #[qinvokable]
                 fn invokable() {}
             }
         };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_some());
     }
 
     #[test]
@@ -544,7 +532,7 @@ mod tests {
         assert!(!cxx_qt_data.qobjects[&qobject_ident()].threading);
 
         let item: Item = parse_quote! {
-            impl cxx_qt::Threading for qobject::MyObject {}
+            impl cxx_qt::Threading for MyObject {}
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
@@ -883,7 +871,7 @@ mod tests {
         assert!(!qobject.threading);
 
         let threading_block: Item = parse_quote! {
-            impl cxx_qt::Threading for qobject::MyObject {}
+            impl cxx_qt::Threading for MyObject {}
         };
 
         cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
