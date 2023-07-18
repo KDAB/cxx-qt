@@ -50,9 +50,9 @@ mod ffi {
         fn set_trivial(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: QPoint);
     }
     unsafe extern "C++" {
+        #[cxx_name = "primitiveChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "primitive_changed"]
-        fn primitiveChanged(self: Pin<&mut MyObject>);
+        fn primitive_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -67,9 +67,9 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
+        #[cxx_name = "trivialChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "trivial_changed"]
-        fn trivialChanged(self: Pin<&mut MyObject>);
+        fn trivial_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]

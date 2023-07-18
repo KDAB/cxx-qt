@@ -81,9 +81,9 @@ pub mod ffi {
         fn set_property_name(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
+        #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut MyObject>);
+        fn property_name_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -102,7 +102,7 @@ pub mod ffi {
         fn invokable_name_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
-        #[rust_name = "ready"]
+        #[cxx_name = "ready"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -153,9 +153,9 @@ pub mod ffi {
         fn set_property_name(self: &mut SecondObjectRust, cpp: Pin<&mut SecondObject>, value: i32);
     }
     unsafe extern "C++" {
+        #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut SecondObject>);
+        fn property_name_changed(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -174,8 +174,8 @@ pub mod ffi {
         fn invokable_name_wrapper(self: &mut SecondObjectRust, cpp: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
+        #[cxx_name = "ready"]
         #[my_attribute]
-        #[rust_name = "ready"]
         fn ready(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {

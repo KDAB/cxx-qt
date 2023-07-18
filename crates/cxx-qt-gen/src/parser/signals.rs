@@ -87,6 +87,13 @@ impl ParsedSignal {
             method.attrs.remove(index);
         }
 
+        // Ensure that there isn't a cxx_name already
+        //
+        // TODO: unless we could then use that for the C++ name in the naming phase?
+        if attribute_find_path(&method.attrs, &["cxx_name"]).is_some() {
+            return Err(Error::new(method.span(), "signals cannot contain a cxx_name attribute as this is used internally"));
+        }
+
         let safe = method.sig.unsafety.is_none();
 
         Ok(Self {

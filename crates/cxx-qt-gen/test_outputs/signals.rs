@@ -38,7 +38,7 @@ mod ffi {
         fn invokable_wrapper(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
-        #[rust_name = "ready"]
+        #[cxx_name = "ready"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -54,8 +54,8 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[rust_name = "data_changed"]
-        fn dataChanged(
+        #[cxx_name = "dataChanged"]
+        fn data_changed(
             self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
@@ -82,8 +82,8 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[rust_name = "base_class_new_data"]
-        fn newData(
+        #[cxx_name = "newData"]
+        fn base_class_new_data(
             self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
