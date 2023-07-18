@@ -25,7 +25,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 ///         type MyObject = super::MyObjectRust;
 ///
 ///         #[qinvokable]
-///         fn invokable(self: &qobject::MyObject, a: i32, b: i32) -> i32;
+///         fn invokable(self: &MyObject, a: i32, b: i32) -> i32;
 ///     }
 /// }
 ///

@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - QObject struct is now split between the bridge and implementation outside via a type alias
 - `qobject` module is no longer generated
 - `impl cxx_qt::trait for qobject::T` inside the bridge is now `impl cxx_qt::trait for T`
+- `qobject::T` as the self parameter in the bridge is now `T`
 
 ### Fixed
 

@@ -52,7 +52,7 @@ mod tests {
     fn test_from_impl_method() {
         let parsed = ParsedQInvokable {
             method: parse_quote! {
-                fn my_invokable(self: &qobject::MyObject);
+                fn my_invokable(self: &MyObject);
             },
             qobject_ident: format_ident!("MyObject"),
             mutable: false,

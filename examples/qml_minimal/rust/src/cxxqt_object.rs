@@ -33,10 +33,10 @@ pub mod qobject {
     // ANCHOR: book_rustobj_invokable_signature
     unsafe extern "RustQt" {
         #[qinvokable]
-        fn increment_number(self: Pin<&mut qobject::MyObject>);
+        fn increment_number(self: Pin<&mut MyObject>);
 
         #[qinvokable]
-        fn say_hi(self: &qobject::MyObject, string: &QString, number: i32);
+        fn say_hi(self: &MyObject, string: &QString, number: i32);
     }
     // ANCHOR_END: book_rustobj_invokable_signature
 }

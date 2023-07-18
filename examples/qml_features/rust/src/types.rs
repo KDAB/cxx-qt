@@ -83,11 +83,11 @@ pub mod ffi {
 
         /// Load the value from a QVariant
         #[qinvokable]
-        fn load_from_variant(self: Pin<&mut qobject::Types>, variant: &QVariant);
+        fn load_from_variant(self: Pin<&mut Types>, variant: &QVariant);
 
         /// Toggle the boolean Q_PROPERTY
         #[qinvokable]
-        fn toggle_boolean(self: Pin<&mut qobject::Types>);
+        fn toggle_boolean(self: Pin<&mut Types>);
     }
 }
 

@@ -118,7 +118,7 @@ mod tests {
     fn test_generate_rust_invokables() {
         let invokables = vec![
             ParsedQInvokable {
-                method: parse_quote! { fn void_invokable(self: &qobject::MyObject); },
+                method: parse_quote! { fn void_invokable(self: &MyObject); },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -126,7 +126,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn trivial_invokable(self: &qobject::MyObject, param: i32) -> i32; },
+                method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -137,7 +137,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut qobject::MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
                 safe: true,
@@ -148,7 +148,7 @@ mod tests {
                 specifiers: HashSet::new(),
             },
             ParsedQInvokable {
-                method: parse_quote! { unsafe fn unsafe_invokable(self: &qobject::MyObject, param: *mut T) -> *mut T; },
+                method: parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: false,

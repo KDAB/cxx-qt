@@ -442,7 +442,7 @@ mod tests {
         let item: Item = parse_quote! {
             unsafe extern "RustQt" {
                 #[qinvokable]
-                fn invokable(self: &qobject::MyObject);
+                fn invokable(self: &MyObject);
 
                 fn cpp_context();
             }
@@ -466,7 +466,7 @@ mod tests {
         let item: Item = parse_quote! {
             unsafe extern "RustQt" {
                 #[qinvokable]
-                fn invokable(self: &qobject::MyObject::Bad);
+                fn invokable(self: &MyObject::Bad);
             }
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
@@ -743,17 +743,17 @@ mod tests {
         let unsafe_block: Item = parse_quote! {
             unsafe extern "RustQt" {
                 #[inherit]
-                fn test(self: &qobject::MyObject);
+                fn test(self: &MyObject);
 
                 #[inherit]
-                fn with_args(self: &qobject::MyObject, arg: i32);
+                fn with_args(self: &MyObject, arg: i32);
             }
         };
         let safe_block: Item = parse_quote! {
             extern "RustQt" {
                 #[cxx_name="withRename"]
                 #[inherit]
-                unsafe fn with_rename(self: Pin<&mut qobject::MyObject>, arg: i32);
+                unsafe fn with_rename(self: Pin<&mut MyObject>, arg: i32);
             }
         };
 
@@ -783,12 +783,12 @@ mod tests {
         let block: Item = parse_quote! {
             unsafe extern "RustQt" {
                 #[qsignal]
-                fn ready(self: Pin<&mut qobject::MyObject>);
+                fn ready(self: Pin<&mut MyObject>);
 
                 #[cxx_name="cppDataChanged"]
                 #[inherit]
                 #[qsignal]
-                fn data_changed(self: Pin<&mut qobject::MyObject>, data: i32);
+                fn data_changed(self: Pin<&mut MyObject>, data: i32);
             }
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
@@ -828,7 +828,7 @@ mod tests {
         let block: Item = parse_quote! {
             unsafe extern "RustQt" {
                 #[qsignal]
-                fn ready(self: Pin<&mut qobject::UnknownObj>);
+                fn ready(self: Pin<&mut UnknownObj>);
             }
         };
         assert!(cxxqtdata.parse_cxx_qt_item(block).is_err());
@@ -840,7 +840,7 @@ mod tests {
         let block: Item = parse_quote! {
             extern "RustQt" {
                 #[qsignal]
-                unsafe fn unsafe_signal(self: Pin<&mut qobject::MyObject>, arg: *mut T);
+                unsafe fn unsafe_signal(self: Pin<&mut MyObject>, arg: *mut T);
             }
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
