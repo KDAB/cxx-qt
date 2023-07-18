@@ -53,7 +53,7 @@ pub mod qobject {
         #[inherit]
         #[qsignal]
         fn data_changed(
-            self: Pin<&mut qobject::CustomBaseClass>,
+            self: Pin<&mut CustomBaseClass>,
             top_left: &QModelIndex,
             bottom_right: &QModelIndex,
             roles: &QVector_i32,
@@ -64,29 +64,29 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Add a new row to the QAbstractListModel on the current thread
         #[qinvokable]
-        fn add(self: Pin<&mut qobject::CustomBaseClass>);
+        fn add(self: Pin<&mut CustomBaseClass>);
 
         /// On a background thread, add a given number of rows to the QAbstractListModel
         #[qinvokable]
-        fn add_on_thread(self: Pin<&mut qobject::CustomBaseClass>, mut counter: i32);
+        fn add_on_thread(self: Pin<&mut CustomBaseClass>, mut counter: i32);
     }
 
     // ANCHOR: book_inherit_clear_signature
     unsafe extern "RustQt" {
         /// Clear the rows in the QAbstractListModel
         #[qinvokable]
-        pub fn clear(self: Pin<&mut qobject::CustomBaseClass>);
+        pub fn clear(self: Pin<&mut CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_clear_signature
 
     unsafe extern "RustQt" {
         /// Multiply the number in the row with the given index by the given factor
         #[qinvokable]
-        pub fn multiply(self: Pin<&mut qobject::CustomBaseClass>, index: i32, factor: f64);
+        pub fn multiply(self: Pin<&mut CustomBaseClass>, index: i32, factor: f64);
 
         /// Remove the row with the given index
         #[qinvokable]
-        pub fn remove(self: Pin<&mut qobject::CustomBaseClass>, index: i32);
+        pub fn remove(self: Pin<&mut CustomBaseClass>, index: i32);
     }
 
     // ANCHOR: book_inherit_qalm_impl_unsafe
@@ -95,33 +95,33 @@ pub mod qobject {
         /// Inherited beginInsertRows from the base class
         #[inherit]
         unsafe fn begin_insert_rows(
-            self: Pin<&mut qobject::CustomBaseClass>,
+            self: Pin<&mut CustomBaseClass>,
             parent: &QModelIndex,
             first: i32,
             last: i32,
         );
         /// Inherited endInsertRows from the base class
         #[inherit]
-        unsafe fn end_insert_rows(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn end_insert_rows(self: Pin<&mut CustomBaseClass>);
 
         /// Inherited beginRemoveRows from the base class
         #[inherit]
         unsafe fn begin_remove_rows(
-            self: Pin<&mut qobject::CustomBaseClass>,
+            self: Pin<&mut CustomBaseClass>,
             parent: &QModelIndex,
             first: i32,
             last: i32,
         );
         /// Inherited endRemoveRows from the base class
         #[inherit]
-        unsafe fn end_remove_rows(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn end_remove_rows(self: Pin<&mut CustomBaseClass>);
 
         /// Inherited beginResetModel from the base class
         #[inherit]
-        unsafe fn begin_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn begin_reset_model(self: Pin<&mut CustomBaseClass>);
         /// Inherited endResetModel from the base class
         #[inherit]
-        unsafe fn end_reset_model(self: Pin<&mut qobject::CustomBaseClass>);
+        unsafe fn end_reset_model(self: Pin<&mut CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_qalm_impl_unsafe
 
@@ -130,12 +130,12 @@ pub mod qobject {
         /// Inherited canFetchMore from the base class
         #[cxx_name = "canFetchMore"]
         #[inherit]
-        fn base_can_fetch_more(self: &qobject::CustomBaseClass, parent: &QModelIndex) -> bool;
+        fn base_can_fetch_more(self: &CustomBaseClass, parent: &QModelIndex) -> bool;
 
         /// Inherited index from the base class
         #[inherit]
         fn index(
-            self: &qobject::CustomBaseClass,
+            self: &CustomBaseClass,
             row: i32,
             column: i32,
             parent: &QModelIndex,
@@ -147,7 +147,7 @@ pub mod qobject {
     // ANCHOR: book_inherit_data_signature
     unsafe extern "RustQt" {
         #[qinvokable(cxx_override)]
-        fn data(self: &qobject::CustomBaseClass, index: &QModelIndex, role: i32) -> QVariant;
+        fn data(self: &CustomBaseClass, index: &QModelIndex, role: i32) -> QVariant;
     }
     // ANCHOR_END: book_inherit_data_signature
 
@@ -156,18 +156,18 @@ pub mod qobject {
         /// Return whether the base class can fetch more
         // Example of overriding a C++ virtual method and calling the base class implementation.
         #[qinvokable(cxx_override)]
-        fn can_fetch_more(self: &qobject::CustomBaseClass, parent: &QModelIndex) -> bool;
+        fn can_fetch_more(self: &CustomBaseClass, parent: &QModelIndex) -> bool;
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
 
     unsafe extern "RustQt" {
         /// Return the role names for the QAbstractListModel
         #[qinvokable(cxx_override)]
-        fn role_names(self: &qobject::CustomBaseClass) -> QHash_i32_QByteArray;
+        fn role_names(self: &CustomBaseClass) -> QHash_i32_QByteArray;
 
         /// Return the row count for the QAbstractListModel
         #[qinvokable(cxx_override)]
-        fn row_count(self: &qobject::CustomBaseClass, _parent: &QModelIndex) -> i32;
+        fn row_count(self: &CustomBaseClass, _parent: &QModelIndex) -> i32;
     }
 }
 

@@ -82,7 +82,7 @@ mod tests {
     fn test_immutable() {
         let generated = generate_from_foreign(
             parse_quote! {
-                fn test(self: &qobject::T, a: B, b: C);
+                fn test(self: &T, a: B, b: C);
             },
             Some("TestBaseClass"),
         )
@@ -104,7 +104,7 @@ mod tests {
     fn test_mutable() {
         let generated = generate_from_foreign(
             parse_quote! {
-                fn test(self: Pin<&mut qobject::T>);
+                fn test(self: Pin<&mut T>);
             },
             Some("TestBaseClass"),
         )
@@ -126,7 +126,7 @@ mod tests {
     fn test_default_base_class() {
         let generated = generate_from_foreign(
             parse_quote! {
-                fn test(self: &qobject::T);
+                fn test(self: &T);
             },
             None,
         )

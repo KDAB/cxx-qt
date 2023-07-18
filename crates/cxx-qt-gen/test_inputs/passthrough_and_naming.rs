@@ -87,10 +87,10 @@ pub mod ffi {
 
     unsafe extern "RustQt" {
         #[qsignal]
-        fn ready(self: Pin<&mut qobject::MyObject>);
+        fn ready(self: Pin<&mut MyObject>);
 
         #[qinvokable]
-        fn invokable_name(self: Pin<&mut qobject::MyObject>);
+        fn invokable_name(self: Pin<&mut MyObject>);
     }
 
     extern "RustQt" {
@@ -104,9 +104,9 @@ pub mod ffi {
     unsafe extern "RustQt" {
         #[my_attribute]
         #[qsignal]
-        fn ready(self: Pin<&mut qobject::SecondObject>);
+        fn ready(self: Pin<&mut SecondObject>);
 
         #[qinvokable]
-        fn invokable_name(self: Pin<&mut qobject::SecondObject>);
+        fn invokable_name(self: Pin<&mut SecondObject>);
     }
 }

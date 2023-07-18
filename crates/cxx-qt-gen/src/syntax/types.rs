@@ -44,10 +44,13 @@ pub fn is_pin_of_self(ty: &Type) -> bool {
 }
 
 fn extract_qobject_ident_from_path(path: &Path) -> Result<Ident> {
-    if path.segments.len() == 2 && path.segments.first().unwrap().ident == "qobject" {
-        Ok(path.segments.last().unwrap().ident.clone())
+    if path.segments.len() == 1 {
+        Ok(path.segments[0].ident.clone())
     } else {
-        Err(Error::new_spanned(path, "Expected a qobject::T type!"))
+        Err(Error::new_spanned(
+            path,
+            "Expected a path with one segment!",
+        ))
     }
 }
 
@@ -60,7 +63,7 @@ fn extract_qobject_ident_from_ref(ty: &TypeReference) -> Result<(Ident, Option<M
     } else {
         Err(Error::new_spanned(
             ty,
-            "Expected type to be a `&qobject::T` reference!",
+            "Expected type to be a `&T` reference!",
         ))
     }
 }
@@ -83,25 +86,16 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
             }
         }
     }
-    if ty
-        .path
-        .segments
-        .first()
-        .map(|segment| segment.ident == "qobject")
-        == Some(true)
-    {
-        Err(Error::new_spanned(ty, "Cannot take qobject::T by value, use either `self: &qobject::T`, or `Pin<&mut qobject::T>`"))
-    } else {
-        Err(Error::new_spanned(
-            ty,
-            "Expected a qobject::T refernce! Use either `&qobject::T` or `Pin<&mut qobject::T>`",
-        ))
-    }
+
+    Err(Error::new_spanned(
+        ty,
+        "Expected a T reference! Use either `&T` or `Pin<&mut T>`",
+    ))
 }
 
 /// Extract the qobject ident from any of the following patterns:
-/// - &qobject::T
-/// - Pin<&mut qobject::T>
+/// - &T
+/// - Pin<&mut T>
 pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
     match ty {
         Type::Reference(type_ref) => {
@@ -109,7 +103,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
             if mutability.is_some() {
                 return Err(Error::new_spanned(
                     type_ref,
-                    "Cannot take qobject::T by mutable reference, use either `self: &qobject::T`, or `Pin<&mut qobject::T>`",
+                    "Cannot take T by mutable reference, use either `self: &T`, or `Pin<&mut T>`",
                 ));
             }
             Ok((ident, mutability))
@@ -120,7 +114,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
         }
         _ => Err(Error::new_spanned(
             ty,
-            "Expected type to be a &qobject::T or Pin<&mut qobject::T> reference!",
+            "Expected type to be a &T or Pin<&mut T> reference!",
         )),
     }
 }
@@ -152,14 +146,14 @@ mod tests {
 
     #[test]
     fn test_extract_qobject_ident() {
-        assert_qobject_ident(parse_quote! { &qobject::Foo }, "Foo", false);
-        assert_qobject_ident(parse_quote! { Pin<&mut qobject::Foo> }, "Foo", true);
+        assert_qobject_ident(parse_quote! { &Foo }, "Foo", false);
+        assert_qobject_ident(parse_quote! { Pin<&mut Foo> }, "Foo", true);
 
-        assert!(super::extract_qobject_ident(&parse_quote! { qobject::Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { &mut qobject::Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Pin<&qobject::Foo> }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { qobject::X::Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { &mut Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Pin<&Foo> }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { X::Foo }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
     }
 }

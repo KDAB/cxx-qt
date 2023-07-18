@@ -24,15 +24,15 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
-        fn load_color(self: &qobject::RustInvokables) -> QColor;
+        fn load_color(self: &RustInvokables) -> QColor;
 
         /// Mutable invokable method that stores a color
         #[qinvokable]
-        fn store_color(self: Pin<&mut qobject::RustInvokables>, red: f32, green: f32, blue: f32);
+        fn store_color(self: Pin<&mut RustInvokables>, red: f32, green: f32, blue: f32);
 
         /// Mutable invokable method with no parameters that resets the color
         #[qinvokable]
-        fn reset(self: Pin<&mut qobject::RustInvokables>);
+        fn reset(self: Pin<&mut RustInvokables>);
     }
     // ANCHOR_END: book_invokable_signature
 }

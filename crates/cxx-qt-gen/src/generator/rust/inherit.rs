@@ -80,7 +80,7 @@ mod tests {
     fn test_mutable() {
         let generated = generate_from_foreign(
             parse_quote! {
-                fn test(self: Pin<&mut qobject::MyObject>, a: B, b: C);
+                fn test(self: Pin<&mut MyObject>, a: B, b: C);
             },
             Safety::Safe,
         )
@@ -104,7 +104,7 @@ mod tests {
     fn test_immutable() {
         let generated = generate_from_foreign(
             parse_quote! {
-                fn test(self: &qobject::MyObject, a: B, b: C);
+                fn test(self: &MyObject, a: B, b: C);
             },
             Safety::Safe,
         )
@@ -128,7 +128,7 @@ mod tests {
     fn test_unsafe() {
         let generated = generate_from_foreign(
             parse_quote! {
-                unsafe fn test(self: &qobject::MyObject);
+                unsafe fn test(self: &MyObject);
             },
             Safety::Unsafe,
         )
