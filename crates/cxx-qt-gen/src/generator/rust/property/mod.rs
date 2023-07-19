@@ -278,9 +278,9 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_trivial_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_trivial_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
                     {
-                        self.connect_trivial_property_changed(func, CxxQtConnectionType::AutoConnection)
+                        self.connect_trivial_property_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
                     }
                 }
             },
@@ -319,9 +319,9 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_opaque_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_opaque_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
                     {
-                        self.connect_opaque_property_changed(func, CxxQtConnectionType::AutoConnection)
+                        self.connect_opaque_property_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
                     }
                 }
             },
@@ -360,9 +360,9 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_unsafe_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> CxxQtQMetaObjectConnection
+                    pub fn on_unsafe_property_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
                     {
-                        self.connect_unsafe_property_changed(func, CxxQtConnectionType::AutoConnection)
+                        self.connect_unsafe_property_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
                     }
                 }
             },

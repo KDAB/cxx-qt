@@ -144,8 +144,8 @@ pub mod cxx_qt_ffi {
         pub fn on_ready(
             self: core::pin::Pin<&mut MyObject>,
             func: fn(core::pin::Pin<&mut MyObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl MyObject {
@@ -164,8 +164,8 @@ pub mod cxx_qt_ffi {
                 third: QPoint,
                 fourth: &'a QPoint,
             ),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_data_changed(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl MyObject {
@@ -184,8 +184,8 @@ pub mod cxx_qt_ffi {
                 third: QPoint,
                 fourth: &'a QPoint,
             ),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_base_class_new_data(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_base_class_new_data(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl cxx_qt::Locking for MyObject {}

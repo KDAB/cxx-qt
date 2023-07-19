@@ -245,8 +245,8 @@ pub mod cxx_qt_ffi {
         pub fn on_property_name_changed(
             self: core::pin::Pin<&mut MyObject>,
             func: fn(core::pin::Pin<&mut MyObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl MyObject {
@@ -259,8 +259,8 @@ pub mod cxx_qt_ffi {
         pub fn on_ready(
             self: core::pin::Pin<&mut MyObject>,
             func: fn(core::pin::Pin<&mut MyObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl cxx_qt::Locking for MyObject {}
@@ -312,8 +312,8 @@ pub mod cxx_qt_ffi {
         pub fn on_property_name_changed(
             self: core::pin::Pin<&mut SecondObject>,
             func: fn(core::pin::Pin<&mut SecondObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_property_name_changed(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl SecondObject {
@@ -326,8 +326,8 @@ pub mod cxx_qt_ffi {
         pub fn on_ready(
             self: core::pin::Pin<&mut SecondObject>,
             func: fn(core::pin::Pin<&mut SecondObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_ready(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     #[doc(hidden)]
