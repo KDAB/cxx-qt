@@ -11,7 +11,7 @@ use crate::{
             types::CppType,
         },
         naming::{invokable::QInvokableName, qobject::QObjectName},
-        utils::cpp::syn_type_to_cpp_return_type,
+        utils::cpp::{syn_return_type_to_cpp_except, syn_type_to_cpp_return_type},
     },
     parser::{
         cxxqtdata::ParsedCxxMappings,
@@ -143,10 +143,9 @@ pub fn generate_cpp_invokables(
         // in Rust for our invokable.
         //
         // CXX generates the source and we just need the matching header.
-        //
-        // TODO: will this always be noexcept ? If the return type is Result is this then removed?
+        let has_noexcept = syn_return_type_to_cpp_except(&invokable.method.sig.output);
         generated.private_methods.push(CppFragment::Header(format!(
-            "{return_cxx_ty} {ident}({parameter_types}){is_const} noexcept;",
+            "{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept};",
             return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
                 return_cxx_ty
             } else {
