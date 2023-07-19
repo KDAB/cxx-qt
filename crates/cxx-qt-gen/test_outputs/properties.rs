@@ -153,8 +153,8 @@ pub mod cxx_qt_ffi {
         pub fn on_primitive_changed(
             self: core::pin::Pin<&mut MyObject>,
             func: fn(core::pin::Pin<&mut MyObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_primitive_changed(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_primitive_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl MyObject {
@@ -167,8 +167,8 @@ pub mod cxx_qt_ffi {
         pub fn on_trivial_changed(
             self: core::pin::Pin<&mut MyObject>,
             func: fn(core::pin::Pin<&mut MyObject>),
-        ) -> CxxQtQMetaObjectConnection {
-            self.connect_trivial_changed(func, CxxQtConnectionType::AutoConnection)
+        ) -> cxx_qt_lib::QMetaObjectConnection {
+            self.connect_trivial_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
     impl cxx_qt::Locking for MyObject {}
