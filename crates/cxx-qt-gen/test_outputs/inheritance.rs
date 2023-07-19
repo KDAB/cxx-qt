@@ -70,33 +70,23 @@ mod inheritance {
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
-use self::cxx_qt_inheritance::*;
-#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-pub mod cxx_qt_inheritance {
-    use super::inheritance::*;
-    use super::*;
-    use cxx_qt::CxxQtType;
-    #[doc(hidden)]
-    type UniquePtr<T> = cxx::UniquePtr<T>;
-    type MyObjectRust = super::MyObjectRust;
-    impl cxx_qt::Locking for inheritance::MyObject {}
-    #[doc(hidden)]
-    pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
-        std::boxed::Box::new(core::default::Default::default())
+impl cxx_qt::Locking for inheritance::MyObject {}
+#[doc(hidden)]
+pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for inheritance::MyObject {
+    type Target = MyObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
     }
-    impl core::ops::Deref for inheritance::MyObject {
-        type Target = MyObjectRust;
-        fn deref(&self) -> &Self::Target {
-            self.cxx_qt_ffi_rust()
-        }
+}
+impl cxx_qt::CxxQtType for inheritance::MyObject {
+    type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
     }
-    impl cxx_qt::CxxQtType for inheritance::MyObject {
-        type Rust = MyObjectRust;
-        fn rust(&self) -> &Self::Rust {
-            self.cxx_qt_ffi_rust()
-        }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-            self.cxx_qt_ffi_rust_mut()
-        }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
     }
 }

@@ -18,7 +18,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{parse_quote, Ident, ImplItem, Item, Path, Result};
+use syn::{Ident, ImplItem, Item, Path, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -69,16 +69,6 @@ impl GeneratedRustQObject {
         generated
             .blocks
             .append(&mut generate_qobject_definitions(&qobject_idents)?);
-
-        // Add a type alias so that generated code can still find T
-        //
-        // TODO: this should be removed once generated methods aren't in the hidden module
-        generated.blocks.cxx_qt_mod_contents.push({
-            let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
-            parse_quote! {
-                type #rust_struct_name_rust = super::#rust_struct_name_rust;
-            }
-        });
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_rust_properties(

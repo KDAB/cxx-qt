@@ -126,87 +126,77 @@ mod ffi {
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
-use self::cxx_qt_ffi::*;
-#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-pub mod cxx_qt_ffi {
-    use super::ffi::*;
-    use super::*;
-    use cxx_qt::CxxQtType;
-    #[doc(hidden)]
-    type UniquePtr<T> = cxx::UniquePtr<T>;
-    type MyObjectRust = super::MyObjectRust;
-    impl ffi::MyObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "ready"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_ready(
-            self: core::pin::Pin<&mut ffi::MyObject>,
-            func: fn(core::pin::Pin<&mut ffi::MyObject>),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_ready(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        func: fn(core::pin::Pin<&mut ffi::MyObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl ffi::MyObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "dataChanged"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_data_changed(
-            self: core::pin::Pin<&mut ffi::MyObject>,
-            func: fn(
-                core::pin::Pin<&mut ffi::MyObject>,
-                first: i32,
-                second: cxx::UniquePtr<Opaque>,
-                third: ffi::QPoint,
-                fourth: &'a ffi::QPoint,
-            ),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "dataChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_data_changed(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        func: fn(
+            core::pin::Pin<&mut ffi::MyObject>,
+            first: i32,
+            second: cxx::UniquePtr<Opaque>,
+            third: ffi::QPoint,
+            fourth: &'a ffi::QPoint,
+        ),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl ffi::MyObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "newData"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_base_class_new_data(
-            self: core::pin::Pin<&mut ffi::MyObject>,
-            func: fn(
-                core::pin::Pin<&mut ffi::MyObject>,
-                first: i32,
-                second: cxx::UniquePtr<Opaque>,
-                third: ffi::QPoint,
-                fourth: &'a ffi::QPoint,
-            ),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_base_class_new_data(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "newData"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_base_class_new_data(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        func: fn(
+            core::pin::Pin<&mut ffi::MyObject>,
+            first: i32,
+            second: cxx::UniquePtr<Opaque>,
+            third: ffi::QPoint,
+            fourth: &'a ffi::QPoint,
+        ),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_base_class_new_data(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl cxx_qt::Locking for ffi::MyObject {}
-    #[doc(hidden)]
-    pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
-        std::boxed::Box::new(core::default::Default::default())
+}
+impl cxx_qt::Locking for ffi::MyObject {}
+#[doc(hidden)]
+pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for ffi::MyObject {
+    type Target = MyObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
     }
-    impl core::ops::Deref for ffi::MyObject {
-        type Target = MyObjectRust;
-        fn deref(&self) -> &Self::Target {
-            self.cxx_qt_ffi_rust()
-        }
+}
+impl cxx_qt::CxxQtType for ffi::MyObject {
+    type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
     }
-    impl cxx_qt::CxxQtType for ffi::MyObject {
-        type Rust = MyObjectRust;
-        fn rust(&self) -> &Self::Rust {
-            self.cxx_qt_ffi_rust()
-        }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-            self.cxx_qt_ffi_rust_mut()
-        }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
     }
 }

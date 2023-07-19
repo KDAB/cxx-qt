@@ -172,109 +172,99 @@ mod ffi {
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
-use self::cxx_qt_ffi::*;
-#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-pub mod cxx_qt_ffi {
-    use super::ffi::*;
-    use super::*;
-    use cxx_qt::CxxQtType;
-    #[doc(hidden)]
-    type UniquePtr<T> = cxx::UniquePtr<T>;
-    type MyObjectRust = super::MyObjectRust;
-    impl cxx_qt::Threading for ffi::MyObject {
-        type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
-        type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
-        fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
-            self.cxx_qt_ffi_qt_thread()
-        }
-        #[doc(hidden)]
-        fn queue<F>(
-            cxx_qt_thread: &ffi::MyObjectCxxQtThread,
-            f: F,
-        ) -> std::result::Result<(), cxx::Exception>
-        where
-            F: FnOnce(core::pin::Pin<&mut ffi::MyObject>),
-            F: Send + 'static,
-        {
-            #[allow(clippy::boxed_local)]
-            #[doc(hidden)]
-            fn func(
-                obj: core::pin::Pin<&mut ffi::MyObject>,
-                arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
-            ) {
-                (arg.inner)(obj)
-            }
-            let arg = MyObjectCxxQtThreadQueuedFn {
-                inner: std::boxed::Box::new(f),
-            };
-            ffi::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
-        }
-        #[doc(hidden)]
-        fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread {
-            ffi::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
-        }
-        #[doc(hidden)]
-        fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread) {
-            ffi::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
-        }
+impl cxx_qt::Threading for ffi::MyObject {
+    type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
+    type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
+    fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
+        self.cxx_qt_ffi_qt_thread()
     }
     #[doc(hidden)]
-    pub struct MyObjectCxxQtThreadQueuedFn {
-        inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
-    }
-    impl cxx_qt::Locking for ffi::MyObject {}
-    #[doc(hidden)]
-    pub fn route_arguments_my_object_0(
-        arg0: i32,
-        arg1: *mut ffi::QObject,
-    ) -> ffi::CxxQtConstructorArgumentsMyObject0 {
-        #[allow(unused_variables)]
-        #[allow(clippy::let_unit_value)]
-        let (new_arguments, base_arguments, initialize_arguments) =
-            <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::route_arguments((
-                arg0, arg1,
-            ));
-        ffi::CxxQtConstructorArgumentsMyObject0 {
-            base: ffi::CxxQtConstructorBaseArgumentsMyObject0 {
-                arg0: base_arguments.0,
-            },
-            initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
-            new: ffi::CxxQtConstructorNewArgumentsMyObject0 {
-                arg0: new_arguments.0,
-            },
+    fn queue<F>(
+        cxx_qt_thread: &ffi::MyObjectCxxQtThread,
+        f: F,
+    ) -> std::result::Result<(), cxx::Exception>
+    where
+        F: FnOnce(core::pin::Pin<&mut ffi::MyObject>),
+        F: Send + 'static,
+    {
+        #[allow(clippy::boxed_local)]
+        #[doc(hidden)]
+        fn func(
+            obj: core::pin::Pin<&mut ffi::MyObject>,
+            arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
+        ) {
+            (arg.inner)(obj)
         }
+        let arg = MyObjectCxxQtThreadQueuedFn {
+            inner: std::boxed::Box::new(f),
+        };
+        ffi::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
     }
     #[doc(hidden)]
+    fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread {
+        ffi::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
+    }
+    #[doc(hidden)]
+    fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread) {
+        ffi::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtThreadQueuedFn {
+    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
+}
+impl cxx_qt::Locking for ffi::MyObject {}
+#[doc(hidden)]
+pub fn route_arguments_my_object_0(
+    arg0: i32,
+    arg1: *mut ffi::QObject,
+) -> ffi::CxxQtConstructorArgumentsMyObject0 {
     #[allow(unused_variables)]
-    pub fn new_rs_my_object_0(
-        new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0,
-    ) -> std::boxed::Box<MyObjectRust> {
-        std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
-            i32,
-            *mut ffi::QObject,
-        )>>::new((new_arguments.arg0,)))
+    #[allow(clippy::let_unit_value)]
+    let (new_arguments, base_arguments, initialize_arguments) =
+        <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::route_arguments((
+            arg0, arg1,
+        ));
+    ffi::CxxQtConstructorArgumentsMyObject0 {
+        base: ffi::CxxQtConstructorBaseArgumentsMyObject0 {
+            arg0: base_arguments.0,
+        },
+        initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+        new: ffi::CxxQtConstructorNewArgumentsMyObject0 {
+            arg0: new_arguments.0,
+        },
     }
-    #[doc(hidden)]
-    #[allow(unused_variables)]
-    pub fn initialize_my_object_0(
-        qobject: core::pin::Pin<&mut ffi::MyObject>,
-        initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0,
-    ) {
-        <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::initialize(qobject, ());
+}
+#[doc(hidden)]
+#[allow(unused_variables)]
+pub fn new_rs_my_object_0(
+    new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0,
+) -> std::boxed::Box<MyObjectRust> {
+    std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
+        i32,
+        *mut ffi::QObject,
+    )>>::new((new_arguments.arg0,)))
+}
+#[doc(hidden)]
+#[allow(unused_variables)]
+pub fn initialize_my_object_0(
+    qobject: core::pin::Pin<&mut ffi::MyObject>,
+    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0,
+) {
+    <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::initialize(qobject, ());
+}
+impl core::ops::Deref for ffi::MyObject {
+    type Target = MyObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
     }
-    impl core::ops::Deref for ffi::MyObject {
-        type Target = MyObjectRust;
-        fn deref(&self) -> &Self::Target {
-            self.cxx_qt_ffi_rust()
-        }
+}
+impl cxx_qt::CxxQtType for ffi::MyObject {
+    type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
     }
-    impl cxx_qt::CxxQtType for ffi::MyObject {
-        type Rust = MyObjectRust;
-        fn rust(&self) -> &Self::Rust {
-            self.cxx_qt_ffi_rust()
-        }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-            self.cxx_qt_ffi_rust_mut()
-        }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
     }
 }
