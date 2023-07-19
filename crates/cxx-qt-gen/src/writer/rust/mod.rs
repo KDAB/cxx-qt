@@ -5,14 +5,10 @@
 
 use crate::generator::rust::GeneratedRustBlocks;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
+use quote::{quote, ToTokens};
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
-    // Build the module idents
-    let cxx_mod_ident = &generated.cxx_mod.ident;
-    let cxx_qt_mod_ident = format_ident!("cxx_qt_{cxx_mod_ident}");
-
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
@@ -44,24 +40,10 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         .expect("Could not build CXX common block"),
     );
 
-    let mut qobject_types = vec![];
     for qobject in &generated.qobjects {
         // Add the blocks from the QObject
         cxx_mod_contents.extend_from_slice(&qobject.blocks.cxx_mod_contents);
         cxx_qt_mod_contents.extend_from_slice(&qobject.blocks.cxx_qt_mod_contents);
-
-        // Add the type alias to the C++ struct
-        let cpp_struct_ident = &qobject.cpp_struct_ident;
-        let cpp_struct_ident_str = cpp_struct_ident.to_string();
-        qobject_types.push(quote! {
-            #[doc = "The C++ type for the QObject "]
-            #[doc = #cpp_struct_ident_str]
-            #[doc = "\n"]
-            #[doc = "Use this type when referring to the QObject as a pointer"]
-            #[doc = "\n"]
-            #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-            pub type #cpp_struct_ident = super::#cpp_struct_ident;
-        })
     }
 
     // Inject the CXX blocks
@@ -71,30 +53,11 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         cxx_mod.content = Some((syn::token::Brace::default(), cxx_mod_contents));
     }
 
-    // Copy the visiblity of the module so we re-export things in the same way
-    let cxx_mod_visiblity = &generated.cxx_mod.vis;
-
     quote! {
         #[cxx::bridge(namespace = #namespace)]
         #cxx_mod
 
-        #cxx_mod_visiblity use self::#cxx_qt_mod_ident::*;
-        // TODO: for now mark as public
-        // as we need to reach the generated getters and setters
-        // but later we'll likely implement things outside the module
-        //
-        /// Internal CXX-Qt module, made public temporarily between API changes
-        pub mod #cxx_qt_mod_ident {
-            // Temporary hack so that qualified types still work, this will be removed in the next commit
-            use super::*;
-            use super::#cxx_mod_ident::*;
-            use cxx_qt::CxxQtType;
-
-            #[doc(hidden)]
-            type UniquePtr<T> = cxx::UniquePtr<T>;
-
-            #(#cxx_qt_mod_contents)*
-        }
+        #(#cxx_qt_mod_contents)*
     }
     .into_token_stream()
 }
@@ -276,25 +239,14 @@ mod tests {
                 }
             }
 
-            use self::cxx_qt_ffi::*;
-            #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-            pub mod cxx_qt_ffi {
-                use super::*;
-                use super::ffi::*;
-                use cxx_qt::CxxQtType;
+            use module::Struct;
 
-                #[doc(hidden)]
-                type UniquePtr<T> = cxx::UniquePtr<T>;
+            #[derive(Default)]
+            pub struct MyObjectRust;
 
-                use module::Struct;
+            impl MyObjectRust {
+                fn rust_method(&self) {
 
-                #[derive(Default)]
-                pub struct MyObjectRust;
-
-                impl MyObjectRust {
-                    fn rust_method(&self) {
-
-                    }
                 }
             }
         }
@@ -344,34 +296,23 @@ mod tests {
                 }
             }
 
-            use self::cxx_qt_ffi::*;
-            #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-            pub mod cxx_qt_ffi {
-                use super::*;
-                use super::ffi::*;
-                use cxx_qt::CxxQtType;
+            use module::Struct;
 
-                #[doc(hidden)]
-                type UniquePtr<T> = cxx::UniquePtr<T>;
+            #[derive(Default)]
+            pub struct FirstObjectRust;
 
-                use module::Struct;
+            impl FirstObjectRust {
+                fn rust_method(&self) {
 
-                #[derive(Default)]
-                pub struct FirstObjectRust;
-
-                impl FirstObjectRust {
-                    fn rust_method(&self) {
-
-                    }
                 }
+            }
 
-                #[derive(Default)]
-                pub struct SecondObjectRust;
+            #[derive(Default)]
+            pub struct SecondObjectRust;
 
-                impl SecondObjectRust {
-                    fn rust_method(&self) {
+            impl SecondObjectRust {
+                fn rust_method(&self) {
 
-                    }
                 }
             }
         }

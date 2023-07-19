@@ -208,148 +208,137 @@ pub mod ffi {
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObject>) -> Pin<&mut SecondObjectRust>;
     }
 }
-pub use self::cxx_qt_ffi::*;
-#[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
-pub mod cxx_qt_ffi {
-    use super::ffi::*;
-    use super::*;
-    use cxx_qt::CxxQtType;
-    #[doc(hidden)]
-    type UniquePtr<T> = cxx::UniquePtr<T>;
-    use super::MyTrait;
-    type MyObjectRust = super::MyObjectRust;
-    impl ffi::MyObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        pub fn property_name(&self) -> &i32 {
-            &self.property_name
-        }
+use super::MyTrait;
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "property_name"]
+    pub fn property_name(&self) -> &i32 {
+        &self.property_name
     }
-    impl ffi::MyObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
-            use cxx_qt::CxxQtType;
-            if self.property_name == value {
-                return;
-            }
-            self.as_mut().rust_mut().property_name = value;
-            self.as_mut().property_name_changed();
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "property_name"]
+    pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.property_name == value {
+            return;
         }
+        self.as_mut().rust_mut().property_name = value;
+        self.as_mut().property_name_changed();
     }
-    impl ffi::MyObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "propertyNameChanged"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_property_name_changed(
-            self: core::pin::Pin<&mut ffi::MyObject>,
-            func: fn(core::pin::Pin<&mut ffi::MyObject>),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "propertyNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_property_name_changed(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        func: fn(core::pin::Pin<&mut ffi::MyObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl ffi::MyObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "ready"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_ready(
-            self: core::pin::Pin<&mut ffi::MyObject>,
-            func: fn(core::pin::Pin<&mut ffi::MyObject>),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_ready(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        func: fn(core::pin::Pin<&mut ffi::MyObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl cxx_qt::Locking for ffi::MyObject {}
-    #[doc(hidden)]
-    pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
-        std::boxed::Box::new(core::default::Default::default())
+}
+impl cxx_qt::Locking for ffi::MyObject {}
+#[doc(hidden)]
+pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for ffi::MyObject {
+    type Target = MyObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
     }
-    impl core::ops::Deref for ffi::MyObject {
-        type Target = MyObjectRust;
-        fn deref(&self) -> &Self::Target {
-            self.cxx_qt_ffi_rust()
-        }
+}
+impl cxx_qt::CxxQtType for ffi::MyObject {
+    type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
     }
-    impl cxx_qt::CxxQtType for ffi::MyObject {
-        type Rust = MyObjectRust;
-        fn rust(&self) -> &Self::Rust {
-            self.cxx_qt_ffi_rust()
-        }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-            self.cxx_qt_ffi_rust_mut()
-        }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
     }
-    type SecondObjectRust = super::SecondObjectRust;
-    impl ffi::SecondObject {
-        #[doc = "Getter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        pub fn property_name(&self) -> &i32 {
-            &self.property_name
-        }
+}
+impl ffi::SecondObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "property_name"]
+    pub fn property_name(&self) -> &i32 {
+        &self.property_name
     }
-    impl ffi::SecondObject {
-        #[doc = "Setter for the Q_PROPERTY "]
-        #[doc = "property_name"]
-        pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
-            use cxx_qt::CxxQtType;
-            if self.property_name == value {
-                return;
-            }
-            self.as_mut().rust_mut().property_name = value;
-            self.as_mut().property_name_changed();
+}
+impl ffi::SecondObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "property_name"]
+    pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.property_name == value {
+            return;
         }
+        self.as_mut().rust_mut().property_name = value;
+        self.as_mut().property_name_changed();
     }
-    impl ffi::SecondObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "propertyNameChanged"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_property_name_changed(
-            self: core::pin::Pin<&mut ffi::SecondObject>,
-            func: fn(core::pin::Pin<&mut ffi::SecondObject>),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::SecondObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "propertyNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_property_name_changed(
+        self: core::pin::Pin<&mut ffi::SecondObject>,
+        func: fn(core::pin::Pin<&mut ffi::SecondObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    impl ffi::SecondObject {
-        #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "ready"]
-        #[doc = ", so that when the signal is emitted the function pointer is executed."]
-        #[doc = "\n"]
-        #[doc = "Note that this method uses a AutoConnection connection type."]
-        #[must_use]
-        pub fn on_ready(
-            self: core::pin::Pin<&mut ffi::SecondObject>,
-            func: fn(core::pin::Pin<&mut ffi::SecondObject>),
-        ) -> cxx_qt_lib::QMetaObjectConnection {
-            self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
-        }
+}
+impl ffi::SecondObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_ready(
+        self: core::pin::Pin<&mut ffi::SecondObject>,
+        func: fn(core::pin::Pin<&mut ffi::SecondObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
-    #[doc(hidden)]
-    pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
-        std::boxed::Box::new(core::default::Default::default())
+}
+#[doc(hidden)]
+pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for ffi::SecondObject {
+    type Target = SecondObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
     }
-    impl core::ops::Deref for ffi::SecondObject {
-        type Target = SecondObjectRust;
-        fn deref(&self) -> &Self::Target {
-            self.cxx_qt_ffi_rust()
-        }
+}
+impl cxx_qt::CxxQtType for ffi::SecondObject {
+    type Rust = SecondObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
     }
-    impl cxx_qt::CxxQtType for ffi::SecondObject {
-        type Rust = SecondObjectRust;
-        fn rust(&self) -> &Self::Rust {
-            self.cxx_qt_ffi_rust()
-        }
-        fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-            self.cxx_qt_ffi_rust_mut()
-        }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
     }
 }
