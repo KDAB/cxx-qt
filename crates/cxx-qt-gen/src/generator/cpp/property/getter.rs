@@ -27,13 +27,22 @@ pub fn generate(
             {qobject_ident}::{ident_getter}() const
             {{
                 {rust_obj_guard}
-                return m_rustObj->{ident_getter}(*this);
+                return {ident_getter_wrapper}();
             }}
             "#,
             return_cxx_ty = cxx_ty.as_cxx_ty(),
             ident_getter = idents.getter.cpp.to_string(),
+            ident_getter_wrapper = idents.getter_wrapper.cpp.to_string(),
             qobject_ident = qobject_ident,
             rust_obj_guard = lock_guard.unwrap_or_default(),
         ),
     }
+}
+
+pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &CppType) -> CppFragment {
+    CppFragment::Header(format!(
+        "{return_cxx_ty} const& {ident_getter_wrapper}() const noexcept;",
+        return_cxx_ty = cxx_ty.as_cxx_ty(),
+        ident_getter_wrapper = idents.getter_wrapper.cpp
+    ))
 }

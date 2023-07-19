@@ -46,6 +46,8 @@ public:
   explicit MyObject(QObject* parent = nullptr);
 
 private:
+  ::std::int32_t const& getPropertyNameWrapper() const noexcept;
+  void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
 
 private:
@@ -85,6 +87,8 @@ public:
   explicit SecondObject(QObject* parent = nullptr);
 
 private:
+  ::std::int32_t const& getPropertyNameWrapper() const noexcept;
+  void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
 
 private:

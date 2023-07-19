@@ -16,8 +16,7 @@ pub fn generate(
     ty: &Type,
 ) -> RustFragmentPair {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
-    let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
-    let setter_cpp = idents.setter.cpp.to_string();
+    let setter_wrapper_cpp = idents.setter_wrapper.cpp.to_string();
     let setter_rust = &idents.setter.rust;
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
@@ -33,34 +32,24 @@ pub fn generate(
     RustFragmentPair {
         cxx_bridge: vec![quote! {
             extern "Rust" {
-                #[cxx_name = #setter_cpp]
-                #has_unsafe fn #setter_rust(self: &mut #rust_struct_name_rust, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty);
+                #[cxx_name = #setter_wrapper_cpp]
+                #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #ty);
             }
         }],
-        implementation: vec![
-            quote! {
-                impl #rust_struct_name_rust {
-                    #[doc(hidden)]
-                    pub fn #setter_rust(&mut self, cpp: Pin<&mut #cpp_class_name_rust>, value: #ty) {
-                        cpp.#setter_rust(value);
+        implementation: vec![quote! {
+            impl #cpp_class_name_rust {
+                #[doc = "Setter for the Q_PROPERTY "]
+                #[doc = #ident_str]
+                pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
+                    if self.#ident == value {
+                        // don't want to set the value again and reemit the signal,
+                        // as this can cause binding loops
+                        return;
                     }
+                    self.as_mut().rust_mut().#ident = value;
+                    self.as_mut().#notify_ident();
                 }
-            },
-            quote! {
-                impl #cpp_class_name_rust {
-                    #[doc = "Setter for the Q_PROPERTY "]
-                    #[doc = #ident_str]
-                    pub fn #setter_rust(mut self: Pin<&mut Self>, value: #ty) {
-                        if self.#ident == value {
-                            // don't want to set the value again and reemit the signal,
-                            // as this can cause binding loops
-                            return;
-                        }
-                        self.as_mut().rust_mut().#ident = value;
-                        self.as_mut().#notify_ident();
-                    }
-                }
-            },
-        ],
+            }
+        }],
     }
 }

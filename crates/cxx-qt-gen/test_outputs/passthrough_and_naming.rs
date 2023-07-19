@@ -73,12 +73,12 @@ pub mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "getPropertyName"]
-        unsafe fn property_name<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a i32;
+        #[cxx_name = "getPropertyNameWrapper"]
+        unsafe fn property_name<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setPropertyName"]
-        fn set_property_name(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: i32);
+        #[cxx_name = "setPropertyNameWrapper"]
+        fn set_property_name(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
@@ -146,12 +146,12 @@ pub mod ffi {
         type SecondObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "getPropertyName"]
-        unsafe fn property_name<'a>(self: &'a SecondObjectRust, cpp: &'a SecondObject) -> &'a i32;
+        #[cxx_name = "getPropertyNameWrapper"]
+        unsafe fn property_name<'a>(self: &'a SecondObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setPropertyName"]
-        fn set_property_name(self: &mut SecondObjectRust, cpp: Pin<&mut SecondObject>, value: i32);
+        #[cxx_name = "setPropertyNameWrapper"]
+        fn set_property_name(self: Pin<&mut SecondObject>, value: i32);
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
@@ -218,23 +218,11 @@ pub mod cxx_qt_ffi {
     type UniquePtr<T> = cxx::UniquePtr<T>;
     use super::MyTrait;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn property_name<'a>(&'a self, cpp: &'a MyObject) -> &'a i32 {
-            cpp.property_name()
-        }
-    }
     impl MyObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
             &self.property_name
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn set_property_name(&mut self, cpp: Pin<&mut MyObject>, value: i32) {
-            cpp.set_property_name(value);
         }
     }
     impl MyObject {
@@ -297,23 +285,11 @@ pub mod cxx_qt_ffi {
         }
     }
     type SecondObjectRust = super::SecondObjectRust;
-    impl SecondObjectRust {
-        #[doc(hidden)]
-        pub fn property_name<'a>(&'a self, cpp: &'a SecondObject) -> &'a i32 {
-            cpp.property_name()
-        }
-    }
     impl SecondObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
             &self.property_name
-        }
-    }
-    impl SecondObjectRust {
-        #[doc(hidden)]
-        pub fn set_property_name(&mut self, cpp: Pin<&mut SecondObject>, value: i32) {
-            cpp.set_property_name(value);
         }
     }
     impl SecondObject {

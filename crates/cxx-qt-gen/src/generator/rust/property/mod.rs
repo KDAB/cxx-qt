@@ -85,7 +85,7 @@ mod tests {
 
         // Check that we have the expected number of blocks
         assert_eq!(generated.cxx_mod_contents.len(), 12);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 15);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 9);
 
         // Trivial Property
 
@@ -94,24 +94,13 @@ mod tests {
             &generated.cxx_mod_contents[0],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getTrivialProperty"]
-                    unsafe fn trivial_property<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a i32;
+                    #[cxx_name = "getTrivialPropertyWrapper"]
+                    unsafe fn trivial_property<'a>(self: &'a MyObject) -> &'a i32;
                 }
             },
         );
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn trivial_property<'a>(&'a self, cpp: &'a MyObject) -> &'a i32 {
-                        cpp.trivial_property()
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[1],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -128,24 +117,13 @@ mod tests {
             &generated.cxx_mod_contents[1],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setTrivialProperty"]
-                    fn set_trivial_property(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: i32);
+                    #[cxx_name = "setTrivialPropertyWrapper"]
+                    fn set_trivial_property(self: Pin<&mut MyObject>, value: i32);
                 }
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[2],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn set_trivial_property(&mut self, cpp: Pin<&mut MyObject>, value: i32) {
-                        cpp.set_trivial_property(value);
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[3],
+            &generated.cxx_qt_mod_contents[1],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -168,24 +146,13 @@ mod tests {
             &generated.cxx_mod_contents[2],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getOpaqueProperty"]
-                    unsafe fn opaque_property<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a UniquePtr<QColor>;
+                    #[cxx_name = "getOpaquePropertyWrapper"]
+                    unsafe fn opaque_property<'a>(self: &'a MyObject) -> &'a UniquePtr<QColor>;
                 }
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[4],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn opaque_property<'a>(&'a self, cpp: &'a MyObject) -> &'a UniquePtr<QColor> {
-                        cpp.opaque_property()
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[5],
+            &generated.cxx_qt_mod_contents[2],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -202,24 +169,13 @@ mod tests {
             &generated.cxx_mod_contents[3],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setOpaqueProperty"]
-                    fn set_opaque_property(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: UniquePtr<QColor>);
+                    #[cxx_name = "setOpaquePropertyWrapper"]
+                    fn set_opaque_property(self: Pin<&mut MyObject>, value: UniquePtr<QColor>);
                 }
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[6],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn set_opaque_property(&mut self, cpp: Pin<&mut MyObject>, value: UniquePtr<QColor>) {
-                        cpp.set_opaque_property(value);
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[7],
+            &generated.cxx_qt_mod_contents[3],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -242,24 +198,13 @@ mod tests {
             &generated.cxx_mod_contents[4],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getUnsafeProperty"]
-                    unsafe fn unsafe_property<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a *mut T;
+                    #[cxx_name = "getUnsafePropertyWrapper"]
+                    unsafe fn unsafe_property<'a>(self: &'a MyObject) -> &'a *mut T;
                 }
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[8],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn unsafe_property<'a>(&'a self, cpp: &'a MyObject) -> &'a *mut T {
-                        cpp.unsafe_property()
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[9],
+            &generated.cxx_qt_mod_contents[4],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Getter for the Q_PROPERTY "]
@@ -276,24 +221,13 @@ mod tests {
             &generated.cxx_mod_contents[5],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setUnsafeProperty"]
-                    unsafe fn set_unsafe_property(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: *mut T);
+                    #[cxx_name = "setUnsafePropertyWrapper"]
+                    unsafe fn set_unsafe_property(self: Pin<&mut MyObject>, value: *mut T);
                 }
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[10],
-            parse_quote! {
-                impl MyObjectRust {
-                    #[doc(hidden)]
-                    pub fn set_unsafe_property(&mut self, cpp: Pin<&mut MyObject>, value: *mut T) {
-                        cpp.set_unsafe_property(value);
-                    }
-                }
-            },
-        );
-        assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[11],
+            &generated.cxx_qt_mod_contents[5],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
@@ -335,7 +269,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[12],
+            &generated.cxx_qt_mod_contents[6],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -376,7 +310,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[13],
+            &generated.cxx_qt_mod_contents[7],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -417,7 +351,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &generated.cxx_qt_mod_contents[14],
+            &generated.cxx_qt_mod_contents[8],
             parse_quote! {
                 impl MyObject {
                     #[doc = "Connect the given function pointer to the signal "]

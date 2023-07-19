@@ -20,14 +20,14 @@ MyObject::unsafeRustMut()
 MyObject::getPropertyName() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->getPropertyName(*this);
+  return getPropertyNameWrapper();
 }
 
 void
 MyObject::setPropertyName(::std::int32_t const& value)
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPropertyName(*this, value);
+  setPropertyNameWrapper(value);
 }
 
 ::QMetaObject::Connection
@@ -96,14 +96,14 @@ SecondObject::unsafeRustMut()
 SecondObject::getPropertyName() const
 {
 
-  return m_rustObj->getPropertyName(*this);
+  return getPropertyNameWrapper();
 }
 
 void
 SecondObject::setPropertyName(::std::int32_t const& value)
 {
 
-  m_rustObj->setPropertyName(*this, value);
+  setPropertyNameWrapper(value);
 }
 
 ::QMetaObject::Connection
