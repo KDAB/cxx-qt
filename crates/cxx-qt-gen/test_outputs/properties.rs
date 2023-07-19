@@ -34,20 +34,20 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "getPrimitive"]
-        unsafe fn primitive<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a i32;
+        #[cxx_name = "getPrimitiveWrapper"]
+        unsafe fn primitive<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setPrimitive"]
-        fn set_primitive(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: i32);
+        #[cxx_name = "setPrimitiveWrapper"]
+        fn set_primitive(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
-        #[cxx_name = "getTrivial"]
-        unsafe fn trivial<'a>(self: &'a MyObjectRust, cpp: &'a MyObject) -> &'a QPoint;
+        #[cxx_name = "getTrivialWrapper"]
+        unsafe fn trivial<'a>(self: &'a MyObject) -> &'a QPoint;
     }
     extern "Rust" {
-        #[cxx_name = "setTrivial"]
-        fn set_trivial(self: &mut MyObjectRust, cpp: Pin<&mut MyObject>, value: QPoint);
+        #[cxx_name = "setTrivialWrapper"]
+        fn set_trivial(self: Pin<&mut MyObject>, value: QPoint);
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
@@ -108,23 +108,11 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn primitive<'a>(&'a self, cpp: &'a MyObject) -> &'a i32 {
-            cpp.primitive()
-        }
-    }
     impl MyObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "primitive"]
         pub fn primitive(&self) -> &i32 {
             &self.primitive
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn set_primitive(&mut self, cpp: Pin<&mut MyObject>, value: i32) {
-            cpp.set_primitive(value);
         }
     }
     impl MyObject {
@@ -138,23 +126,11 @@ pub mod cxx_qt_ffi {
             self.as_mut().primitive_changed();
         }
     }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn trivial<'a>(&'a self, cpp: &'a MyObject) -> &'a QPoint {
-            cpp.trivial()
-        }
-    }
     impl MyObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "trivial"]
         pub fn trivial(&self) -> &QPoint {
             &self.trivial
-        }
-    }
-    impl MyObjectRust {
-        #[doc(hidden)]
-        pub fn set_trivial(&mut self, cpp: Pin<&mut MyObject>, value: QPoint) {
-            cpp.set_trivial(value);
         }
     }
     impl MyObject {

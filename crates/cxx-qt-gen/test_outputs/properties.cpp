@@ -20,28 +20,28 @@ MyObject::unsafeRustMut()
 MyObject::getPrimitive() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->getPrimitive(*this);
+  return getPrimitiveWrapper();
 }
 
 void
 MyObject::setPrimitive(::std::int32_t const& value)
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setPrimitive(*this, value);
+  setPrimitiveWrapper(value);
 }
 
 QPoint const&
 MyObject::getTrivial() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  return m_rustObj->getTrivial(*this);
+  return getTrivialWrapper();
 }
 
 void
 MyObject::setTrivial(QPoint const& value)
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
-  m_rustObj->setTrivial(*this, value);
+  setTrivialWrapper(value);
 }
 
 ::QMetaObject::Connection

@@ -12,16 +12,22 @@ use syn::Ident;
 pub struct QPropertyName {
     pub name: CombinedIdent,
     pub getter: CombinedIdent,
+    pub getter_wrapper: CombinedIdent,
     pub setter: CombinedIdent,
+    pub setter_wrapper: CombinedIdent,
     pub notify: CombinedIdent,
 }
 
 impl From<&Ident> for QPropertyName {
     fn from(ident: &Ident) -> Self {
+        let getter = CombinedIdent::getter_from_property(ident.clone());
+        let setter = CombinedIdent::setter_from_property(ident);
         Self {
             name: CombinedIdent::from_property(ident.clone()),
-            getter: CombinedIdent::getter_from_property(ident.clone()),
-            setter: CombinedIdent::setter_from_property(ident),
+            getter_wrapper: CombinedIdent::wrapper_from_combined_property(&getter),
+            getter,
+            setter_wrapper: CombinedIdent::wrapper_from_combined_property(&setter),
+            setter,
             notify: CombinedIdent::notify_from_property(ident),
         }
     }
@@ -65,6 +71,14 @@ impl CombinedIdent {
         Self {
             cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
             rust: ident,
+        }
+    }
+
+    /// For a given ident generate the Rust and C++ wrapper names
+    fn wrapper_from_combined_property(ident: &CombinedIdent) -> Self {
+        Self {
+            cpp: format_ident!("{}Wrapper", ident.cpp),
+            rust: format_ident!("{}_wrapper", ident.rust),
         }
     }
 }

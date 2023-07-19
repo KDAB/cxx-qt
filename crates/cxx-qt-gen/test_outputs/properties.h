@@ -45,6 +45,12 @@ public:
   explicit MyObject(QObject* parent = nullptr);
 
 private:
+  ::std::int32_t const& getPrimitiveWrapper() const noexcept;
+  void setPrimitiveWrapper(::std::int32_t value) noexcept;
+  QPoint const& getTrivialWrapper() const noexcept;
+  void setTrivialWrapper(QPoint value) noexcept;
+
+private:
   ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };

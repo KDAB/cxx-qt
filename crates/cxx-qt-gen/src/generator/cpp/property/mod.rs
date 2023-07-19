@@ -37,12 +37,18 @@ pub fn generate_cpp_properties(
             &cxx_ty,
             lock_guard,
         ));
+        generated
+            .private_methods
+            .push(getter::generate_wrapper(&idents, &cxx_ty));
         generated.methods.push(setter::generate(
             &idents,
             &qobject_ident,
             &cxx_ty,
             lock_guard,
         ));
+        generated
+            .private_methods
+            .push(setter::generate_wrapper(&idents, &cxx_ty));
         signals.push(signal::generate(&idents, qobject_idents));
     }
 
@@ -109,7 +115,7 @@ mod tests {
             MyObject::getTrivialProperty() const
             {
                 // ::std::lock_guard
-                return m_rustObj->getTrivialProperty(*this);
+                return getTrivialPropertyWrapper();
             }
             "#}
         );
@@ -130,7 +136,7 @@ mod tests {
                 MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
                     // ::std::lock_guard
-                    m_rustObj->setTrivialProperty(*this, value);
+                    setTrivialPropertyWrapper(value);
                 }
                 "#}
         );
@@ -151,7 +157,7 @@ mod tests {
             MyObject::getOpaqueProperty() const
             {
                 // ::std::lock_guard
-                return m_rustObj->getOpaqueProperty(*this);
+                return getOpaquePropertyWrapper();
             }
             "#}
         );
@@ -172,7 +178,7 @@ mod tests {
             MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
                 // ::std::lock_guard
-                m_rustObj->setOpaqueProperty(*this, value);
+                setOpaquePropertyWrapper(value);
             }
             "#}
         );
@@ -242,6 +248,48 @@ mod tests {
             }
             "#}
         );
+
+        // private methods
+        assert_eq!(generated.private_methods.len(), 4);
+        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "::std::int32_t const& getTrivialPropertyWrapper() const noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "void setTrivialPropertyWrapper(::std::int32_t value) noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[2] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "::std::unique_ptr<QColor> const& getOpaquePropertyWrapper() const noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[3] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "void setOpaquePropertyWrapper(::std::unique_ptr<QColor> value) noexcept;"
+        );
     }
 
     #[test]
@@ -284,7 +332,7 @@ mod tests {
             MyObject::getMappedProperty() const
             {
                 // ::std::lock_guard
-                return m_rustObj->getMappedProperty(*this);
+                return getMappedPropertyWrapper();
             }
             "#}
         );
@@ -302,7 +350,7 @@ mod tests {
                 MyObject::setMappedProperty(A1 const& value)
                 {
                     // ::std::lock_guard
-                    m_rustObj->setMappedProperty(*this, value);
+                    setMappedPropertyWrapper(value);
                 }
                 "#}
         );
@@ -338,5 +386,24 @@ mod tests {
             }
             "#}
         );
+
+        // private methods
+        assert_eq!(generated.private_methods.len(), 2);
+        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(
+            header,
+            "A1 const& getMappedPropertyWrapper() const noexcept;"
+        );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(header, "void setMappedPropertyWrapper(A1 value) noexcept;");
     }
 }
