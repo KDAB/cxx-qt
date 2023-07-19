@@ -9,6 +9,22 @@ use syn::{
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
 };
 
+/// For a given Rust return type determine if the C++ header should have noexcept
+pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
+    if let ReturnType::Type(_, ty) = return_ty {
+        // If we are a Result<T> then we can have an exception
+        if let Type::Path(ty_path) = &**ty {
+            if let Some(segment) = ty_path.path.segments.first() {
+                if segment.ident == "Result" {
+                    return "";
+                }
+            }
+        }
+    }
+
+    "noexcept"
+}
+
 /// For a given Rust return type attempt to generate a C++ string
 ///
 /// Note that return types are allowed to have a Result<T>
@@ -281,6 +297,24 @@ mod tests {
     use syn::parse_quote;
 
     use super::*;
+
+    #[test]
+    fn test_syn_return_type_to_cpp_except_default() {
+        let ty = parse_quote! {};
+        assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
+    }
+
+    #[test]
+    fn test_syn_return_type_to_cpp_except_result() {
+        let ty = parse_quote! { -> Result<T> };
+        assert_eq!(syn_return_type_to_cpp_except(&ty), "");
+    }
+
+    #[test]
+    fn test_syn_return_type_to_cpp_except_type() {
+        let ty = parse_quote! { -> T };
+        assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
+    }
 
     #[test]
     fn test_syn_type_to_cpp_type_built_in_one_part() {
