@@ -140,6 +140,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "trivial_property"]
                     pub fn set_trivial_property(mut self: core::pin::Pin<&mut Self>, value: i32) {
+                        use cxx_qt::CxxQtType;
                         if self.trivial_property == value {
                             return;
                         }
@@ -192,6 +193,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
                     pub fn set_opaque_property(mut self: core::pin::Pin<&mut Self>, value: cxx::UniquePtr<QColor>) {
+                        use cxx_qt::CxxQtType;
                         if self.opaque_property == value {
                             return;
                         }
@@ -244,6 +246,7 @@ mod tests {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "unsafe_property"]
                     pub fn set_unsafe_property(mut self: core::pin::Pin<&mut Self>, value: *mut T) {
+                        use cxx_qt::CxxQtType;
                         if self.unsafe_property == value {
                             return;
                         }

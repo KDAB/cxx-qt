@@ -50,6 +50,7 @@ pub fn generate(
                 #[doc = "Setter for the Q_PROPERTY "]
                 #[doc = #ident_str]
                 pub fn #setter_rust(mut self: core::pin::Pin<&mut Self>, value: #qualified_ty) {
+                    use cxx_qt::CxxQtType;
                     if self.#ident == value {
                         // don't want to set the value again and reemit the signal,
                         // as this can cause binding loops

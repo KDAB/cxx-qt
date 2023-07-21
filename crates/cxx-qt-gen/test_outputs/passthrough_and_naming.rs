@@ -229,6 +229,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
+            use cxx_qt::CxxQtType;
             if self.property_name == value {
                 return;
             }
@@ -296,6 +297,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
+            use cxx_qt::CxxQtType;
             if self.property_name == value {
                 return;
             }
