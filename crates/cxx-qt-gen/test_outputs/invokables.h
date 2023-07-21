@@ -40,7 +40,8 @@ public:
   Q_INVOKABLE void invokableResultTuple() const;
   Q_INVOKABLE ::rust::String invokableResultType() const;
   MyObjectCxxQtThread qtThread() const;
-  explicit MyObject(::std::int32_t arg0, QObject* arg1);
+  explicit MyObject(::std::int32_t arg0, QString const& arg1);
+  explicit MyObject();
 
 private:
   void cppMethodWrapper() const noexcept;
@@ -58,6 +59,8 @@ private:
   ::rust::String invokableResultTypeWrapper() const;
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
+  explicit MyObject(
+    ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args);
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

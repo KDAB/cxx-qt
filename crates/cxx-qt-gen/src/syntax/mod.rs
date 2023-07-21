@@ -6,6 +6,7 @@
 pub mod attribute;
 pub mod expr;
 pub mod foreignmod;
+pub mod lifetimes;
 pub mod path;
 mod qtfile;
 mod qtitem;

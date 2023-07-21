@@ -15,14 +15,15 @@ use crate::{
         },
     },
     parser::constructor::Constructor,
+    syntax::lifetimes,
 };
 
 use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse_quote, parse_quote_spanned, spanned::Spanned, Expr, FnArg, Ident, Item, Path, Result,
-    Type,
+    parse_quote, parse_quote_spanned, spanned::Spanned, Error, Expr, FnArg, Ident, Item, Lifetime,
+    Path, Result, Type,
 };
 
 const CONSTRUCTOR_ARGUMENTS: &str = "CxxQtConstructorArguments";
@@ -97,6 +98,7 @@ fn generate_default_constructor(
 fn generate_arguments_struct(
     namespace_internals: &str,
     struct_name: &CombinedIdent,
+    lifetime: &Option<TokenStream>,
     argument_list: &[Type],
 ) -> Item {
     let argument_members = argument_members(argument_list);
@@ -112,7 +114,7 @@ fn generate_arguments_struct(
         #[namespace = #namespace_internals]
         #[cxx_name = #cxx_name]
         #[doc(hidden)]
-        struct #rust_name {
+        struct #rust_name #lifetime {
             #(#argument_members,)*
             #not_empty // Make sure there's always at least one struct member, as CXX
                        // doesn't support empty shared structs.
@@ -140,6 +142,43 @@ fn generate_arguments_initialization(
     }
 }
 
+fn lifetime_of_arguments(
+    lifetime: &Option<Lifetime>,
+    argument_list: &[Type],
+) -> Result<Option<TokenStream>> {
+    if let Some(lifetime) = lifetime.as_ref() {
+        let argument_lifetimes: Vec<Lifetime> = argument_list
+            .iter()
+            .map(lifetimes::from_type)
+            .collect::<Result<Vec<Vec<Lifetime>>>>()?
+            .into_iter()
+            .flatten()
+            .collect();
+
+        if argument_lifetimes.is_empty() {
+            Ok(None)
+        } else {
+            // Any of the argument lifetimes may be different from the lifetime passed to the constructor.
+            // However, then the compiler will just generate an appropriate error, as the lifetime has the wrong name.
+            Ok(Some(quote! {
+                < #lifetime >
+            }))
+        }
+    } else {
+        // If there's a lifetime in the arguments, we can just let the compiler error on us.
+        // The error message will be reasonably nice.
+        Ok(None)
+    }
+}
+
+fn unsafe_if(condition: bool) -> Option<TokenStream> {
+    if condition {
+        Some(quote! { unsafe })
+    } else {
+        None
+    }
+}
+
 pub fn generate(
     constructors: &[Constructor],
     qobject_idents: &QObjectName,
@@ -163,13 +202,50 @@ pub fn generate(
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
 
     for (index, constructor) in constructors.iter().enumerate() {
-        let arguments_rust = format_ident!("{CONSTRUCTOR_ARGUMENTS}{qobject_name}{index}");
+        let lifetime = constructor.lifetime.as_ref().map(|lifetime| {
+            quote! {
+                < #lifetime >
+            }
+        });
+        let arguments_lifetime =
+            lifetime_of_arguments(&constructor.lifetime, &constructor.arguments)?;
+        let base_lifetime =
+            lifetime_of_arguments(&constructor.lifetime, &constructor.base_arguments)?;
+        let new_lifetime =
+            lifetime_of_arguments(&constructor.lifetime, &constructor.new_arguments)?;
+        let initialize_lifetime =
+            lifetime_of_arguments(&constructor.lifetime, &constructor.initialize_arguments)?;
+        let args_tuple_lifetime = base_lifetime
+            .clone()
+            .or(new_lifetime.clone())
+            .or(initialize_lifetime.clone());
+
+        // If there is a lifetime declared, but it's not used, The compiler will catch this,
+        // but the error message is so obscure, that we should catch it here with a better error
+        // message.
+        if lifetime.is_some()
+            && [
+                &arguments_lifetime,
+                &base_lifetime,
+                &new_lifetime,
+                &initialize_lifetime,
+            ]
+            .into_iter()
+            .all(Option::is_none)
+        {
+            return Err(Error::new_spanned(
+                &constructor.lifetime,
+                "this lifetime isn't used in the Constructor declaration!",
+            ));
+        }
+
+        let args_tuple_rust = format_ident!("{CONSTRUCTOR_ARGUMENTS}{qobject_name}{index}");
         let base_arguments_rust = format_ident!("{BASE_ARGUMENTS}{qobject_name}{index}");
         let new_arguments_rust = format_ident!("{NEW_ARGUMENTS}{qobject_name}{index}");
         let initialize_arguments_rust =
             format_ident!("{INITIALIZE_ARGUMENTS}{qobject_name}{index}");
 
-        let arguments_cxx = format!("{CONSTRUCTOR_ARGUMENTS}{index}");
+        let args_tuple_cxx = format!("{CONSTRUCTOR_ARGUMENTS}{index}");
         let base_arguments_cxx = format_ident!("{BASE_ARGUMENTS}{index}");
         let new_arguments_cxx = format_ident!("{NEW_ARGUMENTS}{index}");
         let initialize_arguments_cxx = format_ident!("{INITIALIZE_ARGUMENTS}{index}");
@@ -181,7 +257,7 @@ pub fn generate(
         let initialize_cxx = format!("initialize{index}");
 
         let route_arguments_rust = format_ident!("route_arguments_{qobject_name_snake}_{index}");
-        let route_arguemnts_cxx = format!("routeArguments{index}");
+        let route_arguments_cxx = format!("routeArguments{index}");
 
         let argument_types_qualified: Vec<Type> = constructor
             .arguments
@@ -209,15 +285,24 @@ pub fn generate(
                 parameter
             })
             .collect();
-        let route_arguments_safety = if constructor
-            .arguments
-            .iter()
-            .any(syn_type_is_cxx_bridge_unsafe)
-        {
-            quote! { unsafe }
-        } else {
-            quote! {}
-        };
+
+        // As the function implementations cast to `Constructor<(Args)>`, these `Args` may
+        // include the lifetime.
+        let new_function_lifetime = new_lifetime.clone().or(arguments_lifetime.clone());
+        let initialize_function_lifetime =
+            initialize_lifetime.clone().or(arguments_lifetime.clone());
+        let route_function_decl_lifetime =
+            arguments_lifetime.clone().or(args_tuple_lifetime.clone());
+
+        let route_arguments_safety = unsafe_if(
+            lifetime.is_some()
+                || constructor
+                    .arguments
+                    .iter()
+                    .any(syn_type_is_cxx_bridge_unsafe),
+        );
+        let new_safety = unsafe_if(new_function_lifetime.is_some());
+        let initialize_safety = unsafe_if(initialize_function_lifetime.is_some());
 
         let assign_arguments = constructor
             .arguments
@@ -258,49 +343,52 @@ pub fn generate(
         result.cxx_mod_contents.append(&mut vec![
             parse_quote! {
                 #[namespace = #namespace_internals]
-                #[cxx_name = #arguments_cxx]
+                #[cxx_name = #args_tuple_cxx]
                 #[doc(hidden)]
-                struct #arguments_rust {
-                    base: #base_arguments_rust,
+                struct #args_tuple_rust #args_tuple_lifetime {
+                    base: #base_arguments_rust #base_lifetime,
                     // new a keyword in C++, so we use `new_` here
                     #[cxx_name = "new_"]
-                    new: #new_arguments_rust,
-                    initialize: #initialize_arguments_rust,
+                    new: #new_arguments_rust #new_lifetime,
+                    initialize: #initialize_arguments_rust #initialize_lifetime,
                 }
             },
             generate_arguments_struct(&namespace.internal, &CombinedIdent {
                 cpp: base_arguments_cxx.clone(),
                 rust: base_arguments_rust.clone(),
-            }, &constructor.base_arguments),
+            }, &base_lifetime, &constructor.base_arguments),
             generate_arguments_struct(&namespace.internal, &CombinedIdent {
                 cpp: new_arguments_cxx.clone(),
                 rust: new_arguments_rust.clone(),
-            }, &constructor.new_arguments),
+            }, &new_lifetime, &constructor.new_arguments),
             generate_arguments_struct(&namespace.internal, &CombinedIdent {
                 cpp: initialize_arguments_cxx.clone(),
                 rust: initialize_arguments_rust.clone(),
-            }, &constructor.initialize_arguments),
+            }, &initialize_lifetime, &constructor.initialize_arguments),
             parse_quote! {
                 extern "Rust" {
                     #[namespace = #namespace_internals]
-                    #[cxx_name = #route_arguemnts_cxx]
+                    #[cxx_name = #route_arguments_cxx]
                     // This function may need to be marked unsafe, as some arguments may be pointers.
-                    #route_arguments_safety fn #route_arguments_rust(#(#route_arguments_parameters),*) -> #arguments_rust;
+                    #route_arguments_safety fn #route_arguments_rust #route_function_decl_lifetime (#(#route_arguments_parameters),*) -> #args_tuple_rust #args_tuple_lifetime;
 
                     #[namespace = #namespace_internals]
                     #[cxx_name = #new_cxx]
-                    fn #new_rust(args: #new_arguments_rust) -> Box<#rust_struct_name_rust>;
+                    #new_safety fn #new_rust #new_lifetime (args: #new_arguments_rust #new_lifetime) -> Box<#rust_struct_name_rust>;
 
                     #[namespace = #namespace_internals]
                     #[cxx_name = #initialize_cxx]
-                    fn #initialize_rust(qobject: Pin<&mut #qobject_name_rust>, args: #initialize_arguments_rust);
+                    #initialize_safety fn #initialize_rust #initialize_lifetime (qobject: Pin<&mut #qobject_name_rust>, args: #initialize_arguments_rust #initialize_lifetime);
                 }
             },
         ]);
         result.cxx_qt_mod_contents.append(&mut vec![parse_quote_spanned! {
             constructor.imp.span() =>
             #[doc(hidden)]
-            pub fn #route_arguments_rust(#(#route_arguments_parameter_qualified),*) -> #module_ident::#arguments_rust {
+            // Use the catch-all lifetime here, as if a lifetime argument is specified, it should
+            // be used in either the argument list itself, or the returned, routed arguments.
+            // So it must be used by this function somewhere.
+            pub fn #route_arguments_rust #lifetime(#(#route_arguments_parameter_qualified),*) -> #module_ident::#args_tuple_rust #args_tuple_lifetime {
                 // These variables won't be used if the corresponding argument list is empty.
                 #[allow(unused_variables)]
                 #[allow(clippy::let_unit_value)]
@@ -310,7 +398,7 @@ pub fn generate(
                     initialize_arguments
                     ) = <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>
                                     ::route_arguments((#(#assign_arguments,)*));
-                #module_ident::#arguments_rust {
+                #module_ident::#args_tuple_rust {
                     base: #module_ident::#init_base_arguments,
                     initialize: #module_ident::#init_initalize_arguments,
                     new: #module_ident::#init_new_arguments,
@@ -321,7 +409,12 @@ pub fn generate(
             constructor.imp.span() =>
             #[doc(hidden)]
             #[allow(unused_variables)]
-            pub fn #new_rust(new_arguments: #module_ident::#new_arguments_rust) -> std::boxed::Box<#rust_struct_name_rust> {
+            #[allow(clippy::extra_unused_lifetimes)]
+            // If we use the lifetime here for casting to the specific Constructor type, then
+            // clippy for some reason thinks that the lifetime is unused even though it is used
+            // by the `as` expression.
+            // So let's just allow unused extra lifetimes for this function.
+            pub fn #new_rust  #new_function_lifetime(new_arguments: #module_ident::#new_arguments_rust #new_lifetime) -> std::boxed::Box<#rust_struct_name_rust> {
                 std::boxed::Box::new(<#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>::new((#(#extract_new_arguments,)*)))
             }
         },
@@ -329,9 +422,14 @@ pub fn generate(
             constructor.imp.span() =>
             #[doc(hidden)]
             #[allow(unused_variables)]
-            pub fn #initialize_rust(
+            #[allow(clippy::extra_unused_lifetimes)]
+            // If we use the lifetime here for casting to the specific Constructor type, then
+            // clippy for some reason thinks that the lifetime is unused even though it is used
+            // by the `as` expression.
+            // So let's just allow unused extra lifetimes for this function.
+            pub fn #initialize_rust #initialize_function_lifetime(
                 qobject: core::pin::Pin<&mut #qobject_name_rust_qualified>,
-                initialize_arguments: #module_ident::#initialize_arguments_rust
+                initialize_arguments: #module_ident::#initialize_arguments_rust  #initialize_lifetime
             ) {
                 <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>::initialize(
                     qobject,
@@ -355,6 +453,7 @@ mod tests {
             base_arguments: vec![],
             initialize_arguments: vec![],
             arguments: vec![],
+            lifetime: None,
             // dummy impl for testing
             imp: parse_quote! {impl X {}},
         }
@@ -506,6 +605,7 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
+                #[allow(clippy::extra_unused_lifetimes)]
                 pub fn new_rs_my_object_0(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <MyObject as cxx_qt::Constructor<()> >::new(())
@@ -518,6 +618,7 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
+                #[allow(clippy::extra_unused_lifetimes)]
                 pub fn initialize_my_object_0(
                     qobject: core::pin::Pin<&mut MyObject>,
                     initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0)
@@ -536,11 +637,11 @@ mod tests {
                 #namespace_attr
                 #[cxx_name = "CxxQtConstructorArguments1"]
                 #[doc(hidden)]
-                struct CxxQtConstructorArgumentsMyObject1 {
+                struct CxxQtConstructorArgumentsMyObject1<'lifetime> {
                     base: CxxQtConstructorBaseArgumentsMyObject1,
                     #[cxx_name="new_"]
                     new: CxxQtConstructorNewArgumentsMyObject1,
-                    initialize : CxxQtConstructorInitializeArgumentsMyObject1,
+                    initialize : CxxQtConstructorInitializeArgumentsMyObject1<'lifetime>,
                 }
             },
         );
@@ -575,9 +676,9 @@ mod tests {
                 #namespace_attr
                 #[cxx_name="CxxQtConstructorInitializeArguments1"]
                 #[doc(hidden)]
-                struct CxxQtConstructorInitializeArgumentsMyObject1 {
+                struct CxxQtConstructorInitializeArgumentsMyObject1<'lifetime> {
                     arg0: i32,
-                    arg1: i64,
+                    arg1: &'lifetime QString,
                 }
             },
         );
@@ -587,7 +688,7 @@ mod tests {
                 extern "Rust" {
                     #namespace_attr
                     #[cxx_name = "routeArguments1"]
-                    unsafe fn route_arguments_my_object_1(arg0: *const QObject) -> CxxQtConstructorArgumentsMyObject1;
+                    unsafe fn route_arguments_my_object_1<'lifetime>(arg0: *const QObject) -> CxxQtConstructorArgumentsMyObject1<'lifetime>;
 
                     #namespace_attr
                     #[cxx_name = "newRs1"]
@@ -595,7 +696,7 @@ mod tests {
 
                     #namespace_attr
                     #[cxx_name = "initialize1"]
-                    fn initialize_my_object_1(qobject: Pin<&mut MyObject>, args: CxxQtConstructorInitializeArgumentsMyObject1);
+                    unsafe fn initialize_my_object_1<'lifetime>(qobject: Pin<&mut MyObject>, args: CxxQtConstructorInitializeArgumentsMyObject1<'lifetime>);
                 }
             },
         );
@@ -604,7 +705,7 @@ mod tests {
             &blocks.cxx_qt_mod_contents[3],
             quote! {
                 #[doc(hidden)]
-                pub fn route_arguments_my_object_1(arg0: *const QObject) -> ffi::CxxQtConstructorArgumentsMyObject1
+                pub fn route_arguments_my_object_1<'lifetime>(arg0: *const QObject) -> ffi::CxxQtConstructorArgumentsMyObject1<'lifetime>
                 {
                     #[allow(unused_variables)]
                     #[allow(clippy::let_unit_value)]
@@ -633,6 +734,7 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
+                #[allow(clippy::extra_unused_lifetimes)]
                 pub fn new_rs_my_object_1(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <MyObject as cxx_qt::Constructor<(*const QObject,)> >::new(
@@ -645,9 +747,10 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
-                pub fn initialize_my_object_1(
+                #[allow(clippy::extra_unused_lifetimes)]
+                pub fn initialize_my_object_1<'lifetime>(
                     qobject: core::pin::Pin<&mut MyObject>,
-                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject1)
+                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject1<'lifetime>)
                 {
                     <MyObject as cxx_qt::Constructor<(*const QObject,)> >::initialize(
                         qobject,
@@ -664,12 +767,16 @@ mod tests {
             Constructor {
                 arguments: vec![parse_quote! { *const QObject }],
                 new_arguments: vec![parse_quote! { i16 }],
-                initialize_arguments: vec![parse_quote! { i32 }, parse_quote! { i64 }],
+                initialize_arguments: vec![
+                    parse_quote! { i32 },
+                    parse_quote! { &'lifetime QString },
+                ],
                 base_arguments: vec![
                     parse_quote! { i64 },
                     parse_quote! { *mut QObject },
                     parse_quote! { f32 },
                 ],
+                lifetime: Some(parse_quote! { 'lifetime }),
                 ..mock_constructor()
             },
         ]);
@@ -684,5 +791,21 @@ mod tests {
         assert_empty_constructor_blocks(&blocks, &namespace_attr);
 
         assert_full_constructor_blocks(&blocks, &namespace_attr);
+    }
+
+    #[test]
+    fn constructor_impl_with_unused_lifetime() {
+        let result = super::generate(
+            &[Constructor {
+                lifetime: Some(parse_quote! { 'a }),
+                ..mock_constructor()
+            }],
+            &mock_name(),
+            &mock_namespace(),
+            &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
+        );
+
+        assert!(result.is_err());
     }
 }

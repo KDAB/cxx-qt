@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use syn::{
-    spanned::Spanned, AngleBracketedGenericArguments, Error, GenericArgument, ItemImpl, Path,
-    PathArguments, PathSegment, Result, Type,
+    spanned::Spanned, AngleBracketedGenericArguments, Error, GenericArgument, GenericParam,
+    Generics, ItemImpl, Lifetime, Path, PathArguments, PathSegment, Result, Type,
 };
 
 #[derive(Default)]
@@ -32,6 +32,9 @@ pub struct Constructor {
     /// Arguments to the initialize function.
     /// The `initialize` function is run after the QObject is created.
     pub initialize_arguments: Vec<Type>,
+
+    // The lifetime argument of the impl block.
+    pub lifetime: Option<Lifetime>,
 
     /// The original impl that this constructor was parse from.
     pub imp: ItemImpl,
@@ -120,18 +123,30 @@ impl Constructor {
         }
     }
 
+    pub fn parse_impl_generics(generics: &Generics) -> Result<Option<Lifetime>> {
+        if generics.where_clause.is_some() {
+            return Err(Error::new_spanned(
+                &generics.where_clause,
+                "Where clauses are not allowed on cxx_qt::Constructor impls!",
+            ));
+        }
+
+        let parameters: Vec<_> = generics.params.iter().collect();
+        match *parameters {
+            [] => Ok(None),
+            [GenericParam::Lifetime(lifetime)] => Ok(Some(lifetime.lifetime.clone())),
+            _ => Err(Error::new_spanned(
+                generics,
+                "Only a single lifetime parameter is allowed on cxx_qt::Constructor impls!",
+            )),
+        }
+    }
+
     pub fn parse(imp: ItemImpl) -> Result<Self> {
         if let Some(unsafety) = imp.unsafety {
             return Err(Error::new_spanned(
                 unsafety,
                 "Unnecessary unsafe around constructor impl.",
-            ));
-        }
-
-        if !imp.generics.params.is_empty() {
-            return Err(Error::new_spanned(
-                imp.generics.params,
-                "Generics are not allowed on cxx_qt::Constructor impls!",
             ));
         }
 
@@ -141,6 +156,8 @@ impl Constructor {
                 "cxx_qt::Constructor must only be declared, not implemented inside cxx_qt::bridge!",
             ));
         }
+
+        let lifetime = Self::parse_impl_generics(&imp.generics)?;
 
         let (_, trait_path, _) = &imp
             .trait_
@@ -153,6 +170,7 @@ impl Constructor {
             new_arguments: arguments.new.unwrap_or_default(),
             base_arguments: arguments.base.unwrap_or_default(),
             initialize_arguments: arguments.initialize.unwrap_or_default(),
+            lifetime,
             imp,
         })
     }
@@ -204,9 +222,9 @@ mod tests {
         // TODO This should be allowed at some point if the lifetime is actually used.
         assert_parse_error(
             parse_quote! {
-                impl<'a> cxx_qt::Constructor<()> for T {}
+                impl<'a, 'b> cxx_qt::Constructor<()> for T {}
             },
-            "lifetime on impl block",
+            "multiple lifetimes on impl block",
         );
 
         assert_parse_error(
@@ -245,6 +263,7 @@ mod tests {
         assert!(constructor.new_arguments.is_empty());
         assert!(constructor.base_arguments.is_empty());
         assert!(constructor.initialize_arguments.is_empty());
+        assert!(constructor.lifetime.is_none());
     }
 
     #[test]
@@ -266,5 +285,20 @@ mod tests {
         );
         assert!(constructor.initialize_arguments.is_empty());
         assert_eq!(constructor.base_arguments, vec![parse_quote!(i64)]);
+        assert!(constructor.lifetime.is_none());
+    }
+
+    #[test]
+    fn parse_generic_lifetime() {
+        let constructor = Constructor::parse(parse_quote! {
+            impl<'my_lifetime> cxx_qt::Constructor<()> for X {}
+        })
+        .unwrap();
+
+        assert!(constructor.arguments.is_empty());
+        assert!(constructor.base_arguments.is_empty());
+        assert!(constructor.initialize_arguments.is_empty());
+        assert!(constructor.new_arguments.is_empty());
+        assert_eq!(constructor.lifetime, Some(parse_quote! { 'my_lifetime }));
     }
 }
