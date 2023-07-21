@@ -6,6 +6,8 @@ mod ffi {
         type QColor = cxx_qt_lib::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
+        include ! (< QtCore / QObject >);
+        type QObject;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
@@ -224,12 +226,12 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     pub fn route_arguments_my_object_0(
         arg0: i32,
-        arg1: *mut QObject,
+        arg1: *mut ffi::QObject,
     ) -> ffi::CxxQtConstructorArgumentsMyObject0 {
         #[allow(unused_variables)]
         #[allow(clippy::let_unit_value)]
         let (new_arguments, base_arguments, initialize_arguments) =
-            <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((
+            <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::route_arguments((
                 arg0, arg1,
             ));
         ffi::CxxQtConstructorArgumentsMyObject0 {
@@ -249,7 +251,7 @@ pub mod cxx_qt_ffi {
     ) -> std::boxed::Box<MyObjectRust> {
         std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
             i32,
-            *mut QObject,
+            *mut ffi::QObject,
         )>>::new((new_arguments.arg0,)))
     }
     #[doc(hidden)]
@@ -258,7 +260,7 @@ pub mod cxx_qt_ffi {
         qobject: core::pin::Pin<&mut ffi::MyObject>,
         initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0,
     ) {
-        <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
+        <ffi::MyObject as cxx_qt::Constructor<(i32, *mut ffi::QObject)>>::initialize(qobject, ());
     }
     impl core::ops::Deref for ffi::MyObject {
         type Target = MyObjectRust;

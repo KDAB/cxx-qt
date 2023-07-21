@@ -9,7 +9,10 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
         rust::qobject::GeneratedRustQObjectBlocks,
-        utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_is_cxx_bridge_unsafe},
+        utils::rust::{
+            syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified,
+            syn_type_is_cxx_bridge_unsafe,
+        },
     },
     parser::constructor::Constructor,
 };
@@ -18,7 +21,8 @@ use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse_quote, parse_quote_spanned, spanned::Spanned, Expr, Ident, Item, Path, Result, Type,
+    parse_quote, parse_quote_spanned, spanned::Spanned, Expr, FnArg, Ident, Item, Path, Result,
+    Type,
 };
 
 const CONSTRUCTOR_ARGUMENTS: &str = "CxxQtConstructorArguments";
@@ -179,15 +183,30 @@ pub fn generate(
         let route_arguments_rust = format_ident!("route_arguments_{qobject_name_snake}_{index}");
         let route_arguemnts_cxx = format!("routeArguments{index}");
 
-        let argument_types = &constructor.arguments;
+        let argument_types_qualified: Vec<Type> = constructor
+            .arguments
+            .iter()
+            .map(|arg| syn_type_cxx_bridge_to_qualified(arg, qualified_mappings))
+            .collect();
 
-        let route_arguments_parameters: Vec<TokenStream> = constructor
+        let route_arguments_parameters: Vec<FnArg> = constructor
             .arguments
             .iter()
             .enumerate()
             .map(|(index, ty)| {
                 let name = format_ident!("arg{index}");
-                quote! { #name: #ty }
+                parse_quote! { #name: #ty }
+            })
+            .collect();
+        let route_arguments_parameter_qualified: Vec<FnArg> = route_arguments_parameters
+            .iter()
+            .cloned()
+            .map(|mut parameter| {
+                if let FnArg::Typed(pat_type) = &mut parameter {
+                    *pat_type.ty =
+                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, qualified_mappings);
+                }
+                parameter
             })
             .collect();
         let route_arguments_safety = if constructor
@@ -281,7 +300,7 @@ pub fn generate(
         result.cxx_qt_mod_contents.append(&mut vec![parse_quote_spanned! {
             constructor.imp.span() =>
             #[doc(hidden)]
-            pub fn #route_arguments_rust(#(#route_arguments_parameters),*) -> #module_ident::#arguments_rust {
+            pub fn #route_arguments_rust(#(#route_arguments_parameter_qualified),*) -> #module_ident::#arguments_rust {
                 // These variables won't be used if the corresponding argument list is empty.
                 #[allow(unused_variables)]
                 #[allow(clippy::let_unit_value)]
@@ -289,7 +308,7 @@ pub fn generate(
                     new_arguments,
                     base_arguments,
                     initialize_arguments
-                    ) = <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>
+                    ) = <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>
                                     ::route_arguments((#(#assign_arguments,)*));
                 #module_ident::#arguments_rust {
                     base: #module_ident::#init_base_arguments,
@@ -303,7 +322,7 @@ pub fn generate(
             #[doc(hidden)]
             #[allow(unused_variables)]
             pub fn #new_rust(new_arguments: #module_ident::#new_arguments_rust) -> std::boxed::Box<#rust_struct_name_rust> {
-                std::boxed::Box::new(<#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::new((#(#extract_new_arguments,)*)))
+                std::boxed::Box::new(<#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>::new((#(#extract_new_arguments,)*)))
             }
         },
         parse_quote_spanned! {
@@ -314,7 +333,7 @@ pub fn generate(
                 qobject: core::pin::Pin<&mut #qobject_name_rust_qualified>,
                 initialize_arguments: #module_ident::#initialize_arguments_rust
             ) {
-                <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::initialize(
+                <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types_qualified,)*)>>::initialize(
                     qobject,
                     (#(#extract_initialize_arguments,)*));
             }
