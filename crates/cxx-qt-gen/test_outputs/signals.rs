@@ -130,6 +130,7 @@ use self::cxx_qt_ffi::*;
 #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
 pub mod cxx_qt_ffi {
     use super::ffi::*;
+    use super::*;
     use cxx_qt::CxxQtType;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -142,8 +143,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: core::pin::Pin<&mut MyObject>,
-            func: fn(core::pin::Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut ffi::MyObject>,
+            func: fn(core::pin::Pin<&mut ffi::MyObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
@@ -156,13 +157,13 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_data_changed(
-            self: core::pin::Pin<&mut MyObject>,
+            self: core::pin::Pin<&mut ffi::MyObject>,
             func: fn(
-                core::pin::Pin<&mut MyObject>,
+                core::pin::Pin<&mut ffi::MyObject>,
                 first: i32,
                 second: cxx::UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
+                third: ffi::QPoint,
+                fourth: &'a ffi::QPoint,
             ),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
@@ -176,13 +177,13 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_base_class_new_data(
-            self: core::pin::Pin<&mut MyObject>,
+            self: core::pin::Pin<&mut ffi::MyObject>,
             func: fn(
-                core::pin::Pin<&mut MyObject>,
+                core::pin::Pin<&mut ffi::MyObject>,
                 first: i32,
                 second: cxx::UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
+                third: ffi::QPoint,
+                fourth: &'a ffi::QPoint,
             ),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_base_class_new_data(func, cxx_qt_lib::ConnectionType::AutoConnection)

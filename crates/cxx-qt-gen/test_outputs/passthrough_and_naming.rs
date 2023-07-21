@@ -212,6 +212,7 @@ pub use self::cxx_qt_ffi::*;
 #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
 pub mod cxx_qt_ffi {
     use super::ffi::*;
+    use super::*;
     use cxx_qt::CxxQtType;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -243,8 +244,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_property_name_changed(
-            self: core::pin::Pin<&mut MyObject>,
-            func: fn(core::pin::Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut ffi::MyObject>,
+            func: fn(core::pin::Pin<&mut ffi::MyObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
@@ -257,8 +258,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: core::pin::Pin<&mut MyObject>,
-            func: fn(core::pin::Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut ffi::MyObject>,
+            func: fn(core::pin::Pin<&mut ffi::MyObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
@@ -310,8 +311,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_property_name_changed(
-            self: core::pin::Pin<&mut SecondObject>,
-            func: fn(core::pin::Pin<&mut SecondObject>),
+            self: core::pin::Pin<&mut ffi::SecondObject>,
+            func: fn(core::pin::Pin<&mut ffi::SecondObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
@@ -324,8 +325,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_ready(
-            self: core::pin::Pin<&mut SecondObject>,
-            func: fn(core::pin::Pin<&mut SecondObject>),
+            self: core::pin::Pin<&mut ffi::SecondObject>,
+            func: fn(core::pin::Pin<&mut ffi::SecondObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }

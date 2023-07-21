@@ -3,28 +3,38 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{GenericArgument, PathArguments, PathSegment, ReturnType, Type, TypeReference};
+use std::collections::BTreeMap;
+
+use syn::{
+    GenericArgument, Ident, Path, PathArguments, PathSegment, ReturnType, Type, TypeReference,
+};
 
 /// Return a qualified version of the type that can by used outside of a CXX bridge
 ///
 /// Eg Pin -> core::pin::Pin or UniquePtr -> cxx::UniquePtr
-pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &syn::Type) -> syn::Type {
+///
+/// And also resolves any qualified mappings
+///
+/// Eg MyObject -> ffi::MyObject
+pub(crate) fn syn_type_cxx_bridge_to_qualified(
+    ty: &syn::Type,
+    qualified_mappings: &BTreeMap<Ident, Path>,
+) -> syn::Type {
     match ty {
         Type::Array(ty_array) => {
             let mut ty_array = ty_array.clone();
-            *ty_array.elem = syn_type_cxx_bridge_to_qualified(&ty_array.elem);
+            *ty_array.elem = syn_type_cxx_bridge_to_qualified(&ty_array.elem, qualified_mappings);
             return Type::Array(ty_array);
         }
         Type::BareFn(ty_bare_fn) => {
             let mut ty_bare_fn = ty_bare_fn.clone();
             if let ReturnType::Type(_, ty) = &mut ty_bare_fn.output {
-                **ty = syn_type_cxx_bridge_to_qualified(ty);
+                **ty = syn_type_cxx_bridge_to_qualified(ty, qualified_mappings);
             }
 
-            ty_bare_fn
-                .inputs
-                .iter_mut()
-                .for_each(|arg| arg.ty = syn_type_cxx_bridge_to_qualified(&arg.ty));
+            ty_bare_fn.inputs.iter_mut().for_each(|arg| {
+                arg.ty = syn_type_cxx_bridge_to_qualified(&arg.ty, qualified_mappings)
+            });
 
             return Type::BareFn(ty_bare_fn);
         }
@@ -36,7 +46,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &syn::Type) -> syn::Type {
                 if let PathArguments::AngleBracketed(angled) = &mut segment.arguments {
                     angled.args.iter_mut().for_each(|arg| {
                         if let GenericArgument::Type(ty) = arg {
-                            *ty = syn_type_cxx_bridge_to_qualified(ty);
+                            *ty = syn_type_cxx_bridge_to_qualified(ty, qualified_mappings);
                         }
                     });
                 }
@@ -66,29 +76,35 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &syn::Type) -> syn::Type {
                 }
             }
 
+            // If the path matches a known ident then used the qualified mapping
+            if let Some(ident) = ty_path.path.get_ident() {
+                if let Some(qualified_path) = qualified_mappings.get(ident) {
+                    ty_path.path = qualified_path.clone();
+                }
+            }
+
             return Type::Path(ty_path);
         }
         Type::Ptr(ty_ptr) => {
             let mut ty_ptr = ty_ptr.clone();
-            *ty_ptr.elem = syn_type_cxx_bridge_to_qualified(&ty_ptr.elem);
+            *ty_ptr.elem = syn_type_cxx_bridge_to_qualified(&ty_ptr.elem, qualified_mappings);
             return Type::Ptr(ty_ptr);
         }
         Type::Reference(ty_ref) => {
             let mut ty_ref = ty_ref.clone();
-            *ty_ref.elem = syn_type_cxx_bridge_to_qualified(&ty_ref.elem);
+            *ty_ref.elem = syn_type_cxx_bridge_to_qualified(&ty_ref.elem, qualified_mappings);
             return Type::Reference(ty_ref);
         }
         Type::Slice(ty_slice) => {
             let mut ty_slice = ty_slice.clone();
-            *ty_slice.elem = syn_type_cxx_bridge_to_qualified(&ty_slice.elem);
+            *ty_slice.elem = syn_type_cxx_bridge_to_qualified(&ty_slice.elem, qualified_mappings);
             return Type::Slice(ty_slice);
         }
         Type::Tuple(ty_tuple) => {
             let mut ty_tuple = ty_tuple.clone();
-            ty_tuple
-                .elems
-                .iter_mut()
-                .for_each(|elem| *elem = syn_type_cxx_bridge_to_qualified(elem));
+            ty_tuple.elems.iter_mut().for_each(|elem| {
+                *elem = syn_type_cxx_bridge_to_qualified(elem, qualified_mappings)
+            });
             return Type::Tuple(ty_tuple);
         }
         _others => {}
@@ -125,28 +141,30 @@ pub(crate) fn syn_type_is_cxx_bridge_unsafe(ty: &syn::Type) -> bool {
 mod tests {
     use super::*;
 
+    use quote::format_ident;
     use syn::parse_quote;
 
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_cxx() {
+        let mappings = BTreeMap::<Ident, Path>::default();
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { CxxString }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { CxxString }, &mappings),
             parse_quote! { cxx::CxxString }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { CxxVector<T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { CxxVector<T> }, &mappings),
             parse_quote! { cxx::CxxVector<T> }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { SharedPtr<T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { SharedPtr<T> }, &mappings),
             parse_quote! { cxx::SharedPtr<T> }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { UniquePtr<T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { UniquePtr<T> }, &mappings),
             parse_quote! { cxx::UniquePtr<T> }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { WeakPtr<T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { WeakPtr<T> }, &mappings),
             parse_quote! { cxx::WeakPtr<T> }
         );
     }
@@ -154,7 +172,10 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_core() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { Pin<&mut T> }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { Pin<&mut T> },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { core::pin::Pin<&mut T> }
         );
     }
@@ -162,7 +183,10 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_array() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { [UniquePtr<T>; 1] }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { [UniquePtr<T>; 1] },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { [cxx::UniquePtr<T>; 1] }
         );
     }
@@ -170,7 +194,10 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_fn() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { fn(UniquePtr<T>) -> SharedPtr<T> }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { fn(UniquePtr<T>) -> SharedPtr<T> },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { fn(cxx::UniquePtr<T>) -> cxx::SharedPtr<T> }
         );
     }
@@ -178,7 +205,10 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_nested() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { Pin<UniquePtr<T>> }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { Pin<UniquePtr<T>> },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { core::pin::Pin<cxx::UniquePtr<T>> }
         );
     }
@@ -186,31 +216,36 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_ptr() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { *mut UniquePtr<T> }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { *mut UniquePtr<T> },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { *mut cxx::UniquePtr<T> }
         );
     }
 
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_reference() {
+        let mappings = BTreeMap::<Ident, Path>::default();
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { &UniquePtr<*mut T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { &UniquePtr<*mut T> }, &mappings),
             parse_quote! { &cxx::UniquePtr<*mut T> }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { &mut UniquePtr<*mut T> }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { &mut UniquePtr<*mut T> }, &mappings),
             parse_quote! { &mut cxx::UniquePtr<*mut T> }
         );
     }
 
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_slice() {
+        let mappings = BTreeMap::<Ident, Path>::default();
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { &[UniquePtr<T>] }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { &[UniquePtr<T>] }, &mappings),
             parse_quote! { &[cxx::UniquePtr<T>] }
         );
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { &mut [UniquePtr<T>] }),
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { &mut [UniquePtr<T>] }, &mappings),
             parse_quote! { &mut [cxx::UniquePtr<T>] }
         );
     }
@@ -218,8 +253,21 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_tuple() {
         assert_eq!(
-            syn_type_cxx_bridge_to_qualified(&parse_quote! { (UniquePtr<T>, ) }),
+            syn_type_cxx_bridge_to_qualified(
+                &parse_quote! { (UniquePtr<T>, ) },
+                &BTreeMap::<Ident, Path>::default()
+            ),
             parse_quote! { (cxx::UniquePtr<T>, ) }
+        );
+    }
+
+    #[test]
+    fn test_syn_type_cxx_bridge_to_qualified_mapped() {
+        let mut mappings = BTreeMap::<Ident, Path>::default();
+        mappings.insert(format_ident!("A"), parse_quote! { ffi::B });
+        assert_eq!(
+            syn_type_cxx_bridge_to_qualified(&parse_quote! { A }, &mappings),
+            parse_quote! { ffi::B }
         );
     }
 

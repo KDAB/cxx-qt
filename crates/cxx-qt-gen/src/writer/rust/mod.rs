@@ -85,6 +85,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         //
         /// Internal CXX-Qt module, made public temporarily between API changes
         pub mod #cxx_qt_mod_ident {
+            // Temporary hack so that qualified types still work, this will be removed in the next commit
+            use super::*;
             use super::#cxx_mod_ident::*;
             use cxx_qt::CxxQtType;
 
@@ -277,6 +279,7 @@ mod tests {
             use self::cxx_qt_ffi::*;
             #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
             pub mod cxx_qt_ffi {
+                use super::*;
                 use super::ffi::*;
                 use cxx_qt::CxxQtType;
 
@@ -344,6 +347,7 @@ mod tests {
             use self::cxx_qt_ffi::*;
             #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
             pub mod cxx_qt_ffi {
+                use super::*;
                 use super::ffi::*;
                 use cxx_qt::CxxQtType;
 

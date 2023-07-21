@@ -74,6 +74,7 @@ use self::cxx_qt_inheritance::*;
 #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
 pub mod cxx_qt_inheritance {
     use super::inheritance::*;
+    use super::*;
     use cxx_qt::CxxQtType;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;

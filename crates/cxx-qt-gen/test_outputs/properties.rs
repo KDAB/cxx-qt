@@ -103,6 +103,7 @@ use self::cxx_qt_ffi::*;
 #[doc = r" Internal CXX-Qt module, made public temporarily between API changes"]
 pub mod cxx_qt_ffi {
     use super::ffi::*;
+    use super::*;
     use cxx_qt::CxxQtType;
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
@@ -128,14 +129,14 @@ pub mod cxx_qt_ffi {
     impl MyObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "trivial"]
-        pub fn trivial(&self) -> &QPoint {
+        pub fn trivial(&self) -> &ffi::QPoint {
             &self.trivial
         }
     }
     impl MyObject {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "trivial"]
-        pub fn set_trivial(mut self: core::pin::Pin<&mut Self>, value: QPoint) {
+        pub fn set_trivial(mut self: core::pin::Pin<&mut Self>, value: ffi::QPoint) {
             if self.trivial == value {
                 return;
             }
@@ -151,8 +152,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_primitive_changed(
-            self: core::pin::Pin<&mut MyObject>,
-            func: fn(core::pin::Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut ffi::MyObject>,
+            func: fn(core::pin::Pin<&mut ffi::MyObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_primitive_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
@@ -165,8 +166,8 @@ pub mod cxx_qt_ffi {
         #[doc = "Note that this method uses a AutoConnection connection type."]
         #[must_use]
         pub fn on_trivial_changed(
-            self: core::pin::Pin<&mut MyObject>,
-            func: fn(core::pin::Pin<&mut MyObject>),
+            self: core::pin::Pin<&mut ffi::MyObject>,
+            func: fn(core::pin::Pin<&mut ffi::MyObject>),
         ) -> cxx_qt_lib::QMetaObjectConnection {
             self.connect_trivial_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
