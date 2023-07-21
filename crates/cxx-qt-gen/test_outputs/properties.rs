@@ -119,6 +119,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "primitive"]
         pub fn set_primitive(mut self: core::pin::Pin<&mut Self>, value: i32) {
+            use cxx_qt::CxxQtType;
             if self.primitive == value {
                 return;
             }
@@ -137,6 +138,7 @@ pub mod cxx_qt_ffi {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "trivial"]
         pub fn set_trivial(mut self: core::pin::Pin<&mut Self>, value: ffi::QPoint) {
+            use cxx_qt::CxxQtType;
             if self.trivial == value {
                 return;
             }
