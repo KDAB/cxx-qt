@@ -7,8 +7,9 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            constructor, fragment::RustFragmentPair, inherit, invokable::generate_rust_invokables,
-            property::generate_rust_properties, signals::generate_rust_signals, threading,
+            constructor, cxxqttype, fragment::RustFragmentPair, inherit,
+            invokable::generate_rust_invokables, property::generate_rust_properties,
+            signals::generate_rust_signals, threading,
         },
     },
     parser::qobject::ParsedQObject,
@@ -140,6 +141,10 @@ impl GeneratedRustQObject {
             &namespace_idents,
         )?);
 
+        generated.blocks.append(&mut cxxqttype::generate(
+            &qobject_idents,
+        )?);
+
         Ok(generated)
     }
 }
@@ -268,7 +273,7 @@ mod tests {
 
         let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
             .unwrap();
-        assert_eq!(rust.blocks.cxx_mod_contents.len(), 4);
+        assert_eq!(rust.blocks.cxx_mod_contents.len(), 6);
         assert_tokens_eq(
             &rust.blocks.cxx_mod_contents[0],
             quote! {
@@ -306,6 +311,26 @@ mod tests {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_my_object"]
                     fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[4],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "unsafeRust"]
+                    #[doc(hidden)]
+                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.blocks.cxx_mod_contents[5],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "unsafeRustMut"]
+                    #[doc(hidden)]
+                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );

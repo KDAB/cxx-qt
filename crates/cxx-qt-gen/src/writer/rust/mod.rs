@@ -3,63 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::rust::{qobject::GeneratedRustQObject, GeneratedRustBlocks};
+use crate::generator::rust::GeneratedRustBlocks;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-
-/// Return common blocks for CXX bridge which the C++ writer adds as well
-fn cxx_bridge_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
-    let cpp_struct_ident = &qobject.cpp_struct_ident;
-    let rust_struct_ident = &qobject.rust_struct_ident;
-
-    vec![
-        quote! {
-            unsafe extern "C++" {
-                #[cxx_name = "unsafeRust"]
-                #[doc(hidden)]
-                fn cxx_qt_ffi_rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
-            }
-        },
-        quote! {
-            unsafe extern "C++" {
-                #[cxx_name = "unsafeRustMut"]
-                #[doc(hidden)]
-                fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
-            }
-        },
-    ]
-}
-
-/// Return common blocks for CXX-Qt implementation which the C++ writer adds as well
-fn cxx_qt_common_blocks(qobject: &GeneratedRustQObject) -> Vec<TokenStream> {
-    let cpp_struct_ident = &qobject.cpp_struct_ident;
-    let rust_struct_ident = &qobject.rust_struct_ident;
-
-    vec![
-        quote! {
-            impl core::ops::Deref for #cpp_struct_ident {
-                type Target = #rust_struct_ident;
-
-                fn deref(&self) -> &Self::Target {
-                    self.cxx_qt_ffi_rust()
-                }
-            }
-        },
-        quote! {
-            impl cxx_qt::CxxQtType for #cpp_struct_ident {
-                type Rust = #rust_struct_ident;
-
-                fn rust(&self) -> &Self::Rust {
-                    self.cxx_qt_ffi_rust()
-                }
-
-                fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                    self.cxx_qt_ffi_rust_mut()
-                }
-            }
-        },
-    ]
-}
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
@@ -100,23 +46,9 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     let mut qobject_types = vec![];
     for qobject in &generated.qobjects {
-        // Add the common blocks into the bridge which we need
+        // Add the blocks from the QObject
         cxx_mod_contents.extend_from_slice(&qobject.blocks.cxx_mod_contents);
-        cxx_mod_contents.append(
-            &mut cxx_bridge_common_blocks(qobject)
-                .into_iter()
-                .map(|block| syn::parse2(block).expect("Could not build CXX common block"))
-                .collect(),
-        );
-
-        // Inject the common blocks into the implementation we need
         cxx_qt_mod_contents.extend_from_slice(&qobject.blocks.cxx_qt_mod_contents);
-        cxx_qt_mod_contents.append(
-            &mut cxx_qt_common_blocks(qobject)
-                .into_iter()
-                .map(|block| syn::parse2(block).expect("Could not build CXX-Qt common block"))
-                .collect(),
-        );
 
         // Add the type alias to the C++ struct
         let cpp_struct_ident = &qobject.cpp_struct_ident;
@@ -340,18 +272,6 @@ mod tests {
                 extern "Rust" {
                     type MyObjectRust;
                 }
-
-                unsafe extern "C++" {
-                    #[cxx_name = "unsafeRust"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
-                }
-
-                unsafe extern "C++" {
-                    #[cxx_name = "unsafeRustMut"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
-                }
             }
 
             use self::cxx_qt_ffi::*;
@@ -371,24 +291,6 @@ mod tests {
                 impl MyObjectRust {
                     fn rust_method(&self) {
 
-                    }
-                }
-
-                impl core::ops::Deref for MyObject {
-                    type Target = MyObjectRust;
-
-                    fn deref(&self) -> &Self::Target {
-                        self.cxx_qt_ffi_rust()
-                    }
-                }
-
-                impl cxx_qt::CxxQtType for MyObject {
-                    type Rust = MyObjectRust;
-                    fn rust(&self) -> &Self::Rust {
-                        self.cxx_qt_ffi_rust()
-                    }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        self.cxx_qt_ffi_rust_mut()
                     }
                 }
             }
@@ -431,34 +333,11 @@ mod tests {
                 }
 
                 unsafe extern "C++" {
-                    #[cxx_name = "unsafeRust"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &FirstObject) -> &FirstObjectRust;
-                }
-
-                unsafe extern "C++" {
-                    #[cxx_name = "unsafeRustMut"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut FirstObject>) -> Pin<&mut FirstObjectRust>;
-                }
-                unsafe extern "C++" {
                     type SecondObject;
                 }
 
                 extern "Rust" {
                     type SecondObjectRust;
-                }
-
-                unsafe extern "C++" {
-                    #[cxx_name = "unsafeRust"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &SecondObject) -> &SecondObjectRust;
-                }
-
-                unsafe extern "C++" {
-                    #[cxx_name = "unsafeRustMut"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObject>) -> Pin<&mut SecondObjectRust>;
                 }
             }
 
@@ -482,48 +361,12 @@ mod tests {
                     }
                 }
 
-                impl core::ops::Deref for FirstObject {
-                    type Target = FirstObjectRust;
-
-                    fn deref(&self) -> &Self::Target {
-                        self.cxx_qt_ffi_rust()
-                    }
-                }
-
-                impl cxx_qt::CxxQtType for FirstObject {
-                    type Rust = FirstObjectRust;
-                    fn rust(&self) -> &Self::Rust {
-                        self.cxx_qt_ffi_rust()
-                    }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        self.cxx_qt_ffi_rust_mut()
-                    }
-                }
-
                 #[derive(Default)]
                 pub struct SecondObjectRust;
 
                 impl SecondObjectRust {
                     fn rust_method(&self) {
 
-                    }
-                }
-
-                impl core::ops::Deref for SecondObject {
-                    type Target = SecondObjectRust;
-
-                    fn deref(&self) -> &Self::Target {
-                        self.cxx_qt_ffi_rust()
-                    }
-                }
-
-                impl cxx_qt::CxxQtType for SecondObject {
-                    type Rust = SecondObjectRust;
-                    fn rust(&self) -> &Self::Rust {
-                        self.cxx_qt_ffi_rust()
-                    }
-                    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        self.cxx_qt_ffi_rust_mut()
                     }
                 }
             }
