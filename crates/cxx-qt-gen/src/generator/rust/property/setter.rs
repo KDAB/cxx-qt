@@ -6,7 +6,10 @@
 use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
     rust::fragment::RustFragmentPair,
-    utils::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
+    utils::rust::{
+        syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified,
+        syn_type_is_cxx_bridge_unsafe,
+    },
 };
 use quote::quote;
 use std::collections::BTreeMap;
@@ -25,6 +28,8 @@ pub fn generate(
     let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust;
     let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, qualified_mappings);
+    let qualified_impl =
+        syn_ident_cxx_bridge_to_qualified_impl(cpp_class_name_rust, qualified_mappings);
 
     // Determine if unsafe is required due to an unsafe type
     let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {
@@ -41,7 +46,7 @@ pub fn generate(
             }
         }],
         implementation: vec![quote! {
-            impl #cpp_class_name_rust {
+            impl #qualified_impl {
                 #[doc = "Setter for the Q_PROPERTY "]
                 #[doc = #ident_str]
                 pub fn #setter_rust(mut self: core::pin::Pin<&mut Self>, value: #qualified_ty) {

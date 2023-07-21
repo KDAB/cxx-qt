@@ -135,7 +135,7 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -149,7 +149,7 @@ pub mod cxx_qt_ffi {
             self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "dataChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -169,7 +169,7 @@ pub mod cxx_qt_ffi {
             self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "newData"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -189,18 +189,18 @@ pub mod cxx_qt_ffi {
             self.connect_base_class_new_data(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl cxx_qt::Locking for MyObject {}
+    impl cxx_qt::Locking for ffi::MyObject {}
     #[doc(hidden)]
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         std::boxed::Box::new(core::default::Default::default())
     }
-    impl core::ops::Deref for MyObject {
+    impl core::ops::Deref for ffi::MyObject {
         type Target = MyObjectRust;
         fn deref(&self) -> &Self::Target {
             self.cxx_qt_ffi_rust()
         }
     }
-    impl cxx_qt::CxxQtType for MyObject {
+    impl cxx_qt::CxxQtType for ffi::MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()

@@ -179,7 +179,7 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     type UniquePtr<T> = cxx::UniquePtr<T>;
     type MyObjectRust = super::MyObjectRust;
-    impl cxx_qt::Threading for MyObject {
+    impl cxx_qt::Threading for ffi::MyObject {
         type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
         type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
         fn qt_thread(&self) -> MyObjectCxxQtThread {
@@ -191,13 +191,13 @@ pub mod cxx_qt_ffi {
             f: F,
         ) -> std::result::Result<(), cxx::Exception>
         where
-            F: FnOnce(core::pin::Pin<&mut MyObject>),
+            F: FnOnce(core::pin::Pin<&mut ffi::MyObject>),
             F: Send + 'static,
         {
             #[allow(clippy::boxed_local)]
             #[doc(hidden)]
             fn func(
-                obj: core::pin::Pin<&mut MyObject>,
+                obj: core::pin::Pin<&mut ffi::MyObject>,
                 arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
             ) {
                 (arg.inner)(obj)
@@ -218,9 +218,9 @@ pub mod cxx_qt_ffi {
     }
     #[doc(hidden)]
     pub struct MyObjectCxxQtThreadQueuedFn {
-        inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut MyObject>) + Send>,
+        inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
     }
-    impl cxx_qt::Locking for MyObject {}
+    impl cxx_qt::Locking for ffi::MyObject {}
     #[doc(hidden)]
     pub fn route_arguments_my_object_0(
         arg0: i32,
@@ -257,13 +257,13 @@ pub mod cxx_qt_ffi {
     ) {
         <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
     }
-    impl core::ops::Deref for MyObject {
+    impl core::ops::Deref for ffi::MyObject {
         type Target = MyObjectRust;
         fn deref(&self) -> &Self::Target {
             self.cxx_qt_ffi_rust()
         }
     }
-    impl cxx_qt::CxxQtType for MyObject {
+    impl cxx_qt::CxxQtType for ffi::MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()

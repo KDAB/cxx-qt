@@ -218,14 +218,14 @@ pub mod cxx_qt_ffi {
     type UniquePtr<T> = cxx::UniquePtr<T>;
     use super::MyTrait;
     type MyObjectRust = super::MyObjectRust;
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
             &self.property_name
         }
     }
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
@@ -236,7 +236,7 @@ pub mod cxx_qt_ffi {
             self.as_mut().property_name_changed();
         }
     }
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "propertyNameChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -250,7 +250,7 @@ pub mod cxx_qt_ffi {
             self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl MyObject {
+    impl ffi::MyObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -264,18 +264,18 @@ pub mod cxx_qt_ffi {
             self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl cxx_qt::Locking for MyObject {}
+    impl cxx_qt::Locking for ffi::MyObject {}
     #[doc(hidden)]
     pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
         std::boxed::Box::new(core::default::Default::default())
     }
-    impl core::ops::Deref for MyObject {
+    impl core::ops::Deref for ffi::MyObject {
         type Target = MyObjectRust;
         fn deref(&self) -> &Self::Target {
             self.cxx_qt_ffi_rust()
         }
     }
-    impl cxx_qt::CxxQtType for MyObject {
+    impl cxx_qt::CxxQtType for ffi::MyObject {
         type Rust = MyObjectRust;
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()
@@ -285,14 +285,14 @@ pub mod cxx_qt_ffi {
         }
     }
     type SecondObjectRust = super::SecondObjectRust;
-    impl SecondObject {
+    impl ffi::SecondObject {
         #[doc = "Getter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn property_name(&self) -> &i32 {
             &self.property_name
         }
     }
-    impl SecondObject {
+    impl ffi::SecondObject {
         #[doc = "Setter for the Q_PROPERTY "]
         #[doc = "property_name"]
         pub fn set_property_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
@@ -303,7 +303,7 @@ pub mod cxx_qt_ffi {
             self.as_mut().property_name_changed();
         }
     }
-    impl SecondObject {
+    impl ffi::SecondObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "propertyNameChanged"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -317,7 +317,7 @@ pub mod cxx_qt_ffi {
             self.connect_property_name_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
         }
     }
-    impl SecondObject {
+    impl ffi::SecondObject {
         #[doc = "Connect the given function pointer to the signal "]
         #[doc = "ready"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
@@ -335,13 +335,13 @@ pub mod cxx_qt_ffi {
     pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
         std::boxed::Box::new(core::default::Default::default())
     }
-    impl core::ops::Deref for SecondObject {
+    impl core::ops::Deref for ffi::SecondObject {
         type Target = SecondObjectRust;
         fn deref(&self) -> &Self::Target {
             self.cxx_qt_ffi_rust()
         }
     }
-    impl cxx_qt::CxxQtType for SecondObject {
+    impl cxx_qt::CxxQtType for ffi::SecondObject {
         type Rust = SecondObjectRust;
         fn rust(&self) -> &Self::Rust {
             self.cxx_qt_ffi_rust()

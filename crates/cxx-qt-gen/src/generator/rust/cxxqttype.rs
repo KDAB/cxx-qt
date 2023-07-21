@@ -3,17 +3,27 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{naming::qobject::QObjectName, rust::qobject::GeneratedRustQObjectBlocks};
+use std::collections::BTreeMap;
+
+use crate::generator::{
+    naming::qobject::QObjectName, rust::qobject::GeneratedRustQObjectBlocks,
+    utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
+};
 use quote::quote;
-use syn::Result;
+use syn::{Ident, Path, Result};
 
 use super::fragment::RustFragmentPair;
 
-pub fn generate(qobject_ident: &QObjectName) -> Result<GeneratedRustQObjectBlocks> {
+pub fn generate(
+    qobject_ident: &QObjectName,
+    qualified_mappings: &BTreeMap<Ident, Path>,
+) -> Result<GeneratedRustQObjectBlocks> {
     let mut blocks = GeneratedRustQObjectBlocks::default();
 
     let cpp_struct_ident = &qobject_ident.cpp_class.rust;
     let rust_struct_ident = &qobject_ident.rust_struct.rust;
+    let qualified_impl =
+        syn_ident_cxx_bridge_to_qualified_impl(cpp_struct_ident, qualified_mappings);
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -34,7 +44,7 @@ pub fn generate(qobject_ident: &QObjectName) -> Result<GeneratedRustQObjectBlock
         ],
         implementation: vec![
             quote! {
-                impl core::ops::Deref for #cpp_struct_ident {
+                impl core::ops::Deref for #qualified_impl {
                     type Target = #rust_struct_ident;
 
                     fn deref(&self) -> &Self::Target {
@@ -43,7 +53,7 @@ pub fn generate(qobject_ident: &QObjectName) -> Result<GeneratedRustQObjectBlock
                 }
             },
             quote! {
-                impl cxx_qt::CxxQtType for #cpp_struct_ident {
+                impl cxx_qt::CxxQtType for #qualified_impl {
                     type Rust = #rust_struct_ident;
 
                     fn rust(&self) -> &Self::Rust {
@@ -81,7 +91,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_idents = QObjectName::from(&qobject);
 
-        let generated = generate(&qobject_idents).unwrap();
+        let generated = generate(&qobject_idents, &BTreeMap::<Ident, Path>::default()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

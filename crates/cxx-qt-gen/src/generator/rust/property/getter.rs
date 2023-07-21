@@ -6,7 +6,7 @@
 use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
     rust::fragment::RustFragmentPair,
-    utils::rust::syn_type_cxx_bridge_to_qualified,
+    utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
 };
 use quote::quote;
 use std::collections::BTreeMap;
@@ -24,6 +24,8 @@ pub fn generate(
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
     let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, qualified_mappings);
+    let qualified_impl =
+        syn_ident_cxx_bridge_to_qualified_impl(cpp_class_name_rust, qualified_mappings);
 
     RustFragmentPair {
         cxx_bridge: vec![quote! {
@@ -33,7 +35,7 @@ pub fn generate(
             }
         }],
         implementation: vec![quote! {
-            impl #cpp_class_name_rust {
+            impl #qualified_impl {
                 #[doc = "Getter for the Q_PROPERTY "]
                 #[doc = #ident_str]
                 pub fn #getter_rust(&self) -> &#qualified_ty {
