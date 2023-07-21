@@ -141,6 +141,7 @@ pub fn generate(
     qobject_idents: &QObjectName,
     namespace: &NamespaceName,
     qualified_mappings: &BTreeMap<Ident, Path>,
+    module_ident: &Ident,
 ) -> Result<GeneratedRustQObjectBlocks> {
     if constructors.is_empty() {
         return Ok(generate_default_constructor(qobject_idents, namespace));
@@ -280,7 +281,7 @@ pub fn generate(
         result.cxx_qt_mod_contents.append(&mut vec![parse_quote_spanned! {
             constructor.imp.span() =>
             #[doc(hidden)]
-            pub fn #route_arguments_rust(#(#route_arguments_parameters),*) -> #arguments_rust {
+            pub fn #route_arguments_rust(#(#route_arguments_parameters),*) -> #module_ident::#arguments_rust {
                 // These variables won't be used if the corresponding argument list is empty.
                 #[allow(unused_variables)]
                 #[allow(clippy::let_unit_value)]
@@ -290,10 +291,10 @@ pub fn generate(
                     initialize_arguments
                     ) = <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>
                                     ::route_arguments((#(#assign_arguments,)*));
-                #arguments_rust {
-                    base: #init_base_arguments,
-                    initialize: #init_initalize_arguments,
-                    new: #init_new_arguments,
+                #module_ident::#arguments_rust {
+                    base: #module_ident::#init_base_arguments,
+                    initialize: #module_ident::#init_initalize_arguments,
+                    new: #module_ident::#init_new_arguments,
                 }
             }
         },
@@ -301,7 +302,7 @@ pub fn generate(
             constructor.imp.span() =>
             #[doc(hidden)]
             #[allow(unused_variables)]
-            pub fn #new_rust(new_arguments: #new_arguments_rust) -> std::boxed::Box<#rust_struct_name_rust> {
+            pub fn #new_rust(new_arguments: #module_ident::#new_arguments_rust) -> std::boxed::Box<#rust_struct_name_rust> {
                 std::boxed::Box::new(<#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::new((#(#extract_new_arguments,)*)))
             }
         },
@@ -311,7 +312,7 @@ pub fn generate(
             #[allow(unused_variables)]
             pub fn #initialize_rust(
                 qobject: core::pin::Pin<&mut #qobject_name_rust_qualified>,
-                initialize_arguments: #initialize_arguments_rust
+                initialize_arguments: #module_ident::#initialize_arguments_rust
             ) {
                 <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::initialize(
                     qobject,
@@ -326,6 +327,8 @@ pub fn generate(
 mod tests {
     use super::*;
     use crate::tests::assert_tokens_eq;
+
+    use quote::format_ident;
 
     fn mock_constructor() -> Constructor {
         Constructor {
@@ -352,6 +355,7 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
         )
         .unwrap()
     }
@@ -463,17 +467,17 @@ mod tests {
             &blocks.cxx_qt_mod_contents[0],
             quote! {
                 #[doc(hidden)]
-                pub fn route_arguments_my_object_0() -> CxxQtConstructorArgumentsMyObject0
+                pub fn route_arguments_my_object_0() -> ffi::CxxQtConstructorArgumentsMyObject0
                 {
                     #[allow(unused_variables)]
                     #[allow(clippy::let_unit_value)]
                     let (new_arguments, base_arguments, initialize_arguments) =
                         <MyObject as cxx_qt::Constructor<()> >::route_arguments(());
 
-                    CxxQtConstructorArgumentsMyObject0 {
-                        base: CxxQtConstructorBaseArgumentsMyObject0 { not_empty: 0 },
-                        initialize: CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
-                        new: CxxQtConstructorNewArgumentsMyObject0 { not_empty : 0 },
+                    ffi::CxxQtConstructorArgumentsMyObject0 {
+                        base: ffi::CxxQtConstructorBaseArgumentsMyObject0 { not_empty: 0 },
+                        initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+                        new: ffi::CxxQtConstructorNewArgumentsMyObject0 { not_empty : 0 },
                     }
                 }
             },
@@ -483,7 +487,7 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
-                pub fn new_rs_my_object_0(new_arguments: CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
+                pub fn new_rs_my_object_0(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <MyObject as cxx_qt::Constructor<()> >::new(())
                     )
@@ -497,7 +501,7 @@ mod tests {
                 #[allow(unused_variables)]
                 pub fn initialize_my_object_0(
                     qobject: core::pin::Pin<&mut MyObject>,
-                    initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject0)
+                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0)
                 {
                     <MyObject as cxx_qt::Constructor<()> >::initialize(qobject, ());
                 }
@@ -584,24 +588,24 @@ mod tests {
             &blocks.cxx_qt_mod_contents[3],
             quote! {
                 #[doc(hidden)]
-                pub fn route_arguments_my_object_1(arg0: *const QObject) -> CxxQtConstructorArgumentsMyObject1
+                pub fn route_arguments_my_object_1(arg0: *const QObject) -> ffi::CxxQtConstructorArgumentsMyObject1
                 {
                     #[allow(unused_variables)]
                     #[allow(clippy::let_unit_value)]
                     let (new_arguments, base_arguments, initialize_arguments) =
                         <MyObject as cxx_qt::Constructor<(*const QObject,)> >::route_arguments((arg0,));
 
-                    CxxQtConstructorArgumentsMyObject1 {
-                        base: CxxQtConstructorBaseArgumentsMyObject1 {
+                    ffi::CxxQtConstructorArgumentsMyObject1 {
+                        base: ffi::CxxQtConstructorBaseArgumentsMyObject1 {
                             arg0: base_arguments.0,
                             arg1: base_arguments.1,
                             arg2: base_arguments.2,
                         },
-                        initialize: CxxQtConstructorInitializeArgumentsMyObject1 {
+                        initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject1 {
                             arg0: initialize_arguments.0,
                             arg1: initialize_arguments.1,
                         },
-                        new: CxxQtConstructorNewArgumentsMyObject1 {
+                        new: ffi::CxxQtConstructorNewArgumentsMyObject1 {
                             arg0: new_arguments.0,
                         },
                     }
@@ -613,7 +617,7 @@ mod tests {
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
-                pub fn new_rs_my_object_1(new_arguments: CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
+                pub fn new_rs_my_object_1(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <MyObject as cxx_qt::Constructor<(*const QObject,)> >::new(
                             (new_arguments.arg0,)))
@@ -627,7 +631,7 @@ mod tests {
                 #[allow(unused_variables)]
                 pub fn initialize_my_object_1(
                     qobject: core::pin::Pin<&mut MyObject>,
-                    initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject1)
+                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject1)
                 {
                     <MyObject as cxx_qt::Constructor<(*const QObject,)> >::initialize(
                         qobject,

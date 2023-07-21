@@ -182,12 +182,12 @@ pub mod cxx_qt_ffi {
     impl cxx_qt::Threading for ffi::MyObject {
         type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
         type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
-        fn qt_thread(&self) -> MyObjectCxxQtThread {
+        fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
             self.cxx_qt_ffi_qt_thread()
         }
         #[doc(hidden)]
         fn queue<F>(
-            cxx_qt_thread: &MyObjectCxxQtThread,
+            cxx_qt_thread: &ffi::MyObjectCxxQtThread,
             f: F,
         ) -> std::result::Result<(), cxx::Exception>
         where
@@ -205,15 +205,15 @@ pub mod cxx_qt_ffi {
             let arg = MyObjectCxxQtThreadQueuedFn {
                 inner: std::boxed::Box::new(f),
             };
-            cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+            ffi::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
         }
         #[doc(hidden)]
-        fn threading_clone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread {
-            cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
+        fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread {
+            ffi::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
         }
         #[doc(hidden)]
-        fn threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread) {
-            cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
+        fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread) {
+            ffi::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
         }
     }
     #[doc(hidden)]
@@ -225,19 +225,19 @@ pub mod cxx_qt_ffi {
     pub fn route_arguments_my_object_0(
         arg0: i32,
         arg1: *mut QObject,
-    ) -> CxxQtConstructorArgumentsMyObject0 {
+    ) -> ffi::CxxQtConstructorArgumentsMyObject0 {
         #[allow(unused_variables)]
         #[allow(clippy::let_unit_value)]
         let (new_arguments, base_arguments, initialize_arguments) =
             <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((
                 arg0, arg1,
             ));
-        CxxQtConstructorArgumentsMyObject0 {
-            base: CxxQtConstructorBaseArgumentsMyObject0 {
+        ffi::CxxQtConstructorArgumentsMyObject0 {
+            base: ffi::CxxQtConstructorBaseArgumentsMyObject0 {
                 arg0: base_arguments.0,
             },
-            initialize: CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
-            new: CxxQtConstructorNewArgumentsMyObject0 {
+            initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+            new: ffi::CxxQtConstructorNewArgumentsMyObject0 {
                 arg0: new_arguments.0,
             },
         }
@@ -245,7 +245,7 @@ pub mod cxx_qt_ffi {
     #[doc(hidden)]
     #[allow(unused_variables)]
     pub fn new_rs_my_object_0(
-        new_arguments: CxxQtConstructorNewArgumentsMyObject0,
+        new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0,
     ) -> std::boxed::Box<MyObjectRust> {
         std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
             i32,
@@ -256,7 +256,7 @@ pub mod cxx_qt_ffi {
     #[allow(unused_variables)]
     pub fn initialize_my_object_0(
         qobject: core::pin::Pin<&mut ffi::MyObject>,
-        initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject0,
+        initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0,
     ) {
         <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
     }
