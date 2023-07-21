@@ -3,21 +3,25 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeMap;
+
 use crate::generator::{
     naming::{
         namespace::{namespace_combine_ident, NamespaceName},
         qobject::QObjectName,
     },
     rust::qobject::GeneratedRustQObjectBlocks,
+    utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Ident, Path, Result};
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_ident: &QObjectName,
     namespace_ident: &NamespaceName,
+    qualified_mappings: &BTreeMap<Ident, Path>,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut blocks = GeneratedRustQObjectBlocks::default();
 
@@ -30,6 +34,8 @@ pub fn generate(
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
+    let qualified_impl =
+        syn_ident_cxx_bridge_to_qualified_impl(cpp_struct_ident, qualified_mappings);
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -81,7 +87,7 @@ pub fn generate(
         ],
         implementation: vec![
             quote! {
-                impl cxx_qt::Threading for #cpp_struct_ident {
+                impl cxx_qt::Threading for #qualified_impl {
                     type BoxedQueuedFn = #cxx_qt_thread_queued_fn_ident;
                     type ThreadingTypeId = cxx::type_id!(#cxx_qt_thread_ident_type_id_str);
 
@@ -93,7 +99,7 @@ pub fn generate(
                     #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
                     where
-                        F: FnOnce(core::pin::Pin<&mut #cpp_struct_ident>),
+                        F: FnOnce(core::pin::Pin<&mut #qualified_impl>),
                         F: Send + 'static,
                     {
                         // Wrap the given closure and pass in to C++ function as an opaque type
@@ -102,7 +108,7 @@ pub fn generate(
                         #[allow(clippy::boxed_local)]
                         #[doc(hidden)]
                         fn func(
-                            obj: core::pin::Pin<&mut #cpp_struct_ident>,
+                            obj: core::pin::Pin<&mut #qualified_impl>,
                             arg: std::boxed::Box<#cxx_qt_thread_queued_fn_ident>,
                         ) {
                             (arg.inner)(obj)
@@ -129,7 +135,7 @@ pub fn generate(
                 pub struct #cxx_qt_thread_queued_fn_ident {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
-                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut #cpp_struct_ident>) + Send>,
+                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut #qualified_impl>) + Send>,
                 }
             },
         ],
@@ -159,7 +165,12 @@ mod tests {
         let qobject_idents = QObjectName::from(&qobject);
         let namespace_ident = NamespaceName::from(&qobject);
 
-        let generated = generate(&qobject_idents, &namespace_ident).unwrap();
+        let generated = generate(
+            &qobject_idents,
+            &namespace_ident,
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

@@ -9,6 +9,23 @@ use syn::{
     GenericArgument, Ident, Path, PathArguments, PathSegment, ReturnType, Type, TypeReference,
 };
 
+/// Return a qualified version of the ident that can by used for impl T outside of a CXX bridge
+///
+/// Eg MyObject -> ffi::MyObject
+///
+/// Note that this does not handle CXX types such as UniquePtr -> cxx::UniquePtr.
+/// This is just for resolving impl T {} -> impl module::T {}
+pub(crate) fn syn_ident_cxx_bridge_to_qualified_impl(
+    ident: &syn::Ident,
+    qualified_mappings: &BTreeMap<Ident, Path>,
+) -> syn::Path {
+    if let Some(qualified_path) = qualified_mappings.get(ident) {
+        qualified_path.clone()
+    } else {
+        Path::from(ident.clone())
+    }
+}
+
 /// Return a qualified version of the type that can by used outside of a CXX bridge
 ///
 /// Eg Pin -> core::pin::Pin or UniquePtr -> cxx::UniquePtr
@@ -78,9 +95,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(
 
             // If the path matches a known ident then used the qualified mapping
             if let Some(ident) = ty_path.path.get_ident() {
-                if let Some(qualified_path) = qualified_mappings.get(ident) {
-                    ty_path.path = qualified_path.clone();
-                }
+                ty_path.path = syn_ident_cxx_bridge_to_qualified_impl(ident, qualified_mappings);
             }
 
             return Type::Path(ty_path);
@@ -267,6 +282,16 @@ mod tests {
         mappings.insert(format_ident!("A"), parse_quote! { ffi::B });
         assert_eq!(
             syn_type_cxx_bridge_to_qualified(&parse_quote! { A }, &mappings),
+            parse_quote! { ffi::B }
+        );
+    }
+
+    #[test]
+    fn test_syn_ident_cxx_bridge_to_qualified_impl_mapped() {
+        let mut mappings = BTreeMap::<Ident, Path>::default();
+        mappings.insert(format_ident!("A"), parse_quote! { ffi::B });
+        assert_eq!(
+            syn_ident_cxx_bridge_to_qualified_impl(&parse_quote! { A }, &mappings),
             parse_quote! { ffi::B }
         );
     }

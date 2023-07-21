@@ -13,6 +13,7 @@ use crate::{
             invokable::generate_rust_invokables, property::generate_rust_properties,
             signals::generate_rust_signals, threading,
         },
+        utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
     parser::qobject::ParsedQObject,
 };
@@ -125,6 +126,7 @@ impl GeneratedRustQObject {
             generated.blocks.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
+                qualified_mappings,
             )?);
         }
 
@@ -133,12 +135,15 @@ impl GeneratedRustQObject {
         // This could be implemented using an auto trait in the future once stable
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
         if qobject.locking {
-            let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+            let qualified_impl = syn_ident_cxx_bridge_to_qualified_impl(
+                &qobject_idents.cpp_class.rust,
+                qualified_mappings,
+            );
             generated
                 .blocks
                 .cxx_qt_mod_contents
                 .push(syn::parse_quote! {
-                    impl cxx_qt::Locking for #cpp_class_name_rust {}
+                    impl cxx_qt::Locking for #qualified_impl {}
                 });
         }
 
@@ -148,9 +153,10 @@ impl GeneratedRustQObject {
             &namespace_idents,
         )?);
 
-        generated
-            .blocks
-            .append(&mut cxxqttype::generate(&qobject_idents)?);
+        generated.blocks.append(&mut cxxqttype::generate(
+            &qobject_idents,
+            qualified_mappings,
+        )?);
 
         Ok(generated)
     }

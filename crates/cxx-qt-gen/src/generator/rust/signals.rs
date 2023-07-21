@@ -9,7 +9,7 @@ use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
         rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
-        utils::rust::syn_type_cxx_bridge_to_qualified,
+        utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
     parser::signals::ParsedSignal,
 };
@@ -64,6 +64,8 @@ pub fn generate_rust_signals(
         };
         let self_type_qualified =
             syn_type_cxx_bridge_to_qualified(&self_type_cxx, qualified_mappings);
+        let qualified_impl =
+            syn_ident_cxx_bridge_to_qualified_impl(qobject_name, qualified_mappings);
 
         let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
@@ -94,7 +96,7 @@ pub fn generate_rust_signals(
                 },
             ],
             implementation: vec![quote! {
-                impl #qobject_name {
+                impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp_str]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
