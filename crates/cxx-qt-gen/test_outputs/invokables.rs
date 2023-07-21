@@ -229,7 +229,9 @@ pub mod cxx_qt_ffi {
         #[allow(unused_variables)]
         #[allow(clippy::let_unit_value)]
         let (new_arguments, base_arguments, initialize_arguments) =
-            <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((arg0, arg1));
+            <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::route_arguments((
+                arg0, arg1,
+            ));
         CxxQtConstructorArgumentsMyObject0 {
             base: CxxQtConstructorBaseArgumentsMyObject0 {
                 arg0: base_arguments.0,
@@ -245,17 +247,18 @@ pub mod cxx_qt_ffi {
     pub fn new_rs_my_object_0(
         new_arguments: CxxQtConstructorNewArgumentsMyObject0,
     ) -> std::boxed::Box<MyObjectRust> {
-        std::boxed::Box::new(<MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::new(
-            (new_arguments.arg0,),
-        ))
+        std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
+            i32,
+            *mut QObject,
+        )>>::new((new_arguments.arg0,)))
     }
     #[doc(hidden)]
     #[allow(unused_variables)]
     pub fn initialize_my_object_0(
-        qobject: core::pin::Pin<&mut MyObject>,
+        qobject: core::pin::Pin<&mut ffi::MyObject>,
         initialize_arguments: CxxQtConstructorInitializeArgumentsMyObject0,
     ) {
-        <MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
+        <ffi::MyObject as cxx_qt::Constructor<(i32, *mut QObject)>>::initialize(qobject, ());
     }
     impl core::ops::Deref for ffi::MyObject {
         type Target = MyObjectRust;

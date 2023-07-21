@@ -151,6 +151,7 @@ impl GeneratedRustQObject {
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
+            qualified_mappings,
         )?);
 
         generated.blocks.append(&mut cxxqttype::generate(

@@ -3,11 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeMap;
+
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
         rust::qobject::GeneratedRustQObjectBlocks,
-        utils::rust::syn_type_is_cxx_bridge_unsafe,
+        utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_is_cxx_bridge_unsafe},
     },
     parser::constructor::Constructor,
 };
@@ -15,7 +17,9 @@ use crate::{
 use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_quote, parse_quote_spanned, spanned::Spanned, Expr, Ident, Item, Result, Type};
+use syn::{
+    parse_quote, parse_quote_spanned, spanned::Spanned, Expr, Ident, Item, Path, Result, Type,
+};
 
 const CONSTRUCTOR_ARGUMENTS: &str = "CxxQtConstructorArguments";
 const BASE_ARGUMENTS: &str = "CxxQtConstructorBaseArguments";
@@ -136,6 +140,7 @@ pub fn generate(
     constructors: &[Constructor],
     qobject_idents: &QObjectName,
     namespace: &NamespaceName,
+    qualified_mappings: &BTreeMap<Ident, Path>,
 ) -> Result<GeneratedRustQObjectBlocks> {
     if constructors.is_empty() {
         return Ok(generate_default_constructor(qobject_idents, namespace));
@@ -146,6 +151,8 @@ pub fn generate(
 
     let qobject_name = &qobject_idents.cpp_class.cpp;
     let qobject_name_rust = &qobject_idents.cpp_class.rust;
+    let qobject_name_rust_qualified =
+        syn_ident_cxx_bridge_to_qualified_impl(qobject_name_rust, qualified_mappings);
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
@@ -281,7 +288,7 @@ pub fn generate(
                     new_arguments,
                     base_arguments,
                     initialize_arguments
-                    ) = <#qobject_name_rust as cxx_qt::Constructor<(#(#argument_types,)*)>>
+                    ) = <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>
                                     ::route_arguments((#(#assign_arguments,)*));
                 #arguments_rust {
                     base: #init_base_arguments,
@@ -295,7 +302,7 @@ pub fn generate(
             #[doc(hidden)]
             #[allow(unused_variables)]
             pub fn #new_rust(new_arguments: #new_arguments_rust) -> std::boxed::Box<#rust_struct_name_rust> {
-                std::boxed::Box::new(<#qobject_name_rust as cxx_qt::Constructor<(#(#argument_types,)*)>>::new((#(#extract_new_arguments,)*)))
+                std::boxed::Box::new(<#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::new((#(#extract_new_arguments,)*)))
             }
         },
         parse_quote_spanned! {
@@ -303,10 +310,10 @@ pub fn generate(
             #[doc(hidden)]
             #[allow(unused_variables)]
             pub fn #initialize_rust(
-                qobject: core::pin::Pin<&mut #qobject_name_rust>,
+                qobject: core::pin::Pin<&mut #qobject_name_rust_qualified>,
                 initialize_arguments: #initialize_arguments_rust
             ) {
-                <#qobject_name_rust as cxx_qt::Constructor<(#(#argument_types,)*)>>::initialize(
+                <#qobject_name_rust_qualified as cxx_qt::Constructor<(#(#argument_types,)*)>>::initialize(
                     qobject,
                     (#(#extract_initialize_arguments,)*));
             }
@@ -340,7 +347,13 @@ mod tests {
     }
 
     fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustQObjectBlocks {
-        generate(constructors, &mock_name(), &mock_namespace()).unwrap()
+        generate(
+            constructors,
+            &mock_name(),
+            &mock_namespace(),
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap()
     }
 
     #[test]
