@@ -41,6 +41,7 @@ pub mod ffi {
         x: A,
         y: B,
     }
+    use super::MyTrait;
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
     }
@@ -208,7 +209,6 @@ pub mod ffi {
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObject>) -> Pin<&mut SecondObjectRust>;
     }
 }
-use super::MyTrait;
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
     #[doc = "property_name"]

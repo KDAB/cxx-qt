@@ -37,7 +37,7 @@ impl GeneratedRustBlocks {
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
             cxx_mod_contents: vec![generate_include(parser)?],
-            cxx_qt_mod_contents: parser.cxx_qt_data.uses.clone(),
+            cxx_qt_mod_contents: vec![],
             namespace: parser.cxx_qt_data.namespace.clone(),
             qobjects: parser
                 .cxx_qt_data
@@ -120,29 +120,6 @@ mod tests {
         assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_eq!(rust.cxx_qt_mod_contents.len(), 0);
-        assert_eq!(rust.namespace, "cxx_qt");
-        assert_eq!(rust.qobjects.len(), 1);
-    }
-
-    #[test]
-    fn test_generated_rust_blocks_uses() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(namespace = "cxx_qt")]
-            mod ffi {
-                use std::collections::HashMap;
-
-                extern "RustQt" {
-                    #[cxx_qt::qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-
-        let rust = GeneratedRustBlocks::from(&parser).unwrap();
-        assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
-        assert_eq!(rust.cxx_qt_mod_contents.len(), 1);
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.qobjects.len(), 1);
     }
