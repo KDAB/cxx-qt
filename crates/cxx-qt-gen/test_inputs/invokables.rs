@@ -52,12 +52,14 @@ mod ffi {
 
     impl cxx_qt::Threading for MyObject {}
 
-    impl
+    impl<'a>
         cxx_qt::Constructor<
-            (i32, *mut QObject),
+            (i32, &'a QString),
             BaseArguments = (*mut QObject,),
-            NewArguments = (i32,),
+            NewArguments = (&'a QString,),
         > for MyObject
     {
     }
+
+    impl cxx_qt::Constructor<()> for MyObject {}
 }

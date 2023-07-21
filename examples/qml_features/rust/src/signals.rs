@@ -55,6 +55,8 @@ pub mod qobject {
     // ANCHOR_END: book_rust_obj_impl
 
     impl cxx_qt::Constructor<()> for RustSignals {}
+
+    impl<'a> cxx_qt::Constructor<(&'a QUrl,), InitializeArguments = (&'a QUrl,)> for RustSignals {}
 }
 
 use core::pin::Pin;
@@ -144,6 +146,32 @@ impl cxx_qt::Constructor<()> for qobject::RustSignals {
             }
         })
         .release();
+    }
+}
+
+impl<'a> cxx_qt::Constructor<(&'a QUrl,)> for qobject::RustSignals {
+    type NewArguments = ();
+    type BaseArguments = ();
+    type InitializeArguments = (&'a QUrl,);
+
+    fn route_arguments(
+        (url,): (&'a QUrl,),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), (), (url,))
+    }
+
+    fn new(_arguments: Self::NewArguments) -> <Self as CxxQtType>::Rust {
+        Default::default()
+    }
+
+    fn initialize(mut self: core::pin::Pin<&mut Self>, (url,): Self::InitializeArguments) {
+        <Self as cxx_qt::Constructor<()>>::initialize(self.as_mut(), ());
+
+        self.connect(url);
     }
 }
 // ANCHOR_END: book_macro_code

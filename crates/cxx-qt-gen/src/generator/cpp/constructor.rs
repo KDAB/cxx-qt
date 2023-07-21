@@ -153,6 +153,8 @@ mod tests {
             base_arguments: vec![],
             new_arguments: vec![],
             initialize_arguments: vec![],
+            lifetime: None,
+            // dummy impl
             imp: parse_quote! { impl X {} },
         }
     }
@@ -275,6 +277,7 @@ mod tests {
                 new_arguments: vec![parse_quote! { i16}, parse_quote! { i32 }],
                 initialize_arguments: vec![parse_quote! { i32 }, parse_quote! { i64 }],
                 base_arguments: vec![parse_quote! { i64 }, parse_quote! { *mut QObject }],
+                lifetime: Some(parse_quote! { 'a_lifetime }),
                 ..mock_constructor()
             }],
             &["initializer".to_string()],

@@ -110,10 +110,15 @@ MyObject::qtThread() const
   return MyObjectCxxQtThread(m_cxxQtThreadObj, m_rustObjMutex);
 }
 
-MyObject::MyObject(::std::int32_t arg0, QObject* arg1)
+MyObject::MyObject(::std::int32_t arg0, QString const& arg1)
   : MyObject(
       ::cxx_qt::my_object::cxx_qt_my_object::routeArguments0(::std::move(arg0),
                                                              ::std::move(arg1)))
+{
+}
+
+MyObject::MyObject()
+  : MyObject(::cxx_qt::my_object::cxx_qt_my_object::routeArguments1())
 {
 }
 
@@ -128,6 +133,20 @@ MyObject::MyObject(
         this))
 {
   ::cxx_qt::my_object::cxx_qt_my_object::initialize0(
+    *this, ::std::move(args.initialize));
+}
+
+MyObject::MyObject(
+  ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args)
+  : QObject()
+  , m_rustObj(
+      ::cxx_qt::my_object::cxx_qt_my_object::newRs1(::std::move(args.new_)))
+  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
+  , m_cxxQtThreadObj(
+      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
+        this))
+{
+  ::cxx_qt::my_object::cxx_qt_my_object::initialize1(
     *this, ::std::move(args.initialize));
 }
 
