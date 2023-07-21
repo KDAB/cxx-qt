@@ -44,7 +44,11 @@ impl GeneratedRustBlocks {
                 .qobjects
                 .values()
                 .map(|qobject| {
-                    GeneratedRustQObject::from(qobject, &parser.cxx_qt_data.qualified_mappings)
+                    GeneratedRustQObject::from(
+                        qobject,
+                        &parser.cxx_qt_data.qualified_mappings,
+                        &parser.passthrough_module.ident,
+                    )
                 })
                 .collect::<Result<Vec<GeneratedRustQObject>>>()?,
         })

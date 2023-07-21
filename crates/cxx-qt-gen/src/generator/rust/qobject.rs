@@ -51,6 +51,7 @@ impl GeneratedRustQObject {
     pub fn from(
         qobject: &ParsedQObject,
         qualified_mappings: &BTreeMap<Ident, Path>,
+        module_ident: &Ident,
     ) -> Result<GeneratedRustQObject> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
@@ -127,6 +128,7 @@ impl GeneratedRustQObject {
                 &qobject_idents,
                 &namespace_idents,
                 qualified_mappings,
+                module_ident,
             )?);
         }
 
@@ -152,6 +154,7 @@ impl GeneratedRustQObject {
             &qobject_idents,
             &namespace_idents,
             qualified_mappings,
+            module_ident,
         )?);
 
         generated.blocks.append(&mut cxxqttype::generate(
@@ -230,6 +233,7 @@ mod tests {
 
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
+    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -248,6 +252,7 @@ mod tests {
         let rust = GeneratedRustQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
             &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObject");
@@ -271,6 +276,7 @@ mod tests {
         let rust = GeneratedRustQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
             &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObject");
@@ -294,6 +300,7 @@ mod tests {
         let rust = GeneratedRustQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
             &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.blocks.cxx_mod_contents.len(), 6);

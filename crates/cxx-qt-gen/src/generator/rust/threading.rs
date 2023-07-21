@@ -22,6 +22,7 @@ pub fn generate(
     qobject_ident: &QObjectName,
     namespace_ident: &NamespaceName,
     qualified_mappings: &BTreeMap<Ident, Path>,
+    module_ident: &Ident,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut blocks = GeneratedRustQObjectBlocks::default();
 
@@ -91,13 +92,13 @@ pub fn generate(
                     type BoxedQueuedFn = #cxx_qt_thread_queued_fn_ident;
                     type ThreadingTypeId = cxx::type_id!(#cxx_qt_thread_ident_type_id_str);
 
-                    fn qt_thread(&self) -> #cxx_qt_thread_ident
+                    fn qt_thread(&self) -> #module_ident::#cxx_qt_thread_ident
                     {
                         self.cxx_qt_ffi_qt_thread()
                     }
 
                     #[doc(hidden)]
-                    fn queue<F>(cxx_qt_thread: &#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
+                    fn queue<F>(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(core::pin::Pin<&mut #qualified_impl>),
                         F: Send + 'static,
@@ -114,19 +115,19 @@ pub fn generate(
                             (arg.inner)(obj)
                         }
                         let arg = #cxx_qt_thread_queued_fn_ident { inner: std::boxed::Box::new(f) };
-                        #cxx_qt_thread_queue_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        #module_ident::#cxx_qt_thread_queue_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
                     }
 
                     #[doc(hidden)]
-                    fn threading_clone(cxx_qt_thread: &#cxx_qt_thread_ident) -> #cxx_qt_thread_ident
+                    fn threading_clone(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident) -> #module_ident::#cxx_qt_thread_ident
                     {
-                        #cxx_qt_thread_clone(cxx_qt_thread)
+                        #module_ident::#cxx_qt_thread_clone(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread: &mut #cxx_qt_thread_ident)
+                    fn threading_drop(cxx_qt_thread: &mut #module_ident::#cxx_qt_thread_ident)
                     {
-                        #cxx_qt_thread_drop(cxx_qt_thread);
+                        #module_ident::#cxx_qt_thread_drop(cxx_qt_thread);
                     }
                 }
             },
@@ -159,6 +160,8 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
+    use quote::format_ident;
+
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
@@ -169,6 +172,7 @@ mod tests {
             &qobject_idents,
             &namespace_ident,
             &BTreeMap::<Ident, Path>::default(),
+            &format_ident!("ffi"),
         )
         .unwrap();
 
@@ -231,13 +235,13 @@ mod tests {
                     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
                     type ThreadingTypeId = cxx::type_id!("MyObjectCxxQtThread");
 
-                    fn qt_thread(&self) -> MyObjectCxxQtThread
+                    fn qt_thread(&self) -> ffi::MyObjectCxxQtThread
                     {
                         self.cxx_qt_ffi_qt_thread()
                     }
 
                     #[doc(hidden)]
-                    fn queue<F>(cxx_qt_thread: &MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
+                    fn queue<F>(cxx_qt_thread: &ffi::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(core::pin::Pin<&mut MyObject>),
                         F: Send + 'static,
@@ -254,19 +258,19 @@ mod tests {
                             (arg.inner)(obj)
                         }
                         let arg = MyObjectCxxQtThreadQueuedFn { inner: std::boxed::Box::new(f) };
-                        cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        ffi::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
                     }
 
                     #[doc(hidden)]
-                    fn threading_clone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread
+                    fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread
                     {
-                        cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
+                        ffi::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread)
+                    fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread)
                     {
-                        cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
+                        ffi::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
                     }
                 }
             },
