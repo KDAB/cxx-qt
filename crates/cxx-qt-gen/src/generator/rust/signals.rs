@@ -7,12 +7,12 @@ use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
         rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
+        utils::rust::syn_type_cxx_bridge_to_qualified,
     },
     parser::signals::ParsedSignal,
 };
-use proc_macro2::TokenStream;
 use quote::quote;
-use syn::Result;
+use syn::{parse_quote, FnArg, Result};
 
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
@@ -33,24 +33,32 @@ pub fn generate_rust_signals(
         let connect_ident_rust_str = connect_ident_rust.to_string();
         let on_ident_rust = idents.on_name;
 
-        let parameters = signal
+        let parameters_cxx: Vec<FnArg> = signal
             .parameters
             .iter()
             .map(|parameter| {
                 let ident = &parameter.ident;
                 let ty = &parameter.ty;
-                quote! { #ident: #ty }
+                parse_quote! { #ident: #ty }
             })
-            .collect::<Vec<TokenStream>>();
+            .collect();
+        let parameters_qualified: Vec<FnArg> = parameters_cxx
+            .iter()
+            .cloned()
+            .map(|mut parameter| {
+                if let FnArg::Typed(pat_type) = &mut parameter {
+                    *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty);
+                }
+                parameter
+            })
+            .collect();
 
-        let (self_type, self_type_cxx) = if signal.mutable {
-            (
-                quote! { core::pin::Pin<&mut #qobject_name> },
-                quote! { Pin<&mut #qobject_name> },
-            )
+        let self_type_cxx = if signal.mutable {
+            parse_quote! { Pin<&mut #qobject_name> }
         } else {
-            (quote! { &#qobject_name }, quote! { &#qobject_name })
+            parse_quote! { &#qobject_name }
         };
+        let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx);
 
         let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
@@ -66,7 +74,7 @@ pub fn generate_rust_signals(
                     #unsafe_block extern "C++" {
                         #(#attrs)*
                         #[rust_name = #signal_name_rust_str]
-                        #unsafe_call fn #signal_name_cpp(self: #self_type_cxx, #(#parameters),*);
+                        #unsafe_call fn #signal_name_cpp(self: #self_type_cxx, #(#parameters_cxx),*);
                     }
                 },
                 quote! {
@@ -76,7 +84,7 @@ pub fn generate_rust_signals(
                         #[doc = ", so that when the signal is emitted the function pointer is executed."]
                         #[must_use]
                         #[rust_name = #connect_ident_rust_str]
-                        fn #connect_ident_cpp(self: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                        fn #connect_ident_cpp(self: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters_cxx),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                     }
                 },
             ],
@@ -88,7 +96,7 @@ pub fn generate_rust_signals(
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn #on_ident_rust(self: #self_type, func: fn(#self_type, #(#parameters),*)) -> cxx_qt_lib::QMetaObjectConnection
+                    pub fn #on_ident_rust(self: #self_type_qualified, func: fn(#self_type_qualified, #(#parameters_qualified),*)) -> cxx_qt_lib::QMetaObjectConnection
                     {
                         self.#connect_ident_rust(func, cxx_qt_lib::ConnectionType::AutoConnection)
                     }
@@ -247,7 +255,7 @@ mod tests {
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     #[must_use]
-                    pub fn on_data_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>)) -> cxx_qt_lib::QMetaObjectConnection
+                    pub fn on_data_changed(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, trivial: i32, opaque: cxx::UniquePtr<QColor>)) -> cxx_qt_lib::QMetaObjectConnection
                     {
                         self.connect_data_changed(func, cxx_qt_lib::ConnectionType::AutoConnection)
                     }
