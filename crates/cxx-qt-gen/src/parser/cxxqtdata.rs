@@ -62,8 +62,6 @@ pub struct ParsedCxxQtData {
     pub qobjects: BTreeMap<Ident, ParsedQObject>,
     /// The namespace of the CXX-Qt module
     pub namespace: String,
-    /// Any `use` statements end up in the CXX-Qt generated module
-    pub uses: Vec<Item>,
 }
 
 impl ParsedCxxQtData {
@@ -202,11 +200,6 @@ impl ParsedCxxQtData {
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
         match item {
             Item::Impl(imp) => self.parse_impl(imp),
-            Item::Use(_) => {
-                // Any use statements go into the CXX-Qt generated block
-                self.uses.push(item);
-                Ok(None)
-            }
             Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
             _ => Ok(Some(item)),
         }
@@ -521,18 +514,6 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
-    }
-
-    #[test]
-    fn test_find_and_merge_cxx_qt_item_uses() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            use std::collections::HashMap;
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert_eq!(cxx_qt_data.uses.len(), 1);
     }
 
     #[test]
