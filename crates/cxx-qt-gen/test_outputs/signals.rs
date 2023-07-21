@@ -160,7 +160,7 @@ pub mod cxx_qt_ffi {
             func: fn(
                 core::pin::Pin<&mut MyObject>,
                 first: i32,
-                second: UniquePtr<Opaque>,
+                second: cxx::UniquePtr<Opaque>,
                 third: QPoint,
                 fourth: &'a QPoint,
             ),
@@ -180,7 +180,7 @@ pub mod cxx_qt_ffi {
             func: fn(
                 core::pin::Pin<&mut MyObject>,
                 first: i32,
-                second: UniquePtr<Opaque>,
+                second: cxx::UniquePtr<Opaque>,
                 third: QPoint,
                 fourth: &'a QPoint,
             ),

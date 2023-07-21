@@ -157,7 +157,7 @@ mod tests {
                 impl MyObject {
                     #[doc = "Getter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
-                    pub fn opaque_property(&self) -> &UniquePtr<QColor> {
+                    pub fn opaque_property(&self) -> &cxx::UniquePtr<QColor> {
                         &self.opaque_property
                     }
                 }
@@ -180,7 +180,7 @@ mod tests {
                 impl MyObject {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = "opaque_property"]
-                    pub fn set_opaque_property(mut self: core::pin::Pin<&mut Self>, value: UniquePtr<QColor>) {
+                    pub fn set_opaque_property(mut self: core::pin::Pin<&mut Self>, value: cxx::UniquePtr<QColor>) {
                         if self.opaque_property == value {
                             return;
                         }
