@@ -9,19 +9,21 @@ use crate::generator::{
     utils::rust::syn_type_cxx_bridge_to_qualified,
 };
 use quote::quote;
-use syn::Type;
+use std::collections::BTreeMap;
+use syn::{Ident, Path, Type};
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_idents: &QObjectName,
     cxx_ty: &Type,
+    qualified_mappings: &BTreeMap<Ident, Path>,
 ) -> RustFragmentPair {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let getter_wrapper_cpp = idents.getter_wrapper.cpp.to_string();
     let getter_rust = &idents.getter.rust;
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty);
+    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, qualified_mappings);
 
     RustFragmentPair {
         cxx_bridge: vec![quote! {

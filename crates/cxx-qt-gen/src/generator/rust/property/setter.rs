@@ -9,12 +9,14 @@ use crate::generator::{
     utils::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
 };
 use quote::quote;
-use syn::Type;
+use std::collections::BTreeMap;
+use syn::{Ident, Path, Type};
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_idents: &QObjectName,
     cxx_ty: &Type,
+    qualified_mappings: &BTreeMap<Ident, Path>,
 ) -> RustFragmentPair {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let setter_wrapper_cpp = idents.setter_wrapper.cpp.to_string();
@@ -22,7 +24,7 @@ pub fn generate(
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust;
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty);
+    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, qualified_mappings);
 
     // Determine if unsafe is required due to an unsafe type
     let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {

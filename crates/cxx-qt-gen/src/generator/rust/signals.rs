@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeMap;
+
 use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
@@ -12,11 +14,12 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 use quote::quote;
-use syn::{parse_quote, FnArg, Result};
+use syn::{parse_quote, FnArg, Ident, Path, Result};
 
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
+    qualified_mappings: &BTreeMap<Ident, Path>,
 ) -> Result<GeneratedRustQObjectBlocks> {
     let mut generated = GeneratedRustQObjectBlocks::default();
     let qobject_name = &qobject_idents.cpp_class.rust;
@@ -47,7 +50,8 @@ pub fn generate_rust_signals(
             .cloned()
             .map(|mut parameter| {
                 if let FnArg::Typed(pat_type) = &mut parameter {
-                    *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty);
+                    *pat_type.ty =
+                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, qualified_mappings);
                 }
                 parameter
             })
@@ -58,7 +62,8 @@ pub fn generate_rust_signals(
         } else {
             parse_quote! { &#qobject_name }
         };
-        let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx);
+        let self_type_qualified =
+            syn_type_cxx_bridge_to_qualified(&self_type_cxx, qualified_mappings);
 
         let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
@@ -143,7 +148,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_signals(&vec![qsignal], &qobject_idents).unwrap();
+        let generated = generate_rust_signals(
+            &vec![qsignal],
+            &qobject_idents,
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 1);
@@ -217,7 +227,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_signals(&vec![qsignal], &qobject_idents).unwrap();
+        let generated = generate_rust_signals(
+            &vec![qsignal],
+            &qobject_idents,
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 1);
@@ -285,7 +300,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_signals(&vec![qsignal], &qobject_idents).unwrap();
+        let generated = generate_rust_signals(
+            &vec![qsignal],
+            &qobject_idents,
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 1);
@@ -350,7 +370,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_signals(&vec![qsignal], &qobject_idents).unwrap();
+        let generated = generate_rust_signals(
+            &vec![qsignal],
+            &qobject_idents,
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 1);

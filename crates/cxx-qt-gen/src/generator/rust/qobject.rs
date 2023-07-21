@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeMap;
+
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -15,7 +17,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{parse_quote, Ident, ImplItem, Item, Result};
+use syn::{parse_quote, Ident, ImplItem, Item, Path, Result};
 
 #[derive(Default)]
 pub struct GeneratedRustQObjectBlocks {
@@ -45,7 +47,10 @@ pub struct GeneratedRustQObject {
 }
 
 impl GeneratedRustQObject {
-    pub fn from(qobject: &ParsedQObject) -> Result<GeneratedRustQObject> {
+    pub fn from(
+        qobject: &ParsedQObject,
+        qualified_mappings: &BTreeMap<Ident, Path>,
+    ) -> Result<GeneratedRustQObject> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
@@ -77,6 +82,7 @@ impl GeneratedRustQObject {
         generated.blocks.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
+            qualified_mappings,
         )?);
         generated.blocks.append(&mut generate_rust_invokables(
             &qobject.invokables,
@@ -93,6 +99,7 @@ impl GeneratedRustQObject {
         generated.blocks.append(&mut generate_rust_signals(
             &qobject.signals,
             &qobject_idents,
+            qualified_mappings,
         )?);
 
         // If this type is a singleton then we need to add an include
@@ -141,9 +148,9 @@ impl GeneratedRustQObject {
             &namespace_idents,
         )?);
 
-        generated.blocks.append(&mut cxxqttype::generate(
-            &qobject_idents,
-        )?);
+        generated
+            .blocks
+            .append(&mut cxxqttype::generate(&qobject_idents)?);
 
         Ok(generated)
     }
@@ -231,8 +238,11 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
-            .unwrap();
+        let rust = GeneratedRustQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObject");
         assert_eq!(rust.namespace_internals, "cxx_qt_my_object");
         assert_eq!(rust.rust_struct_ident, "MyObjectRust");
@@ -251,8 +261,11 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
-            .unwrap();
+        let rust = GeneratedRustQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
         assert_eq!(rust.cpp_struct_ident, "MyObject");
         assert_eq!(rust.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(rust.rust_struct_ident, "MyObjectRust");
@@ -271,8 +284,11 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let rust = GeneratedRustQObject::from(parser.cxx_qt_data.qobjects.values().next().unwrap())
-            .unwrap();
+        let rust = GeneratedRustQObject::from(
+            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &BTreeMap::<Ident, Path>::default(),
+        )
+        .unwrap();
         assert_eq!(rust.blocks.cxx_mod_contents.len(), 6);
         assert_tokens_eq(
             &rust.blocks.cxx_mod_contents[0],
