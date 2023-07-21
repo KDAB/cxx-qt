@@ -77,7 +77,11 @@ impl Parser {
                     // qobject. Otherwise return them to be added to other
                     if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
                         // Load any CXX name mappings
-                        cxx_qt_data.populate_cxx_mappings_from_item(&other, &bridge_namespace)?;
+                        cxx_qt_data.populate_mappings_from_item(
+                            &other,
+                            &bridge_namespace,
+                            &module.ident,
+                        )?;
 
                         // Unknown item so add to the other list
                         others.push(other);
@@ -86,7 +90,11 @@ impl Parser {
             } else {
                 // Load any CXX name mappings
                 for item in &items.1 {
-                    cxx_qt_data.populate_cxx_mappings_from_item(item, &bridge_namespace)?;
+                    cxx_qt_data.populate_mappings_from_item(
+                        item,
+                        &bridge_namespace,
+                        &module.ident,
+                    )?;
                 }
 
                 // No qobjects found so pass everything through
