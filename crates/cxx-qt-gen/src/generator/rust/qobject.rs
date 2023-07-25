@@ -21,33 +21,20 @@ use quote::quote;
 use syn::{Ident, ImplItem, Item, Path, Result};
 
 #[derive(Default)]
-pub struct GeneratedRustQObjectBlocks {
+pub struct GeneratedRustQObject {
     /// Module for the CXX bridge
     pub cxx_mod_contents: Vec<Item>,
     /// Items for the CXX-Qt module
     pub cxx_qt_mod_contents: Vec<Item>,
 }
 
-impl GeneratedRustQObjectBlocks {
+impl GeneratedRustQObject {
     pub fn append(&mut self, other: &mut Self) {
         self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
         self.cxx_qt_mod_contents
             .append(&mut other.cxx_qt_mod_contents);
     }
-}
 
-pub struct GeneratedRustQObject {
-    /// Ident of the Rust name for the C++ object
-    pub cpp_struct_ident: Ident,
-    /// Ident of the namespace for CXX-Qt internals of the QObject
-    pub namespace_internals: String,
-    /// Ident of the Rust name for the Rust object
-    pub rust_struct_ident: Ident,
-    /// The blocks for this QObject
-    pub blocks: GeneratedRustQObjectBlocks,
-}
-
-impl GeneratedRustQObject {
     pub fn from(
         qobject: &ParsedQObject,
         qualified_mappings: &BTreeMap<Ident, Path>,
@@ -57,38 +44,31 @@ impl GeneratedRustQObject {
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = GeneratedRustQObject {
-            cpp_struct_ident: qobject_idents.cpp_class.rust.clone(),
-            namespace_internals: namespace_idents.internal.clone(),
-            rust_struct_ident: qobject_idents.rust_struct.rust.clone(),
-            blocks: GeneratedRustQObjectBlocks {
-                cxx_mod_contents: vec![],
-                cxx_qt_mod_contents: qobject.others.clone(),
-            },
+            cxx_mod_contents: vec![],
+            cxx_qt_mod_contents: qobject.others.clone(),
         };
 
-        generated
-            .blocks
-            .append(&mut generate_qobject_definitions(&qobject_idents)?);
+        generated.append(&mut generate_qobject_definitions(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
-        generated.blocks.append(&mut generate_rust_properties(
+        generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
             qualified_mappings,
         )?);
-        generated.blocks.append(&mut generate_rust_invokables(
+        generated.append(&mut generate_rust_invokables(
             &qobject.invokables,
             &qobject_idents,
         )?);
-        generated.blocks.append(&mut generate_passthrough_impl(
+        generated.append(&mut generate_passthrough_impl(
             &qobject.passthrough_impl_items,
             &qobject_idents,
         )?);
-        generated.blocks.append(&mut inherit::generate(
+        generated.append(&mut inherit::generate(
             &qobject_idents,
             &qobject.inherited_methods,
         )?);
-        generated.blocks.append(&mut generate_rust_signals(
+        generated.append(&mut generate_rust_signals(
             &qobject.signals,
             &qobject_idents,
             qualified_mappings,
@@ -106,7 +86,6 @@ impl GeneratedRustQObject {
                     implementation: vec![],
                 };
                 generated
-                    .blocks
                     .cxx_mod_contents
                     .append(&mut fragment.cxx_bridge_as_items()?);
             }
@@ -114,7 +93,7 @@ impl GeneratedRustQObject {
 
         // If this type has threading enabled then add generation
         if qobject.threading {
-            generated.blocks.append(&mut threading::generate(
+            generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
                 qualified_mappings,
@@ -131,15 +110,12 @@ impl GeneratedRustQObject {
                 &qobject_idents.cpp_class.rust,
                 qualified_mappings,
             );
-            generated
-                .blocks
-                .cxx_qt_mod_contents
-                .push(syn::parse_quote! {
-                    impl cxx_qt::Locking for #qualified_impl {}
-                });
+            generated.cxx_qt_mod_contents.push(syn::parse_quote! {
+                impl cxx_qt::Locking for #qualified_impl {}
+            });
         }
 
-        generated.blocks.append(&mut constructor::generate(
+        generated.append(&mut constructor::generate(
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
@@ -147,7 +123,7 @@ impl GeneratedRustQObject {
             module_ident,
         )?);
 
-        generated.blocks.append(&mut cxxqttype::generate(
+        generated.append(&mut cxxqttype::generate(
             &qobject_idents,
             qualified_mappings,
         )?);
@@ -160,8 +136,8 @@ impl GeneratedRustQObject {
 pub fn generate_passthrough_impl(
     impl_items: &[ImplItem],
     qobject_idents: &QObjectName,
-) -> Result<GeneratedRustQObjectBlocks> {
-    let mut blocks = GeneratedRustQObjectBlocks::default();
+) -> Result<GeneratedRustQObject> {
+    let mut blocks = GeneratedRustQObject::default();
     blocks.cxx_qt_mod_contents.extend_from_slice(
         &impl_items
             .iter()
@@ -181,10 +157,8 @@ pub fn generate_passthrough_impl(
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(
-    qobject_idents: &QObjectName,
-) -> Result<GeneratedRustQObjectBlocks> {
-    let mut generated = GeneratedRustQObjectBlocks::default();
+fn generate_qobject_definitions(qobject_idents: &QObjectName) -> Result<GeneratedRustQObject> {
+    let mut generated = GeneratedRustQObject::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
@@ -227,54 +201,6 @@ mod tests {
     use syn::{parse_quote, ItemMod};
 
     #[test]
-    fn test_generated_rust_qobject_blocks() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[cxx_qt::qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-
-        let rust = GeneratedRustQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::<Ident, Path>::default(),
-            &format_ident!("ffi"),
-        )
-        .unwrap();
-        assert_eq!(rust.cpp_struct_ident, "MyObject");
-        assert_eq!(rust.namespace_internals, "cxx_qt_my_object");
-        assert_eq!(rust.rust_struct_ident, "MyObjectRust");
-    }
-
-    #[test]
-    fn test_generated_rust_qobject_blocks_namespace() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(namespace = "cxx_qt")]
-            mod ffi {
-                extern "RustQt" {
-                    #[cxx_qt::qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-
-        let rust = GeneratedRustQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::<Ident, Path>::default(),
-            &format_ident!("ffi"),
-        )
-        .unwrap();
-        assert_eq!(rust.cpp_struct_ident, "MyObject");
-        assert_eq!(rust.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(rust.rust_struct_ident, "MyObjectRust");
-    }
-
-    #[test]
     fn test_generated_rust_qobject_blocks_singleton() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
@@ -293,9 +219,9 @@ mod tests {
             &format_ident!("ffi"),
         )
         .unwrap();
-        assert_eq!(rust.blocks.cxx_mod_contents.len(), 6);
+        assert_eq!(rust.cxx_mod_contents.len(), 6);
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[0],
+            &rust.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
                     #[doc = "The C++ type for the QObject "]
@@ -309,7 +235,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[1],
+            &rust.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
                     type MyObjectRust;
@@ -317,7 +243,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[2],
+            &rust.cxx_mod_contents[2],
             quote! {
                 unsafe extern "C++" {
                     include!(<QtQml/QQmlEngine>);
@@ -325,7 +251,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[3],
+            &rust.cxx_mod_contents[3],
             quote! {
                 extern "Rust" {
                     #[cxx_name = "createRs"]
@@ -335,7 +261,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[4],
+            &rust.cxx_mod_contents[4],
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
@@ -345,7 +271,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.blocks.cxx_mod_contents[5],
+            &rust.cxx_mod_contents[5],
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]

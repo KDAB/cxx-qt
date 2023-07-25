@@ -6,7 +6,7 @@
 use crate::{
     generator::{
         naming::{invokable::QInvokableName, qobject::QObjectName},
-        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
+        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObject},
     },
     parser::invokable::ParsedQInvokable,
 };
@@ -17,8 +17,8 @@ use syn::Result;
 pub fn generate_rust_invokables(
     invokables: &Vec<ParsedQInvokable>,
     qobject_idents: &QObjectName,
-) -> Result<GeneratedRustQObjectBlocks> {
-    let mut generated = GeneratedRustQObjectBlocks::default();
+) -> Result<GeneratedRustQObject> {
+    let mut generated = GeneratedRustQObject::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
 
     for invokable in invokables {
