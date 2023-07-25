@@ -17,7 +17,7 @@ use diagnostics::{Diagnostic, GeneratedError};
 use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     env,
     fs::File,
     io::Write,
@@ -26,7 +26,7 @@ use std::{
 
 use cxx_qt_gen::{
     parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks,
-    GeneratedRustBlocks, Parser, QmlElementMetadata,
+    GeneratedRustBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -40,19 +40,25 @@ use cxx_qt_gen::{
 struct GeneratedCppFilePaths {
     plain_cpp: PathBuf,
     qobject: Option<PathBuf>,
-    qobject_header: Option<QObjectHeader>,
-}
-
-struct QObjectHeader {
-    path: PathBuf,
-    qml_metadata: Vec<QmlElementMetadata>,
+    qobject_header: Option<PathBuf>,
 }
 
 struct GeneratedCpp {
     cxx_qt: Option<CppFragment>,
     cxx: cxx_gen::GeneratedCode,
     file_ident: String,
-    qml_metadata: Vec<QmlElementMetadata>,
+}
+
+/// Metadata for registering a QML module
+struct QmlModule {
+    /// The URI of the QML module
+    pub uri: String,
+    /// The minor version of the QML module
+    pub version_minor: usize,
+    /// The major version of the QML module
+    pub version_major: usize,
+    /// The .rs files with #[qml_element] attribute(s)
+    pub rust_files: Vec<PathBuf>,
 }
 
 impl GeneratedCpp {
@@ -67,7 +73,6 @@ impl GeneratedCpp {
             .map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
-        let mut qml_metadata = Vec::new();
         // TODO: later change how the resultant filename is chosen, can we match the input file like
         // CXX does?
         //
@@ -120,11 +125,6 @@ impl GeneratedCpp {
                         .map_err(to_diagnostic)?;
                     let rust_tokens = write_rust(&generated_rust);
                     file_ident = parser.cxx_file_stem.clone();
-                    for (_, qobject) in parser.cxx_qt_data.qobjects {
-                        if let Some(q) = qobject.qml_metadata {
-                            qml_metadata.push(q);
-                        }
-                    }
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
@@ -145,7 +145,6 @@ impl GeneratedCpp {
             cxx_qt,
             cxx,
             file_ident,
-            qml_metadata,
         })
     }
 
@@ -183,10 +182,7 @@ impl GeneratedCpp {
             header
                 .write_all(header_generated.as_bytes())
                 .expect("Could not write cxx-qt header file");
-            cpp_file_paths.qobject_header = Some(QObjectHeader {
-                path: header_path,
-                qml_metadata: self.qml_metadata,
-            });
+            cpp_file_paths.qobject_header = Some(header_path);
 
             let cpp_path = PathBuf::from(format!(
                 "{}/{}.cxxqt.cpp",
@@ -232,7 +228,7 @@ impl GeneratedCpp {
 fn generate_cxxqt_cpp_files(
     rs_source: &[PathBuf],
     header_dir: impl AsRef<Path>,
-) -> Result<Vec<GeneratedCppFilePaths>, Diagnostic> {
+) -> Vec<GeneratedCppFilePaths> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
@@ -241,11 +237,26 @@ fn generate_cxxqt_cpp_files(
         let path = format!("{manifest_dir}/{}", rs_path.display());
         println!("cargo:rerun-if-changed={path}");
 
-        let generated_code = GeneratedCpp::new(&path)?;
+        let generated_code = match GeneratedCpp::new(&path) {
+            Ok(v) => v,
+            Err(diagnostic) => {
+                diagnostic.report();
+                std::process::exit(1);
+            }
+        };
         generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
     }
 
-    Ok(generated_file_paths)
+    generated_file_paths
+}
+
+fn panic_duplicate_file_and_qml_module(
+    path: &Path,
+    uri: &str,
+    version_major: usize,
+    version_minor: usize,
+) {
+    panic!("CXX-Qt bridge Rust file {} specified in QML module {uri} (version {version_major}.{version_minor}), but also specified via CxxQtBuilder::file. Bridge files must be specified via CxxQtBuilder::file or CxxQtBuilder::qml_module, but not both.", path.display());
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
@@ -283,9 +294,10 @@ fn generate_cxxqt_cpp_files(
 #[derive(Default)]
 pub struct CxxQtBuilder {
     rust_sources: Vec<PathBuf>,
-    qobject_headers: Vec<QObjectHeader>,
+    qobject_headers: Vec<PathBuf>,
     qrc_files: Vec<PathBuf>,
     qt_modules: HashSet<String>,
+    qml_modules: Vec<QmlModule>,
     cc_builder: cc::Build,
 }
 
@@ -303,6 +315,7 @@ impl CxxQtBuilder {
             qobject_headers: vec![],
             qrc_files: vec![],
             qt_modules,
+            qml_modules: vec![],
             cc_builder: cc::Build::new(),
         }
     }
@@ -310,9 +323,19 @@ impl CxxQtBuilder {
     /// Specify rust file paths to parse through the cxx-qt marco
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
-        let rust_source = rust_source.as_ref();
-        self.rust_sources.push(rust_source.to_path_buf());
+        let rust_source = rust_source.as_ref().to_path_buf();
+        for qml_module in &self.qml_modules {
+            if qml_module.rust_files.contains(&rust_source) {
+                panic_duplicate_file_and_qml_module(
+                    &rust_source,
+                    &qml_module.uri,
+                    qml_module.version_major,
+                    qml_module.version_minor,
+                );
+            }
+        }
         println!("cargo:rerun-if-changed={}", rust_source.display());
+        self.rust_sources.push(rust_source);
         self
     }
 
@@ -351,14 +374,37 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Register a QML module at build time
+    pub fn qml_module(
+        mut self,
+        uri: &str,
+        version_major: usize,
+        version_minor: usize,
+        rust_files: &[impl AsRef<Path>],
+    ) -> Self {
+        let rust_files: Vec<PathBuf> = rust_files
+            .iter()
+            .map(|p| p.as_ref().to_path_buf())
+            .collect();
+        for path in &rust_files {
+            if self.rust_sources.contains(path) {
+                panic_duplicate_file_and_qml_module(path, uri, version_major, version_minor);
+            }
+        }
+        self.qml_modules.push(QmlModule {
+            uri: uri.to_owned(),
+            version_major,
+            version_minor,
+            rust_files,
+        });
+        self
+    }
+
     /// Specify a C++ header containing a Q_OBJECT macro to run [moc](https://doc.qt.io/qt-6/moc.html) on.
     /// This allows building QObject C++ subclasses besides the ones autogenerated by cxx-qt.
     pub fn qobject_header(mut self, path: impl AsRef<Path>) -> Self {
         let path = path.as_ref();
-        self.qobject_headers.push(QObjectHeader {
-            path: path.to_owned(),
-            qml_metadata: Vec::new(),
-        });
+        self.qobject_headers.push(path.to_owned());
         println!("cargo:rerun-if-changed={}", path.display());
         self
     }
@@ -467,62 +513,52 @@ impl CxxQtBuilder {
         }
 
         // Generate files
-        match generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
-            Ok(generated_files) => {
-                for files in generated_files {
-                    self.cc_builder.file(files.plain_cpp);
-                    if let (Some(qobject), Some(qobject_header)) =
-                        (files.qobject, files.qobject_header)
-                    {
-                        self.cc_builder.file(&qobject);
-                        self.qobject_headers.push(qobject_header);
-                    }
-                }
-            }
-            Err(diagnostic) => {
-                // When CXX-Qt fails in the build script, we shouldn't panic, as the Rust backtrace
-                // probably isn't useful. We can instead report the error nicely, using
-                // codespan_reporting and then just exit the build script with a non-zero exit code.
-                // This will make for a cleaner build-script output than panicing.
-                diagnostic.report();
-                std::process::exit(1);
+        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
+            self.cc_builder.file(files.plain_cpp);
+            if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
+                self.cc_builder.file(&qobject);
+                self.qobject_headers.push(qobject_header);
             }
         }
 
-        // To support multiple QML elements with the same import URI, qmltyperegistrar must be run
-        // only once for each QML module (URI). So, collect the metadata for all QML elements within
-        // each module, regardless of which Rust QObject they are from.
-        let mut qml_modules = HashMap::<(String, usize, usize), Vec<PathBuf>>::new();
-        let mut cc_builder_whole_archive_files_added = false;
         // Run moc on C++ headers with Q_OBJECT macro
         for qobject_header in self.qobject_headers {
-            let uris = qobject_header
-                .qml_metadata
-                .iter()
-                .map(|qml_metadata| qml_metadata.uri.as_str());
-            let moc_products = qtbuild.moc(&qobject_header.path, uris);
+            let moc_products = qtbuild.moc(&qobject_header, None);
             self.cc_builder.file(moc_products.cpp);
-            for qml_metadata in qobject_header.qml_metadata {
-                self.cc_builder.define("QT_STATICPLUGIN", None);
-                qml_modules
-                    .entry((
-                        qml_metadata.uri.clone(),
-                        qml_metadata.version_major,
-                        qml_metadata.version_minor,
-                    ))
-                    .or_default()
-                    .push(moc_products.metatypes_json.clone());
-            }
         }
-        for ((uri, version_major, version_minor), paths) in qml_modules {
-            let qml_type_registration_files =
-                qtbuild.register_qml_types(&paths, version_major, version_minor, &uri);
+
+        let mut cc_builder_whole_archive_files_added = false;
+
+        // Bridges for QML modules are handled separately because
+        // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
+        for qml_module in self.qml_modules {
+            let mut qml_metatypes_json = Vec::new();
+
+            for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
+                self.cc_builder.file(files.plain_cpp);
+                if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
+                {
+                    self.cc_builder.file(&qobject);
+                    let moc_products = qtbuild.moc(qobject_header, Some(&qml_module.uri));
+                    self.cc_builder.file(moc_products.cpp);
+                    qml_metatypes_json.push(moc_products.metatypes_json);
+                }
+            }
+
+            let qml_type_registration_files = qtbuild.register_qml_types(
+                &qml_metatypes_json,
+                qml_module.version_major,
+                qml_module.version_minor,
+                &qml_module.uri,
+            );
             self.cc_builder
                 .file(qml_type_registration_files.qmltyperegistrar);
             self.cc_builder.file(qml_type_registration_files.plugin);
             cc_builder_whole_archive.file(qml_type_registration_files.plugin_init);
+            self.cc_builder.define("QT_STATICPLUGIN", None);
             cc_builder_whole_archive_files_added = true;
         }
+
         for qrc_file in self.qrc_files {
             cc_builder_whole_archive.file(qtbuild.qrc(&qrc_file));
             cc_builder_whole_archive_files_added = true;

@@ -18,7 +18,7 @@ mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.energy", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(f64, average_use)]
         #[qproperty(u32, sensors)]
         #[qproperty(f64, total_use)]

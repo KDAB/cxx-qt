@@ -259,7 +259,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject(qml_uri = "com.kdab", qml_version = "1.0", qml_singleton)]
+                    #[cxx_qt::qobject(qml_element, qml_singleton)]
                     type MyObject = super::MyObjectRust;
                 }
             }

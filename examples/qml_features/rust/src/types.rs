@@ -74,7 +74,7 @@ pub mod ffi {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(bool, boolean)]
         #[qproperty(QPointF, point)]
         #[qproperty(QUrl, url)]

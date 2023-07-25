@@ -19,10 +19,7 @@ use syn::{Attribute, Error, Ident, ImplItem, Item, ItemImpl, LitStr, Result};
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct QmlElementMetadata {
-    pub uri: String,
     pub name: String,
-    pub version_major: usize,
-    pub version_minor: usize,
     pub uncreatable: bool,
     pub singleton: bool,
 }
@@ -124,63 +121,22 @@ impl ParsedQObject {
             &qobject_ty.attrs[attr_index],
             AttributeDefault::Some(|span| LitStr::new("", span)),
         )?;
-        let qml_uri = attrs_map.get(&quote::format_ident!("qml_uri"));
-        let qml_version = attrs_map.get(&quote::format_ident!("qml_version"));
-        let qml_name = attrs_map.get(&quote::format_ident!("qml_name"));
-        let qml_uncreatable = attrs_map.get(&quote::format_ident!("qml_uncreatable"));
-        let qml_singleton = attrs_map.get(&quote::format_ident!("qml_singleton"));
-        match (qml_uri, qml_version) {
-            (Some(qml_uri), Some(qml_version)) => {
-                let qml_version = qml_version.value();
-                let version_parts: Vec<_> = qml_version.split('.').collect();
-                let version_major = version_parts[0]
-                    .parse()
-                    .expect("Could not parse major version from qml_version");
-                let version_minor = version_parts.get(1).unwrap_or(&"0").parse().unwrap_or(0);
-
-                let name = match qml_name {
-                    Some(qml_name) => qml_name.value(),
-                    None => qobject_ty.ident_left.to_string(),
+        match attrs_map.get(&quote::format_ident!("qml_element")) {
+            Some(qml_element) => {
+                let name = if qml_element.value().is_empty() {
+                    qobject_ty.ident_left.to_string()
+                } else {
+                    qml_element.value()
                 };
-
+                let qml_uncreatable = attrs_map.get(&quote::format_ident!("qml_uncreatable"));
+                let qml_singleton = attrs_map.get(&quote::format_ident!("qml_singleton"));
                 Ok(Some(QmlElementMetadata {
-                    uri: qml_uri.value(),
                     name,
-                    version_major,
-                    version_minor,
                     uncreatable: qml_uncreatable.is_some(),
                     singleton: qml_singleton.is_some(),
                 }))
             }
-            (Some(uri), None) => Err(Error::new(
-                uri.span(),
-                "qml_uri specified but no qml_version specified",
-            )),
-            (None, Some(version)) => Err(Error::new(
-                version.span(),
-                "qml_version specified but no qml_uri specified",
-            )),
-            (None, None) => {
-                if let Some(qml_name) = qml_name {
-                    return Err(Error::new(
-                        qml_name.span(),
-                        "qml_name specified but qml_uri and qml_version unspecified",
-                    ));
-                }
-                if let Some(qml_uncreatable) = qml_uncreatable {
-                    return Err(Error::new(
-                        qml_uncreatable.span(),
-                        "qml_uncreatable specified but qml_uri and qml_version unspecified",
-                    ));
-                }
-                if let Some(qml_singleton) = qml_singleton {
-                    return Err(Error::new(
-                        qml_singleton.span(),
-                        "qml_singleton specified but qml_uri and qml_version unspecified",
-                    ));
-                }
-                Ok(None)
-            }
+            None => Ok(None),
         }
     }
 
@@ -394,17 +350,14 @@ pub mod tests {
     #[test]
     fn test_qml_metadata() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1.0")]
+            #[cxx_qt::qobject(qml_element)]
             type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                uri: "foo.bar".to_owned(),
-                name: "MyObject".to_owned(),
-                version_major: 1,
-                version_minor: 0,
+                name: "MyObject".to_string(),
                 uncreatable: false,
                 singleton: false,
             })
@@ -414,17 +367,14 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_named() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_name = "MyQmlElement")]
-            type MyNamedObject = super::MyObjectRust;
+            #[cxx_qt::qobject(qml_element = "OtherName")]
+            type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                uri: "foo.bar".to_owned(),
-                name: "MyQmlElement".to_owned(),
-                version_major: 1,
-                version_minor: 0,
+                name: "OtherName".to_string(),
                 uncreatable: false,
                 singleton: false,
             })
@@ -434,17 +384,14 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_singleton() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_singleton)]
+            #[cxx_qt::qobject(qml_element, qml_singleton)]
             type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                uri: "foo.bar".to_owned(),
-                name: "MyObject".to_owned(),
-                version_major: 1,
-                version_minor: 0,
+                name: "MyObject".to_string(),
                 uncreatable: false,
                 singleton: true,
             })
@@ -454,47 +401,17 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_uncreatable() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_uri = "foo.bar", qml_version = "1", qml_uncreatable)]
+            #[cxx_qt::qobject(qml_element, qml_uncreatable)]
             type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                uri: "foo.bar".to_owned(),
-                name: "MyObject".to_owned(),
-                version_major: 1,
-                version_minor: 0,
+                name: "MyObject".to_string(),
                 uncreatable: true,
                 singleton: false,
             })
         );
-    }
-
-    #[test]
-    fn test_qml_metadata_no_version() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_uri = "foo.bar")]
-            type MyObject = super::MyObjectRust;
-        };
-        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
-    }
-
-    #[test]
-    fn test_qml_metadata_no_uri() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_version = "1.0")]
-            type MyObject = super::MyObjectRust;
-        };
-        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
-    }
-
-    #[test]
-    fn test_qml_metadata_only_name_no_version_no_uri() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_name = "MyQmlElement")]
-            type MyObject = super::MyObjectRust;
-        };
-        assert!(ParsedQObject::from_foreign_item_type(&item, 0).is_err());
     }
 }

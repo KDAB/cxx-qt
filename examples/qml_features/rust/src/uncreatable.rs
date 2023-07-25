@@ -10,7 +10,7 @@
 #[cxx_qt::bridge(cxx_file_stem = "rust_uncreatable")]
 pub mod ffi {
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0", qml_uncreatable)]
+        #[cxx_qt::qobject(qml_element, qml_uncreatable)]
         #[qproperty(i32, value)]
         type RustUncreatable = super::RustUncreatableRust;
     }

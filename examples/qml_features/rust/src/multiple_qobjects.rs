@@ -18,7 +18,7 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(i32, counter)]
         #[qproperty(QColor, color)]
         type FirstObject = super::FirstObjectRust;
@@ -44,7 +44,7 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(i32, counter)]
         #[qproperty(QUrl, url)]
         type SecondObject = super::SecondObjectRust;
