@@ -33,7 +33,7 @@ pub mod qobject {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(QString, string_hash)]
         #[qproperty(QString, string_list)]
         #[qproperty(QString, string_map)]

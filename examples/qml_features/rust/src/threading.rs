@@ -22,7 +22,7 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_uri = "com.kdab.cxx_qt.demo", qml_version = "1.0")]
+        #[cxx_qt::qobject(qml_element)]
         #[qproperty(QString, title)]
         #[qproperty(QUrl, url)]
         type ThreadingWebsite = super::ThreadingWebsiteRust;

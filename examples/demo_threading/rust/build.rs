@@ -5,5 +5,7 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new().file("src/lib.rs").build();
+    CxxQtBuilder::new()
+        .qml_module("com.kdab.energy", 1, 0, &["src/lib.rs"])
+        .build();
 }

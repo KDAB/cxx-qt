@@ -9,19 +9,26 @@ use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
     CxxQtBuilder::new()
-        .file("src/containers.rs")
-        .file("src/custom_base_class.rs")
-        .file("src/custom_parent_class.rs")
-        .file("src/invokables.rs")
-        .file("src/multiple_qobjects.rs")
-        .file("src/nested_qobjects.rs")
-        .file("src/serialisation.rs")
-        .file("src/signals.rs")
-        .file("src/singleton.rs")
-        .file("src/properties.rs")
-        .file("src/threading.rs")
-        .file("src/types.rs")
-        .file("src/uncreatable.rs")
+        .qml_module(
+            "com.kdab.cxx_qt.demo",
+            1,
+            0,
+            &[
+                "src/containers.rs",
+                "src/custom_base_class.rs",
+                "src/custom_parent_class.rs",
+                "src/invokables.rs",
+                "src/multiple_qobjects.rs",
+                "src/nested_qobjects.rs",
+                "src/serialisation.rs",
+                "src/signals.rs",
+                "src/singleton.rs",
+                "src/properties.rs",
+                "src/threading.rs",
+                "src/types.rs",
+                "src/uncreatable.rs",
+            ],
+        )
         // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
         // otherwise linking cargo tests fails because the symbols from those files are not found.
         .cc_builder(|cc| {

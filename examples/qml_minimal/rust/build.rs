@@ -8,6 +8,8 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new().file("src/cxxqt_object.rs").build();
+    CxxQtBuilder::new()
+        .qml_module("com.kdab.cxx_qt.demo", 1, 0, &["src/cxxqt_object.rs"])
+        .build();
 }
 // ANCHOR_END: book_build_rs
