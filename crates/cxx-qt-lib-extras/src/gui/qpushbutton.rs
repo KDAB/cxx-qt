@@ -42,6 +42,9 @@ mod ffi {
 }
 
 impl ffi::QPushButton {
+    // TODO: we need to think about how ownership in widgets is going to work
+    // as for items like QPushButton you may have a parent and have that
+    // free the object and not when the unique ptr goes out of scope
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qpushbutton_init_default()
     }
