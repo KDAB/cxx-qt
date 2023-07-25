@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
-        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObjectBlocks},
+        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObject},
         utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
     parser::signals::ParsedSignal,
@@ -20,8 +20,8 @@ pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
     qualified_mappings: &BTreeMap<Ident, Path>,
-) -> Result<GeneratedRustQObjectBlocks> {
-    let mut generated = GeneratedRustQObjectBlocks::default();
+) -> Result<GeneratedRustQObject> {
+    let mut generated = GeneratedRustQObject::default();
     let qobject_name = &qobject_idents.cpp_class.rust;
 
     // Create the methods for the other signals

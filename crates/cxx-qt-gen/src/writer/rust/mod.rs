@@ -42,8 +42,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     for qobject in &generated.qobjects {
         // Add the blocks from the QObject
-        cxx_mod_contents.extend_from_slice(&qobject.blocks.cxx_mod_contents);
-        cxx_qt_mod_contents.extend_from_slice(&qobject.blocks.cxx_qt_mod_contents);
+        cxx_mod_contents.extend_from_slice(&qobject.cxx_mod_contents);
+        cxx_qt_mod_contents.extend_from_slice(&qobject.cxx_qt_mod_contents);
     }
 
     // Inject the CXX blocks
@@ -66,9 +66,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 mod tests {
     use super::*;
 
-    use crate::generator::rust::qobject::{GeneratedRustQObject, GeneratedRustQObjectBlocks};
+    use crate::generator::rust::qobject::GeneratedRustQObject;
     use pretty_assertions::assert_str_eq;
-    use quote::format_ident;
     use syn::parse_quote;
 
     /// Helper to create a GeneratedRustBlocks for testing
@@ -87,36 +86,31 @@ mod tests {
             }],
             namespace: "cxx_qt::my_object".to_owned(),
             qobjects: vec![GeneratedRustQObject {
-                cpp_struct_ident: format_ident!("MyObject"),
-                namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
-                rust_struct_ident: format_ident!("MyObjectRust"),
-                blocks: GeneratedRustQObjectBlocks {
-                    cxx_mod_contents: vec![
-                        parse_quote! {
-                            unsafe extern "C++" {
-                                type MyObject;
-                            }
-                        },
-                        parse_quote! {
-                            extern "Rust" {
-                                type MyObjectRust;
-                            }
-                        },
-                    ],
-                    cxx_qt_mod_contents: vec![
-                        parse_quote! {
-                            #[derive(Default)]
-                            pub struct MyObjectRust;
-                        },
-                        parse_quote! {
-                            impl MyObjectRust {
-                                fn rust_method(&self) {
+                cxx_mod_contents: vec![
+                    parse_quote! {
+                        unsafe extern "C++" {
+                            type MyObject;
+                        }
+                    },
+                    parse_quote! {
+                        extern "Rust" {
+                            type MyObjectRust;
+                        }
+                    },
+                ],
+                cxx_qt_mod_contents: vec![
+                    parse_quote! {
+                        #[derive(Default)]
+                        pub struct MyObjectRust;
+                    },
+                    parse_quote! {
+                        impl MyObjectRust {
+                            fn rust_method(&self) {
 
-                                }
                             }
-                        },
-                    ],
-                },
+                        }
+                    },
+                ],
             }],
         }
     }
@@ -138,68 +132,58 @@ mod tests {
             namespace: "cxx_qt".to_owned(),
             qobjects: vec![
                 GeneratedRustQObject {
-                    cpp_struct_ident: format_ident!("FirstObject"),
-                    namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
-                    rust_struct_ident: format_ident!("FirstObjectRust"),
-                    blocks: GeneratedRustQObjectBlocks {
-                        cxx_mod_contents: vec![
-                            parse_quote! {
-                                unsafe extern "C++" {
-                                    type FirstObject;
-                                }
-                            },
-                            parse_quote! {
-                                extern "Rust" {
-                                    type FirstObjectRust;
-                                }
-                            },
-                        ],
-                        cxx_qt_mod_contents: vec![
-                            parse_quote! {
-                                #[derive(Default)]
-                                pub struct FirstObjectRust;
-                            },
-                            parse_quote! {
-                                impl FirstObjectRust {
-                                    fn rust_method(&self) {
+                    cxx_mod_contents: vec![
+                        parse_quote! {
+                            unsafe extern "C++" {
+                                type FirstObject;
+                            }
+                        },
+                        parse_quote! {
+                            extern "Rust" {
+                                type FirstObjectRust;
+                            }
+                        },
+                    ],
+                    cxx_qt_mod_contents: vec![
+                        parse_quote! {
+                            #[derive(Default)]
+                            pub struct FirstObjectRust;
+                        },
+                        parse_quote! {
+                            impl FirstObjectRust {
+                                fn rust_method(&self) {
 
-                                    }
                                 }
-                            },
-                        ],
-                    },
+                            }
+                        },
+                    ],
                 },
                 GeneratedRustQObject {
-                    cpp_struct_ident: format_ident!("SecondObject"),
-                    namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
-                    rust_struct_ident: format_ident!("SecondObjectRust"),
-                    blocks: GeneratedRustQObjectBlocks {
-                        cxx_mod_contents: vec![
-                            parse_quote! {
-                                unsafe extern "C++" {
-                                    type SecondObject;
-                                }
-                            },
-                            parse_quote! {
-                                extern "Rust" {
-                                    type SecondObjectRust;
-                                }
-                            },
-                        ],
-                        cxx_qt_mod_contents: vec![
-                            parse_quote! {
-                                #[derive(Default)]
-                                pub struct SecondObjectRust;
-                            },
-                            parse_quote! {
-                                impl SecondObjectRust {
-                                    fn rust_method(&self) {
+                    cxx_mod_contents: vec![
+                        parse_quote! {
+                            unsafe extern "C++" {
+                                type SecondObject;
+                            }
+                        },
+                        parse_quote! {
+                            extern "Rust" {
+                                type SecondObjectRust;
+                            }
+                        },
+                    ],
+                    cxx_qt_mod_contents: vec![
+                        parse_quote! {
+                            #[derive(Default)]
+                            pub struct SecondObjectRust;
+                        },
+                        parse_quote! {
+                            impl SecondObjectRust {
+                                fn rust_method(&self) {
 
-                                    }
                                 }
-                            },
-                        ],
-                    },
+                            }
+                        },
+                    ],
                 },
             ],
         }
