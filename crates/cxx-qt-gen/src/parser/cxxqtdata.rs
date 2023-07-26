@@ -17,7 +17,7 @@ use syn::{
     ItemImpl, Path, Result, Type, TypePath,
 };
 
-use super::invokable::ParsedQInvokable;
+use super::method::ParsedMethod;
 
 #[derive(Default)]
 pub struct ParsedCxxMappings {
@@ -254,10 +254,10 @@ impl ParsedCxxQtData {
                         .push(parsed_inherited_method);
                 // Remaining methods are either C++ methods or invokables
                 } else {
-                    let parsed_invokable_method = ParsedQInvokable::parse(foreign_fn, safe_call)?;
-                    self.with_qobject(&parsed_invokable_method.qobject_ident)?
-                        .invokables
-                        .push(parsed_invokable_method);
+                    let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
+                    self.with_qobject(&parsed_method.qobject_ident)?
+                        .methods
+                        .push(parsed_method);
                 }
             }
         }
@@ -463,9 +463,9 @@ mod tests {
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 2);
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].invokables[0].is_qinvokable);
-        assert!(!cxx_qt_data.qobjects[&qobject_ident()].invokables[1].is_qinvokable);
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
+        assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
+        assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
         assert_eq!(
             cxx_qt_data.qobjects[&qobject_ident()]
                 .passthrough_impl_items
