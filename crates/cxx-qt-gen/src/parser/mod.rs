@@ -34,7 +34,7 @@ pub struct Parser {
 impl Parser {
     /// Constructs a Parser object from a given [syn::ItemMod] block
     pub fn from(mut module: ItemMod) -> Result<Self> {
-        let mut cxx_qt_data = ParsedCxxQtData::default();
+        let mut namespace = "".to_owned();
         let mut others = vec![];
         let mut cxx_file_stem = module.ident.to_string();
 
@@ -44,13 +44,11 @@ impl Parser {
                 &module.attrs[index],
                 AttributeDefault::None,
             )?;
+
             // Parse any namespace in the cxx_qt::bridge macro
-            cxx_qt_data.namespace =
-                if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
-                    lit_str.value()
-                } else {
-                    "".to_owned()
-                };
+            if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
+                namespace = lit_str.value();
+            }
 
             // Parse any custom file stem
             if let Some(stem) = attr_map.get(&quote::format_ident!("cxx_file_stem")) {
@@ -65,10 +63,10 @@ impl Parser {
             ));
         }
 
+        let mut cxx_qt_data = ParsedCxxQtData::new(module.ident.clone(), namespace);
+
         // Check that there are items in the module
         if let Some(mut items) = module.content {
-            let bridge_namespace = cxx_qt_data.namespace.clone();
-
             // Find any QObject structs
             cxx_qt_data.find_qobject_types(&items.1)?;
 
@@ -78,11 +76,7 @@ impl Parser {
                 // qobject. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
                     // Load any CXX name mappings
-                    cxx_qt_data.populate_mappings_from_item(
-                        &other,
-                        &bridge_namespace,
-                        &module.ident,
-                    )?;
+                    cxx_qt_data.populate_mappings_from_item(&other)?;
 
                     // Unknown item so add to the other list
                     others.push(other);

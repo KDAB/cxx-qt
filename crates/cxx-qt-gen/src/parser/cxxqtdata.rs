@@ -49,7 +49,6 @@ impl ParsedCxxMappings {
     }
 }
 
-#[derive(Default)]
 pub struct ParsedCxxQtData {
     /// Mappings for CXX types when used in C++
     pub cxx_mappings: ParsedCxxMappings,
@@ -62,9 +61,22 @@ pub struct ParsedCxxQtData {
     pub qobjects: BTreeMap<Ident, ParsedQObject>,
     /// The namespace of the CXX-Qt module
     pub namespace: String,
+    /// The ident of the module, used for mappings
+    pub module_ident: Ident,
 }
 
 impl ParsedCxxQtData {
+    /// Create a ParsedCxxQtData from a given module and namespace
+    pub fn new(module_ident: Ident, namespace: String) -> Self {
+        Self {
+            cxx_mappings: ParsedCxxMappings::default(),
+            qualified_mappings: BTreeMap::<Ident, Path>::default(),
+            qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
+            module_ident,
+            namespace,
+        }
+    }
+
     /// Find the QObjects within the module and add into the qobjects BTreeMap
     pub fn find_qobject_types(&mut self, items: &[Item]) -> Result<()> {
         for item in items {
@@ -107,19 +119,16 @@ impl ParsedCxxQtData {
     ///
     /// We need to know this as it affects the type name used in the C++ generation
     /// And it is used to create the qualified Rust name
-    pub fn populate_mappings_from_item(
-        &mut self,
-        item: &Item,
-        bridge_namespace: &str,
-        module_ident: &Ident,
-    ) -> Result<()> {
+    pub fn populate_mappings_from_item(&mut self, item: &Item) -> Result<()> {
+        let bridge_namespace = self.namespace.clone();
+
         // Consider if shared types have mappings
         match item {
             Item::Enum(item) => {
-                self.populate_mappings(&item.ident, &item.attrs, bridge_namespace, module_ident)?;
+                self.populate_mappings(&item.ident, &item.attrs, &bridge_namespace)?;
             }
             Item::Struct(item) => {
-                self.populate_mappings(&item.ident, &item.attrs, bridge_namespace, module_ident)?;
+                self.populate_mappings(&item.ident, &item.attrs, &bridge_namespace)?;
             }
             _others => {}
         }
@@ -136,12 +145,7 @@ impl ParsedCxxQtData {
 
             // Read each of the types in the mod (type A;)
             for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-                self.populate_mappings(
-                    &foreign_type.ident,
-                    &foreign_type.attrs,
-                    &block_namespace,
-                    module_ident,
-                )?;
+                self.populate_mappings(&foreign_type.ident, &foreign_type.attrs, &block_namespace)?;
             }
         }
 
@@ -154,7 +158,6 @@ impl ParsedCxxQtData {
         ident: &Ident,
         attrs: &[Attribute],
         parent_namespace: &str,
-        module_ident: &Ident,
     ) -> Result<()> {
         // Retrieve the namespace for the type itself if there is one
         let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
@@ -188,6 +191,7 @@ impl ParsedCxxQtData {
         } else {
             ident.clone()
         };
+        let module_ident = &self.module_ident;
         self.qualified_mappings
             .insert(ident.clone(), parse_quote! { #module_ident::#rust_ident });
 
@@ -318,7 +322,7 @@ mod tests {
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
     fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
-        let mut cxx_qt_data = ParsedCxxQtData::default();
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
         cxx_qt_data
             .qobjects
             .insert(qobject_ident(), create_parsed_qobject());
@@ -327,7 +331,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_one_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::default();
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -347,7 +351,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_multiple_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::default();
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -372,10 +376,8 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_namespace() {
-        let mut cxx_qt_data = ParsedCxxQtData {
-            namespace: "bridge_namespace".to_owned(),
-            ..Default::default()
-        };
+        let mut cxx_qt_data =
+            ParsedCxxQtData::new(format_ident!("ffi"), "bridge_namespace".to_string());
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -412,7 +414,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_no_macro() {
-        let mut cxx_qt_data = ParsedCxxQtData::default();
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -551,9 +553,7 @@ mod tests {
                 type A;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
 
         assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
@@ -576,9 +576,7 @@ mod tests {
                 type A;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
 
@@ -602,9 +600,7 @@ mod tests {
                 type A = C;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
 
@@ -621,6 +617,7 @@ mod tests {
     #[test]
     fn test_cxx_mappings_cxx_name_namespace_bridge() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
+        cxx_qt_data.namespace = "bridge_namespace".to_owned();
 
         let item: Item = parse_quote! {
             extern "C++" {
@@ -630,9 +627,7 @@ mod tests {
                 type B;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "bridge_namespace", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("B").unwrap(), "C");
 
@@ -666,6 +661,7 @@ mod tests {
     #[test]
     fn test_cxx_mappings_cxx_name_namespace_items() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
+        cxx_qt_data.namespace = "namespace".to_owned();
 
         let item: Item = parse_quote! {
             #[namespace = "extern_namespace"]
@@ -677,9 +673,7 @@ mod tests {
             }
         };
         // Also ensure item namespace is chosen instead of bridge namespace
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "namespace", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 0);
 
         assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
@@ -724,9 +718,7 @@ mod tests {
                 type C;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 2);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("C").unwrap(), "D");
@@ -770,9 +762,7 @@ mod tests {
             }
         };
 
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(
             cxx_qt_data.cxx_mappings.cxx_names.get("EnumA").unwrap(),
@@ -807,9 +797,7 @@ mod tests {
             }
         };
 
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(
             cxx_qt_data.cxx_mappings.cxx_names.get("StructA").unwrap(),
@@ -842,9 +830,7 @@ mod tests {
                 type A;
             }
         };
-        assert!(cxx_qt_data
-            .populate_mappings_from_item(&item, "", &format_ident!("ffi"))
-            .is_ok());
+        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
 
         assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
