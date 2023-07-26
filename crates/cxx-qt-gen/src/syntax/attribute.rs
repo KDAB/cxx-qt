@@ -119,7 +119,7 @@ mod tests {
             #[cxx_qt::bridge(a = "b", namespace = "my::namespace")]
             #[cxx_qt::bridge(a = "b", namespace = "my::namespace", namespace = "my::namespace")]
             #[cxx_qt::bridge()]
-            #[qinvokable(cxx_override)]
+            #[qinvokable(inner)]
             mod module;
         };
 
@@ -181,6 +181,6 @@ mod tests {
         )
         .unwrap();
         assert_eq!(result.len(), 1);
-        assert!(result.contains_key(&format_ident!("cxx_override")));
+        assert!(result.contains_key(&format_ident!("inner")));
     }
 }

@@ -142,7 +142,8 @@ pub mod qobject {
     // QAbstractListModel implementation
     // ANCHOR: book_inherit_data_signature
     unsafe extern "RustQt" {
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn data(self: &CustomBaseClass, index: &QModelIndex, role: i32) -> QVariant;
     }
     // ANCHOR_END: book_inherit_data_signature
@@ -151,18 +152,21 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Return whether the base class can fetch more
         // Example of overriding a C++ virtual method and calling the base class implementation.
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn can_fetch_more(self: &CustomBaseClass, parent: &QModelIndex) -> bool;
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
 
     unsafe extern "RustQt" {
         /// Return the role names for the QAbstractListModel
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn role_names(self: &CustomBaseClass) -> QHash_i32_QByteArray;
 
         /// Return the row count for the QAbstractListModel
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn row_count(self: &CustomBaseClass, _parent: &QModelIndex) -> i32;
     }
 }

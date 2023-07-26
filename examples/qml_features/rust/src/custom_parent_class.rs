@@ -52,7 +52,8 @@ mod qobject {
         type CustomParentClass = super::CustomParentClassRust;
 
         /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         unsafe fn paint(self: Pin<&mut CustomParentClass>, painter: *mut QPainter);
 
         // Define that we need to inherit size() from the base class

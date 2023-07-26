@@ -26,10 +26,12 @@ mod inheritance {
     }
 
     unsafe extern "RustQt" {
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
 
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
 }

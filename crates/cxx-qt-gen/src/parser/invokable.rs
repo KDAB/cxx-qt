@@ -8,7 +8,7 @@ use crate::{
     syntax::{attribute::*, foreignmod, safety::Safety, types},
 };
 use std::collections::HashSet;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, LitStr, Result};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -16,6 +16,16 @@ pub enum ParsedQInvokableSpecifiers {
     Final,
     Override,
     Virtual,
+}
+
+impl ParsedQInvokableSpecifiers {
+    fn as_str_slice(&self) -> &[&str] {
+        match self {
+            ParsedQInvokableSpecifiers::Final => &["cxx_final"],
+            ParsedQInvokableSpecifiers::Override => &["cxx_override"],
+            ParsedQInvokableSpecifiers::Virtual => &["cxx_virtual"],
+        }
+    }
 }
 
 /// Describes a single Q_INVOKABLE for a struct
@@ -43,22 +53,20 @@ impl ParsedQInvokable {
             ));
         }
 
+        method.attrs.remove(index);
+
         // Parse any C++ specifiers
         let mut specifiers = HashSet::new();
-        let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-            &method.attrs[index],
-            AttributeDefault::Some(|span| LitStr::new("", span)),
-        )?;
-        if attrs_map.contains_key(&quote::format_ident!("cxx_final")) {
-            specifiers.insert(ParsedQInvokableSpecifiers::Final);
+        for specifier in [
+            ParsedQInvokableSpecifiers::Final,
+            ParsedQInvokableSpecifiers::Override,
+            ParsedQInvokableSpecifiers::Virtual,
+        ] {
+            if let Some(index) = attribute_find_path(&method.attrs, specifier.as_str_slice()) {
+                method.attrs.remove(index);
+                specifiers.insert(specifier);
+            }
         }
-        if attrs_map.contains_key(&quote::format_ident!("cxx_override")) {
-            specifiers.insert(ParsedQInvokableSpecifiers::Override);
-        }
-        if attrs_map.contains_key(&quote::format_ident!("cxx_virtual")) {
-            specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
-        }
-        method.attrs.remove(index);
 
         // Determine if the invokable is mutable
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
