@@ -14,9 +14,7 @@ pub mod signals;
 
 use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault};
 use cxxqtdata::ParsedCxxQtData;
-use syn::{
-    spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Path, PathSegment, Result,
-};
+use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
@@ -81,13 +79,6 @@ impl Parser {
                     // Unknown item so add to the other list
                     others.push(other);
                 }
-            }
-
-            // Add all the QObject types to the qualified mappings
-            for ident in cxx_qt_data.qobjects.keys() {
-                let mut path = Path::from(module.ident.clone());
-                path.segments.push(PathSegment::from(ident.clone()));
-                cxx_qt_data.qualified_mappings.insert(ident.clone(), path);
             }
         }
 
