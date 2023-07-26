@@ -59,6 +59,7 @@ mod tests {
             safe: true,
             parameters: vec![],
             specifiers: HashSet::new(),
+            is_qinvokable: true,
         };
 
         let invokable = QInvokableName::from(&parsed);

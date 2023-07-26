@@ -26,6 +26,7 @@ public:
   MyObjectRust& unsafeRustMut();
 
 public:
+  void cppMethod() const;
   Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();
   Q_INVOKABLE void invokableParameters(QColor const& opaque,
@@ -42,6 +43,7 @@ public:
   explicit MyObject(::std::int32_t arg0, QObject* arg1);
 
 private:
+  void cppMethodWrapper() const noexcept;
   void invokableWrapper() const noexcept;
   void invokableMutableWrapper() noexcept;
   void invokableParametersWrapper(QColor const& opaque,

@@ -103,6 +103,7 @@ mod tests {
                 safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
@@ -114,6 +115,7 @@ mod tests {
                     ty: parse_quote! { i32 },
                 }],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
@@ -125,6 +127,7 @@ mod tests {
                     ty: parse_quote! { &QColor },
                 }],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; },
@@ -136,6 +139,7 @@ mod tests {
                     ty: parse_quote! { *mut T },
                 }],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
         ];
         let qobject_idents = create_qobjectname();

@@ -252,17 +252,13 @@ impl ParsedCxxQtData {
                     self.with_qobject(&parsed_inherited_method.qobject_ident)?
                         .inherited_methods
                         .push(parsed_inherited_method);
-                // Test if the function is an invokable
-                } else if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qinvokable"])
-                {
-                    let parsed_invokable_method =
-                        ParsedQInvokable::parse(foreign_fn, safe_call, index)?;
+                // Remaining methods are either C++ methods or invokables
+                } else {
+                    let parsed_invokable_method = ParsedQInvokable::parse(foreign_fn, safe_call)?;
                     self.with_qobject(&parsed_invokable_method.qobject_ident)?
                         .invokables
                         .push(parsed_invokable_method);
                 }
-
-                // TODO: non-signal/inherit/invokable functions should be exposed as C++ only methods
             }
         }
 
@@ -462,13 +458,14 @@ mod tests {
                 #[qinvokable]
                 fn invokable(self: &MyObject);
 
-                fn cpp_context();
+                fn cpp_context(self: &MyObject);
             }
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 1);
-        // TODO: later we should support C++ context methods somewhere
+        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].invokables.len(), 2);
+        assert!(cxx_qt_data.qobjects[&qobject_ident()].invokables[0].is_qinvokable);
+        assert!(!cxx_qt_data.qobjects[&qobject_ident()].invokables[1].is_qinvokable);
         assert_eq!(
             cxx_qt_data.qobjects[&qobject_ident()]
                 .passthrough_impl_items

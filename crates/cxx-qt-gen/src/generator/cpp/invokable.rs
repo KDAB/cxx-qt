@@ -83,7 +83,7 @@ pub fn generate_cpp_invokables(
 
         generated.methods.push(CppFragment::Pair {
             header: format!(
-                "Q_INVOKABLE {is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
+                "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
                 return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
                     return_cxx_ty
                 } else {
@@ -91,6 +91,11 @@ pub fn generate_cpp_invokables(
                 },
                 ident = idents.name.cpp,
                 parameter_types = parameter_types,
+                is_qinvokable = if invokable.is_qinvokable {
+                    "Q_INVOKABLE "
+                } else {
+                    ""
+                },
                 is_final = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Final) {
                     " final"
                 } else {
@@ -176,6 +181,7 @@ mod tests {
                 safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
@@ -187,6 +193,7 @@ mod tests {
                     ty: parse_quote! { i32 },
                 }],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
@@ -198,6 +205,7 @@ mod tests {
                     ty: parse_quote! { &QColor },
                 }],
                 specifiers: HashSet::new(),
+                is_qinvokable: true,
             },
             ParsedQInvokable {
                 method: parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; },
@@ -215,6 +223,16 @@ mod tests {
                     specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
                     specifiers
                 },
+                is_qinvokable: true,
+            },
+            ParsedQInvokable {
+                method: parse_quote! { fn cpp_method(self: &MyObject); },
+                qobject_ident: format_ident!("MyObject"),
+                mutable: false,
+                safe: true,
+                parameters: vec![],
+                specifiers: HashSet::new(),
+                is_qinvokable: false,
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -228,7 +246,7 @@ mod tests {
         .unwrap();
 
         // methods
-        assert_eq!(generated.methods.len(), 4);
+        assert_eq!(generated.methods.len(), 5);
 
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
@@ -311,8 +329,26 @@ mod tests {
             "#}
         );
 
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
+            (header, source)
+        } else {
+            panic!("Expected pair")
+        };
+        assert_str_eq!(header, "void cppMethod() const;");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            void
+            MyObject::cppMethod() const
+            {
+                // ::std::lock_guard
+                cppMethodWrapper();
+            }
+            "#}
+        );
+
         // private methods
-        assert_eq!(generated.private_methods.len(), 4);
+        assert_eq!(generated.private_methods.len(), 5);
 
         let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
             header
@@ -350,6 +386,13 @@ mod tests {
             header,
             "::std::int32_t specifiersInvokableWrapper(::std::int32_t param) const noexcept;"
         );
+
+        let header = if let CppFragment::Header(header) = &generated.private_methods[4] {
+            header
+        } else {
+            panic!("Expected header")
+        };
+        assert_str_eq!(header, "void cppMethodWrapper() const noexcept;");
     }
 
     #[test]
@@ -364,6 +407,7 @@ mod tests {
                 ty: parse_quote! { i32 },
             }],
             specifiers: HashSet::new(),
+            is_qinvokable: true,
         }];
         let qobject_idents = create_qobjectname();
 

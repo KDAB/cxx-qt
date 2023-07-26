@@ -33,6 +33,9 @@ pub mod qobject {
         /// Mutable invokable method with no parameters that resets the color
         #[qinvokable]
         fn reset(self: Pin<&mut RustInvokables>);
+
+        /// C++ only method which returns the red value
+        fn red_value(self: &RustInvokables) -> f32;
     }
     // ANCHOR_END: book_invokable_signature
 }
@@ -73,6 +76,11 @@ impl qobject::RustInvokables {
     /// Mutable invokable method with no parameters that resets the color
     fn reset(self: Pin<&mut Self>) {
         self.store_helper(0.0, 0.4667, 0.7843);
+    }
+
+    /// C++ only method which returns the red value
+    fn red_value(&self) -> f32 {
+        self.red
     }
 
     /// Mutable C++ context method that helps to store the color
