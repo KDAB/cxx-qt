@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::syntax::attribute::attribute_find_path;
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
 use crate::syntax::safety::Safety;
-use crate::syntax::{attribute::attribute_find_path, path::path_to_single_ident};
 use crate::{
     parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject, signals::ParsedSignal},
     syntax::expr::expr_to_string,
@@ -275,16 +275,19 @@ impl ParsedCxxQtData {
         // If the implementation has a T
         // then this is the block of methods to be implemented on the C++ object
         if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            // Find if we are an impl block for a qobject
-            if let Some(qobject) = self.qobjects.get_mut(&path_to_single_ident(path)?) {
-                // If we are a trait then process it otherwise add to others
-                if imp.trait_.is_some() {
-                    qobject.parse_trait_impl(imp)?;
-                } else {
-                    qobject.others.push(Item::Impl(imp));
-                }
+            // If this path is an ident then try to match to a QObject
+            if let Some(ident) = path.get_ident() {
+                // Find if we are an impl block for a qobject
+                if let Some(qobject) = self.qobjects.get_mut(ident) {
+                    // If we are a trait then process it otherwise add to others
+                    if imp.trait_.is_some() {
+                        qobject.parse_trait_impl(imp)?;
+                    } else {
+                        qobject.others.push(Item::Impl(imp));
+                    }
 
-                return Ok(None);
+                    return Ok(None);
+                }
             }
         }
 

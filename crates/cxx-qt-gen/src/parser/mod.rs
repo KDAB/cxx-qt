@@ -72,35 +72,21 @@ impl Parser {
             // Find any QObject structs
             cxx_qt_data.find_qobject_types(&items.1)?;
 
-            // Loop through any qobjects that were found
-            if !cxx_qt_data.qobjects.is_empty() {
-                for item in items.1.drain(..) {
-                    // Try to find any CXX-Qt items, if found add them to the relevant
-                    // qobject. Otherwise return them to be added to other
-                    if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
-                        // Load any CXX name mappings
-                        cxx_qt_data.populate_mappings_from_item(
-                            &other,
-                            &bridge_namespace,
-                            &module.ident,
-                        )?;
-
-                        // Unknown item so add to the other list
-                        others.push(other);
-                    }
-                }
-            } else {
-                // Load any CXX name mappings
-                for item in &items.1 {
+            // Loop through items and load into qobject or others and populate mappings
+            for item in items.1.drain(..) {
+                // Try to find any CXX-Qt items, if found add them to the relevant
+                // qobject. Otherwise return them to be added to other
+                if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
+                    // Load any CXX name mappings
                     cxx_qt_data.populate_mappings_from_item(
-                        item,
+                        &other,
                         &bridge_namespace,
                         &module.ident,
                     )?;
-                }
 
-                // No qobjects found so pass everything through
-                others.extend(items.1);
+                    // Unknown item so add to the other list
+                    others.push(other);
+                }
             }
 
             // Add all the QObject types to the qualified mappings
