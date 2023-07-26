@@ -5,24 +5,24 @@
 
 use crate::{
     generator::{
-        naming::{invokable::QInvokableName, qobject::QObjectName},
+        naming::{method::QMethodName, qobject::QObjectName},
         rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObject},
     },
-    parser::invokable::ParsedQInvokable,
+    parser::method::ParsedMethod,
 };
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Result;
 
-pub fn generate_rust_invokables(
-    invokables: &Vec<ParsedQInvokable>,
+pub fn generate_rust_methods(
+    invokables: &Vec<ParsedMethod>,
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustQObject> {
     let mut generated = GeneratedRustQObject::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
 
     for invokable in invokables {
-        let idents = QInvokableName::from(invokable);
+        let idents = QMethodName::from(invokable);
         let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
         let invokable_ident_rust = &idents.name.rust;
 
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn test_generate_rust_invokables() {
         let invokables = vec![
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn void_invokable(self: &MyObject); },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -105,7 +105,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -117,7 +117,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
@@ -129,7 +129,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -144,7 +144,7 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_invokables(&invokables, &qobject_idents).unwrap();
+        let generated = generate_rust_methods(&invokables, &qobject_idents).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

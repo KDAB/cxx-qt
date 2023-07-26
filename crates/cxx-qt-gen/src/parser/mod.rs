@@ -6,7 +6,7 @@
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod inherit;
-pub mod invokable;
+pub mod method;
 pub mod parameter;
 pub mod property;
 pub mod qobject;

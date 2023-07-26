@@ -7,7 +7,7 @@ pub mod constructor;
 pub mod cxxqttype;
 pub mod fragment;
 pub mod inherit;
-pub mod invokable;
+pub mod method;
 pub mod property;
 pub mod qobject;
 pub mod signals;

@@ -28,8 +28,8 @@ impl ParsedQInvokableSpecifiers {
     }
 }
 
-/// Describes a single Q_INVOKABLE for a struct
-pub struct ParsedQInvokable {
+/// Describes a single method (which could be a Q_INVOKABLE) for a struct
+pub struct ParsedMethod {
     /// The original [syn::ImplItemFn] of the invokable
     pub method: ForeignItemFn,
     /// The type of the self argument
@@ -46,7 +46,7 @@ pub struct ParsedQInvokable {
     pub is_qinvokable: bool,
 }
 
-impl ParsedQInvokable {
+impl ParsedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
             return Err(Error::new(
@@ -86,7 +86,7 @@ impl ParsedQInvokable {
 
         let safe = method.sig.unsafety.is_none();
 
-        Ok(ParsedQInvokable {
+        Ok(ParsedMethod {
             method,
             qobject_ident,
             mutable,

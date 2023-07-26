@@ -5,7 +5,7 @@
 
 use crate::generator::{
     cpp::{
-        constructor, fragment::CppFragment, inherit, invokable::generate_cpp_invokables,
+        constructor, fragment::CppFragment, inherit, method::generate_cpp_methods,
         property::generate_cpp_properties, signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -113,8 +113,8 @@ impl GeneratedCppQObject {
             cxx_mappings,
             lock_guard,
         )?);
-        generated.blocks.append(&mut generate_cpp_invokables(
-            &qobject.invokables,
+        generated.blocks.append(&mut generate_cpp_methods(
+            &qobject.methods,
             &qobject_idents,
             cxx_mappings,
             lock_guard,

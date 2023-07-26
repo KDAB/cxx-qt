@@ -9,21 +9,21 @@ use crate::{
             fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
         },
-        naming::{invokable::QInvokableName, qobject::QObjectName},
+        naming::{method::QMethodName, qobject::QObjectName},
         utils::cpp::{
             syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
         },
     },
     parser::{
         cxxqtdata::ParsedCxxMappings,
-        invokable::{ParsedQInvokable, ParsedQInvokableSpecifiers},
+        method::{ParsedMethod, ParsedQInvokableSpecifiers},
     },
 };
 use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 
-pub fn generate_cpp_invokables(
-    invokables: &Vec<ParsedQInvokable>,
+pub fn generate_cpp_methods(
+    invokables: &Vec<ParsedMethod>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
     lock_guard: Option<&str>,
@@ -31,7 +31,7 @@ pub fn generate_cpp_invokables(
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
-        let idents = QInvokableName::from(invokable);
+        let idents = QMethodName::from(invokable);
         let return_cxx_ty =
             syn_type_to_cpp_return_type(&invokable.method.sig.output, cxx_mappings)?;
 
@@ -174,7 +174,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_invokables() {
         let invokables = vec![
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn void_invokable(self: &MyObject); },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -183,7 +183,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -195,7 +195,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
@@ -207,7 +207,7 @@ mod tests {
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -225,7 +225,7 @@ mod tests {
                 },
                 is_qinvokable: true,
             },
-            ParsedQInvokable {
+            ParsedMethod {
                 method: parse_quote! { fn cpp_method(self: &MyObject); },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
@@ -237,7 +237,7 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_invokables(
+        let generated = generate_cpp_methods(
             &invokables,
             &qobject_idents,
             &ParsedCxxMappings::default(),
@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
-        let invokables = vec![ParsedQInvokable {
+        let invokables = vec![ParsedMethod {
             method: parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; },
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
@@ -419,7 +419,7 @@ mod tests {
             .cxx_names
             .insert("B".to_owned(), "B2".to_owned());
 
-        let generated = generate_cpp_invokables(
+        let generated = generate_cpp_methods(
             &invokables,
             &qobject_idents,
             &cxx_mappings,

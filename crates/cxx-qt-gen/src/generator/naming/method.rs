@@ -2,24 +2,24 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{generator::naming::CombinedIdent, parser::invokable::ParsedQInvokable};
+use crate::{generator::naming::CombinedIdent, parser::method::ParsedMethod};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{ForeignItemFn, Ident};
 
-/// Names for parts of a Q_INVOKABLE
-pub struct QInvokableName {
+/// Names for parts of a method (which could be a Q_INVOKABLE)
+pub struct QMethodName {
     pub name: CombinedIdent,
     pub wrapper: CombinedIdent,
 }
 
-impl From<&ParsedQInvokable> for QInvokableName {
-    fn from(invokable: &ParsedQInvokable) -> Self {
+impl From<&ParsedMethod> for QMethodName {
+    fn from(invokable: &ParsedMethod) -> Self {
         Self::from(&invokable.method)
     }
 }
 
-impl From<&ForeignItemFn> for QInvokableName {
+impl From<&ForeignItemFn> for QMethodName {
     fn from(method: &ForeignItemFn) -> Self {
         let ident = &method.sig.ident;
         Self {
@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_from_impl_method() {
-        let parsed = ParsedQInvokable {
+        let parsed = ParsedMethod {
             method: parse_quote! {
                 fn my_invokable(self: &MyObject);
             },
@@ -62,7 +62,7 @@ mod tests {
             is_qinvokable: true,
         };
 
-        let invokable = QInvokableName::from(&parsed);
+        let invokable = QMethodName::from(&parsed);
         assert_eq!(invokable.name.cpp, format_ident!("myInvokable"));
         assert_eq!(invokable.name.rust, format_ident!("my_invokable"));
         assert_eq!(invokable.wrapper.cpp, format_ident!("myInvokableWrapper"));

@@ -10,7 +10,7 @@ use crate::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
             constructor, cxxqttype, fragment::RustFragmentPair, inherit,
-            invokable::generate_rust_invokables, property::generate_rust_properties,
+            method::generate_rust_methods, property::generate_rust_properties,
             signals::generate_rust_signals, threading,
         },
         utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
@@ -56,8 +56,8 @@ impl GeneratedRustQObject {
             &qobject_idents,
             qualified_mappings,
         )?);
-        generated.append(&mut generate_rust_invokables(
-            &qobject.invokables,
+        generated.append(&mut generate_rust_methods(
+            &qobject.methods,
             &qobject_idents,
         )?);
         generated.append(&mut generate_passthrough_impl(
