@@ -29,13 +29,16 @@ mod ffi {
         #[qinvokable]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
 
-        #[qinvokable(cxx_final)]
+        #[qinvokable]
+        #[cxx_final]
         fn invokable_final(self: &MyObject);
 
-        #[qinvokable(cxx_override)]
+        #[qinvokable]
+        #[cxx_override]
         fn invokable_override(self: &MyObject);
 
-        #[qinvokable(cxx_virtual)]
+        #[qinvokable]
+        #[cxx_virtual]
         fn invokable_virtual(self: &MyObject);
 
         #[qinvokable]

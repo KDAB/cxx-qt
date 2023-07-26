@@ -45,9 +45,9 @@ This way methods can be overridden, declared as `virtual` or `final`.
 
 | C++ keyword | CXX-Qt attribute              |
 |-------------|-------------------------------|
-| `override`  | `#[qinvokable(cxx_override)]` |
-| `virtual`   | `#[qinvokable(cxx_virtual)]`  |
-| `final`     | `#[qinvokable(cxx_final)]`    |
+| `override`  | `#[cxx_override]` |
+| `virtual`   | `#[cxx_virtual]`  |
+| `final`     | `#[cxx_final]`    |
 
 The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmodel.html#data) method inherited from the QAbstractListModel.
 ```rust,ignore
