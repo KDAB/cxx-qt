@@ -5,6 +5,7 @@
 
 use crate::syntax::attribute::attribute_find_path;
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
+use crate::syntax::path::path_from_idents;
 use crate::syntax::safety::Safety;
 use crate::{
     parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject, signals::ParsedSignal},
@@ -13,8 +14,8 @@ use crate::{
 use quote::format_ident;
 use std::collections::BTreeMap;
 use syn::{
-    parse_quote, spanned::Spanned, Attribute, Error, ForeignItem, Ident, Item, ItemForeignMod,
-    ItemImpl, Path, Result, Type, TypePath,
+    spanned::Spanned, Attribute, Error, ForeignItem, Ident, Item, ItemForeignMod, ItemImpl, Path,
+    Result, Type, TypePath,
 };
 
 use super::method::ParsedMethod;
@@ -100,6 +101,12 @@ impl ParsedCxxQtData {
                                 if qobject.namespace.is_empty() && !self.namespace.is_empty() {
                                     qobject.namespace = self.namespace.clone();
                                 }
+
+                                // Add the QObject type to the qualified mappings
+                                self.qualified_mappings.insert(
+                                    foreign_alias.ident_left.clone(),
+                                    path_from_idents(&self.module_ident, &foreign_alias.ident_left),
+                                );
 
                                 // Note that we assume a compiler error will occur later
                                 // if you had two structs with the same name
@@ -191,9 +198,10 @@ impl ParsedCxxQtData {
         } else {
             ident.clone()
         };
-        let module_ident = &self.module_ident;
-        self.qualified_mappings
-            .insert(ident.clone(), parse_quote! { #module_ident::#rust_ident });
+        self.qualified_mappings.insert(
+            ident.clone(),
+            path_from_idents(&self.module_ident, &rust_ident),
+        );
 
         Ok(())
     }
