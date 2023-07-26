@@ -158,18 +158,27 @@ impl ParsedCxxQtData {
 
         // If there is a foreign mod then process it
         if let Item::ForeignMod(foreign_mod) = &item {
-            // Retrieve a namespace from the mod or the bridge
-            let block_namespace =
-                if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                    expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value)?
-                } else {
-                    bridge_namespace.to_owned()
-                };
+            self.populate_mappings_from_foreign_mod_item(foreign_mod)?;
+        }
 
-            // Read each of the types in the mod (type A;)
-            for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-                self.populate_mappings(&foreign_type.ident, &foreign_type.attrs, &block_namespace)?;
-            }
+        Ok(())
+    }
+
+    fn populate_mappings_from_foreign_mod_item(
+        &mut self,
+        foreign_mod: &ItemForeignMod,
+    ) -> Result<()> {
+        // Retrieve a namespace from the mod or the bridge
+        let block_namespace =
+            if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
+                expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value)?
+            } else {
+                self.namespace.to_owned()
+            };
+
+        // Read each of the types in the mod (type A;)
+        for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
+            self.populate_mappings(&foreign_type.ident, &foreign_type.attrs, &block_namespace)?;
         }
 
         Ok(())
