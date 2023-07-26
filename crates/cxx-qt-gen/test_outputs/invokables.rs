@@ -39,6 +39,11 @@ mod ffi {
     }
     extern "Rust" {
         #[doc(hidden)]
+        #[cxx_name = "cppMethodWrapper"]
+        fn cpp_method(self: &MyObject);
+    }
+    extern "Rust" {
+        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
         fn invokable(self: &MyObject);
     }

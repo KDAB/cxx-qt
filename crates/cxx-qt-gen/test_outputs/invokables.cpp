@@ -21,6 +21,13 @@ MyObject::unsafeRustMut()
 }
 
 void
+MyObject::cppMethod() const
+{
+  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  cppMethodWrapper();
+}
+
+void
 MyObject::invokable() const
 {
   const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);

@@ -27,26 +27,20 @@ mod qobject {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for MyObject {}
 
+    // Note that we are only testing with C++ here so we don't need qinvokable
     unsafe extern "RustQt" {
-        #[qinvokable]
         fn double_number_self(self: Pin<&mut MyObject>);
 
-        #[qinvokable]
         fn double_number(self: &MyObject, number: i32) -> i32;
 
-        #[qinvokable]
         fn say_hi(self: &MyObject, string: &QString, number: i32);
 
-        #[qinvokable]
         fn queue_test(self: Pin<&mut MyObject>);
 
-        #[qinvokable]
         fn queue_test_multi_thread(self: Pin<&mut MyObject>);
 
-        #[qinvokable]
         fn fetch_update_call_count(self: &MyObject) -> i32;
 
-        #[qinvokable]
         fn throw_exception(self: &MyObject) -> Result<i32>;
     }
 }

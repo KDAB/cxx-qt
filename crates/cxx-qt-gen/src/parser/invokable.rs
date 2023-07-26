@@ -42,10 +42,12 @@ pub struct ParsedQInvokable {
     pub parameters: Vec<ParsedFunctionParameter>,
     /// Any specifiers that declared on the invokable
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
+    /// Whether the method is qinvokable
+    pub is_qinvokable: bool,
 }
 
 impl ParsedQInvokable {
-    pub fn parse(mut method: ForeignItemFn, safety: Safety, index: usize) -> Result<Self> {
+    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
             return Err(Error::new(
                 method.span(),
@@ -53,7 +55,14 @@ impl ParsedQInvokable {
             ));
         }
 
-        method.attrs.remove(index);
+        // Determine if the method is invokable
+        let is_qinvokable = if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"])
+        {
+            method.attrs.remove(index);
+            true
+        } else {
+            false
+        };
 
         // Parse any C++ specifiers
         let mut specifiers = HashSet::new();
@@ -84,6 +93,7 @@ impl ParsedQInvokable {
             parameters,
             specifiers,
             safe,
+            is_qinvokable,
         })
     }
 }

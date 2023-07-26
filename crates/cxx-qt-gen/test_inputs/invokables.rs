@@ -14,6 +14,8 @@ mod ffi {
         #[cxx_qt::qobject]
         type MyObject = super::MyObjectRust;
 
+        fn cpp_method(self: &MyObject);
+
         #[qinvokable]
         fn invokable(self: &MyObject);
 

@@ -36,10 +36,8 @@ mod qobject {
         #[qproperty(QString, string)]
         type MyData = super::MyDataRust;
 
-        #[qinvokable]
         fn as_json_str(self: &MyData) -> QString;
 
-        #[qinvokable]
         fn grab_values(self: Pin<&mut MyData>);
     }
 }
