@@ -87,15 +87,17 @@ impl ParsedCxxQtData {
                 {
                     for foreign_item in &foreign_mod.items {
                         if let ForeignItem::Verbatim(tokens) = foreign_item {
-                            let foreign_alias: ForeignTypeIdentAlias = syn::parse2(tokens.clone())?;
+                            let mut foreign_alias: ForeignTypeIdentAlias =
+                                syn::parse2(tokens.clone())?;
 
-                            // TODO: in the future qobject macro will be removed and all types in RustQt will be QObjects
+                            // Check this type is tagged with a #[qobject]
                             if let Some(index) =
-                                attribute_find_path(&foreign_alias.attrs, &["cxx_qt", "qobject"])
+                                attribute_find_path(&foreign_alias.attrs, &["qobject"])
                             {
+                                foreign_alias.attrs.remove(index);
+
                                 // Load the QObject
-                                let mut qobject =
-                                    ParsedQObject::from_foreign_item_type(&foreign_alias, index)?;
+                                let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
 
                                 // Inject the bridge namespace if the qobject one is empty
                                 if qobject.namespace.is_empty() && !self.namespace.is_empty() {
@@ -346,7 +348,7 @@ mod tests {
                 extern "RustQt" {
                     type Other = super::OtherRust;
 
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -366,9 +368,9 @@ mod tests {
                 extern "RustQt" {
                     type Other = super::OtherRust;
 
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type SecondObject = super::SecondObjectRust;
                 }
             }
@@ -391,9 +393,10 @@ mod tests {
             mod module {
                 extern "RustQt" {
                     type Other = super::OtherRust;
-                    #[cxx_qt::qobject(namespace = "qobject_namespace")]
+                    #[qobject]
+                    #[namespace = "qobject_namespace"]
                     type MyObject = super::MyObjectRust;
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type SecondObject = super::SecondObjectRust;
                 }
             }

@@ -10,7 +10,9 @@
 #[cxx_qt::bridge(cxx_file_stem = "rust_singleton")]
 pub mod qobject {
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_element, qml_singleton)]
+        #[qobject]
+        #[qml_element]
+        #[qml_singleton]
         #[qproperty(i32, persistent_value)]
         type RustSingleton = super::RustSingletonRust;
 

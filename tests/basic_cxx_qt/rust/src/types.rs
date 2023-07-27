@@ -7,7 +7,7 @@
 #[cxx_qt::bridge(cxx_file_stem = "my_types", namespace = "cxx_qt::my_types")]
 mod ffi {
     extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         #[qproperty(bool, boolean)]
         #[qproperty(f32, float_32)]
         #[qproperty(f64, float_64)]

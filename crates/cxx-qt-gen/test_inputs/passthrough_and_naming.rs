@@ -80,7 +80,8 @@ pub mod ffi {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(base = "QStringListModel")]
+        #[qobject]
+        #[base = "QStringListModel"]
         #[qproperty(i32, property_name)]
         type MyObject = super::MyObjectRust;
     }
@@ -94,7 +95,7 @@ pub mod ffi {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         #[qproperty(i32, property_name)]
         type SecondObject = super::SecondObjectRust;
     }

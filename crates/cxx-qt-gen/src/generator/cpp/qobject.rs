@@ -166,7 +166,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -191,7 +191,8 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject(base = "QStringListModel")]
+                    #[qobject]
+                    #[base = "QStringListModel"]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -214,7 +215,8 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject(qml_element = "MyQmlElement")]
+                    #[qobject]
+                    #[qml_element = "MyQmlElement"]
                     type MyNamedObject = super::MyNamedObjectRust;
                 }
             }
@@ -240,7 +242,9 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject(qml_element, qml_singleton)]
+                    #[qobject]
+                    #[qml_element]
+                    #[qml_singleton]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -267,7 +271,9 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject(qml_element, qml_uncreatable)]
+                    #[qobject]
+                    #[qml_element]
+                    #[qml_uncreatable]
                     type MyObject = super::MyObjectRust;
                 }
             }

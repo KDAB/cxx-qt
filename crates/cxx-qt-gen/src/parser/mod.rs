@@ -12,7 +12,7 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault};
+use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map};
 use cxxqtdata::ParsedCxxQtData;
 use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
 
@@ -38,10 +38,7 @@ impl Parser {
 
         // Remove the cxx_qt::bridge attribute
         if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
-            let attr_map = attribute_tokens_to_map::<Ident, LitStr>(
-                &module.attrs[index],
-                AttributeDefault::None,
-            )?;
+            let attr_map = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[index])?;
 
             // Parse any namespace in the cxx_qt::bridge macro
             if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
@@ -150,7 +147,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
 
@@ -186,7 +183,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
 
@@ -217,7 +214,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
 

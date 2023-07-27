@@ -36,7 +36,8 @@ pub mod qobject {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
         type Serialisation = super::SerialisationRust;

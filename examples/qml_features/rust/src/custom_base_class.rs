@@ -34,7 +34,9 @@ pub mod qobject {
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     extern "RustQt" {
-        #[cxx_qt::qobject(base = "QAbstractListModel", qml_element)]
+        #[qobject]
+        #[base = "QAbstractListModel"]
+        #[qml_element]
         type CustomBaseClass = super::CustomBaseClassRust;
     }
     // ANCHOR_END: book_qobject_base

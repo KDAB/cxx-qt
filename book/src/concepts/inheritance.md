@@ -33,7 +33,7 @@ For this, the `clear` method implemented in Rust needs to call `beginResetModel`
 See [the Qt docs](https://doc.qt.io/qt-6/qabstractlistmodel.html) for more details on the specific subclassing requirements.
 
 Methods in a `extern "RustQt"` block similar to CXX can be tagged with an `#[inherit]` attribute, with the same restrictions regarding which types can be used.
-Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `self: &qobject::T`, where `qobject::T` must refer to a QObject marked with `#[cxx_qt::qobject]` in the `#[cxx_qt::bridge]`
+Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `self: &qobject::T`, where `qobject::T` must refer to a QObject marked with `#[qobject]` in the `#[cxx_qt::bridge]`
 
 The declared methods will be case-converted as in other CXX-Qt APIs.
 To explicitly declare the C++ method name, use the `#[cxx_name="myFunctionName"]` attribute.

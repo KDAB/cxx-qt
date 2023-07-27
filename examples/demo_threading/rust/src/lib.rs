@@ -18,7 +18,8 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(f64, average_use)]
         #[qproperty(u32, sensors)]
         #[qproperty(f64, total_use)]

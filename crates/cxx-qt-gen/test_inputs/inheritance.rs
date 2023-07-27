@@ -8,7 +8,8 @@ mod inheritance {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(base = "QAbstractItemModel")]
+        #[qobject]
+        #[base = "QAbstractItemModel"]
         type MyObject = super::MyObjectRust;
     }
 

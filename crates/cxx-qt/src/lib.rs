@@ -16,7 +16,7 @@ pub use cxx_qt_macro::qobject;
 
 pub use cxxqtthread::CxxQtThread;
 
-/// This trait is automatically implemented for all types which are marked as `#[cxx_qt::qobject]`.
+/// This trait is automatically implemented for all types which are marked as `#[qobject]`.
 /// It provides information about the type that is wrapped by the QObject, as well as the methods
 /// that Cxx-Qt will generate for the QObject.
 pub trait CxxQtType {
@@ -94,7 +94,7 @@ pub trait Threading: Locking + Sized {
 /// #[cxx_qt::bridge]
 /// mod qobject {
 ///     extern "RustQt" {
-///         #[cxx_qt::qobject]
+///         #[qobject]
 ///         type MyStruct = super::MyStructRust;
 ///     }
 ///

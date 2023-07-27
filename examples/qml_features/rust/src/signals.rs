@@ -36,7 +36,8 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         // ANCHOR: book_signals_struct
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(bool, logging_enabled)]
         type RustSignals = super::RustSignalsRust;
     }
