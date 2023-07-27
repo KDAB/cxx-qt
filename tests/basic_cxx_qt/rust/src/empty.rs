@@ -6,7 +6,7 @@
 #[cxx_qt::bridge(cxx_file_stem = "empty")]
 mod ffi {
     extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         type Empty = super::EmptyRust;
     }
 }

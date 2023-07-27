@@ -8,10 +8,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 # `qobject::T` - The generated QObject
 
 One of the key features of CXX-Qt is the ability to create your own QObjects from Rust.
-This is what the [`#[cxx_qt::qobject]` macro](./qobject_struct.md) is for.
+This is what the [`#[qobject]` macro](./qobject_struct.md) is for.
 This page serves to document the details of what is generated and how to interact with the generated QObject from Rust.
 
-The `#[cxx_qt::qobject]` macro generates a QObject for a given Rust struct.
+The `#[qobject]` macro generates a QObject for a given Rust struct.
 Whilst this QObject is a C++ type, CXX-Qt will automatically wrap it as a [CXX Opaque Type](https://cxx.rs/extern-c++.html#opaque-c-types).
 These generated QObjects are accessible to Rust in a generated module with the name `qobject`. Each struct `T`'s generated QObject is accessible as `qobject::T`.
 
@@ -37,7 +37,7 @@ Example:
 // In file qt_types.rs
 #[cxx_qt::bridge]
 mod ffi {
-  #[cxx_qt::qobject]
+  #[qobject]
   #[derive(Default)]
   pub struct MyObject {}
 }
@@ -89,7 +89,7 @@ There is also an advanced way to access the data in the internal Rust struct:
 fn rust(&self) -> &T
 fn rust_mut(self: Pin<&mut Self>) -> &mut T
 ```
-Where `T` is the struct with the `#[cxx_qt::qobject]` macro.
+Where `T` is the struct with the `#[qobject]` macro.
 
 This allows you to directly manipulate the internal Rust struct without having to use the generated accessor methods.
 

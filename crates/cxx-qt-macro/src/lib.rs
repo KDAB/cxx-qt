@@ -20,7 +20,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod qobject {
 ///     unsafe extern "RustQt" {
-///         #[cxx_qt::qobject]
+///         #[qobject]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
 ///         type MyObject = super::MyObjectRust;
 ///
@@ -73,7 +73,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// #[cxx_qt::bridge]
 /// mod my_object {
 ///     extern "RustQt" {
-///         #[cxx_qt::qobject]
+///         #[qobject]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
 ///         type MyObject = super::MyObjectRust;
 ///     }
@@ -86,7 +86,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # fn main() {}
 /// ```
 ///
-/// You can also specify a custom base class by using `#[cxx_qt::qobject(base = "QStringListModel")]`, you must then use CXX to add any includes needed.
+/// You can also specify a custom base class by using `#[base = "QStringListModel"]`, you must then use CXX to add any includes needed.
 ///
 /// # Example
 ///
@@ -94,7 +94,8 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// #[cxx_qt::bridge]
 /// mod my_object {
 ///     extern "RustQt" {
-///         #[cxx_qt::qobject(base = "QStringListModel")]
+///         #[qobject]
+///         #[base = "QStringListModel"]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
 ///         type MyModel = super::MyModelRust;
 ///     }
@@ -112,7 +113,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
-    unreachable!("cxx_qt::qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
+    unreachable!("qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
 // Take the module and C++ namespace and generate the rust code

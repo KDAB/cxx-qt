@@ -11,7 +11,7 @@ mod ffi {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         type MyObject = super::MyObjectRust;
 
         fn cpp_method(self: &MyObject);

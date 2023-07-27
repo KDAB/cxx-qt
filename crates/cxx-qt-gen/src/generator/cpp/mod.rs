@@ -54,7 +54,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -73,7 +73,7 @@ mod tests {
             #[cxx_qt::bridge(cxx_file_stem = "my_object")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
             }
@@ -92,7 +92,7 @@ mod tests {
             #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
-                    #[cxx_qt::qobject]
+                    #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
             }

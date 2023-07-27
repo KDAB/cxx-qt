@@ -7,7 +7,7 @@ mod ffi {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         #[derive(Default)]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]

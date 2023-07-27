@@ -11,7 +11,8 @@
 pub mod qobject {
     // ANCHOR: book_extern_block
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(i32, counter)]
         type InnerObject = super::InnerObjectRust;
     }
@@ -24,7 +25,8 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(*mut InnerObject, inner)]
         type OuterObject = super::OuterObjectRust;
 

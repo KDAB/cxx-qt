@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
     - [Building with Cargo](./getting-started/5-cargo-executable.md)
 - [QObject](./qobject/index.md)
     - [`#[cxx_qt::bridge]` - Bridge Macro](./qobject/bridge-macro.md)
-    - [`#[cxx_qt::qobject]` - Defining QObjects](./qobject/qobject_struct.md)
+    - [`#[qobject]` - Defining QObjects](./qobject/qobject_struct.md)
     - [`#[qsignal]` - Signal macro](./qobject/signals.md)
     - [`qobject::T` - The generated QObject](./qobject/generated-qobject.md)
     - [CxxQtThread](./qobject/cxxqtthread.md)

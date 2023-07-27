@@ -18,7 +18,7 @@ mod qobject {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject]
+        #[qobject]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
         type MyObject = super::MyObjectRust;

@@ -52,13 +52,13 @@ Additionally, a `#[cxx_qt::bridge]` gives you a few more features that allow you
 
 ## QObject struct
 
-To create a new QObject subclass, we can define a struct within our module and mark it with `#[cxx_qt::qobject]`.
+To create a new QObject subclass, we can define a struct within our module and mark it with `#[qobject]`.
 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 
-Optionally, add `qml_uri` and `qml_version` inside `#[cxx_qt::qobject]` to tell the Rust build script to generate a QML plugin
+Optionally, add `qml_uri` and `qml_version` inside `#[qobject]` to tell the Rust build script to generate a QML plugin
 that will register the QObject with QML engine at startup. If you want the name of the QML type and the Rust type to be different,
 you can also add `qml_name = "OtherName"`. This takes the place of the
 [qt_add_qml_module CMake function](https://doc.qt.io/qt-6/qt-add-qml-module.html) (because that doesn't work with CXX-Qt's build system).
@@ -92,7 +92,7 @@ For more details on the available types, see the [Qt types page](../concepts/typ
 ## qobject::T
 
 CXX-Qt will then automatically generate a new QObject subclass for our `MyObject` struct and expose it as an [`extern "C++"` opaque type](https://cxx.rs/extern-c++.html#opaque-c-types) to Rust.
-For any Rust struct `T` that is marked with `#[cxx_qt::qobject]`, CXX-Qt will expose the corresponding C++ QObject under `qobject::T`.
+For any Rust struct `T` that is marked with `#[qobject]`, CXX-Qt will expose the corresponding C++ QObject under `qobject::T`.
 In our case, this means we can refer to the C++ QObject for our `MyObject` struct, as `qobject::MyObject`.
 
 This type can be used like any other CXX opaque type.

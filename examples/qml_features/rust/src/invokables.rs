@@ -16,7 +16,8 @@ pub mod qobject {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         type RustInvokables = super::RustInvokablesRust;
     }
 

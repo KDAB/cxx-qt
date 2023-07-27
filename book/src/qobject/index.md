@@ -14,7 +14,7 @@ For a simpler introduction, take a look at our [Getting Started guide](../gettin
 
 QObject Features and Parts:
   * [`#[cxx_qt::bridge]` - The macro around the module](./bridge-macro.md)
-  * [`#[cxx_qt::qobject]` - Marking a Rust struct as a QObject](./qobject_struct.md)
+  * [`#[qobject]` - Marking a Rust struct as a QObject](./qobject_struct.md)
   * [`#[qsignal]` - A macro for defining signals](./signals.md)
   * [`qobject:T` - The generated QObject](./generated-qobject.md)
   * [`CxxQtThread` - Queueing closures onto the Qt event loop](./cxxqtthread.md)

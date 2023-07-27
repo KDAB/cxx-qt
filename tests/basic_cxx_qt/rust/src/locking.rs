@@ -8,7 +8,7 @@
 pub mod qobject {
     unsafe extern "RustQt" {
         /// A QObject which has cxx_qt::Locking
-        #[cxx_qt::qobject]
+        #[qobject]
         type RustLockingEnabled = super::RustLockingEnabledRust;
 
         fn get_counter(self: &RustLockingEnabled) -> u32;
@@ -18,7 +18,7 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         /// A QObject which has !cxx_qt::Locking
-        #[cxx_qt::qobject]
+        #[qobject]
         type RustLockingDisabled = super::RustLockingDisabledRust;
 
         fn get_counter(self: &RustLockingDisabled) -> u32;

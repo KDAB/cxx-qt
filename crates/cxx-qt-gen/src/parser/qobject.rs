@@ -9,12 +9,11 @@ use crate::{
         property::ParsedQProperty, signals::ParsedSignal,
     },
     syntax::{
-        attribute::{attribute_find_path, attribute_tokens_to_map, AttributeDefault},
-        foreignmod::ForeignTypeIdentAlias,
+        attribute::attribute_find_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
     },
 };
-use syn::{Attribute, Error, Ident, ImplItem, Item, ItemImpl, LitStr, Result};
+use syn::{Attribute, Error, Ident, ImplItem, Item, ItemImpl, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -65,32 +64,32 @@ pub struct ParsedQObject {
     pub others: Vec<Item>,
 }
 
-impl ParsedQObject {
-    /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the cxx_qt::qobject specified
-    pub fn from_foreign_item_type(
-        qobject_ty: &ForeignTypeIdentAlias,
-        attr_index: usize,
-    ) -> Result<Self> {
-        let qml_metadata = Self::parse_qml_metadata(qobject_ty, attr_index)?;
+impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
+    type Error = syn::Error;
 
-        let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-            &qobject_ty.attrs[attr_index],
-            AttributeDefault::Some(|span| LitStr::new("", span)),
-        )?;
+    /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
+    fn try_from(qobject_ty: &ForeignTypeIdentAlias) -> Result<Self> {
+        let mut qobject_ty = qobject_ty.clone();
+
+        // Find any QML metadata
+        let qml_metadata = Self::parse_qml_metadata(&qobject_ty.ident_left, &mut qobject_ty.attrs)?;
 
         // Find if there is any base class
-        let base_class = attrs_map
-            .get(&quote::format_ident!("base"))
-            .map(|base| base.value());
+        let base_class = attribute_find_path(&qobject_ty.attrs, &["base"])
+            .map(|index| {
+                let attr = qobject_ty.attrs.remove(index);
+                expr_to_string(&attr.meta.require_name_value()?.value)
+            })
+            .transpose()?;
 
         // Load the namespace, if it is empty then the ParsedCxxQtData will inject any global namespace
-        let namespace = attrs_map
-            .get(&quote::format_ident!("namespace"))
-            .map_or_else(|| "".to_owned(), |base| base.value());
-
-        // Remove the macro from the type
-        let mut qobject_ty = qobject_ty.clone();
-        qobject_ty.attrs.remove(attr_index);
+        let namespace = attribute_find_path(&qobject_ty.attrs, &["namespace"])
+            .map(|index| {
+                let attr = qobject_ty.attrs.remove(index);
+                expr_to_string(&attr.meta.require_name_value()?.value)
+            })
+            .transpose()?
+            .unwrap_or_else(|| "".to_owned());
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
@@ -112,32 +111,39 @@ impl ParsedQObject {
             others: vec![],
         })
     }
+}
 
+impl ParsedQObject {
     fn parse_qml_metadata(
-        qobject_ty: &ForeignTypeIdentAlias,
-        attr_index: usize,
+        qobject_ident: &Ident,
+        attrs: &mut Vec<Attribute>,
     ) -> Result<Option<QmlElementMetadata>> {
-        let attrs_map = attribute_tokens_to_map::<Ident, LitStr>(
-            &qobject_ty.attrs[attr_index],
-            AttributeDefault::Some(|span| LitStr::new("", span)),
-        )?;
-        match attrs_map.get(&quote::format_ident!("qml_element")) {
-            Some(qml_element) => {
-                let name = if qml_element.value().is_empty() {
-                    qobject_ty.ident_left.to_string()
-                } else {
-                    qml_element.value()
-                };
-                let qml_uncreatable = attrs_map.get(&quote::format_ident!("qml_uncreatable"));
-                let qml_singleton = attrs_map.get(&quote::format_ident!("qml_singleton"));
-                Ok(Some(QmlElementMetadata {
-                    name,
-                    uncreatable: qml_uncreatable.is_some(),
-                    singleton: qml_singleton.is_some(),
-                }))
-            }
-            None => Ok(None),
+        // Find if there is a qml_element attribute
+        if let Some(index) = attribute_find_path(attrs, &["qml_element"]) {
+            // Extract the name of the qml_element
+            let name = match attrs.remove(index).meta {
+                Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
+                _ => qobject_ident.to_string(),
+            };
+
+            // Determine if this element is uncreatable
+            let uncreatable = attribute_find_path(attrs, &["qml_uncreatable"])
+                .map(|index| attrs.remove(index))
+                .is_some();
+
+            // Determine if this element is a singleton
+            let singleton = attribute_find_path(attrs, &["qml_singleton"])
+                .map(|index| attrs.remove(index))
+                .is_some();
+
+            return Ok(Some(QmlElementMetadata {
+                name,
+                uncreatable,
+                singleton,
+            }));
         }
+
+        Ok(None)
     }
 
     pub fn parse_trait_impl(&mut self, imp: ItemImpl) -> Result<()> {
@@ -232,20 +238,20 @@ pub mod tests {
 
     pub fn create_parsed_qobject() -> ParsedQObject {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject]
+            #[qobject]
             type MyObject = super::MyObjectRust;
         };
-        ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap()
+        ParsedQObject::try_from(&qobject_struct).unwrap()
     }
 
     #[test]
     fn test_from_struct_no_base_class() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject]
+            #[qobject]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
         assert!(qobject.base_class.is_none());
         assert!(qobject.qml_metadata.is_none());
     }
@@ -253,35 +259,36 @@ pub mod tests {
     #[test]
     fn test_from_struct_base_class() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(base = "QStringListModel")]
+            #[qobject]
+            #[base = "QStringListModel"]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
         assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
     }
 
     #[test]
     fn test_from_struct_properties_and_fields() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject]
+            #[qobject]
             #[qproperty(i32, int_property)]
             #[qproperty(i32, public_property)]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
         assert_eq!(qobject.properties.len(), 2);
     }
 
     #[test]
     fn test_from_struct_fields() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject]
+            #[qobject]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::from_foreign_item_type(&qobject_struct, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
         assert_eq!(qobject.properties.len(), 0);
     }
 
@@ -330,14 +337,12 @@ pub mod tests {
     #[test]
     fn test_parse_struct_fields_valid() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject]
+            #[qobject]
             #[qproperty(f64, f64_property)]
             #[qproperty(f64, public_property)]
             type T = super::TRust;
         };
-        let properties = ParsedQObject::from_foreign_item_type(&item, 0)
-            .unwrap()
-            .properties;
+        let properties = ParsedQObject::try_from(&item).unwrap().properties;
         assert_eq!(properties.len(), 2);
 
         assert_eq!(properties[0].ident, "f64_property");
@@ -350,10 +355,11 @@ pub mod tests {
     #[test]
     fn test_qml_metadata() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_element)]
+            #[qobject]
+            #[qml_element]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&item).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -367,10 +373,11 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_named() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_element = "OtherName")]
+            #[qobject]
+            #[qml_element = "OtherName"]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&item).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -384,10 +391,12 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_singleton() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_element, qml_singleton)]
+            #[qobject]
+            #[qml_element]
+            #[qml_singleton]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&item).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -401,10 +410,12 @@ pub mod tests {
     #[test]
     fn test_qml_metadata_uncreatable() {
         let item: ForeignTypeIdentAlias = parse_quote! {
-            #[cxx_qt::qobject(qml_element, qml_uncreatable)]
+            #[qobject]
+            #[qml_element]
+            #[qml_uncreatable]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::from_foreign_item_type(&item, 0).unwrap();
+        let qobject = ParsedQObject::try_from(&item).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {

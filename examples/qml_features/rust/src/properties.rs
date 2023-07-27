@@ -19,7 +19,8 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         // ANCHOR: book_properties_struct
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(bool, connected)]
         #[qproperty(QUrl, connected_url)]
         #[qproperty(QUrl, previous_connected_url)]

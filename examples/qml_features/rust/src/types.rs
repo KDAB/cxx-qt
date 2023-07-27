@@ -74,7 +74,8 @@ pub mod ffi {
     }
 
     unsafe extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(bool, boolean)]
         #[qproperty(QPointF, point)]
         #[qproperty(QUrl, url)]

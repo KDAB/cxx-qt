@@ -22,7 +22,8 @@ pub mod qobject {
     }
 
     extern "RustQt" {
-        #[cxx_qt::qobject(qml_element)]
+        #[qobject]
+        #[qml_element]
         #[qproperty(QString, title)]
         #[qproperty(QUrl, url)]
         type ThreadingWebsite = super::ThreadingWebsiteRust;
