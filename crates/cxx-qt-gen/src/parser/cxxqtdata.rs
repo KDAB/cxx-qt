@@ -86,34 +86,50 @@ impl ParsedCxxQtData {
                     == Some("RustQt".to_string())
                 {
                     for foreign_item in &foreign_mod.items {
-                        if let ForeignItem::Verbatim(tokens) = foreign_item {
-                            let mut foreign_alias: ForeignTypeIdentAlias =
-                                syn::parse2(tokens.clone())?;
+                        match foreign_item {
+                            // Fn are parsed later in parse_foreign_mod_rust_qt
+                            ForeignItem::Fn(_) => {}
+                            ForeignItem::Verbatim(tokens) => {
+                                let mut foreign_alias: ForeignTypeIdentAlias =
+                                    syn::parse2(tokens.clone())?;
 
-                            // Check this type is tagged with a #[qobject]
-                            if let Some(index) =
-                                attribute_find_path(&foreign_alias.attrs, &["qobject"])
-                            {
-                                foreign_alias.attrs.remove(index);
+                                // Check this type is tagged with a #[qobject]
+                                if let Some(index) =
+                                    attribute_find_path(&foreign_alias.attrs, &["qobject"])
+                                {
+                                    foreign_alias.attrs.remove(index);
 
-                                // Load the QObject
-                                let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
+                                    // Load the QObject
+                                    let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
 
-                                // Inject the bridge namespace if the qobject one is empty
-                                if qobject.namespace.is_empty() && !self.namespace.is_empty() {
-                                    qobject.namespace = self.namespace.clone();
+                                    // Inject the bridge namespace if the qobject one is empty
+                                    if qobject.namespace.is_empty() && !self.namespace.is_empty() {
+                                        qobject.namespace = self.namespace.clone();
+                                    }
+
+                                    // Add the QObject type to the qualified mappings
+                                    self.qualified_mappings.insert(
+                                        foreign_alias.ident_left.clone(),
+                                        path_from_idents(
+                                            &self.module_ident,
+                                            &foreign_alias.ident_left,
+                                        ),
+                                    );
+
+                                    // Note that we assume a compiler error will occur later
+                                    // if you had two structs with the same name
+                                    self.qobjects
+                                        .insert(foreign_alias.ident_left.clone(), qobject);
+                                } else {
+                                    return Err(Error::new(
+                                        foreign_item.span(),
+                                        "type A = super::B must be tagged with #[qobject]",
+                                    ));
                                 }
-
-                                // Add the QObject type to the qualified mappings
-                                self.qualified_mappings.insert(
-                                    foreign_alias.ident_left.clone(),
-                                    path_from_idents(&self.module_ident, &foreign_alias.ident_left),
-                                );
-
-                                // Note that we assume a compiler error will occur later
-                                // if you had two structs with the same name
-                                self.qobjects
-                                    .insert(foreign_alias.ident_left.clone(), qobject);
+                            }
+                            // Const Macro, Type are unsupported in extern "RustQt" for now
+                            _others => {
+                                return Err(Error::new(foreign_item.span(), "Unsupported item"))
                             }
                         }
                     }
@@ -346,8 +362,6 @@ mod tests {
         let module: ItemMod = parse_quote! {
             mod module {
                 extern "RustQt" {
-                    type Other = super::OtherRust;
-
                     #[qobject]
                     type MyObject = super::MyObjectRust;
                 }
@@ -366,8 +380,6 @@ mod tests {
         let module: ItemMod = parse_quote! {
             mod module {
                 extern "RustQt" {
-                    type Other = super::OtherRust;
-
                     #[qobject]
                     type MyObject = super::MyObjectRust;
                     #[qobject]
@@ -392,7 +404,6 @@ mod tests {
         let module: ItemMod = parse_quote! {
             mod module {
                 extern "RustQt" {
-                    type Other = super::OtherRust;
                     #[qobject]
                     #[namespace = "qobject_namespace"]
                     type MyObject = super::MyObjectRust;
@@ -424,7 +435,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_qobjects_no_macro() {
+    fn test_find_qobjects_no_qobject() {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
 
         let module: ItemMod = parse_quote! {
@@ -436,8 +447,7 @@ mod tests {
             }
         };
         let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
-        assert!(result.is_ok());
-        assert_eq!(cxx_qt_data.qobjects.len(), 0);
+        assert!(result.is_err());
     }
 
     #[test]
