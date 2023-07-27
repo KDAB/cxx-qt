@@ -31,6 +31,8 @@ pub struct ParsedCxxMappings {
     ///
     /// This is used in the C++ generation to map the Rust type name to the C++ name
     pub namespaces: BTreeMap<String, String>,
+    /// Mappings for CXX types when used outside the bridge
+    pub qualified: BTreeMap<Ident, Path>,
 }
 
 impl ParsedCxxMappings {
@@ -52,10 +54,8 @@ impl ParsedCxxMappings {
 }
 
 pub struct ParsedCxxQtData {
-    /// Mappings for CXX types when used in C++
+    /// Mappings for CXX types when used in C++ or Rust
     pub cxx_mappings: ParsedCxxMappings,
-    /// Mappings for CXX types when used outside the bridge
-    pub qualified_mappings: BTreeMap<Ident, Path>,
     /// Map of the QObjects defined in the module that will be used for code generation
     //
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
@@ -74,7 +74,6 @@ impl ParsedCxxQtData {
     pub fn new(module_ident: Ident, namespace: String) -> Self {
         Self {
             cxx_mappings: ParsedCxxMappings::default(),
-            qualified_mappings: BTreeMap::<Ident, Path>::default(),
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
@@ -110,7 +109,7 @@ impl ParsedCxxQtData {
                                     }
 
                                     // Add the QObject type to the qualified mappings
-                                    self.qualified_mappings.insert(
+                                    self.cxx_mappings.qualified.insert(
                                         foreign_alias.ident_left.clone(),
                                         path_from_idents(
                                             &self.module_ident,
@@ -227,7 +226,7 @@ impl ParsedCxxQtData {
         } else {
             ident.clone()
         };
-        self.qualified_mappings.insert(
+        self.cxx_mappings.qualified.insert(
             ident.clone(),
             path_from_idents(&self.module_ident, &rust_ident),
         );
@@ -613,10 +612,11 @@ mod tests {
         assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
@@ -637,10 +637,11 @@ mod tests {
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
@@ -661,10 +662,11 @@ mod tests {
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
         assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
@@ -698,17 +700,19 @@ mod tests {
             "bridge_namespace"
         );
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
         );
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("B"))
                 .unwrap(),
             &parse_quote! { ffi::B }
@@ -743,17 +747,19 @@ mod tests {
             "type_namespace"
         );
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
         );
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("B"))
                 .unwrap(),
             &parse_quote! { ffi::B }
@@ -790,17 +796,19 @@ mod tests {
             "extern_namespace"
         );
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 2);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
         );
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("C"))
                 .unwrap(),
             &parse_quote! { ffi::C }
@@ -832,10 +840,11 @@ mod tests {
             "enum_namespace"
         );
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("EnumA"))
                 .unwrap(),
             &parse_quote! { ffi::EnumA }
@@ -867,10 +876,11 @@ mod tests {
             "struct_namespace"
         );
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("StructA"))
                 .unwrap(),
             &parse_quote! { ffi::StructA }
@@ -890,10 +900,11 @@ mod tests {
         assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
         assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
 
-        assert_eq!(cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::B }
