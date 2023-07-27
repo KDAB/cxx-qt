@@ -5,7 +5,10 @@
 
 use std::collections::BTreeMap;
 
-use syn::{Ident, Path};
+use quote::format_ident;
+use syn::{spanned::Spanned, Attribute, Ident, Path, Result};
+
+use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string, path::path_from_idents};
 
 #[derive(Default)]
 pub struct ParsedCxxMappings {
@@ -18,6 +21,8 @@ pub struct ParsedCxxMappings {
     /// This is used in the C++ generation to map the Rust type name to the C++ name
     pub namespaces: BTreeMap<String, String>,
     /// Mappings for CXX types when used outside the bridge
+    ///
+    /// This is used in the Rust generation to map the bridge type A to ffi::B
     pub qualified: BTreeMap<Ident, Path>,
 }
 
@@ -36,5 +41,50 @@ impl ParsedCxxMappings {
         } else {
             cxx_name
         }
+    }
+
+    /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
+    pub fn populate(
+        &mut self,
+        ident: &Ident,
+        attrs: &[Attribute],
+        parent_namespace: &str,
+        module_ident: &Ident,
+    ) -> Result<()> {
+        // Find if there is a namespace (for C++ generation)
+        let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
+            expr_to_string(&attrs[index].meta.require_name_value()?.value)?
+        } else {
+            parent_namespace.to_string()
+        };
+
+        if !namespace.is_empty() {
+            self.namespaces.insert(ident.to_string(), namespace);
+        }
+
+        // Find if there is a cxx_name mapping (for C++ generation)
+        if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
+            self.cxx_names.insert(
+                ident.to_string(),
+                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
+            );
+        }
+
+        // Find if there is a rust_name mapping
+        let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
+            format_ident!(
+                "{}",
+                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
+                span = attrs[index].span()
+            )
+        } else {
+            ident.clone()
+        };
+
+        // Add the rust_ident to qualified mappings (for Rust generation using ffi::T)
+        self.qualified
+            .insert(ident.clone(), path_from_idents(module_ident, &rust_ident));
+
+        Ok(())
     }
 }
