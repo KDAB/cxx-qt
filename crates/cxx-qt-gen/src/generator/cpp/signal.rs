@@ -9,7 +9,7 @@ use crate::{
         naming::{qobject::QObjectName, signals::QSignalName},
         utils::cpp::syn_type_to_cpp_type,
     },
-    parser::{cxxqtdata::ParsedCxxMappings, signals::ParsedSignal},
+    parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
 };
 use indoc::formatdoc;
 use syn::Result;

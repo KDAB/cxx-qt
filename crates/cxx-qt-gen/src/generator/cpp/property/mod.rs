@@ -8,7 +8,7 @@ use crate::generator::{
     naming::{property::QPropertyName, qobject::QObjectName},
     utils::cpp::syn_type_to_cpp_type,
 };
-use crate::parser::{cxxqtdata::ParsedCxxMappings, property::ParsedQProperty};
+use crate::parser::{mappings::ParsedCxxMappings, property::ParsedQProperty};
 use syn::Result;
 
 mod getter;

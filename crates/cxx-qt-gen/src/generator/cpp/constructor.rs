@@ -6,7 +6,7 @@
 use super::qobject::GeneratedCppQObjectBlocks;
 use crate::{
     generator::{cpp::GeneratedCppQObject, utils::cpp::syn_type_to_cpp_type},
-    parser::{constructor::Constructor, cxxqtdata::ParsedCxxMappings},
+    parser::{constructor::Constructor, mappings::ParsedCxxMappings},
     CppFragment,
 };
 
