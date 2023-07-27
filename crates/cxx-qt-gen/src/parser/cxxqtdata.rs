@@ -15,11 +15,10 @@ use crate::{
     },
     syntax::expr::expr_to_string,
 };
-use quote::format_ident;
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Attribute, Error, ForeignItem, Ident, Item, ItemForeignMod, ItemImpl, Result,
-    Type, TypePath,
+    spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
+    ItemStruct, Result, Type, TypePath,
 };
 
 pub struct ParsedCxxQtData {
@@ -119,11 +118,10 @@ impl ParsedCxxQtData {
 
         // Consider if shared types have mappings
         match item {
-            Item::Enum(item) => {
-                self.populate_mappings(&item.ident, &item.attrs, &bridge_namespace)?;
-            }
-            Item::Struct(item) => {
-                self.populate_mappings(&item.ident, &item.attrs, &bridge_namespace)?;
+            Item::Enum(ItemEnum { attrs, ident, .. })
+            | Item::Struct(ItemStruct { attrs, ident, .. }) => {
+                self.cxx_mappings
+                    .populate(ident, attrs, &bridge_namespace, &self.module_ident)?;
             }
             _others => {}
         }
@@ -150,55 +148,13 @@ impl ParsedCxxQtData {
 
         // Read each of the types in the mod (type A;)
         for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-            self.populate_mappings(&foreign_type.ident, &foreign_type.attrs, &block_namespace)?;
+            self.cxx_mappings.populate(
+                &foreign_type.ident,
+                &foreign_type.attrs,
+                &block_namespace,
+                &self.module_ident,
+            )?;
         }
-
-        Ok(())
-    }
-
-    /// Helper which adds cxx_name, rust_name, and namespace mappings from the ident, attrs, parent namespace, and module ident
-    fn populate_mappings(
-        &mut self,
-        ident: &Ident,
-        attrs: &[Attribute],
-        parent_namespace: &str,
-    ) -> Result<()> {
-        // Retrieve the namespace for the type itself if there is one
-        let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
-            expr_to_string(&attrs[index].meta.require_name_value()?.value)?
-        } else {
-            parent_namespace.to_string()
-        };
-
-        // There is a cxx_name attribute
-        if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
-            self.cxx_mappings.cxx_names.insert(
-                ident.to_string(),
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-            );
-        }
-
-        // There is a namespace
-        if !namespace.is_empty() {
-            self.cxx_mappings
-                .namespaces
-                .insert(ident.to_string(), namespace);
-        }
-
-        // Add type to qualified mappings
-        let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
-            format_ident!(
-                "{}",
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-                span = attrs[index].span()
-            )
-        } else {
-            ident.clone()
-        };
-        self.cxx_mappings.qualified.insert(
-            ident.clone(),
-            path_from_idents(&self.module_ident, &rust_ident),
-        );
 
         Ok(())
     }
