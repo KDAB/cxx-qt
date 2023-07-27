@@ -64,22 +64,22 @@ impl Default for RustInvokablesRust {
 // ANCHOR: book_invokable_impl
 impl qobject::RustInvokables {
     /// Immutable invokable method that returns the QColor
-    fn load_color(&self) -> Result<QColor, i32> {
+    pub fn load_color(&self) -> Result<QColor, i32> {
         Ok(self.as_qcolor())
     }
 
     /// Mutable invokable method that stores a color
-    fn store_color(self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
+    pub fn store_color(self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
         self.store_helper(red, green, blue);
     }
 
     /// Mutable invokable method with no parameters that resets the color
-    fn reset(self: Pin<&mut Self>) {
+    pub fn reset(self: Pin<&mut Self>) {
         self.store_helper(0.0, 0.4667, 0.7843);
     }
 
     /// C++ only method which returns the red value
-    fn red_value(&self) -> f32 {
+    pub fn red_value(&self) -> f32 {
         self.red
     }
 
@@ -95,7 +95,7 @@ impl qobject::RustInvokables {
 
 impl RustInvokablesRust {
     /// Immutable Rust context method that returns the QColor
-    fn as_qcolor(&self) -> QColor {
+    pub fn as_qcolor(&self) -> QColor {
         QColor::from_rgb(
             (self.red * 255.0).round() as i32,
             (self.green * 255.0).round() as i32,

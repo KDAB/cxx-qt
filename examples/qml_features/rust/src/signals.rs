@@ -70,7 +70,7 @@ pub struct RustSignalsRust {
 
 impl qobject::RustSignals {
     /// Connect to the given url
-    fn connect(self: Pin<&mut Self>, url: &QUrl) {
+    pub fn connect(self: Pin<&mut Self>, url: &QUrl) {
         // Check that the url starts with kdab
         if url.to_string().starts_with("https://kdab.com") {
             // Emit a signal to QML stating that we have connected
@@ -82,7 +82,7 @@ impl qobject::RustSignals {
     }
 
     /// Disconnect
-    fn disconnect(self: Pin<&mut Self>) {
+    pub fn disconnect(self: Pin<&mut Self>) {
         // Emit a signal to QML stating that we have disconnected
         self.disconnected();
     }

@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows a custom parent class can be used
 #[cxx_qt::bridge(cxx_file_stem = "custom_parent_class")]
-mod qobject {
+pub mod qobject {
     unsafe extern "C++" {
         /// QColor from cxx_qt_lib
         type QColor = cxx_qt_lib::QColor;
@@ -56,11 +56,11 @@ mod qobject {
         #[cxx_override]
         unsafe fn paint(self: Pin<&mut CustomParentClass>, painter: *mut QPainter);
 
-        // Define that we need to inherit size() from the base class
+        /// Define that we need to inherit size() from the base class
         #[inherit]
         fn size(self: &CustomParentClass) -> QSizeF;
 
-        // Define that we need to inherit update() from the base class
+        /// Define that we need to inherit update() from the base class
         #[inherit]
         fn update(self: Pin<&mut CustomParentClass>);
     }
@@ -81,10 +81,14 @@ pub struct CustomParentClassRust {
 
 impl qobject::CustomParentClass {
     /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
-    fn paint(self: Pin<&mut Self>, painter: *mut qobject::QPainter) {
+    ///
+    /// # Safety
+    ///
+    /// As we deref a pointer in a public method this needs to be marked as unsafe
+    pub unsafe fn paint(self: Pin<&mut Self>, painter: *mut qobject::QPainter) {
         // We need to convert the *mut QPainter to a Pin<&mut QPainter> so that we can reach the methods
-        if let Some(painter) = unsafe { painter.as_mut() } {
-            let mut pinned_painter = unsafe { Pin::new_unchecked(painter) };
+        if let Some(painter) = painter.as_mut() {
+            let mut pinned_painter = Pin::new_unchecked(painter);
 
             // Now pinned painter can be used as normal
             // to render a rectangle with two colours

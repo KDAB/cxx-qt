@@ -27,7 +27,7 @@ impl From<&MyObjectRust> for DataSerde {
 const DEFAULT_STR: &str = r#"{"number": 1, "string": "Hello World!"}"#;
 
 #[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "core")]
-mod qobject {
+pub mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");

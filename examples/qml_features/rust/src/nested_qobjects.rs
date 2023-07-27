@@ -35,9 +35,6 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         /// Print the count of the given inner QObject
-        //
-        // This method needs to be unsafe otherwise clippy complains that the
-        // public method might dereference the raw pointer.
         #[qinvokable]
         unsafe fn print_count(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
 
@@ -72,21 +69,20 @@ impl Default for OuterObjectRust {
 
 impl qobject::OuterObject {
     /// Print the count of the given inner QObject
-    //
-    // This method needs to be unsafe otherwise clippy complains that the
-    // public method might dereference the raw pointer.
-    unsafe fn print_count(self: Pin<&mut Self>, inner: *mut qobject::InnerObject) {
-        if let Some(inner) = unsafe { inner.as_ref() } {
+    ///
+    /// # Safety
+    ///
+    /// As we deref a pointer in a public method this needs to be marked as unsafe
+    pub unsafe fn print_count(self: Pin<&mut Self>, inner: *mut qobject::InnerObject) {
+        if let Some(inner) = inner.as_ref() {
             println!("Inner object's counter property: {}", inner.counter());
         }
 
-        unsafe {
-            self.called(inner);
-        }
+        self.called(inner);
     }
 
     /// Reset the counter of the inner QObject stored in the Q_PROPERTY
-    fn reset(self: Pin<&mut Self>) {
+    pub fn reset(self: Pin<&mut Self>) {
         // We need to convert the *mut T to a Pin<&mut T> so that we can reach the methods
         if let Some(inner) = unsafe { self.inner().as_mut() } {
             let pinned_inner = unsafe { Pin::new_unchecked(inner) };

@@ -71,7 +71,7 @@ impl Default for ThreadingWebsiteRust {
 
 impl qobject::ThreadingWebsite {
     /// Swap the URL between kdab.com and github.com
-    fn change_url(self: Pin<&mut Self>) {
+    pub fn change_url(self: Pin<&mut Self>) {
         let new_url = if self.url().to_string() == "https://kdab.com" {
             "https://github.com/kdab/cxx-qt"
         } else {
@@ -81,7 +81,7 @@ impl qobject::ThreadingWebsite {
     }
 
     /// Simulate delay of a network request to retrieve the title of the website
-    fn fetch_title(mut self: Pin<&mut Self>) {
+    pub fn fetch_title(mut self: Pin<&mut Self>) {
         // Check that we aren't already retrieving a title
         if self
             .rust()

@@ -71,7 +71,7 @@ impl Default for RustPropertiesRust {
 
 impl qobject::RustProperties {
     /// Connect to the given url
-    fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
+    pub fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
         // Check that the url starts with kdab
         if url.to_string().starts_with("https://kdab.com") {
             self.as_mut().set_connected(true);
@@ -91,7 +91,7 @@ impl qobject::RustProperties {
     }
 
     /// Disconnect from the stored url
-    fn disconnect(mut self: Pin<&mut Self>) {
+    pub fn disconnect(mut self: Pin<&mut Self>) {
         self.as_mut().set_connected(false);
         self.as_mut()
             .set_status_message(QString::from("Disconnected"));
