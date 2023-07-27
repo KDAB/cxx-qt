@@ -4,36 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::path::path_compare_str;
-use std::collections::HashMap;
-use syn::{
-    // ext::IdentExt,
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Attribute,
-    Error,
-    Meta,
-    Result,
-    Token,
-};
-
-/// Representation of a key and an optional value in an attribute, eg `attribute(key = value)` or `attribute(key)`
-struct AttributeMapValue<K: Parse, V: Parse> {
-    pub key: K,
-    pub value: Option<V>,
-}
-
-impl<K: Parse, V: Parse> Parse for AttributeMapValue<K, V> {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let key = input.parse::<K>()?;
-        let value = if input.peek(Token![=]) {
-            input.parse::<Token![=]>()?;
-            Some(input.parse::<V>()?)
-        } else {
-            None
-        };
-        Ok(AttributeMapValue { key, value })
-    }
-}
+use syn::Attribute;
 
 /// Returns the index of the first [syn::Attribute] that matches a given path
 pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> {
@@ -46,39 +17,11 @@ pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> 
     None
 }
 
-/// Returns a map of keys and values from an attribute, eg attribute(a = b, c = d)
-///
-/// A default value can be specified by using [AttributeDefault].
-pub fn attribute_tokens_to_map<K: std::cmp::Eq + std::hash::Hash + Parse, V: Parse>(
-    attr: &Attribute,
-) -> Result<HashMap<K, V>> {
-    if let Meta::List(meta_list) = &attr.meta {
-        meta_list.parse_args_with(|input: ParseStream| -> Result<HashMap<K, V>> {
-            let mut map = HashMap::new();
-            for item in input.parse_terminated(AttributeMapValue::parse, Token![,])? {
-                if let std::collections::hash_map::Entry::Vacant(e) = map.entry(item.key) {
-                    if let Some(value) = item.value {
-                        e.insert(value);
-                    } else {
-                        return Err(Error::new(attr.span(), "Attribute key is missing a value"));
-                    }
-                } else {
-                    return Err(Error::new(attr.span(), "Duplicate keys in the attributes"));
-                }
-            }
-            Ok(map)
-        })
-    } else {
-        Ok(HashMap::default())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use quote::format_ident;
-    use syn::{parse_quote, Ident, ItemMod, LitStr};
+    use syn::{parse_quote, ItemMod};
 
     #[test]
     fn test_attribute_find_path() {
@@ -94,56 +37,5 @@ mod tests {
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "object"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "missing"]).is_none());
-    }
-
-    #[test]
-    fn test_attribute_tokens_to_map() {
-        let module: ItemMod = parse_quote! {
-            #[qinvokable]
-            #[cxx_qt::bridge]
-            #[cxx_qt::object(MyObject)]
-            #[cxx_qt::bridge(namespace = "my::namespace")]
-            #[cxx_qt::list(A, B, C)]
-            #[cxx_qt::bridge(a = "b", namespace = "my::namespace")]
-            #[cxx_qt::bridge(a = "b", namespace = "my::namespace", namespace = "my::namespace")]
-            #[cxx_qt::bridge()]
-            #[qinvokable(inner)]
-            mod module;
-        };
-
-        assert_eq!(
-            attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[0])
-                .unwrap()
-                .len(),
-            0
-        );
-        assert_eq!(
-            attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[1])
-                .unwrap()
-                .len(),
-            0
-        );
-        assert!(attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[2]).is_err());
-
-        let result = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[3]).unwrap();
-        let ident = format_ident!("namespace");
-        assert_eq!(result.len(), 1);
-        assert!(result.contains_key(&ident));
-        assert_eq!(result[&ident].value(), "my::namespace");
-
-        assert!(attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[4]).is_err());
-
-        let result = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[5]).unwrap();
-        let ident = format_ident!("namespace");
-        assert_eq!(result.len(), 2);
-        assert!(result.contains_key(&ident));
-        assert_eq!(result[&ident].value(), "my::namespace");
-
-        assert!(attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[6]).is_err());
-
-        let result = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[7]).unwrap();
-        assert_eq!(result.len(), 0);
-
-        assert!(attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[8]).is_err());
     }
 }
