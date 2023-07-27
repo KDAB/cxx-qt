@@ -9,7 +9,7 @@ use crate::{
         cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         utils::cpp::syn_type_to_cpp_return_type,
     },
-    parser::{cxxqtdata::ParsedCxxMappings, inherit::ParsedInheritedMethod},
+    parser::{inherit::ParsedInheritedMethod, mappings::ParsedCxxMappings},
 };
 
 use syn::Result;

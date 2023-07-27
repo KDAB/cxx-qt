@@ -15,7 +15,7 @@ use crate::{
         },
     },
     parser::{
-        cxxqtdata::ParsedCxxMappings,
+        mappings::ParsedCxxMappings,
         method::{ParsedMethod, ParsedQInvokableSpecifiers},
     },
 };
