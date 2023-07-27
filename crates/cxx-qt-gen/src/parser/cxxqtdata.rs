@@ -526,55 +526,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cxx_mappings_cxx_name_empty() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            extern "C++" {
-                type A;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name_normal() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            extern "C++" {
-                #[cxx_name = "B"]
-                type A;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name_unsafe() {
+    fn test_cxx_mappings_cxx_name() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
@@ -595,99 +547,6 @@ mod tests {
                 .get(&format_ident!("A"))
                 .unwrap(),
             &parse_quote! { ffi::A }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name_namespace_bridge() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-        cxx_qt_data.namespace = "bridge_namespace".to_owned();
-
-        let item: Item = parse_quote! {
-            extern "C++" {
-                type A;
-
-                #[cxx_name = "C"]
-                type B;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("B").unwrap(), "C");
-
-        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
-            "bridge_namespace"
-        );
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("B").unwrap(),
-            "bridge_namespace"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("B"))
-                .unwrap(),
-            &parse_quote! { ffi::B }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name_namespace_items() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-        cxx_qt_data.namespace = "namespace".to_owned();
-
-        let item: Item = parse_quote! {
-            #[namespace = "extern_namespace"]
-            extern "C++" {
-                type A;
-
-                #[namespace = "type_namespace"]
-                type B;
-            }
-        };
-        // Also ensure item namespace is chosen instead of bridge namespace
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 0);
-
-        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
-            "extern_namespace"
-        );
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("B").unwrap(),
-            "type_namespace"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("B"))
-                .unwrap(),
-            &parse_quote! { ffi::B }
         );
     }
 
@@ -809,30 +668,6 @@ mod tests {
                 .get(&format_ident!("StructA"))
                 .unwrap(),
             &parse_quote! { ffi::StructA }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_rust_name_normal() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            extern "C++" {
-                #[rust_name = "B"]
-                type A;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert!(cxx_qt_data.cxx_mappings.cxx_names.is_empty());
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::B }
         );
     }
 

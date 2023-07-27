@@ -88,3 +88,127 @@ impl ParsedCxxMappings {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use quote::format_ident;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_attribute_none() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(&format_ident!("A"), &[], "", &format_ident!("ffi"))
+            .is_ok());
+
+        assert!(mappings.cxx_names.is_empty());
+        assert!(mappings.namespaces.is_empty());
+        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { ffi::A }
+        );
+    }
+
+    #[test]
+    fn test_attribute_cxx_name() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(
+                &format_ident!("A"),
+                &[parse_quote! { #[cxx_name = "B"] }],
+                "",
+                &format_ident!("ffi")
+            )
+            .is_ok());
+
+        assert_eq!(mappings.cxx_names.len(), 1);
+        assert_eq!(mappings.cxx_names.get("A").unwrap(), "B");
+        assert!(mappings.namespaces.is_empty());
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { ffi::A }
+        );
+    }
+
+    #[test]
+    fn test_attribute_namespace() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(
+                &format_ident!("A"),
+                &[parse_quote! { #[namespace = "type_namespace"] }],
+                "bridge_namespace",
+                &format_ident!("ffi")
+            )
+            .is_ok());
+
+        assert!(mappings.cxx_names.is_empty());
+        assert_eq!(mappings.namespaces.get("A").unwrap(), "type_namespace");
+        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { ffi::A }
+        );
+    }
+
+    #[test]
+    fn test_attribute_rust_name() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(
+                &format_ident!("A"),
+                &[parse_quote! { #[rust_name = "B"] }],
+                "",
+                &format_ident!("ffi")
+            )
+            .is_ok());
+
+        assert!(mappings.cxx_names.is_empty());
+        assert!(mappings.namespaces.is_empty());
+        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { ffi::B }
+        );
+    }
+
+    #[test]
+    fn test_parent_namespace() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(
+                &format_ident!("A"),
+                &[],
+                "bridge_namespace",
+                &format_ident!("ffi")
+            )
+            .is_ok());
+
+        assert!(mappings.cxx_names.is_empty());
+        assert_eq!(mappings.namespaces.get("A").unwrap(), "bridge_namespace");
+        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { ffi::A }
+        );
+    }
+
+    #[test]
+    fn test_qualified() {
+        let mut mappings = ParsedCxxMappings::default();
+        assert!(mappings
+            .populate(&format_ident!("A"), &[], "", &format_ident!("my_module"))
+            .is_ok());
+
+        assert!(mappings.cxx_names.is_empty());
+        assert!(mappings.namespaces.is_empty());
+        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(
+            mappings.qualified.get(&format_ident!("A")).unwrap(),
+            &parse_quote! { my_module::A }
+        );
+    }
+}
