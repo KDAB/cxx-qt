@@ -8,7 +8,10 @@ use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeId
 use crate::syntax::path::path_from_idents;
 use crate::syntax::safety::Safety;
 use crate::{
-    parser::{inherit::ParsedInheritedMethod, qobject::ParsedQObject, signals::ParsedSignal},
+    parser::{
+        externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
+        qobject::ParsedQObject, signals::ParsedSignal,
+    },
     syntax::expr::expr_to_string,
 };
 use quote::format_ident;
@@ -17,8 +20,6 @@ use syn::{
     spanned::Spanned, Attribute, Error, ForeignItem, Ident, Item, ItemForeignMod, ItemImpl, Path,
     Result, Type, TypePath,
 };
-
-use super::method::ParsedMethod;
 
 #[derive(Default)]
 pub struct ParsedCxxMappings {
@@ -60,6 +61,8 @@ pub struct ParsedCxxQtData {
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
     // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
     pub qobjects: BTreeMap<Ident, ParsedQObject>,
+    /// Blocks of extern "C++Qt"
+    pub extern_cxxqt_blocks: Vec<ParsedExternCxxQt>,
     /// The namespace of the CXX-Qt module
     pub namespace: String,
     /// The ident of the module, used for mappings
@@ -73,6 +76,7 @@ impl ParsedCxxQtData {
             cxx_mappings: ParsedCxxMappings::default(),
             qualified_mappings: BTreeMap::<Ident, Path>::default(),
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
+            extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
             namespace,
         }
@@ -249,7 +253,12 @@ impl ParsedCxxQtData {
                     self.parse_foreign_mod_rust_qt(foreign_mod)?;
                     return Ok(None);
                 }
-                // TODO: look for "C++Qt" later
+                "C++Qt" => {
+                    self.populate_mappings_from_foreign_mod_item(&foreign_mod)?;
+                    self.extern_cxxqt_blocks
+                        .push(ParsedExternCxxQt::parse(foreign_mod)?);
+                    return Ok(None);
+                }
                 _others => {}
             }
         }
@@ -564,6 +573,32 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
         assert!(cxx_qt_data.qobjects[&qobject_ident()].threading);
+    }
+
+    #[test]
+    fn test_find_and_merge_cxx_qt_item_extern_cxx_qt() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            #[namespace = "rust"]
+            unsafe extern "C++Qt" {
+                type QPushButton;
+
+                #[qsignal]
+                fn clicked(self: Pin<&mut QPushButton>, checked: bool);
+            }
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert!(result.is_none());
+
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks.len(), 1);
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].attrs.len(), 1);
+        assert_eq!(
+            cxx_qt_data.extern_cxxqt_blocks[0].passthrough_items.len(),
+            1
+        );
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].signals.len(), 1);
+        assert!(cxx_qt_data.extern_cxxqt_blocks[0].unsafety.is_some());
     }
 
     #[test]

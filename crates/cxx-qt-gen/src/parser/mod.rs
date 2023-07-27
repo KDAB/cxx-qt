@@ -5,6 +5,7 @@
 
 pub mod constructor;
 pub mod cxxqtdata;
+pub mod externcxxqt;
 pub mod inherit;
 pub mod method;
 pub mod parameter;
@@ -76,7 +77,7 @@ impl Parser {
             // Loop through items and load into qobject or others and populate mappings
             for item in items.1.drain(..) {
                 // Try to find any CXX-Qt items, if found add them to the relevant
-                // qobject. Otherwise return them to be added to other
+                // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
                     // Load any CXX name mappings
                     cxx_qt_data.populate_mappings_from_item(&other)?;
