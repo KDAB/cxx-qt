@@ -192,7 +192,6 @@ impl QtBuild {
                 .output()
             {
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => Err(QtBuildError::QtMissing),
-
                 Err(e) => Err(QtBuildError::QmakeFailed(e)),
                 Ok(output) => {
                     if output.status.success() {
@@ -236,7 +235,7 @@ impl QtBuild {
 
         fn determine_if_has_framework_libs(qmake_executable: &String) -> bool {
             let lib_path = QtBuild::static_qmake_query(qmake_executable, "QT_INSTALL_LIBS");
-            let target: Result<String, env::VarError> = env::var("TARGET");
+            let target = env::var("TARGET");
 
             match &target {
                 Ok(target) => {
@@ -381,7 +380,7 @@ impl QtBuild {
         qt_module: &str,
     ) -> String {
         for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
-            let prl_path: String = format!(
+            let prl_path = format!(
                 "{}/{}Qt{}{}{}.prl",
                 lib_path, prefix, version_major, qt_module, arch
             );
@@ -400,7 +399,7 @@ impl QtBuild {
             }
         }
 
-        let prl_file: String = format!(
+        let prl_file = format!(
             "{}/{}Qt{}{}.prl",
             lib_path, prefix, version_major, qt_module
         );
@@ -414,7 +413,6 @@ impl QtBuild {
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={lib_path}");
 
-        let target: Result<String, env::VarError> = env::var("TARGET");
         let prefix = match &target {
             Ok(target) => {
                 if target.contains("windows") {
@@ -449,11 +447,6 @@ impl QtBuild {
                     self.find_qt_module_prl(&lib_path, prefix, self.version.major, qt_module),
                 )
             };
-
-            println!(
-                "cargo:rustc-link-search=using {} from {}",
-                link_lib, prl_path
-            );
 
             self.cargo_link_qt_library(
                 &format!("Qt{}{qt_module}", self.version.major),
