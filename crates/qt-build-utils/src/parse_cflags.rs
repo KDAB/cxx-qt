@@ -196,6 +196,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                         } else {
                             match extract_lib_from_filename(target, &file_name) {
                                 Some(lib_basename) => {
+                                    println!("cargo:rustc-link-search=lib_from_filename :",);
                                     println!("cargo:rustc-link-search={}", dir.display());
                                     println!("cargo:rustc-link-lib={lib_basename}");
                                 }
@@ -212,6 +213,8 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
 
     let linker_options = words.iter().filter(|arg| arg.starts_with("-Wl,"));
     for option in linker_options {
+        println!("cargo:rustc-link-arg={}", option);
+
         let mut pop = false;
         let mut ld_option = vec![];
         for subopt in option[4..].split(',') {

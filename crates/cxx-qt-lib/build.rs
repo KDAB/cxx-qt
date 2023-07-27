@@ -19,7 +19,8 @@ fn main() {
         qt_modules.push("Qml".to_owned());
     }
 
-    let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
+    let qtbuild = qt_build_utils::QtBuild::new(qt_modules)
+        .expect("Could not find Qt installation, please check the PATH environment variable.");
 
     // Required for tests
     qt_build_utils::setup_linker();
@@ -187,7 +188,13 @@ fn main() {
         cxx_build::CFG
             .exported_header_dirs
             .push(include_path.as_path());
+        println!(
+            "cargo:rerun-if-changed=include_path: {}",
+            include_path.display()
+        );
     }
+
+    print!("cargo:rerun-if-env-changed=QT_DIR");
 
     let mut builder =
         cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
@@ -271,5 +278,6 @@ fn main() {
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
 
+    println!("cargo:rerun-if-env-changed=compile");
     builder.compile("cxx-qt-lib");
 }
