@@ -194,8 +194,6 @@ fn main() {
         );
     }
 
-    print!("cargo:rerun-if-env-changed=QT_DIR");
-
     let mut builder =
         cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
 

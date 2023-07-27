@@ -387,10 +387,6 @@ impl QtBuild {
             );
             match Path::new(&prl_path).try_exists() {
                 Ok(exists) => {
-                    println!(
-                        "cargo:warning=checking for existence of {}: {}",
-                        prl_path, exists
-                    );
                     if exists {
                         return prl_path;
                     }
