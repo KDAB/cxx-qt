@@ -175,11 +175,12 @@ mod tests {
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
         assert_eq!(parser.cxx_qt_data.namespace, "cxx_qt");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
-        assert_eq!(parser.cxx_qt_data.qualified_mappings.len(), 1);
+        assert_eq!(parser.cxx_qt_data.cxx_mappings.qualified.len(), 1);
         assert_eq!(
             parser
                 .cxx_qt_data
-                .qualified_mappings
+                .cxx_mappings
+                .qualified
                 .get(&format_ident!("MyObject"))
                 .unwrap(),
             &parse_quote! { ffi::MyObject }

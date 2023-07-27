@@ -46,7 +46,7 @@ impl GeneratedRustBlocks {
                 .map(|qobject| {
                     GeneratedRustQObject::from(
                         qobject,
-                        &parser.cxx_qt_data.qualified_mappings,
+                        &parser.cxx_qt_data.cxx_mappings.qualified,
                         &parser.passthrough_module.ident,
                     )
                 })
