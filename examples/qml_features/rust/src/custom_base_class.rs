@@ -158,6 +158,15 @@ pub mod qobject {
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
 
+    /// Roles for the QAbstractListModel
+    #[repr(i32)]
+    enum Roles {
+        /// i32 representing the id role
+        Id,
+        /// i32 representing the value role
+        Value,
+    }
+
     unsafe extern "RustQt" {
         /// Return the role names for the QAbstractListModel
         #[qinvokable]
@@ -272,17 +281,13 @@ impl qobject::CustomBaseClass {
 //
 // ANCHOR: book_inherit_data
 impl qobject::CustomBaseClass {
-    /// i32 representing the id role
-    pub const ID_ROLE: i32 = 0;
-    /// i32 representing the value role
-    pub const VALUE_ROLE: i32 = 1;
-
     /// Retrieve the data for a given index and role
     pub fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
         if let Some((id, value)) = self.vector.get(index.row() as usize) {
+            let role = qobject::Roles { repr: role };
             return match role {
-                Self::ID_ROLE => QVariant::from(id),
-                Self::VALUE_ROLE => QVariant::from(value),
+                qobject::Roles::Id => QVariant::from(id),
+                qobject::Roles::Value => QVariant::from(value),
                 _ => QVariant::default(),
             };
         }
@@ -306,8 +311,8 @@ impl qobject::CustomBaseClass {
     /// Return the role names for the QAbstractListModel
     pub fn role_names(&self) -> QHash<QHashPair_i32_QByteArray> {
         let mut roles = QHash::<QHashPair_i32_QByteArray>::default();
-        roles.insert(Self::ID_ROLE, QByteArray::from("id"));
-        roles.insert(Self::VALUE_ROLE, QByteArray::from("value"));
+        roles.insert(qobject::Roles::Id.repr, QByteArray::from("id"));
+        roles.insert(qobject::Roles::Value.repr, QByteArray::from("value"));
         roles
     }
 
