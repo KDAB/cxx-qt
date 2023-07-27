@@ -141,7 +141,7 @@ pub struct QtBuild {
     qmltyperegistrar_executable: Option<String>,
     rcc_executable: Option<String>,
     qt_modules: Vec<String>,
-    is_framework: bool,
+    has_framework_libs: bool,
 }
 
 impl QtBuild {
@@ -234,7 +234,7 @@ impl QtBuild {
             }
         }
 
-        fn determine_if_framework(qmake_executable: &String) -> bool {
+        fn determine_if_has_framework_libs(qmake_executable: &String) -> bool {
             let lib_path = QtBuild::static_qmake_query(qmake_executable, "QT_INSTALL_LIBS");
             let target: Result<String, env::VarError> = env::var("TARGET");
 
@@ -260,7 +260,9 @@ impl QtBuild {
                         rcc_executable: None,
                         version,
                         qt_modules,
-                        is_framework: determine_if_framework(&executable_name.to_string()),
+                        has_framework_libs: determine_if_has_framework_libs(
+                            &executable_name.to_string(),
+                        ),
                     });
                 }
                 Err(e) => {
@@ -284,7 +286,9 @@ impl QtBuild {
                         rcc_executable: None,
                         version,
                         qt_modules,
-                        is_framework: determine_if_framework(&executable_name.to_string()),
+                        has_framework_libs: determine_if_has_framework_libs(
+                            &executable_name.to_string(),
+                        ),
                     });
                 }
                 // If QT_VERSION_MAJOR is specified, it is expected that one of the versioned
@@ -343,8 +347,7 @@ impl QtBuild {
 
         match std::fs::read_to_string(prl_path) {
             Ok(prl) => {
-                println!("cargo:rustc-link-lib=reading {}", prl_path);
-                if self.is_framework {
+                if self.has_framework_libs {
                     builder.flag(&format!("-F{}", lib_path));
                 }
                 for line in prl.lines() {
@@ -489,19 +492,18 @@ impl QtBuild {
     pub fn include_paths(&self) -> Vec<PathBuf> {
         let mut paths = Vec::new();
 
-        if self.is_framework {
+        if self.has_framework_libs {
             let lib_root_path: String = self.qmake_query("QT_INSTALL_LIBS");
 
             for qt_module in &self.qt_modules {
                 paths.push(format!("{lib_root_path}/Qt{qt_module}.framework/Headers"));
             }
-        } else {
-            let root_path: String = self.qmake_query("QT_INSTALL_HEADERS");
-            for qt_module in &self.qt_modules {
-                paths.push(format!("{root_path}/Qt{qt_module}"));
-            }
-            paths.push(root_path);
         }
+        let root_path: String = self.qmake_query("QT_INSTALL_HEADERS");
+        for qt_module in &self.qt_modules {
+            paths.push(format!("{root_path}/Qt{qt_module}"));
+        }
+        paths.push(root_path);
 
         paths.iter().map(PathBuf::from).collect()
     }

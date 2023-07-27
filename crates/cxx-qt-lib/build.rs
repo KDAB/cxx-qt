@@ -20,7 +20,7 @@ fn main() {
     }
 
     let qtbuild = qt_build_utils::QtBuild::new(qt_modules)
-        .expect("Could not find Qt installation, please check the PATH environment variable.");
+        .expect("Could not find Qt installation, please check the PATH environment variable or set the QMAKE environment variable.");
 
     // Required for tests
     qt_build_utils::setup_linker();
