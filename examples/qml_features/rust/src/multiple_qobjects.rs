@@ -90,7 +90,7 @@ impl Default for FirstObjectRust {
 
 impl qobject::FirstObject {
     /// A Q_INVOKABLE on the first QObject which increments a counter
-    fn increment(mut self: Pin<&mut Self>) {
+    pub fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;
         self.as_mut().set_counter(new_value);
 
@@ -121,7 +121,7 @@ impl Default for SecondObjectRust {
 
 impl qobject::SecondObject {
     /// A Q_INVOKABLE on the second QObject which increments a counter
-    fn increment(mut self: Pin<&mut Self>) {
+    pub fn increment(mut self: Pin<&mut Self>) {
         let new_value = self.as_ref().counter() + 1;
         self.as_mut().set_counter(new_value);
 

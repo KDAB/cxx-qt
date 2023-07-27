@@ -115,7 +115,7 @@ impl Default for TypesRust {
 
 impl ffi::Types {
     /// Load the value from a QVariant
-    fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
+    pub fn load_from_variant(self: Pin<&mut Self>, variant: &QVariant) {
         if let Some(boolean) = variant.value::<bool>() {
             self.set_boolean(boolean);
         } else if let Some(point) = variant.value::<QPointF>() {
@@ -130,7 +130,7 @@ impl ffi::Types {
     }
 
     /// Toggle the boolean Q_PROPERTY
-    fn toggle_boolean(self: Pin<&mut Self>) {
+    pub fn toggle_boolean(self: Pin<&mut Self>) {
         let new_boolean = !self.as_ref().boolean();
         self.set_boolean(new_boolean);
     }

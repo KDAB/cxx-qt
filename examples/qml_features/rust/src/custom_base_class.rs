@@ -277,7 +277,8 @@ impl qobject::CustomBaseClass {
     /// i32 representing the value role
     pub const VALUE_ROLE: i32 = 1;
 
-    fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
+    /// Retrieve the data for a given index and role
+    pub fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
         if let Some((id, value)) = self.vector.get(index.row() as usize) {
             return match role {
                 Self::ID_ROLE => QVariant::from(id),

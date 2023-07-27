@@ -31,7 +31,7 @@ pub struct RustSingletonRust {
 
 impl qobject::RustSingleton {
     /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON
-    fn increment(self: Pin<&mut Self>) {
+    pub fn increment(self: Pin<&mut Self>) {
         let new_value = self.persistent_value() + 1;
         self.set_persistent_value(new_value);
     }
