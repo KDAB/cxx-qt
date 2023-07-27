@@ -19,6 +19,3 @@ compile_commands.json
 
 # cmps (https://github.com/leonmatthes/cmps)
 .cmps/
-
-# macOS
-.DS_Store
