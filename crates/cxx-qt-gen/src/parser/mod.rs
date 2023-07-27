@@ -12,9 +12,11 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::attribute::{attribute_find_path, attribute_tokens_to_map};
+use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 use cxxqtdata::ParsedCxxQtData;
-use syn::{spanned::Spanned, token::Brace, Error, Ident, ItemMod, LitStr, Result};
+use syn::{
+    punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
+};
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
@@ -38,19 +40,27 @@ impl Parser {
 
         // Remove the cxx_qt::bridge attribute
         if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
-            let attr_map = attribute_tokens_to_map::<Ident, LitStr>(&module.attrs[index])?;
+            let attr = module.attrs.remove(index);
 
-            // Parse any namespace in the cxx_qt::bridge macro
-            if let Some(lit_str) = attr_map.get(&quote::format_ident!("namespace")) {
-                namespace = lit_str.value();
+            // If we are no #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
+            if !matches!(attr.meta, Meta::Path(_)) {
+                let nested =
+                    attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
+                for meta in nested {
+                    match meta {
+                        Meta::NameValue(name_value) => {
+                            // Parse any namespace in the cxx_qt::bridge macro
+                            if name_value.path.is_ident("namespace") {
+                                namespace = expr_to_string(&name_value.value)?;
+                            // Parse any custom file stem
+                            } else if name_value.path.is_ident("cxx_file_stem") {
+                                cxx_file_stem = expr_to_string(&name_value.value)?;
+                            }
+                        }
+                        _others => {}
+                    }
+                }
             }
-
-            // Parse any custom file stem
-            if let Some(stem) = attr_map.get(&quote::format_ident!("cxx_file_stem")) {
-                cxx_file_stem = stem.value();
-            }
-
-            module.attrs.remove(index);
         } else {
             return Err(Error::new(
                 module.span(),
