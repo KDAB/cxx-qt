@@ -17,6 +17,11 @@ pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> 
     None
 }
 
+/// Takes and returns the first [syn::Attribute] that matches a given path
+pub fn attribute_take_path(attrs: &mut Vec<Attribute>, path: &[&str]) -> Option<Attribute> {
+    attribute_find_path(attrs, path).map(|index| attrs.remove(index))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,5 +42,20 @@ mod tests {
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "object"]).is_some());
         assert!(attribute_find_path(&module.attrs, &["cxx_qt", "missing"]).is_none());
+    }
+
+    #[test]
+    fn test_attribute_take_path() {
+        let mut module: ItemMod = parse_quote! {
+            #[qinvokable]
+            #[cxx_qt::bridge]
+            #[cxx_qt::object(MyObject)]
+            #[cxx_qt::bridge(namespace = "my::namespace")]
+            mod module;
+        };
+
+        assert_eq!(module.attrs.len(), 4);
+        assert!(attribute_take_path(&mut module.attrs, &["qinvokable"]).is_some());
+        assert_eq!(module.attrs.len(), 3);
     }
 }

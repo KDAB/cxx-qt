@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::parameter::ParsedFunctionParameter;
-use crate::syntax::attribute::attribute_find_path;
+use crate::syntax::attribute::attribute_take_path;
 use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod;
 use crate::syntax::safety::Safety;
@@ -56,8 +56,6 @@ impl ParsedSignal {
             ));
         }
 
-        let mut inherit = false;
-
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
@@ -72,21 +70,14 @@ impl ParsedSignal {
 
         let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
 
-        if let Some(index) = attribute_find_path(&method.attrs, &["cxx_name"]) {
+        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
             ident.cpp = format_ident!(
                 "{}",
-                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
+                expr_to_string(&attr.meta.require_name_value()?.value)?
             );
-
-            method.attrs.remove(index);
         }
 
-        if let Some(index) = attribute_find_path(&method.attrs, &["inherit"]) {
-            inherit = true;
-
-            method.attrs.remove(index);
-        }
-
+        let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
         let safe = method.sig.unsafety.is_none();
 
         Ok(Self {

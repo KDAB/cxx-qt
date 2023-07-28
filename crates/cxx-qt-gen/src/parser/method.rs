@@ -5,7 +5,7 @@
 
 use crate::{
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::*, foreignmod, safety::Safety, types},
+    syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
 };
 use std::collections::HashSet;
 use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
@@ -56,13 +56,7 @@ impl ParsedMethod {
         }
 
         // Determine if the method is invokable
-        let is_qinvokable = if let Some(index) = attribute_find_path(&method.attrs, &["qinvokable"])
-        {
-            method.attrs.remove(index);
-            true
-        } else {
-            false
-        };
+        let is_qinvokable = attribute_take_path(&mut method.attrs, &["qinvokable"]).is_some();
 
         // Parse any C++ specifiers
         let mut specifiers = HashSet::new();
@@ -71,8 +65,7 @@ impl ParsedMethod {
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
         ] {
-            if let Some(index) = attribute_find_path(&method.attrs, specifier.as_str_slice()) {
-                method.attrs.remove(index);
+            if attribute_take_path(&mut method.attrs, specifier.as_str_slice()).is_some() {
                 specifiers.insert(specifier);
             }
         }
