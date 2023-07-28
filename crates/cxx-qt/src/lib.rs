@@ -193,3 +193,45 @@ pub trait Constructor<Arguments>: CxxQtType {
         // By default, do nothing
     }
 }
+
+/// This trait can be implemented on any [CxxQtType] to automatically define a default constructor
+/// that calls the `initialize` function after constructing a default Rust struct.
+///
+/// The default constructor will have the following signature:
+/// ```ignore
+/// cxx_qt::Constructor<()>
+/// ```
+// TODO: Once the QObject type is available in the cxx-qt crate, also auto-generate a default
+// constructor that takes QObject and passes it to the parent.
+pub trait Initialize: CxxQtType {
+    /// This function is called to initialize the QObject after construction.
+    fn initialize(self: core::pin::Pin<&mut Self>);
+}
+
+impl<T> Constructor<()> for T
+where
+    T: Initialize,
+    T::Rust: Default,
+{
+    type NewArguments = ();
+    type BaseArguments = ();
+    type InitializeArguments = ();
+
+    fn new(_arguments: ()) -> <Self as CxxQtType>::Rust {
+        <Self as CxxQtType>::Rust::default()
+    }
+
+    fn route_arguments(
+        _arguments: (),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), (), ())
+    }
+
+    fn initialize(self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
+        Self::initialize(self);
+    }
+}
