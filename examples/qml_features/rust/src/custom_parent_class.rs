@@ -103,26 +103,8 @@ impl qobject::CustomParentClass {
     }
 }
 
-impl cxx_qt::Constructor<()> for qobject::CustomParentClass {
-    type NewArguments = ();
-    type BaseArguments = (*mut qobject::QQuickItem,);
-    type InitializeArguments = ();
-
-    fn route_arguments(
-        _args: (),
-    ) -> (
-        Self::NewArguments,
-        Self::BaseArguments,
-        Self::InitializeArguments,
-    ) {
-        ((), (core::ptr::null_mut(),), ())
-    }
-
-    fn new((): ()) -> CustomParentClassRust {
-        CustomParentClassRust::default()
-    }
-
-    fn initialize(self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
+impl cxx_qt::Initialize for qobject::CustomParentClass {
+    fn initialize(self: core::pin::Pin<&mut Self>) {
         self.on_color_changed(|qobject| qobject.update()).release();
     }
 }

@@ -98,27 +98,9 @@ impl qobject::OuterObject {
     }
 }
 
-impl cxx_qt::Constructor<()> for qobject::OuterObject {
-    type InitializeArguments = ();
-    type NewArguments = ();
-    type BaseArguments = ();
-
-    fn route_arguments(
-        _: (),
-    ) -> (
-        Self::NewArguments,
-        Self::BaseArguments,
-        Self::InitializeArguments,
-    ) {
-        ((), (), ())
-    }
-
-    fn new(_: Self::NewArguments) -> <Self as cxx_qt::CxxQtType>::Rust {
-        Default::default()
-    }
-
-    /// Initialise the QObject, creating a connection from one signal to another
-    fn initialize(self: core::pin::Pin<&mut Self>, _: Self::InitializeArguments) {
+impl cxx_qt::Initialize for qobject::OuterObject {
+    /// Initialize the QObject, creating a connection from one signal to another
+    fn initialize(self: core::pin::Pin<&mut Self>) {
         // Example of connecting a signal from one QObject to another QObject
         // this causes OuterObject::Called to trigger InnerObject::Called
         self.on_called(|qobject, obj| {
