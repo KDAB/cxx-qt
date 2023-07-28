@@ -7,7 +7,7 @@ use crate::{
     generator::naming::CombinedIdent,
     parser::parameter::ParsedFunctionParameter,
     syntax::{
-        attribute::attribute_find_path, expr::expr_to_string, foreignmod, safety::Safety, types,
+        attribute::attribute_take_path, expr::expr_to_string, foreignmod, safety::Safety, types,
     },
 };
 use quote::format_ident;
@@ -46,13 +46,11 @@ impl ParsedInheritedMethod {
 
         let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
 
-        if let Some(index) = attribute_find_path(&method.attrs, &["cxx_name"]) {
+        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
             ident.cpp = format_ident!(
                 "{}",
-                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
+                expr_to_string(&attr.meta.require_name_value()?.value)?
             );
-
-            method.attrs.remove(index);
         }
 
         let safe = method.sig.unsafety.is_none();

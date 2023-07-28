@@ -9,7 +9,7 @@ use crate::{
         property::ParsedQProperty, signals::ParsedSignal,
     },
     syntax::{
-        attribute::attribute_find_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
+        attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
     },
 };
@@ -75,19 +75,13 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
         let qml_metadata = Self::parse_qml_metadata(&qobject_ty.ident_left, &mut qobject_ty.attrs)?;
 
         // Find if there is any base class
-        let base_class = attribute_find_path(&qobject_ty.attrs, &["base"])
-            .map(|index| {
-                let attr = qobject_ty.attrs.remove(index);
-                expr_to_string(&attr.meta.require_name_value()?.value)
-            })
+        let base_class = attribute_take_path(&mut qobject_ty.attrs, &["base"])
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?;
 
         // Load the namespace, if it is empty then the ParsedCxxQtData will inject any global namespace
-        let namespace = attribute_find_path(&qobject_ty.attrs, &["namespace"])
-            .map(|index| {
-                let attr = qobject_ty.attrs.remove(index);
-                expr_to_string(&attr.meta.require_name_value()?.value)
-            })
+        let namespace = attribute_take_path(&mut qobject_ty.attrs, &["namespace"])
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?
             .unwrap_or_else(|| "".to_owned());
 
@@ -119,22 +113,18 @@ impl ParsedQObject {
         attrs: &mut Vec<Attribute>,
     ) -> Result<Option<QmlElementMetadata>> {
         // Find if there is a qml_element attribute
-        if let Some(index) = attribute_find_path(attrs, &["qml_element"]) {
+        if let Some(attr) = attribute_take_path(attrs, &["qml_element"]) {
             // Extract the name of the qml_element
-            let name = match attrs.remove(index).meta {
+            let name = match attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => qobject_ident.to_string(),
             };
 
             // Determine if this element is uncreatable
-            let uncreatable = attribute_find_path(attrs, &["qml_uncreatable"])
-                .map(|index| attrs.remove(index))
-                .is_some();
+            let uncreatable = attribute_take_path(attrs, &["qml_uncreatable"]).is_some();
 
             // Determine if this element is a singleton
-            let singleton = attribute_find_path(attrs, &["qml_singleton"])
-                .map(|index| attrs.remove(index))
-                .is_some();
+            let singleton = attribute_take_path(attrs, &["qml_singleton"]).is_some();
 
             return Ok(Some(QmlElementMetadata {
                 name,
@@ -221,8 +211,8 @@ impl ParsedQObject {
         // elements once using path_compare_str and then building ParsedQProperty
         // from the extracted elements.
         // https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html#method.extract_if
-        while let Some(index) = attribute_find_path(attrs, &["qproperty"]) {
-            properties.push(ParsedQProperty::parse(attrs.remove(index))?);
+        while let Some(attr) = attribute_take_path(attrs, &["qproperty"]) {
+            properties.push(ParsedQProperty::parse(attr)?);
         }
 
         Ok(properties)

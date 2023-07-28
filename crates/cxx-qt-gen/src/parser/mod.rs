@@ -12,7 +12,7 @@ pub mod property;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
+use crate::syntax::{attribute::attribute_take_path, expr::expr_to_string};
 use cxxqtdata::ParsedCxxQtData;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
@@ -39,9 +39,7 @@ impl Parser {
         let mut cxx_file_stem = module.ident.to_string();
 
         // Remove the cxx_qt::bridge attribute
-        if let Some(index) = attribute_find_path(&module.attrs, &["cxx_qt", "bridge"]) {
-            let attr = module.attrs.remove(index);
-
+        if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
             // If we are no #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =

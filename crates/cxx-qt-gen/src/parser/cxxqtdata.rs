@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::attribute::attribute_find_path;
+use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
 use crate::syntax::path::path_from_idents;
 use crate::syntax::safety::Safety;
@@ -94,11 +94,9 @@ impl ParsedCxxQtData {
                                     syn::parse2(tokens.clone())?;
 
                                 // Check this type is tagged with a #[qobject]
-                                if let Some(index) =
-                                    attribute_find_path(&foreign_alias.attrs, &["qobject"])
+                                if attribute_take_path(&mut foreign_alias.attrs, &["qobject"])
+                                    .is_some()
                                 {
-                                    foreign_alias.attrs.remove(index);
-
                                     // Load the QObject
                                     let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
 
@@ -260,10 +258,7 @@ impl ParsedCxxQtData {
         for item in foreign_mod.items.drain(..) {
             if let ForeignItem::Fn(mut foreign_fn) = item {
                 // Test if the function is a signal
-                if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qsignal"]) {
-                    // Remove the signals attribute
-                    foreign_fn.attrs.remove(index);
-
+                if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
                     let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
 
                     self.with_qobject(&parsed_signal_method.qobject_ident)?
@@ -272,10 +267,7 @@ impl ParsedCxxQtData {
                 // Test if the function is an inheritance method
                 //
                 // Note that we need to test for qsignal first as qsignals have their own inherit meaning
-                } else if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["inherit"]) {
-                    // Remove the inherit attribute
-                    foreign_fn.attrs.remove(index);
-
+                } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
                     let parsed_inherited_method =
                         ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
 
