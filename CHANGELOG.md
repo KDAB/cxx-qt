@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `unsafe impl !cxx_qt::Locking for qobject::T` to disable internal locking
 - `Deref` is now implemented for `qobject::T` to reach the `T` Rust struct
 - Support for C++ only methods by not having a `#[qinvokable]` attribute
+- Ability to define a custom C++ Constructor using `cxx_qt::Constructor`
+- `cxx_qt::Initialize` trait for easier default-constructor implementation
 
 ### Changed
 

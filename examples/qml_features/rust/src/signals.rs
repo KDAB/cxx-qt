@@ -34,13 +34,14 @@ pub mod qobject {
     }
     // ANCHOR_END: book_signals_block
 
+    // ANCHOR: book_signals_struct
     unsafe extern "RustQt" {
-        // ANCHOR: book_signals_struct
         #[qobject]
         #[qml_element]
         #[qproperty(bool, logging_enabled)]
         type RustSignals = super::RustSignalsRust;
     }
+    // ANCHOR_END: book_signals_struct
 
     // ANCHOR: book_rust_obj_impl
     unsafe extern "RustQt" {
@@ -54,9 +55,13 @@ pub mod qobject {
     }
     // ANCHOR_END: book_rust_obj_impl
 
+    // ANCHOR: book_initialize_decl
     impl cxx_qt::Constructor<()> for RustSignals {}
+    // ANCHOR_END: book_initialize_decl
 
+    // ANCHOR: book_constructor_decl
     impl<'a> cxx_qt::Constructor<(&'a QUrl,), InitializeArguments = (&'a QUrl,)> for RustSignals {}
+    // ANCHOR_END: book_constructor_decl
 }
 
 use core::pin::Pin;
@@ -91,27 +96,11 @@ impl qobject::RustSignals {
     }
 }
 
-impl cxx_qt::Constructor<()> for qobject::RustSignals {
-    type BaseArguments = ();
-    type NewArguments = ();
-    type InitializeArguments = ();
-
-    fn route_arguments(
-        _: (),
-    ) -> (
-        Self::NewArguments,
-        Self::BaseArguments,
-        Self::InitializeArguments,
-    ) {
-        ((), (), ())
-    }
-
-    fn new(_: Self::NewArguments) -> <Self as CxxQtType>::Rust {
-        Default::default()
-    }
-
-    /// Initialise the QObject, creating a connection reacting to the logging enabled property
-    fn initialize(self: core::pin::Pin<&mut Self>, _: Self::InitializeArguments) {
+// ANCHOR: book_initialize_impl
+impl cxx_qt::Initialize for qobject::RustSignals {
+    /// Initialize the QObject, creating a connection reacting to the logging enabled property
+    fn initialize(self: core::pin::Pin<&mut Self>) {
+        // ANCHOR_END: book_initialize_impl
         self.on_logging_enabled_changed(|mut qobject| {
             // Determine if logging is enabled
             if *qobject.as_ref().logging_enabled() {

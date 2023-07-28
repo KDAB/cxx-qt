@@ -23,3 +23,4 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   * [Threading concept and safety](./threading.md)
   * [Nesting Rust objects](./nested_objects.md)
   * [Inheriting QObjects and overriding methods](./inheritance.md)
+  * [Defining custom C++/QML Constructors](./constructor.md)

@@ -36,6 +36,19 @@ pub mod qobject {
         #[qinvokable]
         fn disconnect(self: Pin<&mut RustProperties>);
     }
+
+    impl cxx_qt::Constructor<()> for RustProperties {}
+
+    // Dummy constructor, added for an example in the book.
+    // ANCHOR: book_constructor_new_decl
+    impl<'a>
+        cxx_qt::Constructor<
+            (bool, &'a QUrl, &'a QUrl, &'a QString),
+            NewArguments = (bool, &'a QUrl, &'a QUrl, &'a QString),
+        > for RustProperties
+    {
+    }
+    // ANCHOR_END: book_constructor_new_decl
 }
 
 use core::pin::Pin;
@@ -102,3 +115,38 @@ impl qobject::RustProperties {
         self.set_connected_url(QUrl::default());
     }
 }
+
+impl cxx_qt::Initialize for qobject::RustProperties {
+    fn initialize(self: Pin<&mut Self>) {}
+}
+
+// Dummy constructor, added for an example in the book.
+// ANCHOR: book_constructor_new_impl
+impl<'a> cxx_qt::Constructor<(bool, &'a QUrl, &'a QUrl, &'a QString)> for qobject::RustProperties {
+    type NewArguments = (bool, &'a QUrl, &'a QUrl, &'a QString);
+    type InitializeArguments = ();
+    type BaseArguments = ();
+
+    fn route_arguments(
+        arguments: (bool, &'a QUrl, &'a QUrl, &'a QString),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        // pass all arguments to the `new` function.
+        (arguments, (), ())
+    }
+
+    fn new(
+        (connected, connected_url, previous_connected_url, status_message): Self::NewArguments,
+    ) -> Self::Rust {
+        Self::Rust {
+            connected,
+            connected_url: connected_url.clone(),
+            previous_connected_url: previous_connected_url.clone(),
+            status_message: status_message.clone(),
+        }
+    }
+}
+// ANCHOR_END: book_constructor_new_impl
