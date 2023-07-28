@@ -413,6 +413,7 @@ impl QtBuild {
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         println!("cargo:rustc-link-search={lib_path}");
 
+        let target = env::var("TARGET");
         let prefix = match &target {
             Ok(target) => {
                 if target.contains("windows") {
