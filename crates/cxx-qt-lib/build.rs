@@ -188,10 +188,6 @@ fn main() {
         cxx_build::CFG
             .exported_header_dirs
             .push(include_path.as_path());
-        println!(
-            "cargo:rerun-if-changed=include_path: {}",
-            include_path.display()
-        );
     }
 
     let mut builder =
@@ -276,6 +272,5 @@ fn main() {
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
 
-    println!("cargo:rerun-if-env-changed=compile");
     builder.compile("cxx-qt-lib");
 }
