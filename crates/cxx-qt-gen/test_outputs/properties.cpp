@@ -19,28 +19,28 @@ MyObject::unsafeRustMut()
 ::std::int32_t const&
 MyObject::getPrimitive() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return getPrimitiveWrapper();
 }
 
 void
 MyObject::setPrimitive(::std::int32_t const& value)
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   setPrimitiveWrapper(value);
 }
 
 QPoint const&
 MyObject::getTrivial() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return getTrivialWrapper();
 }
 
 void
 MyObject::setTrivial(QPoint const& value)
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   setTrivialWrapper(value);
 }
 
@@ -53,7 +53,7 @@ MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::primitiveChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this);
     },
     type);
@@ -68,7 +68,7 @@ MyObject::trivialChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::trivialChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this);
     },
     type);
@@ -79,6 +79,12 @@ MyObject::MyObject(QObject* parent)
   , m_rustObj(::cxx_qt::my_object::cxx_qt_my_object::createRs())
   , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
 {
+}
+
+::std::lock_guard<::std::recursive_mutex>
+MyObject::unsafeRustLock() const
+{
+  return ::std::lock_guard<::std::recursive_mutex>(*m_rustObjMutex);
 }
 
 } // namespace cxx_qt::my_object

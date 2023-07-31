@@ -23,21 +23,21 @@ MyObject::unsafeRustMut()
 void
 MyObject::cppMethod() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   cppMethodWrapper();
 }
 
 void
 MyObject::invokable() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableWrapper();
 }
 
 void
 MyObject::invokableMutable()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableMutableWrapper();
 }
 
@@ -46,56 +46,56 @@ MyObject::invokableParameters(QColor const& opaque,
                               QPoint const& trivial,
                               ::std::int32_t primitive) const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableParametersWrapper(opaque, trivial, primitive);
 }
 
 ::std::unique_ptr<Opaque>
 MyObject::invokableReturnOpaque()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return invokableReturnOpaqueWrapper();
 }
 
 QPoint
 MyObject::invokableReturnTrivial()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return invokableReturnTrivialWrapper();
 }
 
 void
 MyObject::invokableFinal() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableFinalWrapper();
 }
 
 void
 MyObject::invokableOverride() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableOverrideWrapper();
 }
 
 void
 MyObject::invokableVirtual() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableVirtualWrapper();
 }
 
 void
 MyObject::invokableResultTuple() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableResultTupleWrapper();
 }
 
 ::rust::String
 MyObject::invokableResultType() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return invokableResultTypeWrapper();
 }
 
@@ -120,6 +120,12 @@ MyObject::MyObject(::std::int32_t arg0, QString const& arg1)
 MyObject::MyObject()
   : MyObject(::cxx_qt::my_object::cxx_qt_my_object::routeArguments1())
 {
+}
+
+::std::lock_guard<::std::recursive_mutex>
+MyObject::unsafeRustLock() const
+{
+  return ::std::lock_guard<::std::recursive_mutex>(*m_rustObjMutex);
 }
 
 MyObject::MyObject(

@@ -49,6 +49,8 @@ private:
   ::std::int32_t const& getPropertyNameWrapper() const noexcept;
   void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
+  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
+    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

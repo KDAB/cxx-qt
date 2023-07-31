@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeSet;
+
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespace_pair;
 use indoc::formatdoc;
@@ -101,12 +103,6 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
                 format!("::rust::Box<{rust_ident}> m_rustObj;", rust_ident = qobject.rust_ident),
             ];
 
-            if qobject.locking {
-                members.extend(vec![
-                    "::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;".to_string(),
-                ]);
-            }
-
             members.extend(qobject.blocks.members.iter().cloned());
             members.join("\n  ")
         },
@@ -123,12 +119,11 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     // Headers included:
     // <memory> - unique_ptr to the Rust object.
-    // <mutex> - used for mutex locking the rust object.
     formatdoc! {r#"
         #pragma once
 
         #include <memory>
-        #include <mutex>
+        {includes}
 
         namespace rust::cxxqtlib1 {{
         template<typename T>
@@ -143,6 +138,11 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
     qobjects = qobjects_header(generated).join("\n"),
+    includes = generated.qobjects.iter()
+    .fold(BTreeSet::<&String>::default(), |mut acc, qobject| {
+        acc.extend(qobject.blocks.includes.iter());
+        acc
+    }).into_iter().cloned().collect::<Vec<String>>().join("\n"),
     }
 }
 

@@ -41,6 +41,8 @@ private:
   QVariant dataWrapper(QModelIndex const& _index,
                        ::std::int32_t _role) const noexcept;
   bool hasChildrenWrapper(QModelIndex const& _parent) const noexcept;
+  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
+    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

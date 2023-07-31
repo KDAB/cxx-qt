@@ -19,14 +19,14 @@ MyObject::unsafeRustMut()
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   return getPropertyNameWrapper();
 }
 
 void
 MyObject::setPropertyName(::std::int32_t const& value)
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   setPropertyNameWrapper(value);
 }
 
@@ -39,7 +39,7 @@ MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::propertyNameChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this);
     },
     type);
@@ -48,7 +48,7 @@ MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
 void
 MyObject::invokableName()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableNameWrapper();
 }
 
@@ -61,7 +61,7 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::ready,
     this,
     [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this);
     },
     type);
@@ -72,6 +72,12 @@ MyObject::MyObject(QObject* parent)
   , m_rustObj(::cxx_qt::multi_object::cxx_qt_my_object::createRs())
   , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
 {
+}
+
+::std::lock_guard<::std::recursive_mutex>
+MyObject::unsafeRustLock() const
+{
+  return ::std::lock_guard<::std::recursive_mutex>(*m_rustObjMutex);
 }
 
 } // namespace cxx_qt::multi_object

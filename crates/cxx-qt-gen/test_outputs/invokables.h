@@ -57,6 +57,8 @@ private:
   void invokableVirtualWrapper() const noexcept;
   void invokableResultTupleWrapper() const;
   ::rust::String invokableResultTypeWrapper() const;
+  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
+    const;
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
   explicit MyObject(

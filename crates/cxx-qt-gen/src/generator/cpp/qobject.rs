@@ -5,12 +5,13 @@
 
 use crate::generator::{
     cpp::{
-        constructor, fragment::CppFragment, inherit, method::generate_cpp_methods,
+        constructor, fragment::CppFragment, inherit, locking, method::generate_cpp_methods,
         property::generate_cpp_properties, signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
 use crate::parser::{cxxqtdata::ParsedCxxMappings, qobject::ParsedQObject};
+use std::collections::BTreeSet;
 use syn::Result;
 
 #[derive(Default)]
@@ -27,6 +28,8 @@ pub struct GeneratedCppQObjectBlocks {
     pub members: Vec<String>,
     /// List of deconstructor source
     pub deconstructors: Vec<String>,
+    /// List of includes
+    pub includes: BTreeSet<String>,
 }
 
 impl GeneratedCppQObjectBlocks {
@@ -37,6 +40,7 @@ impl GeneratedCppQObjectBlocks {
         self.private_methods.append(&mut other.private_methods);
         self.members.append(&mut other.members);
         self.deconstructors.append(&mut other.deconstructors);
+        self.includes.append(&mut other.includes);
     }
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
@@ -77,8 +81,6 @@ pub struct GeneratedCppQObject {
     pub base_class: String,
     /// The blocks of the QObject
     pub blocks: GeneratedCppQObjectBlocks,
-    /// Whether locking is enabled
-    pub locking: bool,
 }
 
 impl GeneratedCppQObject {
@@ -98,10 +100,9 @@ impl GeneratedCppQObject {
                 .clone()
                 .unwrap_or_else(|| "QObject".to_string()),
             blocks: GeneratedCppQObjectBlocks::from(qobject),
-            locking: qobject.locking,
         };
         let lock_guard = if qobject.locking {
-            Some("const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);")
+            Some("const auto guard = unsafeRustLock();")
         } else {
             None
         };
@@ -131,11 +132,15 @@ impl GeneratedCppQObject {
             cxx_mappings,
         )?);
 
-        let mut member_initializers = if qobject.locking {
-            vec!["m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())".to_string()]
-        } else {
-            vec![]
-        };
+        let mut member_initializers = vec![];
+
+        // If this type has locking enabled then add generation
+        if qobject.locking {
+            let (initializer, mut blocks) = locking::generate(&qobject_idents)?;
+            generated.blocks.append(&mut blocks);
+            member_initializers.push(initializer);
+        }
+
         // If this type has threading enabled then add generation
         if qobject.threading {
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;

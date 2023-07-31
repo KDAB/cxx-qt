@@ -6,6 +6,7 @@
 mod constructor;
 pub mod fragment;
 pub mod inherit;
+pub mod locking;
 pub mod method;
 pub mod property;
 pub mod qobject;

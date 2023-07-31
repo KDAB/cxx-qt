@@ -19,7 +19,7 @@ MyObject::unsafeRustMut()
 void
 MyObject::invokable()
 {
-  const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+  const auto guard = unsafeRustLock();
   invokableWrapper();
 }
 
@@ -32,7 +32,7 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::ready,
     this,
     [&, func = ::std::move(func)]() {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this);
     },
     type);
@@ -54,7 +54,7 @@ MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
                                   ::std::unique_ptr<Opaque> second,
                                   QPoint third,
                                   QPoint const& fourth) {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this,
            ::std::move(first),
            ::std::move(second),
@@ -80,7 +80,7 @@ MyObject::newDataConnect(::rust::Fn<void(MyObject&,
                                   ::std::unique_ptr<Opaque> second,
                                   QPoint third,
                                   QPoint const& fourth) {
-      const ::std::lock_guard<::std::recursive_mutex> guard(*m_rustObjMutex);
+      const auto guard = unsafeRustLock();
       func(*this,
            ::std::move(first),
            ::std::move(second),
@@ -95,6 +95,12 @@ MyObject::MyObject(QObject* parent)
   , m_rustObj(::cxx_qt::my_object::cxx_qt_my_object::createRs())
   , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
 {
+}
+
+::std::lock_guard<::std::recursive_mutex>
+MyObject::unsafeRustLock() const
+{
+  return ::std::lock_guard<::std::recursive_mutex>(*m_rustObjMutex);
 }
 
 } // namespace cxx_qt::my_object
