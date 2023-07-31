@@ -143,7 +143,6 @@ mod tests {
             namespace_internals: "rust".to_string(),
             base_class: "BaseClass".to_string(),
             blocks: GeneratedCppQObjectBlocks::default(),
-            locking: true,
         }
     }
 

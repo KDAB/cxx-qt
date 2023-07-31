@@ -52,6 +52,8 @@ public:
 
 private:
   void invokableWrapper() noexcept;
+  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
+    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;

@@ -42,6 +42,8 @@ pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragment {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
+
     use super::*;
 
     use crate::generator::cpp::qobject::{GeneratedCppQObject, GeneratedCppQObjectBlocks};
@@ -59,11 +61,15 @@ mod tests {
                     rust_ident: "MyObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    locking: true,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        includes: {
+                          let mut includes = BTreeSet::<String>::default();
+                          includes.insert("#include <test>".to_owned());
+                          includes
+                        },
                         metaobjects: vec![
                             "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)".to_owned(),
                             "Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)"
@@ -177,11 +183,15 @@ mod tests {
                     rust_ident: "FirstObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    locking: true,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        includes: {
+                          let mut includes = BTreeSet::<String>::default();
+                          includes.insert("#include <test>".to_owned());
+                          includes
+                        },
                         metaobjects: vec![
                             "Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
@@ -218,11 +228,15 @@ mod tests {
                     rust_ident: "SecondObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     base_class: "QStringListModel".to_owned(),
-                    locking: false,
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        includes: {
+                          let mut includes = BTreeSet::<String>::default();
+                          includes.insert("#include <test>".to_owned());
+                          includes
+                        },
                         metaobjects: vec![
                             "Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)"
                                 .to_owned(),
@@ -280,7 +294,7 @@ mod tests {
         #pragma once
 
         #include <memory>
-        #include <mutex>
+        #include <test>
 
         namespace rust::cxxqtlib1 {
         template<typename T>
@@ -322,7 +336,6 @@ mod tests {
 
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
-          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -339,7 +352,7 @@ mod tests {
         #pragma once
 
         #include <memory>
-        #include <mutex>
+        #include <test>
 
         namespace rust::cxxqtlib1 {
         template<typename T>
@@ -377,7 +390,6 @@ mod tests {
 
         private:
           ::rust::Box<FirstObjectRust> m_rustObj;
-          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
         };
 
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
@@ -422,7 +434,7 @@ mod tests {
         #pragma once
 
         #include <memory>
-        #include <mutex>
+        #include <test>
 
         namespace rust::cxxqtlib1 {
         template<typename T>
@@ -464,7 +476,6 @@ mod tests {
 
         private:
           ::rust::Box<MyObjectRust> m_rustObj;
-          ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");

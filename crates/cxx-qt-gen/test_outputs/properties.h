@@ -49,6 +49,8 @@ private:
   void setPrimitiveWrapper(::std::int32_t value) noexcept;
   QPoint const& getTrivialWrapper() const noexcept;
   void setTrivialWrapper(QPoint value) noexcept;
+  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
+    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
