@@ -118,7 +118,13 @@ cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
 } // namespace cxxqtlib1
 } // namespace rust
 
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
 template<typename T>
-struct rust::IsRelocatable<::rust::cxxqtlib1::CxxQtThread<T>> : ::std::true_type
+struct IsRelocatable<::rust::cxxqtlib1::CxxQtThread<T>> : ::std::true_type
 {
 };
+
+} // namespace rust

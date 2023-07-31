@@ -10,8 +10,14 @@
 
 #include "rust/cxx.h"
 
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
 // This has static asserts in the cpp file to ensure this is valid.
 template<>
-struct rust::IsRelocatable<QPersistentModelIndex> : ::std::true_type
+struct IsRelocatable<QPersistentModelIndex> : ::std::true_type
 {
 };
+
+} // namespace rust

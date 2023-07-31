@@ -38,11 +38,17 @@
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 #include "qlist_qvector.h"
 #else
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
-struct rust::IsRelocatable<QList<T>> : ::std::true_type
+struct IsRelocatable<QList<T>> : ::std::true_type
 {
 };
+
+} // namespace rust
 #endif
 
 namespace rust {
