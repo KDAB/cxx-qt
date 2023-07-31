@@ -22,10 +22,11 @@ class MyObject : public QObject
 
 public:
   ~MyObject();
+
+public:
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
 
-public:
   void cppMethod() const;
   Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();

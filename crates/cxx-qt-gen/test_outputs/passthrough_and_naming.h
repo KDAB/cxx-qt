@@ -29,10 +29,11 @@ class MyObject : public QStringListModel
 
 public:
   ~MyObject();
+
+public:
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
 
-public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
@@ -72,10 +73,11 @@ class SecondObject : public QObject
 
 public:
   ~SecondObject();
+
+public:
   SecondObjectRust const& unsafeRust() const;
   SecondObjectRust& unsafeRustMut();
 
-public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
