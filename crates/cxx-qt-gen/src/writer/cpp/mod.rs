@@ -293,7 +293,6 @@ mod tests {
         indoc! {r#"
         #pragma once
 
-        #include <memory>
         #include <test>
 
         namespace rust::cxxqtlib1 {
@@ -317,8 +316,6 @@ mod tests {
 
         public:
           ~MyObject();
-          MyObjectRust const& unsafeRust() const;
-          MyObjectRust& unsafeRustMut();
 
         public:
           int count() const;
@@ -334,8 +331,7 @@ mod tests {
           void privateMethod() const;
           void privateMethod();
 
-        private:
-          ::rust::Box<MyObjectRust> m_rustObj;
+
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -351,7 +347,6 @@ mod tests {
         indoc! {r#"
         #pragma once
 
-        #include <memory>
         #include <test>
 
         namespace rust::cxxqtlib1 {
@@ -379,8 +374,6 @@ mod tests {
 
         public:
           ~FirstObject();
-          FirstObjectRust const& unsafeRust() const;
-          FirstObjectRust& unsafeRustMut();
 
         public:
           int count() const;
@@ -388,8 +381,7 @@ mod tests {
           Q_SIGNAL void countChanged();
 
 
-        private:
-          ::rust::Box<FirstObjectRust> m_rustObj;
+
         };
 
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
@@ -405,8 +397,6 @@ mod tests {
 
         public:
           ~SecondObject();
-          SecondObjectRust const& unsafeRust() const;
-          SecondObjectRust& unsafeRustMut();
 
         public:
           int count() const;
@@ -416,8 +406,7 @@ mod tests {
         private:
           void privateMethod() const;
 
-        private:
-          ::rust::Box<SecondObjectRust> m_rustObj;
+
         };
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
@@ -433,7 +422,6 @@ mod tests {
         indoc! {r#"
         #pragma once
 
-        #include <memory>
         #include <test>
 
         namespace rust::cxxqtlib1 {
@@ -457,8 +445,6 @@ mod tests {
 
         public:
           ~MyObject();
-          MyObjectRust const& unsafeRust() const;
-          MyObjectRust& unsafeRustMut();
 
         public:
           int count() const;
@@ -474,8 +460,7 @@ mod tests {
           void privateMethod() const;
           void privateMethod();
 
-        private:
-          ::rust::Box<MyObjectRust> m_rustObj;
+
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -496,18 +481,6 @@ mod tests {
         MyObject::~MyObject()
         {
 
-        }
-
-        MyObjectRust const&
-        MyObject::unsafeRust() const
-        {
-          return *m_rustObj;
-        }
-
-        MyObjectRust&
-        MyObject::unsafeRustMut()
-        {
-          return *m_rustObj;
         }
 
         int
@@ -572,18 +545,6 @@ mod tests {
 
         }
 
-        FirstObjectRust const&
-        FirstObject::unsafeRust() const
-        {
-          return *m_rustObj;
-        }
-
-        FirstObjectRust&
-        FirstObject::unsafeRustMut()
-        {
-          return *m_rustObj;
-        }
-
         int
         FirstObject::count() const
         {
@@ -603,18 +564,6 @@ mod tests {
         SecondObject::~SecondObject()
         {
 
-        }
-
-        SecondObjectRust const&
-        SecondObject::unsafeRust() const
-        {
-          return *m_rustObj;
-        }
-
-        SecondObjectRust&
-        SecondObject::unsafeRustMut()
-        {
-          return *m_rustObj;
         }
 
         int
@@ -648,18 +597,6 @@ mod tests {
         MyObject::~MyObject()
         {
 
-        }
-
-        MyObjectRust const&
-        MyObject::unsafeRust() const
-        {
-          return *m_rustObj;
-        }
-
-        MyObjectRust&
-        MyObject::unsafeRustMut()
-        {
-          return *m_rustObj;
         }
 
         int

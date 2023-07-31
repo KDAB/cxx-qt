@@ -26,10 +26,11 @@ class MyObject : public QObject
 
 public:
   ~MyObject();
+
+public:
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
 
-public:
   ::std::int32_t const& getPrimitive() const;
   Q_SLOT void setPrimitive(::std::int32_t const& value);
   QPoint const& getTrivial() const;

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod constructor;
+pub mod cxxqttype;
 pub mod fragment;
 pub mod inherit;
 pub mod locking;

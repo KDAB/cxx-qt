@@ -22,10 +22,11 @@ class MyObject : public QObject
 
 public:
   ~MyObject();
+
+public:
   MyObjectRust const& unsafeRust() const;
   MyObjectRust& unsafeRustMut();
 
-public:
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,

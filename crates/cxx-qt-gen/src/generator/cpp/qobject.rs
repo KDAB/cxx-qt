@@ -5,8 +5,9 @@
 
 use crate::generator::{
     cpp::{
-        constructor, fragment::CppFragment, inherit, locking, method::generate_cpp_methods,
-        property::generate_cpp_properties, signal::generate_cpp_signals, threading,
+        constructor, cxxqttype, fragment::CppFragment, inherit, locking,
+        method::generate_cpp_methods, property::generate_cpp_properties,
+        signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
@@ -106,6 +107,11 @@ impl GeneratedCppQObject {
         } else {
             None
         };
+
+        // Add the CxxQtType rust and rust_mut methods
+        generated
+            .blocks
+            .append(&mut cxxqttype::generate(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_cpp_properties(

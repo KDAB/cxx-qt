@@ -29,25 +29,12 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
             {deconstructors}
             }}
 
-            {rust_ident} const&
-            {ident}::unsafeRust() const
-            {{
-              return *m_rustObj;
-            }}
-
-            {rust_ident}&
-            {ident}::unsafeRustMut()
-            {{
-              return *m_rustObj;
-            }}
-
             {methods}
             {namespace_end}
         "#,
         ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
-        rust_ident = qobject.rust_ident,
         methods = qobject.blocks.methods.iter().chain(qobject.blocks.private_methods.iter()).filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
         deconstructors = qobject.blocks.deconstructors.join("\n  "),
         }
