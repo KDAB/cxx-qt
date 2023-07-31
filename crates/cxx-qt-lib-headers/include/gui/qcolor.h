@@ -18,10 +18,16 @@
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
 template<>
-struct rust::IsRelocatable<QColor> : ::std::true_type
+struct IsRelocatable<QColor> : ::std::true_type
 {
 };
+
+} // namespace rust
 #endif
 
 namespace rust {
