@@ -384,7 +384,7 @@ impl QtBuild {
         let target = env::var("TARGET");
         let prefix = match &target {
             Ok(target) => {
-                if target.contains("msvc") {
+                if target.contains("windows") {
                     ""
                 } else {
                     "lib"
