@@ -270,6 +270,7 @@ fn main() {
     builder.flag_if_supported("/permissive-");
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
+    builder.flag_if_supported("-Wa,-mbig-obj");
 
     builder.compile("cxx-qt-lib");
 }

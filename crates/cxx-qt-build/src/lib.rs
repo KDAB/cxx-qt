@@ -499,6 +499,7 @@ impl CxxQtBuilder {
             builder.flag_if_supported("/permissive-");
             // GCC + Clang
             builder.flag_if_supported("-std=c++17");
+            builder.flag_if_supported("-Wa,-mbig-obj");
             // Enable Qt Gui in C++ if the feature is enabled
             #[cfg(feature = "qt_gui")]
             builder.define("CXX_QT_GUI_FEATURE", None);
