@@ -403,7 +403,10 @@ impl QtBuild {
             "{}/{}Qt{}{}.prl",
             lib_path, prefix, version_major, qt_module
         );
-        println!("cargo:warning=falling back to {}", prl_file);
+        println!(
+            "cargo:warning=Qt .prl file not found at expected path, falling back to {}",
+            prl_file
+        );
         prl_file
     }
 
