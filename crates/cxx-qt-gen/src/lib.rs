@@ -36,6 +36,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
 mod tests {
     use super::*;
 
+    use clang_format::{clang_format_with_style, ClangFormatStyle};
     use generator::{cpp::GeneratedCppBlocks, rust::GeneratedRustBlocks};
     use parser::Parser;
     use pretty_assertions::assert_str_eq;
@@ -52,6 +53,11 @@ mod tests {
     /// Helper to ensure that a given syn item is the same as the given TokenStream
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
         assert_str_eq!(item.to_token_stream().to_string(), tokens.to_string());
+    }
+
+    /// Helper for formating C++ code
+    pub(crate) fn format_cpp(cpp_code: &str) -> String {
+        clang_format_with_style(cpp_code, &ClangFormatStyle::File).unwrap()
     }
 
     /// Helper for format Rust code
