@@ -7,7 +7,7 @@ pub mod header;
 pub mod source;
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use clang_format::clang_format;
+use clang_format::{clang_format_with_style, ClangFormatStyle};
 use header::write_cpp_header;
 use source::write_cpp_source;
 
@@ -35,8 +35,8 @@ pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragment {
     let source = write_cpp_source(generated);
 
     CppFragment::Pair {
-        header: clang_format(&header).unwrap_or(header),
-        source: clang_format(&source).unwrap_or(source),
+        header: clang_format_with_style(&header, &ClangFormatStyle::File).unwrap_or(header),
+        source: clang_format_with_style(&source, &ClangFormatStyle::File).unwrap_or(source),
     }
 }
 
@@ -657,8 +657,14 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(header, clang_format(expected_header()).unwrap());
-        assert_str_eq!(source, clang_format(expected_source()).unwrap());
+        assert_str_eq!(
+            header,
+            clang_format_with_style(expected_header(), &ClangFormatStyle::File).unwrap()
+        );
+        assert_str_eq!(
+            source,
+            clang_format_with_style(expected_source(), &ClangFormatStyle::File).unwrap()
+        );
     }
 
     #[test]
@@ -671,11 +677,13 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            clang_format(expected_header_multi_qobjects()).unwrap()
+            clang_format_with_style(expected_header_multi_qobjects(), &ClangFormatStyle::File)
+                .unwrap()
         );
         assert_str_eq!(
             source,
-            clang_format(expected_source_multi_qobjects()).unwrap()
+            clang_format_with_style(expected_source_multi_qobjects(), &ClangFormatStyle::File)
+                .unwrap()
         );
     }
 
@@ -689,11 +697,13 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            clang_format(expected_header_no_namespace()).unwrap()
+            clang_format_with_style(expected_header_no_namespace(), &ClangFormatStyle::File)
+                .unwrap()
         );
         assert_str_eq!(
             source,
-            clang_format(expected_source_no_namespace()).unwrap()
+            clang_format_with_style(expected_source_no_namespace(), &ClangFormatStyle::File)
+                .unwrap()
         );
     }
 }

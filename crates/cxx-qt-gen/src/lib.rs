@@ -36,7 +36,6 @@ pub fn write_headers(directory: impl AsRef<Path>) {
 mod tests {
     use super::*;
 
-    use clang_format::{ClangFormatStyle, CLANG_FORMAT_STYLE};
     use generator::{cpp::GeneratedCppBlocks, rust::GeneratedRustBlocks};
     use parser::Parser;
     use pretty_assertions::assert_str_eq;
@@ -49,13 +48,6 @@ mod tests {
         path::{Path, PathBuf},
     };
     use writer::{cpp::write_cpp, rust::write_rust};
-
-    #[ctor::ctor]
-    fn init_tests() {
-        // Set the ClangFormatStyle to be Mozilla for our tests
-        // so that when they fail the format in the assertions is the same as the files.
-        assert!(CLANG_FORMAT_STYLE.set(ClangFormatStyle::Mozilla).is_ok());
-    }
 
     /// Helper to ensure that a given syn item is the same as the given TokenStream
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
