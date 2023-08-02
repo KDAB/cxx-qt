@@ -46,7 +46,10 @@ mod tests {
 
     use super::*;
 
-    use crate::generator::cpp::qobject::{GeneratedCppQObject, GeneratedCppQObjectBlocks};
+    use crate::{
+        generator::cpp::qobject::{GeneratedCppQObject, GeneratedCppQObjectBlocks},
+        tests::format_cpp,
+    };
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
 
@@ -657,14 +660,8 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(
-            header,
-            clang_format_with_style(expected_header(), &ClangFormatStyle::File).unwrap()
-        );
-        assert_str_eq!(
-            source,
-            clang_format_with_style(expected_source(), &ClangFormatStyle::File).unwrap()
-        );
+        assert_str_eq!(header, format_cpp(expected_header()));
+        assert_str_eq!(source, format_cpp(expected_source()));
     }
 
     #[test]
@@ -675,16 +672,8 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(
-            header,
-            clang_format_with_style(expected_header_multi_qobjects(), &ClangFormatStyle::File)
-                .unwrap()
-        );
-        assert_str_eq!(
-            source,
-            clang_format_with_style(expected_source_multi_qobjects(), &ClangFormatStyle::File)
-                .unwrap()
-        );
+        assert_str_eq!(header, format_cpp(expected_header_multi_qobjects()));
+        assert_str_eq!(source, format_cpp(expected_source_multi_qobjects()));
     }
 
     #[test]
@@ -695,15 +684,7 @@ mod tests {
         } else {
             panic!("Expected Pair")
         };
-        assert_str_eq!(
-            header,
-            clang_format_with_style(expected_header_no_namespace(), &ClangFormatStyle::File)
-                .unwrap()
-        );
-        assert_str_eq!(
-            source,
-            clang_format_with_style(expected_source_no_namespace(), &ClangFormatStyle::File)
-                .unwrap()
-        );
+        assert_str_eq!(header, format_cpp(expected_header_no_namespace()));
+        assert_str_eq!(source, format_cpp(expected_source_no_namespace()));
     }
 }
