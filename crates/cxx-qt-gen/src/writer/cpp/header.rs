@@ -77,7 +77,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
               {metaobjects}
 
             public:
-              ~{ident}();
+              virtual ~{ident}() = default;
 
             {public_methods}
             {private_methods}

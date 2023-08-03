@@ -2,8 +2,6 @@
 
 namespace cxx_qt::my_object {
 
-MyObject::~MyObject() {}
-
 void
 MyObject::invokable()
 {

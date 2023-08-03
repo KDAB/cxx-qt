@@ -24,19 +24,12 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
         formatdoc! { r#"
             {namespace_start}
 
-            {ident}::~{ident}()
-            {{
-            {deconstructors}
-            }}
-
             {methods}
             {namespace_end}
         "#,
-        ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
         methods = qobject.blocks.methods.iter().chain(qobject.blocks.private_methods.iter()).filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
-        deconstructors = qobject.blocks.deconstructors.join("\n  "),
         }
   }).collect::<Vec<String>>()
 }

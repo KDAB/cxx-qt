@@ -19,7 +19,7 @@ class MyObject
   Q_OBJECT
 
 public:
-  ~MyObject();
+  virtual ~MyObject() = default;
 
 public:
   void cppMethod() const;

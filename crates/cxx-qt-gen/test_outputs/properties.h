@@ -23,7 +23,7 @@ class MyObject
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
 
 public:
-  ~MyObject();
+  virtual ~MyObject() = default;
 
 public:
   ::std::int32_t const& getPrimitive() const;

@@ -26,7 +26,7 @@ class MyObject
                setPropertyName NOTIFY propertyNameChanged)
 
 public:
-  ~MyObject();
+  virtual ~MyObject() = default;
 
 public:
   ::std::int32_t const& getPropertyName() const;
@@ -63,7 +63,7 @@ class SecondObject
                setPropertyName NOTIFY propertyNameChanged)
 
 public:
-  ~SecondObject();
+  virtual ~SecondObject() = default;
 
 public:
   ::std::int32_t const& getPropertyName() const;
