@@ -3,11 +3,6 @@
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
-namespace rust::cxxqtlib1 {
-template<typename T>
-class CxxQtThread;
-}
-
 namespace cxx_qt::my_object {
 class MyObject;
 

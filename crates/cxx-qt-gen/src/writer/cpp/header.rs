@@ -40,6 +40,8 @@ fn create_block(block: &str, items: &[String]) -> String {
 }
 
 /// For a given GeneratedCppBlocks write the forward declare
+//
+// Note that this is needed incase ObjectA refers to ObjectB in it's class
 fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
     let (namespace_start, namespace_end) = namespace_pair(generated);
 
@@ -112,11 +114,6 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         #pragma once
 
         {includes}
-
-        namespace rust::cxxqtlib1 {{
-        template<typename T>
-        class CxxQtThread;
-        }}
 
         {forward_declare}
         #include "cxx-qt-gen/{cxx_file_stem}.cxx.h"
