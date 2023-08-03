@@ -15,9 +15,11 @@ use syn::{Result, Type};
 
 fn default_constructor(
     qobject: &GeneratedCppQObject,
+    base_class: String,
     initializers: String,
 ) -> GeneratedCppQObjectBlocks {
     GeneratedCppQObjectBlocks {
+        base_classes: vec![base_class.clone()],
         methods: vec![CppFragment::Pair {
             header: format!(
                 "explicit {class_name}(QObject* parent = nullptr);",
@@ -31,7 +33,6 @@ fn default_constructor(
             {{ }}
             "#,
                 class_name = qobject.ident,
-                base_class = qobject.base_class,
                 namespace_internals = qobject.namespace_internals,
             ),
         }],
@@ -59,6 +60,7 @@ fn expand_arguments(arguments: &[Type], cxx_mappings: &ParsedCxxMappings) -> Res
 pub fn generate(
     qobject: &GeneratedCppQObject,
     constructors: &[Constructor],
+    base_class: String,
     member_initializers: &[String],
     cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedCppQObjectBlocks> {
@@ -69,14 +71,14 @@ pub fn generate(
         .join("");
 
     if constructors.is_empty() {
-        return Ok(default_constructor(qobject, initializers));
+        return Ok(default_constructor(qobject, base_class, initializers));
     }
 
     let mut generated = GeneratedCppQObjectBlocks::default();
+    generated.base_classes.push(base_class.clone());
 
     let class_name = qobject.ident.as_str();
     let namespace_internals = &qobject.namespace_internals;
-    let base_class = &qobject.base_class;
     for (index, constructor) in constructors.iter().enumerate() {
         let argument_list = expand_arguments(&constructor.arguments, cxx_mappings)?;
         let constructor_argument_names = argument_names(&constructor.arguments);
@@ -141,7 +143,6 @@ mod tests {
             ident: "MyObject".to_string(),
             rust_ident: "MyObjectQt".to_string(),
             namespace_internals: "rust".to_string(),
-            base_class: "BaseClass".to_string(),
             blocks: GeneratedCppQObjectBlocks::default(),
         }
     }
@@ -170,6 +171,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
+            "BaseClass".to_owned(),
             &["member1(1)".to_string(), "member2{ 2 }".to_string()],
             &ParsedCxxMappings::default(),
         )
@@ -199,6 +201,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
+            "BaseClass".to_owned(),
             &[],
             &ParsedCxxMappings::default(),
         )
@@ -230,6 +233,7 @@ mod tests {
                 arguments: vec![parse_quote! { i32 }, parse_quote! { *mut QObject }],
                 ..mock_constructor()
             }],
+            "BaseClass".to_owned(),
             &[],
             &ParsedCxxMappings::default(),
         )
@@ -279,6 +283,7 @@ mod tests {
                 lifetime: Some(parse_quote! { 'a_lifetime }),
                 ..mock_constructor()
             }],
+            "BaseClass".to_owned(),
             &["initializer".to_string()],
             &ParsedCxxMappings::default(),
         )
@@ -332,6 +337,7 @@ mod tests {
                     ..mock_constructor()
                 },
             ],
+            "BaseClass".to_owned(),
             &["initializer".to_string()],
             &ParsedCxxMappings::default(),
         )
