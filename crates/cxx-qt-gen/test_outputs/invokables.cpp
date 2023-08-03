@@ -2,11 +2,7 @@
 
 namespace cxx_qt::my_object {
 
-MyObject::~MyObject()
-{
-  const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-  m_cxxQtThreadObj->ptr = nullptr;
-}
+MyObject::~MyObject() {}
 
 void
 MyObject::cppMethod() const
@@ -92,12 +88,6 @@ static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),
 static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[4]),
               "unexpected size");
 
-MyObjectCxxQtThread
-MyObject::qtThread() const
-{
-  return MyObjectCxxQtThread(m_cxxQtThreadObj, m_rustObjMutex);
-}
-
 MyObject::MyObject(::std::int32_t arg0, QString const& arg1)
   : MyObject(
       ::cxx_qt::my_object::cxx_qt_my_object::routeArguments0(::std::move(arg0),
@@ -115,9 +105,7 @@ MyObject::MyObject(
   : QObject(::std::move(args.base.arg0))
   , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs0(::std::move(args.new_)))
-  , m_cxxQtThreadObj(
-      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
-        this))
+  , ::rust::cxxqtlib1::CxxQtThreading<MyObject>(this)
 {
   ::cxx_qt::my_object::cxx_qt_my_object::initialize0(
     *this, ::std::move(args.initialize));
@@ -128,9 +116,7 @@ MyObject::MyObject(
   : QObject()
   , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs1(::std::move(args.new_)))
-  , m_cxxQtThreadObj(
-      ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
-        this))
+  , ::rust::cxxqtlib1::CxxQtThreading<MyObject>(this)
 {
   ::cxx_qt::my_object::cxx_qt_my_object::initialize1(
     *this, ::std::move(args.initialize));

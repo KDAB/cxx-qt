@@ -137,16 +137,19 @@ impl GeneratedCppQObject {
 
         let mut member_initializers = vec![];
 
-        // If this type has locking enabled then add generation
-        if qobject.locking {
-            generated.blocks.append(&mut locking::generate()?);
-        }
-
         // If this type has threading enabled then add generation
+        //
+        // Note that threading also includes locking C++ generation
         if qobject.threading {
+            // The parser phase should check that this is true
+            debug_assert!(qobject.locking);
+
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
             member_initializers.push(initializer);
+        // If this type has locking enabled then add generation
+        } else if qobject.locking {
+            generated.blocks.append(&mut locking::generate()?);
         }
 
         // We need the QObject base class to be first which is added last
@@ -198,6 +201,7 @@ mod tests {
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
+
         assert_eq!(cpp.blocks.base_classes.len(), 3);
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
         assert_eq!(
