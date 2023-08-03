@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxx-qt-common/cxxqt_locking.h>
-#include <memory>
+#include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -18,6 +18,7 @@ class MyObject;
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
+  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
@@ -30,9 +31,6 @@ public:
   ~MyObject();
 
 public:
-  MyObjectRust const& unsafeRust() const;
-  MyObjectRust& unsafeRustMut();
-
   ::std::int32_t const& getPrimitive() const;
   Q_SLOT void setPrimitive(::std::int32_t const& value);
   QPoint const& getTrivial() const;
@@ -52,9 +50,6 @@ private:
   void setPrimitiveWrapper(::std::int32_t value) noexcept;
   QPoint const& getTrivialWrapper() const noexcept;
   void setTrivialWrapper(QPoint value) noexcept;
-
-private:
-  ::rust::Box<MyObjectRust> m_rustObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxx-qt-common/cxxqt_locking.h>
-#include <memory>
+#include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -18,6 +18,7 @@ using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
+  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
@@ -26,9 +27,6 @@ public:
   ~MyObject();
 
 public:
-  MyObjectRust const& unsafeRust() const;
-  MyObjectRust& unsafeRustMut();
-
   void cppMethod() const;
   Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();
@@ -66,7 +64,6 @@ private:
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args);
 
 private:
-  ::rust::Box<MyObjectRust> m_rustObj;
   ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
 };

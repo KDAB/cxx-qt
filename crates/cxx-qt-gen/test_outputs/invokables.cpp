@@ -8,18 +8,6 @@ MyObject::~MyObject()
   m_cxxQtThreadObj->ptr = nullptr;
 }
 
-MyObjectRust const&
-MyObject::unsafeRust() const
-{
-  return *m_rustObj;
-}
-
-MyObjectRust&
-MyObject::unsafeRustMut()
-{
-  return *m_rustObj;
-}
-
 void
 MyObject::cppMethod() const
 {
@@ -125,7 +113,7 @@ MyObject::MyObject()
 MyObject::MyObject(
   ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args)
   : QObject(::std::move(args.base.arg0))
-  , m_rustObj(
+  , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs0(::std::move(args.new_)))
   , m_cxxQtThreadObj(
       ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
@@ -138,7 +126,7 @@ MyObject::MyObject(
 MyObject::MyObject(
   ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args)
   : QObject()
-  , m_rustObj(
+  , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs1(::std::move(args.new_)))
   , m_cxxQtThreadObj(
       ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxx-qt-common/cxxqt_locking.h>
-#include <memory>
+#include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -23,6 +23,7 @@ class SecondObject;
 namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel
+  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
@@ -33,9 +34,6 @@ public:
   ~MyObject();
 
 public:
-  MyObjectRust const& unsafeRust() const;
-  MyObjectRust& unsafeRustMut();
-
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
@@ -52,9 +50,6 @@ private:
   ::std::int32_t const& getPropertyNameWrapper() const noexcept;
   void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
-
-private:
-  ::rust::Box<MyObjectRust> m_rustObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -64,7 +59,9 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
 
 namespace cxx_qt::multi_object {
-class SecondObject : public QObject
+class SecondObject
+  : public QObject
+  , public ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>
 {
   Q_OBJECT
   Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
@@ -74,9 +71,6 @@ public:
   ~SecondObject();
 
 public:
-  SecondObjectRust const& unsafeRust() const;
-  SecondObjectRust& unsafeRustMut();
-
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
@@ -93,9 +87,6 @@ private:
   ::std::int32_t const& getPropertyNameWrapper() const noexcept;
   void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
-
-private:
-  ::rust::Box<SecondObjectRust> m_rustObj;
 };
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,

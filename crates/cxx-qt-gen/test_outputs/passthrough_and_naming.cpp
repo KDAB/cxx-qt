@@ -4,18 +4,6 @@ namespace cxx_qt::multi_object {
 
 MyObject::~MyObject() {}
 
-MyObjectRust const&
-MyObject::unsafeRust() const
-{
-  return *m_rustObj;
-}
-
-MyObjectRust&
-MyObject::unsafeRustMut()
-{
-  return *m_rustObj;
-}
-
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
@@ -69,7 +57,8 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
 
 MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
-  , m_rustObj(::cxx_qt::multi_object::cxx_qt_my_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
+      ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
 {
 }
 
@@ -78,18 +67,6 @@ MyObject::MyObject(QObject* parent)
 namespace cxx_qt::multi_object {
 
 SecondObject::~SecondObject() {}
-
-SecondObjectRust const&
-SecondObject::unsafeRust() const
-{
-  return *m_rustObj;
-}
-
-SecondObjectRust&
-SecondObject::unsafeRustMut()
-{
-  return *m_rustObj;
-}
 
 ::std::int32_t const&
 SecondObject::getPropertyName() const
@@ -138,7 +115,8 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
 
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
-  , m_rustObj(::cxx_qt::multi_object::cxx_qt_second_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>(
+      ::cxx_qt::multi_object::cxx_qt_second_object::createRs())
 {
 }
 
