@@ -2,8 +2,6 @@
 
 namespace cxx_qt::multi_object {
 
-MyObject::~MyObject() {}
-
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
@@ -66,8 +64,6 @@ MyObject::MyObject(QObject* parent)
 } // namespace cxx_qt::multi_object
 
 namespace cxx_qt::multi_object {
-
-SecondObject::~SecondObject() {}
 
 ::std::int32_t const&
 SecondObject::getPropertyName() const

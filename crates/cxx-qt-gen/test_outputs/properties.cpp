@@ -2,8 +2,6 @@
 
 namespace cxx_qt::my_object {
 
-MyObject::~MyObject() {}
-
 ::std::int32_t const&
 MyObject::getPrimitive() const
 {

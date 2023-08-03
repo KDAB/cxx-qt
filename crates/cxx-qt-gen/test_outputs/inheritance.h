@@ -15,7 +15,7 @@ class MyObject
   Q_OBJECT
 
 public:
-  ~MyObject();
+  virtual ~MyObject() = default;
 
 public:
   Q_INVOKABLE QVariant data(QModelIndex const& _index,

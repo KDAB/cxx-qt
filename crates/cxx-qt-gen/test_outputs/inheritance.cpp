@@ -1,7 +1,5 @@
 #include "cxx-qt-gen/inheritance.cxxqt.h"
 
-MyObject::~MyObject() {}
-
 QVariant
 MyObject::data(QModelIndex const& _index, ::std::int32_t _role) const
 {

@@ -64,7 +64,6 @@ mod tests {
                     rust_ident: "MyObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
@@ -186,7 +185,6 @@ mod tests {
                     rust_ident: "FirstObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
@@ -231,7 +229,6 @@ mod tests {
                     rust_ident: "SecondObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
@@ -313,7 +310,7 @@ mod tests {
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
         public:
-          ~MyObject();
+          virtual ~MyObject() = default;
 
         public:
           int count() const;
@@ -366,7 +363,7 @@ mod tests {
           Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)
 
         public:
-          ~FirstObject();
+          virtual ~FirstObject() = default;
 
         public:
           int count() const;
@@ -389,7 +386,7 @@ mod tests {
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
 
         public:
-          ~SecondObject();
+          virtual ~SecondObject() = default;
 
         public:
           int count() const;
@@ -432,7 +429,7 @@ mod tests {
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
         public:
-          ~MyObject();
+          virtual ~MyObject() = default;
 
         public:
           int count() const;
@@ -465,11 +462,6 @@ mod tests {
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
         namespace cxx_qt::my_object {
-
-        MyObject::~MyObject()
-        {
-
-        }
 
         int
         MyObject::count() const
@@ -528,11 +520,6 @@ mod tests {
 
         namespace cxx_qt {
 
-        FirstObject::~FirstObject()
-        {
-
-        }
-
         int
         FirstObject::count() const
         {
@@ -548,11 +535,6 @@ mod tests {
         } // namespace cxx_qt
 
         namespace cxx_qt {
-
-        SecondObject::~SecondObject()
-        {
-
-        }
 
         int
         SecondObject::count() const
@@ -581,11 +563,6 @@ mod tests {
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
 
-
-        MyObject::~MyObject()
-        {
-
-        }
 
         int
         MyObject::count() const
