@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cxx-qt-common/cxxqt_locking.h>
 #include <memory>
-#include <mutex>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -16,7 +16,9 @@ using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 #include "cxx-qt-gen/ffi.cxx.h"
 
 namespace cxx_qt::my_object {
-class MyObject : public QObject
+class MyObject
+  : public QObject
+  , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
 
@@ -58,8 +60,6 @@ private:
   void invokableVirtualWrapper() const noexcept;
   void invokableResultTupleWrapper() const;
   ::rust::String invokableResultTypeWrapper() const;
-  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
-    const;
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
   explicit MyObject(
@@ -67,7 +67,6 @@ private:
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
   ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
     m_cxxQtThreadObj;
 };

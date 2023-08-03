@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cxx-qt-common/cxxqt_locking.h>
 #include <memory>
-#include <mutex>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -16,7 +16,9 @@ class MyObject;
 #include "cxx-qt-gen/ffi.cxx.h"
 
 namespace cxx_qt::my_object {
-class MyObject : public QObject
+class MyObject
+  : public QObject
+  , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
 
@@ -53,12 +55,9 @@ public:
 
 private:
   void invokableWrapper() noexcept;
-  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
-    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

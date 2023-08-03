@@ -139,9 +139,7 @@ impl GeneratedCppQObject {
 
         // If this type has locking enabled then add generation
         if qobject.locking {
-            let (initializer, mut blocks) = locking::generate(&qobject_idents)?;
-            generated.blocks.append(&mut blocks);
-            member_initializers.push(initializer);
+            generated.blocks.append(&mut locking::generate()?);
         }
 
         // If this type has threading enabled then add generation
@@ -200,8 +198,12 @@ mod tests {
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
-        assert_eq!(cpp.blocks.base_classes.len(), 1);
+        assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
+        assert_eq!(
+            cpp.blocks.base_classes[1],
+            "::rust::cxxqtlib1::CxxQtLocking"
+        );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
@@ -225,8 +227,12 @@ mod tests {
         )
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(cpp.blocks.base_classes.len(), 1);
+        assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
+        assert_eq!(
+            cpp.blocks.base_classes[1],
+            "::rust::cxxqtlib1::CxxQtLocking"
+        );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 

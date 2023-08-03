@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cxx-qt-common/cxxqt_locking.h>
 #include <memory>
-#include <mutex>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -12,7 +12,9 @@ class MyObject;
 
 #include "cxx-qt-gen/inheritance.cxx.h"
 
-class MyObject : public QAbstractItemModel
+class MyObject
+  : public QAbstractItemModel
+  , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
 
@@ -42,12 +44,9 @@ private:
   QVariant dataWrapper(QModelIndex const& _index,
                        ::std::int32_t _role) const noexcept;
   bool hasChildrenWrapper(QModelIndex const& _parent) const noexcept;
-  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
-    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
