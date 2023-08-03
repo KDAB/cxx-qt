@@ -298,11 +298,6 @@ mod tests {
 
         #include <test>
 
-        namespace rust::cxxqtlib1 {
-        template<typename T>
-        class CxxQtThread;
-        }
-
         namespace cxx_qt::my_object {
         class MyObject;
 
@@ -351,11 +346,6 @@ mod tests {
         #pragma once
 
         #include <test>
-
-        namespace rust::cxxqtlib1 {
-        template<typename T>
-        class CxxQtThread;
-        }
 
         namespace cxx_qt {
         class FirstObject;
@@ -426,11 +416,6 @@ mod tests {
         #pragma once
 
         #include <test>
-
-        namespace rust::cxxqtlib1 {
-        template<typename T>
-        class CxxQtThread;
-        }
 
 
         class MyObject;
