@@ -17,7 +17,8 @@ main(int argc, char* argv[])
 
   QQmlApplicationEngine engine;
 
-  const QUrl url(QStringLiteral("qrc:/MainWindow.qml"));
+  const QUrl url(
+    QStringLiteral("qrc:/qt/qml/com/kdab/energy/qml/MainWindow.qml"));
   QObject::connect(
     &engine,
     &QQmlApplicationEngine::objectCreated,
