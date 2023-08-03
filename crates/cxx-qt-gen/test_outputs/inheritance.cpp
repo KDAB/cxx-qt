@@ -19,5 +19,6 @@ MyObject::hasChildren(QModelIndex const& _parent) const
 MyObject::MyObject(QObject* parent)
   : QAbstractItemModel(parent)
   , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::cxx_qt_my_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtLocking()
 {
 }

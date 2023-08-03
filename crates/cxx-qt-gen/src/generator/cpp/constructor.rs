@@ -62,10 +62,10 @@ pub fn generate(
     qobject: &GeneratedCppQObject,
     constructors: &[Constructor],
     base_class: String,
-    member_initializers: &[String],
+    class_initializers: &[String],
     cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedCppQObjectBlocks> {
-    let initializers = member_initializers
+    let initializers = class_initializers
         .iter()
         .map(|initializer| format!("\n  , {initializer}"))
         .collect::<Vec<_>>()
