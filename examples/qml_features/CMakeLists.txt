@@ -54,7 +54,6 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 
 add_executable(${APP_NAME}
     cpp/main.cpp
-    qml/qml.qrc
 )
 
 target_include_directories(${APP_NAME} PRIVATE cpp)

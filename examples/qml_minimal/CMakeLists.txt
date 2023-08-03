@@ -82,8 +82,8 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 # ANCHOR_END: book_cmake_use_corrosion
 
 # ANCHOR: book_cmake_executable
-# Define the executable with the C++ source and Qt resource files
-add_executable(${APP_NAME} cpp/main.cpp qml/qml.qrc)
+# Define the executable with the C++ source
+add_executable(${APP_NAME} cpp/main.cpp)
 
 # Link to the Rust library
 target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)

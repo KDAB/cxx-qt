@@ -5,15 +5,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_build_rs
-use cxx_qt_build::CxxQtBuilder;
+use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(
-            "com.kdab.cxx_qt.demo",
-            1,
-            0,
-            &[
+        .qml_module(QmlModule {
+            uri: "com.kdab.cxx_qt.demo",
+            rust_files: &[
                 "src/containers.rs",
                 "src/custom_base_class.rs",
                 "src/custom_parent_class.rs",
@@ -28,7 +26,23 @@ fn main() {
                 "src/types.rs",
                 "src/uncreatable.rs",
             ],
-        )
+            qml_files: &[
+                "../qml/main.qml",
+                "../qml/pages/ContainersPage.qml",
+                "../qml/pages/CustomBaseClassPage.qml",
+                "../qml/pages/CustomParentClassPage.qml",
+                "../qml/pages/InvokablesPage.qml",
+                "../qml/pages/MultipleQObjectsPage.qml",
+                "../qml/pages/NestedQObjectsPage.qml",
+                "../qml/pages/PropertiesPage.qml",
+                "../qml/pages/SerialisationPage.qml",
+                "../qml/pages/SignalsPage.qml",
+                "../qml/pages/SingletonPage.qml",
+                "../qml/pages/ThreadingPage.qml",
+                "../qml/pages/TypesPage.qml",
+            ],
+            ..Default::default()
+        })
         // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
         // otherwise linking cargo tests fails because the symbols from those files are not found.
         .cc_builder(|cc| {

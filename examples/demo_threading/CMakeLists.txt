@@ -65,7 +65,6 @@ add_executable(${APP_NAME}
     cpp/helpers/sensor.h
     cpp/helpers/sensor.cpp
     images/images.qrc
-    qml/qml.qrc
     ${QML_COMPAT_RESOURCES}
 )
 target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)

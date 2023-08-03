@@ -14,6 +14,10 @@
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
+mod qml_modules;
+use qml_modules::OwningQmlModule;
+pub use qml_modules::QmlModule;
+
 use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
@@ -47,18 +51,6 @@ struct GeneratedCpp {
     cxx_qt: Option<CppFragment>,
     cxx: cxx_gen::GeneratedCode,
     file_ident: String,
-}
-
-/// Metadata for registering a QML module
-struct QmlModule {
-    /// The URI of the QML module
-    pub uri: String,
-    /// The minor version of the QML module
-    pub version_minor: usize,
-    /// The major version of the QML module
-    pub version_major: usize,
-    /// The .rs files with #[qml_element] attribute(s)
-    pub rust_files: Vec<PathBuf>,
 }
 
 impl GeneratedCpp {
@@ -226,7 +218,7 @@ impl GeneratedCpp {
 
 /// Generate C++ files from a given list of Rust files, returning the generated paths
 fn generate_cxxqt_cpp_files(
-    rs_source: &[PathBuf],
+    rs_source: &[impl AsRef<Path>],
     header_dir: impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -234,7 +226,7 @@ fn generate_cxxqt_cpp_files(
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
         let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
-        let path = format!("{manifest_dir}/{}", rs_path.display());
+        let path = format!("{manifest_dir}/{}", rs_path.as_ref().display());
         println!("cargo:rerun-if-changed={path}");
 
         let generated_code = match GeneratedCpp::new(&path) {
@@ -251,12 +243,12 @@ fn generate_cxxqt_cpp_files(
 }
 
 fn panic_duplicate_file_and_qml_module(
-    path: &Path,
+    path: impl AsRef<Path>,
     uri: &str,
     version_major: usize,
     version_minor: usize,
 ) {
-    panic!("CXX-Qt bridge Rust file {} specified in QML module {uri} (version {version_major}.{version_minor}), but also specified via CxxQtBuilder::file. Bridge files must be specified via CxxQtBuilder::file or CxxQtBuilder::qml_module, but not both.", path.display());
+    panic!("CXX-Qt bridge Rust file {} specified in QML module {uri} (version {version_major}.{version_minor}), but also specified via CxxQtBuilder::file. Bridge files must be specified via CxxQtBuilder::file or CxxQtBuilder::qml_module, but not both.", path.as_ref().display());
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
@@ -297,7 +289,7 @@ pub struct CxxQtBuilder {
     qobject_headers: Vec<PathBuf>,
     qrc_files: Vec<PathBuf>,
     qt_modules: HashSet<String>,
-    qml_modules: Vec<QmlModule>,
+    qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
 }
 
@@ -374,29 +366,45 @@ impl CxxQtBuilder {
         self
     }
 
-    /// Register a QML module at build time
-    pub fn qml_module(
+    /// Register a QML module at build time. The `rust_files` of the [QmlModule] struct
+    /// should contain `#[cxx_qt::bridge]` modules with QObject types annotated with `#[qml_element]`.
+    ///
+    /// The QmlModule struct's `qml_files` are registered with the [Qt Resource System](https://doc.qt.io/qt-6/resources.html) in
+    /// the [default QML import path](https://doc.qt.io/qt-6/qtqml-syntax-imports.html#qml-import-path) `qrc:/qt/qml/uri/of/module/`.
+    /// Additional resources such as images can be added to the Qt resources for the QML module by specifying
+    /// the `qrc_files` field.
+    ///
+    /// When using Qt 6, this will [run qmlcachegen](https://doc.qt.io/qt-6/qtqml-qtquick-compiler-tech.html)
+    /// to compile the specified `.qml` files ahead-of-time.
+    ///
+    /// ```no_run
+    /// use cxx_qt_build::{CxxQtBuilder, QmlModule};
+    ///
+    /// CxxQtBuilder::new()
+    ///     .qml_module(QmlModule {
+    ///         uri: "com.kdab.cxx_qt.demo",
+    ///         rust_files: &["src/cxxqt_object.rs"],
+    ///         qml_files: &["qml/main.qml"],
+    ///         ..Default::default()
+    ///     })
+    ///     .build();
+    /// ```
+    pub fn qml_module<A: AsRef<Path>, B: AsRef<Path>>(
         mut self,
-        uri: &str,
-        version_major: usize,
-        version_minor: usize,
-        rust_files: &[impl AsRef<Path>],
-    ) -> Self {
-        let rust_files: Vec<PathBuf> = rust_files
-            .iter()
-            .map(|p| p.as_ref().to_path_buf())
-            .collect();
-        for path in &rust_files {
+        qml_module: QmlModule<A, B>,
+    ) -> CxxQtBuilder {
+        let qml_module = OwningQmlModule::from(qml_module);
+        for path in &qml_module.rust_files {
             if self.rust_sources.contains(path) {
-                panic_duplicate_file_and_qml_module(path, uri, version_major, version_minor);
+                panic_duplicate_file_and_qml_module(
+                    path,
+                    &qml_module.uri,
+                    qml_module.version_major,
+                    qml_module.version_minor,
+                );
             }
         }
-        self.qml_modules.push(QmlModule {
-            uri: uri.to_owned(),
-            version_major,
-            version_minor,
-            rust_files,
-        });
+        self.qml_modules.push(qml_module);
         self
     }
 
@@ -532,6 +540,8 @@ impl CxxQtBuilder {
 
         let mut cc_builder_whole_archive_files_added = false;
 
+        let lib_name = "cxx-qt-generated";
+
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
         for qml_module in self.qml_modules {
@@ -548,16 +558,20 @@ impl CxxQtBuilder {
                 }
             }
 
-            let qml_type_registration_files = qtbuild.register_qml_types(
+            let qml_module_registration_files = qtbuild.register_qml_module(
                 &qml_metatypes_json,
+                &qml_module.uri,
                 qml_module.version_major,
                 qml_module.version_minor,
-                &qml_module.uri,
+                lib_name,
+                &qml_module.qml_files,
+                &qml_module.qrc_files,
             );
             self.cc_builder
-                .file(qml_type_registration_files.qmltyperegistrar);
-            self.cc_builder.file(qml_type_registration_files.plugin);
-            cc_builder_whole_archive.file(qml_type_registration_files.plugin_init);
+                .file(qml_module_registration_files.qmltyperegistrar);
+            self.cc_builder.file(qml_module_registration_files.plugin);
+            cc_builder_whole_archive.file(qml_module_registration_files.plugin_init);
+            cc_builder_whole_archive.file(qml_module_registration_files.rcc);
             self.cc_builder.define("QT_STATICPLUGIN", None);
             cc_builder_whole_archive_files_added = true;
         }
@@ -599,6 +613,6 @@ impl CxxQtBuilder {
         if cc_builder_whole_archive_files_added {
             cc_builder_whole_archive.compile("qt-static-initializers");
         }
-        self.cc_builder.compile("cxx-qt-gen");
+        self.cc_builder.compile(lib_name);
     }
 }

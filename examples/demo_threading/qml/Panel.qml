@@ -24,7 +24,7 @@ Item {
 
     BorderImage {
         id: panel
-        source: "./images/panel.png"
+        source: "../images/panel.png"
         width: 900
         clip: true
         height: parent.height - 30
@@ -54,7 +54,7 @@ Item {
 
         Image {
             id: kdabL
-            source: "./images/kdabLogo.png"
+            source: "../images/kdabLogo.png"
             x: (-panel.x / 1.5) + 60
             y: 120
         }
@@ -78,7 +78,7 @@ Item {
 
         Image {
             id: rust
-            source: "./images/RLogolarge.png"
+            source: "../images/RLogolarge.png"
             anchors.horizontalCenter: kdabL.horizontalCenter
             anchors.top: kdabL.bottom
             anchors.topMargin: 100

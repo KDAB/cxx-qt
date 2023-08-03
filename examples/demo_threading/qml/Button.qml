@@ -19,7 +19,7 @@ Item {
     Image {
         id: inner
         anchors.centerIn: parent
-        source: "./images/activeInner.png"
+        source: "../images/activeInner.png"
         opacity: activeF || pressed ? 1 : 0
         Behavior on opacity { NumberAnimation { easing.type: Easing.InOutQuad } }
     }
@@ -27,7 +27,7 @@ Item {
     Image {
         id: innerInactive
         anchors.centerIn: parent
-        source: "./images/inactiveInner.png"
+        source: "../images/inactiveInner.png"
         opacity: 1 - inner.opacity
     }
 
@@ -41,7 +41,7 @@ Item {
 
         Image {
             id: outer
-            source: "./images/activeOuter.png"
+            source: "../images/activeOuter.png"
             anchors.centerIn: parent
             opacity: activeF || pressed ? 1 : 0
             Behavior on opacity { NumberAnimation { easing.type: Easing.InOutQuad } }
@@ -49,7 +49,7 @@ Item {
 
         Image {
             id: outerInactive
-            source: "./images/inactiveOuter.png"
+            source: "../images/inactiveOuter.png"
             anchors.centerIn: parent
             opacity: 1 - outer.opacity
         }

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // ANCHOR: book_cargo_executable_build_rs
-use cxx_qt_build::CxxQtBuilder;
+use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
@@ -14,10 +14,12 @@ fn main() {
         // - Qt Qml is linked by enabling the qt_qml Cargo feature (default).
         // - Qt Qml requires linking Qt Network on macOS
         .qt_module("Network")
-        .qml_module("com.kdab.cxx_qt.demo", 1, 0, &["src/cxxqt_object.rs"])
-        // Generate C++ code from the .qrc file with the rcc tool
-        // https://doc.qt.io/qt-6/resources.html
-        .qrc("qml/qml.qrc")
+        .qml_module(QmlModule {
+            uri: "com.kdab.cxx_qt.demo",
+            rust_files: &["src/cxxqt_object.rs"],
+            qml_files: &["qml/main.qml"],
+            ..Default::default()
+        })
         .build();
 }
 // ANCHOR_END: book_cargo_executable_build_rs

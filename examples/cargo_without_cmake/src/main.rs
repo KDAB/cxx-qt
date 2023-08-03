@@ -25,7 +25,7 @@ fn main() {
 
     // Load the QML path into the engine
     if let Some(engine) = engine.as_mut() {
-        engine.load(&QUrl::from("qrc:/main.qml"));
+        engine.load(&QUrl::from("qrc:/qt/qml/com/kdab/cxx_qt/demo/qml/main.qml"));
     }
 
     // Start the app

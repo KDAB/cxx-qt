@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>MainWindow.qml</file>
-        <file>Button.qml</file>
-        <file>SideText.qml</file>
-        <file>SensorUI.qml</file>
-        <file>Panel.qml</file>
-    </qresource>
-</RCC>

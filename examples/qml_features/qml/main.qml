@@ -70,51 +70,51 @@ ApplicationWindow {
             model: ListModel {
                 ListElement {
                     name: "Properties"
-                    source: "qrc:/pages/PropertiesPage.qml"
+                    source: "pages/PropertiesPage.qml"
                 }
                 ListElement {
                     name: "Invokables"
-                    source: "qrc:/pages/InvokablesPage.qml"
+                    source: "pages/InvokablesPage.qml"
                 }
                 ListElement {
                     name: "Signals"
-                    source: "qrc:/pages/SignalsPage.qml"
+                    source: "pages/SignalsPage.qml"
                 }
                 ListElement {
                     name: "Threading"
-                    source: "qrc:/pages/ThreadingPage.qml"
+                    source: "pages/ThreadingPage.qml"
                 }
                 ListElement {
                     name: "Custom Base Class"
-                    source: "qrc:/pages/CustomBaseClassPage.qml"
+                    source: "pages/CustomBaseClassPage.qml"
                 }
                 ListElement {
                     name: "Serialisation"
-                    source: "qrc:/pages/SerialisationPage.qml"
+                    source: "pages/SerialisationPage.qml"
                 }
                 ListElement {
                     name: "Types"
-                    source: "qrc:/pages/TypesPage.qml"
+                    source: "pages/TypesPage.qml"
                 }
                 ListElement {
                     name: "Containers"
-                    source: "qrc:/pages/ContainersPage.qml"
+                    source: "pages/ContainersPage.qml"
                 }
                 ListElement {
                     name: "Multiple QObjects"
-                    source: "qrc:/pages/MultipleQObjectsPage.qml"
+                    source: "pages/MultipleQObjectsPage.qml"
                 }
                 ListElement {
                     name: "Nested QObjects"
-                    source: "qrc:/pages/NestedQObjectsPage.qml"
+                    source: "pages/NestedQObjectsPage.qml"
                 }
                 ListElement {
                     name: "Singleton"
-                    source: "qrc:/pages/SingletonPage.qml"
+                    source: "pages/SingletonPage.qml"
                 }
                 ListElement {
                     name: "Custom Parent Class"
-                    source: "qrc:/pages/CustomParentClassPage.qml"
+                    source: "pages/CustomParentClassPage.qml"
                 }
             }
         }
