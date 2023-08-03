@@ -13,11 +13,11 @@ use syn::Result;
 pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
-    let ident = &qobject_idents.cpp_class.cpp;
+    let cpp_class = &qobject_idents.cpp_class.cpp;
     let cxx_qt_thread_ident = &qobject_idents.cxx_qt_thread_class;
 
     result.forward_declares.push(format!(
-        "using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{ident}>;"
+        "using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{cpp_class}>;"
     ));
     // Ensure that the CxxQtThread<T> is of the correct size and alignment
     // which should be two std::shared_ptr which are two size_t each
@@ -27,31 +27,18 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQOb
         static_assert(sizeof({cxx_qt_thread_ident}) == sizeof(::std::size_t[4]), "unexpected size");
         "#
     }));
-    result.members.push(format!(
-        "::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>> m_cxxQtThreadObj;"
-    ));
-    result.methods.push(CppFragment::Pair {
-        header: format!("{cxx_qt_thread_ident} qtThread() const;"),
-        source: formatdoc! {
-            r#"
-            {cxx_qt_thread_ident}
-            {ident}::qtThread() const
-            {{
-              return {cxx_qt_thread_ident}(m_cxxQtThreadObj, m_rustObjMutex);
-            }}
-            "#
-        },
-    });
-    result.deconstructors.push(formatdoc! {
-        r#"
-        const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-        m_cxxQtThreadObj->ptr = nullptr;
-        "#
-    });
 
-    let member_initializer = format!("m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<{ident}>>(this))");
+    result
+        .includes
+        .insert("#include <cxx-qt-common/cxxqt_threading.h>".to_owned());
 
-    Ok((member_initializer, result))
+    result
+        .base_classes
+        .push(format!("::rust::cxxqtlib1::CxxQtThreading<{cpp_class}>"));
+
+    let class_initializer = format!("::rust::cxxqtlib1::CxxQtThreading<{cpp_class}>(this)");
+
+    Ok((class_initializer, result))
 }
 
 #[cfg(test)]
@@ -76,19 +63,14 @@ mod tests {
             "using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;"
         );
 
-        // members
-        assert_eq!(generated.members.len(), 1);
-        assert_str_eq!(
-            &generated.members[0],
-            "::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>> m_cxxQtThreadObj;"
-        );
+        // initialiser
         assert_str_eq!(
             initializer,
-            "m_cxxQtThreadObj(::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(this))"
+            "::rust::cxxqtlib1::CxxQtThreading<MyObject>(this)"
         );
 
         // methods
-        assert_eq!(generated.methods.len(), 2);
+        assert_eq!(generated.methods.len(), 1);
 
         let source = if let CppFragment::Source(source) = &generated.methods[0] {
             source
@@ -103,31 +85,17 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
-        assert_str_eq!(header, "MyObjectCxxQtThread qtThread() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            MyObjectCxxQtThread
-            MyObject::qtThread() const
-            {
-              return MyObjectCxxQtThread(m_cxxQtThreadObj, m_rustObjMutex);
-            }
-            "#}
-        );
+        // includes
+        assert_eq!(generated.includes.len(), 1);
+        assert!(generated
+            .includes
+            .contains("#include <cxx-qt-common/cxxqt_threading.h>"));
 
-        // deconstructors
-        assert_eq!(generated.deconstructors.len(), 1);
-        assert_str_eq!(
-            generated.deconstructors[0],
-            indoc! {r#"
-            const auto guard = ::std::unique_lock(m_cxxQtThreadObj->mutex);
-            m_cxxQtThreadObj->ptr = nullptr;
-            "#}
+        // base class
+        assert_eq!(generated.base_classes.len(), 1);
+        assert_eq!(
+            generated.base_classes[0],
+            "::rust::cxxqtlib1::CxxQtThreading<MyObject>"
         );
     }
 }

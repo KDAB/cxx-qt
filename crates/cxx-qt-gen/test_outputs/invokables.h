@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cxx-qt-common/cxxqt_locking.h>
+#include <cxx-qt-common/cxxqt_threading.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
@@ -19,7 +19,7 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqtlib1::CxxQtThreading<MyObject>
 {
   Q_OBJECT
 
@@ -40,7 +40,6 @@ public:
   Q_INVOKABLE virtual void invokableVirtual() const;
   Q_INVOKABLE void invokableResultTuple() const;
   Q_INVOKABLE ::rust::String invokableResultType() const;
-  MyObjectCxxQtThread qtThread() const;
   explicit MyObject(::std::int32_t arg0, QString const& arg1);
   explicit MyObject();
 
@@ -62,10 +61,6 @@ private:
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args);
-
-private:
-  ::std::shared_ptr<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>
-    m_cxxQtThreadObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
