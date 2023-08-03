@@ -59,6 +59,7 @@ MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
   , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtLocking()
 {
 }
 

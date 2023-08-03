@@ -135,7 +135,7 @@ impl GeneratedCppQObject {
             cxx_mappings,
         )?);
 
-        let mut member_initializers = vec![];
+        let mut class_initializers = vec![];
 
         // If this type has threading enabled then add generation
         //
@@ -146,10 +146,12 @@ impl GeneratedCppQObject {
 
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
-            member_initializers.push(initializer);
+            class_initializers.push(initializer);
         // If this type has locking enabled then add generation
         } else if qobject.locking {
-            generated.blocks.append(&mut locking::generate()?);
+            let (initializer, mut blocks) = locking::generate()?;
+            generated.blocks.append(&mut blocks);
+            class_initializers.push(initializer);
         }
 
         // We need the QObject base class to be first which is added last
@@ -162,7 +164,7 @@ impl GeneratedCppQObject {
                 .base_class
                 .clone()
                 .unwrap_or_else(|| "QObject".to_string()),
-            &member_initializers,
+            &class_initializers,
             cxx_mappings,
         )?);
 

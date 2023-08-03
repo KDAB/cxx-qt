@@ -6,7 +6,7 @@
 use crate::generator::cpp::qobject::GeneratedCppQObjectBlocks;
 use syn::Result;
 
-pub fn generate() -> Result<GeneratedCppQObjectBlocks> {
+pub fn generate() -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     result
@@ -17,7 +17,9 @@ pub fn generate() -> Result<GeneratedCppQObjectBlocks> {
         .base_classes
         .push("::rust::cxxqtlib1::CxxQtLocking".to_owned());
 
-    Ok(result)
+    let class_initializer = "::rust::cxxqtlib1::CxxQtLocking()".to_owned();
+
+    Ok((class_initializer, result))
 }
 
 #[cfg(test)]
@@ -26,7 +28,10 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_locking() {
-        let generated = generate().unwrap();
+        let (initializer, generated) = generate().unwrap();
+
+        // initializer
+        assert_eq!(initializer, "::rust::cxxqtlib1::CxxQtLocking()");
 
         // includes
         assert_eq!(generated.includes.len(), 1);

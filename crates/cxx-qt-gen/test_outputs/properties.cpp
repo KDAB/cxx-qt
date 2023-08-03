@@ -66,6 +66,7 @@ MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtLocking()
 {
 }
 
