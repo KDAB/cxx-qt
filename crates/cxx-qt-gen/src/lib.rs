@@ -29,6 +29,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             "cxxqt_locking.h",
         ),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
+        (include_str!("../include/cxxqt_type.h"), "cxxqt_type.h"),
     ] {
         // Note that we do not need rerun-if-changed for these files
         // as include_str causes a rerun when the header changes

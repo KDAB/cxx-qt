@@ -198,10 +198,14 @@ mod tests {
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
-        assert_eq!(cpp.blocks.base_classes.len(), 2);
+        assert_eq!(cpp.blocks.base_classes.len(), 3);
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
         assert_eq!(
             cpp.blocks.base_classes[1],
+            "::rust::cxxqtlib1::CxxQtType<MyObjectRust>"
+        );
+        assert_eq!(
+            cpp.blocks.base_classes[2],
             "::rust::cxxqtlib1::CxxQtLocking"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
@@ -227,10 +231,14 @@ mod tests {
         )
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(cpp.blocks.base_classes.len(), 2);
+        assert_eq!(cpp.blocks.base_classes.len(), 3);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
         assert_eq!(
             cpp.blocks.base_classes[1],
+            "::rust::cxxqtlib1::CxxQtType<MyObjectRust>"
+        );
+        assert_eq!(
+            cpp.blocks.base_classes[2],
             "::rust::cxxqtlib1::CxxQtLocking"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);

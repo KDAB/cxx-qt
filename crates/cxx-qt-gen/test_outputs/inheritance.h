@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxx-qt-common/cxxqt_locking.h>
-#include <memory>
+#include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -14,6 +14,7 @@ class MyObject;
 
 class MyObject
   : public QAbstractItemModel
+  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
@@ -22,9 +23,6 @@ public:
   ~MyObject();
 
 public:
-  MyObjectRust const& unsafeRust() const;
-  MyObjectRust& unsafeRustMut();
-
   Q_INVOKABLE QVariant data(QModelIndex const& _index,
                             ::std::int32_t _role) const override;
   Q_INVOKABLE bool hasChildren(QModelIndex const& _parent) const override;
@@ -44,9 +42,6 @@ private:
   QVariant dataWrapper(QModelIndex const& _index,
                        ::std::int32_t _role) const noexcept;
   bool hasChildrenWrapper(QModelIndex const& _parent) const noexcept;
-
-private:
-  ::rust::Box<MyObjectRust> m_rustObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

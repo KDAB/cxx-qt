@@ -4,18 +4,6 @@ namespace cxx_qt::my_object {
 
 MyObject::~MyObject() {}
 
-MyObjectRust const&
-MyObject::unsafeRust() const
-{
-  return *m_rustObj;
-}
-
-MyObjectRust&
-MyObject::unsafeRustMut()
-{
-  return *m_rustObj;
-}
-
 void
 MyObject::invokable()
 {
@@ -92,7 +80,8 @@ MyObject::newDataConnect(::rust::Fn<void(MyObject&,
 
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
-  , m_rustObj(::cxx_qt::my_object::cxx_qt_my_object::createRs())
+  , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
+      ::cxx_qt::my_object::cxx_qt_my_object::createRs())
 {
 }
 

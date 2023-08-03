@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cxx-qt-common/cxxqt_locking.h>
-#include <memory>
+#include <cxx-qt-common/cxxqt_type.h>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -18,6 +18,7 @@ class MyObject;
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
+  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
@@ -26,9 +27,6 @@ public:
   ~MyObject();
 
 public:
-  MyObjectRust const& unsafeRust() const;
-  MyObjectRust& unsafeRustMut();
-
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
   ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
@@ -55,9 +53,6 @@ public:
 
 private:
   void invokableWrapper() noexcept;
-
-private:
-  ::rust::Box<MyObjectRust> m_rustObj;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
