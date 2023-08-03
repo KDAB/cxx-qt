@@ -69,7 +69,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
     generated.qobjects.iter().map(|qobject| {
         formatdoc! { r#"
             {namespace_start}
-            class {ident} : public {base_class}
+            class {ident} : {base_classes}
             {{
               Q_OBJECT
               {metaobjects}
@@ -90,7 +90,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         ident = qobject.ident,
         namespace_start = namespace_start,
         namespace_end = namespace_end,
-        base_class = qobject.base_class,
+        base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
         public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),

@@ -63,11 +63,11 @@ mod tests {
                     ident: "MyObject".to_owned(),
                     rust_ident: "MyObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
-                    base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());
@@ -185,11 +185,11 @@ mod tests {
                     ident: "FirstObject".to_owned(),
                     rust_ident: "FirstObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
-                    base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());
@@ -230,11 +230,11 @@ mod tests {
                     ident: "SecondObject".to_owned(),
                     rust_ident: "SecondObjectRust".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
-                    base_class: "QStringListModel".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         deconstructors: vec![],
                         forward_declares: vec![],
                         members: vec![],
+                        base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());

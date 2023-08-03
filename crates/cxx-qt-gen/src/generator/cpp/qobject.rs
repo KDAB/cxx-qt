@@ -31,6 +31,8 @@ pub struct GeneratedCppQObjectBlocks {
     pub deconstructors: Vec<String>,
     /// List of includes
     pub includes: BTreeSet<String>,
+    /// Base class of the QObject
+    pub base_classes: Vec<String>,
 }
 
 impl GeneratedCppQObjectBlocks {
@@ -42,6 +44,7 @@ impl GeneratedCppQObjectBlocks {
         self.members.append(&mut other.members);
         self.deconstructors.append(&mut other.deconstructors);
         self.includes.append(&mut other.includes);
+        self.base_classes.append(&mut other.base_classes);
     }
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
@@ -78,8 +81,6 @@ pub struct GeneratedCppQObject {
     pub rust_ident: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
-    /// Base class of the QObject
-    pub base_class: String,
     /// The blocks of the QObject
     pub blocks: GeneratedCppQObjectBlocks,
 }
@@ -96,10 +97,6 @@ impl GeneratedCppQObject {
             ident: qobject_idents.cpp_class.cpp.to_string(),
             rust_ident: qobject_idents.rust_struct.cpp.to_string(),
             namespace_internals: namespace_idents.internal,
-            base_class: qobject
-                .base_class
-                .clone()
-                .unwrap_or_else(|| "QObject".to_string()),
             blocks: GeneratedCppQObjectBlocks::from(qobject),
         };
         let lock_guard = if qobject.locking {
@@ -153,12 +150,23 @@ impl GeneratedCppQObject {
             generated.blocks.append(&mut blocks);
             member_initializers.push(initializer);
         }
+
+        // We need the QObject base class to be first which is added last
+        generated.blocks.base_classes.reverse();
+
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &qobject.constructors,
+            qobject
+                .base_class
+                .clone()
+                .unwrap_or_else(|| "QObject".to_string()),
             &member_initializers,
             cxx_mappings,
         )?);
+
+        // We need the QObject base class to be first which is added last
+        generated.blocks.base_classes.reverse();
 
         Ok(generated)
     }
@@ -192,7 +200,8 @@ mod tests {
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
-        assert_eq!(cpp.base_class, "QObject");
+        assert_eq!(cpp.blocks.base_classes.len(), 1);
+        assert_eq!(cpp.blocks.base_classes[0], "QObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
@@ -216,7 +225,8 @@ mod tests {
         )
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(cpp.base_class, "QStringListModel");
+        assert_eq!(cpp.blocks.base_classes.len(), 1);
+        assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
