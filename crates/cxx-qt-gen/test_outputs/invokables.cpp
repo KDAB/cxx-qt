@@ -122,18 +122,11 @@ MyObject::MyObject()
 {
 }
 
-::std::lock_guard<::std::recursive_mutex>
-MyObject::unsafeRustLock() const
-{
-  return ::std::lock_guard<::std::recursive_mutex>(*m_rustObjMutex);
-}
-
 MyObject::MyObject(
   ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args)
   : QObject(::std::move(args.base.arg0))
   , m_rustObj(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs0(::std::move(args.new_)))
-  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
   , m_cxxQtThreadObj(
       ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
         this))
@@ -147,7 +140,6 @@ MyObject::MyObject(
   : QObject()
   , m_rustObj(
       ::cxx_qt::my_object::cxx_qt_my_object::newRs1(::std::move(args.new_)))
-  , m_rustObjMutex(::std::make_shared<::std::recursive_mutex>())
   , m_cxxQtThreadObj(
       ::std::make_shared<::rust::cxxqtlib1::CxxQtGuardedPointer<MyObject>>(
         this))

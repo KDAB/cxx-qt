@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cxx-qt-common/cxxqt_locking.h>
 #include <memory>
-#include <mutex>
 
 namespace rust::cxxqtlib1 {
 template<typename T>
@@ -21,7 +21,9 @@ class SecondObject;
 #include "cxx-qt-gen/multi_object.cxx.h"
 
 namespace cxx_qt::multi_object {
-class MyObject : public QStringListModel
+class MyObject
+  : public QStringListModel
+  , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
   Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
@@ -50,12 +52,9 @@ private:
   ::std::int32_t const& getPropertyNameWrapper() const noexcept;
   void setPropertyNameWrapper(::std::int32_t value) noexcept;
   void invokableNameWrapper() noexcept;
-  [[nodiscard]] ::std::lock_guard<::std::recursive_mutex> unsafeRustLock()
-    const;
 
 private:
   ::rust::Box<MyObjectRust> m_rustObj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
