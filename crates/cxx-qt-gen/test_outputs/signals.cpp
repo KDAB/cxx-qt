@@ -5,7 +5,7 @@ namespace cxx_qt::my_object {
 void
 MyObject::invokable()
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableWrapper();
 }
 
@@ -18,7 +18,7 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::ready,
     this,
     [&, func = ::std::move(func)]() {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this);
     },
     type);
@@ -40,7 +40,7 @@ MyObject::dataChangedConnect(::rust::Fn<void(MyObject&,
                                   ::std::unique_ptr<Opaque> second,
                                   QPoint third,
                                   QPoint const& fourth) {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this,
            ::std::move(first),
            ::std::move(second),
@@ -66,7 +66,7 @@ MyObject::newDataConnect(::rust::Fn<void(MyObject&,
                                   ::std::unique_ptr<Opaque> second,
                                   QPoint third,
                                   QPoint const& fourth) {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this,
            ::std::move(first),
            ::std::move(second),

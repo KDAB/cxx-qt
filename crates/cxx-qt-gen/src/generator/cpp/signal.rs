@@ -18,7 +18,7 @@ pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: Option<&str>,
+    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -73,7 +73,7 @@ pub fn generate_cpp_signals(
                             &{qobject_ident}::{signal_ident},
                             this,
                             [&, func = ::std::move(func)]({parameters_cpp}) {{
-                              {rust_obj_guard}
+                              {lock_guard}
                               func({parameter_values});
                             }}, type);
                 }}
@@ -82,7 +82,6 @@ pub fn generate_cpp_signals(
                 parameters_cpp = parameter_types_cpp.join(", "),
                 parameters_rust = parameter_types_rust.join(", "),
                 parameter_values = parameter_values_connection.join(", "),
-                rust_obj_guard = lock_guard.unwrap_or_default(),
             },
         });
     }
@@ -132,7 +131,7 @@ mod tests {
             &signals,
             &qobject_idents,
             &ParsedCxxMappings::default(),
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 
@@ -204,7 +203,7 @@ mod tests {
             &signals,
             &qobject_idents,
             &cxx_mappings,
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 
@@ -266,7 +265,7 @@ mod tests {
             &signals,
             &qobject_idents,
             &ParsedCxxMappings::default(),
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 

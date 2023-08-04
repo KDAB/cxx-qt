@@ -20,7 +20,7 @@ pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: Option<&str>,
+    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
@@ -92,7 +92,7 @@ mod tests {
             &properties,
             &qobject_idents,
             &ParsedCxxMappings::default(),
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 
@@ -310,7 +310,7 @@ mod tests {
             &properties,
             &qobject_idents,
             &cxx_mapping,
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 

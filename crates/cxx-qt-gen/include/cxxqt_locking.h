@@ -29,6 +29,10 @@ protected:
   }
 
   ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
+
+  // Friend MaybeLockGuard so that it can use unsafeRustLock()
+  template<typename T, typename D>
+  friend class MaybeLockGuard;
 };
 
 }

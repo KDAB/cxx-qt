@@ -10,7 +10,7 @@ pub fn generate(
     idents: &QPropertyName,
     qobject_ident: &str,
     cxx_ty: &str,
-    lock_guard: Option<&str>,
+    lock_guard: &str,
 ) -> CppFragment {
     CppFragment::Pair {
         header: format!(
@@ -23,7 +23,7 @@ pub fn generate(
             {return_cxx_ty} const&
             {qobject_ident}::{ident_getter}() const
             {{
-                {rust_obj_guard}
+                {lock_guard}
                 return {ident_getter_wrapper}();
             }}
             "#,
@@ -31,7 +31,6 @@ pub fn generate(
             ident_getter = idents.getter.cpp.to_string(),
             ident_getter_wrapper = idents.getter_wrapper.cpp.to_string(),
             qobject_ident = qobject_ident,
-            rust_obj_guard = lock_guard.unwrap_or_default(),
         ),
     }
 }

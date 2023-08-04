@@ -87,17 +87,21 @@ impl GeneratedCppQObject {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
+        let cpp_class = qobject_idents.cpp_class.cpp.to_string();
         let mut generated = GeneratedCppQObject {
-            ident: qobject_idents.cpp_class.cpp.to_string(),
+            ident: cpp_class.clone(),
             rust_ident: qobject_idents.rust_struct.cpp.to_string(),
             namespace_internals: namespace_idents.internal,
             blocks: GeneratedCppQObjectBlocks::from(qobject),
         };
-        let lock_guard = if qobject.locking {
-            Some("const auto guard = unsafeRustLock();")
-        } else {
-            None
-        };
+
+        // Ensure that we include maybeLock that is used in multiple places
+        generated
+            .blocks
+            .includes
+            .insert("#include <cxx-qt-common/cxxqt_maybelockguard.h>".to_owned());
+        let lock_guard =
+            format!("const ::rust::cxxqtlib1::MaybeLockGuard<{cpp_class}> guard(*this);");
 
         // Build the base class
         let base_class = qobject
@@ -116,19 +120,19 @@ impl GeneratedCppQObject {
             &qobject.properties,
             &qobject_idents,
             cxx_mappings,
-            lock_guard,
+            &lock_guard,
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
             &qobject.methods,
             &qobject_idents,
             cxx_mappings,
-            lock_guard,
+            &lock_guard,
         )?);
         generated.blocks.append(&mut generate_cpp_signals(
             &qobject.signals,
             &qobject_idents,
             cxx_mappings,
-            lock_guard,
+            &lock_guard,
         )?);
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,
