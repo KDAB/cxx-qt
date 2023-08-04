@@ -20,7 +20,7 @@ namespace rust {
 namespace cxxqtlib1 {
 
 template<typename T>
-class CxxQtGuardedPointer
+class CxxQtGuardedPointer final
 {
 public:
   explicit CxxQtGuardedPointer(T* ptr)
@@ -33,7 +33,7 @@ public:
 };
 
 template<typename T>
-class CxxQtThread
+class CxxQtThread final
 {
 public:
   CxxQtThread(::std::shared_ptr<CxxQtGuardedPointer<T>> obj,
