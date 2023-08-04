@@ -5,28 +5,28 @@ namespace cxx_qt::my_object {
 ::std::int32_t const&
 MyObject::getPrimitive() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return getPrimitiveWrapper();
 }
 
 void
 MyObject::setPrimitive(::std::int32_t const& value)
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   setPrimitiveWrapper(value);
 }
 
 QPoint const&
 MyObject::getTrivial() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return getTrivialWrapper();
 }
 
 void
 MyObject::setTrivial(QPoint const& value)
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   setTrivialWrapper(value);
 }
 
@@ -39,7 +39,7 @@ MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::primitiveChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this);
     },
     type);
@@ -54,7 +54,7 @@ MyObject::trivialChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::trivialChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this);
     },
     type);

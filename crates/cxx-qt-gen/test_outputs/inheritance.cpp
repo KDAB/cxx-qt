@@ -3,14 +3,14 @@
 QVariant
 MyObject::data(QModelIndex const& _index, ::std::int32_t _role) const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return dataWrapper(_index, _role);
 }
 
 bool
 MyObject::hasChildren(QModelIndex const& _parent) const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return hasChildrenWrapper(_parent);
 }
 

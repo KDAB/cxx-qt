@@ -26,7 +26,7 @@ pub fn generate_cpp_methods(
     invokables: &Vec<ParsedMethod>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: Option<&str>,
+    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -117,7 +117,7 @@ pub fn generate_cpp_methods(
                     {return_cxx_ty}
                     {qobject_ident}::{ident}({parameter_types}){is_const}
                     {{
-                        {rust_obj_guard}
+                        {lock_guard}
                         {body};
                     }}
                     "#,
@@ -130,7 +130,6 @@ pub fn generate_cpp_methods(
                 is_const = is_const,
                 parameter_types = parameter_types,
                 qobject_ident = qobject_ident,
-                rust_obj_guard = lock_guard.unwrap_or_default(),
                 body = if return_cxx_ty.is_some() {
                     format!("return {body}", body = body)
                 } else {
@@ -241,7 +240,7 @@ mod tests {
             &invokables,
             &qobject_idents,
             &ParsedCxxMappings::default(),
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 
@@ -423,7 +422,7 @@ mod tests {
             &invokables,
             &qobject_idents,
             &cxx_mappings,
-            Some("// ::std::lock_guard"),
+            "// ::std::lock_guard",
         )
         .unwrap();
 

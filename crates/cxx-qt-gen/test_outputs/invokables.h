@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxx-qt-common/cxxqt_maybelockguard.h>
 #include <cxx-qt-common/cxxqt_threading.h>
 #include <cxx-qt-common/cxxqt_type.h>
 

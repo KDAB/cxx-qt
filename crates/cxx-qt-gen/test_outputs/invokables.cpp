@@ -5,21 +5,21 @@ namespace cxx_qt::my_object {
 void
 MyObject::cppMethod() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   cppMethodWrapper();
 }
 
 void
 MyObject::invokable() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableWrapper();
 }
 
 void
 MyObject::invokableMutable()
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableMutableWrapper();
 }
 
@@ -28,56 +28,56 @@ MyObject::invokableParameters(QColor const& opaque,
                               QPoint const& trivial,
                               ::std::int32_t primitive) const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableParametersWrapper(opaque, trivial, primitive);
 }
 
 ::std::unique_ptr<Opaque>
 MyObject::invokableReturnOpaque()
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return invokableReturnOpaqueWrapper();
 }
 
 QPoint
 MyObject::invokableReturnTrivial()
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return invokableReturnTrivialWrapper();
 }
 
 void
 MyObject::invokableFinal() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableFinalWrapper();
 }
 
 void
 MyObject::invokableOverride() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableOverrideWrapper();
 }
 
 void
 MyObject::invokableVirtual() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableVirtualWrapper();
 }
 
 void
 MyObject::invokableResultTuple() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableResultTupleWrapper();
 }
 
 ::rust::String
 MyObject::invokableResultType() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return invokableResultTypeWrapper();
 }
 

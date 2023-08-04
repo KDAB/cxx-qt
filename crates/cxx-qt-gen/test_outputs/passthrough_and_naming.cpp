@@ -5,14 +5,14 @@ namespace cxx_qt::multi_object {
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   return getPropertyNameWrapper();
 }
 
 void
 MyObject::setPropertyName(::std::int32_t const& value)
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   setPropertyNameWrapper(value);
 }
 
@@ -25,7 +25,7 @@ MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::propertyNameChanged,
     this,
     [&, func = ::std::move(func)]() {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this);
     },
     type);
@@ -34,7 +34,7 @@ MyObject::propertyNameChangedConnect(::rust::Fn<void(MyObject&)> func,
 void
 MyObject::invokableName()
 {
-  const auto guard = unsafeRustLock();
+  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   invokableNameWrapper();
 }
 
@@ -47,7 +47,7 @@ MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
     &MyObject::ready,
     this,
     [&, func = ::std::move(func)]() {
-      const auto guard = unsafeRustLock();
+      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
       func(*this);
     },
     type);
@@ -68,14 +68,14 @@ namespace cxx_qt::multi_object {
 ::std::int32_t const&
 SecondObject::getPropertyName() const
 {
-
+  const ::rust::cxxqtlib1::MaybeLockGuard<SecondObject> guard(*this);
   return getPropertyNameWrapper();
 }
 
 void
 SecondObject::setPropertyName(::std::int32_t const& value)
 {
-
+  const ::rust::cxxqtlib1::MaybeLockGuard<SecondObject> guard(*this);
   setPropertyNameWrapper(value);
 }
 
@@ -87,14 +87,17 @@ SecondObject::propertyNameChangedConnect(::rust::Fn<void(SecondObject&)> func,
     this,
     &SecondObject::propertyNameChanged,
     this,
-    [&, func = ::std::move(func)]() { func(*this); },
+    [&, func = ::std::move(func)]() {
+      const ::rust::cxxqtlib1::MaybeLockGuard<SecondObject> guard(*this);
+      func(*this);
+    },
     type);
 }
 
 void
 SecondObject::invokableName()
 {
-
+  const ::rust::cxxqtlib1::MaybeLockGuard<SecondObject> guard(*this);
   invokableNameWrapper();
 }
 
@@ -106,7 +109,10 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
     this,
     &SecondObject::ready,
     this,
-    [&, func = ::std::move(func)]() { func(*this); },
+    [&, func = ::std::move(func)]() {
+      const ::rust::cxxqtlib1::MaybeLockGuard<SecondObject> guard(*this);
+      func(*this);
+    },
     type);
 }
 
