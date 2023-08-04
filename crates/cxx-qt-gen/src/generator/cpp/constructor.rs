@@ -162,7 +162,6 @@ mod tests {
     }
 
     fn assert_empty_blocks(blocks: &GeneratedCppQObjectBlocks) {
-        assert!(blocks.members.is_empty());
         assert!(blocks.metaobjects.is_empty());
         assert!(blocks.forward_declares.is_empty());
     }

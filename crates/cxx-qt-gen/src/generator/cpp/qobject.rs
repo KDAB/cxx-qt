@@ -25,8 +25,6 @@ pub struct GeneratedCppQObjectBlocks {
     pub methods: Vec<CppFragment>,
     /// List of private methods for the QObject
     pub private_methods: Vec<CppFragment>,
-    /// List of members for the QObject
-    pub members: Vec<String>,
     /// List of includes
     pub includes: BTreeSet<String>,
     /// Base class of the QObject
@@ -39,7 +37,6 @@ impl GeneratedCppQObjectBlocks {
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
         self.private_methods.append(&mut other.private_methods);
-        self.members.append(&mut other.members);
         self.includes.append(&mut other.includes);
         self.base_classes.append(&mut other.base_classes);
     }

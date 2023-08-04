@@ -81,7 +81,6 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
             {public_methods}
             {private_methods}
-            {private_members}
             }};
 
             static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
@@ -96,7 +95,6 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
         public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
-        private_members = create_block("private", &qobject.blocks.members),
         metatype = if generated.namespace.is_empty() {
             qobject.ident.clone()
         } else {

@@ -65,7 +65,6 @@ mod tests {
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
-                        members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -186,7 +185,6 @@ mod tests {
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
-                        members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -230,7 +228,6 @@ mod tests {
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
-                        members: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -326,7 +323,6 @@ mod tests {
           void privateMethod() const;
           void privateMethod();
 
-
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -371,7 +367,6 @@ mod tests {
           Q_SIGNAL void countChanged();
 
 
-
         };
 
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
@@ -395,7 +390,6 @@ mod tests {
 
         private:
           void privateMethod() const;
-
 
         };
 
@@ -444,7 +438,6 @@ mod tests {
         private:
           void privateMethod() const;
           void privateMethod();
-
 
         };
 
