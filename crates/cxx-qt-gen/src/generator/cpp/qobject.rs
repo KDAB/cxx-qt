@@ -99,6 +99,13 @@ impl GeneratedCppQObject {
             None
         };
 
+        // Build the base class
+        let base_class = qobject
+            .base_class
+            .clone()
+            .unwrap_or_else(|| "QObject".to_string());
+        generated.blocks.base_classes.push(base_class.clone());
+
         // Add the CxxQtType rust and rust_mut methods
         generated
             .blocks
@@ -148,22 +155,13 @@ impl GeneratedCppQObject {
             class_initializers.push(initializer);
         }
 
-        // We need the QObject base class to be first which is added last
-        generated.blocks.base_classes.reverse();
-
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &qobject.constructors,
-            qobject
-                .base_class
-                .clone()
-                .unwrap_or_else(|| "QObject".to_string()),
+            base_class,
             &class_initializers,
             cxx_mappings,
         )?);
-
-        // We need the QObject base class to be first which is added last
-        generated.blocks.base_classes.reverse();
 
         Ok(generated)
     }

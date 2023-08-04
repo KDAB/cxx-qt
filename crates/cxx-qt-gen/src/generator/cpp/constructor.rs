@@ -19,7 +19,6 @@ fn default_constructor(
     initializers: String,
 ) -> GeneratedCppQObjectBlocks {
     GeneratedCppQObjectBlocks {
-        base_classes: vec![base_class.clone()],
         methods: vec![CppFragment::Pair {
             header: format!(
                 "explicit {class_name}(QObject* parent = nullptr);",
@@ -76,7 +75,6 @@ pub fn generate(
     }
 
     let mut generated = GeneratedCppQObjectBlocks::default();
-    generated.base_classes.push(base_class.clone());
 
     let class_name = qobject.ident.as_str();
     let rust_obj = qobject.rust_ident.as_str();
