@@ -160,7 +160,7 @@ impl QCoreApplication {
     }
 
     /// Sets the Internet domain of the organization that wrote this application
-    pub fn qcoreapplication_set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
+    pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qcoreapplication_set_organization_domain(self, domain);
     }
 

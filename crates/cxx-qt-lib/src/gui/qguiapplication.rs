@@ -164,7 +164,7 @@ impl QGuiApplication {
     }
 
     /// Sets the Internet domain of the organization that wrote this application
-    pub fn qguiapplication_set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
+    pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qguiapplication_set_organization_domain(self, domain);
     }
 
