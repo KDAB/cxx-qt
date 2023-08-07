@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `impl cxx_qt::trait for qobject::T` inside the bridge is now `impl cxx_qt::trait for T`
 - `qobject::T` as the self parameter in the bridge is now `T`
 - `#[cxx_override]`, `#[cxx_final]`, `#[cxx_virtual]` are now independant attributes rather than embedded in `#[qinvokable]`
+- Use `set_organization_name` instead of `q{core,gui}application_set_organization_name` in cxx-qt-lib
 
 ### Fixed
 
