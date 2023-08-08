@@ -572,6 +572,9 @@ impl CxxQtBuilder {
             self.cc_builder.file(qml_module_registration_files.plugin);
             cc_builder_whole_archive.file(qml_module_registration_files.plugin_init);
             cc_builder_whole_archive.file(qml_module_registration_files.rcc);
+            for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
+                cc_builder_whole_archive.file(qmlcachegen_file);
+            }
             self.cc_builder.define("QT_STATICPLUGIN", None);
             cc_builder_whole_archive_files_added = true;
         }
