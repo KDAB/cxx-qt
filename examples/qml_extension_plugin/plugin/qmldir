@@ -1,3 +1,0 @@
-module com.kdab.cxx_qt.demo
-plugin core_qmlplugin
-class_name CoreQmlpluginPlugin

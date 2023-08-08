@@ -14,7 +14,6 @@ members = [
 
     "examples/cargo_without_cmake",
     "examples/demo_threading/rust",
-    "examples/qml_extension_plugin/plugin/rust",
     "examples/qml_features/rust",
     "examples/qml_minimal/rust",
 
