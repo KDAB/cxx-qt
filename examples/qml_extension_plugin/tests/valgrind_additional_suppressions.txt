@@ -1,6 +1,0 @@
-{
-   qmltest_plugin_import_unknown_issue
-   Memcheck:Cond
-   obj:*
-   obj:*
-}

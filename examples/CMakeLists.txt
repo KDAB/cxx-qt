@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
 add_subdirectory(cargo_without_cmake)
-add_subdirectory(qml_extension_plugin)
 add_subdirectory(qml_features)
 add_subdirectory(qml_minimal)
 add_subdirectory(demo_threading)
