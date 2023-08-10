@@ -18,7 +18,6 @@ pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -73,12 +72,11 @@ pub fn generate_cpp_signals(
                             &{qobject_ident}::{signal_ident},
                             this,
                             [&, func = ::std::move(func)]({parameters_cpp}) {{
-                              {lock_guard}
+                              const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
                               func({parameter_values});
                             }}, type);
                 }}
                 "#,
-                connect_ident = connect_ident,
                 parameters_cpp = parameter_types_cpp.join(", "),
                 parameters_rust = parameter_types_rust.join(", "),
                 parameter_values = parameter_values_connection.join(", "),
@@ -127,13 +125,8 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_signals(
-            &signals,
-            &qobject_idents,
-            &ParsedCxxMappings::default(),
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -165,7 +158,7 @@ mod tests {
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this, ::std::move(trivial), ::std::move(opaque));
                         }, type);
             }
@@ -199,13 +192,7 @@ mod tests {
             .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
 
-        let generated = generate_cpp_signals(
-            &signals,
-            &qobject_idents,
-            &cxx_mappings,
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_mappings).unwrap();
 
         assert_eq!(generated.methods.len(), 2);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -234,7 +221,7 @@ mod tests {
                         &MyObject::dataChanged,
                         this,
                         [&, func = ::std::move(func)](A1 mapped) {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this, ::std::move(mapped));
                         }, type);
             }
@@ -261,13 +248,8 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_signals(
-            &signals,
-            &qobject_idents,
-            &ParsedCxxMappings::default(),
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
 
@@ -287,7 +269,7 @@ mod tests {
                         &MyObject::baseName,
                         this,
                         [&, func = ::std::move(func)]() {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this);
                         }, type);
             }

@@ -26,7 +26,6 @@ pub fn generate_cpp_methods(
     invokables: &Vec<ParsedMethod>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
@@ -117,7 +116,7 @@ pub fn generate_cpp_methods(
                     {return_cxx_ty}
                     {qobject_ident}::{ident}({parameter_types}){is_const}
                     {{
-                        {lock_guard}
+                        const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
                         {body};
                     }}
                     "#,
@@ -127,9 +126,6 @@ pub fn generate_cpp_methods(
                     "void"
                 },
                 ident = idents.name.cpp,
-                is_const = is_const,
-                parameter_types = parameter_types,
-                qobject_ident = qobject_ident,
                 body = if return_cxx_ty.is_some() {
                     format!("return {body}", body = body)
                 } else {
@@ -151,7 +147,6 @@ pub fn generate_cpp_methods(
                 "void"
             },
             ident = idents.wrapper.cpp,
-            parameter_types = parameter_types,
         )));
     }
 
@@ -236,13 +231,9 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_methods(
-            &invokables,
-            &qobject_idents,
-            &ParsedCxxMappings::default(),
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_methods(&invokables, &qobject_idents, &ParsedCxxMappings::default())
+                .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -259,7 +250,7 @@ mod tests {
             void
             MyObject::voidInvokable() const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 voidInvokableWrapper();
             }
             "#}
@@ -280,7 +271,7 @@ mod tests {
             ::std::int32_t
             MyObject::trivialInvokable(::std::int32_t param) const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return trivialInvokableWrapper(param);
             }
             "#}
@@ -301,7 +292,7 @@ mod tests {
             ::std::unique_ptr<QColor>
             MyObject::opaqueInvokable(QColor const& param)
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return opaqueInvokableWrapper(param);
             }
             "#}
@@ -322,7 +313,7 @@ mod tests {
             ::std::int32_t
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return specifiersInvokableWrapper(param);
             }
             "#}
@@ -340,7 +331,7 @@ mod tests {
             void
             MyObject::cppMethod() const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 cppMethodWrapper();
             }
             "#}
@@ -418,13 +409,7 @@ mod tests {
             .cxx_names
             .insert("B".to_owned(), "B2".to_owned());
 
-        let generated = generate_cpp_methods(
-            &invokables,
-            &qobject_idents,
-            &cxx_mappings,
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated = generate_cpp_methods(&invokables, &qobject_idents, &cxx_mappings).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);
@@ -441,7 +426,7 @@ mod tests {
             B2
             MyObject::trivialInvokable(A1 param) const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return trivialInvokableWrapper(param);
             }
             "#}

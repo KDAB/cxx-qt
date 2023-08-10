@@ -95,13 +95,11 @@ impl GeneratedCppQObject {
             blocks: GeneratedCppQObjectBlocks::from(qobject),
         };
 
-        // Ensure that we include maybeLock that is used in multiple places
+        // Ensure that we include MaybeLockGuard<T> that is used in multiple places
         generated
             .blocks
             .includes
             .insert("#include <cxx-qt-common/cxxqt_maybelockguard.h>".to_owned());
-        let lock_guard =
-            format!("const ::rust::cxxqtlib1::MaybeLockGuard<{cpp_class}> guard(*this);");
 
         // Build the base class
         let base_class = qobject
@@ -120,19 +118,16 @@ impl GeneratedCppQObject {
             &qobject.properties,
             &qobject_idents,
             cxx_mappings,
-            &lock_guard,
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
             &qobject.methods,
             &qobject_idents,
             cxx_mappings,
-            &lock_guard,
         )?);
         generated.blocks.append(&mut generate_cpp_signals(
             &qobject.signals,
             &qobject_idents,
             cxx_mappings,
-            &lock_guard,
         )?);
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,

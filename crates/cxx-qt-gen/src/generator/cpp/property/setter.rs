@@ -6,16 +6,10 @@
 use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyName};
 use indoc::formatdoc;
 
-pub fn generate(
-    idents: &QPropertyName,
-    qobject_ident: &str,
-    cxx_ty: &str,
-    lock_guard: &str,
-) -> CppFragment {
+pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &str) -> CppFragment {
     CppFragment::Pair {
         header: format!(
             "Q_SLOT void {ident_setter}({cxx_ty} const& value);",
-            cxx_ty = cxx_ty,
             ident_setter = idents.setter.cpp,
         ),
         source: formatdoc! {
@@ -23,14 +17,12 @@ pub fn generate(
             void
             {qobject_ident}::{ident_setter}({cxx_ty} const& value)
             {{
-                {lock_guard}
+                const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
                 {ident_setter_wrapper}(value);
             }}
             "#,
-            cxx_ty = cxx_ty,
             ident_setter = idents.setter.cpp,
             ident_setter_wrapper = idents.setter_wrapper.cpp.to_string(),
-            qobject_ident = qobject_ident,
         },
     }
 }
