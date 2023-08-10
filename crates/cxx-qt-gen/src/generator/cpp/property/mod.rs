@@ -20,7 +20,6 @@ pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-    lock_guard: &str,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
@@ -32,21 +31,15 @@ pub fn generate_cpp_properties(
         let cxx_ty = syn_type_to_cpp_type(&property.ty, cxx_mappings)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-        generated.methods.push(getter::generate(
-            &idents,
-            &qobject_ident,
-            &cxx_ty,
-            lock_guard,
-        ));
+        generated
+            .methods
+            .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
         generated
             .private_methods
             .push(getter::generate_wrapper(&idents, &cxx_ty));
-        generated.methods.push(setter::generate(
-            &idents,
-            &qobject_ident,
-            &cxx_ty,
-            lock_guard,
-        ));
+        generated
+            .methods
+            .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
         generated
             .private_methods
             .push(setter::generate_wrapper(&idents, &cxx_ty));
@@ -57,7 +50,6 @@ pub fn generate_cpp_properties(
         &signals,
         qobject_idents,
         cxx_mappings,
-        lock_guard,
     )?);
 
     Ok(generated)
@@ -88,13 +80,9 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_cpp_properties(
-            &properties,
-            &qobject_idents,
-            &ParsedCxxMappings::default(),
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_properties(&properties, &qobject_idents, &ParsedCxxMappings::default())
+                .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -115,7 +103,7 @@ mod tests {
             ::std::int32_t const&
             MyObject::getTrivialProperty() const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return getTrivialPropertyWrapper();
             }
             "#}
@@ -136,7 +124,7 @@ mod tests {
                 void
                 MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
-                    // ::std::lock_guard
+                    const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                     setTrivialPropertyWrapper(value);
                 }
                 "#}
@@ -157,7 +145,7 @@ mod tests {
             ::std::unique_ptr<QColor> const&
             MyObject::getOpaqueProperty() const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return getOpaquePropertyWrapper();
             }
             "#}
@@ -178,7 +166,7 @@ mod tests {
             void
             MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 setOpaquePropertyWrapper(value);
             }
             "#}
@@ -210,7 +198,7 @@ mod tests {
                         &MyObject::trivialPropertyChanged,
                         this,
                         [&, func = ::std::move(func)]() {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this);
                         }, type);
             }
@@ -243,7 +231,7 @@ mod tests {
                         &MyObject::opaquePropertyChanged,
                         this,
                         [&, func = ::std::move(func)]() {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this);
                         }, type);
             }
@@ -306,13 +294,8 @@ mod tests {
             .cxx_names
             .insert("A".to_owned(), "A1".to_owned());
 
-        let generated = generate_cpp_properties(
-            &properties,
-            &qobject_idents,
-            &cxx_mapping,
-            "// ::std::lock_guard",
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_properties(&properties, &qobject_idents, &cxx_mapping).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 1);
@@ -332,7 +315,7 @@ mod tests {
             A1 const&
             MyObject::getMappedProperty() const
             {
-                // ::std::lock_guard
+                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                 return getMappedPropertyWrapper();
             }
             "#}
@@ -350,7 +333,7 @@ mod tests {
                 void
                 MyObject::setMappedProperty(A1 const& value)
                 {
-                    // ::std::lock_guard
+                    const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                     setMappedPropertyWrapper(value);
                 }
                 "#}
@@ -381,7 +364,7 @@ mod tests {
                         &MyObject::mappedPropertyChanged,
                         this,
                         [&, func = ::std::move(func)]() {
-                          // ::std::lock_guard
+                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
                           func(*this);
                         }, type);
             }
