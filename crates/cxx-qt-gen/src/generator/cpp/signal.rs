@@ -9,10 +9,56 @@ use crate::{
         naming::{qobject::QObjectName, signals::QSignalName},
         utils::cpp::syn_type_to_cpp_type,
     },
-    parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
+    parser::{
+        mappings::ParsedCxxMappings, parameter::ParsedFunctionParameter, signals::ParsedSignal,
+    },
 };
 use indoc::formatdoc;
 use syn::Result;
+
+/// Combined output of possible parameter lines to be used
+struct Parameters {
+    types_closure: String,
+    types_signal: String,
+    values_closure: String,
+}
+
+/// Representation of the self pair
+///
+/// This allows for *this being passed or a parameter in the arguments
+struct SelfValue<'a> {
+    ident: &'a str,
+    ty: &'a str,
+}
+
+/// From given parameters, mappings, and self value constructor the combined parameter lines
+fn parameter_types_and_values(
+    parameters: &[ParsedFunctionParameter],
+    cxx_mappings: &ParsedCxxMappings,
+    self_value: SelfValue,
+) -> Result<Parameters> {
+    let mut parameter_types_closure = vec![];
+    let mut parameter_values_closure = vec![];
+
+    for parameter in parameters {
+        let cxx_ty = syn_type_to_cpp_type(&parameter.ty, cxx_mappings)?;
+        let ident_str = parameter.ident.to_string();
+        parameter_types_closure.push(format!("{cxx_ty} {ident_str}",));
+        parameter_values_closure.push(format!("::std::move({ident_str})"));
+    }
+
+    let parameters_types_signal = parameter_types_closure.join(", ");
+
+    // Insert the extra argument into the closure
+    parameter_types_closure.insert(0, format!("{ty}&", ty = self_value.ty));
+    parameter_values_closure.insert(0, self_value.ident.to_owned());
+
+    Ok(Parameters {
+        types_closure: parameter_types_closure.join(", "),
+        types_signal: parameters_types_signal,
+        values_closure: parameter_values_closure.join(", "),
+    })
+}
 
 pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
@@ -23,63 +69,50 @@ pub fn generate_cpp_signals(
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
 
     for signal in signals {
-        // Generate the parameters
-        let mut parameter_types_cpp = vec![];
-        let mut parameter_values_emitter = vec![];
-
-        for parameter in &signal.parameters {
-            let cxx_ty = syn_type_to_cpp_type(&parameter.ty, cxx_mappings)?;
-            let ident_str = parameter.ident.to_string();
-            parameter_types_cpp.push(format!(
-                "{cxx_ty} {ident}",
-                ident = parameter.ident,
-                cxx_ty = cxx_ty,
-            ));
-            parameter_values_emitter.push(format!("::std::move({ident})", ident = ident_str,));
-        }
-
         // Prepare the idents
         let idents = QSignalName::from(signal);
         let signal_ident = idents.name.cpp.to_string();
         let connect_ident = idents.connect_name.cpp.to_string();
 
+        // Generate the parameters
+        let parameters = parameter_types_and_values(
+            &signal.parameters,
+            cxx_mappings,
+            SelfValue {
+                ident: "*this",
+                ty: &qobject_ident,
+            },
+        )?;
+        let parameters_types_closure = parameters.types_closure;
+        let parameters_types_signal = parameters.types_signal;
+        let parameters_values_closure = parameters.values_closure;
+
         // Generate the Q_SIGNAL if this is not an existing signal
         if !signal.inherit {
             generated.methods.push(CppFragment::Header(format!(
-                "Q_SIGNAL void {ident}({parameters});",
-                ident = signal_ident,
-                parameters = parameter_types_cpp.join(", "),
+                "Q_SIGNAL void {signal_ident}({parameters_types_signal});"
             )));
         }
 
-        // Generate connection
-        let mut parameter_types_rust = parameter_types_cpp.clone();
-        let mut parameter_values_connection = parameter_values_emitter.clone();
-        parameter_types_rust.insert(0, format!("{qobject_ident}&"));
-        parameter_values_connection.insert(0, "*this".to_owned());
-
         generated.methods.push(CppFragment::Pair {
             header: format!(
-                "::QMetaObject::Connection {connect_ident}(::rust::Fn<void({parameters})> func, ::Qt::ConnectionType type);",
-                parameters = parameter_types_rust.join(", ")
+                "::QMetaObject::Connection {connect_ident}(::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type);",
             ),
             source: formatdoc! {
                 r#"
                 ::QMetaObject::Connection
-                {qobject_ident}::{connect_ident}(::rust::Fn<void({parameters_rust})> func, ::Qt::ConnectionType type)
+                {qobject_ident}::{connect_ident}(::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type)
                 {{
                     return ::QObject::connect(this,
-                            &{qobject_ident}::{signal_ident},
-                            this,
-                            [&, func = ::std::move(func)]({parameters_cpp}) {{
-                              const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
-                              func({parameter_values});
-                            }}, type);
+                        &{qobject_ident}::{signal_ident},
+                        this,
+                        [&, func = ::std::move(func)]({parameters_types_signal}) {{
+                            const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
+                            func({parameters_values_closure});
+                        }},
+                        type);
                 }}
                 "#,
-                parameters_cpp = parameter_types_cpp.join(", "),
-                parameters_rust = parameter_types_rust.join(", "),
-                parameter_values = parameter_values_connection.join(", "),
             },
         });
     }
@@ -155,12 +188,13 @@ mod tests {
             MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, ::std::int32_t trivial, ::std::unique_ptr<QColor> opaque)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::dataChanged,
-                        this,
-                        [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this, ::std::move(trivial), ::std::move(opaque));
-                        }, type);
+                    &MyObject::dataChanged,
+                    this,
+                    [&, func = ::std::move(func)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this, ::std::move(trivial), ::std::move(opaque));
+                    },
+                    type);
             }
             "#}
         );
@@ -218,12 +252,13 @@ mod tests {
             MyObject::dataChangedConnect(::rust::Fn<void(MyObject&, A1 mapped)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::dataChanged,
-                        this,
-                        [&, func = ::std::move(func)](A1 mapped) {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this, ::std::move(mapped));
-                        }, type);
+                    &MyObject::dataChanged,
+                    this,
+                    [&, func = ::std::move(func)](A1 mapped) {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this, ::std::move(mapped));
+                    },
+                    type);
             }
             "#}
         );
@@ -266,12 +301,13 @@ mod tests {
             MyObject::baseNameConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::baseName,
-                        this,
-                        [&, func = ::std::move(func)]() {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this);
-                        }, type);
+                    &MyObject::baseName,
+                    this,
+                    [&, func = ::std::move(func)]() {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this);
+                    },
+                    type);
             }
             "#}
         );

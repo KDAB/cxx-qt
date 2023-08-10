@@ -195,12 +195,13 @@ mod tests {
             MyObject::trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::trivialPropertyChanged,
-                        this,
-                        [&, func = ::std::move(func)]() {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this);
-                        }, type);
+                    &MyObject::trivialPropertyChanged,
+                    this,
+                    [&, func = ::std::move(func)]() {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this);
+                    },
+                    type);
             }
             "#}
         );
@@ -228,12 +229,13 @@ mod tests {
             MyObject::opaquePropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::opaquePropertyChanged,
-                        this,
-                        [&, func = ::std::move(func)]() {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this);
-                        }, type);
+                    &MyObject::opaquePropertyChanged,
+                    this,
+                    [&, func = ::std::move(func)]() {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this);
+                    },
+                    type);
             }
             "#}
         );
@@ -361,12 +363,13 @@ mod tests {
             MyObject::mappedPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(this,
-                        &MyObject::mappedPropertyChanged,
-                        this,
-                        [&, func = ::std::move(func)]() {
-                          const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                          func(*this);
-                        }, type);
+                    &MyObject::mappedPropertyChanged,
+                    this,
+                    [&, func = ::std::move(func)]() {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                        func(*this);
+                    },
+                    type);
             }
             "#}
         );
