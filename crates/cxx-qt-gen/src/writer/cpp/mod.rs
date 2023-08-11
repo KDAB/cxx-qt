@@ -52,6 +52,7 @@ mod tests {
         GeneratedCppBlocks {
             cxx_file_stem: "cxx_file_stem".to_owned(),
             namespace: "cxx_qt::my_object".to_owned(),
+            extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
                     ident: "MyObject".to_owned(),
@@ -172,6 +173,7 @@ mod tests {
         GeneratedCppBlocks {
             cxx_file_stem: "cxx_file_stem".to_owned(),
             namespace: "cxx_qt".to_owned(),
+            extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
                     ident: "FirstObject".to_owned(),
@@ -293,6 +295,7 @@ mod tests {
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
 
+
         namespace cxx_qt::my_object {
         class MyObject : public QStringListModel
         {
@@ -345,6 +348,7 @@ mod tests {
         } // namespace cxx_qt
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+
 
         namespace cxx_qt {
         class FirstObject : public QStringListModel
@@ -410,6 +414,7 @@ mod tests {
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
 
 
+
         class MyObject : public QStringListModel
         {
           Q_OBJECT
@@ -447,6 +452,7 @@ mod tests {
     pub fn expected_source() -> &'static str {
         indoc! {r#"
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
+
 
         namespace cxx_qt::my_object {
 
@@ -505,6 +511,7 @@ mod tests {
         indoc! {r#"
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
 
+
         namespace cxx_qt {
 
         int
@@ -548,6 +555,7 @@ mod tests {
     pub fn expected_source_no_namespace() -> &'static str {
         indoc! {r#"
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
+
 
 
 

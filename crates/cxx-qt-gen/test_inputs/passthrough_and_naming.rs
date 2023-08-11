@@ -79,6 +79,26 @@ pub mod ffi {
         include!(<QtCore/QStringListModel>);
     }
 
+    #[namespace = ""]
+    unsafe extern "C++Qt" {
+        type QPushButton;
+
+        #[qsignal]
+        fn clicked(self: Pin<&mut QPushButton>, checked: bool);
+
+        #[namespace = "mynamespace"]
+        #[cxx_name = "ExternObjectCpp"]
+        type ExternObject;
+
+        #[qsignal]
+        #[cxx_name = "dataReady"]
+        fn data_ready(self: Pin<&mut ExternObject>);
+
+        #[qsignal]
+        #[rust_name = "error_occurred"]
+        fn errorOccurred(self: Pin<&mut ExternObject>);
+    }
+
     extern "RustQt" {
         #[qobject]
         #[base = "QStringListModel"]
