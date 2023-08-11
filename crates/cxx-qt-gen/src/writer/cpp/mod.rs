@@ -12,21 +12,15 @@ use header::write_cpp_header;
 use source::write_cpp_source;
 
 /// For a given GeneratedCppBlocks write the namespace pair
-pub fn namespace_pair(generated: &GeneratedCppBlocks) -> (String, String) {
-    let namespace_start = if generated.namespace.is_empty() {
-        "".to_owned()
+pub fn namespace_start_and_end(namespace: &str) -> (String, String) {
+    if namespace.is_empty() {
+        ("".to_owned(), "".to_owned())
     } else {
-        format!("namespace {namespace} {{", namespace = generated.namespace)
-    };
-    let namespace_end = if generated.namespace.is_empty() {
-        "".to_owned()
-    } else {
-        format!(
-            "}} // namespace {namespace}",
-            namespace = generated.namespace
+        (
+            format!("namespace {namespace} {{"),
+            format!("}} // namespace {namespace}"),
         )
-    };
-    (namespace_start, namespace_end)
+    }
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ header and source pair
