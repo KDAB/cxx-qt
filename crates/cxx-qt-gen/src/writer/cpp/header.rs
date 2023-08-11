@@ -116,11 +116,27 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         {forward_declare}
         #include "cxx-qt-gen/{cxx_file_stem}.cxx.h"
 
+        {extern_cxx_qt}
         {qobjects}
     "#,
     cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
     qobjects = qobjects_header(generated).join("\n"),
+    extern_cxx_qt = {
+        let mut out = vec![];
+        for block in &generated.extern_cxx_qt {
+            if let Some(method) = pair_as_header(&block.method) {
+                let (namespace_start, namespace_end) = namespace_start_and_end(&block.namespace);
+                out.push(formatdoc! { r#"
+                    {namespace_start}
+                    {method}
+                    {namespace_end}
+                "#,
+                });
+            }
+        }
+        out.join("\n")
+    },
     includes = generated.qobjects.iter()
     .fold(BTreeSet::<&String>::default(), |mut acc, qobject| {
         acc.extend(qobject.blocks.includes.iter());

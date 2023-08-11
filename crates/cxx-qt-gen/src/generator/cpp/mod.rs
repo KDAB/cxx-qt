@@ -5,6 +5,7 @@
 
 mod constructor;
 pub mod cxxqttype;
+pub mod externcxxqt;
 pub mod fragment;
 pub mod inherit;
 pub mod locking;
@@ -15,6 +16,7 @@ pub mod signal;
 pub mod threading;
 
 use crate::parser::Parser;
+use externcxxqt::GeneratedCppExternCxxQtBlocks;
 use qobject::GeneratedCppQObject;
 use syn::Result;
 
@@ -26,6 +28,8 @@ pub struct GeneratedCppBlocks {
     pub namespace: String,
     /// Generated QObjects
     pub qobjects: Vec<GeneratedCppQObject>,
+    /// Generated extern C++Qt blocks
+    pub extern_cxx_qt: Vec<GeneratedCppExternCxxQtBlocks>,
 }
 
 impl GeneratedCppBlocks {
@@ -39,6 +43,10 @@ impl GeneratedCppBlocks {
                 .values()
                 .map(|qobject| GeneratedCppQObject::from(qobject, &parser.cxx_qt_data.cxx_mappings))
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
+            extern_cxx_qt: externcxxqt::generate(
+                &parser.cxx_qt_data.extern_cxxqt_blocks,
+                &parser.cxx_qt_data.cxx_mappings,
+            )?,
         })
     }
 }

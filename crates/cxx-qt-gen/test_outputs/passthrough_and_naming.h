@@ -16,6 +16,32 @@ class SecondObject;
 
 #include "cxx-qt-gen/multi_object.cxx.h"
 
+namespace rust::cxxqtgen1::externcxxqt {
+::QMetaObject::Connection
+QPushButton_clickedConnect(QPushButton& self,
+                           ::rust::Fn<void(QPushButton&, bool checked)> func,
+                           ::Qt::ConnectionType type);
+
+} // namespace rust::cxxqtgen1::externcxxqt
+
+namespace rust::cxxqtgen1::externcxxqt::mynamespace {
+::QMetaObject::Connection
+ExternObject_dataReadyConnect(
+  ::mynamespace::ExternObjectCpp& self,
+  ::rust::Fn<void(::mynamespace::ExternObjectCpp&)> func,
+  ::Qt::ConnectionType type);
+
+} // namespace rust::cxxqtgen1::externcxxqt::mynamespace
+
+namespace rust::cxxqtgen1::externcxxqt::mynamespace {
+::QMetaObject::Connection
+ExternObject_errorOccurredConnect(
+  ::mynamespace::ExternObjectCpp& self,
+  ::rust::Fn<void(::mynamespace::ExternObjectCpp&)> func,
+  ::Qt::ConnectionType type);
+
+} // namespace rust::cxxqtgen1::externcxxqt::mynamespace
+
 namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel

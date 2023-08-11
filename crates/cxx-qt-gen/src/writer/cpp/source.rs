@@ -39,9 +39,25 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
     formatdoc! {r#"
         #include "cxx-qt-gen/{cxx_file_stem}.cxxqt.h"
 
+        {extern_cxx_qt}
         {qobjects}
     "#,
     cxx_file_stem = generated.cxx_file_stem,
+    extern_cxx_qt = {
+        let mut out = vec![];
+        for block in &generated.extern_cxx_qt {
+            if let Some(method) = pair_as_source(&block.method) {
+                let (namespace_start, namespace_end) = namespace_start_and_end(&block.namespace);
+                out.push(formatdoc! { r#"
+                    {namespace_start}
+                    {method}
+                    {namespace_end}
+                "#,
+                });
+            }
+        }
+        out.join("\n")
+    },
     qobjects = qobjects_source(generated).join("\n"),
     }
 }
