@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespace_pair;
+use crate::writer::cpp::namespace_start_and_end;
 use indoc::formatdoc;
 
 /// Extract the header from a given CppFragment
@@ -43,7 +43,7 @@ fn create_block(block: &str, items: &[String]) -> String {
 //
 // Note that this is needed incase ObjectA refers to ObjectB in it's class
 fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_pair(generated);
+    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
 
     generated
         .qobjects
@@ -66,7 +66,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
 
 /// For a given GeneratedCppBlocks write the classes
 fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_pair(generated);
+    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
 
     generated.qobjects.iter().map(|qobject| {
         formatdoc! { r#"

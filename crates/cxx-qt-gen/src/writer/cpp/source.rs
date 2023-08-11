@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespace_pair;
+use crate::writer::cpp::namespace_start_and_end;
 use indoc::formatdoc;
 
 /// Extract the source from a given CppFragment
@@ -18,7 +18,7 @@ fn pair_as_source(pair: &CppFragment) -> Option<String> {
 
 /// For a given GeneratedCppBlocks write the implementations
 fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_pair(generated);
+    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
 
     generated.qobjects.iter().map(|qobject| {
         formatdoc! { r#"
