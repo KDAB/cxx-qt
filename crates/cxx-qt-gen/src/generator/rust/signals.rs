@@ -8,13 +8,145 @@ use std::collections::BTreeMap;
 use crate::{
     generator::{
         naming::{qobject::QObjectName, signals::QSignalName},
-        rust::{fragment::RustFragmentPair, qobject::GeneratedRustQObject},
+        rust::{
+            externcxxqt::GeneratedExternCxxQt, fragment::RustFragmentPair,
+            qobject::GeneratedRustQObject,
+        },
         utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
-    parser::signals::ParsedSignal,
+    parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
 };
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{parse_quote, FnArg, Ident, Path, Result};
+
+pub fn generate_rust_free_signal(
+    signal: &ParsedSignal,
+    cxx_mappings: &ParsedCxxMappings,
+    module_ident: &Ident,
+) -> Result<GeneratedExternCxxQt> {
+    let qobject_name = &signal.qobject_ident;
+    let idents = QSignalName::from(signal);
+    let signal_name_cpp = idents.name.cpp;
+    let signal_name_cpp_str = signal_name_cpp.to_string();
+    let free_connect_ident_cpp =
+        format_ident!("{}_{}", signal.qobject_ident, idents.connect_name.cpp);
+    let free_connect_ident_rust =
+        format_ident!("{}_{}", signal.qobject_ident, idents.connect_name.rust);
+    let free_connect_ident_rust_str =
+        format_ident!("{}_{}", signal.qobject_ident, idents.connect_name.rust).to_string();
+    let connect_ident_rust = idents.connect_name.rust;
+    let on_ident_rust = idents.on_name;
+    let original_method = &signal.method;
+
+    // TODO: share this in the naming module with generator/cpp
+    let connect_namespace = {
+        // Build a namespace that includes any namespace for the T
+        let ident_namespace = if let Some(namespace) = cxx_mappings
+            .namespaces
+            .get(&signal.qobject_ident.to_string())
+        {
+            format!("::{namespace}")
+        } else {
+            "".to_owned()
+        };
+
+        format!("rust::cxxqtgen1::externcxxqt{ident_namespace}")
+    };
+
+    let parameters_cxx: Vec<FnArg> = signal
+        .parameters
+        .iter()
+        .map(|parameter| {
+            let ident = &parameter.ident;
+            let ty = &parameter.ty;
+            parse_quote! { #ident: #ty }
+        })
+        .collect();
+    let parameters_qualified: Vec<FnArg> = parameters_cxx
+        .iter()
+        .cloned()
+        .map(|mut parameter| {
+            if let FnArg::Typed(pat_type) = &mut parameter {
+                *pat_type.ty =
+                    syn_type_cxx_bridge_to_qualified(&pat_type.ty, &cxx_mappings.qualified);
+            }
+            parameter
+        })
+        .collect();
+
+    let self_type_cxx = if signal.mutable {
+        parse_quote! { Pin<&mut #qobject_name> }
+    } else {
+        parse_quote! { &#qobject_name }
+    };
+    let self_type_qualified =
+        syn_type_cxx_bridge_to_qualified(&self_type_cxx, &cxx_mappings.qualified);
+    let qualified_impl =
+        syn_ident_cxx_bridge_to_qualified_impl(qobject_name, &cxx_mappings.qualified);
+
+    let mut unsafe_block = None;
+    let mut unsafe_call = Some(quote! { unsafe });
+    if signal.safe {
+        std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+    }
+
+    let fragment = RustFragmentPair {
+        cxx_bridge: vec![
+            quote! {
+                #unsafe_block extern "C++" {
+                    #original_method
+                }
+            },
+            quote! {
+                unsafe extern "C++" {
+                    #[doc(hidden)]
+                    #[namespace = #connect_namespace]
+                    #[must_use]
+                    #[rust_name = #free_connect_ident_rust_str]
+                    fn #free_connect_ident_cpp(self_value: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters_cxx),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        ],
+        implementation: vec![
+            quote! {
+                impl #qualified_impl {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = #signal_name_cpp_str]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    pub fn #on_ident_rust(self: #self_type_qualified, func: fn(#self_type_qualified, #(#parameters_qualified),*)) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        #module_ident::#free_connect_ident_rust(self, func, cxx_qt_lib::ConnectionType::AutoConnection)
+                    }
+                }
+            },
+            quote! {
+                impl #qualified_impl {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = #signal_name_cpp_str]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    pub fn #connect_ident_rust(self: #self_type_qualified, func: fn(#self_type_qualified, #(#parameters_qualified),*), conn_type: cxx_qt_lib::ConnectionType) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        #module_ident::#free_connect_ident_rust(self, func, conn_type)
+                    }
+                }
+            },
+        ],
+    };
+
+    let mut generated = GeneratedExternCxxQt::default();
+    generated
+        .cxx_mod_contents
+        .append(&mut fragment.cxx_bridge_as_items()?);
+    generated
+        .cxx_qt_mod_contents
+        .append(&mut fragment.implementation_as_items()?);
+
+    Ok(generated)
+}
 
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,

@@ -46,6 +46,12 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         cxx_qt_mod_contents.extend_from_slice(&qobject.cxx_qt_mod_contents);
     }
 
+    for extern_cxx_qt in &generated.extern_cxx_qt {
+        // Add the blocks from the extern "C++Qt"
+        cxx_mod_contents.extend_from_slice(&extern_cxx_qt.cxx_mod_contents);
+        cxx_qt_mod_contents.extend_from_slice(&extern_cxx_qt.cxx_qt_mod_contents);
+    }
+
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
         items.extend(cxx_mod_contents);
@@ -85,6 +91,7 @@ mod tests {
                 use module::Struct;
             }],
             namespace: "cxx_qt::my_object".to_owned(),
+            extern_cxx_qt: vec![],
             qobjects: vec![GeneratedRustQObject {
                 cxx_mod_contents: vec![
                     parse_quote! {
@@ -130,6 +137,7 @@ mod tests {
                 use module::Struct;
             }],
             namespace: "cxx_qt".to_owned(),
+            extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedRustQObject {
                     cxx_mod_contents: vec![
