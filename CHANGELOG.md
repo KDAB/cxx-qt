@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for C++ only methods by not having a `#[qinvokable]` attribute
 - Ability to define a custom C++ Constructor using `cxx_qt::Constructor`
 - `cxx_qt::Initialize` trait for easier default-constructor implementation
+- `extern "C++Qt"` block support for declaring existing types with methods and signals
 
 ### Changed
 

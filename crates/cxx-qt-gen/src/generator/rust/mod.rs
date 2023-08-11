@@ -5,6 +5,7 @@
 
 pub mod constructor;
 pub mod cxxqttype;
+pub mod externcxxqt;
 pub mod fragment;
 pub mod inherit;
 pub mod method;
@@ -14,7 +15,7 @@ pub mod qobject;
 pub mod signals;
 pub mod threading;
 
-use crate::generator::rust::qobject::GeneratedRustQObject;
+use crate::generator::rust::{externcxxqt::GeneratedExternCxxQt, qobject::GeneratedRustQObject};
 use crate::parser::Parser;
 use quote::quote;
 use syn::{Item, ItemMod, Result};
@@ -31,6 +32,8 @@ pub struct GeneratedRustBlocks {
     pub namespace: String,
     /// Generated QObject blocks
     pub qobjects: Vec<GeneratedRustQObject>,
+    /// Generated extern "C++Qt" blocks
+    pub extern_cxx_qt: Vec<GeneratedExternCxxQt>,
 }
 
 impl GeneratedRustBlocks {
@@ -52,6 +55,18 @@ impl GeneratedRustBlocks {
                     )
                 })
                 .collect::<Result<Vec<GeneratedRustQObject>>>()?,
+            extern_cxx_qt: parser
+                .cxx_qt_data
+                .extern_cxxqt_blocks
+                .iter()
+                .map(|extern_cxx_block| {
+                    GeneratedExternCxxQt::from(
+                        extern_cxx_block,
+                        &parser.cxx_qt_data.cxx_mappings,
+                        &parser.passthrough_module.ident,
+                    )
+                })
+                .collect::<Result<Vec<GeneratedExternCxxQt>>>()?,
         })
     }
 }

@@ -210,6 +210,57 @@ pub mod ffi {
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut SecondObject>) -> Pin<&mut SecondObjectRust>;
     }
+    #[namespace = ""]
+    unsafe extern "C++" {
+        type QPushButton;
+        #[namespace = "mynamespace"]
+        #[cxx_name = "ExternObjectCpp"]
+        type ExternObject;
+    }
+    unsafe extern "C++" {
+        fn clicked(self: Pin<&mut QPushButton>, checked: bool);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1::externcxxqt"]
+        #[must_use]
+        #[rust_name = "QPushButton_connect_clicked"]
+        fn QPushButton_clickedConnect(
+            self_value: Pin<&mut QPushButton>,
+            func: fn(Pin<&mut QPushButton>, checked: bool),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "dataReady"]
+        fn data_ready(self: Pin<&mut ExternObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1::externcxxqt::mynamespace"]
+        #[must_use]
+        #[rust_name = "ExternObject_connect_data_ready"]
+        fn ExternObject_dataReadyConnect(
+            self_value: Pin<&mut ExternObject>,
+            func: fn(Pin<&mut ExternObject>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    unsafe extern "C++" {
+        #[rust_name = "error_occurred"]
+        fn errorOccurred(self: Pin<&mut ExternObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1::externcxxqt::mynamespace"]
+        #[must_use]
+        #[rust_name = "ExternObject_connect_error_occurred"]
+        fn ExternObject_errorOccurredConnect(
+            self_value: Pin<&mut ExternObject>,
+            func: fn(Pin<&mut ExternObject>),
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
 }
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
@@ -342,5 +393,90 @@ impl cxx_qt::CxxQtType for ffi::SecondObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         self.cxx_qt_ffi_rust_mut()
+    }
+}
+impl ffi::QPushButton {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "clicked"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_clicked(
+        self: core::pin::Pin<&mut ffi::QPushButton>,
+        func: fn(core::pin::Pin<&mut ffi::QPushButton>, checked: bool),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::QPushButton_connect_clicked(self, func, cxx_qt_lib::ConnectionType::AutoConnection)
+    }
+}
+impl ffi::QPushButton {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "clicked"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[must_use]
+    pub fn connect_clicked(
+        self: core::pin::Pin<&mut ffi::QPushButton>,
+        func: fn(core::pin::Pin<&mut ffi::QPushButton>, checked: bool),
+        conn_type: cxx_qt_lib::ConnectionType,
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::QPushButton_connect_clicked(self, func, conn_type)
+    }
+}
+impl ffi::ExternObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "dataReady"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_data_ready(
+        self: core::pin::Pin<&mut ffi::ExternObject>,
+        func: fn(core::pin::Pin<&mut ffi::ExternObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::ExternObject_connect_data_ready(self, func, cxx_qt_lib::ConnectionType::AutoConnection)
+    }
+}
+impl ffi::ExternObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "dataReady"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[must_use]
+    pub fn connect_data_ready(
+        self: core::pin::Pin<&mut ffi::ExternObject>,
+        func: fn(core::pin::Pin<&mut ffi::ExternObject>),
+        conn_type: cxx_qt_lib::ConnectionType,
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::ExternObject_connect_data_ready(self, func, conn_type)
+    }
+}
+impl ffi::ExternObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "errorOccurred"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[must_use]
+    pub fn on_error_occurred(
+        self: core::pin::Pin<&mut ffi::ExternObject>,
+        func: fn(core::pin::Pin<&mut ffi::ExternObject>),
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::ExternObject_connect_error_occurred(
+            self,
+            func,
+            cxx_qt_lib::ConnectionType::AutoConnection,
+        )
+    }
+}
+impl ffi::ExternObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "errorOccurred"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[must_use]
+    pub fn connect_error_occurred(
+        self: core::pin::Pin<&mut ffi::ExternObject>,
+        func: fn(core::pin::Pin<&mut ffi::ExternObject>),
+        conn_type: cxx_qt_lib::ConnectionType,
+    ) -> cxx_qt_lib::QMetaObjectConnection {
+        ffi::ExternObject_connect_error_occurred(self, func, conn_type)
     }
 }
