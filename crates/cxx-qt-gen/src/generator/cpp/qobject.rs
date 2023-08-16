@@ -6,7 +6,7 @@
 use crate::generator::{
     cpp::{
         constructor, cxxqttype, fragment::CppFragment, inherit, locking,
-        method::generate_cpp_methods, property::generate_cpp_properties,
+        method::generate_cpp_methods, property::generate_cpp_properties, qenum,
         signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -134,6 +134,9 @@ impl GeneratedCppQObject {
             &qobject.base_class,
             cxx_mappings,
         )?);
+        generated
+            .blocks
+            .append(&mut qenum::generate(&qobject.qenums, cxx_mappings)?);
 
         let mut class_initializers = vec![];
 

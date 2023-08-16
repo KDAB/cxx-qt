@@ -9,6 +9,7 @@ pub mod fragment;
 pub mod inherit;
 pub mod method;
 pub mod property;
+pub mod qenum;
 pub mod qobject;
 pub mod signals;
 pub mod threading;

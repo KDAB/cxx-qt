@@ -18,7 +18,6 @@ class MyObject
   , public ::rust::cxxqtlib1::CxxQtThreading<MyObject>
 {
   Q_OBJECT
-
 public:
   virtual ~MyObject() = default;
 

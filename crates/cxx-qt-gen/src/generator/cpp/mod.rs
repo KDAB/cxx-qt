@@ -11,6 +11,7 @@ pub mod inherit;
 pub mod locking;
 pub mod method;
 pub mod property;
+pub mod qenum;
 pub mod qobject;
 pub mod signal;
 pub mod threading;

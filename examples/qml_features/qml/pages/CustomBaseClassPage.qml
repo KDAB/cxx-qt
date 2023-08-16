@@ -57,6 +57,7 @@ Page {
     }
 
     ScrollView {
+        id: scrollView
         anchors.fill: parent
         clip: true
         ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
@@ -75,5 +76,14 @@ Page {
                 onClicked: ListView.view.currentIndex = index
             }
         }
+    }
+
+    BusyIndicator {
+        anchors {
+            right: scrollView.right
+            bottom: scrollView.bottom
+            margins: 15
+        }
+        running: customBaseClass.state === CustomBaseClass.Running
     }
 }

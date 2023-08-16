@@ -18,12 +18,12 @@ class MyObject
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
+public:
   Q_PROPERTY(::std::int32_t primitive READ getPrimitive WRITE setPrimitive
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
 
-public:
   virtual ~MyObject() = default;
 
 public:
