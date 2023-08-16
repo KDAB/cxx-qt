@@ -49,10 +49,10 @@ class MyObject
   , public ::rust::cxxqtlib1::CxxQtLocking
 {
   Q_OBJECT
+public:
   Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
                setPropertyName NOTIFY propertyNameChanged)
 
-public:
   virtual ~MyObject() = default;
 
 public:
@@ -86,10 +86,10 @@ class SecondObject
   , public ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>
 {
   Q_OBJECT
+public:
   Q_PROPERTY(::std::int32_t propertyName READ getPropertyName WRITE
                setPropertyName NOTIFY propertyNameChanged)
 
-public:
   virtual ~SecondObject() = default;
 
 public:

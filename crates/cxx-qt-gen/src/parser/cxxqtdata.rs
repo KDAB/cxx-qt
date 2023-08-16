@@ -10,8 +10,8 @@ use crate::syntax::safety::Safety;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod,
-        mappings::ParsedCxxMappings, method::ParsedMethod, qobject::ParsedQObject,
-        signals::ParsedSignal,
+        mappings::ParsedCxxMappings, method::ParsedMethod, qenum::ParsedQEnum,
+        qobject::ParsedQObject, signals::ParsedSignal,
     },
     syntax::expr::expr_to_string,
 };
@@ -166,7 +166,34 @@ impl ParsedCxxQtData {
         match item {
             Item::Impl(imp) => self.parse_impl(imp),
             Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
+            Item::Enum(enum_item) => self.parse_enum(enum_item),
             _ => Ok(Some(item)),
+        }
+    }
+
+    fn parse_enum(&mut self, mut item: ItemEnum) -> Result<Option<Item>> {
+        if let Some(qenum_attribute) = attribute_take_path(&mut item.attrs, &["qenum"]) {
+            let qobject: Ident = qenum_attribute.parse_args()?;
+            if let Some(qobject) = self.qobjects.get_mut(&qobject) {
+                let qenum = ParsedQEnum::parse(item)?;
+                self.cxx_mappings.populate(
+                    &qenum.ident,
+                    &qenum.item.attrs,
+                    &self.namespace,
+                    &self.module_ident,
+                )?;
+
+                qobject.qenums.push(qenum);
+
+                Ok(None)
+            } else {
+                Err(Error::new_spanned(
+                    &qobject,
+                    format!("Could not find qobject {qobject}!"),
+                ))
+            }
+        } else {
+            Ok(Some(Item::Enum(item)))
         }
     }
 

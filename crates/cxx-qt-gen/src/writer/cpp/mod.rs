@@ -300,10 +300,10 @@ mod tests {
         class MyObject : public QStringListModel
         {
           Q_OBJECT
+        public:
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
-        public:
           virtual ~MyObject() = default;
 
         public:
@@ -354,9 +354,9 @@ mod tests {
         class FirstObject : public QStringListModel
         {
           Q_OBJECT
+        public:
           Q_PROPERTY(int longPropertyNameThatWrapsInClangFormat READ count WRITE setCount NOTIFY countChanged)
 
-        public:
           virtual ~FirstObject() = default;
 
         public:
@@ -376,9 +376,9 @@ mod tests {
         class SecondObject : public QStringListModel
         {
           Q_OBJECT
+        public:
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
 
-        public:
           virtual ~SecondObject() = default;
 
         public:
@@ -418,10 +418,10 @@ mod tests {
         class MyObject : public QStringListModel
         {
           Q_OBJECT
+        public:
           Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
           Q_PROPERTY(bool longPropertyNameThatWrapsInClangFormat READ getToggle WRITE setToggle NOTIFY toggleChanged)
 
-        public:
           virtual ~MyObject() = default;
 
         public:

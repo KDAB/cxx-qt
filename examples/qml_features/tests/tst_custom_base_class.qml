@@ -82,4 +82,28 @@ TestCase {
         compare(instantiator.count, 1);
         compare(dataChangedSpy.count, 1);
     }
+
+    function test_roles_qenum() {
+        compare(CustomBaseClass.Id, 0);
+        compare(CustomBaseClass.Value, 1);
+
+        const model = createTemporaryObject(componentCustomBaseClass, null, {});
+
+        model.add();
+        compare(model.data(model.index(0, 0), CustomBaseClass.Id), 0);
+        compare(model.data(model.index(0, 0), CustomBaseClass.Value), 0);
+
+        model.add();
+        compare(model.data(model.index(1, 0), CustomBaseClass.Id), 1);
+        compare(model.data(model.index(1, 0), CustomBaseClass.Value), 1.0 / 3.0);
+
+        compare(model.state, CustomBaseClass.Idle);
+        model.addOnThreadDelayed(1, 0 /*ms*/);
+        // This shouldn't cause a flaky test, as the `addOnThread` cannot reset the
+        // state to `Idle` until the Event-Loop of this thread is available again.
+        // Which should only be after this thread has finished.
+        compare(model.state, CustomBaseClass.Running);
+        // Return to the event loop now to give the background thread a chance to reset the "state" again.
+        tryCompare(model, "state", CustomBaseClass.Idle);
+    }
 }

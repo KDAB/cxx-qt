@@ -20,6 +20,8 @@ use crate::{
 use quote::quote;
 use syn::{Ident, ImplItem, Item, Path, Result};
 
+use super::qenum;
+
 #[derive(Default)]
 pub struct GeneratedRustQObject {
     /// Module for the CXX bridge
@@ -73,6 +75,7 @@ impl GeneratedRustQObject {
             &qobject_idents,
             qualified_mappings,
         )?);
+        generated.append(&mut qenum::generate(&qobject.qenums));
 
         // If this type is a singleton then we need to add an include
         if let Some(qml_metadata) = &qobject.qml_metadata {

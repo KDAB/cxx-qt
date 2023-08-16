@@ -31,12 +31,31 @@ pub mod qobject {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
+    #[qenum(CustomBaseClass)]
+    /// Roles for the CustomBaseClass list model
+    enum Roles {
+        /// The index of the row
+        Id,
+        /// The value of the row
+        Value,
+    }
+
+    #[qenum(CustomBaseClass)]
+    /// State of the CustomBaseClass list model
+    enum State {
+        /// Another item is being added in the background
+        Running,
+        /// No items are being added in the background
+        Idle,
+    }
+
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
     extern "RustQt" {
         #[qobject]
         #[base = "QAbstractListModel"]
         #[qml_element]
+        #[qproperty(State, state)]
         type CustomBaseClass = super::CustomBaseClassRust;
     }
     // ANCHOR_END: book_qobject_base
@@ -64,9 +83,15 @@ pub mod qobject {
         #[qinvokable]
         fn add(self: Pin<&mut CustomBaseClass>);
 
-        /// On a background thread, add a given number of rows to the QAbstractListModel
         #[qinvokable]
-        fn add_on_thread(self: Pin<&mut CustomBaseClass>, mut counter: i32);
+        /// On a background thread, add a given number of rows to the QAbstractListModel with a
+        /// configurable delay
+        fn add_on_thread_delayed(self: Pin<&mut CustomBaseClass>, counter: i32, delay_ms: u64);
+
+        /// On a background thread, add a given number of rows to the QAbstractListModel
+        /// Use a standard delay of 250ms per item
+        #[qinvokable]
+        fn add_on_thread(self: Pin<&mut CustomBaseClass>, counter: i32);
     }
 
     // ANCHOR: book_inherit_clear_signature
@@ -177,9 +202,18 @@ use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
 
+impl Default for qobject::State {
+    fn default() -> Self {
+        Self::Idle
+    }
+}
+
 /// A struct which inherits from QAbstractListModel
 #[derive(Default)]
 pub struct CustomBaseClassRust {
+    state: qobject::State,
+    pending_adds: i32,
+
     pub(crate) id: u32,
     pub(crate) vector: Vec<(u32, f64)>,
 }
@@ -191,23 +225,39 @@ impl qobject::CustomBaseClass {
     }
 
     /// On a background thread, add a given number of rows to the QAbstractListModel
-    pub fn add_on_thread(self: Pin<&mut Self>, mut counter: i32) {
+    /// Use delay_ms to add a delay between adding each row
+    pub fn add_on_thread_delayed(mut self: Pin<&mut Self>, mut counter: i32, delay_ms: u64) {
         let qt_thread = self.qt_thread();
+
+        self.as_mut().rust_mut().pending_adds += counter;
+        self.as_mut().set_state(qobject::State::Running);
 
         std::thread::spawn(move || {
             while counter > 0 {
                 counter -= 1;
-                std::thread::sleep(std::time::Duration::from_millis(250));
+                if delay_ms > 0 {
+                    std::thread::sleep(std::time::Duration::from_millis(delay_ms));
+                }
 
                 // Use our add helper to add a row on the Qt event loop
                 // as seen in the threading demo channels could be used to pass info
                 qt_thread
-                    .queue(|custom_base_class| {
-                        custom_base_class.add_cpp_context();
+                    .queue(|mut this| {
+                        this.as_mut().add_cpp_context();
+                        this.as_mut().rust_mut().pending_adds -= 1;
+                        if this.pending_adds == 0 {
+                            this.set_state(qobject::State::Idle);
+                        }
                     })
                     .unwrap();
             }
         });
+    }
+
+    /// On a background thread, add a given number of rows to the QAbstractListModel
+    /// Use a standard delay of 250 ms per item
+    pub fn add_on_thread(self: Pin<&mut Self>, counter: i32) {
+        self.add_on_thread_delayed(counter, 250);
     }
 
     fn add_cpp_context(mut self: Pin<&mut Self>) {
@@ -274,17 +324,13 @@ impl qobject::CustomBaseClass {
 //
 // ANCHOR: book_inherit_data
 impl qobject::CustomBaseClass {
-    /// i32 representing the id role
-    pub const ID_ROLE: i32 = 0;
-    /// i32 representing the value role
-    pub const VALUE_ROLE: i32 = 1;
-
     /// Retrieve the data for a given index and role
     pub fn data(&self, index: &QModelIndex, role: i32) -> QVariant {
+        let role = qobject::Roles { repr: role };
         if let Some((id, value)) = self.vector.get(index.row() as usize) {
             return match role {
-                Self::ID_ROLE => QVariant::from(id),
-                Self::VALUE_ROLE => QVariant::from(value),
+                qobject::Roles::Id => QVariant::from(id),
+                qobject::Roles::Value => QVariant::from(value),
                 _ => QVariant::default(),
             };
         }
@@ -308,8 +354,8 @@ impl qobject::CustomBaseClass {
     /// Return the role names for the QAbstractListModel
     pub fn role_names(&self) -> QHash<QHashPair_i32_QByteArray> {
         let mut roles = QHash::<QHashPair_i32_QByteArray>::default();
-        roles.insert(Self::ID_ROLE, QByteArray::from("id"));
-        roles.insert(Self::VALUE_ROLE, QByteArray::from("value"));
+        roles.insert(qobject::Roles::Id.repr, QByteArray::from("id"));
+        roles.insert(qobject::Roles::Value.repr, QByteArray::from("value"));
         roles
     }
 

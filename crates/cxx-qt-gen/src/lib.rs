@@ -211,4 +211,9 @@ mod tests {
     fn generates_inheritance() {
         test_code_generation!("inheritance");
     }
+
+    #[test]
+    fn generates_qenum() {
+        test_code_generation!("qenum");
+    }
 }

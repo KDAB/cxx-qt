@@ -10,7 +10,7 @@ use syn::{spanned::Spanned, Attribute, Ident, Path, Result};
 
 use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string, path::path_from_idents};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ParsedCxxMappings {
     /// Map of the cxx_name of any types defined in CXX extern blocks
     ///
