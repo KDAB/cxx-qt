@@ -116,6 +116,10 @@ ApplicationWindow {
                     name: "Custom Parent Class"
                     source: "pages/CustomParentClassPage.qml"
                 }
+                ListElement {
+                    name: "ExternCxxQt"
+                    source: "pages/ExternCxxQtPage.qml"
+                }
             }
         }
     }

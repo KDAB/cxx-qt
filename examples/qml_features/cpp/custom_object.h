@@ -24,13 +24,9 @@ class CustomObject : public QObject
 
   Q_PROPERTY(int value MEMBER m_value)
 public:
-  explicit CustomObject(QObject* parent = nullptr)
-    : QObject(parent)
-    , m_value(0)
-  {
-  }
+  explicit CustomObject(QObject* parent = nullptr);
 
-  Q_INVOKABLE CustomStruct asStruct() const { return CustomStruct{ m_value }; }
+  Q_INVOKABLE CustomStruct asStruct() const;
 
 private:
   int m_value;

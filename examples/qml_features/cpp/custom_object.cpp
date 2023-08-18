@@ -11,3 +11,15 @@ qvariantCanConvertCustomStruct(const QVariant& variant)
 {
   return variant.canConvert<CustomStruct>();
 }
+
+CustomObject::CustomObject(QObject* parent)
+  : QObject(parent)
+  , m_value(0)
+{
+}
+
+CustomStruct
+CustomObject::asStruct() const
+{
+  return CustomStruct{ m_value };
+}
