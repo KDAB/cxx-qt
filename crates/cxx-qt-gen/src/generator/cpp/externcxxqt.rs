@@ -4,7 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::cpp::signal::generate_cpp_free_signal,
+    generator::{
+        cpp::signal::generate_cpp_free_signal,
+        naming::namespace::namespace_externcxxqt_with_qobject_namespace,
+    },
     parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
     CppFragment,
 };
@@ -27,18 +30,15 @@ pub fn generate(
     for block in blocks {
         for signal in &block.signals {
             // Build a namespace that includes any namespace for the T
-            let ident_namespace = if let Some(namespace) = cxx_mappings
-                .namespaces
-                .get(&signal.qobject_ident.to_string())
-            {
-                format!("::{namespace}")
-            } else {
-                "".to_owned()
-            };
+            let namespace = namespace_externcxxqt_with_qobject_namespace(
+                cxx_mappings
+                    .namespaces
+                    .get(&signal.qobject_ident.to_string()),
+            );
 
             out.push(GeneratedCppExternCxxQtBlocks {
                 method: generate_cpp_free_signal(signal, cxx_mappings)?,
-                namespace: format!("rust::cxxqtgen1::externcxxqt{ident_namespace}"),
+                namespace,
             });
         }
     }

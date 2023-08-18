@@ -7,7 +7,10 @@ use std::collections::BTreeMap;
 
 use crate::{
     generator::{
-        naming::{qobject::QObjectName, signals::QSignalName},
+        naming::{
+            namespace::namespace_externcxxqt_with_qobject_namespace, qobject::QObjectName,
+            signals::QSignalName,
+        },
         rust::{
             externcxxqt::GeneratedExternCxxQt, fragment::RustFragmentPair,
             qobject::GeneratedRustQObject,
@@ -38,20 +41,12 @@ pub fn generate_rust_free_signal(
     let on_ident_rust = idents.on_name;
     let original_method = &signal.method;
 
-    // TODO: share this in the naming module with generator/cpp
-    let connect_namespace = {
-        // Build a namespace that includes any namespace for the T
-        let ident_namespace = if let Some(namespace) = cxx_mappings
+    // Build a namespace that includes any namespace for the T
+    let connect_namespace = namespace_externcxxqt_with_qobject_namespace(
+        cxx_mappings
             .namespaces
-            .get(&signal.qobject_ident.to_string())
-        {
-            format!("::{namespace}")
-        } else {
-            "".to_owned()
-        };
-
-        format!("rust::cxxqtgen1::externcxxqt{ident_namespace}")
-    };
+            .get(&signal.qobject_ident.to_string()),
+    );
 
     let parameters_cxx: Vec<FnArg> = signal
         .parameters

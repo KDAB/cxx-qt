@@ -38,6 +38,16 @@ pub fn namespace_combine_ident(namespace: &str, ident: &Ident) -> String {
     format!("{namespace}::{ident}")
 }
 
+/// Build the externcxxqt namespace combined with the given qobject_namespace
+pub fn namespace_externcxxqt_with_qobject_namespace(qobject_namespace: Option<&String>) -> String {
+    let mut free_namespace = vec!["rust::cxxqtgen1::externcxxqt"];
+    if let Some(qobject_namespace) = qobject_namespace {
+        free_namespace.push(qobject_namespace);
+    }
+
+    free_namespace.join("::")
+}
+
 /// For a given base namespace and QObject ident generate the internal namespace
 ///
 /// The base namespace could be from the module bridge or from the QObject
