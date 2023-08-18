@@ -51,12 +51,12 @@ mod tests {
     pub fn create_generated_cpp() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
             cxx_file_stem: "cxx_file_stem".to_owned(),
-            namespace: "cxx_qt::my_object".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
                     ident: "MyObject".to_owned(),
                     rust_ident: "MyObjectRust".to_owned(),
+                    namespace: "cxx_qt::my_object".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
@@ -172,12 +172,12 @@ mod tests {
     pub fn create_generated_cpp_multi_qobjects() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
             cxx_file_stem: "cxx_file_stem".to_owned(),
-            namespace: "cxx_qt".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
                     ident: "FirstObject".to_owned(),
                     rust_ident: "FirstObjectRust".to_owned(),
+                    namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
@@ -221,6 +221,7 @@ mod tests {
                 GeneratedCppQObject {
                     ident: "SecondObject".to_owned(),
                     rust_ident: "SecondObjectRust".to_owned(),
+                    namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
                         forward_declares: vec![],
@@ -276,7 +277,7 @@ mod tests {
     /// Helper to create a GeneratedCppBlocks with no namespace for testing
     pub fn create_generated_cpp_no_namespace() -> GeneratedCppBlocks {
         let mut generated = create_generated_cpp();
-        generated.namespace = "".to_owned();
+        generated.qobjects[0].namespace = "".to_owned();
         generated.qobjects[0].namespace_internals = "cxx_qt_my_object".to_owned();
         generated
     }

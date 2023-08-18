@@ -9,10 +9,10 @@ class MyObject;
 
 } // namespace cxx_qt::multi_object
 
-namespace cxx_qt::multi_object {
+namespace second_object {
 class SecondObject;
 
-} // namespace cxx_qt::multi_object
+} // namespace second_object
 
 #include "cxx-qt-gen/multi_object.cxx.h"
 
@@ -80,7 +80,7 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
 
-namespace cxx_qt::multi_object {
+namespace second_object {
 class SecondObject
   : public QObject
   , public ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>
@@ -113,6 +113,6 @@ private:
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,
               "SecondObject must inherit from QObject");
-} // namespace cxx_qt::multi_object
+} // namespace second_object
 
-Q_DECLARE_METATYPE(cxx_qt::multi_object::SecondObject*)
+Q_DECLARE_METATYPE(second_object::SecondObject*)

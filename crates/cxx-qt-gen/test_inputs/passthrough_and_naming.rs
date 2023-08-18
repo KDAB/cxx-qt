@@ -116,6 +116,7 @@ pub mod ffi {
 
     extern "RustQt" {
         #[qobject]
+        #[namespace = "second_object"]
         #[qproperty(i32, property_name)]
         type SecondObject = super::SecondObjectRust;
     }
