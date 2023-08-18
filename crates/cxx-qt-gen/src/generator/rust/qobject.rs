@@ -50,7 +50,10 @@ impl GeneratedRustQObject {
             cxx_qt_mod_contents: qobject.others.clone(),
         };
 
-        generated.append(&mut generate_qobject_definitions(&qobject_idents)?);
+        generated.append(&mut generate_qobject_definitions(
+            &qobject_idents,
+            &namespace_idents.namespace,
+        )?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
@@ -160,11 +163,20 @@ pub fn generate_passthrough_impl(
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(qobject_idents: &QObjectName) -> Result<GeneratedRustQObject> {
+fn generate_qobject_definitions(
+    qobject_idents: &QObjectName,
+    namespace: &str,
+) -> Result<GeneratedRustQObject> {
     let mut generated = GeneratedRustQObject::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
+    let namespace = if !namespace.is_empty() {
+        Some(quote! { #[namespace=#namespace] })
+    } else {
+        None
+    };
+
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
             quote! {
@@ -175,6 +187,7 @@ fn generate_qobject_definitions(qobject_idents: &QObjectName) -> Result<Generate
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+                    #namespace
                     type #cpp_class_name_rust;
                 }
             },
@@ -235,6 +248,7 @@ mod tests {
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+                    #[namespace = "cxx_qt"]
                     type MyObject;
                 }
             },

@@ -68,6 +68,7 @@ pub mod ffi {
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[namespace = "cxx_qt::multi_object"]
         type MyObject;
     }
     extern "Rust" {
@@ -141,6 +142,7 @@ pub mod ffi {
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[namespace = "second_object"]
         type SecondObject;
     }
     extern "Rust" {
@@ -195,7 +197,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_second_object"]
+        #[namespace = "second_object::cxx_qt_second_object"]
         fn create_rs_second_object_rust() -> Box<SecondObjectRust>;
     }
     unsafe extern "C++" {

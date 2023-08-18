@@ -73,6 +73,9 @@ pub struct GeneratedCppQObject {
     pub ident: String,
     /// Ident of the Rust object
     pub rust_ident: String,
+    /// Ident of the QObject namespace
+    /// If one isn't specified on the QObject, it's the same as the module.
+    pub namespace: String,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
     /// The blocks of the QObject
@@ -91,6 +94,7 @@ impl GeneratedCppQObject {
         let mut generated = GeneratedCppQObject {
             ident: cpp_class.clone(),
             rust_ident: qobject_idents.rust_struct.cpp.to_string(),
+            namespace: qobject.namespace.clone(),
             namespace_internals: namespace_idents.internal,
             blocks: GeneratedCppQObjectBlocks::from(qobject),
         };

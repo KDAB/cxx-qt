@@ -25,8 +25,6 @@ use syn::Result;
 pub struct GeneratedCppBlocks {
     /// Stem of the CXX header to include
     pub cxx_file_stem: String,
-    /// Ident of the common namespace of the QObjects
-    pub namespace: String,
     /// Generated QObjects
     pub qobjects: Vec<GeneratedCppQObject>,
     /// Generated extern C++Qt blocks
@@ -37,7 +35,6 @@ impl GeneratedCppBlocks {
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
         Ok(GeneratedCppBlocks {
             cxx_file_stem: parser.cxx_file_stem.clone(),
-            namespace: parser.cxx_qt_data.namespace.clone(),
             qobjects: parser
                 .cxx_qt_data
                 .qobjects
@@ -74,8 +71,8 @@ mod tests {
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
         assert_eq!(cpp.cxx_file_stem, "ffi");
-        assert_eq!(cpp.namespace, "");
         assert_eq!(cpp.qobjects.len(), 1);
+        assert_eq!(cpp.qobjects[0].namespace, "");
     }
 
     #[test]
@@ -93,8 +90,8 @@ mod tests {
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
         assert_eq!(cpp.cxx_file_stem, "my_object");
-        assert_eq!(cpp.namespace, "");
         assert_eq!(cpp.qobjects.len(), 1);
+        assert_eq!(&cpp.qobjects[0].namespace, "");
     }
 
     #[test]
@@ -111,6 +108,6 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        assert_eq!(cpp.namespace, "cxx_qt");
+        assert_eq!(cpp.qobjects[0].namespace, "cxx_qt");
     }
 }

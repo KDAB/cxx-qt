@@ -124,7 +124,7 @@ MyObject::MyObject(QObject* parent)
 
 } // namespace cxx_qt::multi_object
 
-namespace cxx_qt::multi_object {
+namespace second_object {
 
 ::std::int32_t const&
 SecondObject::getPropertyName() const
@@ -180,8 +180,8 @@ SecondObject::readyConnect(::rust::Fn<void(SecondObject&)> func,
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>(
-      ::cxx_qt::multi_object::cxx_qt_second_object::createRs())
+      ::second_object::cxx_qt_second_object::createRs())
 {
 }
 
-} // namespace cxx_qt::multi_object
+} // namespace second_object

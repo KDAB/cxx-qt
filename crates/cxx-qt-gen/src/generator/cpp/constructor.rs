@@ -142,6 +142,7 @@ mod tests {
         GeneratedCppQObject {
             ident: "MyObject".to_string(),
             rust_ident: "MyObjectRust".to_string(),
+            namespace: "".to_string(),
             namespace_internals: "rust".to_string(),
             blocks: GeneratedCppQObjectBlocks::default(),
         }

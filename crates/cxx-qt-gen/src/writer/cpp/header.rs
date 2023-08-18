@@ -43,12 +43,11 @@ fn create_block(block: &str, items: &[String]) -> String {
 //
 // Note that this is needed incase ObjectA refers to ObjectB in it's class
 fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
-
     generated
         .qobjects
         .iter()
         .map(|qobject| {
+            let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
             formatdoc! { r#"
                 {namespace_start}
                 class {ident};
@@ -57,8 +56,6 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
             "#,
             ident = &qobject.ident,
             forward_declares = qobject.blocks.forward_declares.join("\n"),
-            namespace_start = namespace_start,
-            namespace_end = namespace_end,
             }
         })
         .collect::<Vec<String>>()
@@ -66,9 +63,8 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
 
 /// For a given GeneratedCppBlocks write the classes
 fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
-
     generated.qobjects.iter().map(|qobject| {
+        let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
         formatdoc! { r#"
             {namespace_start}
             class {ident} : {base_classes}
@@ -95,10 +91,10 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         metaobjects = qobject.blocks.metaobjects.join("\n  "),
         public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
-        metatype = if generated.namespace.is_empty() {
+        metatype = if qobject.namespace.is_empty() {
             qobject.ident.clone()
         } else {
-            format!("{namespace}::{ident}", namespace = generated.namespace, ident = qobject.ident)
+            format!("{namespace}::{ident}", namespace = qobject.namespace, ident = qobject.ident)
         },
         }
     }).collect::<Vec<String>>()

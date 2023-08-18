@@ -18,9 +18,8 @@ fn pair_as_source(pair: &CppFragment) -> Option<String> {
 
 /// For a given GeneratedCppBlocks write the implementations
 fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
-    let (namespace_start, namespace_end) = namespace_start_and_end(&generated.namespace);
-
     generated.qobjects.iter().map(|qobject| {
+        let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
         formatdoc! { r#"
             {namespace_start}
 
