@@ -1,7 +1,6 @@
 #include "cxx-qt-gen/ffi.cxxqt.h"
 
 namespace cxx_qt::my_object {
-
 void
 MyObject::invokable()
 {

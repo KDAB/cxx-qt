@@ -62,7 +62,6 @@ ExternObject_errorOccurredConnect(
 } // namespace rust::cxxqtgen1::externcxxqt::mynamespace
 
 namespace cxx_qt::multi_object {
-
 ::std::int32_t const&
 MyObject::getPropertyName() const
 {
@@ -125,7 +124,6 @@ MyObject::MyObject(QObject* parent)
 } // namespace cxx_qt::multi_object
 
 namespace second_object {
-
 ::std::int32_t const&
 SecondObject::getPropertyName() const
 {
