@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespace_start_and_end;
+use crate::writer::cpp::namespaced;
 use indoc::formatdoc;
 
 /// Extract the source from a given CppFragment
@@ -18,19 +18,21 @@ fn pair_as_source(pair: &CppFragment) -> Option<String> {
 
 /// For a given GeneratedCppBlocks write the implementations
 fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
-    generated.qobjects.iter().map(|qobject| {
-        let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
-        formatdoc! { r#"
-            {namespace_start}
-
-            {methods}
-            {namespace_end}
-        "#,
-        namespace_start = namespace_start,
-        namespace_end = namespace_end,
-        methods = qobject.blocks.methods.iter().chain(qobject.blocks.private_methods.iter()).filter_map(pair_as_source).collect::<Vec<String>>().join("\n"),
-        }
-  }).collect::<Vec<String>>()
+    generated
+        .qobjects
+        .iter()
+        .map(|qobject| {
+            let methods = qobject
+                .blocks
+                .methods
+                .iter()
+                .chain(qobject.blocks.private_methods.iter())
+                .filter_map(pair_as_source)
+                .collect::<Vec<String>>()
+                .join("\n");
+            namespaced(&qobject.namespace, &methods)
+        })
+        .collect::<Vec<String>>()
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ source
@@ -46,13 +48,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         let mut out = vec![];
         for block in &generated.extern_cxx_qt {
             if let Some(method) = pair_as_source(&block.method) {
-                let (namespace_start, namespace_end) = namespace_start_and_end(&block.namespace);
-                out.push(formatdoc! { r#"
-                    {namespace_start}
-                    {method}
-                    {namespace_end}
-                "#,
-                });
+                out.push(namespaced(&block.namespace, &method));
             }
         }
         out.join("\n")

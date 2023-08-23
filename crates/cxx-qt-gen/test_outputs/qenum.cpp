@@ -1,7 +1,6 @@
 #include "cxx-qt-gen/ffi.cxxqt.h"
 
 namespace cxx_qt::my_object {
-
 void
 MyObject::myInvokable(::cxx_qt::my_object::MyEnum qenum,
                       ::cxx_qt::my_object::MyOtherEnum other_qenum) const

@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespace_start_and_end;
+use crate::writer::cpp::namespaced;
 use indoc::formatdoc;
 
 /// Extract the header from a given CppFragment
@@ -47,16 +47,16 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
         .qobjects
         .iter()
         .map(|qobject| {
-            let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
-            formatdoc! { r#"
-                {namespace_start}
-                class {ident};
-                {forward_declares}
-                {namespace_end}
-            "#,
-            ident = &qobject.ident,
-            forward_declares = qobject.blocks.forward_declares.join("\n"),
-            }
+            namespaced(
+                &qobject.namespace,
+                &formatdoc! {r#"
+                    class {ident};
+                    {forward_declares}
+                "#,
+                ident = &qobject.ident,
+                forward_declares = qobject.blocks.forward_declares.join("\n"),
+                },
+            )
         })
         .collect::<Vec<String>>()
 }
@@ -64,39 +64,39 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
 /// For a given GeneratedCppBlocks write the classes
 fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
     generated.qobjects.iter().map(|qobject| {
-        let (namespace_start, namespace_end) = namespace_start_and_end(&qobject.namespace);
-        formatdoc! { r#"
-            {namespace_start}
-            class {ident} : {base_classes}
-            {{
-              Q_OBJECT
-            public:
-              {metaobjects}
+        let class_definition = namespaced(
+            &qobject.namespace,
+            &formatdoc! { r#"
+                class {ident} : {base_classes}
+                {{
+                  Q_OBJECT
+                public:
+                  {metaobjects}
 
-              virtual ~{ident}() = default;
+                  virtual ~{ident}() = default;
 
-            {public_methods}
-            {private_methods}
-            }};
+                {public_methods}
+                {private_methods}
+                }};
 
-            static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");
-            {namespace_end}
+                static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");"#,
+            ident = qobject.ident,
+            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
+            metaobjects = qobject.blocks.metaobjects.join("\n  "),
+            public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+            private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+        });
+
+        formatdoc! {r#"
+            {class_definition}
 
             Q_DECLARE_METATYPE({metatype}*)
-        "#,
-        ident = qobject.ident,
-        namespace_start = namespace_start,
-        namespace_end = namespace_end,
-        base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
-        metaobjects = qobject.blocks.metaobjects.join("\n  "),
-        public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
-        private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
+            "#,
         metatype = if qobject.namespace.is_empty() {
             qobject.ident.clone()
         } else {
             format!("{namespace}::{ident}", namespace = qobject.namespace, ident = qobject.ident)
-        },
-        }
+        },}
     }).collect::<Vec<String>>()
 }
 
@@ -122,13 +122,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         let mut out = vec![];
         for block in &generated.extern_cxx_qt {
             if let Some(method) = pair_as_header(&block.method) {
-                let (namespace_start, namespace_end) = namespace_start_and_end(&block.namespace);
-                out.push(formatdoc! { r#"
-                    {namespace_start}
-                    {method}
-                    {namespace_end}
-                "#,
-                });
+                out.push(namespaced(&block.namespace, &method));
             }
         }
         out.join("\n")

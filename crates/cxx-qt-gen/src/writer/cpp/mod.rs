@@ -9,17 +9,19 @@ pub mod source;
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use clang_format::{clang_format_with_style, ClangFormatStyle};
 use header::write_cpp_header;
+use indoc::formatdoc;
 use source::write_cpp_source;
 
-/// For a given GeneratedCppBlocks write the namespace pair
-pub fn namespace_start_and_end(namespace: &str) -> (String, String) {
+/// Surround the given C++ code with the namespace if it is not empty
+pub fn namespaced(namespace: &str, cpp_code: &str) -> String {
     if namespace.is_empty() {
-        ("".to_owned(), "".to_owned())
+        cpp_code.to_owned()
     } else {
-        (
-            format!("namespace {namespace} {{"),
-            format!("}} // namespace {namespace}"),
-        )
+        formatdoc! {r#"
+            namespace {namespace} {{
+            {cpp_code}
+            }} // namespace {namespace}
+            "# }
     }
 }
 
@@ -292,6 +294,7 @@ mod tests {
         namespace cxx_qt::my_object {
         class MyObject;
 
+
         } // namespace cxx_qt::my_object
 
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
@@ -326,6 +329,7 @@ mod tests {
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
         } // namespace cxx_qt::my_object
 
+
         Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 
         "#}
@@ -341,10 +345,12 @@ mod tests {
         namespace cxx_qt {
         class FirstObject;
 
+
         } // namespace cxx_qt
 
         namespace cxx_qt {
         class SecondObject;
+
 
         } // namespace cxx_qt
 
@@ -371,6 +377,7 @@ mod tests {
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
         } // namespace cxx_qt
 
+
         Q_DECLARE_METATYPE(cxx_qt::FirstObject*)
 
         namespace cxx_qt {
@@ -395,6 +402,7 @@ mod tests {
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
         } // namespace cxx_qt
 
+
         Q_DECLARE_METATYPE(cxx_qt::SecondObject*)
 
         "#}
@@ -407,13 +415,10 @@ mod tests {
 
         #include <test>
 
-
         class MyObject;
 
 
-
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
-
 
 
         class MyObject : public QStringListModel
@@ -443,7 +448,6 @@ mod tests {
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
 
-
         Q_DECLARE_METATYPE(MyObject*)
 
         "#}
@@ -456,7 +460,6 @@ mod tests {
 
 
         namespace cxx_qt::my_object {
-
         int
         MyObject::count() const
         {
@@ -514,7 +517,6 @@ mod tests {
 
 
         namespace cxx_qt {
-
         int
         FirstObject::count() const
         {
@@ -530,7 +532,6 @@ mod tests {
         } // namespace cxx_qt
 
         namespace cxx_qt {
-
         int
         SecondObject::count() const
         {
@@ -556,8 +557,6 @@ mod tests {
     pub fn expected_source_no_namespace() -> &'static str {
         indoc! {r#"
         #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
-
-
 
 
         int
@@ -605,9 +604,34 @@ mod tests {
             // non-const private method
         }
 
-
-
         "#}
+    }
+
+    #[test]
+    fn namespacing() {
+        let cpp_code = "// My C++ Code\n  // with multi-line";
+
+        let namespaced_code = namespaced("my_namespace", cpp_code);
+
+        assert_str_eq!(
+            indoc! {r#"
+            namespace my_namespace {
+            // My C++ Code
+              // with multi-line
+            } // namespace my_namespace
+            "#
+            },
+            namespaced_code
+        );
+    }
+
+    #[test]
+    fn namespacing_with_empty_namespace() {
+        let cpp_code = indoc! {r#"
+            // My C++ Code
+            "#};
+        let namespaced_code = namespaced("", cpp_code);
+        assert_str_eq!(cpp_code, namespaced_code);
     }
 
     #[test]
