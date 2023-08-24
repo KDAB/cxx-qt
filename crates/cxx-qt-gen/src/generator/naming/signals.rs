@@ -61,6 +61,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
 
         let names = QSignalName::from(&qsignal);
@@ -90,6 +91,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
 
         let names = QSignalName::from(&qsignal);

@@ -7,10 +7,11 @@ use crate::parser::parameter::ParsedFunctionParameter;
 use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod;
+use crate::syntax::path::path_compare_str;
 use crate::syntax::safety::Safety;
 use crate::{generator::naming::CombinedIdent, syntax::types};
 use quote::format_ident;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result, Visibility};
 
 /// Describes an individual Signal
 pub struct ParsedSignal {
@@ -28,6 +29,8 @@ pub struct ParsedSignal {
     pub ident: CombinedIdent,
     /// If the signal is defined in the base class
     pub inherit: bool,
+    /// Whether the signal is private
+    pub private: bool,
 }
 
 impl ParsedSignal {
@@ -45,6 +48,7 @@ impl ParsedSignal {
             parameters: vec![],
             ident,
             inherit: false,
+            private: false,
         }
     }
 
@@ -86,6 +90,11 @@ impl ParsedSignal {
 
         let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
         let safe = method.sig.unsafety.is_none();
+        let private = if let Visibility::Restricted(vis_restricted) = &method.vis {
+            path_compare_str(&vis_restricted.path, &["self"])
+        } else {
+            false
+        };
 
         Ok(Self {
             method,
@@ -95,6 +104,7 @@ impl ParsedSignal {
             ident,
             safe,
             inherit,
+            private,
         })
     }
 }
@@ -126,6 +136,7 @@ mod tests {
         );
         assert!(signal.safe);
         assert!(!signal.inherit);
+        assert!(!signal.private);
     }
 
     #[test]
@@ -153,6 +164,7 @@ mod tests {
         );
         assert!(signal.safe);
         assert!(!signal.inherit);
+        assert!(!signal.private);
     }
 
     #[test]
@@ -179,6 +191,7 @@ mod tests {
         );
         assert!(signal.safe);
         assert!(signal.inherit);
+        assert!(!signal.private);
     }
 
     #[test]
@@ -213,6 +226,29 @@ mod tests {
         );
         assert!(signal.safe);
         assert!(!signal.inherit);
+        assert!(!signal.private);
+    }
+
+    #[test]
+    fn test_parse_signal_private() {
+        let method: ForeignItemFn = parse_quote! {
+            pub(self) fn ready(self: Pin<&mut MyObject>);
+        };
+        let signal = ParsedSignal::parse(method.clone(), Safety::Safe).unwrap();
+        assert_eq!(signal.method, method);
+        assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
+        assert!(signal.mutable);
+        assert_eq!(signal.parameters, vec![]);
+        assert_eq!(
+            signal.ident,
+            CombinedIdent {
+                cpp: format_ident!("ready"),
+                rust: format_ident!("ready")
+            }
+        );
+        assert!(signal.safe);
+        assert!(!signal.inherit);
+        assert!(signal.private);
     }
 
     #[test]
@@ -252,6 +288,7 @@ mod tests {
         );
         assert!(!signal.safe);
         assert!(!signal.inherit);
+        assert!(!signal.private);
     }
 
     #[test]

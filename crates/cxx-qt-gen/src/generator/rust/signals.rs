@@ -85,23 +85,28 @@ pub fn generate_rust_free_signal(
         std::mem::swap(&mut unsafe_call, &mut unsafe_block);
     }
 
+    let mut cxx_bridge = vec![];
+
+    if !signal.private {
+        cxx_bridge.push(quote! {
+            #unsafe_block extern "C++" {
+                #original_method
+            }
+        });
+    }
+
+    cxx_bridge.push(quote! {
+        unsafe extern "C++" {
+            #[doc(hidden)]
+            #[namespace = #connect_namespace]
+            #[must_use]
+            #[rust_name = #free_connect_ident_rust_str]
+            fn #free_connect_ident_cpp(self_value: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters_cxx),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+        }
+    });
+
     let fragment = RustFragmentPair {
-        cxx_bridge: vec![
-            quote! {
-                #unsafe_block extern "C++" {
-                    #original_method
-                }
-            },
-            quote! {
-                unsafe extern "C++" {
-                    #[doc(hidden)]
-                    #[namespace = #connect_namespace]
-                    #[must_use]
-                    #[rust_name = #free_connect_ident_rust_str]
-                    fn #free_connect_ident_cpp(self_value: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters_cxx),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
-                }
-            },
-        ],
+        cxx_bridge,
         implementation: vec![
             quote! {
                 impl #qualified_impl {
@@ -274,6 +279,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
         let qobject_idents = create_qobjectname();
 
@@ -353,6 +359,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
         let qobject_idents = create_qobjectname();
 
@@ -426,6 +433,7 @@ mod tests {
             },
             safe: false,
             inherit: false,
+            private: false,
         };
         let qobject_idents = create_qobjectname();
 
@@ -496,6 +504,7 @@ mod tests {
             },
             safe: true,
             inherit: true,
+            private: false,
         };
         let qobject_idents = create_qobjectname();
 
@@ -545,6 +554,162 @@ mod tests {
                     pub fn on_existing_signal(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
                     {
                         self.connect_existing_signal(func, cxx_qt_lib::ConnectionType::AutoConnection)
+                    }
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn test_generate_rust_signal_free() {
+        let qsignal = ParsedSignal {
+            method: parse_quote! {
+                fn ready(self: Pin<&mut MyObject>);
+            },
+            qobject_ident: format_ident!("MyObject"),
+            mutable: true,
+            parameters: vec![],
+            ident: CombinedIdent {
+                cpp: format_ident!("ready"),
+                rust: format_ident!("ready"),
+            },
+            safe: true,
+            inherit: false,
+            private: false,
+        };
+
+        let generated = generate_rust_free_signal(
+            &qsignal,
+            &ParsedCxxMappings::default(),
+            &format_ident!("ffi"),
+        )
+        .unwrap();
+
+        assert_eq!(generated.cxx_mod_contents.len(), 2);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
+
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    fn ready(self: Pin<&mut MyObject>);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[1],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc (hidden)]
+                    #[namespace = "rust::cxxqtgen1::externcxxqt"]
+                    #[must_use]
+                    #[rust_name = "MyObject_connect_ready"]
+                    fn MyObject_readyConnect(self_value: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[0],
+            quote! {
+                impl MyObject {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "ready"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    pub fn on_ready(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        ffi::MyObject_connect_ready(self, func, cxx_qt_lib::ConnectionType::AutoConnection)
+                    }
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[1],
+            quote! {
+                impl MyObject {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "ready"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    pub fn connect_ready(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, ), conn_type: cxx_qt_lib::ConnectionType) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        ffi::MyObject_connect_ready(self, func, conn_type)
+                    }
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn test_generate_rust_signal_free_private() {
+        let qsignal = ParsedSignal {
+            method: parse_quote! {
+                fn ready(self: Pin<&mut MyObject>);
+            },
+            qobject_ident: format_ident!("MyObject"),
+            mutable: true,
+            parameters: vec![],
+            ident: CombinedIdent {
+                cpp: format_ident!("ready"),
+                rust: format_ident!("ready"),
+            },
+            safe: true,
+            inherit: false,
+            private: true,
+        };
+
+        let generated = generate_rust_free_signal(
+            &qsignal,
+            &ParsedCxxMappings::default(),
+            &format_ident!("ffi"),
+        )
+        .unwrap();
+
+        assert_eq!(generated.cxx_mod_contents.len(), 1);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
+
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc (hidden)]
+                    #[namespace = "rust::cxxqtgen1::externcxxqt"]
+                    #[must_use]
+                    #[rust_name = "MyObject_connect_ready"]
+                    fn MyObject_readyConnect(self_value: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[0],
+            quote! {
+                impl MyObject {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "ready"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[doc = "\n"]
+                    #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #[must_use]
+                    pub fn on_ready(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, )) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        ffi::MyObject_connect_ready(self, func, cxx_qt_lib::ConnectionType::AutoConnection)
+                    }
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[1],
+            quote! {
+                impl MyObject {
+                    #[doc = "Connect the given function pointer to the signal "]
+                    #[doc = "ready"]
+                    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #[must_use]
+                    pub fn connect_ready(self: core::pin::Pin<&mut MyObject>, func: fn(core::pin::Pin<&mut MyObject>, ), conn_type: cxx_qt_lib::ConnectionType) -> cxx_qt_lib::QMetaObjectConnection
+                    {
+                        ffi::MyObject_connect_ready(self, func, conn_type)
                     }
                 }
             },
