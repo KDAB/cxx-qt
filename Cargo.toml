@@ -21,6 +21,7 @@ members = [
     "tests/basic_cxx_qt/rust",
     "tests/qt_types_standalone/rust",
 ]
+resolver = "2"
 
 [workspace.package]
 edition = "2021"
