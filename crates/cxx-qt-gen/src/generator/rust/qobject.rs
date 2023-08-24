@@ -45,10 +45,7 @@ impl GeneratedRustQObject {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
-        let mut generated = GeneratedRustQObject {
-            cxx_mod_contents: vec![],
-            cxx_qt_mod_contents: qobject.others.clone(),
-        };
+        let mut generated = GeneratedRustQObject::default();
 
         generated.append(&mut generate_qobject_definitions(
             &qobject_idents,

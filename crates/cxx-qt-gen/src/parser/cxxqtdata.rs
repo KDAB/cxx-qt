@@ -269,11 +269,8 @@ impl ParsedCxxQtData {
                     // If we are a trait then process it otherwise add to others
                     if imp.trait_.is_some() {
                         qobject.parse_trait_impl(imp)?;
-                    } else {
-                        qobject.others.push(Item::Impl(imp));
+                        return Ok(None);
                     }
-
-                    return Ok(None);
                 }
             }
         }
@@ -490,8 +487,7 @@ mod tests {
             }
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].others.len(), 1);
+        assert!(result.is_some());
     }
 
     #[test]
