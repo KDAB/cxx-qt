@@ -85,6 +85,7 @@ pub mod qobject {
         fn add(self: Pin<&mut CustomBaseClass>);
 
         #[qinvokable]
+        #[cxx_name = "addOnThreadDelayed"]
         /// On a background thread, add a given number of rows to the QAbstractListModel with a
         /// configurable delay
         fn add_on_thread_delayed(self: Pin<&mut CustomBaseClass>, counter: i32, delay_ms: u64);
@@ -92,6 +93,7 @@ pub mod qobject {
         /// On a background thread, add a given number of rows to the QAbstractListModel
         /// Use a standard delay of 250ms per item
         #[qinvokable]
+        #[cxx_name = "addOnThread"]
         fn add_on_thread(self: Pin<&mut CustomBaseClass>, counter: i32);
     }
 
@@ -118,6 +120,7 @@ pub mod qobject {
     extern "RustQt" {
         /// Inherited beginInsertRows from the base class
         #[inherit]
+        #[cxx_name = "beginInsertRows"]
         unsafe fn begin_insert_rows(
             self: Pin<&mut CustomBaseClass>,
             parent: &QModelIndex,
@@ -126,10 +129,12 @@ pub mod qobject {
         );
         /// Inherited endInsertRows from the base class
         #[inherit]
+        #[cxx_name = "endInsertRows"]
         unsafe fn end_insert_rows(self: Pin<&mut CustomBaseClass>);
 
         /// Inherited beginRemoveRows from the base class
         #[inherit]
+        #[cxx_name = "beginRemoveRows"]
         unsafe fn begin_remove_rows(
             self: Pin<&mut CustomBaseClass>,
             parent: &QModelIndex,
@@ -138,13 +143,16 @@ pub mod qobject {
         );
         /// Inherited endRemoveRows from the base class
         #[inherit]
+        #[cxx_name = "endRemoveRows"]
         unsafe fn end_remove_rows(self: Pin<&mut CustomBaseClass>);
 
         /// Inherited beginResetModel from the base class
         #[inherit]
+        #[cxx_name = "beginResetModel"]
         unsafe fn begin_reset_model(self: Pin<&mut CustomBaseClass>);
         /// Inherited endResetModel from the base class
         #[inherit]
+        #[cxx_name = "endResetModel"]
         unsafe fn end_reset_model(self: Pin<&mut CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_qalm_impl_unsafe
@@ -182,6 +190,7 @@ pub mod qobject {
         // Example of overriding a C++ virtual method and calling the base class implementation.
         #[qinvokable]
         #[cxx_override]
+        #[cxx_name = "canFetchMore"]
         fn can_fetch_more(self: &CustomBaseClass, parent: &QModelIndex) -> bool;
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
@@ -190,11 +199,13 @@ pub mod qobject {
         /// Return the role names for the QAbstractListModel
         #[qinvokable]
         #[cxx_override]
+        #[cxx_name = "roleNames"]
         fn role_names(self: &CustomBaseClass) -> QHash_i32_QByteArray;
 
         /// Return the row count for the QAbstractListModel
         #[qinvokable]
         #[cxx_override]
+        #[cxx_name = "rowCount"]
         fn row_count(self: &CustomBaseClass, _parent: &QModelIndex) -> i32;
     }
 }

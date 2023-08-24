@@ -48,11 +48,13 @@ pub mod qobject {
 
         /// Retrieve the JSON form of this QObject
         #[qinvokable]
+        #[cxx_name = "asJsonStr"]
         fn as_json_str(self: Pin<&mut Serialisation>) -> QString;
 
         /// From a given JSON string try to load values for the Q_PROPERTYs
         // ANCHOR: book_grab_values
         #[qinvokable]
+        #[cxx_name = "fromJsonStr"]
         fn from_json_str(self: Pin<&mut Serialisation>, string: &QString);
         // ANCHOR_END: book_grab_values
     }

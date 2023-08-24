@@ -47,6 +47,7 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
+        #[cxx_name = "sensorPower"]
         fn sensor_power(self: Pin<&mut EnergyUsage>, uuid: &QString) -> f64;
     }
 

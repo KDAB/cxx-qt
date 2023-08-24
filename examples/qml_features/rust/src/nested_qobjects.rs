@@ -38,6 +38,7 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Print the count of the given inner QObject
         #[qinvokable]
+        #[cxx_name = "printCount"]
         unsafe fn print_count(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
 
         /// Reset the counter of the inner QObject stored in the Q_PROPERTY
