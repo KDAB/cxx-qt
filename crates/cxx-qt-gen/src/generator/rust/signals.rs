@@ -14,7 +14,7 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 use quote::quote;
-use syn::{parse_quote, FnArg, Ident, Path, Result};
+use syn::{parse_quote, token::Colon, BareFnArg, FnArg, Ident, Path, Result};
 
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
@@ -35,24 +35,13 @@ pub fn generate_rust_signals(
         let on_ident_rust = idents.on_name;
         let original_method = &signal.method;
 
-        let parameters_cxx: Vec<FnArg> = signal
+        let parameters_qualified: Vec<BareFnArg> = signal
             .parameters
             .iter()
-            .map(|parameter| {
-                let ident = &parameter.ident;
-                let ty = &parameter.ty;
-                parse_quote! { #ident: #ty }
-            })
-            .collect();
-        let parameters_qualified: Vec<FnArg> = parameters_cxx
-            .iter()
-            .cloned()
-            .map(|mut parameter| {
-                if let FnArg::Typed(pat_type) = &mut parameter {
-                    *pat_type.ty =
-                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, qualified_mappings);
-                }
-                parameter
+            .map(|parameter| BareFnArg {
+                attrs: vec![],
+                name: Some((parameter.ident.clone(), Colon::default())),
+                ty: syn_type_cxx_bridge_to_qualified(&parameter.ty, qualified_mappings),
             })
             .collect();
 
@@ -72,6 +61,24 @@ pub fn generate_rust_signals(
             std::mem::swap(&mut unsafe_call, &mut unsafe_block);
         }
 
+        let original_method_inputs: Vec<BareFnArg> = signal
+            .method
+            .sig
+            .inputs
+            .iter()
+            .map(|fn_arg| {
+                let (attrs, ty) = match fn_arg {
+                    FnArg::Receiver(_) => (vec![], self_type_cxx.clone()),
+                    FnArg::Typed(pat_ty) => (pat_ty.attrs.clone(), *pat_ty.ty.clone()),
+                };
+                BareFnArg {
+                    attrs,
+                    name: None,
+                    ty,
+                }
+            })
+            .collect();
+
         let fragment = RustFragmentPair {
             cxx_bridge: vec![
                 quote! {
@@ -86,7 +93,7 @@ pub fn generate_rust_signals(
                         #[doc = ", so that when the signal is emitted the function pointer is executed."]
                         #[must_use]
                         #[rust_name = #connect_ident_rust_str]
-                        fn #connect_ident_cpp(self: #self_type_cxx, func: #unsafe_call fn(#self_type_cxx, #(#parameters_cxx),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                        fn #connect_ident_cpp(self: #self_type_cxx, func: #unsafe_call fn(#(#original_method_inputs),*), conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                     }
                 },
             ],
@@ -172,7 +179,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_ready"]
-                    fn readyConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn readyConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -253,7 +260,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_data_changed"]
-                    fn dataChangedConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn dataChangedConnect(self: Pin<&mut MyObject>, func: fn(Pin<&mut MyObject>, i32, UniquePtr<QColor>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -326,7 +333,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_unsafe_signal"]
-                    fn unsafeSignalConnect(self: Pin <&mut MyObject>, func: unsafe fn(Pin<&mut MyObject>, param: *mut T), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn unsafeSignalConnect(self: Pin <&mut MyObject>, func: unsafe fn(Pin<&mut MyObject>, *mut T), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -398,7 +405,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_existing_signal"]
-                    fn baseNameConnect(self: Pin<& mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn baseNameConnect(self: Pin<& mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );

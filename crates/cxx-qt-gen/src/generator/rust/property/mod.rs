@@ -278,7 +278,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_trivial_property_changed"]
-                    fn trivialPropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn trivialPropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -319,7 +319,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_opaque_property_changed"]
-                    fn opaquePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn opaquePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -360,7 +360,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_unsafe_property_changed"]
-                    fn unsafePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn unsafePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );

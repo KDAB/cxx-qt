@@ -72,13 +72,7 @@ mod ffi {
         #[rust_name = "connect_data_changed"]
         fn dataChangedConnect(
             self: Pin<&mut MyObject>,
-            func: fn(
-                Pin<&mut MyObject>,
-                first: i32,
-                second: UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
-            ),
+            func: fn(Pin<&mut MyObject>, i32, UniquePtr<Opaque>, QPoint, &'a QPoint),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
@@ -100,13 +94,7 @@ mod ffi {
         #[rust_name = "connect_base_class_new_data"]
         fn newDataConnect(
             self: Pin<&mut MyObject>,
-            func: fn(
-                Pin<&mut MyObject>,
-                first: i32,
-                second: UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
-            ),
+            func: fn(Pin<&mut MyObject>, i32, UniquePtr<Opaque>, QPoint, &'a QPoint),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
