@@ -32,12 +32,15 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// A new sensor has been detected
         #[qsignal]
+        #[cxx_name = "sensorAdded"]
         fn sensor_added(self: Pin<&mut EnergyUsage>, uuid: QString);
         /// A value on an existing sensor has changed
         #[qsignal]
+        #[cxx_name = "sensorChanged"]
         fn sensor_changed(self: Pin<&mut EnergyUsage>, uuid: QString);
         /// An existing sensor has been removed
         #[qsignal]
+        #[cxx_name = "sensorRemoved"]
         fn sensor_removed(self: Pin<&mut EnergyUsage>, uuid: QString);
     }
 

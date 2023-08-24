@@ -27,14 +27,13 @@ pub fn generate_rust_signals(
     // Create the methods for the other signals
     for signal in signals {
         let idents = QSignalName::from(signal);
-        let signal_name_rust = idents.name.rust;
-        let signal_name_rust_str = signal_name_rust.to_string();
         let signal_name_cpp = idents.name.cpp;
         let signal_name_cpp_str = signal_name_cpp.to_string();
         let connect_ident_cpp = idents.connect_name.cpp;
         let connect_ident_rust = idents.connect_name.rust;
         let connect_ident_rust_str = connect_ident_rust.to_string();
         let on_ident_rust = idents.on_name;
+        let original_method = &signal.method;
 
         let parameters_cxx: Vec<FnArg> = signal
             .parameters
@@ -73,15 +72,11 @@ pub fn generate_rust_signals(
             std::mem::swap(&mut unsafe_call, &mut unsafe_block);
         }
 
-        let attrs = &signal.method.attrs;
-
         let fragment = RustFragmentPair {
             cxx_bridge: vec![
                 quote! {
                     #unsafe_block extern "C++" {
-                        #(#attrs)*
-                        #[rust_name = #signal_name_rust_str]
-                        #unsafe_call fn #signal_name_cpp(self: #self_type_cxx, #(#parameters_cxx),*);
+                        #original_method
                     }
                 },
                 quote! {
@@ -164,8 +159,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[rust_name = "ready"]
-                    fn ready(self: Pin<&mut MyObject>, );
+                    fn ready(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -206,6 +200,7 @@ mod tests {
         let qsignal = ParsedSignal {
             method: parse_quote! {
                 #[attribute]
+                #[cxx_name = "dataChanged"]
                 fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
             },
             qobject_ident: format_ident!("MyObject"),
@@ -244,8 +239,8 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[attribute]
-                    #[rust_name = "data_changed"]
-                    fn dataChanged(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+                    #[cxx_name = "dataChanged"]
+                    fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
             },
         );
@@ -285,6 +280,7 @@ mod tests {
     fn test_generate_rust_signal_unsafe() {
         let qsignal = ParsedSignal {
             method: parse_quote! {
+                #[cxx_name = "unsafeSignal"]
                 unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
             },
             qobject_ident: format_ident!("MyObject"),
@@ -316,8 +312,8 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 extern "C++" {
-                    #[rust_name = "unsafe_signal"]
-                    unsafe fn unsafeSignal(self: Pin<&mut MyObject>, param: *mut T);
+                    #[cxx_name = "unsafeSignal"]
+                    unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
                 }
             },
         );
@@ -358,6 +354,7 @@ mod tests {
         let qsignal = ParsedSignal {
             method: parse_quote! {
                 #[inherit]
+                #[cxx_name = "baseName"]
                 fn existing_signal(self: Pin<&mut MyObject>, );
             },
             qobject_ident: format_ident!("MyObject"),
@@ -387,8 +384,8 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[inherit]
-                    #[rust_name = "existing_signal"]
-                    fn baseName(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "baseName"]
+                    fn existing_signal(self: Pin<&mut MyObject>, );
                 }
             },
         );

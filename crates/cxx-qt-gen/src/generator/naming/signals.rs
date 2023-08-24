@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::naming::CombinedIdent;
 use crate::parser::signals::ParsedSignal;
-use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
 
@@ -26,7 +25,7 @@ impl From<&ParsedSignal> for QSignalName {
 }
 
 fn on_from_signal(ident: &Ident) -> Ident {
-    format_ident!("on_{}", ident.to_string().to_case(Case::Snake))
+    format_ident!("on_{}", ident.to_string())
 }
 
 impl CombinedIdent {
@@ -34,8 +33,8 @@ impl CombinedIdent {
         Self {
             // Use signalConnect instead of onSignal here so that we don't
             // create a C++ name that is similar to the QML naming scheme for signals
-            cpp: format_ident!("{}Connect", ident.cpp.to_string().to_case(Case::Camel)),
-            rust: format_ident!("connect_{}", ident.rust.to_string().to_case(Case::Snake)),
+            cpp: format_ident!("{}Connect", ident.cpp.to_string()),
+            rust: format_ident!("connect_{}", ident.rust.to_string()),
         }
     }
 }

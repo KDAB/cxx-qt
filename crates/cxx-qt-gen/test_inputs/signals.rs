@@ -11,10 +11,11 @@ mod ffi {
         type MyObject = super::MyObjectRust;
 
         #[qsignal]
-        fn ready(self: Pin<&mut MyObject>);
+        fn dataReady(self: Pin<&mut MyObject>);
 
         #[qsignal]
-        fn data_changed(
+        #[rust_name = "data_changed"]
+        fn dataChanged(
             self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,

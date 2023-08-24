@@ -52,8 +52,8 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "primitive_changed"]
-        fn primitiveChanged(self: Pin<&mut MyObject>);
+        #[cxx_name = "primitiveChanged"]
+        fn primitive_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -69,8 +69,8 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "trivial_changed"]
-        fn trivialChanged(self: Pin<&mut MyObject>);
+        #[cxx_name = "trivialChanged"]
+        fn trivial_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]

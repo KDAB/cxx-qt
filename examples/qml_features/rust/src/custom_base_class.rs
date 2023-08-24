@@ -69,6 +69,7 @@ pub mod qobject {
         /// Inherit the DataChanged signal from the QAbstractListModel base class
         #[inherit]
         #[qsignal]
+        #[cxx_name = "dataChanged"]
         fn data_changed(
             self: Pin<&mut CustomBaseClass>,
             top_left: &QModelIndex,

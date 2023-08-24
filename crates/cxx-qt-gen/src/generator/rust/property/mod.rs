@@ -264,8 +264,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "trivial_property_changed"]
-                    fn trivialPropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "trivialPropertyChanged"]
+                    fn trivial_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -305,8 +305,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "opaque_property_changed"]
-                    fn opaquePropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "opaquePropertyChanged"]
+                    fn opaque_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -346,8 +346,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "unsafe_property_changed"]
-                    fn unsafePropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "unsafePropertyChanged"]
+                    fn unsafe_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
