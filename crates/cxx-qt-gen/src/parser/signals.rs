@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::parameter::ParsedFunctionParameter;
-use crate::syntax::attribute::attribute_take_path;
+use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod;
 use crate::syntax::safety::Safety;
@@ -70,10 +70,17 @@ impl ParsedSignal {
 
         let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
 
-        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
+        if let Some(index) = attribute_find_path(&method.attrs, &["cxx_name"]) {
             ident.cpp = format_ident!(
                 "{}",
-                expr_to_string(&attr.meta.require_name_value()?.value)?
+                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
+            );
+        }
+
+        if let Some(index) = attribute_find_path(&method.attrs, &["rust_name"]) {
+            ident.rust = format_ident!(
+                "{}",
+                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
             );
         }
 
@@ -130,6 +137,7 @@ mod tests {
         let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "cppReady"]
             fn ready(self: Pin<&mut MyObject>);
         };
         assert_eq!(signal.method, expected_method);
