@@ -84,6 +84,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
+        #[cxx_name = "newData"]
         #[rust_name = "base_class_new_data"]
         fn newData(
             self: Pin<&mut MyObject>,
