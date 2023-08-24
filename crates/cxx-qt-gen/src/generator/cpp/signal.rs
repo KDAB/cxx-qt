@@ -209,6 +209,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         }];
         let qobject_idents = create_qobjectname();
 
@@ -272,6 +273,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         }];
         let qobject_idents = create_qobjectname();
 
@@ -334,6 +336,7 @@ mod tests {
             },
             safe: true,
             inherit: true,
+            private: false,
         }];
         let qobject_idents = create_qobjectname();
 
@@ -382,6 +385,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
 
         let generated = generate_cpp_free_signal(&signal, &ParsedCxxMappings::default()).unwrap();
@@ -436,6 +440,7 @@ mod tests {
             },
             safe: true,
             inherit: false,
+            private: false,
         };
 
         let mut cxx_mappings = ParsedCxxMappings::default();
