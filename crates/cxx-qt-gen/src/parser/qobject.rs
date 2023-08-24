@@ -13,7 +13,7 @@ use crate::{
         path::path_compare_str,
     },
 };
-use syn::{Attribute, Error, Ident, Item, ItemImpl, Meta, Result};
+use syn::{Attribute, Error, Ident, ItemImpl, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -57,9 +57,6 @@ pub struct ParsedQObject {
     pub locking: bool,
     /// Whether threading has been enabled for this QObject
     pub threading: bool,
-    /// Items that we don't need to generate anything for CXX or C++
-    /// eg impls on the Rust object or Default implementations
-    pub others: Vec<Item>,
 }
 
 impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
@@ -100,7 +97,6 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
             qml_metadata,
             locking: true,
             threading: false,
-            others: vec![],
         })
     }
 }
