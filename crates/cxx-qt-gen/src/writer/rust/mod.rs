@@ -48,7 +48,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
-        items.extend(cxx_mod_contents.into_iter());
+        items.extend(cxx_mod_contents);
     } else {
         cxx_mod.content = Some((syn::token::Brace::default(), cxx_mod_contents));
     }
