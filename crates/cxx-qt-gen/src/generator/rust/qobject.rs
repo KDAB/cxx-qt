@@ -18,7 +18,7 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use quote::quote;
-use syn::{Ident, ImplItem, Item, Path, Result};
+use syn::{Ident, Item, Path, Result};
 
 use super::qenum;
 
@@ -63,10 +63,6 @@ impl GeneratedRustQObject {
         )?);
         generated.append(&mut generate_rust_methods(
             &qobject.methods,
-            &qobject_idents,
-        )?);
-        generated.append(&mut generate_passthrough_impl(
-            &qobject.passthrough_impl_items,
             &qobject_idents,
         )?);
         generated.append(&mut inherit::generate(
@@ -136,30 +132,6 @@ impl GeneratedRustQObject {
 
         Ok(generated)
     }
-}
-
-/// Generate the non invokable methods for the Rust side
-pub fn generate_passthrough_impl(
-    impl_items: &[ImplItem],
-    qobject_idents: &QObjectName,
-) -> Result<GeneratedRustQObject> {
-    let mut blocks = GeneratedRustQObject::default();
-    blocks.cxx_qt_mod_contents.extend_from_slice(
-        &impl_items
-            .iter()
-            // Build non invokables on the C++ struct
-            .map(|impl_item| {
-                let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
-                syn::parse2(quote! {
-                    impl #cpp_class_name_rust {
-                        #impl_item
-                    }
-                })
-            })
-            .collect::<Result<Vec<Item>>>()?,
-    );
-
-    Ok(blocks)
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
