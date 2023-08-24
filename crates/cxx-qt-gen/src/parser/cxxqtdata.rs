@@ -450,12 +450,6 @@ mod tests {
         assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
         assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
         assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
-        assert_eq!(
-            cxx_qt_data.qobjects[&qobject_ident()]
-                .passthrough_impl_items
-                .len(),
-            0
-        );
     }
 
     #[test]

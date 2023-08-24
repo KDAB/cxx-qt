@@ -13,7 +13,7 @@ use crate::{
         path::path_compare_str,
     },
 };
-use syn::{Attribute, Error, Ident, ImplItem, Item, ItemImpl, Meta, Result};
+use syn::{Attribute, Error, Ident, Item, ItemImpl, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -45,10 +45,6 @@ pub struct ParsedQObject {
     pub methods: Vec<ParsedMethod>,
     /// List of inherited methods
     pub inherited_methods: Vec<ParsedInheritedMethod>,
-    /// List of "impl" items that need to be implemented on the C++ object in Rust
-    ///
-    /// Note that they will only be visible on the Rust side
-    pub passthrough_impl_items: Vec<ImplItem>,
     /// Any user-defined constructors
     pub constructors: Vec<Constructor>,
     /// List of properties that need to be implemented on the C++ object
@@ -99,7 +95,6 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
             qenums: vec![],
             methods: vec![],
             inherited_methods: vec![],
-            passthrough_impl_items: vec![],
             constructors: vec![],
             properties,
             qml_metadata,
