@@ -111,6 +111,7 @@ pub mod ffi {
         fn ready(self: Pin<&mut MyObject>);
 
         #[qinvokable]
+        #[cxx_name = "invokableName"]
         fn invokable_name(self: Pin<&mut MyObject>);
     }
 
@@ -129,6 +130,7 @@ pub mod ffi {
         fn ready(self: Pin<&mut SecondObject>);
 
         #[qinvokable]
+        #[cxx_name = "invokableName"]
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
 }

@@ -18,6 +18,7 @@ mod ffi {
         type MyObject = super::MyObjectRust;
 
         #[qinvokable]
+        #[cxx_name = "myInvokable"]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
 }

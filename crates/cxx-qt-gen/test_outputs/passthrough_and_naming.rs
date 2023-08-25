@@ -84,8 +84,8 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut MyObject>);
+        #[cxx_name = "propertyNameChanged"]
+        fn property_name_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -105,7 +105,6 @@ pub mod ffi {
         fn invokable_name(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
-        #[rust_name = "ready"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -158,8 +157,8 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
-        #[rust_name = "property_name_changed"]
-        fn propertyNameChanged(self: Pin<&mut SecondObject>);
+        #[cxx_name = "propertyNameChanged"]
+        fn property_name_changed(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
@@ -180,7 +179,6 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[my_attribute]
-        #[rust_name = "ready"]
         fn ready(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {

@@ -264,8 +264,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "trivial_property_changed"]
-                    fn trivialPropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "trivialPropertyChanged"]
+                    fn trivial_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -278,7 +278,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_trivial_property_changed"]
-                    fn trivialPropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn trivialPropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -305,8 +305,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "opaque_property_changed"]
-                    fn opaquePropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "opaquePropertyChanged"]
+                    fn opaque_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -319,7 +319,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_opaque_property_changed"]
-                    fn opaquePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn opaquePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -346,8 +346,8 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "Notify for the Q_PROPERTY"]
-                    #[rust_name = "unsafe_property_changed"]
-                    fn unsafePropertyChanged(self: Pin<&mut MyObject>, );
+                    #[cxx_name = "unsafePropertyChanged"]
+                    fn unsafe_property_changed(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -360,7 +360,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[must_use]
                     #[rust_name = "connect_unsafe_property_changed"]
-                    fn unsafePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>, ), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    fn unsafePropertyChangedConnect(self: Pin <&mut MyObject>, func: fn(Pin<&mut MyObject>), conn_type : CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );

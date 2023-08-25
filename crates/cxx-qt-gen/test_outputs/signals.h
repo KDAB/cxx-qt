@@ -23,9 +23,9 @@ public:
 
 public:
   Q_INVOKABLE void invokable();
-  Q_SIGNAL void ready();
-  ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
-                                         ::Qt::ConnectionType type);
+  Q_SIGNAL void dataReady();
+  ::QMetaObject::Connection dataReadyConnect(::rust::Fn<void(MyObject&)> func,
+                                             ::Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             ::std::unique_ptr<Opaque> second,
                             QPoint third,

@@ -37,10 +37,12 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Swap the URL between kdab.com and github.com
         #[qinvokable]
+        #[cxx_name = "changeUrl"]
         fn change_url(self: Pin<&mut ThreadingWebsite>);
 
         /// Simulate delay of a network request to retrieve the title of the website
         #[qinvokable]
+        #[cxx_name = "fetchTitle"]
         fn fetch_title(self: Pin<&mut ThreadingWebsite>);
     }
 }

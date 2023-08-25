@@ -40,16 +40,15 @@ mod ffi {
         fn invokable(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
-        #[rust_name = "ready"]
-        fn ready(self: Pin<&mut MyObject>);
+        fn dataReady(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc = "Connect the given function pointer to the signal "]
-        #[doc = "ready"]
+        #[doc = "dataReady"]
         #[doc = ", so that when the signal is emitted the function pointer is executed."]
         #[must_use]
-        #[rust_name = "connect_ready"]
-        fn readyConnect(
+        #[rust_name = "connect_dataReady"]
+        fn dataReadyConnect(
             self: Pin<&mut MyObject>,
             func: fn(Pin<&mut MyObject>),
             conn_type: CxxQtConnectionType,
@@ -73,19 +72,13 @@ mod ffi {
         #[rust_name = "connect_data_changed"]
         fn dataChangedConnect(
             self: Pin<&mut MyObject>,
-            func: fn(
-                Pin<&mut MyObject>,
-                first: i32,
-                second: UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
-            ),
+            func: fn(Pin<&mut MyObject>, i32, UniquePtr<Opaque>, QPoint, &'a QPoint),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
     unsafe extern "C++" {
-        #[rust_name = "base_class_new_data"]
-        fn newData(
+        #[cxx_name = "newData"]
+        fn base_class_new_data(
             self: Pin<&mut MyObject>,
             first: i32,
             second: UniquePtr<Opaque>,
@@ -101,13 +94,7 @@ mod ffi {
         #[rust_name = "connect_base_class_new_data"]
         fn newDataConnect(
             self: Pin<&mut MyObject>,
-            func: fn(
-                Pin<&mut MyObject>,
-                first: i32,
-                second: UniquePtr<Opaque>,
-                third: QPoint,
-                fourth: &'a QPoint,
-            ),
+            func: fn(Pin<&mut MyObject>, i32, UniquePtr<Opaque>, QPoint, &'a QPoint),
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
@@ -129,16 +116,16 @@ mod ffi {
 }
 impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
-    #[doc = "ready"]
+    #[doc = "dataReady"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     #[must_use]
-    pub fn on_ready(
+    pub fn on_dataReady(
         self: core::pin::Pin<&mut ffi::MyObject>,
         func: fn(core::pin::Pin<&mut ffi::MyObject>),
     ) -> cxx_qt_lib::QMetaObjectConnection {
-        self.connect_ready(func, cxx_qt_lib::ConnectionType::AutoConnection)
+        self.connect_dataReady(func, cxx_qt_lib::ConnectionType::AutoConnection)
     }
 }
 impl ffi::MyObject {

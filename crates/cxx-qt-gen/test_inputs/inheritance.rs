@@ -23,6 +23,7 @@ mod inheritance {
     extern "RustQt" {
         /// Inherited fetchMore from the base class
         #[inherit]
+        #[cxx_name = "fetchMore"]
         unsafe fn fetch_more(self: Pin<&mut MyObject>, index: &QModelIndex);
     }
 
@@ -33,6 +34,7 @@ mod inheritance {
 
         #[qinvokable]
         #[cxx_override]
+        #[cxx_name = "hasChildren"]
         fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
 }

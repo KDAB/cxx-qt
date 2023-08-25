@@ -9,12 +9,12 @@ MyObject::invokable()
 }
 
 ::QMetaObject::Connection
-MyObject::readyConnect(::rust::Fn<void(MyObject&)> func,
-                       ::Qt::ConnectionType type)
+MyObject::dataReadyConnect(::rust::Fn<void(MyObject&)> func,
+                           ::Qt::ConnectionType type)
 {
   return ::QObject::connect(
     this,
-    &MyObject::ready,
+    &MyObject::dataReady,
     this,
     [&, func = ::std::move(func)]() {
       const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);

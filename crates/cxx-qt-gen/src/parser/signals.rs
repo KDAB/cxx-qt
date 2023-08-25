@@ -5,11 +5,9 @@
 
 use crate::parser::parameter::ParsedFunctionParameter;
 use crate::syntax::attribute::attribute_take_path;
-use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod;
 use crate::syntax::safety::Safety;
 use crate::{generator::naming::CombinedIdent, syntax::types};
-use quote::format_ident;
 use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
 
 /// Describes an individual Signal
@@ -68,14 +66,7 @@ impl ParsedSignal {
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
-        let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
-
-        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
-            ident.cpp = format_ident!(
-                "{}",
-                expr_to_string(&attr.meta.require_name_value()?.value)?
-            );
-        }
+        let ident = CombinedIdent::from_rust_function(&method.attrs, &method.sig.ident);
 
         let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
         let safe = method.sig.unsafety.is_none();
@@ -94,6 +85,7 @@ impl ParsedSignal {
 
 #[cfg(test)]
 mod tests {
+    use quote::format_ident;
     use syn::parse_quote;
 
     use super::*;
@@ -130,6 +122,7 @@ mod tests {
         let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "cppReady"]
             fn ready(self: Pin<&mut MyObject>);
         };
         assert_eq!(signal.method, expected_method);

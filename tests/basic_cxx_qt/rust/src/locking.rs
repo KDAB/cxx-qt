@@ -11,8 +11,10 @@ pub mod qobject {
         #[qobject]
         type RustLockingEnabled = super::RustLockingEnabledRust;
 
+        #[cxx_name = "getCounter"]
         fn get_counter(self: &RustLockingEnabled) -> u32;
 
+        #[cxx_name = "increment"]
         fn increment(self: Pin<&mut RustLockingEnabled>);
     }
 
@@ -21,8 +23,10 @@ pub mod qobject {
         #[qobject]
         type RustLockingDisabled = super::RustLockingDisabledRust;
 
+        #[cxx_name = "getCounter"]
         fn get_counter(self: &RustLockingDisabled) -> u32;
 
+        #[cxx_name = "increment"]
         fn increment(self: Pin<&mut RustLockingDisabled>);
     }
 

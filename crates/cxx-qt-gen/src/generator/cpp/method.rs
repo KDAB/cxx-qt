@@ -169,7 +169,10 @@ mod tests {
     fn test_generate_cpp_invokables() {
         let invokables = vec![
             ParsedMethod {
-                method: parse_quote! { fn void_invokable(self: &MyObject); },
+                method: parse_quote! {
+                    #[cxx_name = "voidInvokable"]
+                    fn void_invokable(self: &MyObject);
+                },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -178,7 +181,10 @@ mod tests {
                 is_qinvokable: true,
             },
             ParsedMethod {
-                method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
+                method: parse_quote! {
+                    #[cxx_name = "trivialInvokable"]
+                    fn trivial_invokable(self: &MyObject, param: i32) -> i32;
+                },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -190,7 +196,10 @@ mod tests {
                 is_qinvokable: true,
             },
             ParsedMethod {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                method: parse_quote! {
+                    #[cxx_name = "opaqueInvokable"]
+                    fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
+                },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
                 safe: true,
@@ -202,7 +211,10 @@ mod tests {
                 is_qinvokable: true,
             },
             ParsedMethod {
-                method: parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; },
+                method: parse_quote! {
+                    #[cxx_name = "specifiersInvokable"]
+                    fn specifiers_invokable(self: &MyObject, param: i32) -> i32;
+                },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -220,7 +232,10 @@ mod tests {
                 is_qinvokable: true,
             },
             ParsedMethod {
-                method: parse_quote! { fn cpp_method(self: &MyObject); },
+                method: parse_quote! {
+                    #[cxx_name = "cppMethod"]
+                    fn cpp_method(self: &MyObject);
+                },
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -388,7 +403,10 @@ mod tests {
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
         let invokables = vec![ParsedMethod {
-            method: parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; },
+            method: parse_quote! {
+                #[cxx_name = "trivialInvokable"]
+                fn trivial_invokable(self: &MyObject, param: A) -> B;
+            },
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,

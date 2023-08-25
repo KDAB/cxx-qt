@@ -792,6 +792,7 @@ mod tests {
         let block: Item = parse_quote! {
             extern "RustQt" {
                 #[qsignal]
+                #[cxx_name = "unsafeSignal"]
                 unsafe fn unsafe_signal(self: Pin<&mut MyObject>, arg: *mut T);
             }
         };
