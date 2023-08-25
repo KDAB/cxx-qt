@@ -15,8 +15,10 @@ pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectName) -> ParsedS
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.cpp_class.rust;
     let notify_rust = &idents.notify.rust;
+    let notify_cpp_str = &idents.notify.cpp.to_string();
     let method: ForeignItemFn = syn::parse_quote! {
         #[doc = "Notify for the Q_PROPERTY"]
+        #[cxx_name = #notify_cpp_str]
         fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
     };
     ParsedSignal::from_property_method(

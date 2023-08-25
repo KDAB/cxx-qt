@@ -47,7 +47,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
         .qobjects
         .iter()
         .map(|qobject| {
-            namespaced(
+            let forward_declares = namespaced(
                 &qobject.namespace,
                 &formatdoc! {r#"
                     class {ident};
@@ -56,9 +56,20 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
                 ident = &qobject.ident,
                 forward_declares = qobject.blocks.forward_declares.join("\n"),
                 },
-            )
+            );
+            let forward_declares_namespaced = qobject.blocks.forward_declares_namespaced.join("\n");
+            formatdoc! {r#"
+                {forward_declares}
+                {forward_declares_namespaced}
+            "#}
         })
         .chain(generated.forward_declares.iter().cloned())
+        .chain(
+            generated
+                .extern_cxx_qt
+                .iter()
+                .map(|external| external.forward_declares.join("\n")),
+        )
         .collect::<Vec<String>>()
 }
 
@@ -88,7 +99,16 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         });
 
+        let fragments = qobject
+            .blocks
+            .fragments
+            .iter()
+            .filter_map(pair_as_header)
+            .collect::<Vec<String>>()
+            .join("\n");
+
         formatdoc! {r#"
+            {fragments}
             {class_definition}
 
             Q_DECLARE_METATYPE({metatype}*)
@@ -131,8 +151,12 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     let extern_cxx_qt = generated
         .extern_cxx_qt
         .iter()
-        .filter_map(|block| {
-            pair_as_header(&block.method).map(|method| namespaced(&block.namespace, &method))
+        .flat_map(|block| {
+            block
+                .fragments
+                .iter()
+                .filter_map(pair_as_header)
+                .collect::<Vec<String>>()
         })
         .collect::<Vec<String>>()
         .join("\n");

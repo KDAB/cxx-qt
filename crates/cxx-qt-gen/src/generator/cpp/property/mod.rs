@@ -90,7 +90,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[1], "Q_PROPERTY(::std::unique_ptr<QColor> opaqueProperty READ getOpaqueProperty WRITE setOpaqueProperty NOTIFY opaquePropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 8);
+        assert_eq!(generated.methods.len(), 6);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -179,64 +179,133 @@ mod tests {
         };
         assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[5] {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
-        assert_str_eq!(
-            header,
-            "::QMetaObject::Connection trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::QMetaObject::Connection
-            MyObject::trivialPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
-            {
-                return ::QObject::connect(this,
-                    &MyObject::trivialPropertyChanged,
-                    this,
-                    [&, func = ::std::move(func)]() {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                        func(*this);
-                    },
-                    type);
-            }
-            "#}
-        );
-
-        let header = if let CppFragment::Header(header) = &generated.methods[6] {
+        let header = if let CppFragment::Header(header) = &generated.methods[5] {
             header
         } else {
             panic!("Expected header!")
         };
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[7] {
+        assert_eq!(generated.fragments.len(), 2);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
+        {
             (header, source)
         } else {
             panic!("Expected Pair")
         };
         assert_str_eq!(
             header,
-            "::QMetaObject::Connection opaquePropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
+            indoc! {r#"
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_trivialPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialPropertyChanged closure, ::Qt::ConnectionType type);
+            } // namespace rust::cxxqtgen1
+            "#}
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::QMetaObject::Connection
-            MyObject::opaquePropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
+            // Define namespace otherwise we hit a GCC bug
+            // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+            namespace rust::cxxqtlib1 {
+            template <>
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>::~SignalHandler()
             {
-                return ::QObject::connect(this,
-                    &MyObject::opaquePropertyChanged,
-                    this,
-                    [&, func = ::std::move(func)]() {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                        func(*this);
+                if (data[0] == nullptr && data[1] == nullptr)
+                {
+                    return;
+                }
+
+                drop_MyObject_signal_handler_trivialPropertyChanged(::std::move(*this));
+            }
+
+            template <>
+            template <>
+            void SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>::operator()<MyObject&>(MyObject& self)
+            {
+                call_MyObject_signal_handler_trivialPropertyChanged(*this, self);
+            }
+
+            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
+            } // namespace rust::cxxqtlib1
+
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_trivialPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialPropertyChanged closure, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(
+                    &self,
+                    &MyObject::trivialPropertyChanged,
+                    &self,
+                    [&, closure = ::std::move(closure)]() mutable {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        closure.template operator()<MyObject&>(self);
                     },
                     type);
             }
+            } // namespace rust::cxxqtgen1
+            "#}
+        );
+
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[1]
+        {
+            (header, source)
+        } else {
+            panic!("Expected Pair")
+        };
+        assert_str_eq!(
+            header,
+            indoc! {r#"
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_opaquePropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandleropaquePropertyChanged closure, ::Qt::ConnectionType type);
+            } // namespace rust::cxxqtgen1
+            "#}
+        );
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            // Define namespace otherwise we hit a GCC bug
+            // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+            namespace rust::cxxqtlib1 {
+            template <>
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>::~SignalHandler()
+            {
+                if (data[0] == nullptr && data[1] == nullptr)
+                {
+                    return;
+                }
+
+                drop_MyObject_signal_handler_opaquePropertyChanged(::std::move(*this));
+            }
+
+            template <>
+            template <>
+            void SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>::operator()<MyObject&>(MyObject& self)
+            {
+                call_MyObject_signal_handler_opaquePropertyChanged(*this, self);
+            }
+
+            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
+            } // namespace rust::cxxqtlib1
+
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_opaquePropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandleropaquePropertyChanged closure, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(
+                    &self,
+                    &MyObject::opaquePropertyChanged,
+                    &self,
+                    [&, closure = ::std::move(closure)]() mutable {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        closure.template operator()<MyObject&>(self);
+                    },
+                    type);
+            }
+            } // namespace rust::cxxqtgen1
             "#}
         );
 
@@ -304,7 +373,7 @@ mod tests {
         assert_str_eq!(generated.metaobjects[0], "Q_PROPERTY(A1 mappedProperty READ getMappedProperty WRITE setMappedProperty NOTIFY mappedPropertyChanged)");
 
         // methods
-        assert_eq!(generated.methods.len(), 4);
+        assert_eq!(generated.methods.len(), 3);
         let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
             (header, source)
         } else {
@@ -347,30 +416,65 @@ mod tests {
         };
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
+        assert_eq!(generated.fragments.len(), 1);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
+        {
             (header, source)
         } else {
             panic!("Expected Pair")
         };
         assert_str_eq!(
             header,
-            "::QMetaObject::Connection mappedPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type);"
+            indoc! {r#"
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_mappedPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermappedPropertyChanged closure, ::Qt::ConnectionType type);
+            } // namespace rust::cxxqtgen1
+            "#}
         );
         assert_str_eq!(
             source,
             indoc! {r#"
-            ::QMetaObject::Connection
-            MyObject::mappedPropertyChangedConnect(::rust::Fn<void(MyObject&)> func, ::Qt::ConnectionType type)
+            // Define namespace otherwise we hit a GCC bug
+            // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+            namespace rust::cxxqtlib1 {
+            template <>
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>::~SignalHandler()
             {
-                return ::QObject::connect(this,
+                if (data[0] == nullptr && data[1] == nullptr)
+                {
+                    return;
+                }
+
+                drop_MyObject_signal_handler_mappedPropertyChanged(::std::move(*this));
+            }
+
+            template <>
+            template <>
+            void SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>::operator()<MyObject&>(MyObject& self)
+            {
+                call_MyObject_signal_handler_mappedPropertyChanged(*this, self);
+            }
+
+            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
+            } // namespace rust::cxxqtlib1
+
+            namespace rust::cxxqtgen1 {
+            ::QMetaObject::Connection
+            MyObject_mappedPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermappedPropertyChanged closure, ::Qt::ConnectionType type)
+            {
+                return ::QObject::connect(
+                    &self,
                     &MyObject::mappedPropertyChanged,
-                    this,
-                    [&, func = ::std::move(func)]() {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-                        func(*this);
+                    &self,
+                    [&, closure = ::std::move(closure)]() mutable {
+                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        closure.template operator()<MyObject&>(self);
                     },
                     type);
             }
+            } // namespace rust::cxxqtgen1
             "#}
         );
 
