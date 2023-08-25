@@ -17,28 +17,40 @@ use syn::Result;
 
 #[derive(Default)]
 pub struct GeneratedCppQObjectBlocks {
+    /// List of includes
+    pub includes: BTreeSet<String>,
     /// List of forward declares before the class and include of the generated CXX header
+    ///
+    /// For now these are not namespaced
     pub forward_declares: Vec<String>,
+    /// List of forward declares before the class and include of the generated CXX header
+    //
+    // TODO: later combine these into forward_declares
+    // once we have solved how to handle namespacing
+    pub forward_declares_namespaced: Vec<String>,
+    /// List of fragments which are outside of the QObject namespace
+    pub fragments: Vec<CppFragment>,
+    /// Base class of the QObject
+    pub base_classes: Vec<String>,
     /// List of Qt Meta Object items (eg Q_PROPERTY)
     pub metaobjects: Vec<String>,
     /// List of public methods for the QObject
     pub methods: Vec<CppFragment>,
     /// List of private methods for the QObject
     pub private_methods: Vec<CppFragment>,
-    /// List of includes
-    pub includes: BTreeSet<String>,
-    /// Base class of the QObject
-    pub base_classes: Vec<String>,
 }
 
 impl GeneratedCppQObjectBlocks {
     pub fn append(&mut self, other: &mut Self) {
+        self.includes.append(&mut other.includes);
         self.forward_declares.append(&mut other.forward_declares);
+        self.forward_declares_namespaced
+            .append(&mut other.forward_declares_namespaced);
+        self.fragments.append(&mut other.fragments);
+        self.base_classes.append(&mut other.base_classes);
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
         self.private_methods.append(&mut other.private_methods);
-        self.includes.append(&mut other.includes);
-        self.base_classes.append(&mut other.base_classes);
     }
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {

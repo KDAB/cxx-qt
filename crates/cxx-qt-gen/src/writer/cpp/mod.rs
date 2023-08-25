@@ -63,7 +63,6 @@ mod tests {
                     namespace: "cxx_qt::my_object".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        forward_declares: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -165,7 +164,8 @@ mod tests {
                                         // non-const private method
                                     }
                                     "#}.to_owned(),
-                            }]
+                            }],
+                            ..Default::default()
                     }
                 }
             ],
@@ -186,7 +186,6 @@ mod tests {
                     namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        forward_declares: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -221,7 +220,7 @@ mod tests {
                         },
                         CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
                         ],
-                        private_methods: vec![],
+                        ..Default::default()
                     }
                 },
                 GeneratedCppQObject {
@@ -230,7 +229,6 @@ mod tests {
                     namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     blocks: GeneratedCppQObjectBlocks {
-                        forward_declares: vec![],
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
@@ -273,7 +271,8 @@ mod tests {
                                         // private method
                                     }
                                     "#}.to_owned(),
-                            }]
+                            }],
+                        ..Default::default()
                     },
                 }
             ]
@@ -301,7 +300,10 @@ mod tests {
 
         } // namespace cxx_qt::my_object
 
+
+
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+
 
 
         namespace cxx_qt::my_object {
@@ -352,13 +354,18 @@ mod tests {
 
         } // namespace cxx_qt
 
+
+
         namespace cxx_qt {
         class SecondObject;
 
 
         } // namespace cxx_qt
 
+
+
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+
 
 
         namespace cxx_qt {
@@ -383,6 +390,7 @@ mod tests {
 
 
         Q_DECLARE_METATYPE(cxx_qt::FirstObject*)
+
 
         namespace cxx_qt {
         class SecondObject : public QStringListModel
@@ -422,7 +430,10 @@ mod tests {
         class MyObject;
 
 
+
+
         #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+
 
 
         class MyObject : public QStringListModel

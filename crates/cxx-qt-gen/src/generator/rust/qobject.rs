@@ -45,6 +45,7 @@ impl GeneratedRustFragment {
             &qobject.properties,
             &qobject_idents,
             cxx_mappings,
+            module_ident,
         )?);
         generated.append(&mut generate_rust_methods(
             &qobject.methods,
@@ -58,6 +59,7 @@ impl GeneratedRustFragment {
             &qobject.signals,
             &qobject_idents,
             cxx_mappings,
+            module_ident,
         )?);
         generated.append(&mut qenum::generate(&qobject.qenums));
 

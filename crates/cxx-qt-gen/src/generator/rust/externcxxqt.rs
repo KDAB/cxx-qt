@@ -6,7 +6,7 @@
 use crate::{
     generator::rust::{
         fragment::{GeneratedRustFragment, RustFragmentPair},
-        signals::generate_rust_free_signal,
+        signals::generate_rust_signal,
     },
     parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
 };
@@ -40,8 +40,11 @@ impl GeneratedRustFragment {
 
         // Build the signals
         for signal in &extern_cxxqt_block.signals {
-            generated.append(&mut generate_rust_free_signal(
+            let qobject_name = &signal.qobject_ident;
+
+            generated.append(&mut generate_rust_signal(
                 signal,
+                qobject_name,
                 cxx_mappings,
                 module_ident,
             )?);
