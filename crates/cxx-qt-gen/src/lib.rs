@@ -32,6 +32,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             include_str!("../include/cxxqt_maybelockguard.h"),
             "cxxqt_maybelockguard.h",
         ),
+        (
+            include_str!("../include/cxxqt_signalhandler.h"),
+            "cxxqt_signalhandler.h",
+        ),
         (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
         (
             include_str!("../include/cxxqt_threading.h"),
