@@ -8,10 +8,13 @@ use crate::{
     parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
     CppFragment,
 };
+use std::collections::BTreeSet;
 use syn::Result;
 
 #[derive(Default)]
 pub struct GeneratedCppExternCxxQtBlocks {
+    /// List of includes
+    pub includes: BTreeSet<String>,
     /// List of methods
     pub method: CppFragment,
     /// Namespace of the method block

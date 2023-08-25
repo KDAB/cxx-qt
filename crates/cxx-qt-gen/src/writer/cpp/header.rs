@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeSet;
+
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespaced;
 use indoc::formatdoc;
@@ -130,7 +132,10 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     .fold(generated.includes.clone(), |mut acc, qobject| {
         acc.extend(qobject.blocks.includes.iter().cloned());
         acc
-    }).into_iter().collect::<Vec<String>>().join("\n"),
+    }).into_iter().chain(generated.extern_cxx_qt.iter().fold(BTreeSet::<String>::default(), |mut acc, block| {
+        acc.extend(block.includes.iter().cloned());
+        acc
+    })).collect::<Vec<String>>().join("\n"),
     }
 }
 

@@ -2,6 +2,7 @@
 
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_maybelockguard.h>
+#include <cxx-qt-common/cxxqt_signalhandler.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
 namespace cxx_qt::multi_object {

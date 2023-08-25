@@ -126,6 +126,10 @@ pub fn generate_cpp_free_signal(
             .get(&signal.qobject_ident.to_string()),
     );
 
+    generated
+        .includes
+        .insert("#include <cxx-qt-common/cxxqt_signalhandler.h>".to_owned());
+
     Ok(generated)
 }
 
@@ -136,6 +140,12 @@ pub fn generate_cpp_signals(
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
+
+    if !signals.is_empty() {
+        generated
+            .includes
+            .insert("#include <cxx-qt-common/cxxqt_signalhandler.h>".to_owned());
+    }
 
     for signal in signals {
         // Prepare the idents
