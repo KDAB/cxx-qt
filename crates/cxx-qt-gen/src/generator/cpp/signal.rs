@@ -5,7 +5,11 @@
 
 use crate::{
     generator::{
-        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+        cpp::{
+            externcxxqt::GeneratedCppExternCxxQtBlocks, fragment::CppFragment,
+            qobject::GeneratedCppQObjectBlocks,
+        },
+        naming::namespace::namespace_externcxxqt_with_qobject_namespace,
         naming::{qobject::QObjectName, signals::QSignalName},
         utils::cpp::syn_type_to_cpp_type,
     },
@@ -64,7 +68,9 @@ fn parameter_types_and_values(
 pub fn generate_cpp_free_signal(
     signal: &ParsedSignal,
     cxx_mappings: &ParsedCxxMappings,
-) -> Result<CppFragment> {
+) -> Result<GeneratedCppExternCxxQtBlocks> {
+    let mut generated = GeneratedCppExternCxxQtBlocks::default();
+
     // Prepare the idents we need
     let qobject_ident = signal.qobject_ident.to_string();
     let qobject_ident_namespaced = cxx_mappings.cxx(&qobject_ident);
@@ -87,31 +93,40 @@ pub fn generate_cpp_free_signal(
     let parameters_types_signal = parameters.types_signal;
     let parameters_values_closure = parameters.values_closure;
 
-    Ok(CppFragment::Pair {
+    generated.method = CppFragment::Pair {
         header: formatdoc!(
             r#"
-            ::QMetaObject::Connection
-            {qobject_ident}_{connect_ident}({qobject_ident_namespaced}& self, ::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type);
-            "#,
+        ::QMetaObject::Connection
+        {qobject_ident}_{connect_ident}({qobject_ident_namespaced}& self, ::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type);
+        "#,
         ),
         source: formatdoc! {
             r#"
-            ::QMetaObject::Connection
-            {qobject_ident}_{connect_ident}({qobject_ident_namespaced}& self, ::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type)
-            {{
-                return ::QObject::connect(
-                    &self,
-                    &{qobject_ident_namespaced}::{signal_ident},
-                    &self,
-                    [&, func = ::std::move(func)]({parameters_types_signal}) {{
-                        const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident_namespaced}> guard(self);
-                        func({parameters_values_closure});
-                    }},
-                    type);
-            }}
-            "#,
+        ::QMetaObject::Connection
+        {qobject_ident}_{connect_ident}({qobject_ident_namespaced}& self, ::rust::Fn<void({parameters_types_closure})> func, ::Qt::ConnectionType type)
+        {{
+            return ::QObject::connect(
+                &self,
+                &{qobject_ident_namespaced}::{signal_ident},
+                &self,
+                [&, func = ::std::move(func)]({parameters_types_signal}) {{
+                    const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident_namespaced}> guard(self);
+                    func({parameters_values_closure});
+                }},
+                type);
+        }}
+        "#,
         },
-    })
+    };
+
+    // Build a namespace that includes any namespace for the T
+    generated.namespace = namespace_externcxxqt_with_qobject_namespace(
+        cxx_mappings
+            .namespaces
+            .get(&signal.qobject_ident.to_string()),
+    );
+
+    Ok(generated)
 }
 
 pub fn generate_cpp_signals(
@@ -390,7 +405,7 @@ mod tests {
 
         let generated = generate_cpp_free_signal(&signal, &ParsedCxxMappings::default()).unwrap();
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated {
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.method {
             (header, source)
         } else {
             panic!("Expected Pair")
@@ -453,7 +468,7 @@ mod tests {
 
         let generated = generate_cpp_free_signal(&signal, &cxx_mappings).unwrap();
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated {
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.method {
             (header, source)
         } else {
             panic!("Expected Pair")
