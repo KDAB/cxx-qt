@@ -12,6 +12,25 @@ mod ffi {
         Z,
     }
 
+    #[qml_element]
+    qnamespace!("cxx_qt::my_object");
+
+    #[qenum]
+    enum MyNamespacedEnum {
+        A,
+        B,
+        C,
+    }
+
+    qnamespace!("other_namespace");
+
+    #[qenum]
+    #[namespace = "other_namespace"]
+    enum MyOtherNamespacedEnum {
+        Variant1,
+        Variant2,
+    }
+
     unsafe extern "RustQt" {
         #[qobject]
         #[derive(Default)]

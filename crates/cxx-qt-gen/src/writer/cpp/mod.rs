@@ -52,6 +52,8 @@ mod tests {
     /// Helper to create a GeneratedCppBlocks for testing
     pub fn create_generated_cpp() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
+            forward_declares: vec![],
+            includes: BTreeSet::default(),
             cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
@@ -173,6 +175,8 @@ mod tests {
     /// Helper to create a GeneratedCppBlocks for testing with multiple qobjects
     pub fn create_generated_cpp_multi_qobjects() -> GeneratedCppBlocks {
         GeneratedCppBlocks {
+            forward_declares: vec![],
+            includes: BTreeSet::default(),
             cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![

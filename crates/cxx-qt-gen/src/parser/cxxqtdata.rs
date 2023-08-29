@@ -5,7 +5,7 @@
 
 use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
-use crate::syntax::path::path_from_idents;
+use crate::syntax::path::{path_compare_str, path_from_idents};
 use crate::syntax::safety::Safety;
 use crate::{
     parser::{
@@ -20,6 +20,9 @@ use syn::{
     spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
     ItemStruct, Result, Type, TypePath,
 };
+use syn::{Attribute, ItemMacro, Meta};
+
+use super::qnamespace::ParsedQNamespace;
 
 pub struct ParsedCxxQtData {
     /// Mappings for CXX types when used in C++ or Rust
@@ -29,6 +32,10 @@ pub struct ParsedCxxQtData {
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
     // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
     pub qobjects: BTreeMap<Ident, ParsedQObject>,
+    /// List of QEnums defined in the module, that aren't associated with a QObject
+    pub qenums: Vec<ParsedQEnum>,
+    /// List of QNamespace declarations
+    pub qnamespaces: Vec<ParsedQNamespace>,
     /// Blocks of extern "C++Qt"
     pub extern_cxxqt_blocks: Vec<ParsedExternCxxQt>,
     /// The namespace of the CXX-Qt module
@@ -43,6 +50,8 @@ impl ParsedCxxQtData {
         Self {
             cxx_mappings: ParsedCxxMappings::default(),
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
+            qenums: vec![],
+            qnamespaces: vec![],
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
             namespace,
@@ -167,33 +176,77 @@ impl ParsedCxxQtData {
             Item::Impl(imp) => self.parse_impl(imp),
             Item::ForeignMod(foreign_mod) => self.parse_foreign_mod(foreign_mod),
             Item::Enum(enum_item) => self.parse_enum(enum_item),
+            Item::Macro(mac) => self.parse_macro(mac),
             _ => Ok(Some(item)),
         }
     }
 
+    fn parse_associated_qenum(&mut self, item: ItemEnum, attribute: Attribute) -> Result<()> {
+        let qobject: Ident = attribute.parse_args()?;
+
+        if let Some(qobject) = self.qobjects.get_mut(&qobject) {
+            let qenum = ParsedQEnum::parse(item)?;
+            self.cxx_mappings.populate(
+                &qenum.ident,
+                &qenum.item.attrs,
+                &self.namespace,
+                &self.module_ident,
+            )?;
+
+            qobject.qenums.push(qenum);
+            Ok(())
+        } else {
+            Err(Error::new_spanned(
+                &qobject,
+                format!("Could not find qobject {qobject}!"),
+            ))
+        }
+    }
+
+    fn parse_namespaced_qenum(&mut self, item: ItemEnum) -> Result<()> {
+        let mut qenum = ParsedQEnum::parse(item)?;
+        if qenum.namespace.is_empty() {
+            qenum.namespace = self.namespace.clone();
+        }
+        if qenum.namespace.is_empty() {
+            return Err(syn::Error::new_spanned(
+                &qenum.ident,
+                "A QEnum must either be namespaced or be associated with a QObject.",
+            ));
+        }
+        self.cxx_mappings.populate(
+            &qenum.ident,
+            &qenum.item.attrs,
+            &self.namespace,
+            &self.module_ident,
+        )?;
+        self.qenums.push(qenum);
+        Ok(())
+    }
+
     fn parse_enum(&mut self, mut item: ItemEnum) -> Result<Option<Item>> {
         if let Some(qenum_attribute) = attribute_take_path(&mut item.attrs, &["qenum"]) {
-            let qobject: Ident = qenum_attribute.parse_args()?;
-            if let Some(qobject) = self.qobjects.get_mut(&qobject) {
-                let qenum = ParsedQEnum::parse(item)?;
-                self.cxx_mappings.populate(
-                    &qenum.ident,
-                    &qenum.item.attrs,
-                    &self.namespace,
-                    &self.module_ident,
-                )?;
-
-                qobject.qenums.push(qenum);
-
+            // A Meta::Path indicates no arguments were provided to the enum
+            // It only contains the "qenum" path and nothing else.
+            if let Meta::Path(_) = qenum_attribute.meta {
+                self.parse_namespaced_qenum(item)?;
                 Ok(None)
             } else {
-                Err(Error::new_spanned(
-                    &qobject,
-                    format!("Could not find qobject {qobject}!"),
-                ))
+                self.parse_associated_qenum(item, qenum_attribute)?;
+                Ok(None)
             }
         } else {
             Ok(Some(Item::Enum(item)))
+        }
+    }
+
+    fn parse_macro(&mut self, item: ItemMacro) -> Result<Option<Item>> {
+        if path_compare_str(&item.mac.path, &["qnamespace"]) {
+            let qnamespace = ParsedQNamespace::parse(item)?;
+            self.qnamespaces.push(qnamespace);
+            Ok(None)
+        } else {
+            Ok(Some(Item::Macro(item)))
         }
     }
 
@@ -830,5 +883,51 @@ mod tests {
 
         let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
         assert!(qobject.threading);
+    }
+
+    #[test]
+    fn test_parse_namespaced_qenum() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
+
+        assert!(cxxqtdata.qenums.is_empty());
+
+        let qenum_without_namespace: Item = parse_quote! {
+            #[qenum]
+            enum MyEnum {
+                A,
+                B
+            }
+        };
+
+        assert!(cxxqtdata
+            .parse_cxx_qt_item(qenum_without_namespace.clone())
+            .is_err());
+
+        let qenum_with_namespace: Item = parse_quote! {
+            #[qenum]
+            #[namespace="my_namespace"]
+            enum MyEnum {
+                A,
+                B
+            }
+        };
+        assert!(cxxqtdata
+            .parse_cxx_qt_item(qenum_with_namespace)
+            .unwrap()
+            .is_none());
+        assert_eq!(1, cxxqtdata.qenums.len());
+
+        let qenum = &cxxqtdata.qenums[0];
+        assert_eq!("my_namespace", &qenum.namespace);
+
+        cxxqtdata.namespace = "other_namespace".to_string();
+
+        assert!(cxxqtdata
+            .parse_cxx_qt_item(qenum_without_namespace)
+            .unwrap()
+            .is_none());
+
+        assert_eq!(2, cxxqtdata.qenums.len());
+        assert_eq!("other_namespace", &cxxqtdata.qenums[1].namespace);
     }
 }

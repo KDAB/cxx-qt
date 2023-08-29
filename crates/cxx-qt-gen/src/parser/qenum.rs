@@ -6,11 +6,13 @@
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
 
-use crate::syntax::path::path_compare_str;
+use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string, path::path_compare_str};
 
 pub struct ParsedQEnum {
     /// The ident of the QEnum
     pub ident: Ident,
+    /// The namespace of the QEnum, either the bridge namespace or the namespace attribute
+    pub namespace: String,
     /// the values of the QEnum
     pub variants: Vec<Ident>,
     /// The original enum item
@@ -54,12 +56,20 @@ impl ParsedQEnum {
             ));
         }
 
-        // TODO: Add support for `namespace`, `cxx_name` and `rust_name` attributes.
-        if let Some(attr) = qenum
-            .attrs
-            .iter()
-            .find(|attr| !path_compare_str(attr.path(), &["doc"]))
-        {
+        let namespace = attribute_find_path(&qenum.attrs, &["namespace"])
+            .map(|attr_index| {
+                let attr = &qenum.attrs[attr_index];
+                expr_to_string(&attr.meta.require_name_value()?.value)
+            })
+            .transpose()?
+            .unwrap_or_default();
+
+        // TODO: Add support for `cxx_name` and `rust_name` attributes.
+        if let Some(attr) = qenum.attrs.iter().find(|attr| {
+            !["doc", "namespace"]
+                .iter()
+                .any(|allowed_attr| path_compare_str(attr.path(), &[allowed_attr]))
+        }) {
             return Err(syn::Error::new_spanned(
                 attr,
                 "Additional attributes are not allowed on #[qenum] enums",
@@ -73,6 +83,7 @@ impl ParsedQEnum {
             .collect::<Result<_>>()?;
 
         Ok(Self {
+            namespace,
             ident: qenum.ident.clone(),
             variants,
             item: qenum,
@@ -82,12 +93,23 @@ impl ParsedQEnum {
 
 #[cfg(test)]
 mod tests {
+    use crate::tests::assert_tokens_eq;
+
     use super::*;
+    use quote::quote;
     use syn::parse_quote;
+
+    fn variants_to_strings(qenum: &ParsedQEnum) -> Vec<String> {
+        qenum
+            .variants
+            .iter()
+            .map(Ident::to_string)
+            .collect::<Vec<_>>()
+    }
 
     #[test]
     fn parse() {
-        let qenum: ItemEnum = parse_quote! {
+        let original_item = quote! {
             /// My doc comment
             enum MyEnum {
                 /// Variant1 doc comment
@@ -96,18 +118,33 @@ mod tests {
                 Variant2,
             }
         };
+        let qenum: ItemEnum = syn::parse2(original_item.clone()).unwrap();
 
         let parsed = ParsedQEnum::parse(qenum).unwrap();
         assert_eq!(parsed.ident, "MyEnum");
+        assert_eq!(parsed.namespace, "");
 
-        assert_eq!(
-            *parsed
-                .variants
-                .iter()
-                .map(Ident::to_string)
-                .collect::<Vec<_>>(),
-            ["Variant1", "Variant2"],
-        )
+        assert_eq!(*variants_to_strings(&parsed), ["Variant1", "Variant2"],);
+        assert_tokens_eq(&parsed.item, original_item);
+    }
+
+    #[test]
+    fn parse_namespaced() {
+        let original_item = quote! {
+            #[namespace="my_namespace"]
+            enum MyEnum {
+                A,
+                B,
+            }
+        };
+        let qenum: ItemEnum = syn::parse2(original_item.clone()).unwrap();
+
+        let qenum = ParsedQEnum::parse(qenum).unwrap();
+        assert_eq!(qenum.ident, "MyEnum");
+        assert_eq!(qenum.namespace, "my_namespace");
+
+        assert_eq!(*variants_to_strings(&qenum), ["A", "B"],);
+        assert_tokens_eq(&qenum.item, original_item);
     }
 
     macro_rules! assert_parse_error {

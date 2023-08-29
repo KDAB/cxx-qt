@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QtCore/QObject>
+#include <QtQml/QQmlEngine>
 #include <cstdint>
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_maybelockguard.h>
@@ -20,6 +22,36 @@ enum class MyOtherEnum : ::std::int32_t
 };
 
 } // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object {
+Q_NAMESPACE
+QML_ELEMENT
+} // namespace cxx_qt::my_object
+
+namespace other_namespace {
+Q_NAMESPACE
+} // namespace other_namespace
+
+namespace cxx_qt::my_object {
+Q_NAMESPACE
+enum class MyNamespacedEnum : ::std::int32_t
+{
+  A,
+  B,
+  C
+};
+Q_ENUM_NS(MyNamespacedEnum)
+} // namespace cxx_qt::my_object
+
+namespace other_namespace {
+Q_NAMESPACE
+enum class MyOtherNamespacedEnum : ::std::int32_t
+{
+  Variant1,
+  Variant2
+};
+Q_ENUM_NS(MyOtherNamespacedEnum)
+} // namespace other_namespace
 
 #include "cxx-qt-gen/ffi.cxx.h"
 

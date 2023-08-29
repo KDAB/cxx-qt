@@ -12,6 +12,7 @@ pub mod method;
 pub mod parameter;
 pub mod property;
 pub mod qenum;
+pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 

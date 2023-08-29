@@ -3,14 +3,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{spanned::Spanned, Error, Expr, Lit, Result};
+use syn::{spanned::Spanned, Error, Expr, ExprLit, Lit, Result};
 
 /// Convert a given [syn::Expr] to a String
 pub fn expr_to_string(expr: &Expr) -> Result<String> {
-    if let Expr::Lit(expr) = expr {
-        if let Lit::Str(lit_str) = &expr.lit {
-            return Ok(lit_str.value());
-        }
+    if let Expr::Lit(ExprLit {
+        lit: Lit::Str(lit_str),
+        ..
+    }) = expr
+    {
+        return Ok(lit_str.value());
     }
 
     Err(Error::new(expr.span(), "expected a literal string"))

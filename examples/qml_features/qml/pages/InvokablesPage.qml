@@ -41,6 +41,21 @@ Page {
                 }
             }
 
+            ToolButton {
+                text: qsTr("Red")
+                onClicked: rustInvokables.storeColorWithEnum(Colors.Red);
+            }
+
+            ToolButton {
+                text: qsTr("Green")
+                onClicked: rustInvokables.storeColorWithEnum(Colors.Green);
+            }
+
+            ToolButton {
+                text: qsTr("Blue")
+                onClicked: rustInvokables.storeColorWithEnum(Colors.Blue);
+            }
+
             Item {
                 Layout.fillWidth: true
             }

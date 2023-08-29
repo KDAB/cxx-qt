@@ -3,15 +3,52 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeSet;
+
 use indoc::formatdoc;
 use syn::Result;
 
 use crate::{
     generator::utils::cpp::Indent,
     parser::{mappings::ParsedCxxMappings, qenum::ParsedQEnum},
+    writer::cpp::namespaced,
 };
 
 use super::qobject::GeneratedCppQObjectBlocks;
+
+fn generate_definition(qenum: &ParsedQEnum) -> String {
+    let enum_name = &qenum.ident.to_string();
+
+    let enum_values = qenum
+        .variants
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>()
+        .join(",\n");
+
+    formatdoc! { r#"
+        enum class {enum_name} : ::std::int32_t {{
+        {enum_values}
+        }};
+        "#, enum_values = enum_values.indented(2) }
+}
+
+pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>) -> String {
+    includes.insert("#include <QtCore/QObject>".to_string());
+
+    let enum_definition = generate_definition(qenum).indented(2);
+    let enum_name = &qenum.ident.to_string();
+    namespaced(
+        &qenum.namespace,
+        // The declaration must still include Q_NAMESPACE, as otherwise moc will complain.
+        // This is redundant with `qnamespace!`, which is now only required if you want to specify
+        // it as QML_ELEMENT.
+        &formatdoc! {r#"
+            Q_NAMESPACE
+            {enum_definition}
+            Q_ENUM_NS({enum_name}) "# },
+    )
+}
 
 pub fn generate(
     qenums: &[ParsedQEnum],
@@ -30,19 +67,8 @@ pub fn generate(
             qualified_name.insert_str(0, "::");
         }
 
-        let enum_values = qenum
-            .variants
-            .iter()
-            .map(ToString::to_string)
-            .collect::<Vec<_>>()
-            .join(",\n");
-
         generated.includes.insert("#include <cstdint>".to_string());
-        let enum_definition = formatdoc! { r#"
-            enum class {enum_name} : ::std::int32_t {{
-            {enum_values}
-            }};
-        "#, enum_values = enum_values.indented(2) };
+        let enum_definition = generate_definition(qenum);
         generated.forward_declares.push(enum_definition.clone());
         generated.metaobjects.push(formatdoc! {r#"
             #ifdef Q_MOC_RUN
