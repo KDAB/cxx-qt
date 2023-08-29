@@ -135,7 +135,6 @@ pub fn generate(
 mod tests {
     use super::*;
 
-    use std::assert_eq;
     use syn::parse_quote;
 
     fn qobject_for_testing() -> GeneratedCppQObject {

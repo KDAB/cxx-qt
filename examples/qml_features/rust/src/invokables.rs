@@ -21,6 +21,21 @@ pub mod qobject {
         type RustInvokables = super::RustInvokablesRust;
     }
 
+    #[qml_element]
+    qnamespace!("Colors");
+
+    #[qenum]
+    #[namespace = "Colors"]
+    /// An enum of colors
+    enum Color {
+        /// Red
+        Red,
+        /// Green
+        Green,
+        /// Blue
+        Blue,
+    }
+
     // ANCHOR: book_invokable_signature
     unsafe extern "RustQt" {
         /// Immutable invokable method that returns the QColor
@@ -30,6 +45,10 @@ pub mod qobject {
         /// Mutable invokable method that stores a color
         #[qinvokable]
         fn store_color(self: Pin<&mut RustInvokables>, red: f32, green: f32, blue: f32);
+
+        /// Mutable invokable method that stores a color with an enum
+        #[qinvokable]
+        fn store_color_with_enum(self: Pin<&mut RustInvokables>, color: Color);
 
         /// Mutable invokable method with no parameters that resets the color
         #[qinvokable]
@@ -72,6 +91,18 @@ impl qobject::RustInvokables {
     /// Mutable invokable method that stores a color
     pub fn store_color(self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
         self.store_helper(red, green, blue);
+    }
+
+    /// QENUMS!
+    pub fn store_color_with_enum(self: Pin<&mut Self>, color: qobject::Color) {
+        use qobject::Color;
+        let (r, g, b) = match color {
+            Color::Red => (1.0, 0.0, 0.0),
+            Color::Green => (0.0, 1.0, 0.0),
+            Color::Blue => (0.0, 0.0, 1.0),
+            _ => (0.0, 0.0, 0.0),
+        };
+        self.store_helper(r, g, b);
     }
 
     /// Mutable invokable method with no parameters that resets the color

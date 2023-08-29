@@ -4,29 +4,43 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{generator::rust::qobject::GeneratedRustQObject, parser::qenum::ParsedQEnum};
-use syn::parse_quote;
+use quote::quote;
+use syn::{parse_quote, Item};
 
-pub fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustQObject {
-    let mut result = GeneratedRustQObject::default();
-    for qenum in qenums {
-        let qenum_item = &qenum.item;
-        let qenum_ident = &qenum.ident;
-        result.append(&mut GeneratedRustQObject {
-            cxx_mod_contents: vec![
+pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
+    qenums
+        .iter()
+        .flat_map(|qenum| {
+            let qenum_item = &qenum.item;
+            let qenum_ident = &qenum.ident;
+            let namespace = &qenum.namespace;
+            let namespace = if namespace.is_empty() {
+                quote! {}
+            } else {
+                quote! { #[namespace = #namespace ] }
+            };
+            vec![
                 parse_quote! {
                     #[repr(i32)]
                     #qenum_item
                 },
                 parse_quote! {
                     extern "C++" {
+                        #namespace
                         type #qenum_ident;
                     }
                 },
-            ],
-            ..Default::default()
-        });
+            ]
+            .into_iter()
+        })
+        .collect()
+}
+
+pub fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustQObject {
+    GeneratedRustQObject {
+        cxx_mod_contents: generate_cxx_mod_contents(qenums),
+        ..Default::default()
     }
-    result
 }
 
 #[cfg(test)]

@@ -13,6 +13,26 @@ mod ffi {
         #[rust_name = "CxxQtQMetaObjectConnection"]
         type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
     }
+    #[repr(i32)]
+    enum MyNamespacedEnum {
+        A,
+        B,
+        C,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyNamespacedEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "other_namespace"]
+    enum MyOtherNamespacedEnum {
+        Variant1,
+        Variant2,
+    }
+    extern "C++" {
+        #[namespace = "other_namespace"]
+        type MyOtherNamespacedEnum;
+    }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
     }

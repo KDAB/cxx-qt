@@ -12,9 +12,12 @@ pub mod locking;
 pub mod method;
 pub mod property;
 pub mod qenum;
+pub mod qnamespace;
 pub mod qobject;
 pub mod signal;
 pub mod threading;
+
+use std::collections::BTreeSet;
 
 use crate::parser::Parser;
 use externcxxqt::GeneratedCppExternCxxQtBlocks;
@@ -23,6 +26,10 @@ use syn::Result;
 
 /// Representation of the generated C++ code for a group of QObjects
 pub struct GeneratedCppBlocks {
+    /// Forward declarations that aren't associated with any QObjects (e.g. "free" qenums).
+    pub forward_declares: Vec<String>,
+    /// Additional includes for the CXX bridge
+    pub includes: BTreeSet<String>,
     /// Stem of the CXX header to include
     pub cxx_file_stem: String,
     /// Generated QObjects
@@ -33,7 +40,24 @@ pub struct GeneratedCppBlocks {
 
 impl GeneratedCppBlocks {
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
+        let mut includes = BTreeSet::new();
+
+        let mut forward_declares: Vec<_> = parser
+            .cxx_qt_data
+            .qnamespaces
+            .iter()
+            .map(|parsed_qnamespace| qnamespace::generate(parsed_qnamespace, &mut includes))
+            .collect();
+        forward_declares.extend(
+            parser
+                .cxx_qt_data
+                .qenums
+                .iter()
+                .map(|parsed_qenum| qenum::generate_declaration(parsed_qenum, &mut includes)),
+        );
         Ok(GeneratedCppBlocks {
+            forward_declares,
+            includes,
             cxx_file_stem: parser.cxx_file_stem.clone(),
             qobjects: parser
                 .cxx_qt_data

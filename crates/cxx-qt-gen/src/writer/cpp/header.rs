@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeSet;
-
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespaced;
 use indoc::formatdoc;
@@ -58,6 +56,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
                 },
             )
         })
+        .chain(generated.forward_declares.iter().cloned())
         .collect::<Vec<String>>()
 }
 
@@ -128,10 +127,10 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         out.join("\n")
     },
     includes = generated.qobjects.iter()
-    .fold(BTreeSet::<&String>::default(), |mut acc, qobject| {
-        acc.extend(qobject.blocks.includes.iter());
+    .fold(generated.includes.clone(), |mut acc, qobject| {
+        acc.extend(qobject.blocks.includes.iter().cloned());
         acc
-    }).into_iter().cloned().collect::<Vec<String>>().join("\n"),
+    }).into_iter().collect::<Vec<String>>().join("\n"),
     }
 }
 

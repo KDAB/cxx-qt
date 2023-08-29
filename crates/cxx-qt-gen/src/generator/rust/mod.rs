@@ -38,9 +38,12 @@ pub struct GeneratedRustBlocks {
 
 impl GeneratedRustBlocks {
     pub fn from(parser: &Parser) -> Result<GeneratedRustBlocks> {
+        let mut cxx_mod_contents = qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums);
+        cxx_mod_contents.push(generate_include(parser)?);
+
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
-            cxx_mod_contents: vec![generate_include(parser)?],
+            cxx_mod_contents,
             cxx_qt_mod_contents: vec![],
             namespace: parser.cxx_qt_data.namespace.clone(),
             qobjects: parser
