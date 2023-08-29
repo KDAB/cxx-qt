@@ -892,7 +892,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             panic!(
                 "rcc --list failed for {}:\n{}",
                 input_path.display(),
-                String::from_utf8_lossy(&cmd.stderr)
+                String::from_utf8_lossy(&cmd_list.stderr)
             );
         }
 
