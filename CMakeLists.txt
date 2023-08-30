@@ -219,6 +219,12 @@ add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format
 # Add test which checks all files have a valid license
 add_test(NAME reuse_lint COMMAND reuse lint)
 
+# Add test which checks that a build rerun doesn't recompile and uses caches instead
+add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Ensure that cargo_build_rerun doesn't run while we are already building
+set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
+
 add_subdirectory(book)
 add_subdirectory(examples)
 add_subdirectory(tests)
