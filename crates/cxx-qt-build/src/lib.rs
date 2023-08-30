@@ -581,6 +581,12 @@ impl CxxQtBuilder {
 
         for qrc_file in self.qrc_files {
             cc_builder_whole_archive.file(qtbuild.qrc(&qrc_file));
+
+            // Also ensure that each of the files in the qrc can cause a change
+            for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
+                println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
+            }
+
             cc_builder_whole_archive_files_added = true;
         }
 
