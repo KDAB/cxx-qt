@@ -839,8 +839,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
         }
 
         QmlModuleRegistrationFiles {
-            // Note that we do not want to rerun if this qrc's contents change as it's generated
-            rcc: self.build_qrc(&qrc_path),
+            rcc: self.qrc(&qrc_path),
             qmlcachegen: qmlcachegen_file_paths,
             qmltyperegistrar: qmltyperegistrar_output_path,
             plugin: qml_plugin_cpp_path,
@@ -852,7 +851,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
     /// The compiled static library must be linked with [+whole-archive](https://doc.rust-lang.org/rustc/command-line-arguments.html#linking-modifiers-whole-archive)
     /// or the linker will discard the generated static variables because they are not referenced from `main`.
-    fn build_qrc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
         if self.rcc_executable.is_none() {
             self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
         }
@@ -886,18 +885,11 @@ Q_IMPORT_PLUGIN({plugin_class_name});
         output_path
     }
 
-    /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
-    /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
-    /// The compiled static library must be linked with [+whole-archive](https://doc.rust-lang.org/rustc/command-line-arguments.html#linking-modifiers-whole-archive)
-    /// or the linker will discard the generated static variables because they are not referenced from `main`.
-    ///
-    /// Also cause cargo to rerun if the contents of any of the resources from the qrc change.
-    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+    /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and return the paths of the sources
+    pub fn qrc_list(&mut self, input_file: &impl AsRef<Path>) -> Vec<PathBuf> {
         if self.rcc_executable.is_none() {
             self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
         }
-
-        let output_path = self.build_qrc(input_file);
 
         // Add the qrc file contents to the cargo rerun list
         let input_path = input_file.as_ref();
@@ -914,13 +906,9 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             );
         }
 
-        for path in String::from_utf8_lossy(&cmd_list.stdout)
+        String::from_utf8_lossy(&cmd_list.stdout)
             .split('\n')
             .map(PathBuf::from)
-        {
-            println!("cargo:rerun-if-changed={}", path.display());
-        }
-
-        output_path
+            .collect()
     }
 }
