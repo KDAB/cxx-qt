@@ -551,7 +551,8 @@ impl QtBuild {
     /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_module](Self::register_qml_module).
     ///
     /// * uri - Should be passed if the input_file is part of a QML module
-    pub fn moc(&mut self, input_file: impl AsRef<Path>, uri: Option<&str>) -> MocProducts {
+    /// * include_paths - Additional include paths to pass to moc
+    pub fn moc(&mut self, input_file: impl AsRef<Path>, uri: Option<&str>, include_paths: &Vec<PathBuf>) -> MocProducts {
         if self.moc_executable.is_none() {
             self.moc_executable = Some(self.get_qt_tool("moc").expect("Could not find moc"));
         }
@@ -566,7 +567,12 @@ impl QtBuild {
         let metatypes_json_path = PathBuf::from(&format!("{}.json", output_path.display()));
 
         let mut include_args = String::new();
+        // Qt includes
         for include_path in self.include_paths() {
+            include_args += &format!("-I {} ", include_path.display());
+        }
+        // User includes
+        for include_path in include_paths {
             include_args += &format!("-I {} ", include_path.display());
         }
 
@@ -847,7 +853,7 @@ public:
 "#
             )
             .unwrap();
-            self.moc(&qml_plugin_cpp_path, Some(uri));
+            self.moc(&qml_plugin_cpp_path, Some(uri), &vec![]);
 
             // Generate file to load static QQmlExtensionPlugin
             let mut qml_plugin_init = File::create(&qml_plugin_init_path).unwrap();
