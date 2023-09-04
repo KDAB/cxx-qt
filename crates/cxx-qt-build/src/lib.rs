@@ -304,6 +304,7 @@ fn panic_duplicate_file_and_qml_module(
 pub struct CxxQtBuilder {
     rust_sources: Vec<PathBuf>,
     qobject_headers: Vec<PathBuf>,
+    qobject_header_includes: Vec<PathBuf>,
     qrc_files: Vec<PathBuf>,
     qt_modules: HashSet<String>,
     qml_modules: Vec<OwningQmlModule>,
@@ -319,6 +320,7 @@ impl CxxQtBuilder {
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
+            qobject_header_includes: vec![],
             qrc_files: vec![],
             qt_modules,
             qml_modules: vec![],
@@ -418,6 +420,13 @@ impl CxxQtBuilder {
         let path = path.as_ref();
         self.qobject_headers.push(path.to_owned());
         println!("cargo:rerun-if-changed={}", path.display());
+        self
+    }
+
+    /// Specify additional include paths when running the moc compiler (qobject_header).
+    pub fn qobject_header_include(mut self, path: impl AsRef<Path>) -> Self {
+        let path = path.as_ref();
+        self.qobject_header_includes.push(path.to_owned());
         self
     }
 
@@ -563,7 +572,7 @@ impl CxxQtBuilder {
 
         // Run moc on C++ headers with Q_OBJECT macro
         for qobject_header in self.qobject_headers {
-            let moc_products = qtbuild.moc(&qobject_header, None);
+            let moc_products = qtbuild.moc(&qobject_header, None, &self.qobject_header_includes);
             self.cc_builder.file(moc_products.cpp);
         }
 
@@ -581,7 +590,7 @@ impl CxxQtBuilder {
                 if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
                 {
                     self.cc_builder.file(&qobject);
-                    let moc_products = qtbuild.moc(qobject_header, Some(&qml_module.uri));
+                    let moc_products = qtbuild.moc(qobject_header, Some(&qml_module.uri), &vec![]);
                     self.cc_builder.file(moc_products.cpp);
                     qml_metatypes_json.push(moc_products.metatypes_json);
                 }
