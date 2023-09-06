@@ -7,10 +7,6 @@
 
 cmake_minimum_required(VERSION 3.24)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug")
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
