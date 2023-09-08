@@ -40,6 +40,7 @@ cxx-qt-lib = { path = "crates/cxx-qt-lib" }
 cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.5.3" }
 qt-build-utils = { path = "crates/qt-build-utils", version = "0.5.3" }
 
+cc = { version = "1.0.79", features = ["parallel"] }
 # Ensure that the example comments are kept in sync
 # examples/cargo_without_cmake/Cargo.toml
 # examples/qml_minimal/rust/Cargo.toml
