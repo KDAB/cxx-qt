@@ -577,6 +577,16 @@ impl CxxQtBuilder {
             }
             self.cc_builder.define("QT_STATICPLUGIN", None);
             cc_builder_whole_archive_files_added = true;
+
+            // If any of the files inside the qml module change, then trigger a rerun
+            for path in qml_module.qml_files.iter().chain(
+                qml_module
+                    .rust_files
+                    .iter()
+                    .chain(qml_module.qrc_files.iter()),
+            ) {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
         }
 
         for qrc_file in self.qrc_files {
