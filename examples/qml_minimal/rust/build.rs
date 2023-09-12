@@ -12,7 +12,9 @@ fn main() {
         .qml_module(QmlModule {
             uri: "com.kdab.cxx_qt.demo",
             rust_files: &["src/cxxqt_object.rs"],
+            // ANCHOR: book_qml_files
             qml_files: &["../qml/main.qml"],
+            // ANCHOR_END: book_qml_files
             ..Default::default()
         })
         .build();
