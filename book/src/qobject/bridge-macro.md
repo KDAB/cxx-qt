@@ -40,8 +40,3 @@ Just like on a `#[cxx::bridge]`, the C++ namespace of the bridge can be changed 
 }
 ```
 This will generate a header file named `threading_website.cxxqt.h` with all C++ items included in the `cxx_qt::website` namespace.
-
-When accessing a type from the bridge module in C++, access it through the C++ namespace:
-```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/cpp/main.cpp:book_namespace_register}}
-```

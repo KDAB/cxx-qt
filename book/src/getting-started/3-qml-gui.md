@@ -35,9 +35,9 @@ For QML, this doesn't make a difference though.
 
 # Qt resources
 
-To include the `main.qml` file inside the application, use the [Qt resource system](https://doc.qt.io/qt-6/resources.html) by listing it in a `qml.qrc` file in the `qml` folder:
+To include the `main.qml` file inside the application, use the [Qt resource system](https://doc.qt.io/qt-6/resources.html) by listing it in the `qml_files` part of our `build.rs` file:
 ```qrc,ignore
-{{#include ../../../examples/qml_minimal/qml/qml.qrc:book_rcc_block}}
+{{#include ../../../examples/qml_minimal/rust/build.rs:book_qml_files}}
 ```
 
 You can omit this, but then you should change the url of the `main.qml` file, so that Qt can find it on your computer.
