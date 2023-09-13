@@ -18,7 +18,7 @@ pub mod qobject {
     }
 
     unsafe extern "RustQt" {
-        // ANCHOR: book_properties_struct
+        // ANCHOR: book_properties_signature
         #[qobject]
         #[qml_element]
         #[qproperty(bool, connected)]
@@ -26,7 +26,7 @@ pub mod qobject {
         #[qproperty(QUrl, previous_connected_url)]
         #[qproperty(QString, status_message)]
         type RustProperties = super::RustPropertiesRust;
-        // ANCHOR_END: book_properties_struct
+        // ANCHOR_END: book_properties_signature
 
         /// Connect to the given url
         #[qinvokable]
@@ -55,6 +55,7 @@ use core::pin::Pin;
 use cxx_qt::CxxQtType;
 use cxx_qt_lib::{QString, QUrl};
 
+// ANCHOR: book_properties_struct
 /// A QObject which has Q_PROPERTYs
 pub struct RustPropertiesRust {
     /// A connected Q_PROPERTY
@@ -69,6 +70,7 @@ pub struct RustPropertiesRust {
     /// A status_message Q_PROPERTY
     status_message: QString,
 }
+// ANCHOR_END: book_properties_struct
 
 // ANCHOR: book_properties_default
 impl Default for RustPropertiesRust {

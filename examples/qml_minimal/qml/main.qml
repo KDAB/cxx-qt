@@ -10,8 +10,8 @@ import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
 
 // ANCHOR: book_qml_import
-// This must match the qml_uri and qml_version
-// specified with the #[qobject] macro in Rust.
+// This must match the uri and version
+// specified in the qml_module in the build.rs script.
 import com.kdab.cxx_qt.demo 1.0
 // ANCHOR_END: book_qml_import
 

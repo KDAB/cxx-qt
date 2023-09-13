@@ -35,12 +35,18 @@ For QML, this doesn't make a difference though.
 
 # Qt resources
 
-To include the `main.qml` file inside the application, use the [Qt resource system](https://doc.qt.io/qt-6/resources.html) by listing it in the `qml_files` part of our `build.rs` file:
-```qrc,ignore
-{{#include ../../../examples/qml_minimal/rust/build.rs:book_qml_files}}
+To include the `main.qml` file inside the application, use the [Qt resource system](https://doc.qt.io/qt-6/resources.html) by listing it in the `qml_files` part of our QML module in the `build.rs` file:
+
+<!--
+TODO: this step magically comes before the build chapters?
+-->
+
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/build.rs:book_qml_module}}
 ```
 
-You can omit this, but then you should change the url of the `main.qml` file, so that Qt can find it on your computer.
+In the `main.cpp` we then use the URL of the `main.qml` file inside the QML module.
+
 ``` cpp, ignore
 {{#include ../../../examples/qml_minimal/cpp/main.cpp:book_qml_url}}
 ```

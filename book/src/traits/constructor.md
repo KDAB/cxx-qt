@@ -1,4 +1,4 @@
-<!-- 
+<!--
 SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 
@@ -6,6 +6,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
 # Defining a custom C++/QML constructor
+
+<!--
+TODO: check and split into Initialise
+-->
 
 By default, CXX-Qt will generate a constructor that takes a single `QObject` pointer as optional argument (usually the QObject parent).
 
@@ -22,7 +26,7 @@ To facilitate these use-cases CXX-Qt provides the [`Constructor` trait][construc
 
 ## Implementing & Declaring a Constructor
 In order for CXX-Qt to generate a custom constructor, the `qobject::T` must implement the [`cxx_qt::Constructor` trait][constructor-trait].
-Additionally, the constructor must be declared within the [cxx_qt::bridge](./bridge.md).
+Additionally, the constructor must be declared within the [cxx_qt::bridge](../bridge/index.md).
 
 This declaration uses Rust's `impl ... for` syntax, but with a few special rules:
 * The implementation block must be empty
