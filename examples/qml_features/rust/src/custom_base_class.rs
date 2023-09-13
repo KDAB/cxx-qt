@@ -11,9 +11,11 @@
 pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
-        include!(< QAbstractListModel >);
-        // ANCHOR_END: book_base_include
+        include!(< QtCore/QAbstractListModel >);
+    }
+    // ANCHOR_END: book_base_include
 
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         /// QHash<i32, QByteArray> from cxx_qt_lib
         type QHash_i32_QByteArray = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_i32_QByteArray>;

@@ -42,8 +42,10 @@ pub mod qobject {
     // ANCHOR_END: book_rustobj_invokable_signature
 }
 
+// ANCHOR: book_use
 use core::pin::Pin;
 use cxx_qt_lib::QString;
+// ANCHOR_END: book_use
 
 /// The Rust struct for the QObject
 // ANCHOR: book_rustobj_struct

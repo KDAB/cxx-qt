@@ -9,14 +9,14 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
+        // ANCHOR: book_qml_module
         .qml_module(QmlModule {
             uri: "com.kdab.cxx_qt.demo",
             rust_files: &["src/cxxqt_object.rs"],
-            // ANCHOR: book_qml_files
             qml_files: &["../qml/main.qml"],
-            // ANCHOR_END: book_qml_files
             ..Default::default()
         })
+        // ANCHOR_END: book_qml_module
         .build();
 }
 // ANCHOR_END: book_build_rs

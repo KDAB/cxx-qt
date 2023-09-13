@@ -7,6 +7,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Types
 
+<!--
+TODO: check and rewrite
+-->
+
 CXX-Qt supports most types supported by CXX. These can be used in properties, invokables, and signals.
 
 ## `cxx-qt-lib` Types

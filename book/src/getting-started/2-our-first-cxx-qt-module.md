@@ -52,13 +52,19 @@ Additionally, a `#[cxx_qt::bridge]` gives you a few more features that allow you
 
 ## QObject struct
 
-To create a new QObject subclass, we can define a struct within our module and mark it with `#[qobject]`.
+To create a new QObject subclass, we can define a type alias within a `extern "RustQt"` block in our module and mark it with `#[qobject]`.
+
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct_signature}}
+```
+
+The Rust struct can be defined outside the module just like a normal Rust struct and can contain any kind of field, even Rust-only types.
 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 
-Optionally, add `qml_uri` and `qml_version` inside `#[qobject]` to tell the Rust build script to generate a QML plugin
+Optionally, add `qml_element` inside `#[qobject]` to tell the Rust build script to generate a QML_ELEMENT
 that will register the QObject with QML engine at startup. If you want the name of the QML type and the Rust type to be different,
 you can also add `qml_name = "OtherName"`. This takes the place of the
 [qt_add_qml_module CMake function](https://doc.qt.io/qt-6/qt-add-qml-module.html) (because that doesn't work with CXX-Qt's build system).
@@ -68,14 +74,13 @@ Additionally, we need to either `impl Default` or `#[derive(Default)]` for our s
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_default}}
 ```
 
-The Rust struct can be defined just like a normal Rust struct and can contain any kind of field, even Rust-only types.
-If a field is tagged as `#[qproperty]` it will be exposed to the C++ side as a `Q_PROPERTY`.
+The `#[qproperty]` attribute on the type alias will create properties to the fields matching the name and be exposed to the C++ side as a `Q_PROPERTY`.
 
 That means the newly created QObject subclass will have two properties as members: `number` and `string`. For names that contain multiple words, like `my_number`, CXX-Qt will automatically rename the field from snake_case to camelCase to fit with C++/QML naming conventions (e.g. `myNumber`).
 
 ### Types
 
-Do note though that any fields tagged as `#[qproperty]` must be types that CXX can translate to C++ types.
+Do note though that any fields exposed as `#[qproperty]` must be types that CXX can translate to C++ types.
 In our case that means:
 - `number: i32` -> `::std::int32_t number`
 - `string: QString` -> `QString string`
@@ -83,17 +88,17 @@ In our case that means:
 For `i32`, CXX-Qt already knows how to translate it.
 A `QString` however is unknown to CXX.
 Luckily, the [`cxx_qt_lib`](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) crate already wraps many Qt types for us.
-We can just import them like any other CXX type:
+We can just define them in the bridge like any other CXX type:
 ``` rust, ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_qstring_import}}
 ```
 For more details on the available types, see the [Qt types page](../concepts/types.md).
 
-## qobject::T
+## Invokables
 
-CXX-Qt will then automatically generate a new QObject subclass for our `MyObject` struct and expose it as an [`extern "C++"` opaque type](https://cxx.rs/extern-c++.html#opaque-c-types) to Rust.
-For any Rust struct `T` that is marked with `#[qobject]`, CXX-Qt will expose the corresponding C++ QObject under `qobject::T`.
-In our case, this means we can refer to the C++ QObject for our `MyObject` struct, as `qobject::MyObject`.
+CXX-Qt will then automatically generate a new QObject subclass for our `MyObjectRust` struct and expose it as an [`extern "C++"` opaque type](https://cxx.rs/extern-c++.html#opaque-c-types) to Rust.
+For any type alias `type T = super::S` marked with `#[qobject]`, CXX-Qt will expose the corresponding C++ QObject under `T`.
+In our case, this means we can refer to the C++ QObject for our `MyObjectRust` struct, as `MyObject`.
 
 This type can be used like any other CXX opaque type.
 Additionally, CXX-Qt allows us to add functionality to this QObject by referring to the type as the self type of functions in an `extern "RustQt"` block in together with `#[qinvokable]`.
@@ -102,8 +107,19 @@ Additionally, CXX-Qt allows us to add functionality to this QObject by referring
 ```
 
 And then implementing the invokables outside the bridge using `impl qobject::MyObject`.
+
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_invokable_impl}}
+```
+
+> Note that by using `qobject` instead of `ffi` as the module name for the bridge,
+> referring to the C++ QObject outside the bridge becomes a natural `qobject::MyObject`
+> instead of `ffi::MyObject`.
+
+Also do not forget to use the relevant imports that are required for the invokable implementation.
+
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_use}}
 ```
 
 In our case, we define two new functions:
@@ -119,8 +135,8 @@ As this type is a CXX Opaque type, we can't actually instantiate it.
 Qt/C++ takes care of this.
 However, we can still define Rust functions on this type.
 They will just be normal Rust functions, but will be executed on a C++ type.
-CXX-Qt will already generate getters and setters for all fields of your struct this way.
-If you additionally mark any of these functions with `#[qinvokable]`, they will also be callable from C++ and QML.
+CXX-Qt will already generate getters and setters for all properties of your struct this way.
+If you additionally define these in the `extern "RustQt"` block of the bridge, they will also be callable from C++ and QML.
 In this case, the types of the arguments also need to convertable to C++, like with any `#[qproperty]`.
 
 And that's it. We've defined our first QObject subclass in Rust. That wasn't so hard, was it?
