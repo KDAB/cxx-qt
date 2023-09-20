@@ -94,6 +94,14 @@ impl ParsedCxxQtData {
                                         ),
                                     );
 
+                                    // Ensure that the namespace of the QObject is in the mappings
+                                    if !qobject.namespace.is_empty() {
+                                        self.cxx_mappings.namespaces.insert(
+                                            foreign_alias.ident_left.to_string(),
+                                            qobject.namespace.clone(),
+                                        );
+                                    }
+
                                     // Note that we assume a compiler error will occur later
                                     // if you had two structs with the same name
                                     self.qobjects
