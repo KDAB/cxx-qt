@@ -267,10 +267,16 @@ mod tests {
                     #[namespace = "type_namespace"]
                     type MyObjectB = super::MyObjectBRust;
                 }
+
+                #[namespace = "extern_namespace"]
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObjectC = super::MyObjectCRust;
+                }
             }
         };
         let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.cxx_qt_data.cxx_mappings.namespaces.len(), 2);
+        assert_eq!(parser.cxx_qt_data.cxx_mappings.namespaces.len(), 3);
         assert_eq!(
             parser
                 .cxx_qt_data
@@ -288,6 +294,15 @@ mod tests {
                 .get("MyObjectB")
                 .unwrap(),
             "type_namespace"
+        );
+        assert_eq!(
+            parser
+                .cxx_qt_data
+                .cxx_mappings
+                .namespaces
+                .get("MyObjectC")
+                .unwrap(),
+            "extern_namespace"
         );
     }
 }
