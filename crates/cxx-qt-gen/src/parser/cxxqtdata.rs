@@ -65,6 +65,16 @@ impl ParsedCxxQtData {
                 if foreign_mod.abi.name.as_ref().map(|lit_str| lit_str.value())
                     == Some("RustQt".to_string())
                 {
+                    // Find the namespace on the foreign mod block if there is one
+                    let namespace = attribute_find_path(&foreign_mod.attrs, &["namespace"])
+                        .map(|index| {
+                            expr_to_string(
+                                &foreign_mod.attrs[index].meta.require_name_value()?.value,
+                            )
+                        })
+                        .transpose()?
+                        .unwrap_or_else(|| self.namespace.clone());
+
                     for foreign_item in &foreign_mod.items {
                         match foreign_item {
                             // Fn are parsed later in parse_foreign_mod_rust_qt
@@ -81,8 +91,8 @@ impl ParsedCxxQtData {
                                     let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
 
                                     // Inject the bridge namespace if the qobject one is empty
-                                    if qobject.namespace.is_empty() && !self.namespace.is_empty() {
-                                        qobject.namespace = self.namespace.clone();
+                                    if qobject.namespace.is_empty() && !namespace.is_empty() {
+                                        qobject.namespace = namespace.clone();
                                     }
 
                                     // Add the QObject type to the qualified mappings
