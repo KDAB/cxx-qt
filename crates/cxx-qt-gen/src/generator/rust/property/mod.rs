@@ -12,17 +12,16 @@ use crate::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::qobject::GeneratedRustQObject,
     },
-    parser::property::ParsedQProperty,
+    parser::{mappings::ParsedCxxMappings, property::ParsedQProperty},
 };
-use std::collections::BTreeMap;
-use syn::{Ident, Path, Result};
+use syn::Result;
 
 use super::signals::generate_rust_signals;
 
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedRustQObject> {
     let mut generated = GeneratedRustQObject::default();
     let mut signals = vec![];
@@ -31,7 +30,12 @@ pub fn generate_rust_properties(
         let idents = QPropertyName::from(property);
 
         // Getters
-        let getter = getter::generate(&idents, qobject_idents, &property.ty, qualified_mappings);
+        let getter = getter::generate(
+            &idents,
+            qobject_idents,
+            &property.ty,
+            &cxx_mappings.qualified,
+        );
         generated
             .cxx_mod_contents
             .append(&mut getter.cxx_bridge_as_items()?);
@@ -40,7 +44,12 @@ pub fn generate_rust_properties(
             .append(&mut getter.implementation_as_items()?);
 
         // Setters
-        let setter = setter::generate(&idents, qobject_idents, &property.ty, qualified_mappings);
+        let setter = setter::generate(
+            &idents,
+            qobject_idents,
+            &property.ty,
+            &cxx_mappings.qualified,
+        );
         generated
             .cxx_mod_contents
             .append(&mut setter.cxx_bridge_as_items()?);
@@ -55,7 +64,7 @@ pub fn generate_rust_properties(
     generated.append(&mut generate_rust_signals(
         &signals,
         qobject_idents,
-        qualified_mappings,
+        cxx_mappings,
     )?);
 
     Ok(generated)
@@ -87,12 +96,9 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_properties(
-            &properties,
-            &qobject_idents,
-            &BTreeMap::<Ident, Path>::default(),
-        )
-        .unwrap();
+        let generated =
+            generate_rust_properties(&properties, &qobject_idents, &ParsedCxxMappings::default())
+                .unwrap();
 
         // Check that we have the expected number of blocks
         assert_eq!(generated.cxx_mod_contents.len(), 12);
