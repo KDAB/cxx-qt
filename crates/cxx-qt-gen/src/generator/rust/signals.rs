@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
 use crate::{
     generator::{
         naming::{
@@ -20,7 +18,7 @@ use crate::{
     parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
 };
 use quote::{format_ident, quote};
-use syn::{parse_quote, FnArg, Ident, Path, Result};
+use syn::{parse_quote, FnArg, Ident, Result};
 
 pub fn generate_rust_free_signal(
     signal: &ParsedSignal,
@@ -151,7 +149,7 @@ pub fn generate_rust_free_signal(
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    cxx_mappings: &ParsedCxxMappings,
 ) -> Result<GeneratedRustQObject> {
     let mut generated = GeneratedRustQObject::default();
     let qobject_name = &qobject_idents.cpp_class.rust;
@@ -183,7 +181,7 @@ pub fn generate_rust_signals(
             .map(|mut parameter| {
                 if let FnArg::Typed(pat_type) = &mut parameter {
                     *pat_type.ty =
-                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, qualified_mappings);
+                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, &cxx_mappings.qualified);
                 }
                 parameter
             })
@@ -195,9 +193,9 @@ pub fn generate_rust_signals(
             parse_quote! { &#qobject_name }
         };
         let self_type_qualified =
-            syn_type_cxx_bridge_to_qualified(&self_type_cxx, qualified_mappings);
+            syn_type_cxx_bridge_to_qualified(&self_type_cxx, &cxx_mappings.qualified);
         let qualified_impl =
-            syn_ident_cxx_bridge_to_qualified_impl(qobject_name, qualified_mappings);
+            syn_ident_cxx_bridge_to_qualified_impl(qobject_name, &cxx_mappings.qualified);
 
         let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
@@ -286,7 +284,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
 
@@ -366,7 +364,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
 
@@ -440,7 +438,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
 
@@ -511,7 +509,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
         )
         .unwrap();
 

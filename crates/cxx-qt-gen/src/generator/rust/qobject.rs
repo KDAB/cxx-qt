@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
@@ -15,10 +13,10 @@ use crate::{
         },
         utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
-    parser::qobject::ParsedQObject,
+    parser::{mappings::ParsedCxxMappings, qobject::ParsedQObject},
 };
 use quote::quote;
-use syn::{Ident, Item, Path, Result};
+use syn::{Ident, Item, Result};
 
 use super::qenum;
 
@@ -39,7 +37,7 @@ impl GeneratedRustQObject {
 
     pub fn from(
         qobject: &ParsedQObject,
-        qualified_mappings: &BTreeMap<Ident, Path>,
+        cxx_mappings: &ParsedCxxMappings,
         module_ident: &Ident,
     ) -> Result<GeneratedRustQObject> {
         // Create the base object
@@ -56,7 +54,7 @@ impl GeneratedRustQObject {
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
-            qualified_mappings,
+            cxx_mappings,
         )?);
         generated.append(&mut generate_rust_methods(
             &qobject.methods,
@@ -69,7 +67,7 @@ impl GeneratedRustQObject {
         generated.append(&mut generate_rust_signals(
             &qobject.signals,
             &qobject_idents,
-            qualified_mappings,
+            cxx_mappings,
         )?);
         generated.append(&mut qenum::generate(&qobject.qenums));
 
@@ -95,7 +93,7 @@ impl GeneratedRustQObject {
             generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
-                qualified_mappings,
+                &cxx_mappings.qualified,
                 module_ident,
             )?);
         }
@@ -107,7 +105,7 @@ impl GeneratedRustQObject {
         if qobject.locking {
             let qualified_impl = syn_ident_cxx_bridge_to_qualified_impl(
                 &qobject_idents.cpp_class.rust,
-                qualified_mappings,
+                &cxx_mappings.qualified,
             );
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
@@ -118,13 +116,13 @@ impl GeneratedRustQObject {
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
-            qualified_mappings,
+            &cxx_mappings.qualified,
             module_ident,
         )?);
 
         generated.append(&mut cxxqttype::generate(
             &qobject_idents,
-            qualified_mappings,
+            &cxx_mappings.qualified,
         )?);
 
         Ok(generated)
@@ -202,7 +200,7 @@ mod tests {
 
         let rust = GeneratedRustQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
