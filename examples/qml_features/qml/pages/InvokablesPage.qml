@@ -41,10 +41,12 @@ Page {
                 }
             }
 
+            // ANCHOR: book_namespaced_qenum
             ToolButton {
                 text: qsTr("Red")
                 onClicked: rustInvokables.storeColorWithEnum(Colors.Red);
             }
+            // ANCHOR_END: book_namespaced_qenum
 
             ToolButton {
                 text: qsTr("Green")

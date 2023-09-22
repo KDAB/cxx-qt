@@ -21,9 +21,12 @@ pub mod qobject {
         type RustInvokables = super::RustInvokablesRust;
     }
 
+    // ANCHOR: book_qnamespace
     #[qml_element]
     qnamespace!("Colors");
+    // ANCHOR_END: book_qnamespace
 
+    // ANCHOR: book_namespaced_qenum
     #[qenum]
     #[namespace = "Colors"]
     /// An enum of colors
@@ -35,6 +38,7 @@ pub mod qobject {
         /// Blue
         Blue,
     }
+    // ANCHOR_END: book_namespaced_qenum
 
     // ANCHOR: book_invokable_signature
     unsafe extern "RustQt" {

@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ability to define a custom C++ Constructor using `cxx_qt::Constructor`
 - `cxx_qt::Initialize` trait for easier default-constructor implementation
 - `extern "C++Qt"` block support for declaring existing types with methods and signals
+- `#[qenum]` attribute for `Q_ENUM` and `Q_ENUM_NS` support
+- `qnamespace!` macro to support exposing namespaced enums to QML
 
 ### Changed
 
