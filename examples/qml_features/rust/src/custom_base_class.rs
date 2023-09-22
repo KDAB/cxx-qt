@@ -42,6 +42,7 @@ pub mod qobject {
         Value,
     }
 
+    // ANCHOR: book_qenum_in_qobject
     #[qenum(CustomBaseClass)]
     /// State of the CustomBaseClass list model
     enum State {
@@ -50,6 +51,7 @@ pub mod qobject {
         /// No items are being added in the background
         Idle,
     }
+    // ANCHOR_END: book_qenum_in_qobject
 
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
