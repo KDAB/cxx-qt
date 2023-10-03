@@ -13,6 +13,10 @@
 
 namespace rust::cxxqtlib1 {
 
+// This represents a Rust Box<dyn FnMut>
+//
+// It defers all operations to Rust apart for moving, which like Rust is
+// performed by a raw memory copy.
 template<typename CXXArguments>
 class SignalHandler
 {
@@ -23,10 +27,8 @@ public:
 
   SignalHandler(SignalHandler&& other)
   {
-    data[0] = other.data[0];
-    data[1] = other.data[1];
-    other.data[0] = nullptr;
-    other.data[1] = nullptr;
+    data[0] = std::exchange(other.data[0], nullptr);
+    data[1] = std::exchange(other.data[1], nullptr);
   }
 
   ~SignalHandler() noexcept;

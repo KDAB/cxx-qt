@@ -9,6 +9,8 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
+#[doc(hidden)]
+pub mod signalhandler;
 mod cxxqtthread;
 
 pub use cxx_qt_macro::bridge;
