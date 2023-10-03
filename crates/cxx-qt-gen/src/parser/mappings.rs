@@ -43,6 +43,14 @@ impl ParsedCxxMappings {
         }
     }
 
+    /// For a given rust ident return the namespace if it's not empty
+    pub fn namespace(&self, ident: &str) -> Option<String> {
+        self.namespaces
+            .get(ident)
+            .filter(|namespace| !namespace.is_empty())
+            .cloned()
+    }
+
     /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
     pub fn populate(
         &mut self,
@@ -110,6 +118,7 @@ mod tests {
             mappings.qualified.get(&format_ident!("A")).unwrap(),
             &parse_quote! { ffi::A }
         );
+        assert!(mappings.namespace("A").is_none());
     }
 
     #[test]
@@ -152,6 +161,7 @@ mod tests {
             mappings.qualified.get(&format_ident!("A")).unwrap(),
             &parse_quote! { ffi::A }
         );
+        assert_eq!(mappings.namespace("A"), Some("type_namespace".to_owned()));
     }
 
     #[test]
@@ -194,6 +204,7 @@ mod tests {
             mappings.qualified.get(&format_ident!("A")).unwrap(),
             &parse_quote! { ffi::A }
         );
+        assert_eq!(mappings.namespace("A"), Some("bridge_namespace".to_owned()));
     }
 
     #[test]
