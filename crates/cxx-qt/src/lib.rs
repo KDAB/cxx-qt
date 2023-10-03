@@ -18,6 +18,12 @@ pub use cxx_qt_macro::qobject;
 
 pub use cxxqtthread::CxxQtThread;
 
+// Export static assertions that can then be used in cxx-qt-gen generation
+//
+// These are currently used to ensure that CxxQtSignalHandler has the right size
+#[doc(hidden)]
+pub use static_assertions;
+
 /// This trait is automatically implemented for all types which are marked as `#[qobject]`.
 /// It provides information about the type that is wrapped by the QObject, as well as the methods
 /// that Cxx-Qt will generate for the QObject.
