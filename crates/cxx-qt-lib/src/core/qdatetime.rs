@@ -358,13 +358,13 @@ impl Eq for QDateTime {}
 
 impl PartialOrd for QDateTime {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        0.partial_cmp(&ffi::qdatetime_cmp(self, other))
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for QDateTime {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        0.cmp(&ffi::qdatetime_cmp(self, other))
     }
 }
 

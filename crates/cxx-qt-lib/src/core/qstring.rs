@@ -214,13 +214,13 @@ impl Eq for QString {}
 
 impl PartialOrd for QString {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        0.partial_cmp(&ffi::qstring_cmp(self, other))
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for QString {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        0.cmp(&ffi::qstring_cmp(self, other))
     }
 }
 
