@@ -17,5 +17,3 @@ The main purpose of CXX-Qt is to expose Qt's extensions to the C++ language to C
   * [Supported types between Rust and C++](./types.md)
   * [Build Systems](./build_systems.md)
   * [Generated QObject](./generated_qobject.md)
-  * [Nesting Rust objects](./nested_objects.md)
-  * [Inheriting QObjects and overriding methods](./inheritance.md)

@@ -87,7 +87,7 @@ Use the CXX `include!` macro to include the appropriate C++ header for the base 
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_base_include}}
 ```
 
-For more information on inheritance and how to override methods see the [Inheritance & Overriding](../concepts/inheritance.md) page.
+For more information on inheritance and how to override methods see the [Inheritance & Overriding](../advanced/inheritance.md) page.
 
 [Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
