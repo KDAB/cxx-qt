@@ -220,7 +220,7 @@ impl PartialOrd for QString {
 
 impl Ord for QString {
     fn cmp(&self, other: &Self) -> Ordering {
-        0.cmp(&ffi::qstring_cmp(self, other))
+        ffi::qstring_cmp(self, other).cmp(&0)
     }
 }
 
@@ -291,7 +291,7 @@ impl QString {
     /// Lexically compares this string with the other string and
     /// returns if this string is less than, equal to, or greater than the other string.
     pub fn compare(&self, other: &QString, cs: ffi::CaseSensitivity) -> Ordering {
-        0.cmp(&self.compare_i32(other, cs))
+        self.compare_i32(other, cs).cmp(&0)
     }
 
     /// Returns the index position of the first occurrence of the string str in this string,
@@ -380,4 +380,33 @@ impl QString {
 unsafe impl ExternType for QString {
     type Id = type_id!("QString");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_ordering() {
+        let qstring_a = QString::from("a");
+        let qstring_b = QString::from("b");
+
+        assert!(qstring_a < qstring_b);
+        assert_eq!(qstring_a.cmp(&qstring_b), Ordering::Less);
+        assert_eq!(qstring_b.cmp(&qstring_a), Ordering::Greater);
+        assert_eq!(qstring_a.cmp(&qstring_a), Ordering::Equal);
+
+        assert_eq!(
+            qstring_a.compare(&qstring_b, crate::CaseSensitivity::CaseInsensitive),
+            Ordering::Less
+        );
+        assert_eq!(
+            qstring_b.compare(&qstring_a, crate::CaseSensitivity::CaseInsensitive),
+            Ordering::Greater
+        );
+        assert_eq!(
+            qstring_a.compare(&qstring_a, crate::CaseSensitivity::CaseInsensitive),
+            Ordering::Equal
+        );
+    }
 }

@@ -364,7 +364,7 @@ impl PartialOrd for QDateTime {
 
 impl Ord for QDateTime {
     fn cmp(&self, other: &Self) -> Ordering {
-        0.cmp(&ffi::qdatetime_cmp(self, other))
+        ffi::qdatetime_cmp(self, other).cmp(&0)
     }
 }
 
@@ -487,6 +487,30 @@ impl TryFrom<QDateTime> for time::PrimitiveDateTime {
 unsafe impl ExternType for QDateTime {
     type Id = type_id!("QDateTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_ordering() {
+        let qdatetime_a = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 1, 1, 1),
+            &ffi::QTimeZone::utc(),
+        );
+        let qdatetime_b = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 2, 2),
+            &QTime::new(2, 2, 2, 2),
+            &ffi::QTimeZone::utc(),
+        );
+
+        assert!(qdatetime_a < qdatetime_b);
+        assert_eq!(qdatetime_a.cmp(&qdatetime_b), Ordering::Less);
+        assert_eq!(qdatetime_b.cmp(&qdatetime_a), Ordering::Greater);
+        assert_eq!(qdatetime_a.cmp(&qdatetime_a), Ordering::Equal);
+    }
 }
 
 #[cfg(test)]
