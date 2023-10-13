@@ -13,7 +13,8 @@ In this guide we'll go through a minimal example that uses CXX-Qt to create your
 
 ### Prerequisites
 This guide won't be able to explain everything to you, but it will try its best to make sure everyone can follow along.
-However, a few things you should make sure you're familiar with before attempting to follow this guide, as it may be confusing otherwise.
+However, there are a few things you should be familiar with before reading this guide.
+It may be confusing otherwise!
 
 First of all, you should be familiar with Rust. There are many great resources for learning Rust, like [the book](https://doc.rust-lang.org/book/).
 

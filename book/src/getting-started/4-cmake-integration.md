@@ -36,7 +36,7 @@ That's the power of CXX-Qt.
 
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
-If you've generated your project with the `cargo new --lib` or `cargo init --lib folder` command, your `Cargo.toml` likely looks something like this:
+If you've generated your project with the `cargo new --lib` or `cargo init --lib folder` command, your `Cargo.toml` should look something like this:
 ```toml,ignore
 [package]
 name = "qml-minimal"
