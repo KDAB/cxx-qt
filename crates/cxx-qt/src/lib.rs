@@ -11,12 +11,12 @@
 
 #[doc(hidden)]
 pub mod signalhandler;
-mod cxxqtthread;
+mod threading;
 
 pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::qobject;
 
-pub use cxxqtthread::CxxQtThread;
+pub use threading::CxxQtThread;
 
 // Export static assertions that can then be used in cxx-qt-gen generation
 //
