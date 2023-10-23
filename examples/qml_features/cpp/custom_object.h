@@ -24,7 +24,7 @@ class CustomObject : public QObject
 
   Q_PROPERTY(int value MEMBER m_value)
 public:
-  CustomObject(QObject* parent = nullptr)
+  explicit CustomObject(QObject* parent = nullptr)
     : QObject(parent)
     , m_value(0)
   {
