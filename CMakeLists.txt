@@ -109,10 +109,22 @@ add_compile_definitions(
     QT_USE_QSTRINGBUILDER
 )
 
+# QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
+# uses the same installation of Qt as CMake does.
+if(NOT USE_QT5)
+    find_package(Qt6 COMPONENTS Core Gui Test)
+endif()
+if(NOT Qt6_FOUND)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
+endif()
+
+
 if(UNIX AND NOT APPLE)
-    add_compile_definitions(
-        QT_STRICT_ITERATORS
-    )
+    if (Qt5_FOUND)
+        add_compile_definitions(
+            QT_STRICT_ITERATORS
+        )
+    endif()
 endif()
 
 find_program(MEMORYCHECK_COMMAND valgrind)
@@ -134,14 +146,6 @@ function(add_valgrind_test NAME_WITH_PREFIX BINARY WORKING_DIRECTORY)
     )
 endfunction()
 
-# QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
-# uses the same installation of Qt as CMake does.
-if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Test)
-endif()
-if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
-endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 set(CARGO_ENV "QMAKE=set:${QMAKE}")
 set(RUNTIME_ENV "")
