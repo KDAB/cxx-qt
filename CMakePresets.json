@@ -1,0 +1,145 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "displayName": "base preset",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-${presetName}",
+            "hidden": true
+        },
+        {
+            "name": "base-qt6",
+            "displayName": "base preset",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-${presetName}",
+            "hidden": true
+        },	
+	{
+            "name": "dev-mold",
+            "displayName": "Build as debug + using mold linker",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+		"CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=mold",
+                "USE_QT5" : "ON"
+            },
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "dev",
+            "displayName": "Build as debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "USE_QT5" : "ON"
+            },
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "dev-qt6",
+            "displayName": "Build against qt6",
+            "binaryDir": "${sourceDir}/build-qt6",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "inherits": [
+                "base-qt6"
+            ]
+        },
+        {
+            "name": "release-qt6",
+            "displayName": "Build as release mode.",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+		"BUILD_TESTING": "OFF"
+            },
+            "inherits": [
+                "base-qt6"
+            ]
+        },
+        {
+            "name": "dev-mold-qt6",
+            "displayName": "Build as debug + using mold linker",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=mold"
+            },
+            "inherits": [
+                "base-qt6"
+            ]
+        },
+        {
+            "name": "dev-clang",
+            "displayName": "dev-clang",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "USE_QT5" : "ON"
+            },
+            "environment": {
+                "CXX": "clang++",
+                "CCACHE_DISABLE": "ON"
+            },
+            "inherits": [
+                "base"
+            ]
+        },
+        {
+            "name": "release",
+            "displayName": "Build as release mode.",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+		"BUILD_TESTING": "OFF",
+                "USE_QT5" : "ON"
+            },
+            "inherits": [
+                "base"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev"
+        },
+	{
+            "name": "dev-mold",
+            "configurePreset": "dev-mold"
+        },
+        {   
+            "name": "dev-mold-qt6",
+            "configurePreset": "dev-mold-qt6"
+        },
+        {
+            "name": "dev-qt6",
+            "configurePreset": "dev-qt6"
+        },
+        {       
+            "name": "release-qt6",
+            "configurePreset": "release-qt6"
+        },
+        {
+            "name": "dev-clang",
+            "configurePreset": "dev-clang"
+        },
+        {
+            "name": "release",
+            "configurePreset": "release"
+        }
+    ],
+    "testPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": false}
+    }
+  ]
+}
