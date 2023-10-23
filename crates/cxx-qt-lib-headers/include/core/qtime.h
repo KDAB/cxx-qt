@@ -11,7 +11,6 @@
 
 #include <QtCore/QString>
 #include <QtCore/QTime>
-#include <QtCore/Qt>
 
 namespace rust {
 namespace cxxqtlib1 {

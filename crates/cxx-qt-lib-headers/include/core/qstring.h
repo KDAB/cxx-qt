@@ -8,9 +8,7 @@
 #pragma once
 
 #include <QtCore/QByteArray>
-#include <QtCore/QString>
 #include <QtCore/QStringList>
-#include <QtCore/Qt>
 
 #include "rust/cxx.h"
 
