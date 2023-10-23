@@ -4,7 +4,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include <QtCore/QtGlobal>
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 

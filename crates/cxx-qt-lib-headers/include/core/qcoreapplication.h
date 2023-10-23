@@ -12,7 +12,6 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QCoreApplication>
-#include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QVector>
 
