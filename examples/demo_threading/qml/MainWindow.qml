@@ -368,7 +368,7 @@ Window {
 
     SideText {
         id: powerusageT
-        text: "Total used Power: <i>%1 kW</i> Average: <i>%2 kW</i>".arg((energyUsage.totalUse / 1000.0).toPrecision(3)).arg((energyUsage.averageUse / 1000.0).toPrecision(3))
+        text: qsTr("Total used Power: <i>%1 kW</i> Average: <i>%2 kW</i>").arg((energyUsage.totalUse / 1000.0).toPrecision(3)).arg((energyUsage.averageUse / 1000.0).toPrecision(3))
         color: "#a9deff"
         font.pixelSize: 16
         anchors.verticalCenter: wireless.verticalCenter
@@ -386,7 +386,7 @@ Window {
         y: 22
 
         SideText {
-            text: "nº Online Sensors: " + "<i><b>%1</i></b>".arg(energyUsage.sensors)
+            text: qsTr("nº Online Sensors: <i><b>%1</b></i>").arg(energyUsage.sensors)
             color: "#a9deff"
             font.pixelSize: 16
             anchors.verticalCenter: parent.verticalCenter
