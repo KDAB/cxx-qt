@@ -24,7 +24,7 @@ class Sensor : public QObject
   Q_PROPERTY(QString uuid READ uuid WRITE setUuid NOTIFY uuidChanged)
 
 public:
-  Sensor(QObject* parent = nullptr);
+  explicit Sensor(QObject* parent = nullptr);
 
   EnergyUsageProxyModel* model() const;
   bool online() const;
