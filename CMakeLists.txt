@@ -118,6 +118,9 @@ if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
 endif()
 
+if (NOT Qt5_FOUND)
+    add_definitions(-DQT_NO_CONTEXTLESS_CONNECT)
+endif()
 
 if(UNIX AND NOT APPLE)
     if (Qt5_FOUND)
