@@ -120,3 +120,5 @@ MyObject::MyObject(
 }
 
 } // namespace cxx_qt::my_object
+
+#include "moc_invokables.cpp"

@@ -84,3 +84,5 @@ MyObject::MyObject(QObject* parent)
 }
 
 } // namespace cxx_qt::my_object
+
+#include "moc_signals.cpp"
