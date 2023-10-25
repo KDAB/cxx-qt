@@ -48,7 +48,7 @@ pub enum QtBuildError {
         source: std::num::ParseIntError,
     },
     /// `QT_VERSION_MAJOR` environment variable was specified but the Qt version specified by `qmake -query QT_VERSION` did not match
-    #[error("qmake version ({qmake_version}) does not match version specified by QT_VERISON_MAJOR ({qt_version_major})")]
+    #[error("qmake version ({qmake_version}) does not match version specified by QT_VERSION_MAJOR ({qt_version_major})")]
     QtVersionMajorDoesNotMatch {
         qmake_version: u32,
         qt_version_major: u32,
@@ -290,7 +290,7 @@ impl QtBuild {
                             qt_version_major,
                         });
                     }
-                    eprintln!("Candidate qmake executable `{executable_name}` is for Qt{qmake_version} but QT_VERISON_MAJOR environment variable specified as {qt_version_major}. Trying next candidate executable name `{}`...", candidate_executable_names[index + 1]);
+                    eprintln!("Candidate qmake executable `{executable_name}` is for Qt{qmake_version} but QT_VERSION_MAJOR environment variable specified as {qt_version_major}. Trying next candidate executable name `{}`...", candidate_executable_names[index + 1]);
                     continue;
                 }
                 Err(QtBuildError::QtMissing) => continue,
