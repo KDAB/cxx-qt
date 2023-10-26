@@ -4,33 +4,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::rust::{fragment::RustFragmentPair, signals::generate_rust_free_signal},
+    generator::rust::{
+        fragment::{GeneratedRustFragment, RustFragmentPair},
+        signals::generate_rust_free_signal,
+    },
     parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
 };
 use quote::quote;
-use syn::{Ident, Item, Result};
+use syn::{Ident, Result};
 
-#[derive(Default)]
-pub struct GeneratedExternCxxQt {
-    /// Module for the CXX bridge
-    pub cxx_mod_contents: Vec<Item>,
-    /// Items for the CXX-Qt module
-    pub cxx_qt_mod_contents: Vec<Item>,
-}
-
-impl GeneratedExternCxxQt {
-    pub fn append(&mut self, other: &mut Self) {
-        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
-        self.cxx_qt_mod_contents
-            .append(&mut other.cxx_qt_mod_contents);
-    }
-
-    pub fn from(
+impl GeneratedRustFragment {
+    pub fn from_extern_cxx_qt(
         extern_cxxqt_block: &ParsedExternCxxQt,
         cxx_mappings: &ParsedCxxMappings,
         module_ident: &Ident,
     ) -> Result<Self> {
-        let mut generated = GeneratedExternCxxQt::default();
+        let mut generated = Self::default();
 
         // Add the pass through blocks
         let attrs = &extern_cxxqt_block.attrs;

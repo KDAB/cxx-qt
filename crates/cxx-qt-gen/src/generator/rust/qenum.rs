@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{generator::rust::qobject::GeneratedRustQObject, parser::qenum::ParsedQEnum};
+use crate::{generator::rust::fragment::GeneratedRustFragment, parser::qenum::ParsedQEnum};
 use quote::quote;
 use syn::{parse_quote, Item};
 
@@ -36,8 +36,8 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
         .collect()
 }
 
-pub fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustQObject {
-    GeneratedRustQObject {
+pub fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustFragment {
+    GeneratedRustFragment {
         cxx_mod_contents: generate_cxx_mod_contents(qenums),
         ..Default::default()
     }

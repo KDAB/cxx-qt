@@ -7,43 +7,33 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            constructor, cxxqttype, fragment::RustFragmentPair, inherit,
-            method::generate_rust_methods, property::generate_rust_properties,
-            signals::generate_rust_signals, threading,
+            constructor, cxxqttype,
+            fragment::{GeneratedRustFragment, RustFragmentPair},
+            inherit,
+            method::generate_rust_methods,
+            property::generate_rust_properties,
+            signals::generate_rust_signals,
+            threading,
         },
         utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
     parser::{mappings::ParsedCxxMappings, qobject::ParsedQObject},
 };
 use quote::quote;
-use syn::{Ident, Item, Result};
+use syn::{Ident, Result};
 
 use super::qenum;
 
-#[derive(Default)]
-pub struct GeneratedRustQObject {
-    /// Module for the CXX bridge
-    pub cxx_mod_contents: Vec<Item>,
-    /// Items for the CXX-Qt module
-    pub cxx_qt_mod_contents: Vec<Item>,
-}
-
-impl GeneratedRustQObject {
-    pub fn append(&mut self, other: &mut Self) {
-        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
-        self.cxx_qt_mod_contents
-            .append(&mut other.cxx_qt_mod_contents);
-    }
-
-    pub fn from(
+impl GeneratedRustFragment {
+    pub fn from_qobject(
         qobject: &ParsedQObject,
         cxx_mappings: &ParsedCxxMappings,
         module_ident: &Ident,
-    ) -> Result<GeneratedRustQObject> {
+    ) -> Result<Self> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
-        let mut generated = GeneratedRustQObject::default();
+        let mut generated = Self::default();
 
         generated.append(&mut generate_qobject_definitions(
             &qobject_idents,
@@ -133,8 +123,8 @@ impl GeneratedRustQObject {
 fn generate_qobject_definitions(
     qobject_idents: &QObjectName,
     namespace: &str,
-) -> Result<GeneratedRustQObject> {
-    let mut generated = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
@@ -198,7 +188,7 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let rust = GeneratedRustQObject::from(
+        let rust = GeneratedRustFragment::from_qobject(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
             &ParsedCxxMappings::default(),
             &format_ident!("ffi"),
