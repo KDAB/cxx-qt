@@ -88,9 +88,13 @@ add_test(
     COMMAND ${TEST_CMD}
 )
 
-add_valgrind_test(
-    ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
-)
+if (COMMAND add_valgrind_test)
+    add_valgrind_test(
+      ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
+    )
+else()
+    MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+endif()
 
 # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
 set_tests_properties(
