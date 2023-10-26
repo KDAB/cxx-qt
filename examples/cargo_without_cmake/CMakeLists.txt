@@ -12,7 +12,7 @@
 # from any directory in this repository to build this crate without using CMake at all.
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
