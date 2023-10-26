@@ -9,10 +9,7 @@ use crate::{
             namespace::namespace_externcxxqt_with_qobject_namespace, qobject::QObjectName,
             signals::QSignalName,
         },
-        rust::{
-            externcxxqt::GeneratedExternCxxQt, fragment::RustFragmentPair,
-            qobject::GeneratedRustQObject,
-        },
+        rust::fragment::{GeneratedRustFragment, RustFragmentPair},
         utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
     parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
@@ -24,7 +21,7 @@ pub fn generate_rust_free_signal(
     signal: &ParsedSignal,
     cxx_mappings: &ParsedCxxMappings,
     module_ident: &Ident,
-) -> Result<GeneratedExternCxxQt> {
+) -> Result<GeneratedRustFragment> {
     let qobject_name = &signal.qobject_ident;
     let idents = QSignalName::from(signal);
     let signal_name_cpp = idents.name.cpp;
@@ -135,7 +132,7 @@ pub fn generate_rust_free_signal(
         ],
     };
 
-    let mut generated = GeneratedExternCxxQt::default();
+    let mut generated = GeneratedRustFragment::default();
     generated
         .cxx_mod_contents
         .append(&mut fragment.cxx_bridge_as_items()?);
@@ -150,8 +147,8 @@ pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-) -> Result<GeneratedRustQObject> {
-    let mut generated = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut generated = GeneratedRustFragment::default();
     let qobject_name = &qobject_idents.cpp_class.rust;
 
     // Create the methods for the other signals

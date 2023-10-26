@@ -10,7 +10,7 @@ use crate::generator::{
         namespace::{namespace_combine_ident, NamespaceName},
         qobject::QObjectName,
     },
-    rust::qobject::GeneratedRustQObject,
+    rust::fragment::GeneratedRustFragment,
     utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
 };
 use quote::quote;
@@ -23,8 +23,8 @@ pub fn generate(
     namespace_ident: &NamespaceName,
     qualified_mappings: &BTreeMap<Ident, Path>,
     module_ident: &Ident,
-) -> Result<GeneratedRustQObject> {
-    let mut blocks = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut blocks = GeneratedRustFragment::default();
 
     let cpp_struct_ident = &qobject_ident.cpp_class.rust;
     let cxx_qt_thread_ident = &qobject_ident.cxx_qt_thread_class;

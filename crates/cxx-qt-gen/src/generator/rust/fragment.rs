@@ -6,6 +6,22 @@
 use proc_macro2::TokenStream;
 use syn::{Item, Result};
 
+#[derive(Default)]
+pub struct GeneratedRustFragment {
+    /// Module for the CXX bridge
+    pub cxx_mod_contents: Vec<Item>,
+    /// Items for the CXX-Qt module
+    pub cxx_qt_mod_contents: Vec<Item>,
+}
+
+impl GeneratedRustFragment {
+    pub fn append(&mut self, other: &mut Self) {
+        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
+        self.cxx_qt_mod_contents
+            .append(&mut other.cxx_qt_mod_contents);
+    }
+}
+
 /// A generic Rust CXX bridge definition and the corresponding implementation
 pub struct RustFragmentPair {
     pub cxx_bridge: Vec<TokenStream>,

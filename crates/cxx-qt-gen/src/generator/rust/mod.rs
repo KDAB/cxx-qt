@@ -15,7 +15,7 @@ pub mod qobject;
 pub mod signals;
 pub mod threading;
 
-use crate::generator::rust::{externcxxqt::GeneratedExternCxxQt, qobject::GeneratedRustQObject};
+use crate::generator::rust::fragment::GeneratedRustFragment;
 use crate::parser::Parser;
 use quote::quote;
 use syn::{Item, ItemMod, Result};
@@ -28,14 +28,42 @@ pub struct GeneratedRustBlocks {
     pub cxx_mod_contents: Vec<Item>,
     /// Ident of the namespace of the QObject
     pub namespace: String,
-    /// Generated QObject blocks
-    pub qobjects: Vec<GeneratedRustQObject>,
-    /// Generated extern "C++Qt" blocks
-    pub extern_cxx_qt: Vec<GeneratedExternCxxQt>,
+    /// Rust fragments
+    pub fragments: Vec<GeneratedRustFragment>,
 }
 
 impl GeneratedRustBlocks {
     pub fn from(parser: &Parser) -> Result<GeneratedRustBlocks> {
+        let mut fragments = vec![];
+        fragments.extend(
+            parser
+                .cxx_qt_data
+                .qobjects
+                .values()
+                .map(|qobject| {
+                    GeneratedRustFragment::from_qobject(
+                        qobject,
+                        &parser.cxx_qt_data.cxx_mappings,
+                        &parser.passthrough_module.ident,
+                    )
+                })
+                .collect::<Result<Vec<GeneratedRustFragment>>>()?,
+        );
+        fragments.extend(
+            parser
+                .cxx_qt_data
+                .extern_cxxqt_blocks
+                .iter()
+                .map(|extern_cxx_block| {
+                    GeneratedRustFragment::from_extern_cxx_qt(
+                        extern_cxx_block,
+                        &parser.cxx_qt_data.cxx_mappings,
+                        &parser.passthrough_module.ident,
+                    )
+                })
+                .collect::<Result<Vec<GeneratedRustFragment>>>()?,
+        );
+
         let mut cxx_mod_contents = qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums);
         cxx_mod_contents.push(generate_include(parser)?);
 
@@ -43,30 +71,7 @@ impl GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
             cxx_mod_contents,
             namespace: parser.cxx_qt_data.namespace.clone(),
-            qobjects: parser
-                .cxx_qt_data
-                .qobjects
-                .values()
-                .map(|qobject| {
-                    GeneratedRustQObject::from(
-                        qobject,
-                        &parser.cxx_qt_data.cxx_mappings,
-                        &parser.passthrough_module.ident,
-                    )
-                })
-                .collect::<Result<Vec<GeneratedRustQObject>>>()?,
-            extern_cxx_qt: parser
-                .cxx_qt_data
-                .extern_cxxqt_blocks
-                .iter()
-                .map(|extern_cxx_block| {
-                    GeneratedExternCxxQt::from(
-                        extern_cxx_block,
-                        &parser.cxx_qt_data.cxx_mappings,
-                        &parser.passthrough_module.ident,
-                    )
-                })
-                .collect::<Result<Vec<GeneratedExternCxxQt>>>()?,
+            fragments,
         })
     }
 }
@@ -115,7 +120,7 @@ mod tests {
             },
         );
         assert_eq!(rust.namespace, "");
-        assert_eq!(rust.qobjects.len(), 1);
+        assert_eq!(rust.fragments.len(), 1);
     }
 
     #[test]
@@ -135,7 +140,7 @@ mod tests {
         assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_eq!(rust.namespace, "cxx_qt");
-        assert_eq!(rust.qobjects.len(), 1);
+        assert_eq!(rust.fragments.len(), 1);
     }
 
     #[test]
@@ -163,6 +168,6 @@ mod tests {
             },
         );
         assert_eq!(rust.namespace, "");
-        assert_eq!(rust.qobjects.len(), 1);
+        assert_eq!(rust.fragments.len(), 1);
     }
 }

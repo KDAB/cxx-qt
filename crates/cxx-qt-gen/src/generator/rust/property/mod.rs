@@ -10,7 +10,7 @@ pub mod signal;
 use crate::{
     generator::{
         naming::{property::QPropertyName, qobject::QObjectName},
-        rust::qobject::GeneratedRustQObject,
+        rust::fragment::GeneratedRustFragment,
     },
     parser::{mappings::ParsedCxxMappings, property::ParsedQProperty},
 };
@@ -22,8 +22,8 @@ pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
     cxx_mappings: &ParsedCxxMappings,
-) -> Result<GeneratedRustQObject> {
-    let mut generated = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut generated = GeneratedRustFragment::default();
     let mut signals = vec![];
 
     for property in properties {
