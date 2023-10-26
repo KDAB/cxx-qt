@@ -124,7 +124,6 @@ namespace rust {
 
 template<typename T>
 struct IsRelocatable<::rust::cxxqtlib1::CxxQtThread<T>> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
