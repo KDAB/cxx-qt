@@ -12,7 +12,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
-    let mut cxx_qt_mod_contents = generated.cxx_qt_mod_contents.clone();
+    let mut cxx_qt_mod_contents = vec![];
     let namespace = &generated.namespace;
 
     // Add common includes for all objects
@@ -87,9 +87,6 @@ mod tests {
                     include!("myobject.cxxqt.h");
                 }
             }],
-            cxx_qt_mod_contents: vec![parse_quote! {
-                use module::Struct;
-            }],
             namespace: "cxx_qt::my_object".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![GeneratedRustQObject {
@@ -132,9 +129,6 @@ mod tests {
                 unsafe extern "C++" {
                     include!("multiobject.cxxqt.h");
                 }
-            }],
-            cxx_qt_mod_contents: vec![parse_quote! {
-                use module::Struct;
             }],
             namespace: "cxx_qt".to_owned(),
             extern_cxx_qt: vec![],
@@ -231,8 +225,6 @@ mod tests {
                 }
             }
 
-            use module::Struct;
-
             #[derive(Default)]
             pub struct MyObjectRust;
 
@@ -287,8 +279,6 @@ mod tests {
                     type SecondObjectRust;
                 }
             }
-
-            use module::Struct;
 
             #[derive(Default)]
             pub struct FirstObjectRust;

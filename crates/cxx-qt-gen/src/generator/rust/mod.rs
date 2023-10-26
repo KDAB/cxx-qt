@@ -26,8 +26,6 @@ pub struct GeneratedRustBlocks {
     pub cxx_mod: ItemMod,
     /// Any global extra items for the CXX bridge
     pub cxx_mod_contents: Vec<Item>,
-    /// Any global passthrough items for the implementation
-    pub cxx_qt_mod_contents: Vec<Item>,
     /// Ident of the namespace of the QObject
     pub namespace: String,
     /// Generated QObject blocks
@@ -44,7 +42,6 @@ impl GeneratedRustBlocks {
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
             cxx_mod_contents,
-            cxx_qt_mod_contents: vec![],
             namespace: parser.cxx_qt_data.namespace.clone(),
             qobjects: parser
                 .cxx_qt_data
@@ -117,7 +114,6 @@ mod tests {
                 }
             },
         );
-        assert_eq!(rust.cxx_qt_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.qobjects.len(), 1);
     }
@@ -138,7 +134,6 @@ mod tests {
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
         assert_eq!(rust.cxx_mod_contents.len(), 1);
-        assert_eq!(rust.cxx_qt_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.qobjects.len(), 1);
     }
@@ -167,7 +162,6 @@ mod tests {
                 }
             },
         );
-        assert_eq!(rust.cxx_qt_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.qobjects.len(), 1);
     }
