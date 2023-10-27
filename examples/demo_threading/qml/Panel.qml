@@ -47,7 +47,7 @@ Item {
             font.pixelSize: 45
             color: "#a9deff"
             font.weight: Font.Light
-            text: "CXX-Qt - Beach House Demo"
+            text: qsTr("CXX-Qt - Beach House Demo")
             x: kdabL.x
             y: 20
         }
@@ -68,9 +68,9 @@ Item {
             font.weight: Font.Light
             lineHeight: 0.9
             color: "#a9deff"
-            text: "<p><b>CXX-Qt - Safe Rust bindings for Qt</b></p>
+            text: qsTr("<p><b>CXX-Qt - Safe Rust bindings for Qt</b></p>
             <p>KDAB is working to bridge between Rust and Qt. CXX-Qt allows you to define Qt objects from Rust, so that the business logic can be written in Rust while Qt handles the frontend.</p>
-            <p>In this beach house demo, Rust provides a threaded network server for sensors, accumulates data in a background thread, and safely exposes summary and sensor data to QML.</p>"
+            <p>In this beach house demo, Rust provides a threaded network server for sensors, accumulates data in a background thread, and safely exposes summary and sensor data to QML.</p>")
             anchors.left: kdabL.right
             anchors.leftMargin: 25
             y: kdabL.y - 10

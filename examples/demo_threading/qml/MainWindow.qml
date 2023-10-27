@@ -220,22 +220,22 @@ Window {
         spacing: 4
 
         SideText {
-            text: "Beach access"
+            text: qsTr("Beach access")
             scale: currentLevel === 0 ? 1.3 : 1
         }
 
         SideText  {
-            text: "First floor"
+            text: qsTr("First floor")
             scale: currentLevel === 1 ? 1.3 : 1
         }
 
         SideText  {
-            text: "Second floor"
+            text: qsTr("Second floor")
             scale: currentLevel === 2 ? 1.3 : 1
         }
 
         SideText  {
-            text: "Roof and Road"
+            text: qsTr("Roof and Road")
             scale: currentLevel === 3 ? 1.3 : 1
         }
     }
