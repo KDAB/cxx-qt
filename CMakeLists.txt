@@ -143,10 +143,14 @@ enable_testing()
 
 # Create helper method which adds a valgrind test with the given binary
 function(add_valgrind_test NAME_WITH_PREFIX BINARY WORKING_DIRECTORY)
-    add_test(NAME ${NAME_WITH_PREFIX}_valgrind
-        COMMAND ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} --suppressions=${MEMORYCHECK_SUPPRESSIONS_FILE} --gen-suppressions=all ${BINARY}
-        WORKING_DIRECTORY "${WORKING_DIRECTORY}"
-    )
+    if("${MEMORYCHECK_COMMAND}" STREQUAL "MEMORYCHECK_COMMAND-NOTFOUND")
+       MESSAGE(STATUS "valgrind not found. Please install it")
+    else()
+       add_test(NAME ${NAME_WITH_PREFIX}_valgrind
+           COMMAND ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} --suppressions=${MEMORYCHECK_SUPPRESSIONS_FILE} --gen-suppressions=all ${BINARY}
+           WORKING_DIRECTORY "${WORKING_DIRECTORY}"
+       )
+    endif()
 endfunction()
 
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
