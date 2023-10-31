@@ -45,9 +45,11 @@ impl ParsedExternCxxQt {
                     // Remove the signals attribute
                     foreign_fn.attrs.remove(index);
 
-                    extern_cxx_block
-                        .signals
-                        .push(ParsedSignal::parse(foreign_fn, safe_call)?);
+                    let mut signal = ParsedSignal::parse(foreign_fn, safe_call)?;
+                    // extern "C++Qt" signals are always inherit = true
+                    // as they always exist on an existing QObject
+                    signal.inherit = true;
+                    extern_cxx_block.signals.push(signal);
                     continue;
                 }
             }
