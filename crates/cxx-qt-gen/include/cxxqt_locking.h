@@ -32,7 +32,7 @@ protected:
 
   // Friend MaybeLockGuard so that it can use unsafeRustLock()
   template<typename T, typename D>
-  friend class MaybeLockGuard;
+  friend struct MaybeLockGuard;
 };
 
 }
