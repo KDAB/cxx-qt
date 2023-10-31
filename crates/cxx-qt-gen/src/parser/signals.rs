@@ -13,6 +13,7 @@ use crate::{generator::naming::CombinedIdent, syntax::types};
 use quote::format_ident;
 use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result, Visibility};
 
+#[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
     /// The original [syn::ForeignItemFn] of the signal declaration
