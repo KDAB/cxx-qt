@@ -5,10 +5,14 @@ SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-# `qobject::T` - The generated QObject
+# The generated QObject
+
+<!--
+TODO: this page needs rewriting
+-->
 
 One of the key features of CXX-Qt is the ability to create your own QObjects from Rust.
-This is what the [`#[qobject]` macro](./qobject_struct.md) is for.
+This is what the [`#[qobject]` macro](../bridge/extern_rustqt.md#qobjects) is for.
 This page serves to document the details of what is generated and how to interact with the generated QObject from Rust.
 
 The `#[qobject]` macro generates a QObject for a given Rust struct.
@@ -24,9 +28,12 @@ Therefore implementing `Default` on the Rust struct is currently mandatory.
 The C++ object will defer any property state to the Rust struct, and is therefore only a thin wrapper.
 The data for `Q_PROPERTY`s is stored in the Rust struct. The property getters and setters modify the Rust struct internally.
 
+<!--
 Additionally, CXX-Qt generates methods on this struct that help you interact with Qt functionality.
 This includes access to the [`CxxQtThread` struct](./cxxqtthread.md), as well as a function to emit signals.
+-->
 
+<!--
 ## Referencing another QObject
 
 The `qobject::T` type is defined both within the CXX-Qt bridge, as well as the surrounding module.
@@ -96,3 +103,4 @@ This allows you to directly manipulate the internal Rust struct without having t
 You may modify the struct and then manually call the required changed signals.
 
 For normal access, prefer using the generated accessor methods for [properties](./qobject_struct.md#properties).
+-->

@@ -7,12 +7,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Inheritance
 
+<!--
+TODO: check and rewrite
+-->
+
 Some Qt APIs require you to override certain methods from an abstract base class, for example [QAbstractItemModel](https://doc.qt.io/qt-6/qabstractitemmodel.html).
 
 To support creating such subclasses directly from within Rust, CXX-Qt provides you with multiple helpers.
 
 Some superclasses may require special parameters for construction.
-This can be achieved by using a [custom constructor](./constructor.md).
+This can be achieved by using a [custom constructor](../traits/constructor.md).
 
 ## Accessing base class methods
 To access the methods of a base class in Rust, use the `#[inherit]` macro.

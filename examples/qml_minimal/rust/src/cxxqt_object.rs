@@ -23,6 +23,9 @@ pub mod qobject {
 
     // ANCHOR: book_rustobj_struct_signature
     unsafe extern "RustQt" {
+        // The QObject definition
+        // We tell CXX-Qt that we want a QObject class with the name MyObject
+        // based on the Rust struct MyObjectRust.
         #[qobject]
         #[qml_element]
         #[qproperty(i32, number)]
@@ -33,6 +36,7 @@ pub mod qobject {
 
     // ANCHOR: book_rustobj_invokable_signature
     unsafe extern "RustQt" {
+        // Declare the invokable methods we want to expose on the QObject
         #[qinvokable]
         fn increment_number(self: Pin<&mut MyObject>);
 
@@ -42,33 +46,25 @@ pub mod qobject {
     // ANCHOR_END: book_rustobj_invokable_signature
 }
 
+// ANCHOR: book_use
 use core::pin::Pin;
 use cxx_qt_lib::QString;
+// ANCHOR_END: book_use
 
 /// The Rust struct for the QObject
 // ANCHOR: book_rustobj_struct
+#[derive(Default)]
 pub struct MyObjectRust {
     number: i32,
     string: QString,
 }
 // ANCHOR_END: book_rustobj_struct
 
-// ANCHOR: book_rustobj_default
-impl Default for MyObjectRust {
-    fn default() -> Self {
-        Self {
-            number: 0,
-            string: QString::from(""),
-        }
-    }
-}
-// ANCHOR_END: book_rustobj_default
-
 // ANCHOR: book_rustobj_invokable_impl
 impl qobject::MyObject {
     /// Increment the number Q_PROPERTY
     pub fn increment_number(self: Pin<&mut Self>) {
-        let previous = *self.as_ref().number();
+        let previous = *self.number();
         self.set_number(previous + 1);
     }
 

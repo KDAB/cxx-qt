@@ -26,7 +26,9 @@ pub mod qobject {
         fn increment(self: Pin<&mut RustLockingDisabled>);
     }
 
+    // ANCHOR: book_disable_locking
     unsafe impl !cxx_qt::Locking for RustLockingDisabled {}
+    // ANCHOR_END: book_disable_locking
 }
 
 use core::pin::Pin;

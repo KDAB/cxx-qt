@@ -21,9 +21,12 @@ pub mod qobject {
         type RustInvokables = super::RustInvokablesRust;
     }
 
+    // ANCHOR: book_qnamespace
     #[qml_element]
     qnamespace!("Colors");
+    // ANCHOR_END: book_qnamespace
 
+    // ANCHOR: book_namespaced_qenum
     #[qenum]
     #[namespace = "Colors"]
     /// An enum of colors
@@ -35,6 +38,7 @@ pub mod qobject {
         /// Blue
         Blue,
     }
+    // ANCHOR_END: book_namespaced_qenum
 
     // ANCHOR: book_invokable_signature
     unsafe extern "RustQt" {
@@ -53,11 +57,15 @@ pub mod qobject {
         /// Mutable invokable method with no parameters that resets the color
         #[qinvokable]
         fn reset(self: Pin<&mut RustInvokables>);
+    }
+    // ANCHOR_END: book_invokable_signature
 
+    // ANCHOR: book_cpp_method_signature
+    unsafe extern "RustQt" {
         /// C++ only method which returns the red value
         fn red_value(self: &RustInvokables) -> f32;
     }
-    // ANCHOR_END: book_invokable_signature
+    // ANCHOR_END: book_cpp_method_signature
 }
 
 use core::pin::Pin;
@@ -109,12 +117,19 @@ impl qobject::RustInvokables {
     pub fn reset(self: Pin<&mut Self>) {
         self.store_helper(0.0, 0.4667, 0.7843);
     }
+}
+// ANCHOR_END: book_invokable_impl
 
+// ANCHOR: book_cpp_method_impl
+impl qobject::RustInvokables {
     /// C++ only method which returns the red value
     pub fn red_value(&self) -> f32 {
         self.red
     }
+}
+// ANCHOR_END: book_cpp_method_impl
 
+impl qobject::RustInvokables {
     /// Mutable C++ context method that helps to store the color
     fn store_helper(mut self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
         let mut rust_mut = self.as_mut().rust_mut();
@@ -123,7 +138,6 @@ impl qobject::RustInvokables {
         rust_mut.blue = blue;
     }
 }
-// ANCHOR_END: book_invokable_impl
 
 impl RustInvokablesRust {
     /// Immutable Rust context method that returns the QColor

@@ -7,6 +7,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Nested Objects
 
+<!--
+TODO: check and rewrite
+-->
+
 Rust Qt objects can be nested as properties or parameters of each other.
 
 A nested object is referred to by using a pointer to its QObject representation.

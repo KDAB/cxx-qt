@@ -78,6 +78,7 @@ Page {
         }
     }
 
+    // ANCHOR: book_qenum_access
     BusyIndicator {
         anchors {
             right: scrollView.right
@@ -86,4 +87,5 @@ Page {
         }
         running: customBaseClass.state === CustomBaseClass.Running
     }
+    // ANCHOR_END: book_qenum_access
 }

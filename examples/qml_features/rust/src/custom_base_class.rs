@@ -11,9 +11,11 @@
 pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
-        include!(< QAbstractListModel >);
-        // ANCHOR_END: book_base_include
+        include!(< QtCore/QAbstractListModel >);
+    }
+    // ANCHOR_END: book_base_include
 
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");
         /// QHash<i32, QByteArray> from cxx_qt_lib
         type QHash_i32_QByteArray = cxx_qt_lib::QHash<cxx_qt_lib::QHashPair_i32_QByteArray>;
@@ -40,6 +42,7 @@ pub mod qobject {
         Value,
     }
 
+    // ANCHOR: book_qenum_in_qobject
     #[qenum(CustomBaseClass)]
     /// State of the CustomBaseClass list model
     enum State {
@@ -48,6 +51,7 @@ pub mod qobject {
         /// No items are being added in the background
         Idle,
     }
+    // ANCHOR_END: book_qenum_in_qobject
 
     // ANCHOR: book_inherit_qalm
     // ANCHOR: book_qobject_base
