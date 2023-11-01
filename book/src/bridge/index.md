@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 - [extern "C++Qt"](./extern_cppqt.md) - binding Qt features and types to Rust, such as QObject, Q_SIGNAL etc
 - [Shared types](./shared_types.md) - shared enums between Rust and Qt, such as Q_ENUM, Q_ENUM_NS etc
 - [Attributes](./attributes.md) - working with namespaces, giving functions different names
+- [Traits](./traits.md) - traits related to a CXX-Qt QObject
 
 The `#[cxx_qt::bridge]` macro functions very similarly to [`#[cxx::bridge]`](https://docs.rs/cxx/latest/cxx/attr.bridge.html). This macro needs to be written above a Rust module definition.
 

@@ -94,7 +94,7 @@ For more information on inheritance and how to override methods see the [Inherit
 
 ### Traits
 
-The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`. Or the [`Contructor`](../traits/constructor.md) trait needs to be implemented for the type.
+The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`. Or the [`cxx_qt::Constructor`](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) trait needs to be implemented for the type.
 
 <!--
 TODO: do these have their own page?
@@ -247,7 +247,7 @@ Note that these are defined on the generated QObject [`qobject::T`](../concepts/
 
 The function will immediately emit the signal.
 Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
-To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](../traits/threading.md).
+To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](https://docs.rs/cxx-qt/latest/cxx_qt/struct.CxxQtThread.html).
 
 ### Inheritance
 

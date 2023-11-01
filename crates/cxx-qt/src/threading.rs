@@ -12,6 +12,12 @@ use crate::Threading;
 ///
 /// This allows for queueing closures onto the Qt event loop from a background thread
 /// as [CxxQtThread] implements [Send].
+///
+/// When the Rust thread needs to update a value in the QObject it can then queue a closure to the thread.
+/// This closure will be executed on the thread the QObject lives in while holding a lock on the Rust object.
+/// Updating the QObject is then thread-safe.
+///
+/// See the [Threading] example for more information.
 #[repr(C)]
 pub struct CxxQtThread<T>
 where
@@ -58,6 +64,9 @@ where
     T: Threading,
 {
     /// Queue the given closure onto the Qt event loop for this QObject
+    ///
+    /// The first argument of the closure is a pinned mutable reference to the QObject.
+    /// With this parameter, you can then update the QObject to reflect any state changes that have occured in the background thread.
     pub fn queue<F>(&self, f: F) -> Result<(), cxx::Exception>
     where
         F: FnOnce(Pin<&mut T>),
