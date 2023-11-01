@@ -15,7 +15,7 @@ We acknowledge that Qt code and Rust code have different idioms so cannot be dir
 
 Instead of one-to-one bindings we use [CXX](https://cxx.rs/) to [bridge](./bridge/index.md) between, this allows for normal Qt code and normal Rust code.
 
-We feel this is more powerful than typical bindings as this allows us to provide a safe API and safe [multi-threading](./traits/threading.md) between Qt and Rust.
+We feel this is more powerful than typical bindings as this allows us to provide a safe API and safe multi-threading between Qt and Rust.
 
 To aid integration of Qt and Rust code we provide common [Qt types](./concepts/types.md) for Rust which can pass across the bridge and provide ways to express common Qt idioms.
 

@@ -74,7 +74,7 @@ In our case the new class will be named `MyObject` and will be backed by a Rust 
 The Rust struct must be defined **outside** the bridge module and is therefore referred to using `super::`.
 This just needs to be a normal Rust struct and can contain any kind of field, even Rust-only types that are not compatible with CXX.
 
-Unless we want to use CXX-Qt's [Constructor feature](../traits/constructor.md) we just need to ensure that this struct implements Rusts `Default` trait
+Unless we want to use CXX-Qt's [Constructor feature](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) we just need to ensure that this struct implements Rusts `Default` trait
 In this case we just use `#[derive(Default)]` on the struct.
 
 ```rust,ignore
