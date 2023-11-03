@@ -49,6 +49,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qmodelindex_to_qstring"]
         fn toQString(value: &QModelIndex) -> QString;
+
+        #[doc(hidden)]
+        #[rust_name = "qmodelindex_internal_id"]
+        fn qmodelindexInternalId(index: &QModelIndex) -> usize;
     }
 }
 
@@ -60,6 +64,12 @@ pub struct QModelIndex {
     _c: MaybeUninit<i32>,
     _i: MaybeUninit<usize>,
     _m: MaybeUninit<usize>,
+}
+
+impl QModelIndex {
+    pub fn internal_id(&self) -> usize {
+        ffi::qmodelindex_internal_id(self)
+    }
 }
 
 impl Default for QModelIndex {
