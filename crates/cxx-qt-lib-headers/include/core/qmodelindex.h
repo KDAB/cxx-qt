@@ -6,4 +6,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cinttypes>
+
 #include <QtCore/QModelIndex>
+
+namespace rust {
+namespace cxxqtlib1 {
+
+::std::size_t
+qmodelindexInternalId(const QModelIndex& index);
+
+}
+}
