@@ -22,7 +22,8 @@ namespace rust {
 namespace cxxqtlib1 {
 
 ::std::size_t
-qmodelindexInternalId(const QModelIndex& index) {
+qmodelindexInternalId(const QModelIndex& index)
+{
   return index.internalId();
 }
 
