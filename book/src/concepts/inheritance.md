@@ -41,6 +41,8 @@ Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `se
 The declared methods will be case-converted as in other CXX-Qt APIs.
 To explicitly declare the C++ method name, use the `#[cxx_name = "myFunctionName"]` attribute.
 
+> `#[inherit]` can also be used on signals that exist on the base class in an [`extern RustQt` block](../bridge/extern_rustqt.md#signals)
+
 ## Overriding base class methods
 
 CXX-Qt allows invokables to be generated with the C++ modifiers necessary to implement inheritance.
