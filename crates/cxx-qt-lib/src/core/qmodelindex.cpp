@@ -24,7 +24,8 @@ namespace cxxqtlib1 {
 ::std::size_t
 qmodelindexInternalId(const QModelIndex& index)
 {
-  return index.internalId();
+  // TODO: need to add support for quintptr
+  return static_cast<::std::size_t>(index.internalId());
 }
 
 }

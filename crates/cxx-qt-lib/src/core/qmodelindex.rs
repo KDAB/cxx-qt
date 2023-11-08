@@ -67,6 +67,9 @@ pub struct QModelIndex {
 }
 
 impl QModelIndex {
+    /// Returns a `usize` used by the model to associate the index with the internal data structure.
+    //
+    // TODO: need to add support for quintptr
     pub fn internal_id(&self) -> usize {
         ffi::qmodelindex_internal_id(self)
     }
