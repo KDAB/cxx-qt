@@ -44,6 +44,7 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         #[qobject]
+        #[qml_element]
         #[base = "QQuickPaintedItem"]
         #[qproperty(QColor, color)]
         type CustomParentClass = super::CustomParentClassRust;
