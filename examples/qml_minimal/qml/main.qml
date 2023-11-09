@@ -24,7 +24,7 @@ Window {
     MyObject {
         id: myObject
         number: 1
-        string: "My String with my number: " + myObject.number
+        string: qsTr("My String with my number: %1").arg(myObject.number)
     }
 
     Column {
@@ -33,21 +33,21 @@ Window {
         spacing: 10
 
         Label {
-            text: "Number: " + myObject.number
+            text: qsTr("Number: %1").arg(myObject.number)
         }
 
         Label {
-            text: "String: " + myObject.string
+            text: qsTr("String: %1").arg(myObject.string)
         }
 
         Button {
-            text: "Increment Number"
+            text: qsTr("Increment Number")
 
             onClicked: myObject.incrementNumber()
         }
 
         Button {
-            text: "Say Hi!"
+            text: qsTr("Say Hi!")
 
             onClicked: myObject.sayHi(myObject.string, myObject.number)
         }
