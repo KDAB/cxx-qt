@@ -148,6 +148,7 @@ pub struct QtBuild {
     qmlcachegen_executable: Option<String>,
     rcc_executable: Option<String>,
     qt_modules: Vec<String>,
+    has_framework_libs: bool,
 }
 
 impl QtBuild {
@@ -239,6 +240,22 @@ impl QtBuild {
             }
         }
 
+        fn determine_if_has_framework_libs(qmake_executable: &String) -> bool {
+            let lib_path = QtBuild::static_qmake_query(qmake_executable, "QT_INSTALL_LIBS");
+            let target = env::var("TARGET");
+
+            match &target {
+                Ok(target) => {
+                    if target.contains("apple") {
+                        Path::new(&format!("{lib_path}/QtCore.framework")).exists()
+                    } else {
+                        false
+                    }
+                }
+                Err(_) => false,
+            }
+        }
+
         if let Ok(qmake_env_var) = env::var("QMAKE") {
             match verify_candidate(qmake_env_var.trim()) {
                 Ok((executable_name, version)) => {
@@ -250,6 +267,9 @@ impl QtBuild {
                         rcc_executable: None,
                         version,
                         qt_modules,
+                        has_framework_libs: determine_if_has_framework_libs(
+                            &executable_name.to_string(),
+                        ),
                     });
                 }
                 Err(e) => {
@@ -274,6 +294,9 @@ impl QtBuild {
                         rcc_executable: None,
                         version,
                         qt_modules,
+                        has_framework_libs: determine_if_has_framework_libs(
+                            &executable_name.to_string(),
+                        ),
                     });
                 }
                 // If QT_VERSION_MAJOR is specified, it is expected that one of the versioned
@@ -303,8 +326,12 @@ impl QtBuild {
 
     /// Get the output of running `qmake -query var_name`
     pub fn qmake_query(&self, var_name: &str) -> String {
+        QtBuild::static_qmake_query(&self.qmake_executable, var_name)
+    }
+
+    fn static_qmake_query(qmake_executable: &String, var_name: &str) -> String {
         std::str::from_utf8(
-            &Command::new(&self.qmake_executable)
+            &Command::new(qmake_executable)
                 .args(["-query", var_name])
                 .output()
                 .unwrap()
@@ -328,6 +355,9 @@ impl QtBuild {
 
         match std::fs::read_to_string(prl_path) {
             Ok(prl) => {
+                if self.has_framework_libs {
+                    builder.flag(&format!("-F{}", lib_path));
+                }
                 for line in prl.lines() {
                     if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
                         parse_cflags::parse_libs_cflags(
@@ -378,10 +408,15 @@ impl QtBuild {
             }
         }
 
-        format!(
+        let prl_file = format!(
             "{}/{}Qt{}{}.prl",
             lib_path, prefix, version_major, qt_module
-        )
+        );
+        println!(
+            "cargo:warning=Qt .prl file not found at expected path, falling back to {}",
+            prl_file
+        );
+        prl_file
     }
 
     /// Tell Cargo to link each Qt module.
@@ -457,12 +492,21 @@ impl QtBuild {
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
     /// to be passed to whichever tool you are using to invoke the C++ compiler.
     pub fn include_paths(&self) -> Vec<PathBuf> {
-        let root_path = self.qmake_query("QT_INSTALL_HEADERS");
         let mut paths = Vec::new();
+
+        if self.has_framework_libs {
+            let lib_root_path: String = self.qmake_query("QT_INSTALL_LIBS");
+
+            for qt_module in &self.qt_modules {
+                paths.push(format!("{lib_root_path}/Qt{qt_module}.framework/Headers"));
+            }
+        }
+        let root_path: String = self.qmake_query("QT_INSTALL_HEADERS");
         for qt_module in &self.qt_modules {
             paths.push(format!("{root_path}/Qt{qt_module}"));
         }
         paths.push(root_path);
+
         paths.iter().map(PathBuf::from).collect()
     }
 
