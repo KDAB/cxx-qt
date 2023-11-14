@@ -113,6 +113,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
+        # With macOS we need
+        # - std::filesystem::path from 10.15
+        # - std::shared_mutex from 10.12
+        MACOSX_DEPLOYMENT_TARGET: 10.15
         # sccache is around 250-350M in size for a normal build
         # set the cache size to double of this to leave some headroom
         # but don't expand too large as we cache old data and cause cache evictions
