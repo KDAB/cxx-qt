@@ -7,10 +7,6 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Inheritance
 
-<!--
-TODO: check and rewrite
--->
-
 Some Qt APIs require you to override certain methods from an abstract base class, for example [QAbstractItemModel](https://doc.qt.io/qt-6/qabstractitemmodel.html).
 
 To support creating such subclasses directly from within Rust, CXX-Qt provides you with multiple helpers.
@@ -43,7 +39,7 @@ Methods in a `extern "RustQt"` block similar to CXX can be tagged with an `#[inh
 Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `self: &qobject::T`, where `qobject::T` must refer to a QObject marked with `#[qobject]` in the `#[cxx_qt::bridge]`
 
 The declared methods will be case-converted as in other CXX-Qt APIs.
-To explicitly declare the C++ method name, use the `#[cxx_name="myFunctionName"]` attribute.
+To explicitly declare the C++ method name, use the `#[cxx_name = "myFunctionName"]` attribute.
 
 ## Overriding base class methods
 
@@ -56,7 +52,7 @@ This way methods can be overridden, declared as `virtual` or `final`.
 | `virtual`   | `#[cxx_virtual]`  |
 | `final`     | `#[cxx_final]`    |
 
-The below example overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmodel.html#data) method inherited from the QAbstractListModel.
+The example below overrides the [`data`](https://doc.qt.io/qt-6/qabstractitemmodel.html#data) method inherited from the QAbstractListModel.
 ```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_inherit_qalm}}
 
