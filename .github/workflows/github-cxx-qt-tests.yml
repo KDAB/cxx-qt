@@ -55,8 +55,8 @@ jobs:
                 libxkbcommon-dev
             workspace: /home/runner/cxx-qt
 
-          - name: macOS 11 (clang) Qt5
-            os: macos-11
+          - name: macOS 12 (clang) Qt5
+            os: macos-12
             qt_version: 5
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -72,8 +72,8 @@ jobs:
             workspace: /Users/runner/cxx-qt
             cc: clang
             cxx: clang++
-          - name: macOS 11 (clang) Qt6
-            os: macos-11
+          - name: macOS 12 (clang) Qt6
+            os: macos-12
             qt_version: 6
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
