@@ -158,6 +158,7 @@ fn main() {
             "core/qvector/qvector_qcolor",
             "gui/qcolor",
             "gui/qguiapplication",
+            "gui/qimage",
             "gui/qvector2d",
             "gui/qvector3d",
             "gui/qvector4d",
@@ -225,6 +226,7 @@ fn main() {
         cpp_files.extend([
             "gui/qcolor",
             "gui/qguiapplication",
+            "gui/qimage",
             "gui/qvector2d",
             "gui/qvector3d",
             "gui/qvector4d",
