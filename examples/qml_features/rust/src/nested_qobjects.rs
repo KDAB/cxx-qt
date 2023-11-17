@@ -20,6 +20,10 @@ pub mod qobject {
 
     extern "RustQt" {
         /// A signal showing how to refer to another QObject as an argument
+        ///
+        /// # Safety
+        ///
+        /// Due to a raw pointer this is considered unsafe in CXX
         #[qsignal]
         unsafe fn called(self: Pin<&mut InnerObject>, inner: *mut InnerObject);
     }
@@ -31,6 +35,10 @@ pub mod qobject {
         type OuterObject = super::OuterObjectRust;
 
         /// A signal showing how to refer to another QObject as an argument
+        ///
+        /// # Safety
+        ///
+        /// Due to a raw pointer this is considered unsafe in CXX
         #[qsignal]
         unsafe fn called(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
     }
