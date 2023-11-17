@@ -18,6 +18,8 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+# ANCHOR_END: book_cargo_toml_no_cmake
+
 # Use `cxx = "1.0.95"` here instead!
 cxx.workspace = true
 # Use `cxx-qt = "0.5"` here instead!
@@ -29,4 +31,3 @@ cxx-qt-lib.workspace = true
 # Use `cxx-qt-build = "0.5"` here instead!
 # The link_qt_object_files feature is required for statically linking Qt 6.
 cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
-# ANCHOR_END: book_cargo_toml_no_cmake

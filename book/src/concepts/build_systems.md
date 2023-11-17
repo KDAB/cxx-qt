@@ -9,11 +9,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 CXX-Qt can be integrated into existing CMake projects or built with only cargo. The getting started guide provides documentation on how to setup your project:
 
-  * [CMake Integration](../getting-started/4-cmake-integration.md)
-  * [Cargo Integration](../getting-started/5-cargo-executable.md)
+  * [Cargo Integration](../getting-started/4-cargo-executable.md)
+  * [CMake Integration](../getting-started/5-cmake-integration.md)
 
 CXX-Qt could work with any C++ build system so long as the `QMAKE` and `CXXQT_EXPORT_DIR` environment variables are set before calling Cargo,
-as documented in [CMake integration](../getting-started/4-cmake-integration.md). However, using C++ build systems besides CMake with CXX-Qt is untested.
+as documented in [CMake integration](../getting-started/5-cmake-integration.md). However, using C++ build systems besides CMake with CXX-Qt is untested.
 
 ## QML Modules
 
