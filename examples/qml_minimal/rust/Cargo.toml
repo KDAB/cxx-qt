@@ -26,9 +26,9 @@ crate-type = ["staticlib"]
 [dependencies]
 # Use `cxx = "1.0.95"` here instead!
 cxx.workspace = true
-# Use `cxx-qt = "0.5"` here instead!
+# Use `cxx-qt = "0.6"` here instead!
 cxx-qt.workspace = true
-# Use `cxx-qt-lib = "0.5"` here instead!
+# Use `cxx-qt-lib = "0.6"` here instead!
 cxx-qt-lib.workspace = true
 # ANCHOR_END: book_dependencies
 
@@ -36,7 +36,7 @@ cxx-qt-lib.workspace = true
 # and compiles it together with the Rust static library
 # ANCHOR: book_build_dependencies
 [build-dependencies]
-# Use `cxx-qt-build = "0.5"` here instead!
+# Use `cxx-qt-build = "0.6"` here instead!
 cxx-qt-build.workspace = true
 
 [features]
