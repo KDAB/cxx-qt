@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 # ANCHOR: book_all
+# ANCHOR: book_static_lib
 [package]
 name = "qml-minimal"
 version = "0.1.0"
@@ -17,7 +18,6 @@ license = "MIT OR Apache-2.0"
 
 # This will instruct Cargo to create a static
 # library which CMake can link against
-# ANCHOR: book_static_lib
 [lib]
 crate-type = ["staticlib"]
 # ANCHOR_END: book_static_lib

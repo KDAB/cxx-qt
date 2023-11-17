@@ -34,4 +34,4 @@ It is again important to emphasize here that `MyObject` is just another QObject 
 The only difference being that any invokable functions are defined in Rust, instead of C++.
 For QML, this doesn't make a difference though.
 
-Now that we have some application code, let's get this project [building and running](./4-cmake-integration.md).
+Now that we have some application code, let's get this project [building and running](./4-cargo-executable.md)

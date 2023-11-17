@@ -7,25 +7,20 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Our first CXX-Qt module
 
-We first need to create a folder structure to add the different parts of our project.
-
-```ignore
-tutorial
-  - cpp
-  - qml
-  - rust
-```
-
 As with all things Rust, we'll want to create a cargo project, run the following command inside the `tutorial` folder to initialize the Rust part of the project.
-```bash
-cargo init --lib rust
+```console
+$ cargo new cxx-qt-tutorial
+$ cd cxx-qt-tutorial
 ```
-Note the `--lib` option here. For this example, we will create a static library in Rust and use CMake to
-link this into a C++ executable. We'll discuss details of this later, when we [integrate our Rust project with CMake](./4-cmake-integration.md).
+> If you want to skip building with Cargo and try building with CMake directly
+> you can add the `--lib` option here. That will make it easier to create a static library in Rust and use CMake to
+> link this into a C++ executable. We'll discuss details of this later, when we [integrate our Rust project with CMake](./5-cmake-integration.md)
+>
+> Building with Cargo is easier to start with, so if in doubt, try building with Cargo first.
 
-As outlined in the previous section, to use CXX-Qt, we'll create a Rust module within this library crate.
+As outlined in the previous section, to use CXX-Qt, we'll create a Rust module within this crate.
 This Rust module will then serve as our interface between Qt and Rust.
-First, in the `rust/src/lib.rs`, we tell Cargo about the module we're about to create:
+First, in the `src/main.rs`, we tell Cargo about the module we're about to create:
 
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/lib.rs:book_mod_statement}}
