@@ -5,6 +5,7 @@
 
 mod qbytearray;
 pub use qbytearray::QByteArray;
+pub use qbytearray::QByteArrayCursor;
 
 mod qcoreapplication;
 pub use qcoreapplication::QCoreApplication;
