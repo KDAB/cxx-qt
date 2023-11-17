@@ -4,8 +4,9 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                MyObjectCxxQtSignalParamsprimitiveChanged*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalParamsprimitiveChanged*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -61,8 +62,9 @@ MyObject_primitiveChangedConnect(
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                MyObjectCxxQtSignalParamstrivialChanged*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalParamstrivialChanged*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;

@@ -209,7 +209,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -270,7 +270,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -439,7 +439,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {

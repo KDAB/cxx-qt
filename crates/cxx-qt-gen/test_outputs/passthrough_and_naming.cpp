@@ -4,8 +4,8 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<
-  ::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::~SignalHandler()
+SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::
+  ~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -59,8 +59,9 @@ QPushButton_clickedConnect(
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::mynamespace::
-                ExternObjectCxxQtSignalParamsdataReady*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalParamsdataReady*>::
+  ~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -117,8 +118,9 @@ ExternObject_dataReadyConnect(
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::mynamespace::
-                ExternObjectCxxQtSignalParamserrorOccurred*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalParamserrorOccurred*>::
+  ~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -175,8 +177,9 @@ ExternObject_errorOccurredConnect(
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::cxx_qt::multi_object::
-                MyObjectCxxQtSignalParamspropertyNameChanged*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::multi_object::
+    MyObjectCxxQtSignalParamspropertyNameChanged*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -234,7 +237,7 @@ MyObject_propertyNameChangedConnect(
 namespace rust::cxxqtlib1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::multi_object::
-                MyObjectCxxQtSignalParamsready*>::~SignalHandler()
+                MyObjectCxxQtSignalParamsready*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -321,9 +324,9 @@ MyObject::MyObject(QObject* parent)
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<
-  ::rust::cxxqtgen1::second_object::
-    SecondObjectCxxQtSignalParamspropertyNameChanged*>::~SignalHandler()
+SignalHandler<::rust::cxxqtgen1::second_object::
+                SecondObjectCxxQtSignalParamspropertyNameChanged*>::
+  ~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -380,7 +383,7 @@ SecondObject_propertyNameChangedConnect(
 namespace rust::cxxqtlib1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::second_object::
-                SecondObjectCxxQtSignalParamsready*>::~SignalHandler()
+                SecondObjectCxxQtSignalParamsready*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
