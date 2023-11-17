@@ -5,7 +5,7 @@
 namespace rust::cxxqtlib1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                QTimerCxxQtSignalParamstimeout*>::~SignalHandler()
+                QTimerCxxQtSignalParamstimeout*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -63,7 +63,7 @@ QTimer_timeoutConnect(
 namespace rust::cxxqtlib1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                MyObjectCxxQtSignalParamsready*>::~SignalHandler()
+                MyObjectCxxQtSignalParamsready*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -120,8 +120,9 @@ MyObject_readyConnect(
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqtlib1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                MyObjectCxxQtSignalParamsdataChanged*>::~SignalHandler()
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalParamsdataChanged*>::
+  ~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -200,7 +201,7 @@ MyObject_dataChangedConnect(
 namespace rust::cxxqtlib1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
-                MyObjectCxxQtSignalParamsnewData*>::~SignalHandler()
+                MyObjectCxxQtSignalParamsnewData*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;

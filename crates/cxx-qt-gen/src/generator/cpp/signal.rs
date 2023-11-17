@@ -150,7 +150,7 @@ pub fn generate_cpp_signal(
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {{
             template <>
-            {signal_handler_type}::~SignalHandler()
+            {signal_handler_type}::~SignalHandler() noexcept
             {{
                 if (data[0] == nullptr && data[1] == nullptr)
                 {{
@@ -290,7 +290,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -390,7 +390,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -478,7 +478,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsbaseName *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsbaseName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -570,7 +570,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -666,7 +666,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqtlib1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler()
+            SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
