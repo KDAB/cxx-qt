@@ -16,6 +16,8 @@ mod qmargins_cxx {
         fn construct_qmargins() -> QMargins;
         fn read_qmargins(m: &QMargins) -> bool;
         fn clone_qmargins(m: &QMargins) -> QMargins;
+        fn test_is_null(m: &QMargins) -> bool;
+        fn add_margins(m1: QMargins, m2: QMargins) -> QMargins;
     }
 }
 
@@ -29,4 +31,12 @@ fn read_qmargins(m: &QMargins) -> bool {
 
 fn clone_qmargins(m: &QMargins) -> QMargins {
     m.clone()
+}
+
+fn test_is_null(m: &QMargins) -> bool {
+    m.is_null()
+}
+
+fn add_margins(m1: QMargins, m2: QMargins) -> QMargins {
+   m1 + m2
 }
