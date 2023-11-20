@@ -29,6 +29,9 @@ QImage
 qimageInitFromData(const rust::Slice<std::uint8_t const> data,
                    rust::Str format);
 
+::std::int64_t
+qimageCacheKey(const QImage& image);
+
 } // namespace cxxqtlib1
 } // namespace rust
 #endif
