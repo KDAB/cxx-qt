@@ -33,7 +33,7 @@ private Q_SLOTS:
 
   void clone()
   {
-    const auto m = QMargins(1.0, 2.0, 3.0, 4.0);
+    const auto m = QMarginsF(1.0, 2.0, 3.0, 4.0);
     const auto c = clone_qmarginsf(m);
     QCOMPARE(c.left(), 1.0);
     QCOMPARE(c.top(), 2.0);
