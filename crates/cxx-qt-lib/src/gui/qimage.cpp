@@ -45,6 +45,11 @@ qimageInitFromData(const rust::Slice<std::uint8_t const> data, rust::Str format)
                           formatString.empty() ? nullptr : formatString.data());
 }
 
+::std::int64_t
+qimageCacheKey(const QImage& image)
+{
+  return static_cast<::std::int64_t>(image.cacheKey());
+}
 }
 }
 
