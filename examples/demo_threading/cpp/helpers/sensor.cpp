@@ -9,6 +9,7 @@
 
 Sensor::Sensor(QObject* parent)
   : QObject(parent)
+  , m_model(nullptr)
 {
   connect(this, &Sensor::uuidChanged, this, &Sensor::findUuid);
   connect(this, &Sensor::modelChanged, this, &Sensor::findUuid);
