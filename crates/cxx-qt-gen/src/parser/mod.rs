@@ -253,4 +253,56 @@ mod tests {
         let parser = Parser::from(module);
         assert!(parser.is_err());
     }
+
+    #[test]
+    fn test_cxx_qobject_namespace() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(namespace = "bridge_namespace")]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObjectA = super::MyObjectARust;
+
+                    #[qobject]
+                    #[namespace = "type_namespace"]
+                    type MyObjectB = super::MyObjectBRust;
+                }
+
+                #[namespace = "extern_namespace"]
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObjectC = super::MyObjectCRust;
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        assert_eq!(parser.cxx_qt_data.cxx_mappings.namespaces.len(), 3);
+        assert_eq!(
+            parser
+                .cxx_qt_data
+                .cxx_mappings
+                .namespaces
+                .get("MyObjectA")
+                .unwrap(),
+            "bridge_namespace"
+        );
+        assert_eq!(
+            parser
+                .cxx_qt_data
+                .cxx_mappings
+                .namespaces
+                .get("MyObjectB")
+                .unwrap(),
+            "type_namespace"
+        );
+        assert_eq!(
+            parser
+                .cxx_qt_data
+                .cxx_mappings
+                .namespaces
+                .get("MyObjectC")
+                .unwrap(),
+            "extern_namespace"
+        );
+    }
 }

@@ -1,5 +1,121 @@
 #include "cxx-qt-gen/ffi.cxxqt.h"
 
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust::cxxqtlib1 {
+template<>
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalParamsprimitiveChanged*>::~SignalHandler() noexcept
+{
+  if (data[0] == nullptr && data[1] == nullptr) {
+    return;
+  }
+
+  drop_MyObject_signal_handler_primitiveChanged(::std::move(*this));
+}
+
+template<>
+template<>
+void
+SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                MyObjectCxxQtSignalParamsprimitiveChanged*>::
+operator()<::cxx_qt::my_object::MyObject&>(::cxx_qt::my_object::MyObject& self)
+{
+  call_MyObject_signal_handler_primitiveChanged(*this, self);
+}
+
+static_assert(
+  alignof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                          MyObjectCxxQtSignalParamsprimitiveChanged*>) <=
+    alignof(::std::size_t),
+  "unexpected aligment");
+static_assert(
+  sizeof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                         MyObjectCxxQtSignalParamsprimitiveChanged*>) ==
+    sizeof(::std::size_t[2]),
+  "unexpected size");
+} // namespace rust::cxxqtlib1
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_primitiveChangedConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalHandlerprimitiveChanged closure,
+  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    &self,
+    &::cxx_qt::my_object::MyObject::primitiveChanged,
+    &self,
+    [&, closure = ::std::move(closure)]() mutable {
+      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::MyObject>
+        guard(self);
+      closure.template operator()<::cxx_qt::my_object::MyObject&>(self);
+    },
+    type);
+}
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust::cxxqtlib1 {
+template<>
+SignalHandler<
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalParamstrivialChanged*>::~SignalHandler() noexcept
+{
+  if (data[0] == nullptr && data[1] == nullptr) {
+    return;
+  }
+
+  drop_MyObject_signal_handler_trivialChanged(::std::move(*this));
+}
+
+template<>
+template<>
+void
+SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                MyObjectCxxQtSignalParamstrivialChanged*>::
+operator()<::cxx_qt::my_object::MyObject&>(::cxx_qt::my_object::MyObject& self)
+{
+  call_MyObject_signal_handler_trivialChanged(*this, self);
+}
+
+static_assert(
+  alignof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                          MyObjectCxxQtSignalParamstrivialChanged*>) <=
+    alignof(::std::size_t),
+  "unexpected aligment");
+static_assert(
+  sizeof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
+                         MyObjectCxxQtSignalParamstrivialChanged*>) ==
+    sizeof(::std::size_t[2]),
+  "unexpected size");
+} // namespace rust::cxxqtlib1
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_trivialChangedConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlertrivialChanged
+    closure,
+  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    &self,
+    &::cxx_qt::my_object::MyObject::trivialChanged,
+    &self,
+    [&, closure = ::std::move(closure)]() mutable {
+      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::MyObject>
+        guard(self);
+      closure.template operator()<::cxx_qt::my_object::MyObject&>(self);
+    },
+    type);
+}
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
 namespace cxx_qt::my_object {
 ::std::int32_t const&
 MyObject::getPrimitive() const
@@ -27,36 +143,6 @@ MyObject::setTrivial(QPoint const& value)
 {
   const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
   setTrivialWrapper(value);
-}
-
-::QMetaObject::Connection
-MyObject::primitiveChangedConnect(::rust::Fn<void(MyObject&)> func,
-                                  ::Qt::ConnectionType type)
-{
-  return ::QObject::connect(
-    this,
-    &MyObject::primitiveChanged,
-    this,
-    [&, func = ::std::move(func)]() {
-      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-      func(*this);
-    },
-    type);
-}
-
-::QMetaObject::Connection
-MyObject::trivialChangedConnect(::rust::Fn<void(MyObject&)> func,
-                                ::Qt::ConnectionType type)
-{
-  return ::QObject::connect(
-    this,
-    &MyObject::trivialChanged,
-    this,
-    [&, func = ::std::move(func)]() {
-      const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
-      func(*this);
-    },
-    type);
 }
 
 MyObject::MyObject(QObject* parent)

@@ -12,7 +12,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
-    let mut cxx_qt_mod_contents = generated.cxx_qt_mod_contents.clone();
+    let mut cxx_qt_mod_contents = vec![];
     let namespace = &generated.namespace;
 
     // Add common includes for all objects
@@ -40,16 +40,10 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         .expect("Could not build CXX common block"),
     );
 
-    for qobject in &generated.qobjects {
-        // Add the blocks from the QObject
-        cxx_mod_contents.extend_from_slice(&qobject.cxx_mod_contents);
-        cxx_qt_mod_contents.extend_from_slice(&qobject.cxx_qt_mod_contents);
-    }
-
-    for extern_cxx_qt in &generated.extern_cxx_qt {
-        // Add the blocks from the extern "C++Qt"
-        cxx_mod_contents.extend_from_slice(&extern_cxx_qt.cxx_mod_contents);
-        cxx_qt_mod_contents.extend_from_slice(&extern_cxx_qt.cxx_qt_mod_contents);
+    for fragment in &generated.fragments {
+        // Add the blocks from the fragment
+        cxx_mod_contents.extend_from_slice(&fragment.cxx_mod_contents);
+        cxx_qt_mod_contents.extend_from_slice(&fragment.cxx_qt_mod_contents);
     }
 
     // Inject the CXX blocks
@@ -72,7 +66,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
 mod tests {
     use super::*;
 
-    use crate::generator::rust::qobject::GeneratedRustQObject;
+    use crate::generator::rust::fragment::GeneratedRustFragment;
     use pretty_assertions::assert_str_eq;
     use syn::parse_quote;
 
@@ -87,12 +81,8 @@ mod tests {
                     include!("myobject.cxxqt.h");
                 }
             }],
-            cxx_qt_mod_contents: vec![parse_quote! {
-                use module::Struct;
-            }],
             namespace: "cxx_qt::my_object".to_owned(),
-            extern_cxx_qt: vec![],
-            qobjects: vec![GeneratedRustQObject {
+            fragments: vec![GeneratedRustFragment {
                 cxx_mod_contents: vec![
                     parse_quote! {
                         unsafe extern "C++" {
@@ -133,13 +123,9 @@ mod tests {
                     include!("multiobject.cxxqt.h");
                 }
             }],
-            cxx_qt_mod_contents: vec![parse_quote! {
-                use module::Struct;
-            }],
             namespace: "cxx_qt".to_owned(),
-            extern_cxx_qt: vec![],
-            qobjects: vec![
-                GeneratedRustQObject {
+            fragments: vec![
+                GeneratedRustFragment {
                     cxx_mod_contents: vec![
                         parse_quote! {
                             unsafe extern "C++" {
@@ -166,7 +152,7 @@ mod tests {
                         },
                     ],
                 },
-                GeneratedRustQObject {
+                GeneratedRustFragment {
                     cxx_mod_contents: vec![
                         parse_quote! {
                             unsafe extern "C++" {
@@ -231,8 +217,6 @@ mod tests {
                 }
             }
 
-            use module::Struct;
-
             #[derive(Default)]
             pub struct MyObjectRust;
 
@@ -287,8 +271,6 @@ mod tests {
                     type SecondObjectRust;
                 }
             }
-
-            use module::Struct;
 
             #[derive(Default)]
             pub struct FirstObjectRust;

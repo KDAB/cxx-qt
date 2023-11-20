@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
-        rust::qobject::GeneratedRustQObject,
+        rust::fragment::GeneratedRustFragment,
         utils::rust::{
             syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified,
             syn_type_is_cxx_bridge_unsafe,
@@ -66,7 +66,7 @@ fn argument_members(args: &[Type]) -> Vec<TokenStream> {
 fn generate_default_constructor(
     qobject_idents: &QObjectName,
     namespace: &NamespaceName,
-) -> GeneratedRustQObject {
+) -> GeneratedRustFragment {
     let rust_struct_ident = &qobject_idents.rust_struct.rust;
 
     let create_rs_ident = format_ident!(
@@ -75,7 +75,7 @@ fn generate_default_constructor(
     );
     let namespace_internals = &namespace.internal;
 
-    GeneratedRustQObject {
+    GeneratedRustFragment {
         cxx_mod_contents: vec![parse_quote! {
         extern "Rust" {
             #[cxx_name = "createRs"]
@@ -185,12 +185,12 @@ pub fn generate(
     namespace: &NamespaceName,
     qualified_mappings: &BTreeMap<Ident, Path>,
     module_ident: &Ident,
-) -> Result<GeneratedRustQObject> {
+) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
         return Ok(generate_default_constructor(qobject_idents, namespace));
     }
 
-    let mut result = GeneratedRustQObject::default();
+    let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
 
     let qobject_name = &qobject_idents.cpp_class.cpp;
@@ -467,7 +467,7 @@ mod tests {
         NamespaceName::from_pair_str("ffi", &format_ident!("MyObject"))
     }
 
-    fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustQObject {
+    fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {
         generate(
             constructors,
             &mock_name(),
@@ -529,7 +529,7 @@ mod tests {
     // This is called by the `multiple_constructors` test so we don't have to
     // assert this in two separate tests.
     fn assert_empty_constructor_blocks(
-        blocks: &GeneratedRustQObject,
+        blocks: &GeneratedRustFragment,
         namespace_attr: &TokenStream,
     ) {
         assert_tokens_eq(
@@ -629,7 +629,10 @@ mod tests {
         );
     }
 
-    fn assert_full_constructor_blocks(blocks: &GeneratedRustQObject, namespace_attr: &TokenStream) {
+    fn assert_full_constructor_blocks(
+        blocks: &GeneratedRustFragment,
+        namespace_attr: &TokenStream,
+    ) {
         // the index here starts with 5, as this is part of the larger multiple_constructors test.
         assert_tokens_eq(
             &blocks.cxx_mod_contents[5],

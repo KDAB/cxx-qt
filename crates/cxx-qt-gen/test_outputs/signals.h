@@ -2,6 +2,7 @@
 
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_maybelockguard.h>
+#include <cxx-qt-common/cxxqt_signalhandler.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
 namespace cxx_qt::my_object {
@@ -9,7 +10,61 @@ class MyObject;
 
 } // namespace cxx_qt::my_object
 
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using MyObjectCxxQtSignalHandlerready =
+  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using MyObjectCxxQtSignalHandlerdataChanged = ::rust::cxxqtlib1::SignalHandler<
+  struct MyObjectCxxQtSignalParamsdataChanged*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using MyObjectCxxQtSignalHandlernewData =
+  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsnewData*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using QTimerCxxQtSignalHandlertimeout =
+  ::rust::cxxqtlib1::SignalHandler<struct QTimerCxxQtSignalParamstimeout*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
 #include "cxx-qt-gen/ffi.cxx.h"
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+QTimer_timeoutConnect(
+  ::cxx_qt::my_object::QTimer& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::QTimerCxxQtSignalHandlertimeout closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_readyConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlerready closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_dataChangedConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlerdataChanged
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_newDataConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlernewData
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace cxx_qt::my_object {
 class MyObject
@@ -24,26 +79,10 @@ public:
 public:
   Q_INVOKABLE void invokable();
   Q_SIGNAL void ready();
-  ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
-                                         ::Qt::ConnectionType type);
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             ::std::unique_ptr<Opaque> second,
                             QPoint third,
                             QPoint const& fourth);
-  ::QMetaObject::Connection dataChangedConnect(
-    ::rust::Fn<void(MyObject&,
-                    ::std::int32_t first,
-                    ::std::unique_ptr<Opaque> second,
-                    QPoint third,
-                    QPoint const& fourth)> func,
-    ::Qt::ConnectionType type);
-  ::QMetaObject::Connection newDataConnect(
-    ::rust::Fn<void(MyObject&,
-                    ::std::int32_t first,
-                    ::std::unique_ptr<Opaque> second,
-                    QPoint third,
-                    QPoint const& fourth)> func,
-    ::Qt::ConnectionType type);
   explicit MyObject(QObject* parent = nullptr);
 
 private:

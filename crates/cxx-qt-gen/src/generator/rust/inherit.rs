@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::{naming::qobject::QObjectName, rust::qobject::GeneratedRustQObject},
+    generator::{naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment},
     parser::inherit::ParsedInheritedMethod,
 };
 use proc_macro2::TokenStream;
@@ -14,8 +14,8 @@ use syn::{Item, Result};
 pub fn generate(
     qobject_ident: &QObjectName,
     methods: &[ParsedInheritedMethod],
-) -> Result<GeneratedRustQObject> {
-    let mut blocks = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut blocks = GeneratedRustFragment::default();
     let qobject_name = &qobject_ident.cpp_class.rust;
 
     let mut bridges = methods
@@ -71,7 +71,7 @@ mod tests {
     fn generate_from_foreign(
         method: ForeignItemFn,
         safety: Safety,
-    ) -> Result<GeneratedRustQObject> {
+    ) -> Result<GeneratedRustFragment> {
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, safety).unwrap()];
         generate(&create_qobjectname(), &inherited_methods)
     }

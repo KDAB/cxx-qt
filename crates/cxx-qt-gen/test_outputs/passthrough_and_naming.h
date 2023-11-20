@@ -2,6 +2,7 @@
 
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_maybelockguard.h>
+#include <cxx-qt-common/cxxqt_signalhandler.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
 namespace cxx_qt::multi_object {
@@ -9,38 +10,95 @@ class MyObject;
 
 } // namespace cxx_qt::multi_object
 
+namespace rust::cxxqtgen1::cxx_qt::multi_object {
+using MyObjectCxxQtSignalHandlerpropertyNameChanged =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct MyObjectCxxQtSignalParamspropertyNameChanged*>;
+} // namespace rust::cxxqtgen1::cxx_qt::multi_object
+
+namespace rust::cxxqtgen1::cxx_qt::multi_object {
+using MyObjectCxxQtSignalHandlerready =
+  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
+} // namespace rust::cxxqtgen1::cxx_qt::multi_object
+
 namespace second_object {
 class SecondObject;
 
 } // namespace second_object
 
+namespace rust::cxxqtgen1::second_object {
+using SecondObjectCxxQtSignalHandlerpropertyNameChanged =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct SecondObjectCxxQtSignalParamspropertyNameChanged*>;
+} // namespace rust::cxxqtgen1::second_object
+
+namespace rust::cxxqtgen1::second_object {
+using SecondObjectCxxQtSignalHandlerready =
+  ::rust::cxxqtlib1::SignalHandler<struct SecondObjectCxxQtSignalParamsready*>;
+} // namespace rust::cxxqtgen1::second_object
+
+namespace rust::cxxqtgen1 {
+using QPushButtonCxxQtSignalHandlerclicked =
+  ::rust::cxxqtlib1::SignalHandler<struct QPushButtonCxxQtSignalParamsclicked*>;
+} // namespace rust::cxxqtgen1
+
+namespace rust::cxxqtgen1::mynamespace {
+using ExternObjectCxxQtSignalHandlerdataReady =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct ExternObjectCxxQtSignalParamsdataReady*>;
+} // namespace rust::cxxqtgen1::mynamespace
+
+namespace rust::cxxqtgen1::mynamespace {
+using ExternObjectCxxQtSignalHandlererrorOccurred =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct ExternObjectCxxQtSignalParamserrorOccurred*>;
+} // namespace rust::cxxqtgen1::mynamespace
+
 #include "cxx-qt-gen/multi_object.cxx.h"
 
-namespace rust::cxxqtgen1::externcxxqt {
+namespace rust::cxxqtgen1 {
 ::QMetaObject::Connection
-QPushButton_clickedConnect(QPushButton& self,
-                           ::rust::Fn<void(QPushButton&, bool checked)> func,
-                           ::Qt::ConnectionType type);
+QPushButton_clickedConnect(
+  QPushButton& self,
+  ::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1
 
-} // namespace rust::cxxqtgen1::externcxxqt
-
-namespace rust::cxxqtgen1::externcxxqt::mynamespace {
+namespace rust::cxxqtgen1::mynamespace {
 ::QMetaObject::Connection
 ExternObject_dataReadyConnect(
   ::mynamespace::ExternObjectCpp& self,
-  ::rust::Fn<void(::mynamespace::ExternObjectCpp&)> func,
+  ::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalHandlerdataReady
+    closure,
   ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::mynamespace
 
-} // namespace rust::cxxqtgen1::externcxxqt::mynamespace
-
-namespace rust::cxxqtgen1::externcxxqt::mynamespace {
+namespace rust::cxxqtgen1::mynamespace {
 ::QMetaObject::Connection
 ExternObject_errorOccurredConnect(
   ::mynamespace::ExternObjectCpp& self,
-  ::rust::Fn<void(::mynamespace::ExternObjectCpp&)> func,
+  ::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalHandlererrorOccurred
+    closure,
   ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::mynamespace
 
-} // namespace rust::cxxqtgen1::externcxxqt::mynamespace
+namespace rust::cxxqtgen1::cxx_qt::multi_object {
+::QMetaObject::Connection
+MyObject_propertyNameChangedConnect(
+  ::cxx_qt::multi_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::multi_object::
+    MyObjectCxxQtSignalHandlerpropertyNameChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::multi_object
+
+namespace rust::cxxqtgen1::cxx_qt::multi_object {
+::QMetaObject::Connection
+MyObject_readyConnect(
+  ::cxx_qt::multi_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::multi_object::MyObjectCxxQtSignalHandlerready
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::multi_object
 
 namespace cxx_qt::multi_object {
 class MyObject
@@ -59,13 +117,8 @@ public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
-  ::QMetaObject::Connection propertyNameChangedConnect(
-    ::rust::Fn<void(MyObject&)> func,
-    ::Qt::ConnectionType type);
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
-  ::QMetaObject::Connection readyConnect(::rust::Fn<void(MyObject&)> func,
-                                         ::Qt::ConnectionType type);
   explicit MyObject(QObject* parent = nullptr);
 
 private:
@@ -79,6 +132,23 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 } // namespace cxx_qt::multi_object
 
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
+
+namespace rust::cxxqtgen1::second_object {
+::QMetaObject::Connection
+SecondObject_propertyNameChangedConnect(
+  ::second_object::SecondObject& self,
+  ::rust::cxxqtgen1::second_object::
+    SecondObjectCxxQtSignalHandlerpropertyNameChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::second_object
+
+namespace rust::cxxqtgen1::second_object {
+::QMetaObject::Connection
+SecondObject_readyConnect(
+  ::second_object::SecondObject& self,
+  ::rust::cxxqtgen1::second_object::SecondObjectCxxQtSignalHandlerready closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::second_object
 
 namespace second_object {
 class SecondObject
@@ -96,13 +166,8 @@ public:
   ::std::int32_t const& getPropertyName() const;
   Q_SLOT void setPropertyName(::std::int32_t const& value);
   Q_SIGNAL void propertyNameChanged();
-  ::QMetaObject::Connection propertyNameChangedConnect(
-    ::rust::Fn<void(SecondObject&)> func,
-    ::Qt::ConnectionType type);
   Q_INVOKABLE void invokableName();
   Q_SIGNAL void ready();
-  ::QMetaObject::Connection readyConnect(::rust::Fn<void(SecondObject&)> func,
-                                         ::Qt::ConnectionType type);
   explicit SecondObject(QObject* parent = nullptr);
 
 private:

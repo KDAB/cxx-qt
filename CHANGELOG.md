@@ -12,13 +12,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.5.3...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.6.0...HEAD)
+
+## [0.6.0](https://github.com/KDAB/cxx-qt/compare/v0.5.3...v0.6.0) - 2023-11-17
 
 ### Added
 
 - Allow associated constants, types and macro invocations within `impl qobject::T` blocks
 - Ensure that generated Rust code works when `#![deny(missing_docs)]` is enabled
-- Ability to connect and disconnect from signals in Rust triggering a function pointer
+- Ability to connect and disconnect from signals in Rust triggering a function pointer or closure
 - `unsafe impl !cxx_qt::Locking for qobject::T` to disable internal locking
 - `Deref` is now implemented for `qobject::T` to reach the `T` Rust struct
 - Support for C++ only methods by not having a `#[qinvokable]` attribute

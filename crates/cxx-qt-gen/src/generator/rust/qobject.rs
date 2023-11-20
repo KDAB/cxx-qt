@@ -3,49 +3,37 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName},
         rust::{
-            constructor, cxxqttype, fragment::RustFragmentPair, inherit,
-            method::generate_rust_methods, property::generate_rust_properties,
-            signals::generate_rust_signals, threading,
+            constructor, cxxqttype,
+            fragment::{GeneratedRustFragment, RustFragmentPair},
+            inherit,
+            method::generate_rust_methods,
+            property::generate_rust_properties,
+            signals::generate_rust_signals,
+            threading,
         },
         utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
-    parser::qobject::ParsedQObject,
+    parser::{mappings::ParsedCxxMappings, qobject::ParsedQObject},
 };
 use quote::quote;
-use syn::{Ident, Item, Path, Result};
+use syn::{Ident, Result};
 
 use super::qenum;
 
-#[derive(Default)]
-pub struct GeneratedRustQObject {
-    /// Module for the CXX bridge
-    pub cxx_mod_contents: Vec<Item>,
-    /// Items for the CXX-Qt module
-    pub cxx_qt_mod_contents: Vec<Item>,
-}
-
-impl GeneratedRustQObject {
-    pub fn append(&mut self, other: &mut Self) {
-        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
-        self.cxx_qt_mod_contents
-            .append(&mut other.cxx_qt_mod_contents);
-    }
-
-    pub fn from(
+impl GeneratedRustFragment {
+    pub fn from_qobject(
         qobject: &ParsedQObject,
-        qualified_mappings: &BTreeMap<Ident, Path>,
+        cxx_mappings: &ParsedCxxMappings,
         module_ident: &Ident,
-    ) -> Result<GeneratedRustQObject> {
+    ) -> Result<Self> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
-        let mut generated = GeneratedRustQObject::default();
+        let mut generated = Self::default();
 
         generated.append(&mut generate_qobject_definitions(
             &qobject_idents,
@@ -56,7 +44,8 @@ impl GeneratedRustQObject {
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
-            qualified_mappings,
+            cxx_mappings,
+            module_ident,
         )?);
         generated.append(&mut generate_rust_methods(
             &qobject.methods,
@@ -69,7 +58,8 @@ impl GeneratedRustQObject {
         generated.append(&mut generate_rust_signals(
             &qobject.signals,
             &qobject_idents,
-            qualified_mappings,
+            cxx_mappings,
+            module_ident,
         )?);
         generated.append(&mut qenum::generate(&qobject.qenums));
 
@@ -95,7 +85,7 @@ impl GeneratedRustQObject {
             generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
-                qualified_mappings,
+                &cxx_mappings.qualified,
                 module_ident,
             )?);
         }
@@ -107,7 +97,7 @@ impl GeneratedRustQObject {
         if qobject.locking {
             let qualified_impl = syn_ident_cxx_bridge_to_qualified_impl(
                 &qobject_idents.cpp_class.rust,
-                qualified_mappings,
+                &cxx_mappings.qualified,
             );
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
@@ -118,13 +108,13 @@ impl GeneratedRustQObject {
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
-            qualified_mappings,
+            &cxx_mappings.qualified,
             module_ident,
         )?);
 
         generated.append(&mut cxxqttype::generate(
             &qobject_idents,
-            qualified_mappings,
+            &cxx_mappings.qualified,
         )?);
 
         Ok(generated)
@@ -135,8 +125,8 @@ impl GeneratedRustQObject {
 fn generate_qobject_definitions(
     qobject_idents: &QObjectName,
     namespace: &str,
-) -> Result<GeneratedRustQObject> {
-    let mut generated = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
@@ -200,9 +190,9 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let rust = GeneratedRustQObject::from(
+        let rust = GeneratedRustFragment::from_qobject(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &BTreeMap::<Ident, Path>::default(),
+            &ParsedCxxMappings::default(),
             &format_ident!("ffi"),
         )
         .unwrap();

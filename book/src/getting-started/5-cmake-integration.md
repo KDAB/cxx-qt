@@ -7,10 +7,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Building with CMake
 
-In this example, we will demonstrate how to integrate cxx-qt code into a C++ application. Cargo builds the cxx-qt code
-as a static library, then CMake links it into a C++ executable.
+In this example, we will demonstrate how to integrate CXX-Qt code into a C++ application using CMake.
+Cargo builds the CXX-Qt code as a static library, then CMake links it into a C++ executable.
 
-> If you don't want to use CMake, and only want to use Cargo to build your project, you can [skip to the next chapter](./5-cargo-executable.md).
+> If you don't want to use CMake, and only want to use Cargo to build your project, refer to the  [previous section](./4-cargo-executable.md).
+
+We'll first want to modify our project structure to separate the different parts of our project.
+
+```ignore
+tutorial
+  - cpp
+  - qml
+  - rust
+```
+
+Move the rust project into the `rust` folder.
+Pull out the `qml` folder back to the top level.
 
 ## C++ executable
 
@@ -36,7 +48,7 @@ That's the power of CXX-Qt.
 
 ## Cargo setup
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
-If you've generated your project with the `cargo new --lib` or `cargo init --lib folder` command, your `Cargo.toml` should look something like this:
+If you've generated your project with the `cargo new --lib` or `cargo init --lib [folder]` command, your `Cargo.toml` should look something like this:
 ```toml,ignore
 [package]
 name = "qml-minimal"
@@ -47,24 +59,35 @@ edition = "2021"
 ```
 
 We'll have to do multiple things:
-- Instruct cargo to create a staticlib
+- Instruct cargo to create a static library
 - Add `cxx`, `cxx-qt`, as well as `cxx-qt-lib` as dependencies
 - Add `cxx-qt-build` as a build dependency
 
-> Note that in order for cxx-qt to work, the `qmake` executable must be located. This is because cxx-qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
->
-> This will be done by setting `QMAKE` environment variable from CMake, so that Qt version found by CMake will be correctly passed down to Cargo.
+> If you've already followed the Cargo setup, most of this should already be done.
+> Make sure to change the `crate-type` to `"staticlib"` though!
 
 In the end, your `Cargo.toml` should look similar to this.
 
 ```toml,ignore
-{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_all}}
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_static_lib}}
+
+[dependencies]
+cxx = "1.0.95"
+cxx-qt = "0.6"
+cxx-qt-lib = "0.6"
+
+# cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
+# and compiles it together with the Rust static library
+[build-dependencies]
+cxx-qt-build = "0.6"
+
+[features]
+# This feature must be enabled for `cargo test` when linking Qt 6 statically.
+link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
 ```
 
-> Note that instead of the `*.workspace = true` arguments for the CXX-Qt crates, you should instead use the versions from [crates.io](https://crates.io/search?q=cxx-qt).
-> As described in the code comment above each dependency.
-
-We'll then also need to add a script named `build.rs` next to our `Cargo.toml`:
+We'll then also need to add a script named `build.rs` next to the `Cargo.toml`:
+> If you've already followed the Cargo build tutorial, simply modify the existing `build.rs` file.
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/build.rs:book_build_rs}}
 ```
@@ -76,19 +99,29 @@ In our case, this is only the `src/cxxqt_object.rs` file.
 This is also where the QML module is defined with a QML uri and version.
 The files and resources in the module are then exposed in the same way as the [qt_add_qml_module CMake function](https://doc.qt.io/qt-6/qt-add-qml-module.html).
 
+> Note that in order for CXX-Qt to work, the `qmake` executable must be located. This is because CXX-Qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
+>
+> This will be done in the `CMakeLists.txt` file by setting the `QMAKE` environment variable from CMake.
+> This ensures that CMake and Cargo use the same Qt binaries.
+
+We'll also need to remove the `src/main.rs` and replace it with a `src/lib.rs` file.
+This file only needs to include a single line:
+```rust,ignore
+{{#include ../../../examples/qml_minimal/rust/src/lib.rs:book_mod_statement}}
+```
+
+This simply ensures that our rust module is included in our library.
+
+Feel free to add additional rust modules in your library as well.
+
 ## CMake setup
 
-Now add a `CMakeLists.txt` file in the root of the `tutorial` folder. Start the `CMakeLists.txt` file like any other C++ project using Qt. For this example, we are [supporting both
-Qt5 and Qt6 with CMake](https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.html):
+Now add a `CMakeLists.txt` file in the root of your project folder.
+Start the `CMakeLists.txt` file like any other C++ project using Qt.
+For this example, we are [supporting both Qt5 and Qt6 with CMake](https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.html):
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup}}
-```
-
-To ensure that cxx-qt-build uses the same version of Qt as your CMake targets, use the `Qt` CMake target to locate the qmake executable. Then, pass `qmake` executable path to `build.rs` with the environment variable `QMAKE` using `corrosion_set_env_vars`.
-
-```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_qmake}}
 ```
 
 Locate [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake.
@@ -98,7 +131,13 @@ If Corrosion is not installed, automatically download it:
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_corrosion}}
 ```
 
-Use Corrosion to create a CMake library target for the Rust library. cxx-qt requires a few more steps beyond using
+To ensure that cxx-qt-build uses the same version of Qt as your CMake targets, use the `Qt` CMake target to locate the qmake executable. Then, pass `qmake` executable path to `build.rs` with the environment variable `QMAKE` using `corrosion_set_env_vars`.
+
+```cmake,ignore
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_qmake}}
+```
+
+Use Corrosion to create a CMake library target for the Rust library. CXX-Qt requires a few more steps beyond using
 a typical Rust library with Corrosion:
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_use_corrosion}}
@@ -108,6 +147,25 @@ Finally, create the CMake executable target and link it to the Rust library:
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_executable}}
+```
+
+Your project should now have a structure similar to this:
+```console, ignore
+$ tree -I target/ -I tests
+.
+├── CMakeLists.txt
+├── cpp
+│   └── main.cpp
+├── qml
+│   └── main.qml
+└── rust
+    ├── build.rs
+    ├── Cargo.toml
+    └── src
+        ├── cxxqt_object.rs
+        └── lib.rs
+
+5 directories, 7 files
 ```
 
 Build the project like any other CMake project:
@@ -131,10 +189,3 @@ You should now see the two Labels that display the state of our `MyObject`, as w
 If you're building CXX-Qt on Windows using MSVC generator, you need to ensure that `set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")` is set in CMake (or use the `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` flag) when building with the `Debug` configuration. This flag is necessary to ensure that the correct C Runtime Library is used. Then you can build using `cmake --build build --config Debug`.
 
 This issue is caused by a bug in the [cc](https://docs.rs/cc/latest/cc/index.html) crate (as described in https://github.com/rust-lang/cc-rs/pull/717), which has not been merged yet. Specifically, the problem is that cc generated code always links to the MultiThreaded runtime, even when building in Debug mode. We hope that this step won't be necessary in the future, once the cc crate fix is merged and released.
-
-## Success 🥳
-
-For further reading, you can take a look at the [bridge chapter](../bridge/index.md) which goes into detail about all features that CXX-Qt exposes to new QObject subclasses.
-As well as the [Concepts chapter](../concepts/index.md), which explains the concepts underlying CXX-Qt.
-
-In the next, optional chapter, we will show how to build the same QML application with Cargo without needing CMake.

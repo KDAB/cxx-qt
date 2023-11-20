@@ -30,13 +30,35 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
                 .filter_map(pair_as_source)
                 .collect::<Vec<String>>()
                 .join("\n");
-            namespaced(&qobject.namespace, &methods)
+            let namespaced = namespaced(&qobject.namespace, &methods);
+
+            qobject
+                .blocks
+                .fragments
+                .iter()
+                .filter_map(pair_as_source)
+                .chain([namespaced])
+                .collect::<Vec<String>>()
+                .join("\n")
         })
         .collect::<Vec<String>>()
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ source
 pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
+    let extern_cxx_qt = generated
+        .extern_cxx_qt
+        .iter()
+        .flat_map(|block| {
+            block
+                .fragments
+                .iter()
+                .filter_map(pair_as_source)
+                .collect::<Vec<String>>()
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
     formatdoc! {r#"
         #include "cxx-qt-gen/{cxx_file_stem}.cxxqt.h"
 
@@ -44,15 +66,6 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         {qobjects}
     "#,
     cxx_file_stem = generated.cxx_file_stem,
-    extern_cxx_qt = {
-        let mut out = vec![];
-        for block in &generated.extern_cxx_qt {
-            if let Some(method) = pair_as_source(&block.method) {
-                out.push(namespaced(&block.namespace, &method));
-            }
-        }
-        out.join("\n")
-    },
     qobjects = qobjects_source(generated).join("\n"),
     }
 }

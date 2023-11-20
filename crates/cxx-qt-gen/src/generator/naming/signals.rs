@@ -2,8 +2,8 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::generator::naming::CombinedIdent;
 use crate::parser::signals::ParsedSignal;
+use crate::{generator::naming::CombinedIdent, parser::mappings::ParsedCxxMappings};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
@@ -36,6 +36,53 @@ impl CombinedIdent {
             // create a C++ name that is similar to the QML naming scheme for signals
             cpp: format_ident!("{}Connect", ident.cpp.to_string().to_case(Case::Camel)),
             rust: format_ident!("connect_{}", ident.rust.to_string().to_case(Case::Snake)),
+        }
+    }
+}
+
+pub struct QSignalHelperName {
+    pub connect_name: CombinedIdent,
+    pub function_call: Ident,
+    pub function_drop: Ident,
+    pub handler_alias: Ident,
+    pub handler_alias_namespaced: String,
+    pub namespace: String,
+    pub struct_closure: Ident,
+    pub struct_param: Ident,
+}
+
+impl QSignalHelperName {
+    pub fn new(
+        idents: &QSignalName,
+        qobject_ident: &Ident,
+        cxx_mappings: &ParsedCxxMappings,
+    ) -> Self {
+        let signal_ident = &idents.name.cpp;
+        let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
+        let namespace = {
+            let mut namespace = vec!["rust::cxxqtgen1"];
+            if let Some(qobject_namespace) = cxx_mappings.namespaces.get(&qobject_ident.to_string())
+            {
+                namespace.push(qobject_namespace);
+            }
+
+            namespace.join("::")
+        };
+
+        // TODO: in the future we might improve the naming of the methods
+        // to avoid collisions (maybe use a separator similar to how CXX uses $?)
+        Self {
+            connect_name: CombinedIdent {
+                cpp: format_ident!("{}_{}", qobject_ident, idents.connect_name.cpp),
+                rust: format_ident!("{}_{}", qobject_ident, idents.connect_name.rust),
+            },
+            function_drop: format_ident!("drop_{qobject_ident}_signal_handler_{signal_ident}"),
+            function_call: format_ident!("call_{qobject_ident}_signal_handler_{signal_ident}"),
+            handler_alias_namespaced: format!("::{namespace}::{handler_alias}"),
+            struct_closure: format_ident!("{qobject_ident}CxxQtSignalClosure{signal_ident}"),
+            struct_param: format_ident!("{qobject_ident}CxxQtSignalParams{signal_ident}"),
+            namespace,
+            handler_alias,
         }
     }
 }

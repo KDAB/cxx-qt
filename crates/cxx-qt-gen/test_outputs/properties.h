@@ -2,6 +2,7 @@
 
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_maybelockguard.h>
+#include <cxx-qt-common/cxxqt_signalhandler.h>
 #include <cxx-qt-common/cxxqt_type.h>
 
 namespace cxx_qt::my_object {
@@ -9,7 +10,37 @@ class MyObject;
 
 } // namespace cxx_qt::my_object
 
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using MyObjectCxxQtSignalHandlerprimitiveChanged =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct MyObjectCxxQtSignalParamsprimitiveChanged*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+using MyObjectCxxQtSignalHandlertrivialChanged =
+  ::rust::cxxqtlib1::SignalHandler<
+    struct MyObjectCxxQtSignalParamstrivialChanged*>;
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
 #include "cxx-qt-gen/ffi.cxx.h"
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_primitiveChangedConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::
+    MyObjectCxxQtSignalHandlerprimitiveChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
+
+namespace rust::cxxqtgen1::cxx_qt::my_object {
+::QMetaObject::Connection
+MyObject_trivialChangedConnect(
+  ::cxx_qt::my_object::MyObject& self,
+  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlertrivialChanged
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace cxx_qt::my_object {
 class MyObject
@@ -32,13 +63,7 @@ public:
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
   Q_SIGNAL void primitiveChanged();
-  ::QMetaObject::Connection primitiveChangedConnect(
-    ::rust::Fn<void(MyObject&)> func,
-    ::Qt::ConnectionType type);
   Q_SIGNAL void trivialChanged();
-  ::QMetaObject::Connection trivialChangedConnect(
-    ::rust::Fn<void(MyObject&)> func,
-    ::Qt::ConnectionType type);
   explicit MyObject(QObject* parent = nullptr);
 
 private:

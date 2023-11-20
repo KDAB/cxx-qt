@@ -6,6 +6,16 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
+    unsafe extern "C++Qt" {
+        include!(<QtCore/QTimer>);
+        /// QTimer
+        type QTimer;
+
+        /// When the QTimer timeout occurs
+        #[qsignal]
+        pub(self) fn timeout(self: Pin<&mut QTimer>);
+    }
+
     unsafe extern "RustQt" {
         #[qobject]
         type MyObject = super::MyObjectRust;
@@ -19,7 +29,7 @@ mod ffi {
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
-            fourth: &'a QPoint,
+            fourth: &QPoint,
         );
 
         #[cxx_name = "newData"]

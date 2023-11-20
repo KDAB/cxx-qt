@@ -15,6 +15,7 @@ fn main() {
                 "src/containers.rs",
                 "src/custom_base_class.rs",
                 "src/custom_parent_class.rs",
+                "src/externcxxqt.rs",
                 "src/invokables.rs",
                 "src/multiple_qobjects.rs",
                 "src/nested_qobjects.rs",
@@ -31,6 +32,7 @@ fn main() {
                 "../qml/pages/ContainersPage.qml",
                 "../qml/pages/CustomBaseClassPage.qml",
                 "../qml/pages/CustomParentClassPage.qml",
+                "../qml/pages/ExternCxxQtPage.qml",
                 "../qml/pages/InvokablesPage.qml",
                 "../qml/pages/MultipleQObjectsPage.qml",
                 "../qml/pages/NestedQObjectsPage.qml",
@@ -48,8 +50,10 @@ fn main() {
         .cc_builder(|cc| {
             cc.include("../cpp");
             cc.file("../cpp/custom_object.cpp");
+            cc.file("../cpp/external_qobject.cpp");
         })
         .qobject_header("../cpp/custom_object.h")
+        .qobject_header("../cpp/external_qobject.h")
         // Ensure that Quick module is linked, so that cargo test can work.
         // In a CMake project this isn't required as the linking happens in CMake.
         .qt_module("Quick")

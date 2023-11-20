@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::BTreeSet;
+
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
 use crate::writer::cpp::namespaced;
 use indoc::formatdoc;
@@ -45,7 +47,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
         .qobjects
         .iter()
         .map(|qobject| {
-            namespaced(
+            let forward_declares = namespaced(
                 &qobject.namespace,
                 &formatdoc! {r#"
                     class {ident};
@@ -54,9 +56,20 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
                 ident = &qobject.ident,
                 forward_declares = qobject.blocks.forward_declares.join("\n"),
                 },
-            )
+            );
+            let forward_declares_namespaced = qobject.blocks.forward_declares_namespaced.join("\n");
+            formatdoc! {r#"
+                {forward_declares}
+                {forward_declares_namespaced}
+            "#}
         })
         .chain(generated.forward_declares.iter().cloned())
+        .chain(
+            generated
+                .extern_cxx_qt
+                .iter()
+                .map(|external| external.forward_declares.join("\n")),
+        )
         .collect::<Vec<String>>()
 }
 
@@ -86,7 +99,16 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
         });
 
+        let fragments = qobject
+            .blocks
+            .fragments
+            .iter()
+            .filter_map(pair_as_header)
+            .collect::<Vec<String>>()
+            .join("\n");
+
         formatdoc! {r#"
+            {fragments}
             {class_definition}
 
             Q_DECLARE_METATYPE({metatype}*)
@@ -101,8 +123,44 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
 /// For a given GeneratedCppBlocks write this into a C++ header
 pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
-    // Headers included:
-    // <memory> - unique_ptr to the Rust object.
+    let includes = {
+        let mut include_set = BTreeSet::new();
+        include_set.extend(
+            generated
+                .includes
+                .iter()
+                .chain(
+                    generated
+                        .qobjects
+                        .iter()
+                        .flat_map(|qobject| &qobject.blocks.includes),
+                )
+                .chain(
+                    generated
+                        .extern_cxx_qt
+                        .iter()
+                        .flat_map(|block| &block.includes),
+                ),
+        );
+        include_set
+            .into_iter()
+            .cloned()
+            .collect::<Vec<String>>()
+            .join("\n")
+    };
+    let extern_cxx_qt = generated
+        .extern_cxx_qt
+        .iter()
+        .flat_map(|block| {
+            block
+                .fragments
+                .iter()
+                .filter_map(pair_as_header)
+                .collect::<Vec<String>>()
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
     formatdoc! {r#"
         #pragma once
 
@@ -117,20 +175,6 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
     qobjects = qobjects_header(generated).join("\n"),
-    extern_cxx_qt = {
-        let mut out = vec![];
-        for block in &generated.extern_cxx_qt {
-            if let Some(method) = pair_as_header(&block.method) {
-                out.push(namespaced(&block.namespace, &method));
-            }
-        }
-        out.join("\n")
-    },
-    includes = generated.qobjects.iter()
-    .fold(generated.includes.clone(), |mut acc, qobject| {
-        acc.extend(qobject.blocks.includes.iter().cloned());
-        acc
-    }).into_iter().collect::<Vec<String>>().join("\n"),
     }
 }
 

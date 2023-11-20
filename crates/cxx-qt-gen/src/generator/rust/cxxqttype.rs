@@ -6,7 +6,7 @@
 use std::collections::BTreeMap;
 
 use crate::generator::{
-    naming::qobject::QObjectName, rust::qobject::GeneratedRustQObject,
+    naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment,
     utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
 };
 use quote::quote;
@@ -17,8 +17,8 @@ use super::fragment::RustFragmentPair;
 pub fn generate(
     qobject_ident: &QObjectName,
     qualified_mappings: &BTreeMap<Ident, Path>,
-) -> Result<GeneratedRustQObject> {
-    let mut blocks = GeneratedRustQObject::default();
+) -> Result<GeneratedRustFragment> {
+    let mut blocks = GeneratedRustFragment::default();
 
     let cpp_struct_ident = &qobject_ident.cpp_class.rust;
     let rust_struct_ident = &qobject_ident.rust_struct.rust;

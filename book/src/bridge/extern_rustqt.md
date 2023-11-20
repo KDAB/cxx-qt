@@ -67,11 +67,7 @@ TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_INTERFACE
 - [`qml_uncreatable`](https://doc.qt.io/qt-6/qqmlengine.html#QML_UNCREATABLE): Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
 - [`qml_singleton`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the QObject will be instantiated as a singleton in QML.
 
-Note that the rust file must be included within a Qml module in the `build.rs` file.
-
-<!--
-TODO: link to build system discussions
--->
+> The Rust file must be included within a [QML module in the `build.rs` file](../concepts/build_systems.md#qml-modules)
 
 ### `base` attribute
 
@@ -94,11 +90,9 @@ For more information on inheritance and how to override methods see the [Inherit
 
 ### Traits
 
-The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`. Or the [`Contructor`](../traits/constructor.md) trait needs to be implemented for the type.
+The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`. Or the [`cxx_qt::Constructor`](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) trait needs to be implemented for the type.
 
-<!--
-TODO: do these have their own page?
--->
+For further documentation see the [traits page](./traits.md).
 
 ## Properties
 
@@ -170,7 +164,9 @@ Implementations then have no difference to non invokable methods.
 
 ### Inheritance
 
-<!-- TODO -->
+Methods or signals that already exist on the base class of an object can be accessed via the `#[inherit]` attribute.
+
+For documentation see the [inheritance](../concepts/inheritance.md) page.
 
 ### Specifiers
 
@@ -247,7 +243,7 @@ Note that these are defined on the generated QObject [`qobject::T`](../concepts/
 
 The function will immediately emit the signal.
 Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
-To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](../traits/threading.md).
+To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](https://docs.rs/cxx-qt/latest/cxx_qt/struct.CxxQtThread.html).
 
 ### Inheritance
 
