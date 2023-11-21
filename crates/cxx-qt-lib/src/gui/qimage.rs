@@ -79,12 +79,12 @@ mod ffi {
         #[rust_name = "set_offset"]
         fn setOffset(self: &mut QImage, point: &QPoint);
 
-        /// Returns the size of the image.
-        fn size(self: &QImage) -> QSize;
-
         /// Sets the pixel color at (x, y) to color.
         #[rust_name = "set_pixel_color"]
         fn setPixelColor(self: &mut QImage, x: i32, y: i32, color: &QColor);
+
+        /// Returns the size of the image.
+        fn size(self: &QImage) -> QSize;
 
         /// Returns the number of pixels by which the image is intended to be offset by when positioning relative to other images.
         fn offset(self: &QImage) -> QPoint;
