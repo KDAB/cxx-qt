@@ -86,6 +86,9 @@ mod ffi {
         /// Returns the size of the image.
         fn size(self: &QImage) -> QSize;
 
+        /// Swaps image other with this image. This operation is very fast and never fails.
+        fn swap(self: &mut QImage, other: &mut QImage);
+
         /// Returns the number of pixels by which the image is intended to be offset by when positioning relative to other images.
         fn offset(self: &QImage) -> QPoint;
 
