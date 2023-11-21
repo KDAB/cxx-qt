@@ -81,6 +81,10 @@ mod ffi {
         /// Returns true if the string starts with s; otherwise returns false.
         #[rust_name = "starts_with"]
         fn startsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Converts a plain text string to an HTML string with HTML metacharacters <, >, &, and " replaced by HTML entities.
+        #[rust_name = "to_html_escaped"]
+        fn toHtmlEscaped(self: &QString) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
