@@ -67,6 +67,12 @@ mod ffi {
         TimeZone,
     }
 
+    #[repr(i32)]
+    enum TransformationMode {
+        FastTransformation,
+        SmoothTransformation,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -75,9 +81,11 @@ mod ffi {
         type DateFormat;
         type SplitBehaviorFlags;
         type TimeSpec;
+        type TransformationMode;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
