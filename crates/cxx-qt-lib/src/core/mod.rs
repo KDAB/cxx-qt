@@ -65,6 +65,7 @@ pub use qstringlist::QStringList;
 mod qt;
 pub use qt::{
     AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
 
 mod qtime;

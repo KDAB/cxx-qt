@@ -8,6 +8,12 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type TransformationMode = crate::TransformationMode;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qimage.h");
         type QImage = super::QImage;
@@ -66,6 +72,14 @@ mod ffi {
 
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
+
+        /// Returns a scaled copy of the image. The returned image is scaled to the given height using the specified transformation mode.
+        #[rust_name = "scaled_to_height"]
+        fn scaledToHeight(self: &QImage, width: i32, mode: TransformationMode) -> QImage;
+
+        /// Returns a scaled copy of the image. The returned image is scaled to the given width using the specified transformation mode.
+        #[rust_name = "scaled_to_width"]
+        fn scaledToWidth(self: &QImage, width: i32, mode: TransformationMode) -> QImage;
 
         /// Resizes the color table to contain colorCount entries.
         #[rust_name = "set_color_count"]
