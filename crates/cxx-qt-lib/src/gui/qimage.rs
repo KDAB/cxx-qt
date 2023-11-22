@@ -148,20 +148,7 @@ mod ffi {
         fn qimageCacheKey(image: &QImage) -> i64;
     }
 }
-/*
-#[cfg(qt_version_major = "6")]
-#[cxx::bridge]
-mod ffi_qt_6 {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qimage.h");
-        type QImage = super::QImage;
 
-        /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether horizontal and vertical are set to true or false.
-        // #[cfg(qt_version_major = "6")]
-        fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
-    }
-}
-*/
 /// > ⚠ **Warning**: The QImage API in CXX-Qt-lib is not yet complete and subject to change.
 ///
 /// This struct is the Rust representation of the [`QImage`](https://doc.qt.io/qt-6/qimage.html)
