@@ -14,6 +14,7 @@ fn main() {
         .file("src/qdatetime.rs")
         .file("src/qguiapplication.rs")
         .file("src/qhash.rs")
+        .file("src/qline.rs")
         .file("src/qlinef.rs")
         .file("src/qlist.rs")
         .file("src/qmap.rs")
