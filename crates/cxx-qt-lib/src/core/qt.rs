@@ -67,9 +67,12 @@ mod ffi {
         TimeZone,
     }
 
+    /// This enum type defines whether image transformations (e.g., scaling) should be smooth or not.
     #[repr(i32)]
     enum TransformationMode {
+        /// The transformation is performed quickly, with no smoothing.
         FastTransformation,
+        /// The resulting image is transformed using bilinear filtering.
         SmoothTransformation,
     }
 
