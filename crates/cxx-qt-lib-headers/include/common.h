@@ -14,6 +14,8 @@
 namespace rust {
 namespace cxxqtlib1 {
 
+using c_void = void;
+
 template<typename T, typename... Args>
 T
 construct(Args... args)

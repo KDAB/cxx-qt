@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for further types: `QLine`, `QLineF`, `QImage`
+- `internal_pointer_mut()` function on `QModelIndex`
+- `c_void` in CXX-Qt-lib for easy access to `void *`
 
 ## [0.6.0](https://github.com/KDAB/cxx-qt/compare/v0.5.3...v0.6.0) - 2023-11-17
 

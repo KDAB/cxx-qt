@@ -34,11 +34,16 @@ mod ffi {
         /// Returns the sibling at row for the current column. If there is no sibling at this position, an invalid QModelIndex is returned.
         #[rust_name = "sibling_at_row"]
         fn siblingAtRow(self: &QModelIndex, row: i32) -> QModelIndex;
+
+        /// Returns a `*mut c_void` pointer used by the model to associate the index with the internal data structure.
+        #[rust_name = "internal_pointer_mut"]
+        fn internalPointer(self: &QModelIndex) -> *mut c_void;
     }
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
+        type c_void = crate::c_void;
 
         #[doc(hidden)]
         #[rust_name = "qmodelindex_init_default"]

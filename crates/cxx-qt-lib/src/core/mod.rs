@@ -96,3 +96,33 @@ pub use qvariant::{QVariant, QVariantValue};
 
 mod qvector;
 pub use qvector::{QVector, QVectorElement};
+
+#[cxx::bridge]
+mod ffi {
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+        type c_void;
+    }
+}
+
+/// This is a workaround for CXX missing support for `*mut c_void`/`*const c_void` types.
+///
+/// To use this type add this to your bridge:
+/// ```rust
+/// # #[cxx::bridge]
+/// # mod ffi {
+/// #
+/// #[namespace = "rust::cxxqtlib1"]
+/// unsafe extern "C++" {
+///     include!("cxx-qt-lib/common.h");
+///     type c_void = cxx_qt_lib::c_void;
+/// }
+/// #
+/// # }
+/// #
+/// # fn main() {}
+/// ```
+///
+/// See: <https://github.com/dtolnay/cxx/issues/1049>
+pub use ffi::c_void;
