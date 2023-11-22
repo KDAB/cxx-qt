@@ -40,4 +40,21 @@ private Q_SLOTS:
     QCOMPARE(c.right(), 3.0);
     QCOMPARE(c.bottom(), 4.0);
   }
+
+  void nullMargin()
+  {
+    const auto m = QMarginsF();
+    QVERIFY(test_is_nullf(m));
+  }
+
+  void addMargins()
+  {
+    const auto m = QMargins(1, 2, 3, 4);
+    const auto m2 = QMargins(4, 3, 2, 1);
+    const auto m3 = add_marginsf(m, m2);
+    QCOMPARE(m3.left(), 5);
+    QCOMPARE(m3.top(), 5);
+    QCOMPARE(m3.right(), 5);
+    QCOMPARE(m3.bottom(), 5);
+  }
 };
