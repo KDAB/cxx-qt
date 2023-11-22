@@ -38,5 +38,5 @@ fn test_is_null(m: &QMargins) -> bool {
 }
 
 fn add_margins(m1: QMargins, m2: QMargins) -> QMargins {
-   m1 + m2
+    m1 + m2
 }
