@@ -41,7 +41,8 @@ CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). It should w
 Rust both support, however, these are not tested regularly.
 
 CXX-Qt is in early development and the API changes frequently. For the latest documentation between releases, [install mdBook](https://rust-lang.github.io/mdBook/guide/installation.html)
-and run `mdbook serve` in the [book folder](./book).
+and run `mdbook serve --open` in the [book folder](./book). It will open your own browser.
+If you need to open it in another browser goto url [http://localhost:3000](http://localhost:3000).
 
 ## Comparison to other Rust Qt bindings
 
