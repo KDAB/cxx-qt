@@ -61,8 +61,6 @@ mod ffi {
         #[rust_name = "set_points"]
         fn setPoints(self: &mut QLine, p1: &QPoint, p2: &QPoint);
 
-        //QLineF 	toLineF() const
-
         /// Translates this line by the given offset.
         fn translate(self: &mut QLine, offset: &QPoint);
 
