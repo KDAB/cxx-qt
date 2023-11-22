@@ -12,6 +12,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type TransformationMode = crate::TransformationMode;
+        type AspectRatioMode = crate::AspectRatioMode;
     }
 
     unsafe extern "C++" {
@@ -72,6 +73,15 @@ mod ffi {
 
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
+
+        /// Returns a copy of the image scaled to a rectangle with the given width and height according to the given aspectRatioMode and transformMode.
+        fn scaled(
+            self: &QImage,
+            width: i32,
+            height: i32,
+            aspectRatioMode: AspectRatioMode,
+            transformMode: TransformationMode,
+        ) -> QImage;
 
         /// Returns a scaled copy of the image. The returned image is scaled to the given height using the specified transformation mode.
         #[rust_name = "scaled_to_height"]
