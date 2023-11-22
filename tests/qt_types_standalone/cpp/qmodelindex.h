@@ -6,15 +6,30 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QAbstractListModel>
 #include <QtCore/QModelIndex>
 #include <QtCore/QStringListModel>
 #include <QtTest/QTest>
 
 #include "cxx-qt-gen/qmodelindex_cxx.cxx.h"
 
-class QModelIndexTest : public QObject
+// We subclass from QAbstractListModel to have a valid model to use for
+// access to createIndex();
+class QModelIndexTest : public QAbstractListModel
 {
   Q_OBJECT
+
+public:
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override
+  {
+    return 0;
+  }
+
+  QVariant data(const QModelIndex& index,
+                int role = Qt::DisplayRole) const override
+  {
+    return QVariant();
+  }
 
 private Q_SLOTS:
   void construct()
@@ -38,4 +53,23 @@ private Q_SLOTS:
     QCOMPARE(c.isValid(), true);
     QCOMPARE(c.row(), 0);
   }
+
+  void internalPointer()
+  {
+    const auto index = createIndex(0, 0, (void*)&my_data);
+
+    auto pointer = internal_pointer_qmodelindex(index);
+    QCOMPARE((int*)pointer, &my_data);
+  }
+
+  void internalId()
+  {
+    const auto index = createIndex(0, 0, (quintptr)1234);
+
+    auto id = internal_id_qmodelindex(index);
+    QCOMPARE(id, 1234);
+  }
+
+private:
+  int my_data = 42;
 };
