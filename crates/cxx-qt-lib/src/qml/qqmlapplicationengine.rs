@@ -36,6 +36,10 @@ mod ffi {
         /// Loads the root QML file located at url.
         fn load(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
 
+        /// This property holds the directory for storing offline user data
+        #[rust_name = "offline_storage_path"]
+        fn offlineStoragePath(self: &QQmlApplicationEngine) -> QString;
+
         /// Returns the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file).
         #[rust_name = "plugin_path_list"]
         fn pluginPathList(self: &QQmlApplicationEngine) -> QStringList;
@@ -51,6 +55,10 @@ mod ffi {
         /// Sets the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file) to paths.
         #[rust_name = "set_plugin_path_list"]
         fn setPluginPathList(self: Pin<&mut QQmlApplicationEngine>, paths: &QStringList);
+
+        /// Sets path as string for storing offline user data.
+        #[rust_name = "set_offline_storage_path"]
+        fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
     }
 
     #[namespace = "rust::cxxqtlib1"]
