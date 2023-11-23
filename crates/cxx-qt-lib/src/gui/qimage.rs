@@ -288,4 +288,13 @@ mod tests {
         assert_eq!(default_image.depth(), 0);
         assert_eq!(default_image.size().is_null(), true);
     }
+
+    #[test]
+    fn test_create_qimage_from_format() {
+        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        assert_eq!(qimage.width(), 50);
+        assert_eq!(qimage.height(), 70);
+        assert_eq!(default_image.is_null(), false);
+        assert_eq!(default_image.size().is_null(), false);
+    }
 }
