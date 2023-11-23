@@ -42,11 +42,11 @@ mod ffi {
         fn depth(self: &QImage) -> i32;
 
         /// Returns the number of pixels that fit horizontally in a physical meter.
-        #[rust_name = "dots_per_meterx"]
+        #[rust_name = "dots_per_meter_x"]
         fn dotsPerMeterX(self: &QImage) -> i32;
 
         /// Returns the number of pixels that fit vertically in a physical meter.
-        #[rust_name = "dots_per_metery"]
+        #[rust_name = "dots_per_meter_y"]
         fn dotsPerMeterY(self: &QImage) -> i32;
 
         /// Fills the entire image with the given color.
