@@ -16,6 +16,8 @@ mod qmarginsf_cxx {
         fn construct_qmarginsf() -> QMarginsF;
         fn read_qmarginsf(m: &QMarginsF) -> bool;
         fn clone_qmarginsf(m: &QMarginsF) -> QMarginsF;
+        fn test_is_nullf(m: &QMarginsF) -> bool;
+        fn add_marginsf(m1: QMarginsF, m2: QMarginsF) -> QMarginsF;
     }
 }
 
@@ -29,4 +31,12 @@ fn read_qmarginsf(m: &QMarginsF) -> bool {
 
 fn clone_qmarginsf(m: &QMarginsF) -> QMarginsF {
     m.clone()
+}
+
+fn test_is_nullf(m: &QMarginsF) -> bool {
+    m.is_null()
+}
+
+fn add_marginsf(m1: QMarginsF, m2: QMarginsF) -> QMarginsF {
+    m1 + m2
 }
