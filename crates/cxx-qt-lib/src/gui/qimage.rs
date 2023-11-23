@@ -136,6 +136,10 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
 
         #[doc(hidden)]
+        #[rust_name = "qimage_init_default"]
+        fn construct() -> QImage;
+
+        #[doc(hidden)]
         #[rust_name = "qimage_drop"]
         fn drop(image: &mut QImage);
 
@@ -167,6 +171,13 @@ impl Clone for QImage {
     /// Constructs a copy of other.
     fn clone(&self) -> Self {
         self.copy(&self.rect())
+    }
+}
+
+impl Default for QImage {
+    /// Constructs a null image.
+    fn default() -> Self {
+        ffi::qimage_init_default()
     }
 }
 
@@ -203,5 +214,20 @@ impl QImage {
     /// Returns a number that identifies the contents of this QImage object.
     pub fn cache_key(&self) -> i64 {
         ffi::qimage_cache_key(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_default_values() {
+        let default_image = QImage::default();
+        assert_eq!(default_image.all_gray(), true);
+        assert_eq!(default_image.is_null(), true);
+        assert_eq!(default_image.width(), 0);
+        assert_eq!(default_image.height(), 0);
+        assert_eq!(default_image.depth(), 0);
+        assert_eq!(default_image.size().is_null(), true);
     }
 }
