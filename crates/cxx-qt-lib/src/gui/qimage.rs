@@ -18,6 +18,7 @@ mod ffi {
     /// The type of image format available in Qt.
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
     enum QImageFormat {
         Format_Invalid,
         Format_Mono,
@@ -95,6 +96,9 @@ mod ffi {
 
         /// Fills the entire image with the given color.
         fn fill(self: &mut QImage, color: &QColor);
+
+        /// Returns the format of the image.
+        fn format(self: &QImage) -> QImageFormat;
 
         /// Whether the QImage is null.
         ///
@@ -294,7 +298,16 @@ mod tests {
         let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         assert_eq!(qimage.width(), 50);
         assert_eq!(qimage.height(), 70);
-        assert_eq!(default_image.is_null(), false);
-        assert_eq!(default_image.size().is_null(), false);
+        assert_eq!(qimage.is_null(), false);
+        assert_eq!(qimage.format(), ffi::QImageFormat::Format_Mono);
+    }
+
+    #[test]
+    fn test_copy() {
+        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        let qimage2 = qimage.copy(&qimage.rect());
+        assert_eq!(qimage.width(), qimage2.width());
+        assert_eq!(qimage.height(), qimage2.height());
+        assert_eq!(qimage.format(), qimage2.format());
     }
 }
