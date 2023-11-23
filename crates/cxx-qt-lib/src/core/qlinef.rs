@@ -106,7 +106,7 @@ impl Default for QLineF {
 
 // Safety:
 //
-// Static checks on the C++ side ensure that QLine is trivial.
+// Static checks on the C++ side ensure that QLineF is trivial.
 unsafe impl ExternType for QLineF {
     type Id = type_id!("QLineF");
     type Kind = cxx::kind::Trivial;
