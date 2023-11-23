@@ -285,12 +285,12 @@ mod tests {
     #[test]
     fn test_default_values() {
         let default_image = QImage::default();
-        assert_eq!(default_image.all_gray(), true);
-        assert_eq!(default_image.is_null(), true);
+        assert!(default_image.all_gray());
+        assert!(default_image.is_null());
         assert_eq!(default_image.width(), 0);
         assert_eq!(default_image.height(), 0);
         assert_eq!(default_image.depth(), 0);
-        assert_eq!(default_image.size().is_null(), true);
+        assert!(default_image.size().is_null());
     }
 
     #[test]
@@ -298,7 +298,7 @@ mod tests {
         let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         assert_eq!(qimage.width(), 50);
         assert_eq!(qimage.height(), 70);
-        assert_eq!(qimage.is_null(), false);
+        assert!(!qimage.is_null());
         assert_eq!(qimage.format(), ffi::QImageFormat::Format_Mono);
     }
 
