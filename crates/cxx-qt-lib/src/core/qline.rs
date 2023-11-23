@@ -91,14 +91,14 @@ pub struct QLine {
 }
 
 impl QLine {
-    /// Constructs margins with the given left, top, right, and bottom
+    /// Constructs a line object that represents the line between p1 and p2.
     pub fn new(pt1: QPoint, pt2: QPoint) -> Self {
         ffi::qline_new(pt1, pt2)
     }
 }
 
 impl Default for QLine {
-    /// Constructs a margins object with all margins set to 0.
+    /// Constructs a null line.
     fn default() -> Self {
         ffi::qline_default()
     }
