@@ -149,8 +149,6 @@ mod ffi {
     }
 }
 
-/// > ⚠ **Warning**: The QImage API in CXX-Qt-lib is not yet complete and subject to change.
-///
 /// This struct is the Rust representation of the [`QImage`](https://doc.qt.io/qt-6/qimage.html)
 /// class.
 ///
