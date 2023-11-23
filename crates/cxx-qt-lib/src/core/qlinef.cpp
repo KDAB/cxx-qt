@@ -10,8 +10,8 @@
 
 #include <cstdint>
 
-// QLine has "QPoint" members - pt1, pt2
-// Rust represents these as 32-bit integer types.
+// QLineF has "QPointF" members - pt1, pt2
+// Rust represents these as double types.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qline.h?h=v5.15.6-lts-lgpl#n281
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qline.h?h=v6.2.4#n295

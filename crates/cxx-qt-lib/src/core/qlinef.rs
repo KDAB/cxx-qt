@@ -82,7 +82,7 @@ mod ffi {
     }
 }
 
-/// The QLine class provides a two-dimensional vector using integer precision
+/// The QLineF class provides a two-dimensional vector using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QLineF {
@@ -91,6 +91,7 @@ pub struct QLineF {
 }
 
 impl QLineF {
+    /// Constructs a line object that represents the line between pt1 and pt2.
     pub fn new(pt1: QPointF, pt2: QPointF) -> Self {
         ffi::qlinef_new(pt1, pt2)
     }
