@@ -163,6 +163,13 @@ pub struct QImage {
     _data: MaybeUninit<[usize; 3]>,
 }
 
+impl Clone for QImage {
+    /// Constructs a copy of other.
+    fn clone(&self) -> Self {
+        self.copy(&self.rect())
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size & alignment is the same.
