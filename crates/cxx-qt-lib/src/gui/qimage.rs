@@ -15,6 +15,50 @@ mod ffi {
         type AspectRatioMode = crate::AspectRatioMode;
     }
 
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    enum QImageFormat {
+        Format_Invalid,
+        Format_Mono,
+        Format_MonoLSB,
+        Format_Indexed8,
+        Format_RGB32,
+        Format_ARGB32,
+        Format_ARGB32_Premultiplied,
+        Format_RGB16,
+        Format_ARGB8565_Premultiplied,
+        Format_RGB666,
+        Format_ARGB6666_Premultiplied,
+        Format_RGB555,
+        Format_ARGB8555_Premultiplied,
+        Format_RGB888,
+        Format_RGB444,
+        Format_ARGB4444_Premultiplied,
+        Format_RGBX8888,
+        Format_RGBA8888,
+        Format_RGBA8888_Premultiplied,
+        Format_BGR30,
+        Format_A2BGR30_Premultiplied,
+        Format_RGB30,
+        Format_A2RGB30_Premultiplied,
+        Format_Alpha8,
+        Format_Grayscale8,
+        Format_RGBX64,
+        Format_RGBA64,
+        Format_RGBA64_Premultiplied,
+        Format_Grayscale16,
+        Format_BGR888,
+        /* Qt 6.2
+        Format_RGBX16FPx4,
+        Format_RGBA16FPx4,
+        Format_RGBA16FPx4_Premultiplied,
+        Format_RGBX32FPx4,
+        Format_RGBA32FPx4,
+        Format_RGBA32FPx4_Premultiplied,
+        */
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qimage.h");
         type QImage = super::QImage;
@@ -134,10 +178,15 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
+        type QImageFormat;
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_default"]
         fn construct() -> QImage;
+
+        #[doc(hidden)]
+        #[rust_name = "qimage_init_from_width_and_height_and_image_format"]
+        fn construct(width: i32, height: i32, format: QImageFormat) -> QImage;
 
         #[doc(hidden)]
         #[rust_name = "qimage_drop"]
@@ -214,6 +263,15 @@ impl QImage {
     /// Returns a number that identifies the contents of this QImage object.
     pub fn cache_key(&self) -> i64 {
         ffi::qimage_cache_key(self)
+    }
+
+    /// Construct a Rust QImage from a given width, height, and QImage Format
+    pub fn from_height_width_and_format(
+        width: i32,
+        height: i32,
+        format: ffi::QImageFormat,
+    ) -> Self {
+        ffi::qimage_init_from_width_and_height_and_image_format(width, height, format)
     }
 }
 
