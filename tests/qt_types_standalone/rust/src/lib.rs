@@ -11,6 +11,7 @@ mod qdate;
 mod qdatetime;
 mod qguiapplication;
 mod qhash;
+mod qlinef;
 mod qlist;
 mod qmap;
 mod qmargins;
