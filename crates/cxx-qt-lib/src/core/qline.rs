@@ -76,6 +76,7 @@ mod ffi {
         #[rust_name = "qline_default"]
         fn construct() -> QLine;
 
+        #[doc(hidden)]
         #[rust_name = "qline_new"]
         fn construct(pt1: QPoint, pt2: QPoint) -> QLine;
     }
