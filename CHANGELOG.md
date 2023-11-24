@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `extern "C++Qt"` block support for declaring existing types with methods and signals
 - `#[qenum]` attribute for `Q_ENUM` and `Q_ENUM_NS` support
 - `qnamespace!` macro to support exposing namespaced enums to QML
+- Support for further types: `QLine`, `QLineF`, `QImage`
 
 ### Changed
 
