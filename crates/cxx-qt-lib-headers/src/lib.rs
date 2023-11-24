@@ -24,6 +24,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         ),
         (include_str!("../include/core/qdate.h"), "qdate.h"),
         (include_str!("../include/core/qdatetime.h"), "qdatetime.h"),
+        (
+            include_str!("../include/core/qelapsedtimer.h"),
+            "qelapsedtimer.h",
+        ),
         (include_str!("../include/core/qhash.h"), "qhash.h"),
         (include_str!("../include/core/qline.h"), "qline.h"),
         (include_str!("../include/core/qlinef.h"), "qlinef.h"),

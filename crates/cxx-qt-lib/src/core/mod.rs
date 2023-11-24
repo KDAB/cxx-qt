@@ -17,6 +17,9 @@ mod qdatetime;
 #[cfg(not(target_os = "emscripten"))]
 pub use qdatetime::QDateTime;
 
+mod qelapsedtimer;
+pub use qelapsedtimer::QElapsedTimer;
+
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
