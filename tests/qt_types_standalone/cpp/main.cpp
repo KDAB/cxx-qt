@@ -14,6 +14,7 @@
 #include "qdatetime.h"
 #include "qguiapplication.h"
 #include "qhash.h"
+#include "qlinef.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qmargins.h"
@@ -60,6 +61,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QDateTimeTest));
   runTest(QScopedPointer<QObject>(new QGuiApplicationTest));
   runTest(QScopedPointer<QObject>(new QHashTest));
+  runTest(QScopedPointer<QObject>(new QLineFTest));
   runTest(QScopedPointer<QObject>(new QListTest));
   runTest(QScopedPointer<QObject>(new QMapTest));
   runTest(QScopedPointer<QObject>(new QMarginsTest));
