@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::QPointF;
 use crate::QLine;
+use crate::QPointF;
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
