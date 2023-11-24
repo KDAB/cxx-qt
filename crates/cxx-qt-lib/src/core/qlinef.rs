@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::QLine;
 use crate::QPointF;
 use cxx::{type_id, ExternType};
 
@@ -11,6 +12,8 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qlinef.h");
         type QLineF = super::QLineF;
+        include!("cxx-qt-lib/qline.h");
+        type QLine = crate::QLine;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
 
@@ -79,6 +82,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qlinef_new"]
         fn construct(pt1: QPointF, pt2: QPointF) -> QLineF;
+        #[doc(hidden)]
+        #[rust_name = "qlinef_from_qline"]
+        fn construct(line: &QLine) -> QLineF;
     }
 }
 
@@ -101,6 +107,13 @@ impl Default for QLineF {
     /// Constructs a default qlinef
     fn default() -> Self {
         ffi::qlinef_default()
+    }
+}
+
+impl From<&ffi::QLine> for QLineF {
+    /// Construct a QLineF object from the given integer-based line.
+    fn from(line: &QLine) -> Self {
+        ffi::qlinef_from_qline(line)
     }
 }
 

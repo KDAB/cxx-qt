@@ -20,6 +20,9 @@ pub use qdatetime::QDateTime;
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
+mod qline;
+pub use qline::QLine;
+
 mod qlinef;
 pub use qlinef::QLineF;
 
