@@ -3,8 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::QLine;
-use cxx_qt_lib::QPoint;
+use cxx_qt_lib::{QLine, QPoint};
 
 #[cxx::bridge]
 mod qline_cxx {
