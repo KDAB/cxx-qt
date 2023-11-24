@@ -750,22 +750,25 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 qmlcachegen_loader.clone(),
             ];
 
-            let cmd = Command::new(qmlcachegen_executable)
-                .args(
-                    common_args
-                        .iter()
-                        .chain(&specific_args)
-                        .chain(&qml_file_qrc_paths),
-                )
-                .output()
-                .unwrap_or_else(|_| panic!("qmlcachegen failed for QML module {uri}"));
-            if !cmd.status.success() {
-                panic!(
-                    "qmlcachegen failed for QML module {uri}:\n{}",
-                    String::from_utf8_lossy(&cmd.stderr)
-                );
+            // If there are no QML files there is nothing for qmlcachegen to run with
+            if !qml_files.is_empty() {
+                let cmd = Command::new(qmlcachegen_executable)
+                    .args(
+                        common_args
+                            .iter()
+                            .chain(&specific_args)
+                            .chain(&qml_file_qrc_paths),
+                    )
+                    .output()
+                    .unwrap_or_else(|_| panic!("qmlcachegen failed for QML module {uri}"));
+                if !cmd.status.success() {
+                    panic!(
+                        "qmlcachegen failed for QML module {uri}:\n{}",
+                        String::from_utf8_lossy(&cmd.stderr)
+                    );
+                }
+                qmlcachegen_file_paths.push(PathBuf::from(&qmlcachegen_loader));
             }
-            qmlcachegen_file_paths.push(PathBuf::from(&qmlcachegen_loader));
         }
 
         // Run qmltyperegistrar
