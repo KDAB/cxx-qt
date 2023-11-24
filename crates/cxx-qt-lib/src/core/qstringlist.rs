@@ -36,6 +36,16 @@ mod ffi {
 
         /// Sorts the list of strings in ascending order.
         fn sort(self: &mut QStringList, cs: CaseSensitivity);
+
+        /// Returns a string list where every string has had the before text replaced with the after text wherever the before text is found.
+        /// The before text is matched case-sensitively or not depending on the cs flag.
+        #[rust_name = "replace_in_strings"]
+        fn replaceInStrings(
+            self: &mut QStringList,
+            before: &QString,
+            after: &QString,
+            cs: CaseSensitivity,
+        ) -> &mut QStringList;
     }
 
     #[namespace = "rust::cxxqtlib1"]
