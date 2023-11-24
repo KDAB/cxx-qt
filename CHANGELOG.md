@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.6.0...HEAD)
 
+### Added
+
+- Support for further types: `QLine`, `QLineF`, `QImage`
+
 ## [0.6.0](https://github.com/KDAB/cxx-qt/compare/v0.5.3...v0.6.0) - 2023-11-17
 
 ### Added
@@ -29,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `extern "C++Qt"` block support for declaring existing types with methods and signals
 - `#[qenum]` attribute for `Q_ENUM` and `Q_ENUM_NS` support
 - `qnamespace!` macro to support exposing namespaced enums to QML
-- Support for further types: `QLine`, `QLineF`, `QImage`
 
 ### Changed
 
