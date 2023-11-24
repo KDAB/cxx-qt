@@ -6,7 +6,7 @@
 use cxx_qt_lib::{QLineF, QPointF};
 
 #[cxx::bridge]
-mod qline_cxx {
+mod qlinef_cxx {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qlinef.h");
         type QLineF = cxx_qt_lib::QLineF;
