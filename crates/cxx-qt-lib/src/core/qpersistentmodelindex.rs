@@ -31,6 +31,9 @@ mod ffi {
         fn row(self: &QPersistentModelIndex) -> i32;
         /// Returns the sibling at row and column or an invalid QModelIndex if there is no sibling at this position.
         fn sibling(self: &QPersistentModelIndex, row: i32, column: i32) -> QModelIndex;
+
+        /// Swaps this persistent modelindex with other. This function is very fast and never fails.
+        fn swap(self: &mut QPersistentModelIndex, other: &mut QPersistentModelIndex);
     }
 
     #[namespace = "rust::cxxqtlib1"]
