@@ -636,7 +636,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
         }
 
         // Generate .qrc file and run rcc on it
-        let qrc_path = format!("{qml_module_dir}/qml_module_resources.qrc");
+        let qrc_path = format!("{qml_module_dir}/qml_module_resources_{qml_uri_underscores}.qrc");
         {
             fn qrc_file_line(file_path: &impl AsRef<Path>) -> String {
                 let path_display = file_path.as_ref().display();
