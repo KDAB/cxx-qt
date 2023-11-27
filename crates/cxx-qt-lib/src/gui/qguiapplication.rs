@@ -43,6 +43,9 @@ mod ffi {
         #[rust_name = "qguiapplication_application_name"]
         fn qapplicationApplicationName(app: &QGuiApplication) -> QString;
         #[doc(hidden)]
+        #[rust_name = "qguiapplication_remove_library_path"]
+        fn qapplicationRemoveLibraryPath(app: &QGuiApplication, path: &QString);
+        #[doc(hidden)]
         #[rust_name = "qguiapplication_application_version"]
         fn qapplicationApplicationVersion(app: &QGuiApplication) -> QString;
         #[doc(hidden)]
@@ -150,6 +153,11 @@ impl QGuiApplication {
     /// Set the name of this application
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_application_name(self, name);
+    }
+
+    /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
+    pub fn remove_library_path(&self, path: &QString) {
+        ffi::qguiapplication_remove_library_path(self, path)
     }
 
     /// Set the version of this application
