@@ -32,12 +32,8 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
 
         #[doc(hidden)]
-        #[rust_name = "qcommandlineoption_init_default"]
-        fn construct() -> QCommandLineOption;
-
-        #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qcommandlineoption"]
-        fn construct(url: &QCommandLineOption) -> QCommandLineOption;
+        fn construct(commandLineOption: &QCommandLineOption) -> QCommandLineOption;
     }
 }
 
@@ -50,13 +46,6 @@ impl Clone for QCommandLineOption {
     /// Constructs a copy of other.
     fn clone(&self) -> Self {
         ffi::qcommandlineoption_init_from_qcommandlineoption(self)
-    }
-}
-
-impl Default for QCommandLineOption {
-    /// Constructs an empty QCommandLineOption object.
-    fn default() -> Self {
-        ffi::qcommandlineoption_init_default()
     }
 }
 
