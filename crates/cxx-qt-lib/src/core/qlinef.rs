@@ -153,6 +153,14 @@ impl From<&ffi::QLine> for QLineF {
     }
 }
 
+impl From<QLineF> for ffi::QLine {
+    /// Returns an integer-based copy of this line.
+    /// Note that the returned line's start and end points are rounded to the nearest integer.
+    fn from(value: QLineF) -> Self {
+        value.to_line()
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side ensure that QLineF is trivial.
