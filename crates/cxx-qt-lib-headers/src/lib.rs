@@ -19,6 +19,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
     for (file_contents, file_name) in [
         (include_str!("../include/core/qbytearray.h"), "qbytearray.h"),
         (
+            include_str!("../include/core/qcommandlineparser.h"),
+            "qcommandlineparser.h",
+        ),
+        (
             include_str!("../include/core/qcoreapplication.h"),
             "qcoreapplication.h",
         ),

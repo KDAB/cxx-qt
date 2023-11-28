@@ -6,6 +6,9 @@
 mod qbytearray;
 pub use qbytearray::QByteArray;
 
+mod qcommandlineparser;
+pub use qcommandlineparser::QCommandLineParser;
+
 mod qcoreapplication;
 pub use qcoreapplication::QCoreApplication;
 
