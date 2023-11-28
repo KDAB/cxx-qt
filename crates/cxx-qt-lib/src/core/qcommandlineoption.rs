@@ -16,11 +16,32 @@ mod ffi {
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
 
+        /// Returns the default values set for this option.
+        #[rust_name = "default_values"]
+        fn defaultValues(self: &QCommandLineOption) -> QStringList;
+
         /// Returns the description set for this option.
         fn description(self: &QCommandLineOption) -> QString;
 
         /// Returns the names set for this option.
         fn names(self: &QCommandLineOption) -> QStringList;
+
+        /// Sets the default value used for this option to defaultValue.
+        #[rust_name = "set_default_value"]
+        fn setDefaultValue(self: &mut QCommandLineOption, value: &QString);
+
+        /// Sets the list of default values used for this option to defaultValues.
+        #[rust_name = "set_default_values"]
+        fn setDefaultValues(self: &mut QCommandLineOption, values: &QStringList);
+
+        /// Sets the description used for this option to description.
+        /// It is customary to add a "." at the end of the description.
+        #[rust_name = "set_description"]
+        fn setDescription(self: &mut QCommandLineOption, description: &QString);
+
+        /// Sets the name of the expected value, for the documentation, to valueName.
+        #[rust_name = "set_value_name"]
+        fn setValueName(self: &mut QCommandLineOption, valueName: &QString);
 
         /// Returns the name of the expected value.
         #[rust_name = "value_name"]
