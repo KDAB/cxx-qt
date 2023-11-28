@@ -16,17 +16,18 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QCommandLineParser> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 
 namespace rust {
 namespace cxxqtlib1 {
 QString
-qcommandlineparserValue(const QCommandLineParser &parser, const QString &optionName);
+qcommandlineparserValue(const QCommandLineParser& parser,
+                        const QString& optionName);
 
 QStringList
-qcommandlineparserValues(const QCommandLineParser &parser, const QString &optionName);
+qcommandlineparserValues(const QCommandLineParser& parser,
+                         const QString& optionName);
 }
 }
