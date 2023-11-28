@@ -10,7 +10,6 @@
 
 #include <cstdint>
 
-
 // QCommandLineOption has 1 pointer
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qcommandlineoption.h?h=v5.15.6-lts-lgpl#n59
 //
@@ -20,7 +19,8 @@ assert_alignment_and_size(QCommandLineOption,
                           sizeof(::std::size_t));
 
 static_assert(!::std::is_trivially_copy_assignable<QCommandLineOption>::value);
-static_assert(!::std::is_trivially_copy_constructible<QCommandLineOption>::value);
+static_assert(
+  !::std::is_trivially_copy_constructible<QCommandLineOption>::value);
 
 static_assert(!::std::is_trivially_destructible<QCommandLineOption>::value);
 
