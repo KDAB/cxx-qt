@@ -23,8 +23,10 @@ struct IsRelocatable<QCommandLineParser> : ::std::true_type
 
 namespace rust {
 namespace cxxqtlib1 {
-using QCommandLineParserOptionsAfterPositionalArgumentsMode = QCommandLineParser::OptionsAfterPositionalArgumentsMode;
-using QCommandLineParserSingleDashWordOptionMode = QCommandLineParser::SingleDashWordOptionMode;
+using QCommandLineParserOptionsAfterPositionalArgumentsMode =
+  QCommandLineParser::OptionsAfterPositionalArgumentsMode;
+using QCommandLineParserSingleDashWordOptionMode =
+  QCommandLineParser::SingleDashWordOptionMode;
 
 QString
 qcommandlineparserValue(const QCommandLineParser& parser,
