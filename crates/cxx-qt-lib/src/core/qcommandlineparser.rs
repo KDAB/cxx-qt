@@ -106,6 +106,9 @@ mod ffi {
             parser: &QCommandLineParser,
             optionName: &QString,
         ) -> QStringList;
+
+        #[rust_name = "is_set_from_qstring"]
+        fn qcommandlineparserIsSetFromQString(parser: &QCommandLineParser, name: &QString) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -132,8 +135,15 @@ impl QCommandLineParser {
     pub fn value(&self, option_name: &ffi::QString) -> ffi::QString {
         ffi::qcommandlineparser_value(self, option_name)
     }
+
+    /// Returns a list of option values found for the given option name optionName, or an empty list if not found.
     pub fn values(&self, option_name: &ffi::QString) -> ffi::QStringList {
         ffi::qcommandlineparser_values(self, option_name)
+    }
+
+    /// Checks whether the option name was passed to the application.
+    pub fn is_set(&self, name: &ffi::QString) -> bool {
+        ffi::is_set_from_qstring(self, name)
     }
 }
 

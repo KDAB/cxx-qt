@@ -35,5 +35,9 @@ qcommandlineparserValue(const QCommandLineParser& parser,
 QStringList
 qcommandlineparserValues(const QCommandLineParser& parser,
                          const QString& optionName);
+
+bool
+qcommandlineparserIsSetFromQString(const QCommandLineParser& parser,
+                                   const QString& optionName);
 }
 }
