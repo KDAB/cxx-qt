@@ -55,6 +55,14 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qcommandlineoption"]
         fn construct(commandLineOption: &QCommandLineOption) -> QCommandLineOption;
+
+        #[doc(hidden)]
+        #[rust_name = "qcommandlineoption_init_from_qstring"]
+        fn construct(string: &QString) -> QCommandLineOption;
+
+        #[doc(hidden)]
+        #[rust_name = "qcommandlineoption_init_from_qstringlist"]
+        fn construct(names: &QStringList) -> QCommandLineOption;
     }
 }
 
@@ -67,6 +75,20 @@ impl Clone for QCommandLineOption {
     /// Constructs a copy of other.
     fn clone(&self) -> Self {
         ffi::qcommandlineoption_init_from_qcommandlineoption(self)
+    }
+}
+
+impl From<&ffi::QString> for QCommandLineOption {
+    /// Constructs a command line option object with the name name.
+    fn from(name: &ffi::QString) -> Self {
+        ffi::qcommandlineoption_init_from_qstring(name)
+    }
+}
+
+impl From<&ffi::QStringList> for QCommandLineOption {
+    /// Constructs a command line option object with the name name.
+    fn from(names: &ffi::QStringList) -> Self {
+        ffi::qcommandlineoption_init_from_qstringlist(names)
     }
 }
 
