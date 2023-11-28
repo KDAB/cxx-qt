@@ -7,6 +7,31 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QCommandLineParserOptionsAfterPositionalArgumentsMode {
+        /// application argument --opt -t is interpreted as setting the options opt and t,
+        /// just like application --opt -t argument would do. This is the default parsing mode.
+        /// In order to specify that --opt and -t are positional arguments instead, the user can use --,
+        /// as in application argument -- --opt -t.
+        ParseAsOptions,
+        /// application argument --opt is interpreted as having two positional arguments, argument and --opt.
+        /// This mode is useful for executables that aim to launch other executables (e.g. wrappers, debugging tools, etc.)
+        /// or that support internal commands followed by options for the command. argument is the name of the command,
+        /// and all options occurring after it can be collected and parsed by another command line parser, possibly in another executable.
+        ParseAsPositionalArguments,
+    }
+
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QCommandLineParserSingleDashWordOptionMode {
+        ParseAsCompactedShortOptions,
+        ParseAsLongOptions,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcommandlineparser.h");
         type QCommandLineParser = super::QCommandLineParser;
@@ -49,6 +74,20 @@ mod ffi {
         #[rust_name = "set_application_description"]
         fn setApplicationDescription(self: &mut QCommandLineParser, description: &QString);
 
+        /// Sets the parsing mode to parsingMode. This must be called before process() or parse().
+        #[rust_name = "set_single_dash_word_option_mode"]
+        fn setSingleDashWordOptionMode(
+            self: &mut QCommandLineParser,
+            singleDashWordOptionMode: QCommandLineParserSingleDashWordOptionMode,
+        );
+
+        /// Sets the parsing mode to parsingMode. This must be called before process() or parse().
+        #[rust_name = "set_options_after_positional_arguments_mode"]
+        fn setOptionsAfterPositionalArgumentsMode(
+            self: &mut QCommandLineParser,
+            parsingMode: QCommandLineParserOptionsAfterPositionalArgumentsMode,
+        );
+
         /// Displays the version information from QCoreApplication::applicationVersion(), and exits the application.
         #[rust_name = "show_version"]
         fn showVersion(self: &mut QCommandLineParser);
@@ -72,6 +111,8 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
+        type QCommandLineParserOptionsAfterPositionalArgumentsMode;
+        type QCommandLineParserSingleDashWordOptionMode;
 
         #[doc(hidden)]
         #[rust_name = "qcommandlineparser_init_default"]
