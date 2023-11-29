@@ -39,7 +39,7 @@ mod ffi {
     }
 }
 
-/// The QRect struct defines a rectangle in the plane using integer precision.
+/// The QElapsedTimer struct provides a fast way to calculate elapsed times.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QElapsedTimer {
