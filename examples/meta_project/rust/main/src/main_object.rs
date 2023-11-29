@@ -34,10 +34,7 @@ pub struct MainObjectRust {
 
 impl qobject::MainObject {
     pub fn increment(mut self: Pin<&mut Self>) {
-        let counter = self.rust().counter;
-        let counter = sub1::increment(counter);
-        let counter = sub2::increment(counter);
-        self.as_mut().rust_mut().counter = counter;
+        self.as_mut().rust_mut().counter = self.rust().counter + 1;
 
         let new_string = QString::from(&self.rust().counter.to_string());
         self.as_mut().set_string(new_string);
