@@ -120,5 +120,12 @@ qapplicationSetOrganizationName(T& app, const QString& name)
   app.setOrganizationName(name);
 }
 
+template<typename T>
+void
+qapplicationRemoveLibraryPath(T& app, const QString& path)
+{
+  app.removeLibraryPath(path);
+}
+
 }
 }

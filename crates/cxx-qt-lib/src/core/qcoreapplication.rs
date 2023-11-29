@@ -55,6 +55,9 @@ mod ffi {
         #[rust_name = "qcoreapplication_organization_name"]
         fn qapplicationOrganizationName(app: &QCoreApplication) -> QString;
         #[doc(hidden)]
+        #[rust_name = "qcoreapplication_remove_library_path"]
+        fn qapplicationRemoveLibraryPath(app: &QCoreApplication, path: &QString);
+        #[doc(hidden)]
         #[rust_name = "qcoreapplication_set_application_name"]
         fn qapplicationSetApplicationName(app: Pin<&mut QCoreApplication>, name: &QString);
         #[doc(hidden)]
@@ -141,6 +144,11 @@ impl QCoreApplication {
     /// The name of the organization that wrote this application
     pub fn organization_name(&self) -> QString {
         ffi::qcoreapplication_organization_name(self)
+    }
+
+    /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
+    pub fn remove_library_path(&self, path: &QString) {
+        ffi::qcoreapplication_remove_library_path(self, path)
     }
 
     /// Set the name of this application
