@@ -74,9 +74,9 @@ if(BUILD_WASM)
     #
     # TODO: Figure out how to configure such that
     #       we can use add_executable for WASM
-    qt_add_executable(example_meta_project cpp/main.cpp qml/qml.qrc)
+    qt_add_executable(example_meta_project cpp/main.cpp)
 else()
-    add_executable(example_meta_project cpp/main.cpp qml/qml.qrc)
+    add_executable(example_meta_project cpp/main.cpp)
 endif()
 
 # Link to the qml module, which in turn links to the Rust qml_meta_project library
