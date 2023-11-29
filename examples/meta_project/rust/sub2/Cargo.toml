@@ -11,10 +11,6 @@ authors = [
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
-# This will instruct Cargo to create an rlib our main crate is the staticlib
-[lib]
-crate-type = ["rlib"]
-
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
