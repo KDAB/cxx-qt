@@ -9,5 +9,5 @@
 mod sub2_object;
 
 pub fn increment(number: u32) -> u32 {
-    number + 2
+    number + 3
 }
