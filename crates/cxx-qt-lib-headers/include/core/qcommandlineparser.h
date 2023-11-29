@@ -39,5 +39,5 @@ qcommandlineparserValues(const QCommandLineParser& parser,
 bool
 qcommandlineparserIsSetFromQString(const QCommandLineParser& parser,
                                    const QString& optionName);
-}
-}
+} // namespace cxxqtlib1
+} // namespace rust

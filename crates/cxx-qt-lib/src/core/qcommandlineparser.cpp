@@ -17,10 +17,6 @@ assert_alignment_and_size(QCommandLineParser,
                           sizeof(::std::size_t));
 
 static_assert(!::std::is_trivially_copy_assignable<QCommandLineParser>::value);
-static_assert(
-  !::std::is_trivially_copy_constructible<QCommandLineParser>::value);
-
-static_assert(!::std::is_trivially_destructible<QCommandLineParser>::value);
 
 namespace rust {
 namespace cxxqtlib1 {

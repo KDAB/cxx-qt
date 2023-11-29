@@ -118,6 +118,10 @@ mod ffi {
         type QCommandLineParserSingleDashWordOptionMode;
 
         #[doc(hidden)]
+        #[rust_name = "qcommandlineparser_drop"]
+        fn drop(parser: &mut QCommandLineParser);
+
+        #[doc(hidden)]
         #[rust_name = "qcommandlineparser_init_default"]
         fn construct() -> QCommandLineParser;
     }
@@ -125,6 +129,7 @@ mod ffi {
 
 /// QCoreApplication provides the command-line arguments as a simple list of strings.
 /// QCommandLineParser provides the ability to define a set of options, parse the command-line arguments, and store which options have actually been used, as well as option values.
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct QCommandLineParser {
     _space: MaybeUninit<usize>,
@@ -151,6 +156,12 @@ impl Default for QCommandLineParser {
     /// Constructs a command line parser object.
     fn default() -> Self {
         ffi::qcommandlineparser_init_default()
+    }
+}
+
+impl Drop for QCommandLineParser {
+    fn drop(&mut self) {
+        ffi::qcommandlineparser_drop(self);
     }
 }
 
