@@ -27,7 +27,7 @@ if(NOT Corrosion_FOUND)
     FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4.1
+        GIT_TAG v0.4.2
     )
 
     FetchContent_MakeAvailable(Corrosion)
@@ -52,7 +52,6 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 
 add_executable(${APP_NAME}
     cpp/main.cpp
-    qml/qml.qrc
 )
 
 target_include_directories(${APP_NAME} PRIVATE cpp)

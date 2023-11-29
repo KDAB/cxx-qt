@@ -11,6 +11,7 @@ fn main() {
         .qml_module(QmlModule::<_, &str> {
             uri: "com.kdab.cxx_qt.demo",
             rust_files: &["src/main_object.rs"],
+            qml_files: &["../../qml/main.qml"],
             ..Default::default()
         })
         .build();
