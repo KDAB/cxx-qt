@@ -53,6 +53,10 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
 
         #[doc(hidden)]
+        #[rust_name = "qcommandlineoption_drop"]
+        fn drop(option: &mut QCommandLineOption);
+
+        #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qcommandlineoption"]
         fn construct(commandLineOption: &QCommandLineOption) -> QCommandLineOption;
 
@@ -75,6 +79,13 @@ impl Clone for QCommandLineOption {
     /// Constructs a copy of other.
     fn clone(&self) -> Self {
         ffi::qcommandlineoption_init_from_qcommandlineoption(self)
+    }
+}
+
+impl Drop for QCommandLineOption {
+    /// Destroys the qcommandlineoption.
+    fn drop(&mut self) {
+        ffi::qcommandlineoption_drop(self)
     }
 }
 

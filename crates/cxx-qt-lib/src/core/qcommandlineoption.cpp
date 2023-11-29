@@ -22,6 +22,4 @@ static_assert(!::std::is_trivially_copy_assignable<QCommandLineOption>::value);
 static_assert(
   !::std::is_trivially_copy_constructible<QCommandLineOption>::value);
 
-static_assert(!::std::is_trivially_destructible<QCommandLineOption>::value);
-
 static_assert(QTypeInfo<QCommandLineOption>::isRelocatable);
