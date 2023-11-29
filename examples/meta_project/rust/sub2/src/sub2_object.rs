@@ -12,6 +12,7 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         #[qobject]
+        #[qml_element]
         #[qproperty(QString, string)]
         type Sub2Object = super::Sub2ObjectRust;
 
