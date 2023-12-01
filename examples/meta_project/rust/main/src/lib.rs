@@ -7,6 +7,6 @@ mod main_object;
 
 // Ensure the symbols from the rlib dependencies end up
 // in the staticlib (if you use Rust symbols from these
-// crates in this crate, you can skip these `pub use` statements).
-pub use sub1;
-pub use sub2;
+// crates in this crate, you can skip these `extern crate` statements).
+extern crate sub1;
+extern crate sub2;
