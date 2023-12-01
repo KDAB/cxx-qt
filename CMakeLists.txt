@@ -214,7 +214,10 @@ endif()
 set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
 # Add CMake tests for `cargo test/clippy/fmt/doc`.
-add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
+
+# qml-meta-project has issues linking with Qt 5 on Windows, as well as with GNU ld.gold.
+# There are no Cargo tests for that example anyway, so skip building it with `cargo test`.
+add_test(NAME cargo_tests COMMAND cargo test --release --all-features --workspace --exclude qml-meta-project --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 
