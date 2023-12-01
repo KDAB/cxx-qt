@@ -34,7 +34,7 @@ if(NOT Corrosion_FOUND)
 endif()
 
 set(CRATE qml-meta-project)
-corrosion_import_crate(MANIFEST_PATH rust/main/Cargo.toml CRATES ${CRATE})
+corrosion_import_crate(MANIFEST_PATH rust/main/Cargo.toml CRATES ${CRATE} FLAGS -j1)
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
