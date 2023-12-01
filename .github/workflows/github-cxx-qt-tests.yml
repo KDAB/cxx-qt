@@ -281,7 +281,7 @@ jobs:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
-      run: cmake --build build --config Release --parallel 2
+      run: cmake --build build --config Release
       working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
