@@ -3,7 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
+use std::{
+    io::{Cursor, Seek, Write},
+    mem::MaybeUninit,
+};
 
 #[cxx::bridge]
 mod ffi {
@@ -119,6 +122,97 @@ impl AsRef<[u8]> for QByteArray {
     /// Construct a slice of u8 from a QByteArray
     fn as_ref(&self) -> &[u8] {
         self.as_slice()
+    }
+}
+
+/// A QByteArray cursor allows seeking inside a QByteArray
+/// and writing to it.
+/// Comparable with [std::io::Cursor].
+pub struct QByteArrayCursor {
+    inner: QByteArray,
+    position: isize,
+}
+
+impl QByteArrayCursor {
+    /// Constructs a new QByteArrayCursor at location 0.
+    /// Like [`std::io::Cursor<Vec<u8>>`] this will overwrite
+    /// existing data in the QByteArray before starting to resize.
+    pub fn new(bytearray: QByteArray) -> Self {
+        Self {
+            inner: bytearray,
+            position: 0,
+        }
+    }
+
+    /// Returns a reference to the underlying QByteArray.
+    pub fn into_inner(self) -> QByteArray {
+        self.inner
+    }
+}
+
+/// Like the implementation of `Cursor<Vec<u8>>`, the QByteArrayCursor
+/// will overwrite existing data in the QByteArray.
+/// The QByteArray is resized as needed.
+impl Write for QByteArrayCursor {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let length_after_append = buf.len() as isize + self.position;
+        let bytearray_length = self.inner.len();
+        if length_after_append > bytearray_length {
+            self.inner.resize(length_after_append);
+        }
+
+        let bytes = self.inner.as_mut_slice();
+
+        // If the resize operation failed, then we need to do additional
+        // error handling.
+        // Luckily we can just leave this up to the `Cursor<&mut [u8]>` implementation.
+        let mut bytes_cursor = Cursor::new(bytes);
+        bytes_cursor.set_position(self.position as u64);
+
+        bytes_cursor.write(buf).map(|bytes_written| {
+            self.position += bytes_written as isize;
+            bytes_written
+        })
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // Nothing to flush, we always write everything
+        Ok(())
+    }
+}
+
+impl AsRef<QByteArray> for QByteArrayCursor {
+    fn as_ref(&self) -> &QByteArray {
+        &self.inner
+    }
+}
+
+impl Seek for QByteArrayCursor {
+    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
+        use std::io::{Error, ErrorKind, SeekFrom};
+        let (base_pos, offset) = match pos {
+            SeekFrom::Start(n) => (
+                0_usize,
+                n.try_into().map_err(|_err| {
+                    Error::new(
+                        ErrorKind::InvalidInput,
+                        "invalid seek to an overflowing position",
+                    )
+                })?,
+            ),
+            SeekFrom::End(n) => (self.inner.len() as usize, n),
+            SeekFrom::Current(n) => (self.position as usize, n),
+        };
+        match base_pos.checked_add_signed(offset as isize) {
+            Some(n) => {
+                self.position = (n as isize).min(self.inner.len());
+                Ok(self.position as u64)
+            }
+            None => Err(Error::new(
+                ErrorKind::InvalidInput,
+                "invalid seek to a negative or overflowing position",
+            )),
+        }
     }
 }
 
