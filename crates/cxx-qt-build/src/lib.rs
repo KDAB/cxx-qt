@@ -242,6 +242,15 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
+/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
+/// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
+fn header_root() -> String {
+    match env::var("CXXQT_EXPORT_DIR") {
+        Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
+        Err(_) => env::var("OUT_DIR").unwrap(),
+    }
+}
+
 fn panic_duplicate_file_and_qml_module(
     path: impl AsRef<Path>,
     uri: &str,
@@ -291,6 +300,16 @@ pub struct CxxQtBuilder {
     qt_modules: HashSet<String>,
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
+    extra_defines: HashSet<String>,
+}
+
+/// Options for external crates to use
+#[derive(Default)]
+pub struct CxxQtBuildersOpts {
+    /// Any extra definitions
+    pub defines: HashSet<String>,
+    /// Contents, directory, file name
+    pub headers: Vec<(String, String, String)>,
 }
 
 impl CxxQtBuilder {
@@ -309,6 +328,7 @@ impl CxxQtBuilder {
             qt_modules,
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
+            extra_defines: HashSet::new(),
         }
     }
 
@@ -426,27 +446,44 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Build with the given extra options
+    pub fn with_opts(mut self, opts: CxxQtBuildersOpts) -> Self {
+        let header_root = header_root();
+        for (file_contents, dir_name, file_name) in opts.headers {
+            let directory = if dir_name.is_empty() {
+                header_root.clone()
+            } else {
+                format!("{header_root}/{dir_name}")
+            };
+            std::fs::create_dir_all(directory.clone())
+                .expect("Could not create {directory} header directory");
+
+            let h_path = format!("{directory}/{file_name}");
+            let mut header = File::create(h_path).expect("Could not create header: {h_path}");
+            write!(header, "{file_contents}").expect("Could not write header: {h_path}");
+        }
+
+        // Add any of the defines
+        self.extra_defines.extend(opts.defines);
+
+        self
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
         // Ensure that the linker is setup correctly for Cargo builds
         qt_build_utils::setup_linker();
 
-        // The include directory needs to be namespaced by crate name when exporting for a C++ build system,
-        // but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
-        let header_root = match env::var("CXXQT_EXPORT_DIR") {
-            Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
-            Err(_) => env::var("OUT_DIR").unwrap(),
-        };
+        let header_root = header_root();
         let generated_header_dir = format!("{header_root}/cxx-qt-gen");
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
-        // Write cxx-qt-gen, cxx-qt-lib and cxx headers
+        // Write cxx-qt and cxx headers
         cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
-        cxx_qt_lib_headers::write_headers(format!("{header_root}/cxx-qt-lib"));
         std::fs::create_dir_all(format!("{header_root}/rust"))
             .expect("Could not create cxx header directory");
         let h_path = format!("{header_root}/rust/cxx.h");
@@ -499,12 +536,12 @@ impl CxxQtBuilder {
             builder.flag_if_supported("-std=c++17");
             // MinGW requires big-obj otherwise debug builds fail
             builder.flag_if_supported("-Wa,-mbig-obj");
-            // Enable Qt Gui in C++ if the feature is enabled
-            #[cfg(feature = "qt_gui")]
-            builder.define("CXX_QT_GUI_FEATURE", None);
-            // Enable Qt Gui in C++ if the feature is enabled
-            #[cfg(feature = "qt_qml")]
-            builder.define("CXX_QT_QML_FEATURE", None);
+
+            // Enable any extra defines
+            for extra_define in &self.extra_defines {
+                builder.define(extra_define, None);
+            }
+
             for include_dir in qtbuild.include_paths() {
                 builder.include(&include_dir);
             }
