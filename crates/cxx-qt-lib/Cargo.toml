@@ -18,6 +18,7 @@ exclude = [ "**/generate.sh" ]
 
 [dependencies]
 cxx.workspace = true
+cxx-qt-build.workspace = true
 bytes = { version = "1.4", optional = true }
 chrono = { version = "0.4.27", optional = true }
 http = { version = "1.0", optional = true }
@@ -27,7 +28,6 @@ url = { version = "2.3", optional = true }
 
 [build-dependencies]
 cxx-build.workspace = true
-cxx-qt-lib-headers.workspace = true
 qt-build-utils.workspace = true
 
 [features]
@@ -36,8 +36,8 @@ bytes = ["dep:bytes"]
 chrono = ["dep:chrono"]
 http = ["dep:http"]
 rgb = ["dep:rgb"]
-qt_gui = ["cxx-qt-lib-headers/qt_gui"]
-qt_qml = ["cxx-qt-lib-headers/qt_qml"]
+qt_gui = ["cxx-qt-build/qt_gui"]
+qt_qml = ["cxx-qt-build/qt_qml"]
 time = ["dep:time"]
 url = ["dep:url"]
 link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
