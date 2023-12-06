@@ -46,5 +46,6 @@ fn main() {
             ],
             ..Default::default()
         })
+        .with_opts(cxx_qt_lib::build_opts())
         .build();
 }

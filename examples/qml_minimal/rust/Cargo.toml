@@ -38,6 +38,8 @@ cxx-qt-lib.workspace = true
 [build-dependencies]
 # Use `cxx-qt-build = "0.6"` here instead!
 cxx-qt-build.workspace = true
+# Use `cxx-qt-lib = "0.6"` here instead!
+cxx-qt-lib.workspace = true
 
 [features]
 # This feature must be enabled for `cargo test` when linking Qt 6 statically.
