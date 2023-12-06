@@ -25,6 +25,7 @@ uuid = { version = "1.2", features = ["serde", "v4"] }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
+cxx-qt-lib.workspace = true
 
 [features]
 link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
