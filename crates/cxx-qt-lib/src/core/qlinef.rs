@@ -17,6 +17,14 @@ mod ffi {
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
 
+        /// Returns the angle of the line in degrees.
+        fn angle(self: &QLineF) -> f64;
+
+        /// Returns the angle (in degrees) from this line to the given line, taking the direction of the lines into account.
+        /// If the lines do not intersect within their range, it is the intersection point of the extended lines that serves as origin (see QLineF::UnboundedIntersection).
+        #[rust_name = "angle_to"]
+        fn angleTo(self: &QLineF, line: &QLineF) -> f64;
+
         /// Returns the line's start point.
         fn p1(self: &QLineF) -> QPointF;
 
@@ -48,6 +56,26 @@ mod ffi {
         #[rust_name = "is_null"]
         fn isNull(self: &QLineF) -> bool;
 
+        /// Returns the length of the line.
+        fn length(self: &QLineF) -> f64;
+
+        /// Returns a line that is perpendicular to this line with the same starting point and length.
+        #[rust_name = "normal_vector"]
+        fn normalVector(self: &QLineF) -> QLineF;
+
+        /// Returns the point at the parameterized position specified by t. The function returns the line's start point if t = 0, and its end point if t = 1.
+        #[rust_name = "point_at"]
+        fn pointAt(self: &QLineF, t: f64) -> QPointF;
+
+        /// Sets the angle of the line to the given angle (in degrees). This will change the position of the second point of the line such that the line has the given angle.
+        #[rust_name = "set_angle"]
+        fn setAngle(self: &mut QLineF, angle: f64);
+
+        /// Sets the length of the line to the given length. QLineF will move the end point - p2() - of the line to give the line its new length, unless length() was previously zero, i
+        /// in which case no scaling is attempted. For lines with very short lengths (represented by denormal floating-point values), results may be imprecise.
+        #[rust_name = "set_length"]
+        fn setLength(self: &mut QLineF, length: f64);
+
         /// Sets the starting point of this line to p1.
         #[rust_name = "set_p1"]
         fn setP1(self: &mut QLineF, p1: &QPointF);
@@ -64,11 +92,19 @@ mod ffi {
         #[rust_name = "set_points"]
         fn setPoints(self: &mut QLineF, p1: &QPointF, p2: &QPointF);
 
+        /// Returns an integer based copy of this line.
+        #[rust_name = "to_line"]
+        fn toLine(self: &QLineF) -> QLine;
+
         /// Translates this line by the given offset.
         fn translate(self: &mut QLineF, offset: &QPointF);
 
         /// Returns this line translated by the given offset.
         fn translated(self: &QLineF, offset: &QPointF) -> QLineF;
+
+        /// Returns the unit vector for this line, i.e a line starting at the same point as this line with a length of 1.0, provided the line is non-null.
+        #[rust_name = "unit_vector"]
+        fn unitVector(self: &QLineF) -> QLineF;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -114,6 +150,14 @@ impl From<&ffi::QLine> for QLineF {
     /// Construct a QLineF object from the given integer-based line.
     fn from(line: &QLine) -> Self {
         ffi::qlinef_from_qline(line)
+    }
+}
+
+impl From<QLineF> for ffi::QLine {
+    /// Returns an integer-based copy of this line.
+    /// Note that the returned line's start and end points are rounded to the nearest integer.
+    fn from(value: QLineF) -> Self {
+        value.to_line()
     }
 }
 
