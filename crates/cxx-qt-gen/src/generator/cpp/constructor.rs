@@ -17,8 +17,8 @@ fn default_constructor(
     base_class: String,
     initializers: String,
 ) -> GeneratedCppQObjectBlocks {
-    GeneratedCppQObjectBlocks {
-        methods: vec![CppFragment::Pair {
+    let constructor = if qobject.has_qobject_macro {
+        CppFragment::Pair {
             header: format!(
                 "explicit {class_name}(QObject* parent = nullptr);",
                 class_name = qobject.ident
@@ -34,7 +34,33 @@ fn default_constructor(
                 namespace_internals = qobject.namespace_internals,
                 rust_obj = qobject.rust_ident,
             ),
-        }],
+        }
+    } else {
+        CppFragment::Pair {
+            header: format!("explicit {class_name}();", class_name = qobject.ident),
+            source: formatdoc!(
+                r#"
+            {class_name}::{class_name}()
+              {base_class_line}
+              , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
+            {{ }}
+            "#,
+                base_class_line = if base_class.is_empty() {
+                    unreachable!(
+                        "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
+                    );
+                } else {
+                    format!(": {base_class}()")
+                },
+                class_name = qobject.ident,
+                namespace_internals = qobject.namespace_internals,
+                rust_obj = qobject.rust_ident,
+            ),
+        }
+    };
+
+    GeneratedCppQObjectBlocks {
+        methods: vec![constructor],
         ..Default::default()
     }
 }
@@ -143,6 +169,7 @@ mod tests {
             namespace: "".to_string(),
             namespace_internals: "rust".to_string(),
             blocks: GeneratedCppQObjectBlocks::default(),
+            has_qobject_macro: true,
         }
     }
 
@@ -214,6 +241,37 @@ mod tests {
                     "
                     MyObject::MyObject(QObject* parent)
                       : BaseClass(parent)
+                      , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::createRs())
+                    {{ }}
+                    "
+                ),
+            }]
+        );
+    }
+
+    #[test]
+    fn default_constructor_no_qobject_macro() {
+        let mut qobject = qobject_for_testing();
+        qobject.has_qobject_macro = false;
+        let blocks = generate(
+            &qobject,
+            &[],
+            "BaseClass".to_owned(),
+            &[],
+            &TypeNames::default(),
+        )
+        .unwrap();
+
+        assert_empty_blocks(&blocks);
+        assert!(blocks.private_methods.is_empty());
+        assert_eq!(
+            blocks.methods,
+            vec![CppFragment::Pair {
+                header: "explicit MyObject();".to_string(),
+                source: formatdoc!(
+                    "
+                    MyObject::MyObject()
+                      : BaseClass()
                       , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::createRs())
                     {{ }}
                     "
