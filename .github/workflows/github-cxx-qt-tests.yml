@@ -65,7 +65,7 @@ jobs:
             # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
             # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
             # https://github.com/KDAB/cxx-qt/issues/121
-            ctest_args: --exclude-regex '^(example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_tests|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -77,7 +77,7 @@ jobs:
             qt_version: 6
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            ctest_args: --exclude-regex '^(example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_tests|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -184,7 +184,7 @@ jobs:
       # https://github.com/KDAB/cxx-qt/issues/121
       #
       # automake is needed for building libicu which is a dependency of Qt
-      run: brew install automake autoconf-archive ninja clang-format
+      run: brew install automake autoconf-archive ninja
 
     - name: "Authenticate to GitHub Packages"
       if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
