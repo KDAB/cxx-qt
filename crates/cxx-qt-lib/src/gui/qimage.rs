@@ -19,6 +19,15 @@ mod ffi {
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
+    enum QImageInvertMode {
+        InvertRgb,
+        InvertRgba,
+    }
+
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
     enum QImageFormat {
         Format_Invalid,
         Format_Mono,
@@ -108,6 +117,10 @@ mod ffi {
         /// Returns the format of the image.
         fn format(self: &QImage) -> QImageFormat;
 
+        /// Inverts all pixel values in the image.
+        #[rust_name = "invert_pixels"]
+        fn invertPixels(self: &mut QImage, mode: QImageInvertMode);
+
         /// Whether the QImage is null.
         ///
         /// This means that the QImage has all parameters set to zero and no allocated data.
@@ -191,6 +204,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
         type QImageFormat;
+        type QImageInvertMode;
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_default"]

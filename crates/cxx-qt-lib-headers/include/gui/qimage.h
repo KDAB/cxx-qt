@@ -24,6 +24,7 @@ struct IsRelocatable<QImage> : ::std::true_type
 
 namespace cxxqtlib1 {
 using QImageFormat = QImage::Format;
+using QImageInvertMode = QImage::InvertMode;
 
 QImage
 qimageInitFromData(const rust::Slice<std::uint8_t const> data,
