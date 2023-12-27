@@ -94,6 +94,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtime_secs_to"]
         fn qtimeSecsTo(time: &QTime, t: QTime) -> i32;
+
+        #[doc(hidden)]
+        #[rust_name = "qtime_is_valid"]
+        fn qtimeIsValid(h: i32, m: i32, s: i32, ms: i32) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -156,6 +160,9 @@ impl QTime {
     /// If t is earlier than this time, the number of seconds returned is negative.
     pub fn secs_to(&self, t: Self) -> i32 {
         ffi::qtime_secs_to(self, t)
+    }
+    pub fn is_valid_time(h: i32, m: i32, s: i32, ms: i32) -> bool {
+        ffi::qtime_is_valid(h, m, s, ms)
     }
 }
 
