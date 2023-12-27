@@ -99,6 +99,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qbytearray_trimmed"]
         fn qbytearrayTrimmed(bytearray: &QByteArray) -> QByteArray;
+
+        #[doc(hidden)]
+        #[rust_name = "qbytearray_prepend"]
+        fn qbytearrayPrepend(bytearray: &mut QByteArray, ch: u8);
     }
 }
 
@@ -268,6 +272,11 @@ impl QByteArray {
     /// Returns the number of items in the QByteArray.
     pub fn len(&self) -> isize {
         ffi::qbytearray_len(self)
+    }
+
+    /// Inserts value at the start of the list.
+    pub fn prepend(&mut self, ch: u8) {
+        ffi::qbytearray_prepend(self, ch);
     }
 
     /// Removes len bytes from the array, starting at index position pos.

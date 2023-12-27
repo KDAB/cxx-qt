@@ -93,6 +93,12 @@ qbytearrayAppend(QByteArray& byteArray, ::std::uint8_t ch)
 }
 
 void
+qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch)
+{
+  byteArray.prepend(static_cast<char>(ch));
+}
+
+void
 qbytearrayFill(QByteArray& byteArray, ::std::uint8_t ch, ::rust::isize size)
 {
   Q_ASSERT(size >= -1);

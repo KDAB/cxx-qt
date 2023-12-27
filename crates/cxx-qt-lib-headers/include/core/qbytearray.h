@@ -63,5 +63,7 @@ qbytearrayToUpper(const QByteArray& byteArray);
 QByteArray
 qbytearrayTrimmed(const QByteArray& byteArray);
 
+void
+qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch);
 }
 }
