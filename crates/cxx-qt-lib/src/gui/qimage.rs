@@ -76,8 +76,16 @@ mod ffi {
         #[rust_name = "all_gray"]
         fn allGray(self: &QImage) -> bool;
 
+        /// Returns the number of bit planes in the image.
+        #[rust_name = "bit_plane_count"]
+        fn bitPlaneCount(self: &QImage) -> i32;
+
         /// Returns a sub-area of the image as a new image.
         fn copy(self: &QImage, rect: &QRect) -> QImage;
+
+        /// Creates and returns a 1-bpp heuristic mask for this image.
+        #[rust_name = "create_heuristic_mask"]
+        fn createHeuristicMask(self: &QImage, clipTight: bool) -> QImage;
 
         /// Returns the size of the color table for the image.
         #[rust_name = "color_count"]
