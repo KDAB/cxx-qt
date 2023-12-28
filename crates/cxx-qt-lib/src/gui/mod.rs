@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
@@ -20,3 +20,6 @@ pub use qvector4d::QVector4D;
 
 mod qimage;
 pub use qimage::QImage;
+
+mod qpainter;
+pub use qpainter::QPainter;
