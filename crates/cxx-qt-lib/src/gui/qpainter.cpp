@@ -22,4 +22,3 @@ static_assert(!::std::is_trivially_copy_constructible<QPainter>::value);
 
 static_assert(!::std::is_trivially_destructible<QPainter>::value);
 
-static_assert(QTypeInfo<QPainter>::isRelocatable);

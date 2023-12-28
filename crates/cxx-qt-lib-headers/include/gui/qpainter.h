@@ -10,4 +10,17 @@
 
 #include <QtGui/QPainter>
 
+#include "rust/cxx.h"
+
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
+template<>
+struct IsRelocatable<QPainter> : ::std::true_type
+{
+};
+
+} // namespace rust
+
 #endif

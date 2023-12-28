@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
-use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -45,8 +44,8 @@ mod ffi {
         fn drawText(self: &mut QPainter, point: &QPoint, text: &QString);
 
         /// Fills the given rectangle with the color specified.
-        #[rust_name = "fill_rect"]
-        fn fillRect(self: &mut QPainter, rectangle: &QRect, color: &QColor);
+        // #[rust_name = "fill_rect"]
+        // fn fillRect(self: &mut QPainter, rectangle: &QRect, color: &QColor);
 
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
