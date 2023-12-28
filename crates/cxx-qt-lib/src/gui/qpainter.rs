@@ -19,10 +19,18 @@ mod ffi {
         type QLine = crate::QLine;
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
+        include!("cxx-qt-lib/qimage.h");
+        type QImage = crate::QImage;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
         fn drawEllipse(self: &mut QPainter, rect: &QRect);
+
+        /// Draws the given image into the given rectangle.
+        #[rust_name = "draw_image"]
+        fn drawImage(self: &mut QPainter, rectangle: &QRect, image: &QImage);
 
         /// Draws a line defined by line.
         #[rust_name = "draw_line"]
@@ -32,6 +40,10 @@ mod ffi {
         #[rust_name = "draw_point"]
         fn drawPoint(self: &mut QPainter, point: &QPoint);
 
+        /// Draws the given text with the currently defined text direction, beginning at the given position.
+        #[rust_name = "draw_text"]
+        fn drawText(self: &mut QPainter, point: &QPoint, text: &QString);
+
         /// Fills the given rectangle with the color specified.
         #[rust_name = "fill_rect"]
         fn fillRect(self: &mut QPainter, rectangle: &QRect, color: &QColor);
@@ -40,11 +52,18 @@ mod ffi {
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: &mut QPainter);
 
+        /// Enables clipping if enable is true, or disables clipping if enable is false.
+        #[rust_name = "set_clipping"]
+        fn setClipping(self: &mut QPainter, enable: bool);
+
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: &mut QPainter);
 
         /// Translates the coordinate system by the given offset.
         fn translate(self: &mut QPainter, offset: &QPoint);
+
+        /// Returns the window rectangle.
+        fn window(self: &QPainter) -> QRect;
     }
 
     #[namespace = "rust::cxxqtlib1"]
