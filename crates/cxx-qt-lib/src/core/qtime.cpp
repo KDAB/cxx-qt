@@ -66,7 +66,7 @@ bool
 qtimeIsValid(int h, int m, int s, int ms)
 {
   return QTime::isValid(h, m, s, ms);
-}	
+}
 
 }
 }
