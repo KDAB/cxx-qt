@@ -12,16 +12,32 @@ mod ffi {
         type QPainter = super::QPainter;
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
+        include!("cxx-qt-lib/qrectf.h");
+        type QRectF = crate::QRectF;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
-        include!("cxx-qt-lib/qcolor.h");
-        type QColor = crate::QColor;
+        // include!("cxx-qt-lib/qcolor.h");
+        // type QColor = crate::QColor;
         include!("cxx-qt-lib/qimage.h");
         type QImage = crate::QImage;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        /// Returns the currently set brush origin.
+        #[rust_name = "brush_origin"]
+        fn brushOrigin(self: &QPainter) -> QPoint;
+
+        /// Returns the bounding rectangle of the current clip if there is a clip;
+        /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
+        #[rust_name = "clip_bounding_rect"]
+        fn clipBoundingRect(self: &QPainter) -> QRectF;
+
+        /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
+        /// and the given startAngle and spanAngle.
+        #[rust_name = "draw_arc"]
+        fn drawArc(self: &mut QPainter, x: i32, y: i32, width: i32, height: i32, startAngle: i32, spanAngle: i32);
 
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
@@ -47,6 +63,17 @@ mod ffi {
         // #[rust_name = "fill_rect"]
         // fn fillRect(self: &mut QPainter, rectangle: &QRect, color: &QColor);
 
+        /// Returns true if clipping has been set; otherwise returns false.
+        #[rust_name = "has_clipping"]
+        fn hasClipping(self: &QPainter) -> bool;
+
+        /// Returns true if begin() has been called and end() has not yet been called; otherwise returns false.
+        #[rust_name = "is_active"]
+        fn isActive(self: &QPainter) -> bool;
+
+        /// Returns the opacity of the painter. The default value is 1.
+        fn opacity(self: &QPainter) -> f64;
+
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: &mut QPainter);
@@ -55,8 +82,16 @@ mod ffi {
         #[rust_name = "set_clipping"]
         fn setClipping(self: &mut QPainter, enable: bool);
 
+        /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
+        /// where 0.0 is fully transparent and 1.0 is fully opaque.
+        #[rust_name = "set_opacity"]
+        fn setOpacity(self: &mut QPainter, opacity: f64);
+
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: &mut QPainter);
+
+        /// Rotates the coordinate system clockwise. The given angle parameter is in degrees.
+        fn rotate(self: &mut QPainter, angle: f64);
 
         /// Translates the coordinate system by the given offset.
         fn translate(self: &mut QPainter, offset: &QPoint);
