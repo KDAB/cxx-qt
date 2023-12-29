@@ -91,6 +91,13 @@ mod ffi {
         OpaqueMode,
     }
 
+    #[repr(i32)]
+    enum ClipOperation {
+        NoClip,
+        ReplaceClip,
+        IntersectClip,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -102,10 +109,11 @@ mod ffi {
         type TransformationMode;
         type LayoutDirection;
         type BGMode;
+        type ClipOperation;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, BGMode, CaseSensitivity, ConnectionType, DateFormat, LayoutDirection,
-    SplitBehaviorFlags, TimeSpec, TransformationMode,
+    SplitBehaviorFlags, TimeSpec, TransformationMode, ClipOperation
 };

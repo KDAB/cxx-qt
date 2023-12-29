@@ -12,6 +12,7 @@ mod ffi {
         include!("cxx-qt-lib/qt.h");
         type LayoutDirection = crate::LayoutDirection;
         type BGMode = crate::BGMode;
+        type ClipOperation = crate::ClipOperation;
     }
 
     unsafe extern "C++" {
@@ -120,6 +121,10 @@ mod ffi {
         /// Enables clipping if enable is true, or disables clipping if enable is false.
         #[rust_name = "set_clipping"]
         fn setClipping(self: &mut QPainter, enable: bool);
+
+        /// Enables clipping, and sets the clip region to the given rectangle using the given clip operation.
+        #[rust_name = "set_clip_rect"]
+        fn setClipRect(self: &mut QPainter, rectangle: &QRect, operation: ClipOperation);
 
         /// Sets the layout direction used by the painter when drawing text, to the specified direction.
         #[rust_name = "set_layout_direction"]
