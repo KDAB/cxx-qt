@@ -167,6 +167,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
         fn construct() -> QPainter;
+
+        #[doc(hidden)]
+        #[rust_name = "qpainter_drop"]
+        fn drop(painter: &mut QPainter);        
     }
 }
 
@@ -182,6 +186,12 @@ impl Default for QPainter {
     }
 }
 
+impl Drop for QPainter {
+    fn drop(&mut self) {
+        ffi::qpainter_drop(self);
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
@@ -189,3 +199,5 @@ unsafe impl ExternType for QPainter {
     type Id = type_id!("QPainter");
     type Kind = cxx::kind::Trivial;
 }
+
+
