@@ -10,6 +10,15 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpen.h");
         type QPen = super::QPen;
+
+        /// Returns true if the pen is cosmetic; otherwise returns false.
+        #[rust_name = "is_comestic"]
+        fn isCosmetic(pen: &QPen) -> bool;
+
+        /// Returns true if the pen has a solid fill, otherwise false.
+        #[rust_name = "is_solid"]
+        fn isSolid(pen: &QPen) -> bool;
+
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -19,21 +28,28 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpen_init_default"]
         fn construct() -> QPen;
+
+        #[doc(hidden)]
+        #[rust_name = "qpen_drop"]
+        fn drop(pen: &mut QPen);
     }
 }
 
-#[derive(Clone)]
 #[repr(C)]
 pub struct QPen {
     _cspec: MaybeUninit<i32>,
-    _ct: MaybeUninit<[u16; 5]>,
-    _padding: MaybeUninit<u16>,
 }
 
 impl Default for QPen {
     /// Constructs a default black solid line pen with 1 width.
     fn default() -> Self {
         ffi::qpen_init_default()
+    }
+}
+
+impl Drop for QPen {
+    fn drop(&mut self) {
+        ffi::qpen_drop(self);
     }
 }
 

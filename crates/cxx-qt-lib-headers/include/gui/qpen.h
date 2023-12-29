@@ -18,7 +18,7 @@
 namespace rust {
 
 template<>
-struct IsRelocatable<QColor> : ::std::true_type
+struct IsRelocatable<QPen> : ::std::true_type
 {
 };
 
