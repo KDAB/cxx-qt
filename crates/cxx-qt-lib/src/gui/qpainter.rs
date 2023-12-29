@@ -48,7 +48,19 @@ mod ffi {
         /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
         /// and the given startAngle and spanAngle.
         #[rust_name = "draw_arc"]
-        fn drawArc(self: &mut QPainter, x: i32, y: i32, width: i32, height: i32, startAngle: i32, spanAngle: i32);
+        fn drawArc(
+            self: &mut QPainter,
+            x: i32,
+            y: i32,
+            width: i32,
+            height: i32,
+            startAngle: i32,
+            spanAngle: i32,
+        );
+
+        /// Draws the chord defined by the given rectangle, startAngle and spanAngle.
+        #[rust_name = "draw_chord"]
+        fn drawChord(self: &mut QPainter, rectangle: &QRect, startAngle: i32, spanAngle: i32);
 
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
@@ -62,6 +74,10 @@ mod ffi {
         #[rust_name = "draw_line"]
         fn drawLine(self: &mut QPainter, line: &QLine);
 
+        /// Draws a pie defined by the given rectangle, startAngle and spanAngle.
+        #[rust_name = "draw_pie"]
+        fn drawPie(self: &mut QPainter, rectangle: &QRectF, startAngle: i32, spanAngle: i32);
+
         /// Draws a single point at the given position using the current pen's color.
         #[rust_name = "draw_point"]
         fn drawPoint(self: &mut QPainter, point: &QPoint);
@@ -69,6 +85,10 @@ mod ffi {
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
         fn drawText(self: &mut QPainter, point: &QPoint, text: &QString);
+
+        /// Erases the area inside the given rectangle.
+        #[rust_name = "erase_rect"]
+        fn eraseRect(self: &mut QPainter, rectangle: &QRectF);
 
         /// Fills the given rectangle with the color specified.
         #[rust_name = "fill_rect"]

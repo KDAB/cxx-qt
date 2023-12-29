@@ -70,8 +70,8 @@ pub use qstringlist::QStringList;
 
 mod qt;
 pub use qt::{
-    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
-    TransformationMode, LayoutDirection, BGMode
+    AspectRatioMode, BGMode, CaseSensitivity, ConnectionType, DateFormat, LayoutDirection,
+    SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
 
 mod qtime;
