@@ -7,6 +7,13 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type LayoutDirection = crate::LayoutDirection;
+        type BGMode = crate::BGMode;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpainter.h");
         type QPainter = super::QPainter;
@@ -24,6 +31,10 @@ mod ffi {
         type QImage = crate::QImage;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        /// Returns the current background mode.
+        #[rust_name = "background_mode"]
+        fn backgroundMode(self: &QPainter) -> BGMode;
 
         /// Returns the currently set brush origin.
         #[rust_name = "brush_origin"]
@@ -71,6 +82,10 @@ mod ffi {
         #[rust_name = "is_active"]
         fn isActive(self: &QPainter) -> bool;
 
+        /// Returns the layout direction used by the painter when drawing text.
+        #[rust_name = "layout_direction"]
+        fn layoutDirection(self: &QPainter) -> LayoutDirection;
+
         /// Returns the opacity of the painter. The default value is 1.
         fn opacity(self: &QPainter) -> f64;
 
@@ -78,9 +93,17 @@ mod ffi {
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: &mut QPainter);
 
+        /// Sets the background mode of the painter to the given mode
+        #[rust_name = "set_background_mode"]
+        fn setBackgroundMode(self: &mut QPainter, mode: BGMode);
+
         /// Enables clipping if enable is true, or disables clipping if enable is false.
         #[rust_name = "set_clipping"]
         fn setClipping(self: &mut QPainter, enable: bool);
+
+        /// Sets the layout direction used by the painter when drawing text, to the specified direction.
+        #[rust_name = "set_layout_direction"]
+        fn setLayoutDirection(self: &mut QPainter, direction: LayoutDirection);
 
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
