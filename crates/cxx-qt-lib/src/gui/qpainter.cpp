@@ -4,6 +4,8 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qpainter.h"
 
 #include "../assertion_utils.h"
@@ -22,3 +24,4 @@ static_assert(!::std::is_trivially_copy_constructible<QPainter>::value);
 
 static_assert(!::std::is_trivially_destructible<QPainter>::value);
 
+#endif
