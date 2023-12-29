@@ -25,8 +25,8 @@ mod ffi {
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
-        // include!("cxx-qt-lib/qcolor.h");
-        // type QColor = crate::QColor;
+        include!("cxx-qt-lib/qcolor.h");
+        type QColor = crate::QColor;
         include!("cxx-qt-lib/qimage.h");
         type QImage = crate::QImage;
         include!("cxx-qt-lib/qstring.h");
@@ -71,8 +71,8 @@ mod ffi {
         fn drawText(self: &mut QPainter, point: &QPoint, text: &QString);
 
         /// Fills the given rectangle with the color specified.
-        // #[rust_name = "fill_rect"]
-        // fn fillRect(self: &mut QPainter, rectangle: &QRect, color: &QColor);
+        #[rust_name = "fill_rect"]
+        fn fillRect(self: &mut QPainter, rectangle: &QRectF, color: &QColor);
 
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
