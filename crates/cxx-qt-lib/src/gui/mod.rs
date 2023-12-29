@@ -20,3 +20,6 @@ pub use qvector4d::QVector4D;
 
 mod qimage;
 pub use qimage::QImage;
+
+mod qpen;
+pub use qpen::QPen;
