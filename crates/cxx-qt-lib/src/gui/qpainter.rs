@@ -170,7 +170,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qpainter_drop"]
-        fn drop(painter: &mut QPainter);        
+        fn drop(painter: &mut QPainter);
     }
 }
 
@@ -199,5 +199,3 @@ unsafe impl ExternType for QPainter {
     type Id = type_id!("QPainter");
     type Kind = cxx::kind::Trivial;
 }
-
-
