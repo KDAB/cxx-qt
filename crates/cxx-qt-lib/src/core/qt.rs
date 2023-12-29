@@ -114,6 +114,6 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ConnectionType, DateFormat, LayoutDirection,
-    SplitBehaviorFlags, TimeSpec, TransformationMode, ClipOperation
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat,
+    LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
