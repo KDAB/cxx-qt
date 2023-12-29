@@ -43,6 +43,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             include_str!("../include/core/qmodelindex.h"),
             "qmodelindex.h",
         ),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qpen.h"), "qpen.h"),
         (
             include_str!("../include/core/qpersistentmodelindex.h"),
             "qpersistentmodelindex.h",
