@@ -125,10 +125,22 @@ mod ffi {
         #[rust_name = "set_layout_direction"]
         fn setLayoutDirection(self: &mut QPainter, direction: LayoutDirection);
 
+        /// Sets the painter's pen to have style Qt::SolidLine, width 1 and the specified color.
+        #[rust_name = "set_pen"]
+        fn setPen(self: &mut QPainter, color: &QColor);
+
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
         #[rust_name = "set_opacity"]
         fn setOpacity(self: &mut QPainter, opacity: f64);
+
+        /// Sets the painter's viewport rectangle to the given rectangle, and enables view transformations.
+        #[rust_name = "set_viewport"]
+        fn setViewport(self: &mut QPainter, rectangle: &QRect);
+
+        /// Sets the painter's window to the given rectangle, and enables view transformations.
+        #[rust_name = "set_window"]
+        fn setWindow(self: &mut QPainter, rectangle: &QRect);
 
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: &mut QPainter);
