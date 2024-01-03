@@ -25,7 +25,6 @@ mod ffi {
 
         /// Returns the color of this pen's brush.
         fn color(pen: &QPen) -> QColor;
-
     }
 
     #[namespace = "rust::cxxqtlib1"]
