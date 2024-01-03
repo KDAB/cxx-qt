@@ -196,6 +196,11 @@ jobs:
       # automake is needed for building libicu which is a dependency of Qt
       run: brew install automake autoconf-archive ninja clang-format
 
+    # Note that for nuget uploads to work this must be run as the kdab user
+    # eg a branch on the kdab repo rather than a users fork
+    #
+    # Otherwise you may see the following error:
+    # Pushing NuGet to "cxx-qt-github-packages" failed. Use --debug for more information.
     - name: "Authenticate to GitHub Packages"
       if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
       shell: bash
