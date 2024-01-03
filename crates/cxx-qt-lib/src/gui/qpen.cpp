@@ -27,4 +27,6 @@ static_assert(!::std::is_trivially_copy_constructible<QPen>::value);
 
 static_assert(!::std::is_trivially_destructible<QPen>::value);
 
+static_assert(QTypeInfo<QPen>::isRelocatable);
+
 #endif
