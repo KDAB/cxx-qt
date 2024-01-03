@@ -11,7 +11,7 @@ mod ffi {
         include!("cxx-qt-lib/qpen.h");
         type QPen = super::QPen;
         include!("cxx-qt-lib/qcolor.h");
-        type QColor = super::QColor;
+        type QColor = crate::QColor;
 
         /// Returns true if the pen is cosmetic; otherwise returns false.
         #[rust_name = "is_comestic"]
