@@ -5,6 +5,8 @@
 use cxx::{type_id, ExternType};
 use std::mem::MaybeUninit;
 
+use crate::QColor;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
