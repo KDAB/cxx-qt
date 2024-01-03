@@ -8,20 +8,16 @@
 #ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qpainter.h"
 
-#include "../assertion_utils.h"
+namespace rust {
+namespace cxxqtlib1 {
 
-#include <cstdint>
+::std::unique_ptr<QPainter>
+qpainterInitDefault()
+{
+  return ::std::make_unique<QPainter>();
+}
 
-// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpainter.h?h=v5.15.6-lts-lgpl#n504
-//
-// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpainter.h?h=v6.2.4#n451
-assert_alignment_and_size(QPainter,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t));
-
-static_assert(!::std::is_trivially_copy_assignable<QPainter>::value);
-static_assert(!::std::is_trivially_copy_constructible<QPainter>::value);
-
-static_assert(!::std::is_trivially_destructible<QPainter>::value);
+}
+}
 
 #endif

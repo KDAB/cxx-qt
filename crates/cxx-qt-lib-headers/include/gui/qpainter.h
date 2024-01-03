@@ -8,19 +8,17 @@
 
 #ifdef CXX_QT_GUI_FEATURE
 
+#include <cinttypes>
+#include <memory>
+
 #include <QtGui/QPainter>
 
-#include "rust/cxx.h"
-
-// Define namespace otherwise we hit a GCC bug
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust {
+namespace cxxqtlib1 {
 
-template<>
-struct IsRelocatable<QPainter> : ::std::true_type
-{
-};
+::std::unique_ptr<QPainter>
+qpainterInitDefault();
 
-} // namespace rust
-
+}
+}
 #endif

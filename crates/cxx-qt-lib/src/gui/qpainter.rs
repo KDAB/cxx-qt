@@ -2,9 +2,6 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use cxx::{type_id, ExternType};
-use std::mem::MaybeUninit;
-
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
@@ -17,7 +14,7 @@ mod ffi {
 
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpainter.h");
-        type QPainter = super::QPainter;
+        type QPainter;
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
         include!("cxx-qt-lib/qrectf.h");
@@ -50,7 +47,7 @@ mod ffi {
         /// and the given startAngle and spanAngle.
         #[rust_name = "draw_arc"]
         fn drawArc(
-            self: &mut QPainter,
+            self: Pin<&mut QPainter>,
             x: i32,
             y: i32,
             width: i32,
@@ -61,39 +58,39 @@ mod ffi {
 
         /// Draws the chord defined by the given rectangle, startAngle and spanAngle.
         #[rust_name = "draw_chord"]
-        fn drawChord(self: &mut QPainter, rectangle: &QRect, startAngle: i32, spanAngle: i32);
+        fn drawChord(self: Pin<Pin<&mut QPainter>>, rectangle: &QRect, startAngle: i32, spanAngle: i32);
 
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
-        fn drawEllipse(self: &mut QPainter, rect: &QRect);
+        fn drawEllipse(self: Pin<&mut QPainter>, rect: &QRect);
 
         /// Draws the given image into the given rectangle.
         #[rust_name = "draw_image"]
-        fn drawImage(self: &mut QPainter, rectangle: &QRect, image: &QImage);
+        fn drawImage(self: Pin<&mut QPainter>, rectangle: &QRect, image: &QImage);
 
         /// Draws a line defined by line.
         #[rust_name = "draw_line"]
-        fn drawLine(self: &mut QPainter, line: &QLine);
+        fn drawLine(self: Pin<&mut QPainter>, line: &QLine);
 
         /// Draws a pie defined by the given rectangle, startAngle and spanAngle.
         #[rust_name = "draw_pie"]
-        fn drawPie(self: &mut QPainter, rectangle: &QRectF, startAngle: i32, spanAngle: i32);
+        fn drawPie(self: Pin<&mut QPainter>, rectangle: &QRectF, startAngle: i32, spanAngle: i32);
 
         /// Draws a single point at the given position using the current pen's color.
         #[rust_name = "draw_point"]
-        fn drawPoint(self: &mut QPainter, point: &QPoint);
+        fn drawPoint(self: Pin<&mut QPainter>, point: &QPoint);
 
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
-        fn drawText(self: &mut QPainter, point: &QPoint, text: &QString);
+        fn drawText(self: Pin<&mut QPainter>, point: &QPoint, text: &QString);
 
         /// Erases the area inside the given rectangle.
         #[rust_name = "erase_rect"]
-        fn eraseRect(self: &mut QPainter, rectangle: &QRectF);
+        fn eraseRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
 
         /// Fills the given rectangle with the color specified.
         #[rust_name = "fill_rect"]
-        fn fillRect(self: &mut QPainter, rectangle: &QRectF, color: &QColor);
+        fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
 
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
@@ -112,49 +109,49 @@ mod ffi {
 
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
-        fn save(self: &mut QPainter);
+        fn save(self: Pin<&mut QPainter>);
 
         /// Sets the background mode of the painter to the given mode
         #[rust_name = "set_background_mode"]
-        fn setBackgroundMode(self: &mut QPainter, mode: BGMode);
+        fn setBackgroundMode(self: Pin<&mut QPainter>, mode: BGMode);
 
         /// Enables clipping if enable is true, or disables clipping if enable is false.
         #[rust_name = "set_clipping"]
-        fn setClipping(self: &mut QPainter, enable: bool);
+        fn setClipping(self: Pin<&mut QPainter>, enable: bool);
 
         /// Enables clipping, and sets the clip region to the given rectangle using the given clip operation.
         #[rust_name = "set_clip_rect"]
-        fn setClipRect(self: &mut QPainter, rectangle: &QRect, operation: ClipOperation);
+        fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
 
         /// Sets the layout direction used by the painter when drawing text, to the specified direction.
         #[rust_name = "set_layout_direction"]
-        fn setLayoutDirection(self: &mut QPainter, direction: LayoutDirection);
+        fn setLayoutDirection(self: Pin<&mut QPainter>, direction: LayoutDirection);
 
         /// Sets the painter's pen to have style Qt::SolidLine, width 1 and the specified color.
         #[rust_name = "set_pen"]
-        fn setPen(self: &mut QPainter, color: &QColor);
+        fn setPen(self: Pin<&mut QPainter>, color: &QColor);
 
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
         #[rust_name = "set_opacity"]
-        fn setOpacity(self: &mut QPainter, opacity: f64);
+        fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
 
         /// Sets the painter's viewport rectangle to the given rectangle, and enables view transformations.
         #[rust_name = "set_viewport"]
-        fn setViewport(self: &mut QPainter, rectangle: &QRect);
+        fn setViewport(self: Pin<&mut QPainter>, rectangle: &QRect);
 
         /// Sets the painter's window to the given rectangle, and enables view transformations.
         #[rust_name = "set_window"]
-        fn setWindow(self: &mut QPainter, rectangle: &QRect);
+        fn setWindow(self: Pin<&mut QPainter>, rectangle: &QRect);
 
         /// Restores the current painter state (pops a saved state off the stack).
-        fn restore(self: &mut QPainter);
+        fn restore(self: Pin<&mut QPainter>);
 
         /// Rotates the coordinate system clockwise. The given angle parameter is in degrees.
-        fn rotate(self: &mut QPainter, angle: f64);
+        fn rotate(self: Pin<&mut QPainter>, angle: f64);
 
         /// Translates the coordinate system by the given offset.
-        fn translate(self: &mut QPainter, offset: &QPoint);
+        fn translate(self: Pin<&mut QPainter>, offset: &QPoint);
 
         /// Returns the window rectangle.
         fn window(self: &QPainter) -> QRect;
@@ -166,36 +163,20 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
-        fn construct() -> QPainter;
-
-        #[doc(hidden)]
-        #[rust_name = "qpainter_drop"]
-        fn drop(painter: &mut QPainter);
+        fn qpainterInitDefault() -> UniquePtr<QPainter>;
     }
+    // QPainter is not a trivial to CXX and is not relocatable in Qt
+    // as the following fails in C++. So we cannot mark it as a trivial type
+    // and need to use references or pointers.
+    // static_assert(QTypeInfo<QPainter>::isRelocatable);
+    impl UniquePtr<QPainter> {}
 }
 
-#[repr(C)]
-pub struct QPainter {
-    _cspec: MaybeUninit<i32>,
-}
+pub use ffi::QPainter;
 
-impl Default for QPainter {
-    /// Constructs a painter.
-    fn default() -> Self {
+impl QPainter {
+    /// Create a QPainter
+    pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qpainter_init_default()
     }
-}
-
-impl Drop for QPainter {
-    fn drop(&mut self) {
-        ffi::qpainter_drop(self);
-    }
-}
-
-// Safety:
-//
-// Static checks on the C++ side to ensure the size is the same.
-unsafe impl ExternType for QPainter {
-    type Id = type_id!("QPainter");
-    type Kind = cxx::kind::Trivial;
 }
