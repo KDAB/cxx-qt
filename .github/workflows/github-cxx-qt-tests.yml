@@ -176,6 +176,16 @@ jobs:
     - name: "[Ubuntu] Install reuse"
       if: runner.os == 'Linux'
       run: pip3 install reuse
+
+    # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
+    # for now force Python 3.11
+    # https://github.com/microsoft/vcpkg/issues/35332
+    - name: "[macOS] Force python 3.11 for vcpkg"
+      if: runner.os == 'macOS'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
       # FIXME: clang-format-14 causes formatting differences if it is selected by brew
