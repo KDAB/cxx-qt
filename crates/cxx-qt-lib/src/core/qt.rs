@@ -76,6 +76,25 @@ mod ffi {
         SmoothTransformation,
     }
 
+    /// This enum type defines the pen styles that can be drawn using QPainter.
+    #[repr(i32)]
+    enum PenStyle {
+        /// no line at all. For example, QPainter::drawRect() fills but does not draw any boundary line.
+        NoPen,
+        /// A plain line.
+        SolidLine,
+        /// Dashes separated by a few pixels.
+        DashLine,
+        /// Dots separated by a few pixels.
+        DotLine,
+        /// Alternate dots and dashes.
+        DashDotLine,
+        /// One dash, two dots, one dash, two dots.
+        DashDotDotLine,
+        /// A custom pattern defined using QPainterPathStroker::setDashPattern().
+        CustomDashLine,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -85,10 +104,11 @@ mod ffi {
         type SplitBehaviorFlags;
         type TimeSpec;
         type TransformationMode;
+        type PenStyle;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
-    TransformationMode,
+    TransformationMode, PenStyle,
 };

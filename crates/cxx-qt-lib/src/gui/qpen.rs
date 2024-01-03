@@ -7,6 +7,12 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type PenStyle = crate::PenStyle;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpen.h");
         type QPen = super::QPen;
@@ -27,6 +33,13 @@ mod ffi {
         /// Sets the pen width to the given width in pixels with integer precision.
         #[rust_name = "set_width"]
         fn setWidth(self: &mut QPen, width: i32);
+
+        /// Sets the pen style to the given style.
+        #[rust_name = "set_style"]
+        fn setStyle(self: &mut QPen, style: PenStyle);
+
+        /// Returns the pen style.
+        fn style(self: &QPen) -> PenStyle;
 
         /// Returns the pen width with integer precision.
         fn width(self: &QPen) -> i32;
