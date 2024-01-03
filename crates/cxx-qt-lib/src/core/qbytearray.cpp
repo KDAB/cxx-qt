@@ -93,12 +93,6 @@ qbytearrayAppend(QByteArray& byteArray, ::std::uint8_t ch)
 }
 
 void
-qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch)
-{
-  byteArray.prepend(static_cast<char>(ch));
-}
-
-void
 qbytearrayFill(QByteArray& byteArray, ::std::uint8_t ch, ::rust::isize size)
 {
   Q_ASSERT(size >= -1);
@@ -128,6 +122,12 @@ qbytearrayLen(const QByteArray& byteArray)
   // In Qt 5 the type was int now it is qsizetype, so we need to ensure the type
   // is the same for CXX
   return static_cast<::rust::isize>(byteArray.size());
+}
+
+void
+qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch)
+{
+  byteArray.prepend(static_cast<char>(ch));
 }
 
 void

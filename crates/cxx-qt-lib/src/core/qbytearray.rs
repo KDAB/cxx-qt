@@ -79,6 +79,9 @@ mod ffi {
         #[rust_name = "qbytearray_len"]
         fn qbytearrayLen(bytearray: &QByteArray) -> isize;
         #[doc(hidden)]
+        #[rust_name = "qbytearray_prepend"]
+        fn qbytearrayPrepend(bytearray: &mut QByteArray, ch: u8);
+        #[doc(hidden)]
         #[rust_name = "qbytearray_remove"]
         fn qbytearrayRemove(bytearray: &mut QByteArray, pos: isize, len: isize);
         #[doc(hidden)]
@@ -99,10 +102,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qbytearray_trimmed"]
         fn qbytearrayTrimmed(bytearray: &QByteArray) -> QByteArray;
-
-        #[doc(hidden)]
-        #[rust_name = "qbytearray_prepend"]
-        fn qbytearrayPrepend(bytearray: &mut QByteArray, ch: u8);
     }
 }
 
