@@ -60,6 +60,7 @@ mod ffi {
         /// Set whether warning messages will be output to stderr to enabled.
         #[rust_name = "set_output_warnings_to_standard_error"]
         fn setOutputWarningsToStandardError(self: Pin<&mut QQmlEngine>, enabled: bool);
+
         /// Sets the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file) to paths.
         #[rust_name = "set_plugin_path_list"]
         fn setPluginPathList(self: Pin<&mut QQmlEngine>, paths: &QStringList);
