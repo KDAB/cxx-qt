@@ -5,8 +5,6 @@
 use cxx::{type_id, ExternType};
 use std::mem::MaybeUninit;
 
-use crate::QColor;
-
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -17,14 +15,14 @@ mod ffi {
 
         /// Returns true if the pen is cosmetic; otherwise returns false.
         #[rust_name = "is_comestic"]
-        fn isCosmetic(pen: &QPen) -> bool;
+        fn isCosmetic(self: &QPen) -> bool;
 
         /// Returns true if the pen has a solid fill, otherwise false.
         #[rust_name = "is_solid"]
-        fn isSolid(pen: &QPen) -> bool;
+        fn isSolid(self: &QPen) -> bool;
 
         /// Returns the color of this pen's brush.
-        fn color(pen: &QPen) -> QColor;
+        fn color(self: &QPen) -> QColor;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -44,9 +42,9 @@ mod ffi {
 #[repr(C)]
 pub struct QPen {
     #[cfg(qt_version_major = "5")]
-    _cspec: MaybeUninit<i32>,
-    #[cfg(qt_version_major = "5")]
     _cspec: MaybeUninit<[i32; 2]>,
+    #[cfg(qt_version_major = "6")]
+    _cspec: MaybeUninit<i32>,
 }
 
 impl Default for QPen {
