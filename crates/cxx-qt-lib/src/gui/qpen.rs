@@ -13,6 +13,9 @@ mod ffi {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
 
+        /// Returns the color of this pen's brush.
+        fn color(self: &QPen) -> QColor;
+
         /// Returns true if the pen is cosmetic; otherwise returns false.
         #[rust_name = "is_comestic"]
         fn isCosmetic(self: &QPen) -> bool;
@@ -21,8 +24,12 @@ mod ffi {
         #[rust_name = "is_solid"]
         fn isSolid(self: &QPen) -> bool;
 
-        /// Returns the color of this pen's brush.
-        fn color(self: &QPen) -> QColor;
+        /// Sets the pen width to the given width in pixels with integer precision.
+        #[rust_name = "set_width"]
+        fn setWidth(self: &mut QPen, width: i32);
+
+        /// Returns the pen width with integer precision.
+        fn width(self: &QPen) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
