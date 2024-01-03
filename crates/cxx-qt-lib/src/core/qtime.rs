@@ -161,6 +161,9 @@ impl QTime {
     pub fn secs_to(&self, t: Self) -> i32 {
         ffi::qtime_secs_to(self, t)
     }
+
+    /// Returns true if the specified time is valid; otherwise returns false.
+    /// The time is valid if h is in the range 0 to 23, m and s are in the range 0 to 59, and ms is in the range 0 to 999.
     pub fn is_valid_time(h: i32, m: i32, s: i32, ms: i32) -> bool {
         ffi::qtime_is_valid(h, m, s, ms)
     }
