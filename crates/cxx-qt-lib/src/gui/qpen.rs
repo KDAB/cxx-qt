@@ -43,7 +43,10 @@ mod ffi {
 
 #[repr(C)]
 pub struct QPen {
+    #[cfg(qt_version_major = "5")]
     _cspec: MaybeUninit<i32>,
+    #[cfg(qt_version_major = "5")]
+    _cspec: MaybeUninit<[i32; 2]>,
 }
 
 impl Default for QPen {
