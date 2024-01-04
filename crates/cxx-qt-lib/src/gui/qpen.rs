@@ -12,6 +12,7 @@ mod ffi {
         include!("cxx-qt-lib/qt.h");
         type PenStyle = crate::PenStyle;
         type PenCapStyle = crate::PenCapStyle;
+        type PenJoinStyle = crate::PenJoinStyle;
     }
 
     unsafe extern "C++" {
@@ -21,6 +22,7 @@ mod ffi {
         type QColor = crate::QColor;
 
         /// Returns the pen's cap style.
+        #[rust_name = "cap_style"]
         fn capStyle(self: &QPen) -> PenCapStyle;
 
         /// Returns the color of this pen's brush.
@@ -34,9 +36,17 @@ mod ffi {
         #[rust_name = "is_solid"]
         fn isSolid(self: &QPen) -> bool;
 
+        /// Returns the pen's join style.
+        #[rust_name = "join_style"]
+        fn joinStyle(self: &QPen) -> PenJoinStyle;
+
         /// Sets the pen's cap style to the given style. The default value is Qt::SquareCap.
         #[rust_name = "set_cap_style"]
         fn setCapStyle(self: &mut QPen, style: PenCapStyle);
+
+        /// Sets the pen's join style to the given style. The default value is Qt::BevelJoin.
+        #[rust_name = "set_join_style"]
+        fn setJoinStyle(self: &mut QPen, style: PenJoinStyle);
 
         /// Sets the pen style to the given style.
         #[rust_name = "set_style"]

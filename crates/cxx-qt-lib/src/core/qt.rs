@@ -104,6 +104,16 @@ mod ffi {
         MPenCapStyle = 0x30,
     }
 
+    /// This enum type defines the line join style.
+    #[repr(i32)]
+    enum PenJoinStyle {
+        MiterJoin = 0x00,
+        BevelJoin = 0x40,
+        RoundJoin = 0x80,
+        SvgMiterJoin = 0x100,
+        MPenJoinStyle = 0x1c0,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -115,10 +125,11 @@ mod ffi {
         type TransformationMode;
         type PenStyle;
         type PenCapStyle;
+        type PenJoinStyle;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, PenCapStyle, PenStyle,
-    SplitBehaviorFlags, TimeSpec, TransformationMode,
+    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, PenCapStyle, PenJoinStyle,
+    PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
