@@ -59,6 +59,7 @@ mod ffi {
     }
 }
 
+#[derive(Clone)]
 #[repr(C)]
 pub struct QPen {
     #[cfg(qt_version_major = "5")]
