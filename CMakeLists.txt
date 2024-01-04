@@ -205,9 +205,8 @@ set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
 # Add CMake tests for `cargo test/clippy/fmt/doc`.
 add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
-add_test(NAME cargo_doc COMMAND cargo doc --target-dir ${CARGO_TARGET_DIR})
-add_test(NAME cargo_clippy COMMAND cargo clippy --all-targets --target-dir
-                                   ${CARGO_TARGET_DIR} -- -D warnings)
+add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
+add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 add_test(NAME cargo_fmt COMMAND cargo fmt --all --check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_tests_properties(cargo_tests cargo_clippy cargo_fmt PROPERTIES
