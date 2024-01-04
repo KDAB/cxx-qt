@@ -113,6 +113,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
+        # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
+        # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
+        MACOSX_DEPLOYMENT_TARGET: 12.7
         # sccache is around 250-350M in size for a normal build
         # set the cache size to double of this to leave some headroom
         # but don't expand too large as we cache old data and cause cache evictions
