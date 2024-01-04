@@ -13,5 +13,5 @@ mod qtitem;
 pub mod safety;
 pub mod types;
 
-pub use qtfile::{parse_qt_file, CxxQtFile};
+pub use qtfile::parse_qt_file;
 pub use qtitem::CxxQtItem;
