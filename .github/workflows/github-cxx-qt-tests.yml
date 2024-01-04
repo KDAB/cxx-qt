@@ -55,8 +55,8 @@ jobs:
                 libxkbcommon-dev
             workspace: /home/runner/cxx-qt
 
-          - name: macOS 11 (clang) Qt5
-            os: macos-11
+          - name: macOS 12 (clang) Qt5
+            os: macos-12
             qt_version: 5
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -72,8 +72,8 @@ jobs:
             workspace: /Users/runner/cxx-qt
             cc: clang
             cxx: clang++
-          - name: macOS 11 (clang) Qt6
-            os: macos-11
+          - name: macOS 12 (clang) Qt6
+            os: macos-12
             qt_version: 6
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -113,6 +113,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
+        # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
+        # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
+        MACOSX_DEPLOYMENT_TARGET: 12.7
         # sccache is around 250-350M in size for a normal build
         # set the cache size to double of this to leave some headroom
         # but don't expand too large as we cache old data and cause cache evictions
@@ -176,6 +179,16 @@ jobs:
     - name: "[Ubuntu] Install reuse"
       if: runner.os == 'Linux'
       run: pip3 install reuse
+
+    # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
+    # for now force Python 3.11
+    # https://github.com/microsoft/vcpkg/issues/35332
+    - name: "[macOS] Force python 3.11 for vcpkg"
+      if: runner.os == 'macOS'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
       # FIXME: clang-format-14 causes formatting differences if it is selected by brew
@@ -186,6 +199,11 @@ jobs:
       # automake is needed for building libicu which is a dependency of Qt
       run: brew install automake autoconf-archive ninja clang-format
 
+    # Note that for nuget uploads to work this must be run as the kdab user
+    # eg a branch on the kdab repo rather than a users fork
+    #
+    # Otherwise you may see the following error:
+    # Pushing NuGet to "cxx-qt-github-packages" failed. Use --debug for more information.
     - name: "Authenticate to GitHub Packages"
       if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
       shell: bash
