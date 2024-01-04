@@ -95,6 +95,15 @@ mod ffi {
         CustomDashLine,
     }
 
+    /// This enum type defines the line endcap style
+    #[repr(i32)]
+    enum PenCapStyle {
+        FlatCap = 0x00,
+        SquareCap = 0x10,
+        RoundCap = 0x20,
+        MPenCapStyle = 0x30,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -105,10 +114,11 @@ mod ffi {
         type TimeSpec;
         type TransformationMode;
         type PenStyle;
+        type PenCapStyle;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, SplitBehaviorFlags, TimeSpec,
-    TransformationMode, PenStyle,
+    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, PenCapStyle, PenStyle,
+    SplitBehaviorFlags, TimeSpec, TransformationMode,
 };

@@ -11,6 +11,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type PenStyle = crate::PenStyle;
+        type PenCapStyle = crate::PenCapStyle;
     }
 
     unsafe extern "C++" {
@@ -18,6 +19,9 @@ mod ffi {
         type QPen = super::QPen;
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
+
+        /// Returns the pen's cap style.
+        fn capStyle(self: &QPen) -> PenCapStyle;
 
         /// Returns the color of this pen's brush.
         fn color(self: &QPen) -> QColor;
@@ -30,13 +34,17 @@ mod ffi {
         #[rust_name = "is_solid"]
         fn isSolid(self: &QPen) -> bool;
 
-        /// Sets the pen width to the given width in pixels with integer precision.
-        #[rust_name = "set_width"]
-        fn setWidth(self: &mut QPen, width: i32);
+        /// Sets the pen's cap style to the given style. The default value is Qt::SquareCap.
+        #[rust_name = "set_cap_style"]
+        fn setCapStyle(self: &mut QPen, style: PenCapStyle);
 
         /// Sets the pen style to the given style.
         #[rust_name = "set_style"]
         fn setStyle(self: &mut QPen, style: PenStyle);
+
+        /// Sets the pen width to the given width in pixels with integer precision.
+        #[rust_name = "set_width"]
+        fn setWidth(self: &mut QPen, width: i32);
 
         /// Returns the pen style.
         fn style(self: &QPen) -> PenStyle;
