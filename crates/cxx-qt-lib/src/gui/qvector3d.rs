@@ -63,6 +63,14 @@ mod ffi {
         #[rust_name = "to_pointf"]
         fn toPointF(self: &QVector3D) -> QPointF;
 
+        /// Returns the 2D vector form of this 3D vector, dropping the z coordinate.
+        #[rust_name = "to_vector2d"]
+        fn toVector2D(self: &QVector3D) -> QVector2D;
+
+        /// Returns the 4D form of this 3D vector, with the w coordinate set to zero.
+        #[rust_name = "to_vector4d"]
+        fn toVector4D(self: &QVector3D) -> QVector4D;
+
         /// Returns the x coordinate of this point.
         fn x(self: &QVector3D) -> f32;
         /// Returns the y coordinate of this point.
