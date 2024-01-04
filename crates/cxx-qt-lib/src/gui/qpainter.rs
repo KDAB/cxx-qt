@@ -58,7 +58,12 @@ mod ffi {
 
         /// Draws the chord defined by the given rectangle, startAngle and spanAngle.
         #[rust_name = "draw_chord"]
-        fn drawChord(self: Pin<Pin<&mut QPainter>>, rectangle: &QRect, startAngle: i32, spanAngle: i32);
+        fn drawChord(
+            self: Pin<Pin<&mut QPainter>>,
+            rectangle: &QRect,
+            startAngle: i32,
+            spanAngle: i32,
+        );
 
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
