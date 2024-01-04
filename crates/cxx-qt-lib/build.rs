@@ -277,7 +277,6 @@ fn main() {
     builder.flag_if_supported("/Zc:__cplusplus");
     builder.flag_if_supported("/permissive-");
     builder.flag_if_supported("/bigobj");
-
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
     // MinGW requires big-obj otherwise debug builds fail
