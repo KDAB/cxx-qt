@@ -402,6 +402,14 @@ impl QtBuild {
             Err(_) => "lib",
         };
 
+        if let Ok(target) = &target {
+            if target.contains("apple") {
+                // Tell clang link to clang_rt as we build with -nodefaultlibs
+                // otherwise we cannot use helpers from the compiler in Qt
+                println!("cargo:rustc-link-arg=-fapple-link-rtlib");
+            }
+        }
+
         for qt_module in &self.qt_modules {
             let framework = match &target {
                 Ok(target) => {
