@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::QPointF;
 use cxx::{type_id, ExternType};
 use std::mem::MaybeUninit;
 
@@ -96,6 +97,14 @@ mod ffi {
         fn construct() -> QPainterPath;
 
         #[doc(hidden)]
+        #[rust_name = "qpainterpath_clone"]
+        fn construct(path: &QPainterPath) -> QPainterPath;
+
+        #[doc(hidden)]
+        #[rust_name = "qpainterpath_from_qpointf"]
+        fn construct(point: &QPointF) -> QPainterPath;
+
+        #[doc(hidden)]
         #[rust_name = "qpainterpath_drop"]
         fn drop(pen: &mut QPainterPath);
     }
@@ -115,6 +124,20 @@ impl Default for QPainterPath {
 impl Drop for QPainterPath {
     fn drop(&mut self) {
         ffi::qpainterpath_drop(self);
+    }
+}
+
+impl Clone for QPainterPath {
+    /// Constructs a copy of other.
+    fn clone(&self) -> Self {
+        ffi::qpainterpath_clone(self)
+    }
+}
+
+impl From<&QPointF> for QPainterPath {
+    /// Creates a QPainterPath object with the given startPoint as its current position.
+    fn from(p: &QPointF) -> Self {
+        ffi::qpainterpath_from_qpointf(p)
     }
 }
 
