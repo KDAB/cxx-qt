@@ -19,6 +19,15 @@ mod ffi {
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
+    enum QImageInvertMode {
+        InvertRgb,
+        InvertRgba,
+    }
+
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
     enum QImageFormat {
         Format_Invalid,
         Format_Mono,
@@ -76,8 +85,16 @@ mod ffi {
         #[rust_name = "all_gray"]
         fn allGray(self: &QImage) -> bool;
 
+        /// Returns the number of bit planes in the image.
+        #[rust_name = "bit_plane_count"]
+        fn bitPlaneCount(self: &QImage) -> i32;
+
         /// Returns a sub-area of the image as a new image.
         fn copy(self: &QImage, rect: &QRect) -> QImage;
+
+        /// Creates and returns a 1-bpp heuristic mask for this image.
+        #[rust_name = "create_heuristic_mask"]
+        fn createHeuristicMask(self: &QImage, clipTight: bool) -> QImage;
 
         /// Returns the size of the color table for the image.
         #[rust_name = "color_count"]
@@ -99,6 +116,10 @@ mod ffi {
 
         /// Returns the format of the image.
         fn format(self: &QImage) -> QImageFormat;
+
+        /// Inverts all pixel values in the image.
+        #[rust_name = "invert_pixels"]
+        fn invertPixels(self: &mut QImage, mode: QImageInvertMode);
 
         /// Whether the QImage is null.
         ///
@@ -183,6 +204,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
         type QImageFormat;
+        type QImageInvertMode;
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_default"]
