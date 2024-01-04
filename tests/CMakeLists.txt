@@ -19,11 +19,13 @@ function(add_acceptance_tests TEST_NAME)
         ${CPP_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
     )
 
-    # Add valgrind test
-    add_valgrind_test(
-        ${NAME_WITH_PREFIX} $<TARGET_FILE:${TARGET_NAME}>
-        ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
-    )
+    if (NOT WIN32)
+       # Add valgrind test
+       add_valgrind_test(
+           ${NAME_WITH_PREFIX} $<TARGET_FILE:${TARGET_NAME}>
+           ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+       )
+    endif()
 endfunction()
 
 # Add tests for all the acceptance tests
