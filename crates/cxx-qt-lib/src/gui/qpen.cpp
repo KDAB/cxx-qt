@@ -11,7 +11,7 @@
 #include "../assertion_utils.h"
 
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpen.h?h=v5.15.6-lts-lgpl#n124
-// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpen.h??h=v6.2.4#n94
+// https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpen.h?h=v6.2.4#n94
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QPen,
                           alignof(::std::size_t),
