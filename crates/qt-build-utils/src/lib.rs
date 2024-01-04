@@ -64,10 +64,21 @@ fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
 /// If you are using a C++ build system such as CMake to do the final link of the executable, you do
 /// not need to call this function.
 ///
+/// With Apple devices we set -fapple-link-rtlib as we build with -nodefaultlibs
+/// otherwise we cannot user helpers from the compiler runtime in Qt
+///
 /// This does nothing on non-Unix platforms.
 pub fn setup_linker() {
     if env::var("CARGO_CFG_UNIX").is_err() {
         return;
+    }
+
+    if let Ok(vendor) = env::var("CARGO_CFG_TARGET_VENDOR") {
+        if vendor == "apple" {
+            // Tell clang link to clang_rt as we build with -nodefaultlibs
+            // otherwise we cannot use helpers from the compiler runtime in Qt
+            println!("cargo:rustc-link-arg=-fapple-link-rtlib");
+        }
     }
 
     let flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
