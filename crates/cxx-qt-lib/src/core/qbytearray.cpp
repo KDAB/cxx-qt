@@ -125,6 +125,12 @@ qbytearrayLen(const QByteArray& byteArray)
 }
 
 void
+qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch)
+{
+  byteArray.prepend(static_cast<char>(ch));
+}
+
+void
 qbytearrayRemove(QByteArray& byteArray, ::rust::isize pos, ::rust::isize len)
 {
   Q_ASSERT(pos >= 0);
