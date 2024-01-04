@@ -14,7 +14,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpainterpath.h?h=v6.2.4#n200
 assert_alignment_and_size(QPainterPath,
                           alignof(::std::size_t),
-			  sizeof(::std::size_t));
+                          sizeof(::std::size_t));
 
 static_assert(QTypeInfo<QPainterPath>::isRelocatable);
 
