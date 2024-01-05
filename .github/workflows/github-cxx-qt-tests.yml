@@ -11,6 +11,27 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 jobs:
+  clang_format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y clang-format-12
+      - run: ./clang_format_check.sh .
+
+  rust_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup component add rustfmt
+      - run: cargo fmt --all --check --verbose
+
+  license_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v2
+
   build:
     strategy:
       fail-fast: false
@@ -71,7 +92,7 @@ jobs:
             # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
             # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
             # https://github.com/KDAB/cxx-qt/issues/121
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -85,7 +106,7 @@ jobs:
             vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -100,7 +121,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -116,7 +137,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -149,7 +170,7 @@ jobs:
     - name: "Install Rust toolchain"
       uses: actions-rs/toolchain@v1
       with:
-        components: clippy, rustfmt
+        components: clippy
         toolchain: stable
 
     - name: "Rust tools cache"
@@ -183,7 +204,6 @@ jobs:
         clang-format-12
         libssl-dev
         pkg-config
-        python3-pip
         valgrind
         ${{ matrix.packages-extra }}
 
@@ -191,10 +211,6 @@ jobs:
     - name: "[Ubuntu] Add Qt6 tools to PATH"
       if: runner.os == 'Linux' && matrix.qt_version == 6
       run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
-
-    - name: "[Ubuntu] Install reuse"
-      if: runner.os == 'Linux'
-      run: pip3 install reuse
 
     # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
     # for now force Python 3.11
