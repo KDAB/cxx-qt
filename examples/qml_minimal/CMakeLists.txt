@@ -42,8 +42,8 @@ if(NOT Corrosion_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4.5
+        GIT_REPOSITORY https://github.com/LeonMatthesKDAB/corrosion.git
+        GIT_TAG allow-cmake-compiler-launcher
     )
 
     FetchContent_MakeAvailable(Corrosion)
