@@ -19,6 +19,7 @@ jobs:
           - name: Ubuntu 22.04 (gcc) Qt5
             os: ubuntu-22.04
             qt_version: 5
+            vcpkg: off
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -36,6 +37,7 @@ jobs:
           - name: Ubuntu 22.04 (gcc) Qt6
             os: ubuntu-22.04
             qt_version: 6
+            vcpkg: off
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -58,6 +60,7 @@ jobs:
           - name: macOS 12 (clang) Qt5
             os: macos-12
             qt_version: 5
+            vcpkg: on
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             #
@@ -75,6 +78,7 @@ jobs:
           - name: macOS 12 (clang) Qt6
             os: macos-12
             qt_version: 6
+            vcpkg: on
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
@@ -88,6 +92,7 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
+            vcpkg: on
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -100,6 +105,7 @@ jobs:
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
+            vcpkg: on
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -223,6 +229,7 @@ jobs:
         cmake
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
+        -D VCPKG=${{ matrix.vcpkg }}
         -G Ninja
         -S . -B build
       working-directory: ${{ matrix.workspace }}
