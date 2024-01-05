@@ -167,11 +167,11 @@ jobs:
       uses: LebedevRI/checkout@issue197
       with:
         path: ${{ matrix.workspace }}
+    # Ensure clippy and rustfmt is installed, they should come from github runner
+    #
+    # Note we still need rustfmt for the cxx-qt-gen tests
     - name: "Install Rust toolchain"
-      uses: actions-rs/toolchain@v1
-      with:
-        components: clippy
-        toolchain: stable
+      run: rustup component add clippy rustfmt
 
     - name: "Rust tools cache"
       uses: actions/cache@v3
