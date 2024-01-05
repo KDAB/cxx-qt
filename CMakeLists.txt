@@ -10,11 +10,7 @@ cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
-if(WIN32 OR APPLE)
-    option(VCPKG "Use vcpkg for dependencies" ON)
-else()
-    option(VCPKG "Use vcpkg for dependencies" OFF)
-endif()
+option(VCPKG "Use vcpkg for release mode dependencies" OFF)
 
 if(VCPKG)
     if(USE_QT5)
