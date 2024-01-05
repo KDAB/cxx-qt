@@ -11,8 +11,16 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
 option(VCPKG "Use vcpkg for release mode dependencies" OFF)
+option(VCPKG_BUILDTREES_ROOT "Use custom vcpkg buildtrees" "")
 
 if(VCPKG)
+    # Until debug and release packages are split we only build release packages
+    # to improve CI run times
+    # https://github.com/microsoft/vcpkg/issues/1626
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        message(WARNING "vcpkg only has release mode builds in it's cache")
+    endif()
+
     if(USE_QT5)
         set(VCPKG_MANIFEST_FEATURES "qt5")
     else()
@@ -23,7 +31,13 @@ if(VCPKG)
 
     # These are required for binary caching to work reliably across machines.
     set(VCPKG_FEATURE_FLAGS "-compilertracking")
-    set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
+    if(VCPKG_BUILDTREES_ROOT STREQUAL "")
+        message(STATUS "Using default vcpkg buildtress root")
+        set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
+    else()
+        message(STATUS "Using custom vcpkg buildtrees root: ${VCPKG_BUILDTREES_ROOT}")
+        set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions;--x-buildtrees-root=${VCPKG_BUILDTREES_ROOT}")
+    endif()
 
     if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
         if(WIN32)

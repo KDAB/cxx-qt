@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `internal_pointer_mut()` function on `QModelIndex`
 - `c_void` in CXX-Qt-lib for easy access to `void *`
 
+### Changed
+
+- `VCPKG` is now set to off by default and packages are only built in release mode in the cache
+
 ## [0.6.0](https://github.com/KDAB/cxx-qt/compare/v0.5.3...v0.6.0) - 2023-11-17
 
 ### Added
