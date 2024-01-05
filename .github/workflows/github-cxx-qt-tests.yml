@@ -88,7 +88,7 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
-            ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -100,7 +100,7 @@ jobs:
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
-            ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
