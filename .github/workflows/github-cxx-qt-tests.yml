@@ -20,6 +20,7 @@ jobs:
             os: ubuntu-22.04
             qt_version: 5
             vcpkg: off
+            vcpkg_triplet: x64-linux-release
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -38,6 +39,7 @@ jobs:
             os: ubuntu-22.04
             qt_version: 6
             vcpkg: off
+            vcpkg_triplet: x64-linux-release
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -61,6 +63,7 @@ jobs:
             os: macos-12
             qt_version: 5
             vcpkg: on
+            vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             #
@@ -79,6 +82,7 @@ jobs:
             os: macos-12
             qt_version: 6
             vcpkg: on
+            vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
@@ -93,6 +97,9 @@ jobs:
             os: windows-2022
             qt_version: 5
             vcpkg: on
+            # Use a short buildtrees root for building vcpkg
+            vcpkg_buildtrees_root: C:\v
+            vcpkg_triplet: x64-windows-release
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -106,6 +113,9 @@ jobs:
             os: windows-2022
             qt_version: 6
             vcpkg: on
+            # Use a short buildtrees root for building vcpkg
+            vcpkg_buildtrees_root: C:\v
+            vcpkg_triplet: x64-windows-release
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -224,12 +234,19 @@ jobs:
       uses: seanmiddleditch/gha-setup-vsdevenv@v3
 
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
+    #
+    # Until debug and release packages are split we only build release packages for vcpkg
+    # to improve CI run times, hence VCPKG_HOST_TRIPLET and VCPKG_TARGET_TRIPLET
+    # https://github.com/microsoft/vcpkg/issues/1626
     - name: "Configure"
       run: >-
         cmake
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
         -D VCPKG=${{ matrix.vcpkg }}
+        -D VCPKG_HOST_TRIPLET=${{ matrix.vcpkg_triplet }}
+        -D VCPKG_BUILDTREES_ROOT=${{ matrix.vcpkg_buildtrees_root  }}
+        -D VCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}
         -G Ninja
         -S . -B build
       working-directory: ${{ matrix.workspace }}
