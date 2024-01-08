@@ -19,6 +19,8 @@ jobs:
           - name: Ubuntu 22.04 (gcc) Qt5
             os: ubuntu-22.04
             qt_version: 5
+            vcpkg: off
+            vcpkg_triplet: x64-linux-release
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -36,6 +38,8 @@ jobs:
           - name: Ubuntu 22.04 (gcc) Qt6
             os: ubuntu-22.04
             qt_version: 6
+            vcpkg: off
+            vcpkg_triplet: x64-linux-release
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -55,9 +59,11 @@ jobs:
                 libxkbcommon-dev
             workspace: /home/runner/cxx-qt
 
-          - name: macOS 11 (clang) Qt5
-            os: macos-11
+          - name: macOS 12 (clang) Qt5
+            os: macos-12
             qt_version: 5
+            vcpkg: on
+            vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             #
@@ -65,19 +71,21 @@ jobs:
             # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
             # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
             # https://github.com/KDAB/cxx-qt/issues/121
-            ctest_args: --exclude-regex '^(example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
             cc: clang
             cxx: clang++
-          - name: macOS 11 (clang) Qt6
-            os: macos-11
+          - name: macOS 12 (clang) Qt6
+            os: macos-12
             qt_version: 6
+            vcpkg: on
+            vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            ctest_args: --exclude-regex '^(example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -88,7 +96,11 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
-            ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            vcpkg: on
+            # Use a short buildtrees root for building vcpkg
+            vcpkg_buildtrees_root: C:\v
+            vcpkg_triplet: x64-windows-release
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -100,7 +112,11 @@ jobs:
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
-            ctest_args: --exclude-regex '^(reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            vcpkg: on
+            # Use a short buildtrees root for building vcpkg
+            vcpkg_buildtrees_root: C:\v
+            vcpkg_triplet: x64-windows-release
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|reuse_lint|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -113,6 +129,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
+        # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
+        # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
+        MACOSX_DEPLOYMENT_TARGET: 12.7
         # sccache is around 250-350M in size for a normal build
         # set the cache size to double of this to leave some headroom
         # but don't expand too large as we cache old data and cause cache evictions
@@ -176,6 +195,16 @@ jobs:
     - name: "[Ubuntu] Install reuse"
       if: runner.os == 'Linux'
       run: pip3 install reuse
+
+    # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
+    # for now force Python 3.11
+    # https://github.com/microsoft/vcpkg/issues/35332
+    - name: "[macOS] Force python 3.11 for vcpkg"
+      if: runner.os == 'macOS'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
       # FIXME: clang-format-14 causes formatting differences if it is selected by brew
@@ -186,6 +215,11 @@ jobs:
       # automake is needed for building libicu which is a dependency of Qt
       run: brew install automake autoconf-archive ninja clang-format
 
+    # Note that for nuget uploads to work this must be run as the kdab user
+    # eg a branch on the kdab repo rather than a users fork
+    #
+    # Otherwise you may see the following error:
+    # Pushing NuGet to "cxx-qt-github-packages" failed. Use --debug for more information.
     - name: "Authenticate to GitHub Packages"
       if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
       shell: bash
@@ -200,11 +234,19 @@ jobs:
       uses: seanmiddleditch/gha-setup-vsdevenv@v3
 
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
+    #
+    # Until debug and release packages are split we only build release packages for vcpkg
+    # to improve CI run times, hence VCPKG_HOST_TRIPLET and VCPKG_TARGET_TRIPLET
+    # https://github.com/microsoft/vcpkg/issues/1626
     - name: "Configure"
       run: >-
         cmake
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
+        -D VCPKG=${{ matrix.vcpkg }}
+        -D VCPKG_HOST_TRIPLET=${{ matrix.vcpkg_triplet }}
+        -D VCPKG_BUILDTREES_ROOT=${{ matrix.vcpkg_buildtrees_root  }}
+        -D VCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}
         -G Ninja
         -S . -B build
       working-directory: ${{ matrix.workspace }}

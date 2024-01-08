@@ -63,6 +63,10 @@ mod ffi {
         #[rust_name = "is_upper"]
         fn isUpper(self: &QString) -> bool;
 
+        /// Returns true if the string contains valid UTF-16 encoded data, or false otherwise.
+        #[rust_name = "is_valid_utf16"]
+        fn isValidUtf16(self: &QString) -> bool;
+
         /// Prepends the string str to the beginning of this string and returns a reference to this string.
         fn prepend<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;
 
