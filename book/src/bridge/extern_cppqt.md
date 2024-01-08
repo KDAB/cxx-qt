@@ -5,11 +5,12 @@ SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-# extern "C++Qt"
+# `extern "C++Qt"`
 
-- [QObjects](#qobjects)
-- [Methods](#methods)
-- [Signals](#signals)
+- [`extern "C++Qt"`](#extern-cqt)
+  - [`QObject`s](#qobjects)
+  - [Methods](#methods)
+  - [Signals](#signals)
 
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
@@ -28,7 +29,7 @@ A bridge module may contain zero or more `extern "C++Qt"` blocks.
 This complements the [`extern "C++"` CXX section](https://cxx.rs/extern-c++.html)
 but allows for declaring Qt specific features on C++ types.
 
-## QObjects
+## `QObject`s
 
 Types defined in C++ that are made available to Rust, but only behind an indirection.
 
