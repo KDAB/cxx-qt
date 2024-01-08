@@ -47,6 +47,8 @@ qbytearrayInsert(QByteArray& byteArray, ::rust::isize pos, ::std::uint8_t ch);
 ::rust::isize
 qbytearrayLen(const QByteArray& byteArray);
 void
+qbytearrayPrepend(QByteArray& byteArray, ::std::uint8_t ch);
+void
 qbytearrayRemove(QByteArray& byteArray, ::rust::isize pos, ::rust::isize len);
 void
 qbytearrayReserve(QByteArray& byteArray, ::rust::isize size);
@@ -62,6 +64,5 @@ QByteArray
 qbytearrayToUpper(const QByteArray& byteArray);
 QByteArray
 qbytearrayTrimmed(const QByteArray& byteArray);
-
 }
 }

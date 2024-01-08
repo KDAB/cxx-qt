@@ -4,7 +4,9 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-add_subdirectory(cargo_without_cmake)
+# No longer add cargo-without-cmake here.
+# This causes duplicate builds, as this crate is already entirely built
+# When using `cargo test`
 add_subdirectory(qml_features)
 add_subdirectory(qml_minimal)
 add_subdirectory(demo_threading)

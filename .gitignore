@@ -13,6 +13,7 @@ cargo/*
 **/mdbook-linkcheck/*
 pip3/*
 rustup/*
+CMakeLists.txt.user
 
 # clangd
 compile_commands.json
