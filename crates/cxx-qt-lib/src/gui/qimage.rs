@@ -228,6 +228,8 @@ mod ffi {
     }
 }
 
+pub use ffi::QImageFormat;
+
 /// This struct is the Rust representation of the [`QImage`](https://doc.qt.io/qt-6/qimage.html)
 /// class.
 ///
@@ -292,7 +294,7 @@ impl QImage {
     }
 
     /// Construct a Rust QImage from a given width, height, and QImage Format
-    pub fn from_height_width_and_format(
+    pub fn from_width_height_and_format(
         width: i32,
         height: i32,
         format: ffi::QImageFormat,
@@ -317,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_create_qimage_from_format() {
-        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        let qimage = QImage::from_width_height_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         assert_eq!(qimage.width(), 50);
         assert_eq!(qimage.height(), 70);
         assert!(!qimage.is_null());
@@ -326,7 +328,7 @@ mod tests {
 
     #[test]
     fn test_copy() {
-        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        let qimage = QImage::from_width_height_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         let qimage2 = qimage.copy(&qimage.rect());
         assert_eq!(qimage.width(), qimage2.width());
         assert_eq!(qimage.height(), qimage2.height());

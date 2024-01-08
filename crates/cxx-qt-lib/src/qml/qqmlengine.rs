@@ -33,6 +33,14 @@ mod ffi {
         #[rust_name = "import_path_list"]
         fn importPathList(self: &QQmlEngine) -> QStringList;
 
+        /// This property holds the directory for storing offline user data. Returns the directory where SQL and other offline storage is placed.
+        #[rust_name = "offline_storage_path"]
+        fn offlineStoragePath(self: &QQmlEngine) -> QString;
+
+        /// Returns true if warning messages will be output to stderr in addition to being emitted by the warnings() signal, otherwise false.
+        #[rust_name = "output_warnings_to_standard_error"]
+        fn outputWarningsToStandardError(self: &QQmlEngine) -> bool;
+
         /// Returns the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file).
         #[rust_name = "plugin_path_list"]
         fn pluginPathList(self: &QQmlEngine) -> QStringList;
@@ -44,6 +52,14 @@ mod ffi {
         /// Sets paths as the list of directories where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "set_import_path_list"]
         fn setImportPathList(self: Pin<&mut QQmlEngine>, paths: &QStringList);
+
+        /// This property holds the directory for storing offline user data
+        #[rust_name = "set_offline_storage_path"]
+        fn setOfflineStoragePath(self: Pin<&mut QQmlEngine>, dir: &QString);
+
+        /// Set whether warning messages will be output to stderr to enabled.
+        #[rust_name = "set_output_warnings_to_standard_error"]
+        fn setOutputWarningsToStandardError(self: Pin<&mut QQmlEngine>, enabled: bool);
 
         /// Sets the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file) to paths.
         #[rust_name = "set_plugin_path_list"]
