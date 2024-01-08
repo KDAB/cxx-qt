@@ -19,8 +19,6 @@ mod qvector4d;
 pub use qvector4d::QVector4D;
 
 mod qimage;
-
-pub use qimage::QImage;
 pub use qimage::{QImage, QImageFormat};
 
 mod qpainterpath;
