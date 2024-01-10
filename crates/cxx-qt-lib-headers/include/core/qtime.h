@@ -30,5 +30,7 @@ qtimeFromString(const QString& string, Qt::DateFormat format);
 ::std::int32_t
 qtimeSecsTo(const QTime& time, QTime t);
 
+bool
+qtimeIsValid(int h, int m, int s, int ms);
 }
 }
