@@ -368,6 +368,7 @@ pub fn generate(
             }, &initialize_lifetime, &constructor.initialize_arguments),
             parse_quote_spanned! {
                 constructor.imp.span() =>
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #[namespace = #namespace_internals]
                     #[cxx_name = #route_arguments_cxx]
@@ -567,6 +568,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_mod_contents[4],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #namespace_attr
                     #[cxx_name = "routeArguments0"]
@@ -690,6 +692,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_mod_contents[9],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #namespace_attr
                     #[cxx_name = "routeArguments1"]
