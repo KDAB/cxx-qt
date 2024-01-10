@@ -5,7 +5,7 @@
 
 use crate::{generator::rust::fragment::GeneratedRustFragment, parser::qenum::ParsedQEnum};
 use quote::quote;
-use syn::{parse_quote, Item};
+use syn::{parse_quote_spanned, spanned::Spanned, Item};
 
 pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
     qenums
@@ -20,11 +20,13 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
                 quote! { #[namespace = #namespace ] }
             };
             vec![
-                parse_quote! {
+                parse_quote_spanned! {
+                    qenum.item.span() =>
                     #[repr(i32)]
                     #qenum_item
                 },
-                parse_quote! {
+                parse_quote_spanned! {
+                    qenum.item.span() =>
                     extern "C++" {
                         #namespace
                         type #qenum_ident;
