@@ -94,7 +94,7 @@ jobs:
             # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
             # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
             # https://github.com/KDAB/cxx-qt/issues/121
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -108,7 +108,7 @@ jobs:
             vcpkg_triplet: x64-osx-release
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             cargo_dir: ~/.cargo
@@ -123,7 +123,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
@@ -139,7 +139,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
-            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cpp_clang_format|cargo_build_rerun|.*valgrind)$'
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
