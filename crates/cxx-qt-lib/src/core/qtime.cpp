@@ -62,5 +62,11 @@ qtimeSecsTo(const QTime& time, QTime t)
   return static_cast<::std::int32_t>(time.secsTo(t));
 }
 
+bool
+qtimeIsValid(int h, int m, int s, int ms)
+{
+  return QTime::isValid(h, m, s, ms);
+}
+
 }
 }

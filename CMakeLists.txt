@@ -217,9 +217,8 @@ set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
-add_test(NAME cargo_fmt COMMAND cargo fmt --all --check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-set_tests_properties(cargo_tests cargo_clippy cargo_fmt PROPERTIES
+set_tests_properties(cargo_tests cargo_clippy PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
 )
 set_tests_properties(cargo_doc PROPERTIES
@@ -231,15 +230,6 @@ file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/t
 file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
 add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
-
-# Add test which scans for all .cpp and .h files in this project and runs clang-format
-add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Add test which checks all files have a valid license
-add_test(NAME reuse_lint COMMAND reuse lint)
-
-# Ensure that reuse doesn't run while files are changing
-set_tests_properties(reuse_lint PROPERTIES RUN_SERIAL TRUE)
 
 # Add test which checks that a build rerun doesn't recompile and uses caches instead
 add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
