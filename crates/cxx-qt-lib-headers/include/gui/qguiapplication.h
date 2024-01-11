@@ -20,4 +20,3 @@ qguiapplicationNew(const QVector<QByteArray>& args);
 
 }
 }
-
