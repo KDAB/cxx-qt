@@ -11,11 +11,3 @@
 
 #include <QtGui/QPainter>
 
-namespace rust {
-namespace cxxqtlib1 {
-
-::std::unique_ptr<QPainter>
-qpainterInitDefault();
-
-}
-}

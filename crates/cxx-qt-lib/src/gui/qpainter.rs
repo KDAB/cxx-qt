@@ -171,7 +171,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
-        fn qpainterInitDefault() -> UniquePtr<QPainter>;
+        fn make_unique() -> UniquePtr<QPainter>;
     }
 }
 
