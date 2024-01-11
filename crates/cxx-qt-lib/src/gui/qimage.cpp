@@ -5,7 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-
 #include "cxx-qt-lib/qimage.h"
 #include "../assertion_utils.h"
 #include <string>
@@ -51,4 +50,3 @@ qimageCacheKey(const QImage& image)
 }
 }
 }
-

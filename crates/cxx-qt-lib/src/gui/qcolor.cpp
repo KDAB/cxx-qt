@@ -342,4 +342,3 @@ qcolorYellowF(const QColor& color)
 
 }
 }
-
