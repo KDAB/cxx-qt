@@ -72,6 +72,10 @@ mod ffi {
         #[rust_name = "set_fixed_pitch"]
         fn setFixedPitch(self: &mut QFont, enable: bool);
 
+        /// Set the preference for the hinting level of the glyphs to hintingPreference.
+        #[rust_name = "set_hinting_preference"]
+        fn setHintingPreference(self: &mut QFont, hintingPreference: QFontHintingPreference);
+
         /// Sets the style() of the font to QFont::StyleItalic if enable is true; otherwise the style is set to QFont::StyleNormal.
         #[rust_name = "set_italic"]
         fn setItalic(self: &mut QFont, enable: bool);
@@ -84,8 +88,16 @@ mod ffi {
         #[rust_name = "set_style"]
         fn setStyle(self: &mut QFont, style: QFontStyle);
 
+        /// Sets the style name of the font to styleName.
+        #[rust_name = "set_style_name"]
+        fn setStyleName(self: &mut QFont, styleName: &QString);
+
         /// Returns true if strikeout has been set; otherwise returns false.
         fn strikeOut(self: &QFont) -> bool;
+
+        /// If enable is true, sets underline on; otherwise sets underline off.
+        #[rust_name = "set_underline"]
+        fn setUnderline(self: &mut QFont, enable: bool);
 
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
