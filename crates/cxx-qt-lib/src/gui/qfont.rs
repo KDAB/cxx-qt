@@ -23,9 +23,20 @@ mod ffi {
         /// Returns true if the style() of the font is not QFont::StyleNormal
         fn italic(self: &QFont) -> bool;
 
+        /// Returns true if kerning should be used when drawing text with this font.
+        fn kerning(self: &QFont) -> bool;
+
         /// If enable is true sets the font's weight to QFont::Bold; otherwise sets the weight to QFont::Normal.
         #[rust_name = "set_bold"]
         fn setBold(self: &mut QFont, enable: bool);
+
+        /// Sets the family name of the font. The name is case insensitive and may include a foundry name.
+        #[rust_name = "set_family"]
+        fn setFamily(self: &mut QFont, family: &QString);
+
+        /// If enable is true, sets fixed pitch on; otherwise sets fixed pitch off.
+        #[rust_name = "set_fixed_pitch"]
+        fn setFixedPitch(self: &mut QFont, enable: bool);
 
         /// Sets the style() of the font to QFont::StyleItalic if enable is true; otherwise the style is set to QFont::StyleNormal.
         #[rust_name = "set_italic"]
