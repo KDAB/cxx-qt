@@ -7,6 +7,28 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QFontStyle {
+        StyleNormal,
+        StyleItalic,
+        StyleOblique,
+    }
+
+    /// This enum describes the different levels of hinting that can be applied to glyphs
+    /// to improve legibility on displays where it might be warranted by the density of pixels.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QFontHintingPreference {
+        PreferDefaultHinting,
+        PreferNoHinting,
+        PreferVerticalHinting,
+        PreferFullHinting,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = super::QFont;
@@ -20,11 +42,23 @@ mod ffi {
         #[rust_name = "default_family"]
         fn defaultFamily(self: &QFont) -> QString;
 
+        /// Returns the currently preferred hinting level for glyphs rendered with this font.
+        #[rust_name = "hinting_preference"]
+        fn hintingPreference(self: &QFont) -> QFontHintingPreference;
+
         /// Returns true if the style() of the font is not QFont::StyleNormal
         fn italic(self: &QFont) -> bool;
 
         /// Returns true if kerning should be used when drawing text with this font.
         fn kerning(self: &QFont) -> bool;
+
+        /// Returns the pixel size of the font if it was set with setPixelSize(). Returns -1 if the size was set with setPointSize() or setPointSizeF().
+        #[rust_name = "pixel_size"]
+        fn pixelSize(self: &QFont) -> i32;
+
+        /// Returns the point size of the font. Returns -1 if the font size was specified in pixels.
+        #[rust_name = "point_size"]
+        fn pointSize(self: &QFont) -> i32;
 
         /// If enable is true sets the font's weight to QFont::Bold; otherwise sets the weight to QFont::Normal.
         #[rust_name = "set_bold"]
@@ -46,6 +80,10 @@ mod ffi {
         #[rust_name = "set_strikeout"]
         fn setStrikeOut(self: &mut QFont, enable: bool);
 
+        /// Sets the style of the font to style.
+        #[rust_name = "set_style"]
+        fn setStyle(self: &mut QFont, style: QFontStyle);
+
         /// Returns true if strikeout has been set; otherwise returns false.
         fn strikeOut(self: &QFont) -> bool;
 
@@ -56,6 +94,8 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
+        type QFontStyle;
+        type QFontHintingPreference;
 
         #[doc(hidden)]
         #[rust_name = "qfont_init_default"]

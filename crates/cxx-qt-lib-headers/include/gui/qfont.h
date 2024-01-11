@@ -21,4 +21,9 @@ struct IsRelocatable<QFont> : ::std::true_type
 {
 };
 
+namespace cxxqtlib1 {
+using QFontStyle = QFont::Style;
+using QFontHintingPreference = QFont::HintingPreference;
+
+} // namespace cxxqtlib1
 } // namespace rust
