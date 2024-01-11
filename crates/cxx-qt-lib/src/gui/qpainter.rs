@@ -172,11 +172,6 @@ mod ffi {
         #[rust_name = "qpainter_init_default"]
         fn qpainterInitDefault() -> UniquePtr<QPainter>;
     }
-    // QPainter is not a trivial to CXX and is not relocatable in Qt
-    // as the following fails in C++. So we cannot mark it as a trivial type
-    // and need to use references or pointers.
-    // static_assert(QTypeInfo<QPainter>::isRelocatable);
-    impl UniquePtr<QPainter> {}
 }
 
 pub use ffi::QPainter;
