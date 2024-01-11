@@ -19,6 +19,15 @@ mod ffi {
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
+    enum QImageInvertMode {
+        InvertRgb,
+        InvertRgba,
+    }
+
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
     enum QImageFormat {
         Format_Invalid,
         Format_Mono,
@@ -76,8 +85,16 @@ mod ffi {
         #[rust_name = "all_gray"]
         fn allGray(self: &QImage) -> bool;
 
+        /// Returns the number of bit planes in the image.
+        #[rust_name = "bit_plane_count"]
+        fn bitPlaneCount(self: &QImage) -> i32;
+
         /// Returns a sub-area of the image as a new image.
         fn copy(self: &QImage, rect: &QRect) -> QImage;
+
+        /// Creates and returns a 1-bpp heuristic mask for this image.
+        #[rust_name = "create_heuristic_mask"]
+        fn createHeuristicMask(self: &QImage, clipTight: bool) -> QImage;
 
         /// Returns the size of the color table for the image.
         #[rust_name = "color_count"]
@@ -99,6 +116,10 @@ mod ffi {
 
         /// Returns the format of the image.
         fn format(self: &QImage) -> QImageFormat;
+
+        /// Inverts all pixel values in the image.
+        #[rust_name = "invert_pixels"]
+        fn invertPixels(self: &mut QImage, mode: QImageInvertMode);
 
         /// Whether the QImage is null.
         ///
@@ -183,6 +204,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
         type QImageFormat;
+        type QImageInvertMode;
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_default"]
@@ -205,6 +227,8 @@ mod ffi {
         fn qimageCacheKey(image: &QImage) -> i64;
     }
 }
+
+pub use ffi::QImageFormat;
 
 /// This struct is the Rust representation of the [`QImage`](https://doc.qt.io/qt-6/qimage.html)
 /// class.
@@ -270,7 +294,7 @@ impl QImage {
     }
 
     /// Construct a Rust QImage from a given width, height, and QImage Format
-    pub fn from_height_width_and_format(
+    pub fn from_width_height_and_format(
         width: i32,
         height: i32,
         format: ffi::QImageFormat,
@@ -295,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_create_qimage_from_format() {
-        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        let qimage = QImage::from_width_height_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         assert_eq!(qimage.width(), 50);
         assert_eq!(qimage.height(), 70);
         assert!(!qimage.is_null());
@@ -304,7 +328,7 @@ mod tests {
 
     #[test]
     fn test_copy() {
-        let qimage = QImage::from_height_width_and_format(50, 70, ffi::QImageFormat::Format_Mono);
+        let qimage = QImage::from_width_height_and_format(50, 70, ffi::QImageFormat::Format_Mono);
         let qimage2 = qimage.copy(&qimage.rect());
         assert_eq!(qimage.width(), qimage2.width());
         assert_eq!(qimage.height(), qimage2.height());

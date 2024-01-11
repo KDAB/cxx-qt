@@ -94,6 +94,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtime_secs_to"]
         fn qtimeSecsTo(time: &QTime, t: QTime) -> i32;
+
+        #[doc(hidden)]
+        #[rust_name = "qtime_is_valid"]
+        fn qtimeIsValid(h: i32, m: i32, s: i32, ms: i32) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -157,6 +161,12 @@ impl QTime {
     pub fn secs_to(&self, t: Self) -> i32 {
         ffi::qtime_secs_to(self, t)
     }
+
+    /// Returns true if the specified time is valid; otherwise returns false.
+    /// The time is valid if h is in the range 0 to 23, m and s are in the range 0 to 59, and ms is in the range 0 to 999.
+    pub fn is_valid_time(h: i32, m: i32, s: i32, ms: i32) -> bool {
+        ffi::qtime_is_valid(h, m, s, ms)
+    }
 }
 
 impl Default for QTime {
@@ -182,21 +192,28 @@ impl fmt::Debug for QTime {
 use chrono::Timelike;
 
 #[cfg(feature = "chrono")]
-impl From<chrono::NaiveTime> for QTime {
-    fn from(value: chrono::NaiveTime) -> Self {
+impl TryFrom<chrono::NaiveTime> for QTime {
+    type Error = &'static str;
+
+    /// Errors if [chrono::NaiveTime] has milliseconds larger than 999,
+    /// as Qt does not support representing a leap second in this way
+    fn try_from(value: chrono::NaiveTime) -> Result<Self, Self::Error> {
         let ms = (value.nanosecond() / 1_000_000) as i32;
-        QTime::new(
+        // NaiveTime can have a nanosecond larger than 1 second
+        // to represent a leap second.
+        //
+        // Qt has no way to represent this, we could add 1 second but
+        // when then happens if the time is 23:59:59 + 1 ?
+        if ms > 999 {
+            return Err("leap second is not supported in Qt");
+        }
+
+        Ok(QTime::new(
             value.hour() as i32,
             value.minute() as i32,
-            // NaiveTime can have a nanosecond larger than 1 second
-            // to represent a leap second.
-            //
-            // For now we merge this into the QTime second as it can't have
-            // milliseconds larger than 1 second. This does however mean the
-            // information is lost when reversed back to a NaiveTime
-            value.second() as i32 + (ms / 1_000),
-            ms % 1_000,
-        )
+            value.second() as i32,
+            ms,
+        ))
     }
 }
 
@@ -258,14 +275,13 @@ mod test_chrono {
     fn qtime_from_chrono_naive() {
         let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 4).unwrap();
         let qtime = QTime::new(1, 2, 3, 4);
-        assert_eq!(QTime::from(naive), qtime);
+        assert_eq!(QTime::try_from(naive).unwrap(), qtime);
     }
 
     #[test]
     fn qtime_from_chrono_naive_leap_second() {
-        let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 3, 1_000).unwrap();
-        let qtime = QTime::new(1, 2, 4, 0);
-        assert_eq!(QTime::from(naive), qtime);
+        let naive = chrono::NaiveTime::from_hms_milli_opt(1, 2, 59, 1_999).unwrap();
+        assert!(QTime::try_from(naive).is_err());
     }
 
     #[test]

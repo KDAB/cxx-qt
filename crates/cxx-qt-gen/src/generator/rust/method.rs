@@ -11,8 +11,8 @@ use crate::{
     parser::method::ParsedMethod,
 };
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::Result;
+use quote::{quote, quote_spanned};
+use syn::{spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
     invokables: &Vec<ParsedMethod>,
@@ -57,7 +57,8 @@ pub fn generate_rust_methods(
         }
 
         let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote! {
+            cxx_bridge: vec![quote_spanned! {
+                invokable.method.span() =>
                 // Note: extern "Rust" block does not need to be unsafe
                 extern "Rust" {
                     // Note that we are exposing a Rust method on the C++ type to C++

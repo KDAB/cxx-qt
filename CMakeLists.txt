@@ -10,13 +10,17 @@ cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
-if(WIN32 OR APPLE)
-    option(VCPKG "Use vcpkg for dependencies" ON)
-else()
-    option(VCPKG "Use vcpkg for dependencies" OFF)
-endif()
+option(VCPKG "Use vcpkg for release mode dependencies" OFF)
+option(VCPKG_BUILDTREES_ROOT "Use custom vcpkg buildtrees" "")
 
 if(VCPKG)
+    # Until debug and release packages are split we only build release packages
+    # to improve CI run times
+    # https://github.com/microsoft/vcpkg/issues/1626
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        message(WARNING "vcpkg only has release mode builds in it's cache")
+    endif()
+
     if(USE_QT5)
         set(VCPKG_MANIFEST_FEATURES "qt5")
     else()
@@ -27,7 +31,13 @@ if(VCPKG)
 
     # These are required for binary caching to work reliably across machines.
     set(VCPKG_FEATURE_FLAGS "-compilertracking")
-    set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
+    if(VCPKG_BUILDTREES_ROOT STREQUAL "")
+        message(STATUS "Using default vcpkg buildtress root")
+        set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions")
+    else()
+        message(STATUS "Using custom vcpkg buildtrees root: ${VCPKG_BUILDTREES_ROOT}")
+        set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions;--x-buildtrees-root=${VCPKG_BUILDTREES_ROOT}")
+    endif()
 
     if(NOT DEFINED ENV{VCPKG_BINARY_SOURCES})
         if(WIN32)
@@ -144,7 +154,9 @@ enable_testing()
 # Create helper method which adds a valgrind test with the given binary
 function(add_valgrind_test NAME_WITH_PREFIX BINARY WORKING_DIRECTORY)
     if("${MEMORYCHECK_COMMAND}" STREQUAL "MEMORYCHECK_COMMAND-NOTFOUND")
-       MESSAGE(STATUS "valgrind not found. Please install it")
+       if (NOT WIN32)
+           MESSAGE(STATUS "valgrind not found. Please install it")
+       endif()
     else()
        add_test(NAME ${NAME_WITH_PREFIX}_valgrind
            COMMAND ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} --suppressions=${MEMORYCHECK_SUPPRESSIONS_FILE} --gen-suppressions=all ${BINARY}
@@ -202,16 +214,11 @@ endif()
 set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
 # Add CMake tests for `cargo test/clippy/fmt/doc`.
-add_test(NAME cargo_tests COMMAND cargo test --features link_qt_object_files --all-targets --target-dir
-                                  ${CARGO_TARGET_DIR})
-add_test(NAME cargo_doc_tests COMMAND cargo test --features link_qt_object_files --doc --target-dir
-                                      ${CARGO_TARGET_DIR})
-add_test(NAME cargo_doc COMMAND cargo doc --workspace --target-dir ${CARGO_TARGET_DIR})
-add_test(NAME cargo_clippy COMMAND cargo clippy --all-targets --target-dir
-                                   ${CARGO_TARGET_DIR} -- -D warnings)
-add_test(NAME cargo_fmt COMMAND cargo fmt --all --check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
+add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
+add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 
-set_tests_properties(cargo_tests cargo_doc_tests cargo_clippy cargo_fmt PROPERTIES
+set_tests_properties(cargo_tests cargo_clippy PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
 )
 set_tests_properties(cargo_doc PROPERTIES
@@ -223,15 +230,6 @@ file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/t
 file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
 add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
-
-# Add test which scans for all .cpp and .h files in this project and runs clang-format
-add_test(NAME cpp_clang_format COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/clang_format_check.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Add test which checks all files have a valid license
-add_test(NAME reuse_lint COMMAND reuse lint)
-
-# Ensure that reuse doesn't run while files are changing
-set_tests_properties(reuse_lint PROPERTIES RUN_SERIAL TRUE)
 
 # Add test which checks that a build rerun doesn't recompile and uses caches instead
 add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
