@@ -14,7 +14,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v6.2.4#n323
 assert_alignment_and_size(QFont,
                           alignof(::std::size_t),
-			  sizeof(::std::size_t));
+			  sizeof(::std::size_t) + sizeof(::std::int64_t));
 
 static_assert(QTypeInfo<QFont>::isRelocatable);
 
