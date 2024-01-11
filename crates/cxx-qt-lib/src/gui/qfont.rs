@@ -10,6 +10,36 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = super::QFont;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        /// Returns true if weight() is a value greater than QFont::Medium; otherwise returns false.
+        fn bold(self: &QFont) -> bool;
+
+        /// Returns the family name that corresponds to the current style hint.
+        #[rust_name = "default_family"]
+        fn defaultFamily(self: &QFont) -> QString;
+
+        /// Returns true if the style() of the font is not QFont::StyleNormal
+        fn italic(self: &QFont) -> bool;
+
+        /// If enable is true sets the font's weight to QFont::Bold; otherwise sets the weight to QFont::Normal.
+        #[rust_name = "set_bold"]
+        fn setBold(self: &mut QFont, enable: bool);
+
+        /// Sets the style() of the font to QFont::StyleItalic if enable is true; otherwise the style is set to QFont::StyleNormal.
+        #[rust_name = "set_italic"]
+        fn setItalic(self: &mut QFont, enable: bool);
+
+        /// If enable is true, sets strikeout on; otherwise sets strikeout off.
+        #[rust_name = "set_strikeout"]
+        fn setStrikeOut(self: &mut QFont, enable: bool);
+
+        /// Returns true if strikeout has been set; otherwise returns false.
+        fn strikeOut(self: &QFont) -> bool;
+
+        /// Returns true if underline has been set; otherwise returns false.
+        fn underline(self: &QFont) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]

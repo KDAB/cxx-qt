@@ -5,7 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qfont.h"
 
 #include "../assertion_utils.h"
@@ -16,8 +15,8 @@ assert_alignment_and_size(QFont,
                           alignof(::std::size_t),
 			  sizeof(::std::size_t) + sizeof(::std::int64_t));
 
+static_assert(!::std::is_trivially_copy_assignable<QFont>::value);
+static_assert(!::std::is_trivially_copy_constructible<QFont>::value);
+
+static_assert(!::std::is_trivially_destructible<QFont>::value);
 static_assert(QTypeInfo<QFont>::isRelocatable);
-
-static_assert(::std::is_trivially_destructible<QFont>::value);
-
-#endif
