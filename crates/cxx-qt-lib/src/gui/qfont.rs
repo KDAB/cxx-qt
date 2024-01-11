@@ -52,7 +52,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qfont_drop"]
-        fn drop(pen: &mut QFont);        
+        fn drop(pen: &mut QFont);
     }
 }
 
