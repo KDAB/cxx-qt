@@ -89,8 +89,10 @@ operatorDiv(const S scalar, const T& t)
   return t / scalar;
 }
 
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args... args) {
+template<typename T, typename... Args>
+std::unique_ptr<T>
+make_unique(Args... args)
+{
   return std::make_unique<T>(args...);
 }
 
