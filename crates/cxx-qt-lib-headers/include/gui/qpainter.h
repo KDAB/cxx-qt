@@ -6,8 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
-
 #include <cinttypes>
 #include <memory>
 
@@ -21,4 +19,3 @@ qpainterInitDefault();
 
 }
 }
-#endif

@@ -125,6 +125,8 @@ mod ffi {
         fn setClipping(self: Pin<&mut QPainter>, enable: bool);
 
         /// Enables clipping, and sets the clip region to the given rectangle using the given clip operation.
+        ///
+        /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
 
