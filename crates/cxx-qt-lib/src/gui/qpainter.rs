@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
@@ -40,7 +41,7 @@ mod ffi {
 
         /// Returns the bounding rectangle of the current clip if there is a clip;
         /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
-        #[rust_name = "clip_bounding_rect"]
+        #[rust_name = "clip_bounding_rect_or_empty"]
         fn clipBoundingRect(self: &QPainter) -> QRectF;
 
         /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
@@ -180,5 +181,16 @@ impl QPainter {
     /// Create a QPainter
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qpainter_init_default()
+    }
+
+    /// Returns the bounding rectangle of the current clip if there is a clip;
+    /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
+    pub fn clip_bounding_rect(&self) -> Option<ffi::QRectF> {
+        let result = self.clip_bounding_rect_or_empty();
+        if result.is_valid() {
+            Some(result)
+        } else {
+            None
+        }
     }
 }
