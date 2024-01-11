@@ -16,11 +16,6 @@ mod ffi {
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
 
-        /// Creates an arc that occupies the given rectangle,
-        /// beginning at the specified startAngle and extending sweepLength degrees counter-clockwise.
-        #[rust_name = "arc_to"]
-        fn arcTo(self: &mut QPainterPath, rectangle: &QRectF, startAngle: f64, sweepLength: f64);
-
         /// Creates an ellipse within the specified boundingRectangle and adds it to the painter
         /// path as a closed subpath.
         #[rust_name = "add_ellipse"]
@@ -37,6 +32,11 @@ mod ffi {
         /// Creates a move to that lies on the arc that occupies the given rectangle at angle.
         #[rust_name = "arc_move_to"]
         fn arcMoveTo(self: &mut QPainterPath, rectangle: &QRectF, angle: f64);
+
+        /// Creates an arc that occupies the given rectangle, beginning at the specified
+        /// startAngle and extending sweepLength degrees counter-clockwise.
+        #[rust_name = "arc_to"]
+        fn arcTo(self: &mut QPainterPath, rectangle: &QRectF, startAngle: f64, sweepLength: f64);
 
         /// Returns the bounding rectangle of this painter path as a rectangle with floating point precision.
         #[rust_name = "bounding_rect"]
