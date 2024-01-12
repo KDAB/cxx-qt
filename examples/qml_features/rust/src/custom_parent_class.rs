@@ -20,17 +20,10 @@ pub mod qobject {
         /// QSizeF from cxx_qt_lib
         type QSizeF = cxx_qt_lib::QSizeF;
         include!("cxx-qt-lib/qsizef.h");
-    }
 
-    // Define the API from QPainter that we need
-    unsafe extern "C++" {
-        /// QPainter from Qt
-        type QPainter;
-        include!(<QtGui/QPainter>);
-
-        /// QPainter::fillRect from Qt
-        #[rust_name = "fill_rect"]
-        fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
+        /// QPainter from cxx_qt_lib
+        type QPainter = cxx_qt_lib::QPainter;
+        include!("cxx-qt-lib/qpainter.h");
     }
 
     // Define the API from QtQuick that we need
