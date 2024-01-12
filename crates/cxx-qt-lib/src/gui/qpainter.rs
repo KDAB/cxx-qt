@@ -184,7 +184,7 @@ impl QPainter {
     }
 
     /// Returns the bounding rectangle of the current clip if there is a clip;
-    /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
+    /// otherwise returns `None`. Note that the clip region is given in logical coordinates.
     pub fn clip_bounding_rect(&self) -> Option<ffi::QRectF> {
         let result = self.clip_bounding_rect_or_empty();
         if result.is_valid() {
