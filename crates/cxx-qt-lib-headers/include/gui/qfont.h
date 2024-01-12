@@ -25,6 +25,7 @@ namespace cxxqtlib1 {
 using QFontStyle = QFont::Style;
 using QFontHintingPreference = QFont::HintingPreference;
 using QFontCapitalization = QFont::Capitalization;
+using QFontSpacingType = QFont::SpacingType;
 
 } // namespace cxxqtlib1
 } // namespace rust
