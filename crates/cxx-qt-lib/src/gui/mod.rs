@@ -23,3 +23,6 @@ pub use qimage::{QImage, QImageFormat};
 
 mod qfont;
 pub use qfont::QFont;
+
+mod qpainter;
+pub use qpainter::QPainter;

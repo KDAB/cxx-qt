@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 <p align=center><a href="./getting-started/index.md">TLDR: Click here for "Getting Started" guide</a></p>
 
-This library provides a safe mechanism for bridging between Qt code and Rust code in a different way to typical Rust Qt bindings.
+This library provides a safe mechanism for bridging between Qt code and Rust code differently from typical Rust Qt bindings.
 
 We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrapped from one to another.
 
@@ -19,7 +19,7 @@ We feel this is more powerful than typical bindings as this allows us to provide
 
 To aid integration of Qt and Rust code we provide common [Qt types](./concepts/types.md) for Rust which can pass across the bridge and provide ways to express common Qt idioms.
 
-Through the use of macros and code generation as seen in the figure below, the developer describes a `QObject` with CXX-Qt macro annotations. Then CXX-Qt generates the C++ representation of the object and uses macro expansion to define the [CXX](https://cxx.rs/) bridge for the interop between C++ and Rust.
+Through the use of macros and code generation as seen in the figure below, the developer describes a `QObject` with CXX-Qt macro annotations. Then CXX-Qt generates the C++ representation of the object and uses macro expansion to define the [CXX](https://cxx.rs/) bridge for interop between C++ and Rust.
 
 <div style="background-color: white; padding: 1rem; text-align: center;">
 
