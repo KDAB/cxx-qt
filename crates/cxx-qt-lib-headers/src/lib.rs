@@ -75,6 +75,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qimage.h"), "qimage.h"),
         #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qpolygon.h"), "qpolygon.h"),
+        #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qvector2d.h"), "qvector2d.h"),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qvector3d.h"), "qvector3d.h"),
