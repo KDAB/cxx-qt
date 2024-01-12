@@ -9,9 +9,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 Rust Qt objects can be nested as properties or parameters of each other.
 
-A nested object is referred to by using a pointer to its QObject representation.
+A nested object is referred to by using a pointer to its `QObject` representation.
 
-First define a type within an extern block for your bridge as normal.
+First define a type within an `extern` block for your bridge as normal.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/nested_qobjects.rs:book_extern_block}}
