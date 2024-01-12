@@ -112,7 +112,8 @@ mod ffi {
         RoundJoin = 0x80,
         SvgMiterJoin = 0x100,
         MPenJoinStyle = 0x1c0,
-      
+    }
+
     /// This enum type specifies the direction of Qt's layouts and text handling.
     #[repr(i32)]
     enum LayoutDirection {
@@ -154,6 +155,7 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
