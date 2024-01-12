@@ -7,9 +7,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Attributes
 
-## namespace
+## `namespace`
 
-The C++ namespace which to emit `extern "RustQt"` items and the namespace to find `extern "C++Qt"` items.
+The C++ `namespace` which to emit `extern "RustQt"` items and the namespace to find `extern "C++Qt"` items.
 
 An item will inherit the namespace specified on it's surrounding `extern` block if any,
 otherwise the namespace specified with the top level `cxx_qt::bridge` attribute, if any, will be used.
@@ -21,7 +21,7 @@ otherwise the namespace specified with the top level `cxx_qt::bridge` attribute,
 > Note that `#[namespace = "..."]` may not work on all items,
 > we hope to improve this in future this support in the future.
 
-## cxx_name and rust_name
+## `cxx_name` and `rust_name`
 
 The `#[cxx_name = "..."]` attribute replaces the name that C++ should use for this item.
 

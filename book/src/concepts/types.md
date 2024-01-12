@@ -52,11 +52,11 @@ If they are opaque, references or pointers must be used.
 
 For examples of how to wrap Qt objects, explore the [`cxx-qt-lib` source code](https://github.com/KDAB/cxx-qt/tree/main/crates/cxx-qt-lib).
 
-### Using a Custom Type with Containers or QVariant
+### Using a Custom Type with Containers or `QVariant`
 
-To use a custom type with containers find the trait that the container uses, eg for `QSet<T>` there is a `QSetElement` trait and for `QHash<K, V>` there is a `QHashPair` trait.
+To use a custom type with containers find the trait that the container uses, e.g. for `QSet<T>` there is a `QSetElement` trait and for `QHash<K, V>` there is a `QHashPair` trait.
 
-Implement the trait for your custom type and then you can use the containers as described above.
+Implement the trait for your custom type, and then you can use the containers as described above.
 
 To use a custom type with `QVariant` implement the `QVariantValue` trait for your custom type, as seen below, then it can be used as normal.
 
@@ -66,4 +66,4 @@ To use a custom type with `QVariant` implement the `QVariantValue` trait for you
 
 A full example of implementing a custom struct with `QVariant` is shown in the [qml_features types example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/types.rs).
 
-Also any custom types or alias in C++ should be registered with Qt using `qRegisterMetaType<T>("TYPE")` to ensure that they work with QML.
+Also, any custom types or alias in C++ should be registered with Qt using `qRegisterMetaType<T>("TYPE")` to ensure that they work with QML.

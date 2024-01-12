@@ -112,6 +112,27 @@ mod ffi {
         RoundJoin = 0x80,
         SvgMiterJoin = 0x100,
         MPenJoinStyle = 0x1c0,
+      
+    /// This enum type specifies the direction of Qt's layouts and text handling.
+    #[repr(i32)]
+    enum LayoutDirection {
+        LeftToRight,
+        RightToLeft,
+        LayoutDirectionAuto,
+    }
+
+    /// This enum type specifies the background mode
+    #[repr(i32)]
+    enum BGMode {
+        TransparentMode,
+        OpaqueMode,
+    }
+
+    #[repr(i32)]
+    enum ClipOperation {
+        NoClip,
+        ReplaceClip,
+        IntersectClip,
     }
 
     unsafe extern "C++" {
@@ -126,10 +147,13 @@ mod ffi {
         type PenStyle;
         type PenCapStyle;
         type PenJoinStyle;
+        type LayoutDirection;
+        type BGMode;
+        type ClipOperation;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, PenCapStyle, PenJoinStyle,
-    PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, LayoutDirection,
+    PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
