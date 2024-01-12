@@ -92,7 +92,7 @@ mod ffi {
         /// This fill mode can also in most cases be considered as the intersection of closed shapes.
         WindingFill,
     }
-  
+
     /// This enum type specifies the direction of Qt's layouts and text handling.
     #[repr(i32)]
     enum LayoutDirection {
@@ -132,6 +132,6 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat,
-    FillRule, LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
+    LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
