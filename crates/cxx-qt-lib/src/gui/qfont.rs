@@ -29,6 +29,23 @@ mod ffi {
         PreferFullHinting,
     }
 
+    /// Rendering option for text this font applies to.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QFontCapitalization {
+        /// This is the normal text rendering option where no capitalization change is applied.
+        MixedCase,
+        /// This alters the text to be rendered in all uppercase type.
+        AllUppercase,
+        /// This alters the text to be rendered in all lowercase type.
+        AllLowercase,
+        /// This alters the text to be rendered in small-caps type.
+        SmallCaps,
+        /// This alters the text to be rendered with the first character of each word as an uppercase character.
+        Capitalize,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = super::QFont;
@@ -38,19 +55,35 @@ mod ffi {
         /// Returns true if weight() is a value greater than QFont::Medium; otherwise returns false.
         fn bold(self: &QFont) -> bool;
 
+        /// Returns the current capitalization type of the font.
+        fn capitalization(self: &QFont) -> QFontCapitalization;
+
         /// Returns the family name that corresponds to the current style hint.
         #[rust_name = "default_family"]
         fn defaultFamily(self: &QFont) -> QString;
 
+        /// Returns true if fixed pitch has been set; otherwise returns false.
+        #[rust_name = "fixed_pitch"]
+        fn fixedPitch(self: &QFont) -> bool;
+
         /// Returns the currently preferred hinting level for glyphs rendered with this font.
         #[rust_name = "hinting_preference"]
         fn hintingPreference(self: &QFont) -> QFontHintingPreference;
+
+        /// Returns true if this font and f are copies of each other, i.e. one of them was created
+        /// as a copy of the other and neither has been modified since. This is much stricter than equality.
+        #[rust_name = "is_copy_of"]
+        fn isCopyOf(self: &QFont, font: &QFont) -> bool;
 
         /// Returns true if the style() of the font is not QFont::StyleNormal
         fn italic(self: &QFont) -> bool;
 
         /// Returns true if kerning should be used when drawing text with this font.
         fn kerning(self: &QFont) -> bool;
+
+        /// Returns the font's key, a textual representation of a font.
+        /// It is typically used as the key for a cache or dictionary of fonts.
+        fn key(self: &QFont) -> QString;
 
         /// Returns the pixel size of the font if it was set with setPixelSize(). Returns -1 if the size was set with setPointSize() or setPointSizeF().
         #[rust_name = "pixel_size"]
@@ -60,9 +93,16 @@ mod ffi {
         #[rust_name = "point_size"]
         fn pointSize(self: &QFont) -> i32;
 
+        /// Returns a new QFont that has attributes copied from other that have not been previously set on this font.
+        fn resolve(self: &QFont, other: &QFont) -> QFont;
+
         /// If enable is true sets the font's weight to QFont::Bold; otherwise sets the weight to QFont::Normal.
         #[rust_name = "set_bold"]
         fn setBold(self: &mut QFont, enable: bool);
+
+        /// Sets the capitalization of the text in this font to caps.
+        #[rust_name = "set_capitalization"]
+        fn setCapitalization(self: &mut QFont, caps: QFontCapitalization);
 
         /// Sets the family name of the font. The name is case insensitive and may include a foundry name.
         #[rust_name = "set_family"]
@@ -79,6 +119,10 @@ mod ffi {
         /// Sets the style() of the font to QFont::StyleItalic if enable is true; otherwise the style is set to QFont::StyleNormal.
         #[rust_name = "set_italic"]
         fn setItalic(self: &mut QFont, enable: bool);
+
+        /// Enables kerning for this font if enable is true; otherwise disables it. By default, kerning is enabled.
+        #[rust_name = "set_kerning"]
+        fn setKerning(self: &mut QFont, enable: bool);
 
         /// If enable is true, sets strikeout on; otherwise sets strikeout off.
         #[rust_name = "set_strikeout"]
@@ -108,6 +152,7 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
         type QFontStyle;
         type QFontHintingPreference;
+        type QFontCapitalization;
 
         #[doc(hidden)]
         #[rust_name = "qfont_init_default"]
