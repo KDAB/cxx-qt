@@ -32,4 +32,3 @@ static_assert(!::std::is_trivially_copy_constructible<QPolygon>::value);
 static_assert(!::std::is_trivially_destructible<QPolygon>::value);
 
 static_assert(QTypeInfo<QPolygon>::isRelocatable);
-
