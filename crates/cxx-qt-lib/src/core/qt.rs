@@ -92,6 +92,28 @@ mod ffi {
         /// This fill mode can also in most cases be considered as the intersection of closed shapes.
         WindingFill,
     }
+  
+    /// This enum type specifies the direction of Qt's layouts and text handling.
+    #[repr(i32)]
+    enum LayoutDirection {
+        LeftToRight,
+        RightToLeft,
+        LayoutDirectionAuto,
+    }
+
+    /// This enum type specifies the background mode
+    #[repr(i32)]
+    enum BGMode {
+        TransparentMode,
+        OpaqueMode,
+    }
+
+    #[repr(i32)]
+    enum ClipOperation {
+        NoClip,
+        ReplaceClip,
+        IntersectClip,
+    }
 
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
@@ -103,10 +125,13 @@ mod ffi {
         type TimeSpec;
         type TransformationMode;
         type FillRule;
+        type LayoutDirection;
+        type BGMode;
+        type ClipOperation;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, CaseSensitivity, ConnectionType, DateFormat, FillRule, SplitBehaviorFlags,
-    TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat,
+    FillRule, LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
