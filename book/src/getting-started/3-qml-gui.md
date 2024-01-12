@@ -12,6 +12,7 @@ For a small modern GUI in Qt, that definitely means using QML.
 It's powerful, flexible, declarative, and allows us to iterate very quickly.
 
 So let's add a `main.qml` file in a `qml` folder:
+
 ```qml,ignore
 {{#include ../../../examples/qml_minimal/qml/main.qml:book_main_qml}}
 ```
@@ -19,18 +20,18 @@ So let's add a `main.qml` file in a `qml` folder:
 If you're not familiar with QML, take a look at the [Qt QML intro](https://doc.qt.io/qt-6/qmlapplications.html).
 We of course also recommend our [QML Intro Training](https://www.kdab.com/software-services/on-site-training/qt-onsite/programming-qtqml-onsite-training/).
 
-This code will create a pretty simple GUI that consists of two Labels and two Buttons.
+This code will create a pretty simple GUI that consists of two `Label`s and two `Button`s.
 The important part here is the use of the `MyObject` type.
 As you can see, the class we defined earlier is now usable in QML.
 
-As it is just another QObject subclass, it can be used in Qt's property binding system, as is done with the `myObject.string`, which is bound to `myObject.number`.
+As it is just another `QObject` subclass, it can be used in Qt's property binding system, as is done with the `myObject.string`, which is bound to `myObject.number`.
 
 The labels then simply display the data defined in the `MyObject` class.
 We can use the two buttons to interact with the `MyObject` instance.
 As you can see here, CXX-Qt has converted the snake_case of the function names to camelCase - `incrementNumber` and `sayHi`.
 This way the `MyObject` doesn't seem at all out of place in QML.
 
-It is again important to emphasize here that `MyObject` is just another QObject subclass and can be used just like any other `QObject` subclass.
+It is again important to emphasize here that `MyObject` is just another `QObject` subclass and can be used just like any other `QObject` subclass.
 The only difference being that any invokable functions are defined in Rust, instead of C++.
 For QML, this doesn't make a difference though.
 

@@ -5,9 +5,9 @@ SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-# extern "RustQt"
+# `extern "RustQt"`
 
-- [QObjects](#qobjects)
+- [`QObject`s](#qobjects)
 - [Properties](#properties)
 - [Methods](#methods)
 - [Signals](#signals)
@@ -30,11 +30,11 @@ A bridge module may contain zero or more `extern "RustQt"` blocks.
 This complements the [`extern "Rust"` CXX section](https://cxx.rs/extern-rust.html)
 but allows for declaring Qt specific features on C++ types.
 
-## QObjects
+## `QObject`s
 
 Types specified with a `#[qobject]` attribute are generated in C++ as a [`QObject`](https://doc.qt.io/qt-6/qobject.html).
 
-The left side of the type specifies the C++ generated type and name, when referring to the C++ context this should be used. The right side of the type specifies which Rust type provides the inner implementation of the type (for example fields ).
+The left side of the type specifies the C++ generated type and name, when referring to the C++ context this should be used. The right side of the type specifies which Rust type provides the inner implementation of the type (for example fields).
 
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
@@ -51,7 +51,7 @@ struct MyObjectRust;
 
 ### QML Attributes
 
-QObjects can be registered as a QML type directly at build time by using the [`#[qml_element]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_ELEMENT) attribute.
+`QObject`s can be registered as a QML type directly at build time by using the [`#[qml_element]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_ELEMENT) attribute.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct_signature}}
@@ -65,20 +65,21 @@ TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_INTERFACE
 
 - [`qml_name`](https://doc.qt.io/qt-6/qqmlengine.html#QML_NAMED_ELEMENT): Use a different type name for QML.
 - [`qml_uncreatable`](https://doc.qt.io/qt-6/qqmlengine.html#QML_UNCREATABLE): Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
-- [`qml_singleton`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the QObject will be instantiated as a singleton in QML.
+- [`qml_singleton`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the `QObject` will be instantiated as a singleton in QML.
 
 > The Rust file must be included within a [QML module in the `build.rs` file](../concepts/build_systems.md#qml-modules)
 
 ### `base` attribute
 
-Use the `base` attribute to specify a C++ class that the C++ QObject will inherit from.
-The base class must inherit from QObject (directly or indirectly). If you do not specify a base attribute, it will inherit directly from QObject.
+Use the `base` attribute to specify a C++ class that the C++ `QObject` will inherit from.
+The base class must inherit from `QObject` (directly or indirectly). If you do not specify a base attribute, it will inherit directly from `QObject`.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qobject_base}}
 ```
 
 Use the CXX `include!` macro to include the appropriate C++ header for the base class:
+
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_base_include}}
 ```
@@ -86,7 +87,6 @@ Use the CXX `include!` macro to include the appropriate C++ header for the base 
 For more information on inheritance and how to override methods see the [Inheritance & Overriding](../concepts/inheritance.md) page.
 
 [Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
-
 
 ### Traits
 
@@ -96,7 +96,7 @@ For further documentation see the [traits page](./traits.md).
 
 ## Properties
 
-The `#[qproperty(TYPE, NAME, ...)]` attribute can be specified on a [`#[qobject]` marked type](#qobjects) to expose a [`Q_PROPERTY`](https://doc.qt.io/qt-6/properties.html) on the generated QObject.
+The `#[qproperty(TYPE, NAME, ...)]` attribute can be specified on a [`#[qobject]` marked type](#qobjects) to expose a [`Q_PROPERTY`](https://doc.qt.io/qt-6/properties.html) on the generated `QObject`.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_signature}}
@@ -111,19 +111,21 @@ The type and name of the
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
 
 On the C++ side:
-  * setter: `set<Property>`
-  * getter: `get<Property>`
-  * changed: `<Property>Changed`
+
+- setter: `set<Property>`
+- getter: `get<Property>`
+- changed: `<Property>Changed`
 
 On the Rust side:
-  * setter: `set_<Property>`
-  * getter: `<Property>`
-  * changed: `<Property>_changed`
 
-Also the generated Rust methods for [signals](#signals)
+- setter: `set_<Property>`
+- getter: `<Property>`
+- changed: `<Property>_changed`
 
-  * connect: `connect_<Property>_changed`
-  * on: `on_<Property>_changed`
+The generated Rust methods for [signals](#signals):
+
+- connect: `connect_<Property>_changed`
+- on: `on_<Property>_changed`
 
 Where `<Property>` is the name of the property.
 
@@ -186,16 +188,16 @@ These are specified as an attribute on the method signature.
 
 ## Signals
 
-The `qsignal` attribute is used in an `extern "RustQt"` block to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for the a QObject.
+The `qsignal` attribute is used in an `extern "RustQt"` block to define [signals](https://doc.qt.io/qt-6/signalsandslots.html) for a `QObject`.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_block}}
 ```
 
-For every function signature in the extern block, CXX-Qt will generate a signal on the corresponding QObject.
+For every function signature in the `extern` block, CXX-Qt will generate a signal on the corresponding `QObject`.
 If the function has parameters, they will become the parameters for the corresponding signal.
 
-If a signal is defined on the base class of the QObject then `#[inherit]` can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
+If a signal is defined on the base class of the `QObject` then `#[inherit]` can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
 
 A full example can be found in the [qml features](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs).
 
@@ -212,7 +214,7 @@ For every signal defined in the enum, two methods are generated.
   2. `connect_<signal_name>`
 
 The `on_<signal_name>` method takes a handler function as the parameter, which will be called when the signal is emitted.
-That handler function's first argument is the qobject and the remaining arguments are the signal parameters.
+That handler function's first argument is the `QObject` and the remaining arguments are the signal parameters.
 
 The `connect_<signal_name>` function additionally takes the [Qt connection type](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum) as a parameter.
 
@@ -228,7 +230,7 @@ Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qme
 Note that the `QMetaObjectConnection` returned by CXX-Qt behaves a bit different from the Qt C++ implementation.
 
 When the `QMetaObjectConnection` is dropped, it automatically disconnects the connection, similar to how a C++ `std::unique_ptr` or Rusts `Box` behaves.
-If you don't want to store the QMetaObjectConnection, call `release`, which will drop the object without disconnecting.
+If you don't want to store the `QMetaObjectConnection`, call `release`, which will drop the object without disconnecting.
 In this case, it is no longer possible to disconnect later.
 
 ```rust,ignore,noplayground
@@ -239,15 +241,15 @@ In this case, it is no longer possible to disconnect later.
 
 Call the function signature defined in the `extern "RustQt"` block to emit the signal.
 
-Note that these are defined on the generated QObject [`qobject::T`](../concepts/generated_qobject.md), so can be called from any mutable `#[qinvokable]`.
+Note that these are defined on the generated `QObject` [`qobject::T`](../concepts/generated_qobject.md), so can be called from any mutable `#[qinvokable]`.
 
 The function will immediately emit the signal.
 Depending on the connection type, the connected slots will be called either immediately or from the event loop (See [the different connection types](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum)).
 To queue the call until the next cycle of the Qt event loop, you can use the [`CxxQtThread`](https://docs.rs/cxx-qt/latest/cxx_qt/struct.CxxQtThread.html).
 
-### Inheritance
+### Signal Inheritance
 
-If a signal is defined on the base class of the QObject then the `#[inherit]` attribute can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
+If a signal is defined on the base class of the `QObject` then the `#[inherit]` attribute can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qsignals_inherit}}

@@ -23,3 +23,6 @@ pub use qimage::{QImage, QImageFormat};
 
 mod qpolygon;
 pub use qpolygon::QPolygon;
+
+mod qpainter;
+pub use qpainter::QPainter;
