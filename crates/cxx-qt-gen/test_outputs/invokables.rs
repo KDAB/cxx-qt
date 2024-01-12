@@ -150,6 +150,7 @@ mod ffi {
     struct CxxQtConstructorInitializeArgumentsMyObject0 {
         not_empty: i8,
     }
+    #[allow(clippy::needless_lifetimes)]
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         #[cxx_name = "routeArguments0"]
@@ -196,6 +197,7 @@ mod ffi {
     struct CxxQtConstructorInitializeArgumentsMyObject1 {
         not_empty: i8,
     }
+    #[allow(clippy::needless_lifetimes)]
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         #[cxx_name = "routeArguments1"]

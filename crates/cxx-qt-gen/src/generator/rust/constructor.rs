@@ -341,7 +341,8 @@ pub fn generate(
         );
 
         result.cxx_mod_contents.append(&mut vec![
-            parse_quote! {
+            parse_quote_spanned! {
+                constructor.imp.span() =>
                 #[namespace = #namespace_internals]
                 #[cxx_name = #args_tuple_cxx]
                 #[doc(hidden)]
@@ -365,7 +366,9 @@ pub fn generate(
                 cpp: initialize_arguments_cxx.clone(),
                 rust: initialize_arguments_rust.clone(),
             }, &initialize_lifetime, &constructor.initialize_arguments),
-            parse_quote! {
+            parse_quote_spanned! {
+                constructor.imp.span() =>
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #[namespace = #namespace_internals]
                     #[cxx_name = #route_arguments_cxx]
@@ -565,6 +568,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_mod_contents[4],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #namespace_attr
                     #[cxx_name = "routeArguments0"]
@@ -688,6 +692,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_mod_contents[9],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 extern "Rust" {
                     #namespace_attr
                     #[cxx_name = "routeArguments1"]

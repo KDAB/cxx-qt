@@ -8,8 +8,8 @@ use crate::{
     parser::inherit::ParsedInheritedMethod,
 };
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{Item, Result};
+use quote::{quote, quote_spanned};
+use syn::{spanned::Spanned, Item, Result};
 
 pub fn generate(
     qobject_ident: &QObjectName,
@@ -45,7 +45,8 @@ pub fn generate(
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
             let attrs = &method.method.attrs;
-            syn::parse2(quote! {
+            syn::parse2(quote_spanned! {
+                method.method.span() =>
                 #unsafe_block extern "C++" {
                     #(#attrs)*
                     #[cxx_name = #cxx_name_string]
