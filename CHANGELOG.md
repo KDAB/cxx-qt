@@ -5,6 +5,9 @@ SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
+<!-- markdownlint-disable MD024 -->
+<!-- ^^ MD024 complains about duplicate headers -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -176,6 +179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use postEvent for emitting events safely
+
 ## [0.1.0](https://github.com/KDAB/cxx-qt/releases/tag/v0.1.0) - 2021-12-03
 
 ### Added
