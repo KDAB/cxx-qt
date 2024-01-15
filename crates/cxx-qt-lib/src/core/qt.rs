@@ -113,7 +113,7 @@ mod ffi {
         SvgMiterJoin = 0x100,
         MPenJoinStyle = 0x1c0,
     }
-  
+
     #[repr(i32)]
     enum FillRule {
         /// Specifies that the region is filled using the odd even fill rule.
