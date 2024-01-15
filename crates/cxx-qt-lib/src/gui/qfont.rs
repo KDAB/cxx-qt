@@ -185,7 +185,6 @@ mod ffi {
     }
 }
 
-#[derive(Clone)]
 #[repr(C)]
 pub struct QFont {
     _cspec: MaybeUninit<i32>,
