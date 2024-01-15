@@ -32,6 +32,10 @@ pub fn generate(
             let mut block = GeneratedCppExternCxxQtBlocks::default();
             let data = generate_cpp_signal(signal, &signal.qobject_ident, cxx_mappings)?;
             block.includes = data.includes;
+            // Ensure that we include MaybeLockGuard<T> that is used in multiple places
+            block
+                .includes
+                .insert("#include <cxx-qt-common/cxxqt_maybelockguard.h>".to_owned());
             block.forward_declares = data.forward_declares;
             block.fragments = data.fragments;
             debug_assert!(data.methods.is_empty());
