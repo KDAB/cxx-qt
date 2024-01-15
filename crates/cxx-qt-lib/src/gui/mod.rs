@@ -24,5 +24,8 @@ pub use qimage::{QImage, QImageFormat};
 mod qfont;
 pub use qfont::QFont;
 
+mod qpainterpath;
+pub use qpainterpath::QPainterPath;
+
 mod qpainter;
 pub use qpainter::QPainter;
