@@ -32,6 +32,14 @@ jobs:
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
 
+  markdown_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v14
+        with:
+          globs: 'book/**/*.md'
+
   build:
     # Run after pre checks
     needs: [clang_format, license_check, rust_format_check]

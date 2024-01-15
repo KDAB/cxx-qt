@@ -6,7 +6,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qguiapplication.h"
 
 #include "cxx-qt-lib/qcoreapplication.h"
@@ -32,4 +31,3 @@ qguiapplicationNew(const QVector<QByteArray>& args)
 
 }
 }
-#endif
