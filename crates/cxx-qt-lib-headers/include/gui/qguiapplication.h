@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
 #include <memory>
 
 #include <QtGui/QGuiApplication>
@@ -21,5 +20,3 @@ qguiapplicationNew(const QVector<QByteArray>& args);
 
 }
 }
-
-#endif
