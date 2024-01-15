@@ -7,13 +7,17 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-
+    /// This enum describes the different styles of glyphs that are used to display text.
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
     enum QFontStyle {
+        /// Normal glyphs used in unstyled text.
         StyleNormal,
+        /// Italic glyphs that are specifically designed for the purpose of representing italicized text.
         StyleItalic,
+        /// Glyphs with an italic appearance that are typically based on the unstyled glyphs,
+        /// but are not fine-tuned for the purpose of representing italicized text.
         StyleOblique,
     }
 
@@ -23,9 +27,20 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
     enum QFontHintingPreference {
+        /// Use the default hinting level for the target platform.
         PreferDefaultHinting,
+        /// If possible, render text without hinting the outlines of the glyphs.
+        /// The text layout will be typographically accurate and scalable, using the same metrics as are used e.g. when printing.
         PreferNoHinting,
+        /// If possible, render text with no horizontal hinting, but align glyphs to the pixel grid in the vertical direction.
+        /// The text will appear crisper on displays where the density is too low to give an accurate rendering of the glyphs.
+        /// But since the horizontal metrics of the glyphs are unhinted, the text's layout will be scalable to higher density
+        /// devices (such as printers) without impacting details such as line breaks.
         PreferVerticalHinting,
+        /// If possible, render text with hinting in both horizontal and vertical directions. The text will be altered to optimize
+        /// legibility on the target device, but since the metrics will depend on the target size of the text, the positions of
+        /// glyphs, line breaks, and other typographical detail will not scale, meaning that a text layout may look
+        /// different on devices with different pixel densities.
         PreferFullHinting,
     }
 

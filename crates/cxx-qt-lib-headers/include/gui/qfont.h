@@ -6,8 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <cinttypes>
-
 #include <QtGui/QFont>
 
 #include "rust/cxx.h"
