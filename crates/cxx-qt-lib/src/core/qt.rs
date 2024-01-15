@@ -76,6 +76,23 @@ mod ffi {
         SmoothTransformation,
     }
 
+    #[repr(i32)]
+    enum FillRule {
+        /// Specifies that the region is filled using the odd even fill rule.
+        /// With this rule, we determine whether a point is inside the shape by using
+        /// the following method. Draw a horizontal line from the point to a location
+        /// outside the shape, and count the number of intersections. If the number of
+        /// intersections is an odd number, the point is inside the shape. This mode is the default.
+        OddEvenFill,
+        /// Specifies that the region is filled using the non zero winding rule.
+        /// With this rule, we determine whether a point is inside the shape by using the following method.
+        /// Draw a horizontal line from the point to a location outside the shape. Determine whether
+        /// the direction of the line at each intersection point is up or down. The winding number is determined
+        /// by summing the direction of each intersection. If the number is non zero, the point is inside the shape.
+        /// This fill mode can also in most cases be considered as the intersection of closed shapes.
+        WindingFill,
+    }
+
     /// This enum type specifies the direction of Qt's layouts and text handling.
     #[repr(i32)]
     enum LayoutDirection {
@@ -107,6 +124,7 @@ mod ffi {
         type SplitBehaviorFlags;
         type TimeSpec;
         type TransformationMode;
+        type FillRule;
         type LayoutDirection;
         type BGMode;
         type ClipOperation;
@@ -114,6 +132,6 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
     LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
