@@ -5,7 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qvector3d.h"
 
 #include "../assertion_utils.h"
@@ -47,4 +46,3 @@ qvector3DDistanceToPoint(const QVector3D& vector, QVector3D point)
 
 }
 }
-#endif

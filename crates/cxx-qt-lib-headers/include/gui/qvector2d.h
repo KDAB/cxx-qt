@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QVector2D>
 
 namespace rust {
@@ -22,4 +21,3 @@ qvector2DDistanceToPoint(const QVector2D& vector, QVector2D point);
 
 }
 }
-#endif
