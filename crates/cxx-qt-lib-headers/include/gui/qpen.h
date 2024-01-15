@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
 #include <cinttypes>
 
 #include <QtGui/QPen>
@@ -23,4 +22,3 @@ struct IsRelocatable<QPen> : ::std::true_type
 };
 
 } // namespace rust
-#endif

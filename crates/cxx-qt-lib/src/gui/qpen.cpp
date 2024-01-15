@@ -5,7 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qpen.h"
 
 #include "../assertion_utils.h"
@@ -20,5 +19,3 @@ static_assert(!::std::is_trivially_copy_constructible<QPen>::value);
 static_assert(!::std::is_trivially_destructible<QPen>::value);
 
 static_assert(QTypeInfo<QPen>::isRelocatable);
-
-#endif
