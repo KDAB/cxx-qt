@@ -6,6 +6,4 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QVector4D>
-#endif
