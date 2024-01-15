@@ -74,6 +74,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpen_drop"]
         fn drop(pen: &mut QPen);
+
+        #[doc(hidden)]
+        #[rust_name = "qpen_clone"]
+        fn construct(pen: &QPen) -> QPen;
     }
 }
 
@@ -95,6 +99,12 @@ impl Default for QPen {
 impl Drop for QPen {
     fn drop(&mut self) {
         ffi::qpen_drop(self);
+    }
+}
+
+impl Clone for QPen {
+    fn clone(&self) -> Self {
+        ffi::qpen_clone(self)
     }
 }
 
