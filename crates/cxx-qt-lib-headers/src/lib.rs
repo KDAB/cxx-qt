@@ -68,6 +68,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qcolor.h"), "qcolor.h"),
         #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qfont.h"), "qfont.h"),
+        #[cfg(feature = "qt_gui")]
         (
             include_str!("../include/gui/qguiapplication.h"),
             "qguiapplication.h",
