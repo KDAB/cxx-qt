@@ -6,7 +6,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qpainterpath.h"
 #include "../assertion_utils.h"
 
@@ -22,5 +21,3 @@ static_assert(!::std::is_trivially_copy_assignable<QPainterPath>::value);
 static_assert(!::std::is_trivially_copy_constructible<QPainterPath>::value);
 
 static_assert(!::std::is_trivially_destructible<QPainterPath>::value);
-
-#endif
