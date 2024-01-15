@@ -182,6 +182,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_drop"]
         fn drop(pen: &mut QFont);
+
+        #[doc(hidden)]
+        #[rust_name = "qfont_clone"]
+        fn construct(font: &QFont) -> QFont;
     }
 }
 
@@ -200,6 +204,12 @@ impl Default for QFont {
 impl Drop for QFont {
     fn drop(&mut self) {
         ffi::qfont_drop(self);
+    }
+}
+
+impl Clone for QFont {
+    fn clone(&self) -> Self {
+        ffi::qfont_clone(self)
     }
 }
 
