@@ -32,6 +32,8 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qpainterpath.h");
         type QPainterPath = crate::QPainterPath;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -144,6 +146,10 @@ mod ffi {
         /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
+
+        /// Sets the painter's font to the given font.
+        #[rust_name = "set_font"]
+        fn setFont(self: Pin<&mut QPainter>, font: &QFont);
 
         /// Sets the layout direction used by the painter when drawing text, to the specified direction.
         #[rust_name = "set_layout_direction"]

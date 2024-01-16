@@ -14,6 +14,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
 #include <QtCore/QVector>
+#include <QtGui/QFont>
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -125,6 +126,20 @@ void
 qapplicationRemoveLibraryPath(T& app, const QString& path)
 {
   app.removeLibraryPath(path);
+}
+
+template<typename T>
+void
+qapplicationSetFont(T& app, const QFont& font)
+{
+  app.setFont(font);
+}
+
+template<typename T>
+QFont
+qapplicationFont(const T& app)
+{
+  return app.font();
 }
 
 }
