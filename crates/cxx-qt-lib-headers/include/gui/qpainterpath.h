@@ -6,9 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
-#include <cinttypes>
-
 #include <QtGui/QPainterPath>
 
 #include "rust/cxx.h"
@@ -23,4 +20,3 @@ struct IsRelocatable<QPainterPath> : ::std::true_type
 };
 
 } // namespace rust
-#endif
