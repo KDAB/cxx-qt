@@ -7,9 +7,6 @@ SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
 
-<!-- markdownlint-disable MD034 -->
-<!-- ^^ MD034 complains about bare link in 'About KDAB' -->
-
 # CXX-Qt
 
 [![Github](https://img.shields.io/badge/github-kdab%2Fcxx--qt-informational?logo=github)](https://github.com/kdab/cxx-qt)
@@ -159,4 +156,4 @@ We continue to help develop parts of Qt and are one of the major contributors
 to the Qt Project. We can give advanced or standard trainings anywhere
 around the globe on Qt as well as C++, OpenGL, 3D and more.
 
-Please visit https://www.kdab.com to meet the people who write code like this.
+Please visit <https://www.kdab.com> to meet the people who write code like this.
