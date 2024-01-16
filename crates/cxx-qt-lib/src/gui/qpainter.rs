@@ -32,6 +32,8 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qpainterpath.h");
         type QPainterPath = crate::QPainterPath;
+        include!("cxx-qt-lib/qpen.h");
+        type QPen = crate::QPen;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -123,6 +125,9 @@ mod ffi {
         /// Returns the opacity of the painter. The default value is 1.
         fn opacity(self: &QPainter) -> f64;
 
+        /// Returns the painter's current pen.
+        fn pen(self: &QPainter) -> &QPen;
+
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: Pin<&mut QPainter>);
@@ -157,6 +162,10 @@ mod ffi {
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
         #[rust_name = "set_opacity"]
         fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
+
+        /// Draws the outline (strokes) the path path with the pen specified by pen
+        #[rust_name = "stroke_path"]
+        fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
 
         /// Sets the painter's viewport rectangle to the given rectangle, and enables view transformations.
         #[rust_name = "set_viewport"]
