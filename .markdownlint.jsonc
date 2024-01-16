@@ -1,0 +1,13 @@
+/*
+SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Matt Aber <matt.aber@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+*/
+
+{
+    "MD033": false, // no-inline-html
+    "MD013": false, // line-length
+    "MD028": false, // no-blanks-blockquote
+    "MD014": false // commands-show-output
+}
