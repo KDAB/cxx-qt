@@ -14,7 +14,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
 #include <QtCore/QVector>
+#ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QFont>
+#endif
 
 namespace rust {
 namespace cxxqtlib1 {
@@ -128,19 +130,14 @@ qapplicationRemoveLibraryPath(T& app, const QString& path)
   app.removeLibraryPath(path);
 }
 
-template<typename T>
-void
-qapplicationSetFont(T& app, const QFont& font)
-{
-  app.setFont(font);
-}
-
+#ifdef CXX_QT_GUI_FEATURE
 template<typename T>
 QFont
 qapplicationFont(const T& app)
 {
   return app.font();
 }
+#endif
 
 }
 }

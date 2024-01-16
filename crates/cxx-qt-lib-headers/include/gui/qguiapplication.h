@@ -9,6 +9,7 @@
 #include <memory>
 
 #include <QtGui/QGuiApplication>
+#include <QtGui/QFont>
 
 #include "rust/cxx.h"
 
@@ -17,6 +18,12 @@ namespace cxxqtlib1 {
 
 ::std::unique_ptr<QGuiApplication>
 qguiapplicationNew(const QVector<QByteArray>& args);
+
+void
+qapplicationSetFont(QGuiApplication& app, const QFont& font)
+{
+  app.setFont(font);
+}
 
 }
 }
