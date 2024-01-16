@@ -5,7 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qvector2d.h"
 
 #include "../assertion_utils.h"
@@ -39,4 +38,3 @@ qvector2DDistanceToPoint(const QVector2D& vector, QVector2D point)
 
 }
 }
-#endif

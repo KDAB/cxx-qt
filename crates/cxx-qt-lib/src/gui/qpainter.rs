@@ -30,6 +30,8 @@ mod ffi {
         type QImage = crate::QImage;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qpainterpath.h");
+        type QPainterPath = crate::QPainterPath;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -43,6 +45,10 @@ mod ffi {
         /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
         #[rust_name = "clip_bounding_rect_or_empty"]
         fn clipBoundingRect(self: &QPainter) -> QRectF;
+
+        /// Returns the current clip path in logical coordinates.
+        #[rust_name = "clip_path"]
+        fn clipPath(self: &QPainter) -> QPainterPath;
 
         /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
         /// and the given startAngle and spanAngle.
@@ -77,6 +83,10 @@ mod ffi {
         /// Draws a line defined by line.
         #[rust_name = "draw_line"]
         fn drawLine(self: Pin<&mut QPainter>, line: &QLine);
+
+        /// Draws the given painter path using the current pen for outline and the current brush for filling.
+        #[rust_name = "draw_path"]
+        fn drawPath(self: Pin<&mut QPainter>, path: &QPainterPath);
 
         /// Draws a pie defined by the given rectangle, startAngle and spanAngle.
         #[rust_name = "draw_pie"]
@@ -124,6 +134,10 @@ mod ffi {
         /// Enables clipping if enable is true, or disables clipping if enable is false.
         #[rust_name = "set_clipping"]
         fn setClipping(self: Pin<&mut QPainter>, enable: bool);
+
+        /// Enables clipping, and sets the clip path for the painter to the given path, with the clip operation.
+        #[rust_name = "set_clip_path"]
+        fn setClipPath(self: Pin<&mut QPainter>, path: &QPainterPath, operation: ClipOperation);
 
         /// Enables clipping, and sets the clip region to the given rectangle using the given clip operation.
         ///
