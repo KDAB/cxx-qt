@@ -21,6 +21,9 @@ pub use qvector4d::QVector4D;
 mod qimage;
 pub use qimage::{QImage, QImageFormat};
 
+mod qpolygon;
+pub use qpolygon::QPolygon;
+
 mod qpen;
 pub use qpen::QPen;
 
