@@ -72,6 +72,14 @@ mod ffi {
         fn construct() -> QPen;
 
         #[doc(hidden)]
+        #[rust_name = "qpen_init_from_qcolor"]
+        fn construct(color: &QColor) -> QPen;
+
+        #[doc(hidden)]
+        #[rust_name = "qpen_init_from_penstyle"]
+        fn construct(penstyle: &PenStyle) -> QPen;
+
+        #[doc(hidden)]
         #[rust_name = "qpen_drop"]
         fn drop(pen: &mut QPen);
 
@@ -105,6 +113,18 @@ impl Drop for QPen {
 impl Clone for QPen {
     fn clone(&self) -> Self {
         ffi::qpen_clone(self)
+    }
+}
+
+impl From<&ffi::QColor> for QPen {
+    fn from(color: &ffi::QColor) -> Self {
+        ffi::qpen_init_from_qcolor(color)
+    }
+}
+
+impl From<&ffi::PenStyle> for QPen {
+    fn from(penstyle: &ffi::PenStyle) -> Self {
+        ffi::qpen_init_from_penstyle(penstyle)
     }
 }
 
