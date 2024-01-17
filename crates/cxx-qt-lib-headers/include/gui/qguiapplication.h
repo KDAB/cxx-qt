@@ -25,5 +25,11 @@ qapplicationSetFont(QGuiApplication& app, const QFont& font)
   app.setFont(font);
 }
 
+QFont
+qapplicationFont(QGuiApplication& app)
+{
+  return app.font();
+}
+
 }
 }
