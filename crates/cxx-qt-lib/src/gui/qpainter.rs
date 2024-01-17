@@ -11,6 +11,7 @@ mod ffi {
         type LayoutDirection = crate::LayoutDirection;
         type BGMode = crate::BGMode;
         type ClipOperation = crate::ClipOperation;
+        type FillRule = crate::FillRule;
     }
 
     unsafe extern "C++" {
@@ -36,6 +37,8 @@ mod ffi {
         type QFont = crate::QFont;
         include!("cxx-qt-lib/qpen.h");
         type QPen = crate::QPen;
+        include!("cxx-qt-lib/qpolygon.h");
+        type QPolygon = crate::QPolygon;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -76,6 +79,10 @@ mod ffi {
             spanAngle: i32,
         );
 
+        /// Draws the convex polygon defined by polygon using the current pen and brush.
+        #[rust_name = "draw_convex_polygon"]
+        fn drawConvexPolygon(self: Pin<&mut QPainter>, polygon: &QPolygon);
+
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
         fn drawEllipse(self: Pin<&mut QPainter>, rect: &QRect);
@@ -99,6 +106,18 @@ mod ffi {
         /// Draws a single point at the given position using the current pen's color.
         #[rust_name = "draw_point"]
         fn drawPoint(self: Pin<&mut QPainter>, point: &QPoint);
+
+        /// Draws the points in the vector points.
+        #[rust_name = "draw_points"]
+        fn drawPoints(self: Pin<&mut QPainter>, points: &QPolygon);
+
+        /// Draws the polygon defined by the given points using the fill rule fillRule.
+        #[rust_name = "draw_polygon"]
+        fn drawPolygon(self: Pin<&mut QPainter>, points: &QPolygon, fillRule: FillRule);
+
+        /// Draws the polyline defined by the given points using the current pen.
+        #[rust_name = "draw_polyline"]
+        fn drawPolyline(self: Pin<&mut QPainter>, points: &QPolygon);
 
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
