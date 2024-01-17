@@ -76,6 +76,44 @@ mod ffi {
         SmoothTransformation,
     }
 
+    /// This enum type defines the pen styles that can be drawn using QPainter.
+    #[repr(i32)]
+    enum PenStyle {
+        /// no line at all. For example, QPainter::drawRect() fills but does not draw any boundary line.
+        NoPen,
+        /// A plain line.
+        SolidLine,
+        /// Dashes separated by a few pixels.
+        DashLine,
+        /// Dots separated by a few pixels.
+        DotLine,
+        /// Alternate dots and dashes.
+        DashDotLine,
+        /// One dash, two dots, one dash, two dots.
+        DashDotDotLine,
+        /// A custom pattern defined using QPainterPathStroker::setDashPattern().
+        CustomDashLine,
+    }
+
+    /// This enum type defines the line endcap style
+    #[repr(i32)]
+    enum PenCapStyle {
+        FlatCap = 0x00,
+        SquareCap = 0x10,
+        RoundCap = 0x20,
+        MPenCapStyle = 0x30,
+    }
+
+    /// This enum type defines the line join style.
+    #[repr(i32)]
+    enum PenJoinStyle {
+        MiterJoin = 0x00,
+        BevelJoin = 0x40,
+        RoundJoin = 0x80,
+        SvgMiterJoin = 0x100,
+        MPenJoinStyle = 0x1c0,
+    }
+
     #[repr(i32)]
     enum FillRule {
         /// Specifies that the region is filled using the odd even fill rule.
@@ -124,6 +162,9 @@ mod ffi {
         type SplitBehaviorFlags;
         type TimeSpec;
         type TransformationMode;
+        type PenStyle;
+        type PenCapStyle;
+        type PenJoinStyle;
         type FillRule;
         type LayoutDirection;
         type BGMode;
@@ -133,5 +174,6 @@ mod ffi {
 
 pub use ffi::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
-    LayoutDirection, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };

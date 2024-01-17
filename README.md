@@ -26,12 +26,12 @@ It can be used to integrate Rust into C++ applications using CMake or used to bu
 CXX-Qt provides tools for implementing [QObject](https://doc.qt.io/qt-6/object.html) subclasses in Rust which can
 be used from C++, QML, and JavaScript. It consists of two parts:
 
-  * cxx-qt-lib, a library of Rust bindings to common QtCore and QtGui classes made with [CXX](https://cxx.rs/)
+* cxx-qt-lib, a library of Rust bindings to common QtCore and QtGui classes made with [CXX](https://cxx.rs/)
 
-  * cxx-qt & cxx-qt-build, a pair of Rust & C++ code generators which are a superset of CXX plus additional attributes
-    to interface with Qt's [signals & slots](https://doc.qt.io/qt-6/signalsandslots.html) and [property system](https://doc.qt.io/qt-6/properties.html).
-    The cxx-qt crate implements a macro for Rust code generation. cxx-qt-build is used in [Cargo build scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
-    to generate and compile the corresponding C++ code.
+* cxx-qt & cxx-qt-build, a pair of Rust & C++ code generators which are a superset of CXX plus additional attributes
+to interface with Qt's [signals & slots](https://doc.qt.io/qt-6/signalsandslots.html) and [property system](https://doc.qt.io/qt-6/properties.html).
+The cxx-qt crate implements a macro for Rust code generation. cxx-qt-build is used in [Cargo build scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
+to generate and compile the corresponding C++ code.
 
 The [CXX-Qt Book](https://kdab.github.io/cxx-qt/book/getting-started/index.html) walks through a minimal example
 step-by-step and documents CXX-Qt's features for the latest release. The [examples folder](./examples) contains
@@ -85,12 +85,12 @@ git clone https://github.com/KDAB/cxx-qt.git
 
 Ensure that you have the following installed
 
-  * C++ compiler
-  * [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
-  * [CMake](https://cmake.org/)
-  * [Qt 5 and/or Qt 6](https://www.qt.io/)
-  * [Rust toolchain](https://www.rust-lang.org/)
-  * [mold](https://github.com/rui314/mold), [lld](https://lld.llvm.org/), or GNU ld.gold for Linux (lld is included in the XCode toolchain on macOS)
+* C++ compiler
+* [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+* [CMake](https://cmake.org/)
+* [Qt 5 and/or Qt 6](https://www.qt.io/)
+* [Rust toolchain](https://www.rust-lang.org/)
+* [mold](https://github.com/rui314/mold), [lld](https://lld.llvm.org/), or GNU ld.gold for Linux (lld is included in the XCode toolchain on macOS)
 
 This repository's build system uses CMake, which calls Cargo under the hood to build all the
 examples and tests. One example can be built and run with Cargo directly without using CMake:
@@ -118,6 +118,7 @@ cmake --build build
 ```
 
 ### Testing
+
 Testing assumes that `cargo clippy` and `cargo fmt` are available, you may need to install these with `rustup component add clippy rustfmt`.
 
 For testing the book, it assumes that [`mdbook`](https://rust-lang.github.io/mdBook/guide/installation.html) and [`mdbook-linkcheck`](https://github.com/Michael-F-Bryan/mdbook-linkcheck) are installed.
@@ -155,4 +156,4 @@ We continue to help develop parts of Qt and are one of the major contributors
 to the Qt Project. We can give advanced or standard trainings anywhere
 around the globe on Qt as well as C++, OpenGL, 3D and more.
 
-Please visit https://www.kdab.com to meet the people who write code like this.
+Please visit <https://www.kdab.com> to meet the people who write code like this.
