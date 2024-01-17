@@ -32,7 +32,7 @@ CXX-Qt aims to make it easy to integrate all three languages with each other, th
 
 As CXX-Qt is largely an expansion on top of CXX, you should make yourself familiar with CXX first.
 You can read their excellent documentation here:
-> [https://cxx.rs/](https://cxx.rs)
+> <https://cxx.rs/>
 
 CXX already provides idiomatic interaction between C++ and Rust, from Rust, as well as from C++.
 CXX-Qt builds on this foundation, to allow you to define Qt-specific concepts in Rust.

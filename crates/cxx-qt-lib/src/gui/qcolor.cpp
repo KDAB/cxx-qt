@@ -6,7 +6,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#ifdef CXX_QT_GUI_FEATURE
 #include "cxx-qt-lib/qcolor.h"
 #include "cxx-qt-lib/qstring.h"
 
@@ -343,5 +342,3 @@ qcolorYellowF(const QColor& color)
 
 }
 }
-
-#endif

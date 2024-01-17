@@ -6,8 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#ifdef CXX_QT_GUI_FEATURE
-
 #include <QtGui/QImage>
 
 #include "rust/cxx.h"
@@ -35,4 +33,3 @@ qimageCacheKey(const QImage& image);
 
 } // namespace cxxqtlib1
 } // namespace rust
-#endif

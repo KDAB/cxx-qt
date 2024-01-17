@@ -43,6 +43,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
             include_str!("../include/core/qmodelindex.h"),
             "qmodelindex.h",
         ),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qpen.h"), "qpen.h"),
         (
             include_str!("../include/core/qpersistentmodelindex.h"),
             "qpersistentmodelindex.h",
@@ -68,6 +70,8 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qcolor.h"), "qcolor.h"),
         #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qfont.h"), "qfont.h"),
+        #[cfg(feature = "qt_gui")]
         (
             include_str!("../include/gui/qguiapplication.h"),
             "qguiapplication.h",
@@ -76,6 +80,10 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/gui/qimage.h"), "qimage.h"),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qpolygon.h"), "qpolygon.h"),
+        (
+            include_str!("../include/gui/qpainterpath.h"),
+            "qpainterpath.h",
+        ),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qpainter.h"), "qpainter.h"),
         #[cfg(feature = "qt_gui")]
