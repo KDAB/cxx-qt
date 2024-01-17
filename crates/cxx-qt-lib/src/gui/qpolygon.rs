@@ -34,14 +34,8 @@ mod ffi {
         #[rust_name = "set_point"]
         fn setPoint(self: &mut QPolygon, index: i32, point: &QPoint);
 
-        /// Returns a polygon which is r subtracted from this polygon.
-        fn subtracted(self: &mut QPolygon, r: &QPolygon) -> QPolygon;
-
         /// Translates all points in the polygon by (dx, dy).
         fn translate(self: &mut QPolygon, dx: i32, dy: i32);
-
-        /// Returns a polygon which is the union of this polygon and r.
-        fn united(self: &mut QPolygon, r: &QPolygon) -> QPolygon;
     }
 
     #[namespace = "rust::cxxqtlib1"]

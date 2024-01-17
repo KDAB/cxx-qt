@@ -7,3 +7,16 @@
 #pragma once
 
 #include <QtGui/QPolygon>
+
+#include "rust/cxx.h"
+
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust {
+
+template<>
+struct IsRelocatable<QPolygon> : ::std::true_type
+{
+};
+
+} // namespace rust
