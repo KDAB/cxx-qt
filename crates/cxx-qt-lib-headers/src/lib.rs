@@ -80,6 +80,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         (include_str!("../include/gui/qimage.h"), "qimage.h"),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qpolygon.h"), "qpolygon.h"),
+        (include_str!("../include/gui/qpolygonf.h"), "qpolygonf.h"),
         (
             include_str!("../include/gui/qpainterpath.h"),
             "qpainterpath.h",

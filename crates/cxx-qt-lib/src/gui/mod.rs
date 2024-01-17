@@ -24,6 +24,9 @@ pub use qimage::{QImage, QImageFormat};
 mod qpolygon;
 pub use qpolygon::QPolygon;
 
+mod qpolygonf;
+pub use qpolygonf::QPolygonF;
+
 mod qpen;
 pub use qpen::QPen;
 
