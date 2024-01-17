@@ -154,9 +154,9 @@ mod ffi {
         #[rust_name = "set_layout_direction"]
         fn setLayoutDirection(self: Pin<&mut QPainter>, direction: LayoutDirection);
 
-        /// Sets the painter's pen to have style Qt::SolidLine, width 1 and the specified color.
+        /// Sets the painter's pen to be the given pen.
         #[rust_name = "set_pen"]
-        fn setPen(self: Pin<&mut QPainter>, color: &QColor);
+        fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
 
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
