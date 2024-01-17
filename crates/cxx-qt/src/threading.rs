@@ -57,7 +57,13 @@ where
     }
 }
 
+// CxxQtThread is safe to be sent across threads and handles
+// locking and checks with the original QObject to prevent issues
 unsafe impl<T> Send for CxxQtThread<T> where T: Threading {}
+
+// CxxQtThread is safe to use as a reference in parallel from multiple
+// places as it protects the queue call and the closure with mutexes
+unsafe impl<T> Sync for CxxQtThread<T> where T: Threading {}
 
 impl<T> CxxQtThread<T>
 where
