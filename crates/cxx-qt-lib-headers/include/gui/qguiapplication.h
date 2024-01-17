@@ -8,8 +8,8 @@
 
 #include <memory>
 
-#include <QtGui/QGuiApplication>
 #include <QtGui/QFont>
+#include <QtGui/QGuiApplication>
 
 #include "rust/cxx.h"
 

@@ -110,6 +110,9 @@ mod ffi {
         #[rust_name = "fill_rect"]
         fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
 
+        /// Returns the currently set font used for drawing text.
+        fn font(self: &QPainter) -> &QFont;
+
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
         fn hasClipping(self: &QPainter) -> bool;

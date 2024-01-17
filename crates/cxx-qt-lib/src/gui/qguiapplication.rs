@@ -118,6 +118,7 @@ impl QGuiApplication {
         ffi::qguiapplication_exec(self)
     }
 
+    /// Returns the default application font.
     pub fn font(&self) -> QFont {
         ffi::qguiapplication_font(self)
     }
