@@ -32,6 +32,8 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qpainterpath.h");
         type QPainterPath = crate::QPainterPath;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
         include!("cxx-qt-lib/qpen.h");
         type QPen = crate::QPen;
 
@@ -110,6 +112,9 @@ mod ffi {
         #[rust_name = "fill_rect"]
         fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
 
+        /// Returns the currently set font used for drawing text.
+        fn font(self: &QPainter) -> &QFont;
+
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
         fn hasClipping(self: &QPainter) -> bool;
@@ -149,6 +154,10 @@ mod ffi {
         /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
+
+        /// Sets the painter's font to the given font.
+        #[rust_name = "set_font"]
+        fn setFont(self: Pin<&mut QPainter>, font: &QFont);
 
         /// Sets the layout direction used by the painter when drawing text, to the specified direction.
         #[rust_name = "set_layout_direction"]
