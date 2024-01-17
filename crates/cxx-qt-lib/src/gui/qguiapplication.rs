@@ -70,10 +70,10 @@ mod ffi {
         fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_font"]
-        fn qapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
+        fn qguiapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_font"]
-        fn qapplicationFont(app: &QGuiApplication) -> QFont;
+        fn qguiapplicationFont(app: &QGuiApplication) -> QFont;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
