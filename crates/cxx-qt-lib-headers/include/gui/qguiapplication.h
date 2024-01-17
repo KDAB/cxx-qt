@@ -20,16 +20,10 @@ namespace cxxqtlib1 {
 qguiapplicationNew(const QVector<QByteArray>& args);
 
 void
-qapplicationSetFont(QGuiApplication& app, const QFont& font)
-{
-  app.setFont(font);
-}
+qapplicationSetFont(QGuiApplication& app, const QFont& font);
 
 QFont
-qapplicationFont(QGuiApplication& app)
-{
-  return app.font();
-}
+qapplicationFont(const QGuiApplication& app);
 
 }
 }

@@ -29,5 +29,17 @@ qguiapplicationNew(const QVector<QByteArray>& args)
   return ptr;
 }
 
+void
+qapplicationSetFont(QGuiApplication& app, const QFont& font)
+{
+  app.setFont(font);
+}
+
+QFont
+qapplicationFont(const QGuiApplication& app)
+{
+  return app.font();
+}
+
 }
 }
