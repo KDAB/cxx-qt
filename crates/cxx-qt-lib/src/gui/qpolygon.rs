@@ -7,6 +7,12 @@ use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type FillRule = crate::FillRule;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
@@ -19,6 +25,10 @@ mod ffi {
         /// Returns the bounding rectangle of the polygon, or QRect(0, 0, 0, 0) if the polygon is empty.
         #[rust_name = "bounding_rect"]
         fn boundingRect(self: &QPolygon) -> QRect;
+
+        /// Returns true if the given point is inside the polygon according to the specified fillRule; otherwise returns false.
+        #[rust_name = "contains_point"]
+        fn containsPoint(self: &QPolygon, point: &QPoint, fillRule: FillRule) -> bool;
 
         /// Returns a polygon which is the intersection of this polygon and r.
         fn intersected(self: &QPolygon, r: &QPolygon) -> QPolygon;
@@ -34,8 +44,14 @@ mod ffi {
         #[rust_name = "set_point"]
         fn setPoint(self: &mut QPolygon, index: i32, point: &QPoint);
 
+        /// Returns a polygon which is r subtracted from this polygon.
+        fn subtracted(self: &QPolygon, r: &QPolygon) -> QPolygon;
+
         /// Translates all points in the polygon by (dx, dy).
         fn translate(self: &mut QPolygon, dx: i32, dy: i32);
+
+        /// Returns a polygon which is the union of this polygon and r.
+        fn united(self: &QPolygon, r: &QPolygon) -> QPolygon;
     }
 
     #[namespace = "rust::cxxqtlib1"]
