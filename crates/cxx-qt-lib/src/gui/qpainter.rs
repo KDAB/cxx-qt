@@ -163,10 +163,6 @@ mod ffi {
         #[rust_name = "set_opacity"]
         fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
 
-        /// Draws the outline (strokes) the path path with the pen specified by pen
-        #[rust_name = "stroke_path"]
-        fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
-
         /// Sets the painter's viewport rectangle to the given rectangle, and enables view transformations.
         #[rust_name = "set_viewport"]
         fn setViewport(self: Pin<&mut QPainter>, rectangle: &QRect);
@@ -174,6 +170,10 @@ mod ffi {
         /// Sets the painter's window to the given rectangle, and enables view transformations.
         #[rust_name = "set_window"]
         fn setWindow(self: Pin<&mut QPainter>, rectangle: &QRect);
+
+        /// Draws the outline (strokes) the path path with the pen specified by pen
+        #[rust_name = "stroke_path"]
+        fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
 
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: Pin<&mut QPainter>);
