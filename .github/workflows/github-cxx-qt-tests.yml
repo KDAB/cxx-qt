@@ -52,6 +52,7 @@ jobs:
             qt_version: 5
             vcpkg: off
             vcpkg_triplet: x64-linux-release
+            cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -71,6 +72,7 @@ jobs:
             qt_version: 6
             vcpkg: off
             vcpkg_triplet: x64-linux-release
+            cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
@@ -95,6 +97,7 @@ jobs:
             qt_version: 5
             vcpkg: on
             vcpkg_triplet: x64-osx-release
+            cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             #
@@ -114,6 +117,7 @@ jobs:
             qt_version: 6
             vcpkg: on
             vcpkg_triplet: x64-osx-release
+            cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
@@ -131,6 +135,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
+            cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -147,6 +152,7 @@ jobs:
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
+            cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
             qt_qpa_platform: windows
@@ -281,12 +287,12 @@ jobs:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
-      run: cmake --build build --config Release --parallel 2
+      run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
     - name: "Test"
-      run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel 2
+      run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}/build
       env:
         RUSTC_WRAPPER: sccache
