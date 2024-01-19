@@ -64,6 +64,7 @@ set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}
     "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
     "QMAKE=${QMAKE}"
+    $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>
 )
 
 # Create an INTERFACE library target to link libraries to and add include paths.
