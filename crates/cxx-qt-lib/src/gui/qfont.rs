@@ -116,6 +116,9 @@ mod ffi {
         #[rust_name = "letter_spacing_type"]
         fn letterSpacingType(self: &QFont) -> QFontSpacingType;
 
+        /// Returns true if overline has been set; otherwise returns false.
+        fn overline(self: &QFont) -> bool;
+
         /// Returns the pixel size of the font if it was set with setPixelSize(). Returns -1 if the size was set with setPointSize() or setPointSizeF().
         #[rust_name = "pixel_size"]
         fn pixelSize(self: &QFont) -> i32;
@@ -159,6 +162,18 @@ mod ffi {
         #[rust_name = "set_letter_spacing"]
         fn setLetterSpacing(self: &mut QFont, spacingType: QFontSpacingType, spacing: f64);
 
+        /// If enable is true, sets overline on; otherwise sets overline off.
+        #[rust_name = "set_overline"]
+        fn setOverline(self: &mut QFont, enable: bool);
+
+        /// Sets the font size to pixelSize pixels.
+        #[rust_name = "set_pixel_size"]
+        fn setPixelSize(self: &mut QFont, pixelSize: i32);
+
+        /// Sets the stretch factor for the font.
+        #[rust_name = "set_stretch"]
+        fn setStretch(self: &mut QFont, factor: i32);
+
         /// If enable is true, sets strikeout on; otherwise sets strikeout off.
         #[rust_name = "set_strikeout"]
         fn setStrikeOut(self: &mut QFont, enable: bool);
@@ -177,6 +192,14 @@ mod ffi {
         /// If enable is true, sets underline on; otherwise sets underline off.
         #[rust_name = "set_underline"]
         fn setUnderline(self: &mut QFont, enable: bool);
+
+        /// Returns the stretch factor for the font.
+        fn stretch(self: &QFont) -> i32;
+
+        /// Returns the requested font style name. This can be used to match the font
+        /// with irregular styles (that can't be normalized in other style properties).
+        #[rust_name = "style_name"]
+        fn styleName(self: &QFont) -> QString;
 
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
