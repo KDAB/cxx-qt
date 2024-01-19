@@ -11,6 +11,7 @@ mod ffi {
         type LayoutDirection = crate::LayoutDirection;
         type BGMode = crate::BGMode;
         type ClipOperation = crate::ClipOperation;
+        type FillRule = crate::FillRule;
     }
 
     unsafe extern "C++" {
@@ -30,6 +31,14 @@ mod ffi {
         type QImage = crate::QImage;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qpainterpath.h");
+        type QPainterPath = crate::QPainterPath;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
+        include!("cxx-qt-lib/qpen.h");
+        type QPen = crate::QPen;
+        include!("cxx-qt-lib/qpolygon.h");
+        type QPolygon = crate::QPolygon;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -43,6 +52,10 @@ mod ffi {
         /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
         #[rust_name = "clip_bounding_rect_or_empty"]
         fn clipBoundingRect(self: &QPainter) -> QRectF;
+
+        /// Returns the current clip path in logical coordinates.
+        #[rust_name = "clip_path"]
+        fn clipPath(self: &QPainter) -> QPainterPath;
 
         /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
         /// and the given startAngle and spanAngle.
@@ -66,6 +79,10 @@ mod ffi {
             spanAngle: i32,
         );
 
+        /// Draws the convex polygon defined by polygon using the current pen and brush.
+        #[rust_name = "draw_convex_polygon"]
+        fn drawConvexPolygon(self: Pin<&mut QPainter>, polygon: &QPolygon);
+
         /// Draws the ellipse defined by the given rectangle.
         #[rust_name = "draw_ellipse"]
         fn drawEllipse(self: Pin<&mut QPainter>, rect: &QRect);
@@ -78,6 +95,10 @@ mod ffi {
         #[rust_name = "draw_line"]
         fn drawLine(self: Pin<&mut QPainter>, line: &QLine);
 
+        /// Draws the given painter path using the current pen for outline and the current brush for filling.
+        #[rust_name = "draw_path"]
+        fn drawPath(self: Pin<&mut QPainter>, path: &QPainterPath);
+
         /// Draws a pie defined by the given rectangle, startAngle and spanAngle.
         #[rust_name = "draw_pie"]
         fn drawPie(self: Pin<&mut QPainter>, rectangle: &QRectF, startAngle: i32, spanAngle: i32);
@@ -85,6 +106,18 @@ mod ffi {
         /// Draws a single point at the given position using the current pen's color.
         #[rust_name = "draw_point"]
         fn drawPoint(self: Pin<&mut QPainter>, point: &QPoint);
+
+        /// Draws the points in the vector points.
+        #[rust_name = "draw_points"]
+        fn drawPoints(self: Pin<&mut QPainter>, points: &QPolygon);
+
+        /// Draws the polygon defined by the given points using the fill rule fillRule.
+        #[rust_name = "draw_polygon"]
+        fn drawPolygon(self: Pin<&mut QPainter>, points: &QPolygon, fillRule: FillRule);
+
+        /// Draws the polyline defined by the given points using the current pen.
+        #[rust_name = "draw_polyline"]
+        fn drawPolyline(self: Pin<&mut QPainter>, points: &QPolygon);
 
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
@@ -97,6 +130,9 @@ mod ffi {
         /// Fills the given rectangle with the color specified.
         #[rust_name = "fill_rect"]
         fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
+
+        /// Returns the currently set font used for drawing text.
+        fn font(self: &QPainter) -> &QFont;
 
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
@@ -113,6 +149,9 @@ mod ffi {
         /// Returns the opacity of the painter. The default value is 1.
         fn opacity(self: &QPainter) -> f64;
 
+        /// Returns the painter's current pen.
+        fn pen(self: &QPainter) -> &QPen;
+
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: Pin<&mut QPainter>);
@@ -125,19 +164,27 @@ mod ffi {
         #[rust_name = "set_clipping"]
         fn setClipping(self: Pin<&mut QPainter>, enable: bool);
 
+        /// Enables clipping, and sets the clip path for the painter to the given path, with the clip operation.
+        #[rust_name = "set_clip_path"]
+        fn setClipPath(self: Pin<&mut QPainter>, path: &QPainterPath, operation: ClipOperation);
+
         /// Enables clipping, and sets the clip region to the given rectangle using the given clip operation.
         ///
         /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
 
+        /// Sets the painter's font to the given font.
+        #[rust_name = "set_font"]
+        fn setFont(self: Pin<&mut QPainter>, font: &QFont);
+
         /// Sets the layout direction used by the painter when drawing text, to the specified direction.
         #[rust_name = "set_layout_direction"]
         fn setLayoutDirection(self: Pin<&mut QPainter>, direction: LayoutDirection);
 
-        /// Sets the painter's pen to have style Qt::SolidLine, width 1 and the specified color.
+        /// Sets the painter's pen to be the given pen.
         #[rust_name = "set_pen"]
-        fn setPen(self: Pin<&mut QPainter>, color: &QColor);
+        fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
 
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
@@ -151,6 +198,10 @@ mod ffi {
         /// Sets the painter's window to the given rectangle, and enables view transformations.
         #[rust_name = "set_window"]
         fn setWindow(self: Pin<&mut QPainter>, rectangle: &QRect);
+
+        /// Draws the outline (strokes) the path path with the pen specified by pen
+        #[rust_name = "stroke_path"]
+        fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
 
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: Pin<&mut QPainter>);

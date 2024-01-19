@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QByteArray, QString, QStringList, QVector};
+use crate::{QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
 
 #[cxx::bridge]
@@ -18,6 +18,8 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qvector.h");
         type QVector_QByteArray = crate::QVector<QByteArray>;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
 
         include!("cxx-qt-lib/qguiapplication.h");
         type QGuiApplication;
@@ -67,6 +69,12 @@ mod ffi {
         #[rust_name = "qguiapplication_set_application_version"]
         fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
         #[doc(hidden)]
+        #[rust_name = "qguiapplication_set_font"]
+        fn qguiapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_font"]
+        fn qguiapplicationFont(app: &QGuiApplication) -> QFont;
+        #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
         #[doc(hidden)]
@@ -108,6 +116,11 @@ impl QGuiApplication {
     /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
     pub fn exec(self: Pin<&mut Self>) -> i32 {
         ffi::qguiapplication_exec(self)
+    }
+
+    /// Returns the default application font.
+    pub fn font(&self) -> QFont {
+        ffi::qguiapplication_font(self)
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.
@@ -163,6 +176,11 @@ impl QGuiApplication {
     /// Set the version of this application
     pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
         ffi::qguiapplication_set_application_version(self, version);
+    }
+
+    /// Changes the default application font to font.
+    pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
+        ffi::qguiapplication_set_font(self, font);
     }
 
     /// Sets the list of directories to search when loading plugins with QLibrary to paths.

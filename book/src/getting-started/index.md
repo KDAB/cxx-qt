@@ -24,7 +24,7 @@ If you're not familiar with Qt/QML yet, take a look at the [Qt Getting started g
 
 CXX-Qt (as the name suggests) is built on top of [CXX](https://cxx.rs).
 You should have a basic idea of how CXX works before attempting to follow this guide.
-Take a look at the CXX documentation here: [https://cxx.rs/](https://cxx.rs/)
+Take a look at the CXX documentation here: <https://cxx.rs/>
 
 ### Installation
 
