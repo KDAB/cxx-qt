@@ -21,6 +21,10 @@ mod ffi {
         type QRectF = crate::QRectF;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         /// Creates an ellipse within the specified boundingRectangle and adds it to the painter
         /// path as a closed subpath.
@@ -38,6 +42,11 @@ mod ffi {
         /// Creates a move to that lies on the arc that occupies the given rectangle at angle.
         #[rust_name = "arc_move_to"]
         fn arcMoveTo(self: &mut QPainterPath, rectangle: &QRectF, angle: f64);
+
+        /// Adds the given text to this path as a set of closed subpaths created from the font supplied.
+        /// The subpaths are positioned so that the left end of the text's baseline lies at the specified point.
+        #[rust_name = "add_text"]
+        fn addText(self: &mut QPainterPath, point: &QPointF, font: &QFont, text: &QString);
 
         /// Creates an arc that occupies the given rectangle, beginning at the specified
         /// startAngle and extending sweepLength degrees counter-clockwise.
