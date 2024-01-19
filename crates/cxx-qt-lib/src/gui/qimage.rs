@@ -168,6 +168,14 @@ mod ffi {
         #[rust_name = "set_alpha_channel"]
         fn setAlphaChannel(self: &mut QImage, alphaChannel: &QImage);
 
+        /// Sets the number of pixels that fit horizontally in a physical meter, to x.
+        #[rust_name = "set_dots_per_meter_x"]
+        fn setDotsPerMeterX(self: &mut QImage, x: i32);
+
+        /// Sets the number of pixels that fit vertically in a physical meter, to y.
+        #[rust_name = "set_dots_per_meter_y"]
+        fn setDotsPerMeterY(self: &mut QImage, y: i32);
+
         /// Sets the number of pixels by which the image is intended to be offset by when positioning relative to other images, to offset.
         #[rust_name = "set_offset"]
         fn setOffset(self: &mut QImage, point: &QPoint);
@@ -181,6 +189,10 @@ mod ffi {
 
         /// Swaps image other with this image. This operation is very fast and never fails.
         fn swap(self: &mut QImage, other: &mut QImage);
+
+        /// Changes the format of the image to format without changing the data. Only works between formats of the same depth.
+        #[rust_name = "reinterpret_as_format"]
+        fn reinterpretAsFormat(self: &mut QImage, format: QImageFormat) -> bool;
 
         /// Returns the number of pixels by which the image is intended to be offset by when positioning relative to other images.
         fn offset(self: &QImage) -> QPoint;
