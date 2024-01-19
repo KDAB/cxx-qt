@@ -10,3 +10,4 @@
 add_subdirectory(qml_features)
 add_subdirectory(qml_minimal)
 add_subdirectory(demo_threading)
+add_subdirectory(meta_project)

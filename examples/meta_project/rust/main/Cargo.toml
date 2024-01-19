@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "qml-meta-project"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+# Linking CXX-Qt crates as rlibs requires a compiler feature
+# that was stabilized in Rust 1.74,
+# combining +whole-archive and +bundle link modifiers: https://github.com/rust-lang/rust/pull/113301
+rust-version = "1.74"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+sub1 = { path = "../sub1" }
+sub2 = { path = "../sub2" }
+
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib.workspace = true
+
+[build-dependencies]
+cxx-qt-build.workspace = true
