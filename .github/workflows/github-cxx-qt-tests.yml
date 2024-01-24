@@ -292,7 +292,7 @@ jobs:
       env:
         RUSTC_WRAPPER: sccache
     - name: "Test"
-      run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
+      run: ctest ${{ matrix.ctest_args }} -C Release -T test -VV
       working-directory: ${{ matrix.workspace }}/build
       env:
         RUSTC_WRAPPER: sccache
