@@ -291,9 +291,17 @@ jobs:
       working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
-    - name: "Test"
+    - name: "CTest"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}/build
+      env:
+        RUSTC_WRAPPER: sccache
+        QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
+        QT_SELECT: qt${{ matrix.qt_version }}
+
+    - name: "Cargo test"
+      run: cargo test --release --all-features --target-dir ${{ matrix.workspace }}/build/cargo/build
+      working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
