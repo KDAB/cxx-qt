@@ -60,4 +60,4 @@ serde_json = "1.0"
 # Use a patched version of cc-rs that respects the rustc wrapper
 # This should greatly speed up CI builds!
 [patch.crates-io]
-cc = { git = "https://github.com/LeonMatthesKDAB/cc-rs.git", branch="respect-rustc-wrapper" }
+cc = { git = "https://github.com/Be-ing/cc-rs.git", branch="apple_deployment_target_api" }

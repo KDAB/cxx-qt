@@ -510,6 +510,11 @@ impl CxxQtBuilder {
             builder.flag_if_supported("-std=c++17");
             // MinGW requires big-obj otherwise debug builds fail
             builder.flag_if_supported("-Wa,-mbig-obj");
+            // macOS
+            // We need
+            //   - std::filesystem::path from 10.15
+            //   - std::shared_mutex from 10.12
+            builder.apple_deployment_target(&"10.5");
             // Enable Qt Gui in C++ if the feature is enabled
             #[cfg(feature = "qt_gui")]
             builder.define("CXX_QT_GUI_FEATURE", None);

@@ -289,6 +289,11 @@ fn main() {
     builder.flag_if_supported("/bigobj");
     // GCC + Clang
     builder.flag_if_supported("-std=c++17");
+    // macOS
+    // We need
+    //   - std::filesystem::path from 10.15
+    //   - std::shared_mutex from 10.12
+    builder.apple_deployment_target(&"10.15");
     // MinGW requires big-obj otherwise debug builds fail
     builder.flag_if_supported("-Wa,-mbig-obj");
 
