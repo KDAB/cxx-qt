@@ -283,19 +283,15 @@ jobs:
         -S . -B build
       working-directory: ${{ matrix.workspace }}
       env:
-        RUSTC_WRAPPER: sccache
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}
-      env:
-        RUSTC_WRAPPER: sccache
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test -VV
       working-directory: ${{ matrix.workspace }}/build
       env:
-        RUSTC_WRAPPER: sccache
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
         QT_SELECT: qt${{ matrix.qt_version }}
 
