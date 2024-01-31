@@ -288,6 +288,10 @@ jobs:
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}
+
+    - name: "Print intermediate compiler cache statistics"
+      run: sccache --show-stats
+
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test -VV
       working-directory: ${{ matrix.workspace }}/build
@@ -295,7 +299,7 @@ jobs:
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
         QT_SELECT: qt${{ matrix.qt_version }}
 
-    - name: "Print compiler cache statistics"
+    - name: "Print final compiler cache statistics"
       run: sccache --show-stats
 
     - name: Upload GitHub Actions artifacts of vcpkg logs
