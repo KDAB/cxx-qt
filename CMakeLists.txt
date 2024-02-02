@@ -218,6 +218,10 @@ add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-d
 add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
 add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 
+if(CMAKE_RUSTC_WRAPPER)
+    list(APPEND CARGO_ENV "RUSTC_WRAPPER=set:${CMAKE_RUSTC_WRAPPER}")
+endif()
+
 set_tests_properties(cargo_tests cargo_clippy PROPERTIES
     ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
 )
