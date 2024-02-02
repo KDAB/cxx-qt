@@ -28,6 +28,10 @@ mod ffi {
         /// Returns the color of this pen's brush.
         fn color(self: &QPen) -> QColor;
 
+        /// Returns the dash offset for the pen.
+        #[rust_name = "dash_offset"]
+        fn dashOffset(self: &QPen) -> f64;
+
         /// Returns true if the pen is cosmetic; otherwise returns false.
         #[rust_name = "is_comestic"]
         fn isCosmetic(self: &QPen) -> bool;
@@ -40,9 +44,28 @@ mod ffi {
         #[rust_name = "join_style"]
         fn joinStyle(self: &QPen) -> PenJoinStyle;
 
+        /// Returns the miter limit of the pen. The miter limit is only
+        /// relevant when the join style is set to Qt::MiterJoin.
+        #[rust_name = "miter_limit"]
+        fn miterLimit(self: &QPen) -> f64;
+
         /// Sets the pen's cap style to the given style. The default value is Qt::SquareCap.
         #[rust_name = "set_cap_style"]
         fn setCapStyle(self: &mut QPen, style: PenCapStyle);
+
+        /// Sets the color of this pen's brush to the given color.
+        #[rust_name = "set_color"]
+        fn setColor(self: &mut QPen, color: &QColor);
+
+        /// Sets this pen to cosmetic or non-cosmetic, depending on the value of cosmetic.
+        #[rust_name = "set_cosmetic"]
+        fn setCosmetic(self: &mut QPen, cosmetic: bool);
+
+        /// Sets the dash offset (the starting point on the dash pattern) for this pen to
+        /// the offset specified. The offset is measured in terms of the units used to
+        /// specify the dash pattern.
+        #[rust_name = "set_dash_offset"]
+        fn setDashOffset(self: &mut QPen, offset: f64);
 
         /// Sets the pen's join style to the given style. The default value is Qt::BevelJoin.
         #[rust_name = "set_join_style"]
@@ -51,6 +74,10 @@ mod ffi {
         /// Sets the pen style to the given style.
         #[rust_name = "set_style"]
         fn setStyle(self: &mut QPen, style: PenStyle);
+
+        /// Sets the miter limit of this pen to the given limit.
+        #[rust_name = "set_miter_limit"]
+        fn setMiterLimit(self: &mut QPen, limit: f64);
 
         /// Sets the pen width to the given width in pixels with integer precision.
         #[rust_name = "set_width"]
