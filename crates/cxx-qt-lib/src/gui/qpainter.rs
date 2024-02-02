@@ -44,6 +44,11 @@ mod ffi {
         #[rust_name = "background_mode"]
         fn backgroundMode(self: &QPainter) -> BGMode;
 
+        /// Flushes the painting pipeline and prepares for the user issuing commands directly
+        /// to the underlying graphics context. Must be followed by a call to endNativePainting().
+        #[rust_name = "begin_native_painting"]
+        fn beginNativePainting(self: Pin<&mut QPainter>);
+
         /// Returns the currently set brush origin.
         #[rust_name = "brush_origin"]
         fn brushOrigin(self: &QPainter) -> QPoint;
@@ -119,9 +124,18 @@ mod ffi {
         #[rust_name = "draw_polyline"]
         fn drawPolyline(self: Pin<&mut QPainter>, points: &QPolygon);
 
+        /// Draws the current rectangle with the current pen and brush.
+        #[rust_name = "draw_rect"]
+        fn drawRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
+
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
         fn drawText(self: Pin<&mut QPainter>, point: &QPoint, text: &QString);
+
+        /// Restores the painter after manually issuing native painting commands.
+        /// Lets the painter restore any native state that it relies on before calling any other painter commands.
+        #[rust_name = "end_native_painting"]
+        fn endNativePainting(self: Pin<&mut QPainter>);
 
         /// Erases the area inside the given rectangle.
         #[rust_name = "erase_rect"]
@@ -211,6 +225,10 @@ mod ffi {
 
         /// Translates the coordinate system by the given offset.
         fn translate(self: Pin<&mut QPainter>, offset: &QPoint);
+
+        /// Returns true if view transformation is enabled; otherwise returns false.
+        #[rust_name = "view_transform_enabled"]
+        fn viewTransformEnabled(self: &QPainter) -> bool;
 
         /// Returns the window rectangle.
         fn window(self: &QPainter) -> QRect;
