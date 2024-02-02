@@ -152,7 +152,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qpainterpath_drop"]
-        fn drop(pen: &mut QPainterPath);
+        fn drop(painterPath: &mut QPainterPath);
     }
 }
 
