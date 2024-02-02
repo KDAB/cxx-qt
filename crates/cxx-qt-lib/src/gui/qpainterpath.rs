@@ -25,6 +25,8 @@ mod ffi {
         type QFont = crate::QFont;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qpolygonf.h");
+        type QPolygonF = crate::QPolygonF;
 
         /// Creates an ellipse within the specified boundingRectangle and adds it to the painter
         /// path as a closed subpath.
@@ -34,6 +36,10 @@ mod ffi {
         /// Adds the given path to this path as a closed subpath.
         #[rust_name = "add_path"]
         fn addPath(self: &mut QPainterPath, path: &QPainterPath);
+
+        /// Adds the given polygon to the path as an (unclosed) subpath.
+        #[rust_name = "add_polygon"]
+        fn addPolygon(self: &mut QPainterPath, polygon: &QPolygonF);
 
         /// Adds the given rectangle to this path as a closed subpath.
         #[rust_name = "add_rect"]
@@ -57,6 +63,9 @@ mod ffi {
         #[rust_name = "bounding_rect"]
         fn boundingRect(self: &QPainterPath) -> QRectF;
 
+        /// Returns the number of elements allocated by the QPainterPath.
+        fn capacity(self: &QPainterPath) -> i32;
+
         /// Clears the path elements stored.
         fn clear(self: &mut QPainterPath);
 
@@ -76,6 +85,12 @@ mod ffi {
         /// Returns the rectangle containing all the points and control points in this path.
         #[rust_name = "control_point_rect"]
         fn controlPointRect(self: &QPainterPath) -> QRectF;
+
+        /// Adds a cubic Bezier curve between the current position and the given endPoint using the control
+        /// points specified by c1, and c2.
+        /// After the curve is added, the current position is updated to be at the end point of the curve.
+        #[rust_name = "cubic_to"]
+        fn cubicTo(self: &mut QPainterPath, c1: &QPointF, c2: &QPointF, endPoint: &QPointF);
 
         /// Returns the current position of the path.
         #[rust_name = "current_position"]
@@ -109,6 +124,15 @@ mod ffi {
         /// After the line is drawn, the current position is updated to be at the end point of the line.
         #[rust_name = "line_to"]
         fn lineTo(self: &mut QPainterPath, endPoint: &QPointF);
+
+        /// Adds a quadratic Bezier curve between the current position and the given endPoint
+        /// with the control point specified by c.
+        /// After the curve is added, the current point is updated to be at the end point of the curve.
+        #[rust_name = "quad_to"]
+        fn quadTo(self: &mut QPainterPath, c: &QPointF, endPoint: &QPointF);
+
+        /// Reserves a given amount of elements in QPainterPath's internal memory.
+        fn reserve(self: &mut QPainterPath, size: i32);
 
         /// Sets the fill rule of the painter path to the given fillRule. Qt provides two methods for filling paths:
         #[rust_name = "set_fill_rule"]
