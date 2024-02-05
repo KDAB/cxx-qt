@@ -78,6 +78,8 @@ mod ffi {
         type QFont = super::QFont;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qstringlist.h");
+        type QStringList = crate::QStringList;
 
         /// Returns true if weight() is a value greater than QFont::Medium; otherwise returns false.
         fn bold(self: &QFont) -> bool;
@@ -89,9 +91,28 @@ mod ffi {
         #[rust_name = "default_family"]
         fn defaultFamily(self: &QFont) -> QString;
 
+        /// Returns true if a window system font exactly matching
+        /// the settings of this font is available.
+        #[rust_name = "exact_match"]
+        fn exactMatch(self: &QFont) -> bool;
+
+        /// Returns the requested font family name, i.e. the name
+        /// set in the constructor or the last setFont() call.
+        #[rust_name = "family_or_default"]
+        fn family(self: &QFont) -> QString;
+
+        /// Returns the requested font family names, i.e. the names set in the last setFamilies()
+        /// call or via the constructor. Otherwise it returns an empty list.
+        fn families(self: &QFont) -> QStringList;
+
         /// Returns true if fixed pitch has been set; otherwise returns false.
         #[rust_name = "fixed_pitch"]
         fn fixedPitch(self: &QFont) -> bool;
+
+        /// Sets this font to match the description descrip. The description is a comma-separated
+        /// list of the font attributes, as returned by toString().
+        #[rust_name = "from_string"]
+        fn fromString(self: &mut QFont, descrip: &QString) -> bool;
 
         /// Returns the currently preferred hinting level for glyphs rendered with this font.
         #[rust_name = "hinting_preference"]
@@ -111,6 +132,10 @@ mod ffi {
         /// Returns the font's key, a textual representation of a font.
         /// It is typically used as the key for a cache or dictionary of fonts.
         fn key(self: &QFont) -> QString;
+
+        /// Returns the letter spacing for the font.
+        #[rust_name = "letter_spacing"]
+        fn letterSpacing(self: &QFont) -> f64;
 
         /// Returns the spacing type used for letter spacing.
         #[rust_name = "letter_spacing_type"]
@@ -141,6 +166,11 @@ mod ffi {
         /// Sets the family name of the font. The name is case insensitive and may include a foundry name.
         #[rust_name = "set_family"]
         fn setFamily(self: &mut QFont, family: &QString);
+
+        /// Sets the list of family names for the font. The names are case insensitive and may include
+        /// a foundry name. The first family in families will be set as the main family for the font.
+        #[rust_name = "set_families"]
+        fn setFamilies(self: &mut QFont, families: &QStringList);
 
         /// If enable is true, sets fixed pitch on; otherwise sets fixed pitch off.
         #[rust_name = "set_fixed_pitch"]
@@ -186,15 +216,19 @@ mod ffi {
         #[rust_name = "set_style_name"]
         fn setStyleName(self: &mut QFont, styleName: &QString);
 
-        /// Returns true if strikeout has been set; otherwise returns false.
-        fn strikeOut(self: &QFont) -> bool;
-
         /// If enable is true, sets underline on; otherwise sets underline off.
         #[rust_name = "set_underline"]
         fn setUnderline(self: &mut QFont, enable: bool);
 
+        /// Sets the word spacing for the font to spacing.
+        #[rust_name = "set_word_spacing"]
+        fn setWordSpacing(self: &mut QFont, spacing: f64);
+
         /// Returns the stretch factor for the font.
         fn stretch(self: &QFont) -> i32;
+
+        /// Returns true if strikeout has been set; otherwise returns false.
+        fn strikeOut(self: &QFont) -> bool;
 
         /// Returns the requested font style name. This can be used to match the font
         /// with irregular styles (that can't be normalized in other style properties).
@@ -203,6 +237,10 @@ mod ffi {
 
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
+
+        /// Returns the word spacing for the font.
+        #[rust_name = "word_spacing"]
+        fn wordSpacing(self: &QFont) -> f64;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -248,6 +286,19 @@ impl Drop for QFont {
 impl Clone for QFont {
     fn clone(&self) -> Self {
         ffi::qfont_clone(self)
+    }
+}
+
+impl QFont {
+    /// Returns the bounding rectangle of the current clip if there is a clip;
+    /// otherwise returns `None`. Note that the clip region is given in logical coordinates.
+    pub fn family(&self) -> Option<ffi::QString> {
+        let result = self.family_or_default();
+        if result.is_empty() {
+            None
+        } else {
+            Some(result)
+        }
     }
 }
 
