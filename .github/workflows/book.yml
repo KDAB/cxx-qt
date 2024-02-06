@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     # Keep in sync with manual-book.yml
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install mdbook and mdbook-linkcheck from binaries
       run: |
         mkdir mdbook
-        curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.28/mdbook-v0.4.28-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=./mdbook
+        curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.36/mdbook-v0.4.36-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=./mdbook
         echo `pwd`/mdbook >> $GITHUB_PATH
         curl -sSL https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest/download/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip
         unzip mdbook-linkcheck.zip -d mdbook-linkcheck/
