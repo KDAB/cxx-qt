@@ -198,7 +198,7 @@ jobs:
           ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
-        key: ${{ matrix.os }}_sccache-0.4.1_mdbook-0.4.28_mdbook-linkcheck-0.7.7
+        key: ${{ matrix.os }}_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       run: cargo install --locked sccache mdbook mdbook-linkcheck
