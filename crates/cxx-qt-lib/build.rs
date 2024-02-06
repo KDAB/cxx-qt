@@ -194,12 +194,6 @@ fn main() {
         println!("cargo:rerun-if-changed=src/{bridge}.rs");
     }
 
-    for include_path in qtbuild.include_paths() {
-        cxx_build::CFG
-            .exported_header_dirs
-            .push(include_path.as_path());
-    }
-
     let mut builder =
         cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
 
@@ -282,6 +276,11 @@ fn main() {
         let mut header = File::create(h_path).expect("Could not create header: {h_path}");
         write!(header, "{file_contents}").expect("Could not write header: {h_path}");
     }
+
+    // Load the include paths
+    //
+    // TODO: note once we use cxx-qt-build we don't need to include the Qt paths here
+    builder.includes(qtbuild.include_paths());
     builder.include(header_root);
 
     // Enable Qt Gui in C++ if the feature is enabled
