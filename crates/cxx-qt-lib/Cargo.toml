@@ -23,7 +23,7 @@ time = { version = "0.3.20", optional = true }
 url = { version = "2.3", optional = true }
 
 [build-dependencies]
-cxx-build.workspace = true
+cxx-qt-build.workspace = true
 cxx-qt-lib-headers.workspace = true
 qt-build-utils.workspace = true
 
