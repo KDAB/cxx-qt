@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use cxx_qt_build::CxxQtBuilder;
+use qt_build_utils::QtBuild;
 use std::{fs::File, io::Write};
 
 fn main() {
@@ -13,24 +15,26 @@ fn main() {
         Err(_) => false,
     };
 
-    let mut qt_modules = vec!["Core".to_owned()];
+    let mut builder = CxxQtBuilder::new();
+    // Not strictly required to enable modules as the feature should do this
+    // build lets be explicit for now.
     if feature_qt_gui_enabled {
-        qt_modules.push("Gui".to_owned());
+        builder = builder.qt_module("Gui");
     }
     if feature_qt_qml_enabled {
-        qt_modules.push("Qml".to_owned());
+        builder = builder.qt_module("Qml");
     }
-
-    let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
-
-    // Required for tests
-    qt_build_utils::setup_linker();
 
     // Find the Qt version and tell the Rust compiler
     // this allows us to have conditional Rust code
+    //
+    // TODO: is this useful to have in cxx-qt-build?
     println!(
         "cargo:rustc-cfg=qt_version_major=\"{}\"",
-        qtbuild.version().major
+        QtBuild::new(vec!())
+            .expect("Could not find Qt installation")
+            .version()
+            .major
     );
 
     let mut rust_bridges = vec![
@@ -190,14 +194,9 @@ fn main() {
         ]);
     }
 
-    for bridge in &rust_bridges {
-        println!("cargo:rerun-if-changed=src/{bridge}.rs");
+    for rust_source in &rust_bridges {
+        builder = builder.file(format!("src/{rust_source}.rs"));
     }
-
-    let mut builder =
-        cxx_build::bridges(rust_bridges.iter().map(|bridge| format!("src/{bridge}.rs")));
-
-    qtbuild.cargo_link_libraries(&mut builder);
 
     let mut cpp_files = vec![
         "core/qbytearray",
@@ -253,12 +252,14 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    for cpp_file in &cpp_files {
-        builder.file(format!("src/{cpp_file}.cpp"));
-        println!("cargo:rerun-if-changed=src/{cpp_file}.cpp");
-    }
-    builder.file("src/qt_types.cpp");
-    println!("cargo:rerun-if-changed=src/qt_types.cpp");
+    builder = builder.cc_builder(move |cc| {
+        for cpp_file in &cpp_files {
+            cc.file(format!("src/{cpp_file}.cpp"));
+            println!("cargo:rerun-if-changed=src/{cpp_file}.cpp");
+        }
+        cc.file("src/qt_types.cpp");
+        println!("cargo:rerun-if-changed=src/qt_types.cpp");
+    });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     // Write this library's manually written C++ headers to files and add them to include paths
@@ -277,33 +278,20 @@ fn main() {
         write!(header, "{file_contents}").expect("Could not write header: {h_path}");
     }
 
-    // Load the include paths
-    //
-    // TODO: note once we use cxx-qt-build we don't need to include the Qt paths here
-    builder.includes(qtbuild.include_paths());
-    builder.include(header_root);
+    builder = builder.cc_builder(|cc| {
+        // Load the include path
+        cc.include(&header_root);
 
-    // Enable Qt Gui in C++ if the feature is enabled
-    if feature_qt_gui_enabled {
-        builder.define("CXX_QT_GUI_FEATURE", None);
-    }
+        // Enable Qt Gui in C++ if the feature is enabled
+        if feature_qt_gui_enabled {
+            cc.define("CXX_QT_GUI_FEATURE", None);
+        }
 
-    // Enable Qt Qml in C++ if the feature is enabled
-    if feature_qt_gui_enabled {
-        builder.define("CXX_QT_QML_FEATURE", None);
-    }
+        // Enable Qt Qml in C++ if the feature is enabled
+        if feature_qt_gui_enabled {
+            cc.define("CXX_QT_QML_FEATURE", None);
+        }
+    });
 
-    // Note, ensure our settings stay in sync across cxx-qt-build and cxx-qt-lib
-    builder.cpp(true);
-    // MSVC
-    builder.flag_if_supported("/std:c++17");
-    builder.flag_if_supported("/Zc:__cplusplus");
-    builder.flag_if_supported("/permissive-");
-    builder.flag_if_supported("/bigobj");
-    // GCC + Clang
-    builder.flag_if_supported("-std=c++17");
-    // MinGW requires big-obj otherwise debug builds fail
-    builder.flag_if_supported("-Wa,-mbig-obj");
-
-    builder.compile("cxx-qt-lib");
+    builder.build();
 }
