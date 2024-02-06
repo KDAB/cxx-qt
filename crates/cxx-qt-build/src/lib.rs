@@ -553,9 +553,7 @@ impl CxxQtBuilder {
                 builder.define(extra_define, None);
             }
 
-            for include_dir in qtbuild.include_paths() {
-                builder.include(&include_dir);
-            }
+            builder.includes(qtbuild.include_paths());
             builder.include(&header_root);
             builder.include(&generated_header_dir);
         }

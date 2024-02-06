@@ -11,9 +11,6 @@ edition.workspace = true
 license.workspace = true
 description = "Qt types for integrating `cxx-qt` crate with `cxx`"
 repository.workspace = true
-# Fake linking so that we expose cargo data as env vars for downstream crates
-# https://github.com/rust-lang/cargo/issues/3544
-links = "cxx-qt-lib"
 exclude = [ "**/generate.sh" ]
 
 [dependencies]
