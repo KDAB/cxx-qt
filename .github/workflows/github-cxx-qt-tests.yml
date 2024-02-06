@@ -201,7 +201,10 @@ jobs:
         key: ${{ matrix.os }}_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
-      run: cargo install --locked sccache mdbook mdbook-linkcheck
+      # Do not build with storage backends enabled, we only need local
+      run: |
+        cargo install --no-default-features sccache
+        cargo install mdbook mdbook-linkcheck
 
     - name: "Compiler cache"
       # Always cache and save all branches
