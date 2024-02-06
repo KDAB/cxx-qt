@@ -169,9 +169,10 @@ jobs:
         # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
         # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
         MACOSX_DEPLOYMENT_TARGET: 12.7
-        # sccache is around 250-350M in size for a normal build
-        # set the cache size to double of this to leave some headroom
-        # but don't expand too large as we cache old data and cause cache evictions
+        # sccache is around 180-300M in size for a normal build
+        # With GitHub caches we have a 10 GB limit / 6 conditions = 1666 MB
+        # Allow a larger cache size so that code in branches can be cached
+        # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
 
     steps:
@@ -190,7 +191,7 @@ jobs:
       run: rustup component add clippy rustfmt
 
     - name: "Rust tools cache"
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: rust-tools-cache
       with:
         path: |
@@ -203,13 +204,14 @@ jobs:
       run: cargo install --locked sccache mdbook mdbook-linkcheck
 
     - name: "Compiler cache"
-      uses: actions/cache@v3
+      # Always cache and save all branches
+      # otherwise if we only restore here and only save the main branch
+      # we don't update the cache until something reaches main which
+      # causes an eviction of the cache if the cache isn't accessed for 1 week
+      uses: actions/cache@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
-        key: ${{ matrix.name }}-${{ github.head_ref }}-${{ github.run_number }}
-        restore-keys: |
-          ${{ matrix.name }}-${{ github.head_ref }}
-          ${{ matrix.name }}
+        key: ${{ matrix.name }}_compiler_cache
 
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
