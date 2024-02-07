@@ -7,8 +7,8 @@ pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
 pub mod inherit;
-pub mod mappings;
 pub mod method;
+pub mod naming;
 pub mod parameter;
 pub mod property;
 pub mod qenum;
@@ -18,6 +18,7 @@ pub mod signals;
 
 use crate::syntax::{attribute::attribute_take_path, expr::expr_to_string};
 use cxxqtdata::ParsedCxxQtData;
+use naming::TypeNames;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
 };
@@ -31,15 +32,15 @@ pub struct Parser {
     pub passthrough_module: ItemMod,
     /// Any CXX-Qt data that needs generation later
     pub cxx_qt_data: ParsedCxxQtData,
+    /// all type names that were found in this module, including CXX types
+    pub type_names: TypeNames,
     /// The stem of the file that the CXX headers for this module will be generated into
     pub cxx_file_stem: String,
 }
 
 impl Parser {
-    /// Constructs a Parser object from a given [syn::ItemMod] block
-    pub fn from(mut module: ItemMod) -> Result<Self> {
+    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(String, String)> {
         let mut namespace = "".to_owned();
-        let mut others = vec![];
         let mut cxx_file_stem = module.ident.to_string();
 
         // Remove the cxx_qt::bridge attribute
@@ -70,6 +71,15 @@ impl Parser {
             ));
         }
 
+        Ok((namespace, cxx_file_stem))
+    }
+
+    fn parse_module_contents(
+        mut module: ItemMod,
+        namespace: String,
+    ) -> Result<(ParsedCxxQtData, ItemMod)> {
+        let mut others = vec![];
+
         let mut cxx_qt_data = ParsedCxxQtData::new(module.ident.clone(), namespace);
 
         // Check that there are items in the module
@@ -82,9 +92,6 @@ impl Parser {
                 // Try to find any CXX-Qt items, if found add them to the relevant
                 // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
-                    // Load any CXX name mappings
-                    cxx_qt_data.populate_mappings_from_item(&other)?;
-
                     // Unknown item so add to the other list
                     others.push(other);
                 }
@@ -93,10 +100,28 @@ impl Parser {
 
         // Create a new module using only items that are not CXX-Qt items
         module.content = Some((Brace::default(), others));
+        Ok((cxx_qt_data, module))
+    }
+
+    /// Constructs a Parser object from a given [syn::ItemMod] block
+    pub fn from(mut module: ItemMod) -> Result<Self> {
+        let (namespace, cxx_file_stem) = Self::parse_mod_attributes(&mut module)?;
+        let (cxx_qt_data, module) = Self::parse_module_contents(module, namespace)?;
+        let type_names = TypeNames::from_parsed_data(
+            &cxx_qt_data,
+            module
+                .content
+                .as_ref()
+                .map(|brace_and_items| &brace_and_items.1)
+                .unwrap_or(&vec![]),
+            &cxx_qt_data.namespace,
+            &module.ident,
+        )?;
 
         // Return the successful Parser object
         Ok(Self {
             passthrough_module: module,
+            type_names,
             cxx_qt_data,
             cxx_file_stem,
         })
@@ -178,11 +203,10 @@ mod tests {
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
         assert_eq!(parser.cxx_qt_data.namespace, "cxx_qt");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
-        assert_eq!(parser.cxx_qt_data.cxx_mappings.qualified.len(), 1);
+        assert_eq!(parser.type_names.qualified.len(), 1);
         assert_eq!(
             parser
-                .cxx_qt_data
-                .cxx_mappings
+                .type_names
                 .qualified
                 .get(&format_ident!("MyObject"))
                 .unwrap(),
@@ -276,32 +300,17 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.cxx_qt_data.cxx_mappings.namespaces.len(), 3);
+        assert_eq!(parser.type_names.namespaces.len(), 3);
         assert_eq!(
-            parser
-                .cxx_qt_data
-                .cxx_mappings
-                .namespaces
-                .get("MyObjectA")
-                .unwrap(),
+            parser.type_names.namespaces.get("MyObjectA").unwrap(),
             "bridge_namespace"
         );
         assert_eq!(
-            parser
-                .cxx_qt_data
-                .cxx_mappings
-                .namespaces
-                .get("MyObjectB")
-                .unwrap(),
+            parser.type_names.namespaces.get("MyObjectB").unwrap(),
             "type_namespace"
         );
         assert_eq!(
-            parser
-                .cxx_qt_data
-                .cxx_mappings
-                .namespaces
-                .get("MyObjectC")
-                .unwrap(),
+            parser.type_names.namespaces.get("MyObjectC").unwrap(),
             "extern_namespace"
         );
     }
