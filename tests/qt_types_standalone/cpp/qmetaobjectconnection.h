@@ -11,7 +11,7 @@
 #include <QtTest/QTest>
 #include <qobjectdefs.h>
 
-#include "cxx-qt-gen/qmetaobjectconnection_cxx.cxx.h"
+#include "cxx-qt-gen/qmetaobjectconnection.cxx.h"
 
 class MyObject : public QObject
 {

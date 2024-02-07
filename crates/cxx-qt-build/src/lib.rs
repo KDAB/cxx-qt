@@ -18,7 +18,6 @@ mod qml_modules;
 use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
-use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
     collections::HashSet,
@@ -65,11 +64,6 @@ impl GeneratedCpp {
             .map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
-        // TODO: later change how the resultant filename is chosen, can we match the input file like
-        // CXX does?
-        //
-        // For CXX-Qt generating one header per QObject likely makes sense, but what happens with CXX data?
-        // for now this uses the module ident
         let mut file_ident: String = "".to_owned();
         let mut tokens = proc_macro2::TokenStream::new();
 
@@ -90,7 +84,18 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    file_ident = m.ident.to_string().to_case(Case::Snake);
+                    // Match upstream where they use the file name as the ident
+                    //
+                    // TODO: what happens if there are folders?
+                    //
+                    // TODO: ideally CXX-Qt would also use the file name
+                    // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
+                    file_ident = rust_file_path
+                        .file_stem()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_owned();
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {

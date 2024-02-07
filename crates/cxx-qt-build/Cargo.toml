@@ -14,7 +14,6 @@ repository.workspace = true
 
 [dependencies]
 cc.workspace = true
-convert_case.workspace = true
 cxx-gen.workspace = true
 cxx-qt-gen.workspace = true
 proc-macro2.workspace = true

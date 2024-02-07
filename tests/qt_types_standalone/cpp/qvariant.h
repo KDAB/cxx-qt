@@ -9,7 +9,7 @@
 #include <QtCore/QVariant>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qvariant_cxx.cxx.h"
+#include "cxx-qt-gen/qvariant.cxx.h"
 
 // We use VariantTest in data driven tests, so register to Qt metatype system
 Q_DECLARE_METATYPE(VariantTest)
