@@ -17,7 +17,7 @@ use crate::{
         },
         utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
-    parser::{mappings::ParsedCxxMappings, qobject::ParsedQObject},
+    parser::{naming::TypeNames, qobject::ParsedQObject},
 };
 use quote::quote;
 use syn::{Ident, Result};
@@ -27,7 +27,7 @@ use super::qenum;
 impl GeneratedRustFragment {
     pub fn from_qobject(
         qobject: &ParsedQObject,
-        cxx_mappings: &ParsedCxxMappings,
+        type_names: &TypeNames,
         module_ident: &Ident,
     ) -> Result<Self> {
         // Create the base object
@@ -44,7 +44,7 @@ impl GeneratedRustFragment {
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,
-            cxx_mappings,
+            type_names,
             module_ident,
         )?);
         generated.append(&mut generate_rust_methods(
@@ -58,7 +58,7 @@ impl GeneratedRustFragment {
         generated.append(&mut generate_rust_signals(
             &qobject.signals,
             &qobject_idents,
-            cxx_mappings,
+            type_names,
             module_ident,
         )?);
         generated.append(&mut qenum::generate(&qobject.qenums));
@@ -85,7 +85,7 @@ impl GeneratedRustFragment {
             generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
-                &cxx_mappings.qualified,
+                &type_names.qualified,
                 module_ident,
             )?);
         }
@@ -97,7 +97,7 @@ impl GeneratedRustFragment {
         if qobject.locking {
             let qualified_impl = syn_ident_cxx_bridge_to_qualified_impl(
                 &qobject_idents.cpp_class.rust,
-                &cxx_mappings.qualified,
+                &type_names.qualified,
             );
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
@@ -108,13 +108,13 @@ impl GeneratedRustFragment {
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
-            &cxx_mappings.qualified,
+            &type_names.qualified,
             module_ident,
         )?);
 
         generated.append(&mut cxxqttype::generate(
             &qobject_idents,
-            &cxx_mappings.qualified,
+            &type_names.qualified,
         )?);
 
         Ok(generated)
@@ -192,7 +192,7 @@ mod tests {
 
         let rust = GeneratedRustFragment::from_qobject(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();

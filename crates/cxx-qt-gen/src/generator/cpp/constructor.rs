@@ -6,7 +6,7 @@
 use super::qobject::GeneratedCppQObjectBlocks;
 use crate::{
     generator::{cpp::GeneratedCppQObject, utils::cpp::syn_type_to_cpp_type},
-    parser::{constructor::Constructor, mappings::ParsedCxxMappings},
+    parser::{constructor::Constructor, naming::TypeNames},
     CppFragment,
 };
 
@@ -48,11 +48,11 @@ fn argument_names(arguments: &[Type]) -> Vec<String> {
         .collect()
 }
 
-fn expand_arguments(arguments: &[Type], cxx_mappings: &ParsedCxxMappings) -> Result<String> {
+fn expand_arguments(arguments: &[Type], type_names: &TypeNames) -> Result<String> {
     Ok(arguments
         .iter()
         .zip(argument_names(arguments).into_iter())
-        .map(|(ty, name)| syn_type_to_cpp_type(ty, cxx_mappings).map(|ty| format!("{ty} {name}")))
+        .map(|(ty, name)| syn_type_to_cpp_type(ty, type_names).map(|ty| format!("{ty} {name}")))
         .collect::<Result<Vec<_>>>()?
         .join(", "))
 }
@@ -62,7 +62,7 @@ pub fn generate(
     constructors: &[Constructor],
     base_class: String,
     class_initializers: &[String],
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let initializers = class_initializers
         .iter()
@@ -80,7 +80,7 @@ pub fn generate(
     let rust_obj = qobject.rust_ident.as_str();
     let namespace_internals = &qobject.namespace_internals;
     for (index, constructor) in constructors.iter().enumerate() {
-        let argument_list = expand_arguments(&constructor.arguments, cxx_mappings)?;
+        let argument_list = expand_arguments(&constructor.arguments, type_names)?;
         let constructor_argument_names = argument_names(&constructor.arguments);
 
         generated.methods.push(CppFragment::Pair {
@@ -171,7 +171,7 @@ mod tests {
             &[],
             "BaseClass".to_owned(),
             &["member1(1)".to_string(), "member2{ 2 }".to_string()],
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
 
@@ -201,7 +201,7 @@ mod tests {
             &[],
             "BaseClass".to_owned(),
             &[],
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
 
@@ -233,7 +233,7 @@ mod tests {
             }],
             "BaseClass".to_owned(),
             &[],
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
 
@@ -283,7 +283,7 @@ mod tests {
             }],
             "BaseClass".to_owned(),
             &["initializer".to_string()],
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
 
@@ -337,7 +337,7 @@ mod tests {
             ],
             "BaseClass".to_owned(),
             &["initializer".to_string()],
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
 
