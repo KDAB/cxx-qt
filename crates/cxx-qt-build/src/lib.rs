@@ -18,7 +18,6 @@ mod qml_modules;
 use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
-use convert_case::{Case, Casing};
 use quote::ToTokens;
 use std::{
     collections::HashSet,
@@ -90,7 +89,12 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    file_ident = m.ident.to_string().to_case(Case::Snake);
+                    file_ident = rust_file_path
+                        .file_stem()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_owned();
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {
