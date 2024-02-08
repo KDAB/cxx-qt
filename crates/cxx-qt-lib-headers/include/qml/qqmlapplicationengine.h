@@ -11,12 +11,16 @@
 #include <memory>
 
 #include <QtQml/QQmlApplicationEngine>
+#include <QtQml/QQmlEngine>
 
 namespace rust {
 namespace cxxqtlib1 {
 
 ::std::unique_ptr<QQmlApplicationEngine>
 qqmlapplicationengineNew();
+
+QQmlEngine&
+qqmlapplicationengineAsQQmlEngine(QQmlApplicationEngine&);
 
 }
 }

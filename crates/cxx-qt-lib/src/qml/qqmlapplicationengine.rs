@@ -61,11 +61,22 @@ mod ffi {
         fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
     }
 
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qqmlengine.h");
+        type QQmlEngine = crate::QQmlEngine;
+    }
+
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "qqmlapplicationengine_new"]
         fn qqmlapplicationengineNew() -> UniquePtr<QQmlApplicationEngine>;
+
+        #[doc(hidden)]
+        #[rust_name = "qqmlapplicationengine_as_qqmlengine"]
+        fn qqmlapplicationengineAsQQmlEngine(
+            ptr: Pin<&mut QQmlApplicationEngine>,
+        ) -> Pin<&mut QQmlEngine>;
     }
 
     // QQmlApplicationEngine is not a trivial to CXX and is not relocatable in Qt
@@ -75,9 +86,17 @@ mod ffi {
     impl UniquePtr<QQmlApplicationEngine> {}
 }
 
+use crate::QQmlEngine;
+use core::pin::Pin;
+
 pub use ffi::QQmlApplicationEngine;
 
 impl QQmlApplicationEngine {
+    /// Convert the existing [QQmlApplicationEngine] to a [QQmlEngine]
+    pub fn as_qqmlengine<'a>(self: Pin<&'a mut Self>) -> Pin<&'a mut QQmlEngine> {
+        ffi::qqmlapplicationengine_as_qqmlengine(self)
+    }
+
     /// Create a new QQmlApplicationEngine
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qqmlapplicationengine_new()

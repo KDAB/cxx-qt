@@ -51,6 +51,12 @@ Window {
 
             onClicked: myObject.sayHi(myObject.string, myObject.number)
         }
+
+        Button {
+            text: qsTr("Quit")
+
+            onClicked: Qt.quit()
+        }
     }
 }
 // ANCHOR_END: book_main_qml

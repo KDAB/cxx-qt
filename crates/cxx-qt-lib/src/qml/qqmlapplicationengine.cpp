@@ -16,5 +16,11 @@ qqmlapplicationengineNew()
   return ::std::make_unique<QQmlApplicationEngine>();
 }
 
+QQmlEngine&
+qqmlapplicationengineAsQQmlEngine(QQmlApplicationEngine& engine)
+{
+  return static_cast<QQmlEngine&>(engine);
+}
+
 }
 }
