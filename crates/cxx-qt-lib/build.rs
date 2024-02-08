@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::{fs::File, io::Write};
+
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
     let feature_qt_qml_enabled = std::env::var("CARGO_FEATURE_QT_QML").is_ok();
@@ -263,38 +265,22 @@ fn main() {
     println!("cargo:rerun-if-changed=src/qt_types.cpp");
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    fn copy_dir(src: impl AsRef<std::path::Path>, dest: impl AsRef<std::path::Path>) {
-        let dest = dest.as_ref();
-        let src = src.as_ref();
-        if src.is_dir() {
-            std::fs::create_dir_all(dest).expect("could not create directory {dest}");
-            for entry in std::fs::read_dir(src).expect("could not read dir {src}") {
-                let entry = entry.expect("could not retrieve entry for dir {src}");
-                let path = entry.path();
-                let file_name = entry
-                    .file_name()
-                    .into_string()
-                    .expect("cannot convert OsString to String");
-                let dest = dest.display();
-                if path.is_file() {
-                    std::fs::copy(path, format!("{dest}/{file_name}"))
-                        .expect("could not copy {path}");
-                }
-            }
-        }
-    }
-
     // Write this library's manually written C++ headers to files and add them to include paths
-    let include_out_dir = format!("{}/include", std::env::var("OUT_DIR").unwrap());
-    copy_dir("include/core", format!("{include_out_dir}/cxx-qt-lib"));
-    copy_dir("include/gui", format!("{include_out_dir}/cxx-qt-lib"));
-    copy_dir("include/qml", format!("{include_out_dir}/cxx-qt-lib"));
-    std::fs::copy(
-        "include/common.h",
-        format!("{include_out_dir}/cxx-qt-lib/common.h"),
-    )
-    .expect("could not copy common.h");
-    builder.include(include_out_dir);
+    let header_root = format!("{}/include", std::env::var("OUT_DIR").unwrap());
+    for (file_contents, dir_name, file_name) in cxx_qt_lib_headers::build_opts().headers {
+        let directory = if dir_name.is_empty() {
+            header_root.clone()
+        } else {
+            format!("{header_root}/{dir_name}")
+        };
+        std::fs::create_dir_all(directory.clone())
+            .expect("Could not create {directory} header directory");
+
+        let h_path = format!("{directory}/{file_name}");
+        let mut header = File::create(h_path).expect("Could not create header: {h_path}");
+        write!(header, "{file_contents}").expect("Could not write header: {h_path}");
+    }
+    builder.include(header_root);
 
     // Enable Qt Gui in C++ if the feature is enabled
     if feature_qt_gui_enabled {
