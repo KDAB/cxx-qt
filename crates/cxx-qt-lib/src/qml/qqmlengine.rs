@@ -3,8 +3,21 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx::bridge]
+#[cxx_qt::bridge(cxx_file_stem = "qqmlengine")]
 mod ffi {
+    unsafe extern "C++Qt" {
+        include!("cxx-qt-lib/qqmlengine.h");
+        type QQmlEngine;
+
+        /// This signal is emitted when the QML loaded by the engine would like to exit from the event loop with the specified return code ret_code.
+        #[qsignal]
+        fn exit(self: Pin<&mut QQmlEngine>, ret_code: i32);
+
+        /// This signal is emitted when the QML loaded by the engine would like to quit.
+        #[qsignal]
+        fn quit(self: Pin<&mut QQmlEngine>);
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
@@ -12,9 +25,6 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
-
-        include!("cxx-qt-lib/qqmlengine.h");
-        type QQmlEngine;
 
         /// Adds path as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
