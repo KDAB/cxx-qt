@@ -9,6 +9,8 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
+use std::{fs::File, io::Write, path::Path};
+
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
@@ -355,5 +357,39 @@ where
 
     fn initialize(self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
         Self::initialize(self);
+    }
+}
+
+#[doc(hidden)]
+// Write the cxx-qt headers to the specified directory.
+pub fn write_headers(directory: impl AsRef<Path>) {
+    let directory = directory.as_ref();
+    std::fs::create_dir_all(directory).expect("Could not create cxx-qt header directory");
+    for (file_contents, file_name) in [
+        (
+            include_str!("../include/cxxqt_locking.h"),
+            "cxxqt_locking.h",
+        ),
+        (
+            include_str!("../include/cxxqt_maybelockguard.h"),
+            "cxxqt_maybelockguard.h",
+        ),
+        (
+            include_str!("../include/cxxqt_signalhandler.h"),
+            "cxxqt_signalhandler.h",
+        ),
+        (include_str!("../include/cxxqt_thread.h"), "cxxqt_thread.h"),
+        (
+            include_str!("../include/cxxqt_threading.h"),
+            "cxxqt_threading.h",
+        ),
+        (include_str!("../include/cxxqt_type.h"), "cxxqt_type.h"),
+    ] {
+        // Note that we do not need rerun-if-changed for these files
+        // as include_str causes a rerun when the header changes
+        // and the files are always written to the target.
+        let h_path = format!("{}/{file_name}", directory.display());
+        let mut header = File::create(h_path).expect("Could not create cxx-qt header");
+        write!(header, "{file_contents}").expect("Could not write cxx-qt header");
     }
 }
