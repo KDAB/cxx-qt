@@ -13,21 +13,21 @@ mod ffi {
         type QByteArray = super::QByteArray;
 
         /// Clears the contents of the byte array and makes it null.
-        fn clear(self: &mut QByteArray);
+        fn clear(self: &mut Self);
         /// Returns true if the byte array has size 0; otherwise returns false.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QByteArray) -> bool;
+        fn isEmpty(self: &Self) -> bool;
         /// Returns true if this byte array is lowercase, that is, if it's identical to its toLower() folding.
         #[rust_name = "is_lower"]
-        fn isLower(self: &QByteArray) -> bool;
+        fn isLower(self: &Self) -> bool;
         /// Returns true if this byte array is null; otherwise returns false.
         #[rust_name = "is_null"]
-        fn isNull(self: &QByteArray) -> bool;
+        fn isNull(self: &Self) -> bool;
         /// Returns true if this byte array is uppercase, that is, if it's identical to its toUpper() folding.
         #[rust_name = "is_upper"]
-        fn isUpper(self: &QByteArray) -> bool;
+        fn isUpper(self: &Self) -> bool;
         /// Releases any memory not required to store the array's data.
-        fn squeeze(self: &mut QByteArray);
+        fn squeeze(self: &mut Self);
     }
 
     #[namespace = "rust::cxxqtlib1"]
