@@ -12,7 +12,7 @@ use crate::{
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
         utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
-    parser::{mappings::ParsedCxxMappings, signals::ParsedSignal},
+    parser::{naming::TypeNames, signals::ParsedSignal},
     syntax::attribute::attribute_find_path,
 };
 use quote::quote;
@@ -21,11 +21,11 @@ use syn::{parse_quote, FnArg, Ident, Result, Type};
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Ident,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_name, cxx_mappings);
+    let idents_helper = QSignalHelperName::new(&idents, qobject_name, type_names);
 
     let signal_name_cpp = idents.name.cpp;
     let signal_name_cpp_str = signal_name_cpp.to_string();
@@ -52,7 +52,7 @@ pub fn generate_rust_signal(
         .map(|mut parameter| {
             if let FnArg::Typed(pat_type) = &mut parameter {
                 *pat_type.ty =
-                    syn_type_cxx_bridge_to_qualified(&pat_type.ty, &cxx_mappings.qualified);
+                    syn_type_cxx_bridge_to_qualified(&pat_type.ty, &type_names.qualified);
             }
             parameter
         })
@@ -67,7 +67,7 @@ pub fn generate_rust_signal(
         .cloned()
         .map(|parameter| match parameter {
             FnArg::Typed(pat_type) => {
-                syn_type_cxx_bridge_to_qualified(&pat_type.ty, &cxx_mappings.qualified)
+                syn_type_cxx_bridge_to_qualified(&pat_type.ty, &type_names.qualified)
             }
             _ => unreachable!("should only have typed no receiver"),
         })
@@ -79,9 +79,9 @@ pub fn generate_rust_signal(
         parse_quote! { &#qobject_name }
     };
     let self_type_qualified =
-        syn_type_cxx_bridge_to_qualified(&self_type_cxx, &cxx_mappings.qualified);
+        syn_type_cxx_bridge_to_qualified(&self_type_cxx, &type_names.qualified);
     let qualified_impl =
-        syn_ident_cxx_bridge_to_qualified_impl(qobject_name, &cxx_mappings.qualified);
+        syn_ident_cxx_bridge_to_qualified_impl(qobject_name, &type_names.qualified);
 
     let mut unsafe_block = None;
     let mut unsafe_call = Some(quote! { unsafe });
@@ -214,7 +214,7 @@ pub fn generate_rust_signal(
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
@@ -243,7 +243,7 @@ pub fn generate_rust_signals(
         generated.append(&mut generate_rust_signal(
             &signal,
             qobject_name,
-            cxx_mappings,
+            type_names,
             module_ident,
         )?);
     }
@@ -283,7 +283,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -449,7 +449,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -611,7 +611,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -769,7 +769,7 @@ mod tests {
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -925,7 +925,7 @@ mod tests {
         let generated = generate_rust_signal(
             &qsignal,
             &qsignal.qobject_ident,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -1079,7 +1079,7 @@ mod tests {
         let generated = generate_rust_signal(
             &qsignal,
             &qsignal.qobject_ident,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();

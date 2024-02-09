@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::mappings::ParsedCxxMappings;
+use crate::parser::naming::TypeNames;
 use syn::{
     spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
@@ -30,14 +30,14 @@ pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
 /// Note that return types are allowed to have a Result<T>
 pub(crate) fn syn_type_to_cpp_return_type(
     return_ty: &ReturnType,
-    cxx_mapping: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<Option<String>> {
     if let ReturnType::Type(_, ty) = return_ty {
         // If we are a Result<T> then we just become T for C++
         if let Type::Path(ty_path) = &**ty {
             if let Some(segment) = ty_path.path.segments.first() {
                 if segment.ident == "Result" {
-                    let mut args = path_argument_to_string(&segment.arguments, cxx_mapping)?
+                    let mut args = path_argument_to_string(&segment.arguments, type_names)?
                         .unwrap_or_default();
                     if args.len() != 1 {
                         return Err(Error::new(
@@ -60,7 +60,7 @@ pub(crate) fn syn_type_to_cpp_return_type(
             }
         }
 
-        syn_type_to_cpp_type(ty, cxx_mapping).map(|v| if v == "void" { None } else { Some(v) })
+        syn_type_to_cpp_type(ty, type_names).map(|v| if v == "void" { None } else { Some(v) })
     } else {
         Ok(None)
     }
@@ -70,7 +70,7 @@ pub(crate) fn syn_type_to_cpp_return_type(
 ///
 /// This is similar to the parsing in CXX
 /// https://github.com/dtolnay/cxx/blob/a6e1cd1e8d9d6df20e88e7443963dc4c5c8c4875/syntax/parse.rs#L1134
-pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -> Result<String> {
+pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<String> {
     match ty {
         Type::Array(TypeArray { elem, len, .. }) => {
             let len = if let Expr::Lit(len) = &len {
@@ -89,20 +89,20 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
 
             Ok(format!(
                 "::std::array<{ty}, {len}>",
-                ty = syn_type_to_cpp_type(elem, cxx_mapping)?,
+                ty = syn_type_to_cpp_type(elem, type_names)?,
                 len = len
             ))
         }
         Type::BareFn(TypeBareFn { inputs, output, .. }) => {
             let ret = if let ReturnType::Type(_, ty) = output {
-                syn_type_to_cpp_type(ty, cxx_mapping)?
+                syn_type_to_cpp_type(ty, type_names)?
             } else {
                 "void".to_owned()
             };
 
             let args = inputs
                 .iter()
-                .map(|arg| syn_type_to_cpp_type(&arg.ty, cxx_mapping))
+                .map(|arg| syn_type_to_cpp_type(&arg.ty, type_names))
                 .collect::<Result<Vec<String>>>()?;
 
             Ok(format!(
@@ -116,7 +116,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
                 .path
                 .segments
                 .iter()
-                .map(|generic| path_segment_to_string(generic, cxx_mapping))
+                .map(|generic| path_segment_to_string(generic, type_names))
                 .collect::<Result<Vec<String>>>()?;
             if ty_strings.len() == 1 {
                 let first = ty_strings.first().unwrap();
@@ -127,7 +127,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
                 }
 
                 // Use the CXX mapped name
-                Ok(cxx_mapping.cxx(first))
+                Ok(type_names.cxx(first))
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -137,7 +137,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
         }) => Ok(format!(
             "{is_const}{ty}*",
             is_const = if const_token.is_some() { "const " } else { "" },
-            ty = syn_type_to_cpp_type(elem, cxx_mapping)?
+            ty = syn_type_to_cpp_type(elem, type_names)?
         )),
         Type::Reference(TypeReference {
             mutability, elem, ..
@@ -149,7 +149,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
                 Type::Slice(TypeSlice { elem, .. }) => Ok(format!(
                     "::rust::Slice<{ty}{is_const}>",
                     is_const = is_const,
-                    ty = syn_type_to_cpp_type(elem, cxx_mapping)?
+                    ty = syn_type_to_cpp_type(elem, type_names)?
                 )),
                 // str is a special type only available as a reference
                 // We need to map &str to rust::Str
@@ -159,7 +159,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
                 _others => Ok(format!(
                     "{ty}{is_const}&",
                     is_const = is_const,
-                    ty = syn_type_to_cpp_type(elem, cxx_mapping)?
+                    ty = syn_type_to_cpp_type(elem, type_names)?
                 )),
             }
         }
@@ -172,12 +172,9 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, cxx_mapping: &ParsedCxxMappings) -
 }
 
 /// Convert any generic arguments to C++, eg A and B in Ty<A, B>
-fn generic_argument_to_string(
-    generic: &GenericArgument,
-    cxx_mapping: &ParsedCxxMappings,
-) -> Result<String> {
+fn generic_argument_to_string(generic: &GenericArgument, type_names: &TypeNames) -> Result<String> {
     match generic {
-        GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, cxx_mapping),
+        GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, type_names),
         _others => Err(Error::new(
             generic.span(),
             "Unsupported GenericArgument type",
@@ -188,14 +185,14 @@ fn generic_argument_to_string(
 /// Convert the arguments for a path to C++, eg this is the whole <T> block
 fn path_argument_to_string(
     args: &PathArguments,
-    cxx_mapping: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<Option<Vec<String>>> {
     match args {
         PathArguments::AngleBracketed(angled) => Ok(Some(
             angled
                 .args
                 .iter()
-                .map(|generic| generic_argument_to_string(generic, cxx_mapping))
+                .map(|generic| generic_argument_to_string(generic, type_names))
                 .collect::<Result<Vec<String>>>()?,
         )),
         PathArguments::Parenthesized(_) => Err(Error::new(
@@ -207,16 +204,13 @@ fn path_argument_to_string(
 }
 
 /// Convert a segment of a path to C++
-fn path_segment_to_string(
-    segment: &PathSegment,
-    cxx_mapping: &ParsedCxxMappings,
-) -> Result<String> {
+fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Result<String> {
     let mut ident = segment.ident.to_string();
 
     // If we are a Pin<T> then for C++ it becomes just T
     let args = match ident.as_str() {
         "Pin" => {
-            ident = path_argument_to_string(&segment.arguments, cxx_mapping)?
+            ident = path_argument_to_string(&segment.arguments, type_names)?
                 .map_or_else(|| "".to_owned(), |values| values.join(", "));
 
             None
@@ -227,8 +221,9 @@ fn path_segment_to_string(
         "Option" => {
             return Err(Error::new(segment.span(), "Option is not supported"));
         }
-        _others => path_argument_to_string(&segment.arguments, cxx_mapping)?
-            .map(|values| values.join(", ")),
+        _others => {
+            path_argument_to_string(&segment.arguments, type_names)?.map(|values| values.join(", "))
+        }
     };
 
     // If there are template args check that we aren't a recognised A of A<B>
@@ -237,7 +232,7 @@ fn path_segment_to_string(
         ident = if let Some(built_in) = possible_built_in_template_base(&ident) {
             built_in.to_owned()
         } else {
-            cxx_mapping.cxx(&ident)
+            type_names.cxx(&ident)
         };
     }
 
@@ -339,7 +334,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_built_in_one_part() {
         let ty = parse_quote! { i32 };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::int32_t"
         );
     }
@@ -348,7 +343,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_unknown_one_part() {
         let ty = parse_quote! { QPoint };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "QPoint"
         );
     }
@@ -357,7 +352,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_const_one_part() {
         let ty = parse_quote! { &QPoint };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "QPoint const&"
         );
     }
@@ -366,7 +361,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_mut_one_part() {
         let ty = parse_quote! { &mut QPoint };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "QPoint&"
         );
     }
@@ -375,7 +370,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_const_ptr_mut_one_part() {
         let ty = parse_quote! { &*mut T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T* const&"
         );
     }
@@ -384,7 +379,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_const_ptr_const_one_part() {
         let ty = parse_quote! { &*const T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "const T* const&"
         );
     }
@@ -393,7 +388,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_mut_ptr_mut_one_part() {
         let ty = parse_quote! { &mut *mut T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T*&"
         );
     }
@@ -402,7 +397,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ref_mut_ptr_const_one_part() {
         let ty = parse_quote! { &mut *const T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "const T*&"
         );
     }
@@ -411,7 +406,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ptr_mut_one_part() {
         let ty = parse_quote! { *mut T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T*"
         );
     }
@@ -420,7 +415,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_ptr_const_one_part() {
         let ty = parse_quote! { *const T };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "const T*"
         );
     }
@@ -429,7 +424,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_built_in() {
         let ty = parse_quote! { Vec<f64> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Vec<double>"
         );
     }
@@ -438,7 +433,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_unknown() {
         let ty = parse_quote! { UniquePtr<QColor> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<QColor>"
         );
     }
@@ -447,7 +442,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_built_in_ref_const() {
         let ty = parse_quote! { &Vec<f64> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Vec<double> const&"
         );
     }
@@ -456,7 +451,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_built_in_ptr_mut() {
         let ty = parse_quote! { &Vec<*mut T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Vec<T*> const&"
         );
     }
@@ -465,7 +460,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_built_in_ptr_const() {
         let ty = parse_quote! { &Vec<*const T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Vec<const T*> const&"
         );
     }
@@ -474,7 +469,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_unknown_ref_mut() {
         let ty = parse_quote! { &mut UniquePtr<QColor> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<QColor>&"
         );
     }
@@ -483,7 +478,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_unknown_ptr_mut() {
         let ty = parse_quote! { &mut UniquePtr<*mut T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<T*>&"
         );
     }
@@ -492,7 +487,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_templated_unknown_ptr_const() {
         let ty = parse_quote! { &mut UniquePtr<*const T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<const T*>&"
         );
     }
@@ -500,34 +495,27 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_type_mapped() {
         let ty = parse_quote! { A };
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
-            .cxx_names
-            .insert("A".to_owned(), "A1".to_owned());
-        assert_eq!(syn_type_to_cpp_type(&ty, &cxx_mappings).unwrap(), "A1");
+        let mut type_names = TypeNames::default();
+        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "A1");
     }
 
     #[test]
     fn test_syn_type_to_cpp_type_mapped_with_namespace() {
         let ty = parse_quote! { A };
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
-            .cxx_names
-            .insert("A".to_owned(), "A1".to_owned());
-        cxx_mappings
+        let mut type_names = TypeNames::default();
+        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names
             .namespaces
             .insert("A".to_owned(), "N1".to_owned());
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &cxx_mappings).unwrap(),
-            "::N1::A1"
-        );
+        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::N1::A1");
     }
 
     #[test]
     fn test_syn_type_to_cpp_type_pin() {
         let ty = parse_quote! { Pin<T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T"
         );
     }
@@ -536,7 +524,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_pin_ref() {
         let ty = parse_quote! { Pin<&T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T const&"
         );
     }
@@ -545,7 +533,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_pin_ref_mut() {
         let ty = parse_quote! { Pin<&mut T> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "T&"
         );
     }
@@ -554,7 +542,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_pin_template() {
         let ty = parse_quote! { Pin<UniquePtr<T>> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<T>"
         );
     }
@@ -563,7 +551,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_pin_template_ref() {
         let ty = parse_quote! { Pin<&UniquePtr<T>> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<T> const&"
         );
     }
@@ -572,7 +560,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_pin_template_ref_mut() {
         let ty = parse_quote! { Pin<&mut UniquePtr<T>> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::unique_ptr<T>&"
         );
     }
@@ -581,7 +569,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_slice() {
         let ty = parse_quote! { &[i32] };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Slice<::std::int32_t const>"
         );
     }
@@ -590,7 +578,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_slice_mut() {
         let ty = parse_quote! { &mut [i32] };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Slice<::std::int32_t>"
         );
     }
@@ -599,7 +587,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_str() {
         let ty = parse_quote! { &str };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Str"
         );
     }
@@ -608,7 +596,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_str_template() {
         let ty = parse_quote! { Vec<&str> };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Vec<::rust::Str>"
         );
     }
@@ -617,7 +605,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_array() {
         let ty = parse_quote! { [i32; 10] };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::std::array<::std::int32_t, 10>"
         );
     }
@@ -625,20 +613,20 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_type_array_length_zero() {
         let ty = parse_quote! { [i32; 0] };
-        assert!(syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).is_err());
+        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]
     fn test_syn_type_to_cpp_type_array_length_invalid() {
         let ty = parse_quote! { [i32; String] };
-        assert!(syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).is_err());
+        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]
     fn test_syn_type_to_cpp_type_fn() {
         let ty = parse_quote! { fn(i32, i32) -> bool };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Fn<bool, (::std::int32_t, ::std::int32_t)>"
         );
     }
@@ -647,7 +635,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_fn_void() {
         let ty = parse_quote! { fn() };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "::rust::Fn<void, ()>"
         );
     }
@@ -656,7 +644,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_tuple_empty() {
         let ty = parse_quote! { () };
         assert_eq!(
-            syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
             "void"
         );
     }
@@ -664,14 +652,14 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_type_tuple_multiple() {
         let ty = parse_quote! { (i32, ) };
-        assert!(syn_type_to_cpp_type(&ty, &ParsedCxxMappings::default()).is_err());
+        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]
     fn test_syn_type_to_cpp_return_type_none() {
         let ty = parse_quote! {};
         assert_eq!(
-            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             None
         );
     }
@@ -680,7 +668,7 @@ mod tests {
     fn test_syn_type_to_cpp_return_type_normal() {
         let ty = parse_quote! { -> bool };
         assert_eq!(
-            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             Some("bool".to_string())
         );
     }
@@ -689,7 +677,7 @@ mod tests {
     fn test_syn_type_to_cpp_return_type_result_bool() {
         let ty = parse_quote! { -> Result<bool> };
         assert_eq!(
-            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             Some("bool".to_string())
         );
     }
@@ -697,20 +685,20 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_return_type_result_empty() {
         let ty = parse_quote! { -> Result<> };
-        assert!(syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).is_err());
+        assert!(syn_type_to_cpp_return_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]
     fn test_syn_type_to_cpp_return_type_result_multiple() {
         let ty = parse_quote! { -> Result<A, B, C> };
-        assert!(syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).is_err());
+        assert!(syn_type_to_cpp_return_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]
     fn test_syn_type_to_cpp_return_type_result_tuple() {
         let ty = parse_quote! { -> Result<()> };
         assert_eq!(
-            syn_type_to_cpp_return_type(&ty, &ParsedCxxMappings::default()).unwrap(),
+            syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             None
         );
     }

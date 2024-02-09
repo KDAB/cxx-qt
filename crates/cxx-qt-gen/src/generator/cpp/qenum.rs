@@ -10,7 +10,7 @@ use syn::Result;
 
 use crate::{
     generator::utils::cpp::Indent,
-    parser::{mappings::ParsedCxxMappings, qenum::ParsedQEnum},
+    parser::{naming::TypeNames, qenum::ParsedQEnum},
     writer::cpp::namespaced,
 };
 
@@ -52,15 +52,15 @@ pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>
 
 pub fn generate(
     qenums: &[ParsedQEnum],
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
 
     for qenum in qenums {
         let enum_name = &qenum.ident.to_string();
 
-        let mut qualified_name = cxx_mappings.cxx(enum_name);
-        // TODO: this is a workaround for cxx_mappings.cxx not always returning a fully-qualified
+        let mut qualified_name = type_names.cxx(enum_name);
+        // TODO: this is a workaround for type_names.cxx not always returning a fully-qualified
         // identifier.
         // Once https://github.com/KDAB/cxx-qt/issues/619 is fixed, this can be removed.
         if !qualified_name.starts_with("::") {
@@ -102,7 +102,7 @@ mod tests {
         })
         .unwrap()];
 
-        let generated = generate(&qenums, &ParsedCxxMappings::default()).unwrap();
+        let generated = generate(&qenums, &TypeNames::default()).unwrap();
         assert_eq!(generated.includes.len(), 1);
         assert!(generated.includes.contains("#include <cstdint>"));
         assert_eq!(generated.metaobjects.len(), 1);

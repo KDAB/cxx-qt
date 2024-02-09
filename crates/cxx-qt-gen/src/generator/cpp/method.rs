@@ -15,8 +15,8 @@ use crate::{
         },
     },
     parser::{
-        mappings::ParsedCxxMappings,
         method::{ParsedMethod, ParsedQInvokableSpecifiers},
+        naming::TypeNames,
     },
 };
 use indoc::formatdoc;
@@ -25,14 +25,13 @@ use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 pub fn generate_cpp_methods(
     invokables: &Vec<ParsedMethod>,
     qobject_idents: &QObjectName,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
     for invokable in invokables {
         let idents = QMethodName::from(invokable);
-        let return_cxx_ty =
-            syn_type_to_cpp_return_type(&invokable.method.sig.output, cxx_mappings)?;
+        let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
         let parameters: Vec<CppNamedType> = invokable
             .method
@@ -54,7 +53,7 @@ pub fn generate_cpp_methods(
                     } else {
                         Ok(Some(CppNamedType {
                             ident: ident.to_string(),
-                            ty: syn_type_to_cpp_type(ty, cxx_mappings)?,
+                            ty: syn_type_to_cpp_type(ty, type_names)?,
                         }))
                     }
                 } else {
@@ -232,8 +231,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_methods(&invokables, &qobject_idents, &ParsedCxxMappings::default())
-                .unwrap();
+            generate_cpp_methods(&invokables, &qobject_idents, &TypeNames::default()).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -401,15 +399,11 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
-            .cxx_names
-            .insert("A".to_owned(), "A1".to_owned());
-        cxx_mappings
-            .cxx_names
-            .insert("B".to_owned(), "B2".to_owned());
+        let mut type_names = TypeNames::default();
+        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.cxx_names.insert("B".to_owned(), "B2".to_owned());
 
-        let generated = generate_cpp_methods(&invokables, &qobject_idents, &cxx_mappings).unwrap();
+        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);

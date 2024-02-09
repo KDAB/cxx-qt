@@ -9,7 +9,7 @@ use crate::{
         cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         utils::cpp::syn_type_to_cpp_return_type,
     },
-    parser::{inherit::ParsedInheritedMethod, mappings::ParsedCxxMappings},
+    parser::{inherit::ParsedInheritedMethod, naming::TypeNames},
 };
 
 use syn::Result;
@@ -17,12 +17,12 @@ use syn::Result;
 pub fn generate(
     inherited_methods: &[ParsedInheritedMethod],
     base_class: &Option<String>,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     for method in inherited_methods {
-        let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, cxx_mappings)?;
+        let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, type_names)?;
         let base_class = base_class.as_deref().unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {
@@ -58,11 +58,7 @@ mod tests {
     ) -> Result<GeneratedCppQObjectBlocks> {
         let inherited_methods = vec![ParsedInheritedMethod::parse(method, Safety::Safe).unwrap()];
         let base_class = base_class.map(|s| s.to_owned());
-        generate(
-            &inherited_methods,
-            &base_class,
-            &ParsedCxxMappings::default(),
-        )
+        generate(&inherited_methods, &base_class, &TypeNames::default())
     }
 
     fn assert_generated_eq(expected: &str, generated: &GeneratedCppQObjectBlocks) {

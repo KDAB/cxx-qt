@@ -8,7 +8,7 @@ use crate::{
         fragment::{GeneratedRustFragment, RustFragmentPair},
         signals::generate_rust_signal,
     },
-    parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
+    parser::{externcxxqt::ParsedExternCxxQt, naming::TypeNames},
 };
 use quote::quote;
 use syn::{Ident, Result};
@@ -16,7 +16,7 @@ use syn::{Ident, Result};
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
         extern_cxxqt_block: &ParsedExternCxxQt,
-        cxx_mappings: &ParsedCxxMappings,
+        type_names: &TypeNames,
         module_ident: &Ident,
     ) -> Result<Self> {
         let mut generated = Self::default();
@@ -45,7 +45,7 @@ impl GeneratedRustFragment {
             generated.append(&mut generate_rust_signal(
                 signal,
                 qobject_name,
-                cxx_mappings,
+                type_names,
                 module_ident,
             )?);
         }

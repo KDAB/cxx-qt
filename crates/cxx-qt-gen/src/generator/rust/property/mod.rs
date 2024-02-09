@@ -12,7 +12,7 @@ use crate::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::fragment::GeneratedRustFragment,
     },
-    parser::{mappings::ParsedCxxMappings, property::ParsedQProperty},
+    parser::{naming::TypeNames, property::ParsedQProperty},
 };
 use syn::{Ident, Result};
 
@@ -21,7 +21,7 @@ use super::signals::generate_rust_signals;
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectName,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
@@ -31,12 +31,7 @@ pub fn generate_rust_properties(
         let idents = QPropertyName::from(property);
 
         // Getters
-        let getter = getter::generate(
-            &idents,
-            qobject_idents,
-            &property.ty,
-            &cxx_mappings.qualified,
-        );
+        let getter = getter::generate(&idents, qobject_idents, &property.ty, &type_names.qualified);
         generated
             .cxx_mod_contents
             .append(&mut getter.cxx_bridge_as_items()?);
@@ -45,12 +40,7 @@ pub fn generate_rust_properties(
             .append(&mut getter.implementation_as_items()?);
 
         // Setters
-        let setter = setter::generate(
-            &idents,
-            qobject_idents,
-            &property.ty,
-            &cxx_mappings.qualified,
-        );
+        let setter = setter::generate(&idents, qobject_idents, &property.ty, &type_names.qualified);
         generated
             .cxx_mod_contents
             .append(&mut setter.cxx_bridge_as_items()?);
@@ -65,7 +55,7 @@ pub fn generate_rust_properties(
     generated.append(&mut generate_rust_signals(
         &signals,
         qobject_idents,
-        cxx_mappings,
+        type_names,
         module_ident,
     )?);
 
@@ -101,7 +91,7 @@ mod tests {
         let generated = generate_rust_properties(
             &properties,
             &qobject_idents,
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();
