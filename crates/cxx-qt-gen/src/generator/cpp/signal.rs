@@ -65,7 +65,7 @@ fn parameter_types_and_values(
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
     // Insert the extra argument into the closure
-    let self_ty = type_names.cxx(self_ty);
+    let self_ty = type_names.cxx_qualified(self_ty);
     parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
     parameter_types_with_self.insert(0, format!("{self_ty}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
@@ -92,7 +92,7 @@ pub fn generate_cpp_signal(
 
     // Build a namespace that includes any namespace for the T
     let qobject_ident_str = qobject_ident.to_string();
-    let qobject_ident_namespaced = type_names.cxx(&qobject_ident_str);
+    let qobject_ident_namespaced = type_names.cxx_qualified(&qobject_ident_str);
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
