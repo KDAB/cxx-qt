@@ -11,7 +11,7 @@ use crate::generator::{
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
-use crate::parser::{mappings::ParsedCxxMappings, qobject::ParsedQObject};
+use crate::parser::{naming::TypeNames, qobject::ParsedQObject};
 use std::collections::BTreeSet;
 use syn::Result;
 
@@ -95,10 +95,7 @@ pub struct GeneratedCppQObject {
 }
 
 impl GeneratedCppQObject {
-    pub fn from(
-        qobject: &ParsedQObject,
-        cxx_mappings: &ParsedCxxMappings,
-    ) -> Result<GeneratedCppQObject> {
+    pub fn from(qobject: &ParsedQObject, type_names: &TypeNames) -> Result<GeneratedCppQObject> {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
@@ -133,26 +130,26 @@ impl GeneratedCppQObject {
         generated.blocks.append(&mut generate_cpp_properties(
             &qobject.properties,
             &qobject_idents,
-            cxx_mappings,
+            type_names,
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
             &qobject.methods,
             &qobject_idents,
-            cxx_mappings,
+            type_names,
         )?);
         generated.blocks.append(&mut generate_cpp_signals(
             &qobject.signals,
             &qobject_idents,
-            cxx_mappings,
+            type_names,
         )?);
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,
             &qobject.base_class,
-            cxx_mappings,
+            type_names,
         )?);
         generated
             .blocks
-            .append(&mut qenum::generate(&qobject.qenums, cxx_mappings)?);
+            .append(&mut qenum::generate(&qobject.qenums, type_names)?);
 
         let mut class_initializers = vec![];
 
@@ -178,7 +175,7 @@ impl GeneratedCppQObject {
             &qobject.constructors,
             base_class,
             &class_initializers,
-            cxx_mappings,
+            type_names,
         )?);
 
         Ok(generated)
@@ -207,7 +204,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
         assert_eq!(cpp.ident, "MyObject");
@@ -243,7 +240,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
@@ -276,7 +273,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
         assert_eq!(cpp.ident, "MyNamedObject");
@@ -304,7 +301,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
         assert_eq!(cpp.ident, "MyObject");
@@ -333,7 +330,7 @@ mod tests {
 
         let cpp = GeneratedCppQObject::from(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &ParsedCxxMappings::default(),
+            &TypeNames::default(),
         )
         .unwrap();
         assert_eq!(cpp.ident, "MyObject");

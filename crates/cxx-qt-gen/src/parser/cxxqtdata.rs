@@ -4,29 +4,26 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
-use crate::syntax::foreignmod::{foreign_mod_to_foreign_item_types, ForeignTypeIdentAlias};
-use crate::syntax::path::{path_compare_str, path_from_idents};
+use crate::syntax::foreignmod::ForeignTypeIdentAlias;
+use crate::syntax::path::path_compare_str;
 use crate::syntax::safety::Safety;
 use crate::{
     parser::{
-        externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod,
-        mappings::ParsedCxxMappings, method::ParsedMethod, qenum::ParsedQEnum,
-        qobject::ParsedQObject, signals::ParsedSignal,
+        externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
+        qenum::ParsedQEnum, qobject::ParsedQObject, signals::ParsedSignal,
     },
     syntax::expr::expr_to_string,
 };
 use std::collections::BTreeMap;
 use syn::{
-    spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
-    ItemStruct, Result, Type, TypePath,
+    spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
+    Type, TypePath,
 };
 use syn::{Attribute, ItemMacro, Meta};
 
 use super::qnamespace::ParsedQNamespace;
 
 pub struct ParsedCxxQtData {
-    /// Mappings for CXX types when used in C++ or Rust
-    pub cxx_mappings: ParsedCxxMappings,
     /// Map of the QObjects defined in the module that will be used for code generation
     //
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
@@ -48,7 +45,6 @@ impl ParsedCxxQtData {
     /// Create a ParsedCxxQtData from a given module and namespace
     pub fn new(module_ident: Ident, namespace: String) -> Self {
         Self {
-            cxx_mappings: ParsedCxxMappings::default(),
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
             qenums: vec![],
             qnamespaces: vec![],
@@ -95,23 +91,6 @@ impl ParsedCxxQtData {
                                         qobject.namespace = namespace.clone();
                                     }
 
-                                    // Add the QObject type to the qualified mappings
-                                    self.cxx_mappings.qualified.insert(
-                                        foreign_alias.ident_left.clone(),
-                                        path_from_idents(
-                                            &self.module_ident,
-                                            &foreign_alias.ident_left,
-                                        ),
-                                    );
-
-                                    // Ensure that the namespace of the QObject is in the mappings
-                                    if !qobject.namespace.is_empty() {
-                                        self.cxx_mappings.namespaces.insert(
-                                            foreign_alias.ident_left.to_string(),
-                                            qobject.namespace.clone(),
-                                        );
-                                    }
-
                                     // Note that we assume a compiler error will occur later
                                     // if you had two structs with the same name
                                     self.qobjects
@@ -136,56 +115,6 @@ impl ParsedCxxQtData {
         Ok(())
     }
 
-    /// Search through Item's and look for a cxx_name, rust_name, or namespace attribute on a type
-    ///
-    /// We need to know this as it affects the type name used in the C++ generation
-    /// And it is used to create the qualified Rust name
-    pub fn populate_mappings_from_item(&mut self, item: &Item) -> Result<()> {
-        let bridge_namespace = self.namespace.clone();
-
-        // Consider if shared types have mappings
-        match item {
-            Item::Enum(ItemEnum { attrs, ident, .. })
-            | Item::Struct(ItemStruct { attrs, ident, .. }) => {
-                self.cxx_mappings
-                    .populate(ident, attrs, &bridge_namespace, &self.module_ident)?;
-            }
-            _others => {}
-        }
-
-        // If there is a foreign mod then process it
-        if let Item::ForeignMod(foreign_mod) = &item {
-            self.populate_mappings_from_foreign_mod_item(foreign_mod)?;
-        }
-
-        Ok(())
-    }
-
-    fn populate_mappings_from_foreign_mod_item(
-        &mut self,
-        foreign_mod: &ItemForeignMod,
-    ) -> Result<()> {
-        // Retrieve a namespace from the mod or the bridge
-        let block_namespace =
-            if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value)?
-            } else {
-                self.namespace.to_owned()
-            };
-
-        // Read each of the types in the mod (type A;)
-        for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-            self.cxx_mappings.populate(
-                &foreign_type.ident,
-                &foreign_type.attrs,
-                &block_namespace,
-                &self.module_ident,
-            )?;
-        }
-
-        Ok(())
-    }
-
     /// Determine if the given [syn::Item] is a CXX-Qt related item
     /// If it is then add the [syn::Item] into qobjects BTreeMap
     /// Otherwise return the [syn::Item] to pass through to CXX
@@ -204,12 +133,6 @@ impl ParsedCxxQtData {
 
         if let Some(qobject) = self.qobjects.get_mut(&qobject) {
             let qenum = ParsedQEnum::parse(item)?;
-            self.cxx_mappings.populate(
-                &qenum.ident,
-                &qenum.item.attrs,
-                &self.namespace,
-                &self.module_ident,
-            )?;
 
             qobject.qenums.push(qenum);
             Ok(())
@@ -232,12 +155,6 @@ impl ParsedCxxQtData {
                 "A QEnum must either be namespaced or be associated with a QObject.",
             ));
         }
-        self.cxx_mappings.populate(
-            &qenum.ident,
-            &qenum.item.attrs,
-            &self.namespace,
-            &self.module_ident,
-        )?;
         self.qenums.push(qenum);
         Ok(())
     }
@@ -276,7 +193,6 @@ impl ParsedCxxQtData {
                     return Ok(None);
                 }
                 "C++Qt" => {
-                    self.populate_mappings_from_foreign_mod_item(&foreign_mod)?;
                     self.extern_cxxqt_blocks
                         .push(ParsedExternCxxQt::parse(foreign_mod)?);
                     return Ok(None);
@@ -376,7 +292,7 @@ mod tests {
     }
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
-    fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
+    pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
         cxx_qt_data
             .qobjects
@@ -611,152 +527,6 @@ mod tests {
         );
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].signals.len(), 1);
         assert!(cxx_qt_data.extern_cxxqt_blocks[0].unsafety.is_some());
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            unsafe extern "C++" {
-                #[cxx_name = "B"]
-                type A = C;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_cxx_name_normal_namespace_cxx_name() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            #[namespace = "extern_namespace"]
-            extern "C++" {
-                #[cxx_name = "B"]
-                #[namespace = "type_namespace"]
-                type A;
-
-                #[cxx_name = "D"]
-                type C;
-            }
-        };
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 2);
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("A").unwrap(), "B");
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.get("C").unwrap(), "D");
-
-        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 2);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("A").unwrap(),
-            "type_namespace"
-        );
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("C").unwrap(),
-            "extern_namespace"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 2);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("A"))
-                .unwrap(),
-            &parse_quote! { ffi::A }
-        );
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("C"))
-                .unwrap(),
-            &parse_quote! { ffi::C }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_shared_enum() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            #[namespace = "enum_namespace"]
-            #[cxx_name = "EnumB"]
-            enum EnumA {
-                A,
-            }
-        };
-
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.cxx_names.get("EnumA").unwrap(),
-            "EnumB"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 1);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("EnumA").unwrap(),
-            "enum_namespace"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("EnumA"))
-                .unwrap(),
-            &parse_quote! { ffi::EnumA }
-        );
-    }
-
-    #[test]
-    fn test_cxx_mappings_shared_struct() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            #[namespace = "struct_namespace"]
-            #[cxx_name = "StructB"]
-            struct StructA {
-                field: i32,
-            }
-        };
-
-        assert!(cxx_qt_data.populate_mappings_from_item(&item).is_ok());
-        assert_eq!(cxx_qt_data.cxx_mappings.cxx_names.len(), 1);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.cxx_names.get("StructA").unwrap(),
-            "StructB"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.namespaces.len(), 1);
-        assert_eq!(
-            cxx_qt_data.cxx_mappings.namespaces.get("StructA").unwrap(),
-            "struct_namespace"
-        );
-
-        assert_eq!(cxx_qt_data.cxx_mappings.qualified.len(), 1);
-        assert_eq!(
-            cxx_qt_data
-                .cxx_mappings
-                .qualified
-                .get(&format_ident!("StructA"))
-                .unwrap(),
-            &parse_quote! { ffi::StructA }
-        );
     }
 
     #[test]

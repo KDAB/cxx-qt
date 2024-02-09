@@ -12,9 +12,7 @@ use crate::{
         },
         utils::cpp::syn_type_to_cpp_type,
     },
-    parser::{
-        mappings::ParsedCxxMappings, parameter::ParsedFunctionParameter, signals::ParsedSignal,
-    },
+    parser::{naming::TypeNames, parameter::ParsedFunctionParameter, signals::ParsedSignal},
 };
 use indoc::formatdoc;
 use std::collections::BTreeSet;
@@ -49,7 +47,7 @@ struct Parameters {
 /// From given parameters, mappings, and self value constructor the combined parameter lines
 fn parameter_types_and_values(
     parameters: &[ParsedFunctionParameter],
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
     self_ty: &str,
 ) -> Result<Parameters> {
     let mut parameter_named_types_with_self = vec![];
@@ -57,7 +55,7 @@ fn parameter_types_and_values(
     let mut parameter_values_with_self = vec![];
 
     for parameter in parameters {
-        let cxx_ty = syn_type_to_cpp_type(&parameter.ty, cxx_mappings)?;
+        let cxx_ty = syn_type_to_cpp_type(&parameter.ty, type_names)?;
         let ident_str = parameter.ident.to_string();
         parameter_named_types_with_self.push(format!("{cxx_ty} {ident_str}",));
         parameter_types_with_self.push(cxx_ty.clone());
@@ -67,7 +65,7 @@ fn parameter_types_and_values(
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
     // Insert the extra argument into the closure
-    let self_ty = cxx_mappings.cxx(self_ty);
+    let self_ty = type_names.cxx(self_ty);
     parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
     parameter_types_with_self.insert(0, format!("{self_ty}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
@@ -83,7 +81,7 @@ fn parameter_types_and_values(
 pub fn generate_cpp_signal(
     signal: &ParsedSignal,
     qobject_ident: &Ident,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<CppSignalFragment> {
     let mut generated = CppSignalFragment::default();
 
@@ -94,18 +92,18 @@ pub fn generate_cpp_signal(
 
     // Build a namespace that includes any namespace for the T
     let qobject_ident_str = qobject_ident.to_string();
-    let qobject_ident_namespaced = cxx_mappings.cxx(&qobject_ident_str);
+    let qobject_ident_namespaced = type_names.cxx(&qobject_ident_str);
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, cxx_mappings);
+    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names);
 
     let signal_ident = idents.name.cpp;
     let free_connect_ident_cpp = idents_helper.connect_name.cpp;
 
     // Retrieve the parameters for the signal
     let parameters =
-        parameter_types_and_values(&signal.parameters, cxx_mappings, &qobject_ident_namespaced)?;
+        parameter_types_and_values(&signal.parameters, type_names, &qobject_ident_namespaced)?;
     let parameters_named_types = parameters.named_types;
     let parameters_named_types_with_self = parameters.named_types_with_self;
     let parameter_types_with_self = parameters.types_with_self;
@@ -196,14 +194,14 @@ pub fn generate_cpp_signal(
 pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
     qobject_idents: &QObjectName,
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = &qobject_idents.cpp_class.cpp;
 
     for signal in signals {
         let mut block = GeneratedCppQObjectBlocks::default();
-        let data = generate_cpp_signal(signal, qobject_ident, cxx_mappings)?;
+        let data = generate_cpp_signal(signal, qobject_ident, type_names)?;
         block.includes = data.includes;
         block.forward_declares_namespaced = data.forward_declares;
         block.fragments = data.fragments;
@@ -254,7 +252,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -352,12 +350,10 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
-            .cxx_names
-            .insert("A".to_owned(), "A1".to_owned());
+        let mut type_names = TypeNames::default();
+        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &cxx_mappings).unwrap();
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -451,7 +447,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &ParsedCxxMappings::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);
@@ -536,12 +532,8 @@ mod tests {
             private: false,
         };
 
-        let generated = generate_cpp_signal(
-            &signal,
-            &signal.qobject_ident,
-            &ParsedCxxMappings::default(),
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_signal(&signal, &signal.qobject_ident, &TypeNames::default()).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 
@@ -629,15 +621,15 @@ mod tests {
             private: false,
         };
 
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
+        let mut type_names = TypeNames::default();
+        type_names
             .cxx_names
             .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        cxx_mappings
+        type_names
             .namespaces
             .insert("ObjRust".to_owned(), "mynamespace".to_owned());
 
-        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &cxx_mappings).unwrap();
+        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 
