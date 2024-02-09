@@ -63,11 +63,11 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qobjects
                 .values()
-                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.cxx_qt_data.cxx_mappings))
+                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.type_names))
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
             extern_cxx_qt: externcxxqt::generate(
                 &parser.cxx_qt_data.extern_cxxqt_blocks,
-                &parser.cxx_qt_data.cxx_mappings,
+                &parser.type_names,
             )?,
         })
     }

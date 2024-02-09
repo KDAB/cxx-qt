@@ -43,7 +43,7 @@ impl GeneratedRustBlocks {
                 .map(|qobject| {
                     GeneratedRustFragment::from_qobject(
                         qobject,
-                        &parser.cxx_qt_data.cxx_mappings,
+                        &parser.type_names,
                         &parser.passthrough_module.ident,
                     )
                 })
@@ -57,7 +57,7 @@ impl GeneratedRustBlocks {
                 .map(|extern_cxx_block| {
                     GeneratedRustFragment::from_extern_cxx_qt(
                         extern_cxx_block,
-                        &parser.cxx_qt_data.cxx_mappings,
+                        &parser.type_names,
                         &parser.passthrough_module.ident,
                     )
                 })

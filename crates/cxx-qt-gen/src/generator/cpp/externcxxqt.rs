@@ -5,7 +5,7 @@
 
 use crate::{
     generator::cpp::signal::generate_cpp_signal,
-    parser::{externcxxqt::ParsedExternCxxQt, mappings::ParsedCxxMappings},
+    parser::{externcxxqt::ParsedExternCxxQt, naming::TypeNames},
     CppFragment,
 };
 use std::collections::BTreeSet;
@@ -23,14 +23,14 @@ pub struct GeneratedCppExternCxxQtBlocks {
 
 pub fn generate(
     blocks: &[ParsedExternCxxQt],
-    cxx_mappings: &ParsedCxxMappings,
+    type_names: &TypeNames,
 ) -> Result<Vec<GeneratedCppExternCxxQtBlocks>> {
     let mut out = vec![];
 
     for block in blocks {
         for signal in &block.signals {
             let mut block = GeneratedCppExternCxxQtBlocks::default();
-            let data = generate_cpp_signal(signal, &signal.qobject_ident, cxx_mappings)?;
+            let data = generate_cpp_signal(signal, &signal.qobject_ident, type_names)?;
             block.includes = data.includes;
             // Ensure that we include MaybeLockGuard<T> that is used in multiple places
             block
@@ -66,7 +66,7 @@ mod tests {
             }
         })
         .unwrap()];
-        let generated = generate(&blocks, &ParsedCxxMappings::default()).unwrap();
+        let generated = generate(&blocks, &TypeNames::default()).unwrap();
         assert_eq!(generated.len(), 2);
     }
 
@@ -83,15 +83,15 @@ mod tests {
             }
         })
         .unwrap()];
-        let mut cxx_mappings = ParsedCxxMappings::default();
-        cxx_mappings
+        let mut type_names = TypeNames::default();
+        type_names
             .cxx_names
             .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        cxx_mappings
+        type_names
             .namespaces
             .insert("ObjRust".to_owned(), "mynamespace".to_owned());
 
-        let generated = generate(&blocks, &cxx_mappings).unwrap();
+        let generated = generate(&blocks, &type_names).unwrap();
         assert_eq!(generated.len(), 1);
     }
 }
