@@ -59,8 +59,8 @@ pub fn generate(
     for qenum in qenums {
         let enum_name = &qenum.ident.to_string();
 
-        let mut qualified_name = type_names.cxx(enum_name);
-        // TODO: this is a workaround for type_names.cxx not always returning a fully-qualified
+        let mut qualified_name = type_names.cxx_qualified(enum_name);
+        // TODO: this is a workaround for type_names.cxx_qualified not always returning a fully-qualified
         // identifier.
         // Once https://github.com/KDAB/cxx-qt/issues/619 is fixed, this can be removed.
         if !qualified_name.starts_with("::") {

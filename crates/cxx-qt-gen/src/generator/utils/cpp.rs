@@ -127,7 +127,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 }
 
                 // Use the CXX mapped name
-                Ok(type_names.cxx(first))
+                Ok(type_names.cxx_qualified(first))
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -232,7 +232,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
         ident = if let Some(built_in) = possible_built_in_template_base(&ident) {
             built_in.to_owned()
         } else {
-            type_names.cxx(&ident)
+            type_names.cxx_qualified(&ident)
         };
     }
 

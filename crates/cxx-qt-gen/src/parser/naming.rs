@@ -191,7 +191,7 @@ impl TypeNames {
     }
 
     /// For a given rust ident return the CXX name with its namespace
-    pub fn cxx(&self, ident: &str) -> String {
+    pub fn cxx_qualified(&self, ident: &str) -> String {
         // Check if there is a cxx_name or namespace to handle
         let cxx_name = self
             .cxx_names
@@ -483,9 +483,9 @@ mod tests {
 
         assert_eq!(type_names.num_types(), 3);
 
-        assert_eq!(type_names.cxx("A"), "::type_namespace::B");
-        assert_eq!(type_names.cxx("C"), "::extern_namespace::D");
-        assert_eq!(type_names.cxx("E"), "::bridge_namespace::E");
+        assert_eq!(type_names.cxx_qualified("A"), "::type_namespace::B");
+        assert_eq!(type_names.cxx_qualified("C"), "::extern_namespace::D");
+        assert_eq!(type_names.cxx_qualified("E"), "::bridge_namespace::E");
 
         assert_eq!(type_names.namespace("A").unwrap(), "type_namespace");
         assert_eq!(type_names.namespace("C").unwrap(), "extern_namespace");
