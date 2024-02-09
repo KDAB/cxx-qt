@@ -44,11 +44,6 @@ mod ffi {
         #[rust_name = "background_mode"]
         fn backgroundMode(self: &QPainter) -> BGMode;
 
-        /// Flushes the painting pipeline and prepares for the user issuing commands directly
-        /// to the underlying graphics context. Must be followed by a call to endNativePainting().
-        #[rust_name = "begin_native_painting"]
-        fn beginNativePainting(self: Pin<&mut QPainter>);
-
         /// Returns the currently set brush origin.
         #[rust_name = "brush_origin"]
         fn brushOrigin(self: &QPainter) -> QPoint;
@@ -125,17 +120,12 @@ mod ffi {
         fn drawPolyline(self: Pin<&mut QPainter>, points: &QPolygon);
 
         /// Draws the current rectangle with the current pen and brush.
-        #[rust_name = "draw_rect"]
+        #[rust_name = "draw_rect_f"]
         fn drawRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
 
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
         fn drawText(self: Pin<&mut QPainter>, point: &QPoint, text: &QString);
-
-        /// Restores the painter after manually issuing native painting commands.
-        /// Lets the painter restore any native state that it relies on before calling any other painter commands.
-        #[rust_name = "end_native_painting"]
-        fn endNativePainting(self: Pin<&mut QPainter>);
 
         /// Erases the area inside the given rectangle.
         #[rust_name = "erase_rect"]
