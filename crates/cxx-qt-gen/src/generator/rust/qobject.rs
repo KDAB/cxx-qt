@@ -15,7 +15,6 @@ use crate::{
             signals::generate_rust_signals,
             threading,
         },
-        utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
     },
     parser::{naming::TypeNames, qobject::ParsedQObject},
 };
@@ -85,7 +84,7 @@ impl GeneratedRustFragment {
             generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
-                &type_names.qualified,
+                type_names,
                 module_ident,
             )?);
         }
@@ -95,10 +94,7 @@ impl GeneratedRustFragment {
         // This could be implemented using an auto trait in the future once stable
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
         if qobject.locking {
-            let qualified_impl = syn_ident_cxx_bridge_to_qualified_impl(
-                &qobject_idents.cpp_class.rust,
-                &type_names.qualified,
-            );
+            let qualified_impl = type_names.rust_qualified(&qobject_idents.cpp_class.rust);
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
             });
@@ -108,14 +104,11 @@ impl GeneratedRustFragment {
             &qobject.constructors,
             &qobject_idents,
             &namespace_idents,
-            &type_names.qualified,
+            type_names,
             module_ident,
         )?);
 
-        generated.append(&mut cxxqttype::generate(
-            &qobject_idents,
-            &type_names.qualified,
-        )?);
+        generated.append(&mut cxxqttype::generate(&qobject_idents, type_names)?);
 
         Ok(generated)
     }

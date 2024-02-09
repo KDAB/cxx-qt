@@ -400,8 +400,8 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
-        type_names.cxx_names.insert("B".to_owned(), "B2".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
+        type_names.insert("B", None, Some("B2"), None);
 
         let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 

@@ -382,7 +382,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_mapped() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "A1");
     }
 
@@ -390,10 +390,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_mapped_with_namespace() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
-        type_names
-            .namespaces
-            .insert("A".to_owned(), "N1".to_owned());
+        type_names.insert("A", None, Some("A1"), Some("N1"));
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::N1::A1");
     }
 

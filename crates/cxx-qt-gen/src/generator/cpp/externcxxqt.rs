@@ -84,12 +84,7 @@ mod tests {
         })
         .unwrap()];
         let mut type_names = TypeNames::default();
-        type_names
-            .cxx_names
-            .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        type_names
-            .namespaces
-            .insert("ObjRust".to_owned(), "mynamespace".to_owned());
+        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate(&blocks, &type_names).unwrap();
         assert_eq!(generated.len(), 1);

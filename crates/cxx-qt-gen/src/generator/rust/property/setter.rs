@@ -3,23 +3,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{
-    naming::{property::QPropertyName, qobject::QObjectName},
-    rust::fragment::RustFragmentPair,
-    utils::rust::{
-        syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified,
-        syn_type_is_cxx_bridge_unsafe,
+use crate::{
+    generator::{
+        naming::{property::QPropertyName, qobject::QObjectName},
+        rust::fragment::RustFragmentPair,
+        utils::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
     },
+    parser::naming::TypeNames,
 };
 use quote::quote;
-use std::collections::BTreeMap;
-use syn::{Ident, Path, Type};
+use syn::Type;
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_idents: &QObjectName,
     cxx_ty: &Type,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    type_names: &TypeNames,
 ) -> RustFragmentPair {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let setter_wrapper_cpp = idents.setter_wrapper.cpp.to_string();
@@ -27,9 +26,8 @@ pub fn generate(
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust;
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, qualified_mappings);
-    let qualified_impl =
-        syn_ident_cxx_bridge_to_qualified_impl(cpp_class_name_rust, qualified_mappings);
+    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names);
+    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust);
 
     // Determine if unsafe is required due to an unsafe type
     let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {
