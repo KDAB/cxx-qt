@@ -27,15 +27,15 @@ pub struct TypeNames {
     /// Map of the cxx_name of any types defined in CXX extern blocks
     ///
     /// This is used in the C++ generation to map the Rust type name to the C++ name
-    pub cxx_names: BTreeMap<String, String>,
+    cxx_names: BTreeMap<String, String>,
     /// Map of the namespace of any types or methods defined in CXX extern blocks
     ///
     /// This is used in the C++ generation to map the Rust type name to the C++ name
-    pub namespaces: BTreeMap<String, String>,
+    namespaces: BTreeMap<String, String>,
     /// Mappings for CXX types when used outside the bridge
     ///
     /// This is used in the Rust generation to map the bridge type A to ffi::B
-    pub qualified: BTreeMap<Ident, Path>,
+    qualified: BTreeMap<Ident, Path>,
 }
 
 impl TypeNames {
@@ -199,7 +199,7 @@ impl TypeNames {
             .cloned()
             .unwrap_or_else(|| ident.to_owned());
 
-        if let Some(namespace) = self.namespaces.get(ident) {
+        if let Some(namespace) = self.namespace(ident) {
             format!("::{namespace}::{cxx_name}")
         } else {
             cxx_name
@@ -212,6 +212,20 @@ impl TypeNames {
             .get(ident)
             .filter(|namespace| !namespace.is_empty())
             .cloned()
+    }
+
+    /// Return a qualified version of the ident that can by used to refer to the type T outside of a CXX bridge
+    ///
+    /// Eg MyObject -> ffi::MyObject
+    ///
+    /// Note that this does not handle CXX types such as UniquePtr -> cxx::UniquePtr.
+    /// This is just for resolving impl T {} -> impl module::T {}
+    pub fn rust_qualified(&self, ident: &Ident) -> syn::Path {
+        if let Some(qualified_path) = self.qualified.get(ident) {
+            qualified_path.clone()
+        } else {
+            Path::from(ident.clone())
+        }
     }
 
     /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
@@ -257,6 +271,33 @@ impl TypeNames {
             .insert(ident.clone(), path_from_idents(module_ident, &rust_ident));
 
         Ok(())
+    }
+
+    #[cfg(test)]
+    pub fn num_types(&self) -> usize {
+        self.qualified.len()
+    }
+
+    #[cfg(test)]
+    // This function only exists for testing, to allow mocking of the type names
+    pub fn insert(
+        &mut self,
+        ident: &str,
+        qualified: Option<Path>,
+        cxx_name: Option<&str>,
+        namespace: Option<&str>,
+    ) {
+        if let Some(qualified) = qualified {
+            self.qualified.insert(format_ident!("{}", ident), qualified);
+        }
+        if let Some(cxx_name) = cxx_name {
+            self.cxx_names
+                .insert(ident.to_string(), cxx_name.to_string());
+        }
+        if let Some(namespace) = namespace {
+            self.namespaces
+                .insert(ident.to_string(), namespace.to_string());
+        }
     }
 }
 
@@ -417,35 +458,50 @@ mod tests {
 
     #[test]
     fn test_cxx_items_namespacing() {
-        let item: Item = parse_quote! {
-            #[namespace = "extern_namespace"]
-            extern "C++" {
-                #[cxx_name = "B"]
-                #[namespace = "type_namespace"]
-                type A;
+        let items: [Item; 2] = [
+            parse_quote! {
+                #[namespace = "extern_namespace"]
+                extern "C++" {
+                    #[cxx_name = "B"]
+                    #[namespace = "type_namespace"]
+                    type A;
 
-                #[cxx_name = "D"]
-                type C;
-            }
-        };
-        let type_names = parse_cxx_item(item);
+                    #[cxx_name = "D"]
+                    type C;
+                }
+            },
+            parse_quote! {
+                extern "C++" {
+                    type E;
+                }
+            },
+        ];
+        let mut type_names = TypeNames::default();
+        assert!(type_names
+            .populate_from_cxx_items(&items, "bridge_namespace", &format_ident!("ffi"))
+            .is_ok());
 
-        assert_eq!(type_names.cxx_names.len(), 2);
-        assert_eq!(type_names.cxx_names.get("A").unwrap(), "B");
-        assert_eq!(type_names.cxx_names.get("C").unwrap(), "D");
+        assert_eq!(type_names.num_types(), 3);
 
-        assert_eq!(type_names.namespaces.len(), 2);
-        assert_eq!(type_names.namespaces.get("A").unwrap(), "type_namespace");
-        assert_eq!(type_names.namespaces.get("C").unwrap(), "extern_namespace");
+        assert_eq!(type_names.cxx("A"), "::type_namespace::B");
+        assert_eq!(type_names.cxx("C"), "::extern_namespace::D");
+        assert_eq!(type_names.cxx("E"), "::bridge_namespace::E");
 
-        assert_eq!(type_names.qualified.len(), 2);
+        assert_eq!(type_names.namespace("A").unwrap(), "type_namespace");
+        assert_eq!(type_names.namespace("C").unwrap(), "extern_namespace");
+        assert_eq!(type_names.namespace("E").unwrap(), "bridge_namespace");
+
         assert_eq!(
-            type_names.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
+            type_names.rust_qualified(&format_ident!("A")),
+            parse_quote! { ffi::A }
         );
         assert_eq!(
-            type_names.qualified.get(&format_ident!("C")).unwrap(),
-            &parse_quote! { ffi::C }
+            type_names.rust_qualified(&format_ident!("C")),
+            parse_quote! { ffi::C }
+        );
+        assert_eq!(
+            type_names.rust_qualified(&format_ident!("E")),
+            parse_quote! { ffi::E }
         );
     }
 

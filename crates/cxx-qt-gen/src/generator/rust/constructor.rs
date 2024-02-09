@@ -3,18 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
         rust::fragment::GeneratedRustFragment,
-        utils::rust::{
-            syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified,
-            syn_type_is_cxx_bridge_unsafe,
-        },
+        utils::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
     },
-    parser::constructor::Constructor,
+    parser::{constructor::Constructor, naming::TypeNames},
     syntax::lifetimes,
 };
 
@@ -23,7 +18,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
     parse_quote, parse_quote_spanned, spanned::Spanned, Error, Expr, FnArg, Ident, Item, Lifetime,
-    Path, Result, Type,
+    Result, Type,
 };
 
 const CONSTRUCTOR_ARGUMENTS: &str = "CxxQtConstructorArguments";
@@ -183,7 +178,7 @@ pub fn generate(
     constructors: &[Constructor],
     qobject_idents: &QObjectName,
     namespace: &NamespaceName,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
@@ -195,8 +190,7 @@ pub fn generate(
 
     let qobject_name = &qobject_idents.cpp_class.cpp;
     let qobject_name_rust = &qobject_idents.cpp_class.rust;
-    let qobject_name_rust_qualified =
-        syn_ident_cxx_bridge_to_qualified_impl(qobject_name_rust, qualified_mappings);
+    let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust);
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
@@ -262,7 +256,7 @@ pub fn generate(
         let argument_types_qualified: Vec<Type> = constructor
             .arguments
             .iter()
-            .map(|arg| syn_type_cxx_bridge_to_qualified(arg, qualified_mappings))
+            .map(|arg| syn_type_cxx_bridge_to_qualified(arg, type_names))
             .collect();
 
         let route_arguments_parameters: Vec<FnArg> = constructor
@@ -279,8 +273,7 @@ pub fn generate(
             .cloned()
             .map(|mut parameter| {
                 if let FnArg::Typed(pat_type) = &mut parameter {
-                    *pat_type.ty =
-                        syn_type_cxx_bridge_to_qualified(&pat_type.ty, qualified_mappings);
+                    *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names);
                 }
                 parameter
             })
@@ -475,7 +468,7 @@ mod tests {
             constructors,
             &mock_name(),
             &mock_namespace(),
-            &BTreeMap::<Ident, Path>::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap()
@@ -810,7 +803,7 @@ mod tests {
             }],
             &mock_name(),
             &mock_namespace(),
-            &BTreeMap::<Ident, Path>::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         );
 

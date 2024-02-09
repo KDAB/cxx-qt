@@ -360,7 +360,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
 

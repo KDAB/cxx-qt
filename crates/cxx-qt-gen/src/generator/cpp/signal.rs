@@ -351,7 +351,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
@@ -622,12 +622,7 @@ mod tests {
         };
 
         let mut type_names = TypeNames::default();
-        type_names
-            .cxx_names
-            .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        type_names
-            .namespaces
-            .insert("ObjRust".to_owned(), "mynamespace".to_owned());
+        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 
