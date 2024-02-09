@@ -53,6 +53,9 @@ mod ffi {
         /// Translates all points in the polygon by (dx, dy).
         fn translate(self: &mut QPolygonF, dx: f64, dy: f64);
 
+        /// Returns a copy of the polygon that is translated by (dx, dy).
+        fn translated(self: &QPolygonF, dx: f64, dy: f64) -> QPolygonF;
+
         /// Returns a polygon which is the union of this polygon and r.
         fn united(self: &QPolygonF, r: &QPolygonF) -> QPolygonF;
     }
