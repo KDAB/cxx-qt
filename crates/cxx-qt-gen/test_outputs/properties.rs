@@ -7,16 +7,15 @@ mod ffi {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/qt.h");
+        include!("cxx-qt-common/cxxqt_connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
-        type ConnectionType = cxx_qt_lib::ConnectionType;
-        include!("cxx-qt-lib/qmetaobjectconnection.h");
+        type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqtcommon1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
-        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+        type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
@@ -174,13 +173,20 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "primitiveChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_primitive_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi :: MyObject_connect_primitive_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosureprimitiveChanged > :: new (Box :: new (closure)) , conn_type ,)
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_primitive_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosureprimitiveChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
     }
 }
 impl ffi::MyObject {
@@ -189,12 +195,19 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_primitive_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi :: MyObject_connect_primitive_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosureprimitiveChanged > :: new (Box :: new (closure)) , cxx_qt_lib :: ConnectionType :: AutoConnection ,)
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_primitive_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosureprimitiveChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
     }
 }
 #[doc(hidden)]
@@ -228,13 +241,12 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "trivialChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_trivial_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , conn_type ,)
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
 impl ffi::MyObject {
@@ -243,12 +255,11 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_trivial_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , cxx_qt_lib :: ConnectionType :: AutoConnection ,)
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
 #[doc(hidden)]

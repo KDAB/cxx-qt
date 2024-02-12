@@ -7,16 +7,15 @@ mod ffi {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/qt.h");
+        include!("cxx-qt-common/cxxqt_connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
-        type ConnectionType = cxx_qt_lib::ConnectionType;
-        include!("cxx-qt-lib/qmetaobjectconnection.h");
+        type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqtcommon1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
-        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+        type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
@@ -196,19 +195,18 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_ready(
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
             ),
             conn_type,
-        )
+        ))
     }
 }
 impl ffi::MyObject {
@@ -217,18 +215,17 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_ready(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
             ),
-            cxx_qt_lib::ConnectionType::AutoConnection,
-        )
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[doc(hidden)]
@@ -257,7 +254,6 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "dataChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_data_changed<
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
@@ -269,15 +265,15 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_data_changed(
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_data_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(
                 Box::new(closure),
             ),
             conn_type,
-        )
+        ))
     }
 }
 impl ffi::MyObject {
@@ -286,7 +282,6 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_data_changed<
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
@@ -298,14 +293,14 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_data_changed(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_data_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(
                 Box::new(closure),
             ),
-            cxx_qt_lib::ConnectionType::AutoConnection,
-        )
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[doc(hidden)]
@@ -345,7 +340,6 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "newData"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_base_class_new_data<
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
@@ -357,15 +351,15 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_base_class_new_data(
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
             ),
             conn_type,
-        )
+        ))
     }
 }
 impl ffi::MyObject {
@@ -374,7 +368,6 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_base_class_new_data<
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
@@ -386,14 +379,14 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::MyObject_connect_base_class_new_data(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
             ),
-            cxx_qt_lib::ConnectionType::AutoConnection,
-        )
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[doc(hidden)]
@@ -452,19 +445,18 @@ impl ffi::QTimer {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "timeout"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    #[must_use]
     pub fn connect_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static>(
         self: core::pin::Pin<&mut ffi::QTimer>,
         mut closure: F,
-        conn_type: cxx_qt_lib::ConnectionType,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::QTimer_connect_timeout(
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
             ),
             conn_type,
-        )
+        ))
     }
 }
 impl ffi::QTimer {
@@ -473,18 +465,17 @@ impl ffi::QTimer {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    #[must_use]
     pub fn on_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static>(
         self: core::pin::Pin<&mut ffi::QTimer>,
         mut closure: F,
-    ) -> cxx_qt_lib::QMetaObjectConnection {
-        ffi::QTimer_connect_timeout(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
             ),
-            cxx_qt_lib::ConnectionType::AutoConnection,
-        )
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[doc(hidden)]

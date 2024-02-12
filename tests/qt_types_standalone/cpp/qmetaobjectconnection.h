@@ -35,6 +35,8 @@ private Q_SLOTS:
     auto handle = QObject::connect(
       &obj, &MyObject::mySignal, &obj, &MyObject::anotherSignal);
 
+    auto guard = create_qmetaobjectconnectionguard(handle);
+
     QSignalSpy mySignalSpy(&obj, &MyObject::mySignal);
     QSignalSpy anotherSignalSpy(&obj, &MyObject::anotherSignal);
     QCOMPARE(mySignalSpy.count(), 0);
@@ -44,7 +46,7 @@ private Q_SLOTS:
     QCOMPARE(mySignalSpy.count(), 1);
     QCOMPARE(anotherSignalSpy.count(), 1);
 
-    qmetaobjectconnection_drop(std::move(handle));
+    qmetaobjectconnection_drop(*guard);
 
     obj.trigger();
     QCOMPARE(mySignalSpy.count(), 2);
@@ -57,6 +59,8 @@ private Q_SLOTS:
     auto handle = QObject::connect(
       &obj, &MyObject::mySignal, &obj, &MyObject::anotherSignal);
 
+    auto guard = create_qmetaobjectconnectionguard(handle);
+
     QSignalSpy mySignalSpy(&obj, &MyObject::mySignal);
     QSignalSpy anotherSignalSpy(&obj, &MyObject::anotherSignal);
     QCOMPARE(mySignalSpy.count(), 0);
@@ -66,10 +70,17 @@ private Q_SLOTS:
     QCOMPARE(mySignalSpy.count(), 1);
     QCOMPARE(anotherSignalSpy.count(), 1);
 
-    qmetaobjectconnection_release(std::move(handle));
+    auto conn = qmetaobjectconnection_release(*guard);
 
     obj.trigger();
     QCOMPARE(mySignalSpy.count(), 2);
+    QCOMPARE(anotherSignalSpy.count(), 2);
+
+    // Ensure that disconnect still works on the connection
+    QVERIFY(qmetaobjectconnection_disconnect(conn));
+
+    obj.trigger();
+    QCOMPARE(mySignalSpy.count(), 3);
     QCOMPARE(anotherSignalSpy.count(), 2);
   }
 };

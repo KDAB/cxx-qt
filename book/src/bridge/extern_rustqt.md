@@ -225,13 +225,14 @@ using the signal name `<property>Changed` with no parameters.
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_connect}}
 ```
 
-Each connection returns a [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) which is used to manage the connection.
+Each connection returns a `QMetaObjectConnectionGuard` which is used to manage the [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) connection.
 
 Note that the `QMetaObjectConnection` returned by CXX-Qt behaves a bit different from the Qt C++ implementation.
 
-When the `QMetaObjectConnection` is dropped, it automatically disconnects the connection, similar to how a C++ `std::unique_ptr` or Rusts `Box` behaves.
-If you don't want to store the `QMetaObjectConnection`, call `release`, which will drop the object without disconnecting.
-In this case, it is no longer possible to disconnect later.
+When the `QMetaObjectConnectionGuard` is dropped, it automatically disconnects the connection, similar to how a C++ `std::unique_ptr` or Rusts `Box` behaves.
+If you don't want to store the `QMetaObjectConnectionGuard`, call `release`, which will drop the object without disconnecting and return the internal `QMetaObjecConnection`.
+
+> Note that the `QMetaObjectConnection` has a `disconnect` which can be called manually later
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_disconnect}}

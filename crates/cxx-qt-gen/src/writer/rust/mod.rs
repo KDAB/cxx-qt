@@ -22,19 +22,20 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
 
-                include!("cxx-qt-lib/qt.h");
+                include!("cxx-qt-common/cxxqt_connection.h");
                 #[doc(hidden)]
                 #[namespace = "Qt"]
+                // Rename to CxxQtConnectionType so the developer can define it
+                // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtConnectionType"]
-                type ConnectionType = cxx_qt_lib::ConnectionType;
+                type ConnectionType = cxx_qt::ConnectionType;
 
-                include!("cxx-qt-lib/qmetaobjectconnection.h");
                 #[doc(hidden)]
-                #[namespace = "rust::cxxqtlib1"]
+                #[namespace = "rust::cxxqtcommon1"]
                 // Rename to CxxQtQMetaObjectConnection so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtQMetaObjectConnection"]
-                type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+                type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
             }
         })
         .expect("Could not build CXX common block"),
@@ -191,17 +192,16 @@ mod tests {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
 
-                    include!("cxx-qt-lib/qt.h");
+                    include!("cxx-qt-common/cxxqt_connection.h");
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
-                    type ConnectionType = cxx_qt_lib::ConnectionType;
+                    type ConnectionType = cxx_qt::ConnectionType;
 
-                    include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqtcommon1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
-                    type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+                    type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
                 unsafe extern "C++" {
@@ -238,17 +238,16 @@ mod tests {
                 unsafe extern "C++" {
                     include ! (< QtCore / QObject >);
 
-                    include!("cxx-qt-lib/qt.h");
+                    include!("cxx-qt-common/cxxqt_connection.h");
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
-                    type ConnectionType = cxx_qt_lib::ConnectionType;
+                    type ConnectionType = cxx_qt::ConnectionType;
 
-                    include!("cxx-qt-lib/qmetaobjectconnection.h");
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqtcommon1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
-                    type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+                    type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
                 unsafe extern "C++" {

@@ -2,16 +2,15 @@
 mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt-lib/qt.h");
+        include!("cxx-qt-common/cxxqt_connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
-        type ConnectionType = cxx_qt_lib::ConnectionType;
-        include!("cxx-qt-lib/qmetaobjectconnection.h");
+        type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqtcommon1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
-        type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
+        type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     #[repr(i32)]
     enum MyNamespacedEnum {
