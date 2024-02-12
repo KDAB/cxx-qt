@@ -18,6 +18,7 @@ exclude = [ "**/generate.sh" ]
 
 [dependencies]
 cxx.workspace = true
+cxx-qt.workspace = true
 bytes = { version = "1.4", optional = true }
 chrono = { version = "0.4.27", optional = true }
 http = { version = "1.0", optional = true }
