@@ -12,6 +12,7 @@
 use std::{fs::File, io::Write, path::Path};
 
 mod connection;
+mod connectionguard;
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
@@ -20,6 +21,7 @@ pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::qobject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
+pub use connectionguard::QMetaObjectConnectionGuard;
 pub use threading::CxxQtThread;
 
 // Export static assertions that can then be used in cxx-qt-gen generation
