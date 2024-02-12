@@ -280,7 +280,7 @@ fn main() {
         builder.define("CXX_QT_QML_FEATURE", None);
     }
 
-    // Note, ensure our settings stay in sync across cxx-qt-build and cxx-qt-lib
+    // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
     builder.cpp(true);
     // MSVC
     builder.flag_if_supported("/std:c++17");

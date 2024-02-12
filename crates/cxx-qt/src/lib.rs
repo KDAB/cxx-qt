@@ -11,6 +11,7 @@
 
 use std::{fs::File, io::Write, path::Path};
 
+mod connection;
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
@@ -18,6 +19,7 @@ mod threading;
 pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::qobject;
 
+pub use connection::{ConnectionType, QMetaObjectConnection};
 pub use threading::CxxQtThread;
 
 // Export static assertions that can then be used in cxx-qt-gen generation
@@ -365,7 +367,12 @@ where
 pub fn write_headers(directory: impl AsRef<Path>) {
     let directory = directory.as_ref();
     std::fs::create_dir_all(directory).expect("Could not create cxx-qt header directory");
+    // Note ensure that the build script is consistent with files that are copied
     for (file_contents, file_name) in [
+        (
+            include_str!("../include/cxxqt_connection.h"),
+            "cxxqt_connection.h",
+        ),
         (
             include_str!("../include/cxxqt_locking.h"),
             "cxxqt_locking.h",

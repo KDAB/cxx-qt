@@ -22,6 +22,10 @@ cxx.workspace = true
 cxx-qt-macro.workspace = true
 static_assertions = "1.1.0"
 
+[build-dependencies]
+cxx-build.workspace = true
+qt-build-utils.workspace = true
+
 [dev-dependencies]
 cxx.workspace = true
 cxx-qt-lib.workspace = true
