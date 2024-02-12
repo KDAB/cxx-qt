@@ -488,7 +488,7 @@ impl CxxQtBuilder {
         }
 
         for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
-            // Note, ensure our settings stay in sync across cxx-qt-build and cxx-qt-lib
+            // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
             builder.cpp(true);
             // MSVC
             builder.flag_if_supported("/std:c++17");
