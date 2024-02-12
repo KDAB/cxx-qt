@@ -3,26 +3,60 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_lib::QMetaObjectConnection;
+use cxx_qt_lib::{QMetaObjectConnection, QMetaObjectConnectionGuard};
 
 #[cxx::bridge]
 mod qmetaobjectconnection_cxx {
-    #[namespace = "rust::cxxqtlib1"]
+    #[namespace = "rust::cxxqt1"] // note that QMetaObjectConnection is reexported
     unsafe extern "C++" {
         include!("cxx-qt-lib/qmetaobjectconnection.h");
         type QMetaObjectConnection = cxx_qt_lib::QMetaObjectConnection;
     }
 
     extern "Rust" {
-        fn qmetaobjectconnection_drop(conn: QMetaObjectConnection);
-        fn qmetaobjectconnection_release(conn: QMetaObjectConnection);
+        type QMetaObjectConnectionGuardWrapper;
+
+        fn create_qmetaobjectconnectionguard(
+            conn: QMetaObjectConnection,
+        ) -> Box<QMetaObjectConnectionGuardWrapper>;
+
+        fn qmetaobjectconnection_disconnect(conn: &QMetaObjectConnection) -> bool;
+        fn qmetaobjectconnection_drop(wrapper: &mut QMetaObjectConnectionGuardWrapper);
+        fn qmetaobjectconnection_release(
+            wrapper: &mut QMetaObjectConnectionGuardWrapper,
+        ) -> QMetaObjectConnection;
     }
 }
 
-fn qmetaobjectconnection_drop(conn: QMetaObjectConnection) {
-    drop(conn);
+// CXX doesn't support Rust alias so we need to have a new type
+struct QMetaObjectConnectionGuardWrapper {
+    guard: Option<QMetaObjectConnectionGuard>,
 }
 
-fn qmetaobjectconnection_release(conn: QMetaObjectConnection) {
-    conn.release();
+fn create_qmetaobjectconnectionguard(
+    conn: QMetaObjectConnection,
+) -> Box<QMetaObjectConnectionGuardWrapper> {
+    Box::new(QMetaObjectConnectionGuardWrapper {
+        guard: Some(QMetaObjectConnectionGuard::from(conn)),
+    })
+}
+
+fn qmetaobjectconnection_disconnect(conn: &QMetaObjectConnection) -> bool {
+    conn.disconnect()
+}
+
+fn qmetaobjectconnection_drop(wrapper: &mut QMetaObjectConnectionGuardWrapper) {
+    if let Some(guard) = wrapper.guard.take() {
+        drop(guard);
+    }
+}
+
+fn qmetaobjectconnection_release(
+    wrapper: &mut QMetaObjectConnectionGuardWrapper,
+) -> QMetaObjectConnection {
+    if let Some(guard) = wrapper.guard.take() {
+        guard.release()
+    } else {
+        unreachable!();
+    }
 }
