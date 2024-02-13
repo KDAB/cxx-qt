@@ -40,7 +40,7 @@ cxx-qt-lib = { path = "crates/cxx-qt-lib" }
 cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.6.0" }
 qt-build-utils = { path = "crates/qt-build-utils", version = "0.6.0" }
 
-cc = { version = "1.0.79", features = ["parallel"] }
+cc = { version = "1.0.86", features = ["parallel"] }
 # Ensure that the example comments are kept in sync
 # ./examples/cargo_without_cmake/Cargo.toml
 # ./examples/qml_minimal/rust/Cargo.toml
@@ -56,8 +56,3 @@ syn = { version = "2.0", features = ["extra-traits", "full"] }
 quote = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# Use a patched version of cc-rs that respects the rustc wrapper
-# This should greatly speed up CI builds!
-[patch.crates-io]
-cc = { git = "https://github.com/LeonMatthesKDAB/cc-rs.git", branch="respect-rustc-wrapper" }
