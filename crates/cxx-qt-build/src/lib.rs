@@ -331,26 +331,15 @@ impl CxxQtBuilder {
         self
     }
 
-    /// Generate C++ files from [Qt resource .qrc files](https://doc.qt.io/qt-6/resources.html).
-    /// The generated file needs to be `#include`d in another .cpp file. For example:
+    /// Include files listed in a .qrc file into the binary
+    /// with [Qt's resource system](https://doc.qt.io/qt-6/resources.html).
     /// ```no_run
     /// # use cxx_qt_build::CxxQtBuilder;
     /// CxxQtBuilder::new()
     ///     .file("src/cxxqt_module.rs")
     ///     .qrc("src/my_resources.qrc")
-    ///     .cc_builder(|cc| {
-    ///         cc.file("file_with_include.cpp");
-    ///     })
     ///     .build();
     /// ```
-    ///
-    /// In `file_with_include.cpp`:
-    /// ```C++
-    /// #include "my_resources.qrc.cpp"
-    /// ```
-    ///
-    /// You also need to [explicitly load](https://doc.qt.io/qt-6/resources.html#explicit-loading-and-unloading-of-embedded-resources)
-    /// the resources in your .cpp file by calling `qInitResources()` once before starting your application.
     pub fn qrc(mut self, qrc_file: impl AsRef<Path>) -> Self {
         let qrc_file = qrc_file.as_ref();
         self.qrc_files.push(qrc_file.to_path_buf());
