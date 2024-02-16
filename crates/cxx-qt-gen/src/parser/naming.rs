@@ -218,8 +218,8 @@ impl TypeNames {
     ///
     /// Eg MyObject -> ffi::MyObject
     ///
-    /// Note that this does not handle CXX types such as UniquePtr -> cxx::UniquePtr.
-    /// This is just for resolving impl T {} -> impl module::T {}
+    /// Note that this only handles types that are declared inside this bridge.
+    /// E.g. UniquePtr -> cxx::UniquePtr isn't handled here.
     pub fn rust_qualified(&self, ident: &Ident) -> syn::Path {
         if let Some(qualified_path) = self.qualified.get(ident) {
             qualified_path.clone()
