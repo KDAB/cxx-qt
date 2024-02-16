@@ -287,27 +287,8 @@ fn possible_built_in_template_base(ty: &str) -> Option<&str> {
     }
 }
 
-/// A trait to allow indenting multi-line string
-/// This is specifically useful when using formatdoc! with a multi-line string argument.
-/// As the formatdoc! formatting doesn't support indenting multi-line arguments, we can indent
-/// those ourselves.
-pub(crate) trait Indent {
-    fn indented(&self, indent: usize) -> String;
-}
-
-impl Indent for str {
-    fn indented(&self, indent: usize) -> String {
-        self.lines()
-            .map(|line| " ".repeat(indent) + line)
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use indoc::{formatdoc, indoc};
-    use pretty_assertions::assert_str_eq;
     use syn::parse_quote;
 
     use super::*;
@@ -457,28 +438,6 @@ mod tests {
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             None
-        );
-    }
-
-    #[test]
-    fn indent_string() {
-        let multiline_string = indoc! { r#"
-            A,
-            B,
-        "#};
-
-        assert_str_eq!(
-            formatdoc! { r#"
-                enum Test {{
-                {multiline_string}
-                }}
-            "#, multiline_string = multiline_string.indented(2) },
-            indoc! { r#"
-                enum Test {
-                  A,
-                  B,
-                }
-            "#}
         );
     }
 }

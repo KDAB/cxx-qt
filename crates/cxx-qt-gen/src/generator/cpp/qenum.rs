@@ -8,11 +8,9 @@ use std::collections::BTreeSet;
 use indoc::formatdoc;
 use syn::Result;
 
-use crate::{
-    naming::cpp::Indent, naming::TypeNames, parser::qenum::ParsedQEnum, writer::cpp::namespaced,
-};
+use crate::{naming::TypeNames, parser::qenum::ParsedQEnum, writer::cpp::namespaced};
 
-use super::qobject::GeneratedCppQObjectBlocks;
+use super::{qobject::GeneratedCppQObjectBlocks, utils::Indent};
 
 fn generate_definition(qenum: &ParsedQEnum) -> String {
     let enum_name = &qenum.ident.to_string();
