@@ -10,8 +10,8 @@
 #include <memory>
 #include <mutex>
 
-#include <cxx-qt-common/cxxqt_locking.h>
-#include <cxx-qt-common/cxxqt_thread.h>
+#include <cxx-qt/cxxqt_locking.h>
+#include <cxx-qt/cxxqt_thread.h>
 
 namespace rust::cxxqt1 {
 

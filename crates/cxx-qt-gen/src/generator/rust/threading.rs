@@ -49,7 +49,7 @@ pub fn generate(
                     // <https://github.com/dtolnay/cxx/issues/683>
                     #[doc(hidden)]
                     type #cxx_qt_thread_ident = cxx_qt::CxxQtThread<#cpp_struct_ident>;
-                    include!("cxx-qt-common/cxxqt_thread.h");
+                    include!("cxx-qt/cxxqt_thread.h");
 
                     #[doc(hidden)]
                     #[cxx_name = "qtThread"]
@@ -187,7 +187,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
-                    include!("cxx-qt-common/cxxqt_thread.h");
+                    include!("cxx-qt/cxxqt_thread.h");
 
                     #[doc(hidden)]
                     #[cxx_name = "qtThread"]

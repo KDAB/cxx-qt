@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cxx-qt-common/cxxqt_locking.h>
-#include <cxx-qt-common/cxxqt_maybelockguard.h>
-#include <cxx-qt-common/cxxqt_signalhandler.h>
-#include <cxx-qt-common/cxxqt_type.h>
+#include <cxx-qt/cxxqt_locking.h>
+#include <cxx-qt/cxxqt_maybelockguard.h>
+#include <cxx-qt/cxxqt_signalhandler.h>
+#include <cxx-qt/cxxqt_type.h>
 
 namespace cxx_qt::my_object {
 class MyObject;

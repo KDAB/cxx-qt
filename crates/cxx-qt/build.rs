@@ -30,8 +30,8 @@ fn main() {
 
     // Write this library's manually written C++ headers to files and add them to include paths
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let directory = format!("{out_dir}/cxx-qt-common");
-    std::fs::create_dir_all(&directory).expect("Could not create cxx-qt-common header directory");
+    let directory = format!("{out_dir}/cxx-qt");
+    std::fs::create_dir_all(&directory).expect("Could not create cxx-qt header directory");
     // Note we only need cxxqt_connection.h for now, but lets move all headers to be consistent
     // ensure src/lib write_headers is consistent
     for (file_contents, file_name) in [
@@ -56,8 +56,8 @@ fn main() {
         (include_str!("include/cxxqt_type.h"), "cxxqt_type.h"),
     ] {
         let h_path = format!("{directory}/{file_name}");
-        let mut header = File::create(h_path).expect("Could not create cxx-qt-common header");
-        write!(header, "{file_contents}").expect("Could not write cxx-qt-common header");
+        let mut header = File::create(h_path).expect("Could not create cxx-qt header");
+        write!(header, "{file_contents}").expect("Could not write cxx-qt header");
     }
     builder.include(out_dir);
     builder.includes(qtbuild.include_paths());

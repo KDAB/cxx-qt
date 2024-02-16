@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cxx-qt-common/cxxqt_maybelockguard.h>
-#include <cxx-qt-common/cxxqt_threading.h>
-#include <cxx-qt-common/cxxqt_type.h>
+#include <cxx-qt/cxxqt_maybelockguard.h>
+#include <cxx-qt/cxxqt_threading.h>
+#include <cxx-qt/cxxqt_type.h>
 
 namespace cxx_qt::my_object {
 class MyObject;
