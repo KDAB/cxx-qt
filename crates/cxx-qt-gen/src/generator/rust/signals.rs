@@ -10,9 +10,10 @@ use crate::{
             signals::{QSignalHelperName, QSignalName},
         },
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
-        utils::rust::syn_type_cxx_bridge_to_qualified,
     },
-    parser::{naming::TypeNames, signals::ParsedSignal},
+    naming::rust::syn_type_cxx_bridge_to_qualified,
+    naming::TypeNames,
+    parser::signals::ParsedSignal,
     syntax::attribute::attribute_find_path,
 };
 use quote::quote;

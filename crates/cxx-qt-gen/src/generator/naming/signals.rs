@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::signals::ParsedSignal;
-use crate::{generator::naming::CombinedIdent, parser::naming::TypeNames};
+use crate::{generator::naming::CombinedIdent, naming::TypeNames};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;

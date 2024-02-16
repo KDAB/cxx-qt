@@ -9,9 +9,7 @@ use indoc::formatdoc;
 use syn::Result;
 
 use crate::{
-    generator::utils::cpp::Indent,
-    parser::{naming::TypeNames, qenum::ParsedQEnum},
-    writer::cpp::namespaced,
+    naming::cpp::Indent, naming::TypeNames, parser::qenum::ParsedQEnum, writer::cpp::namespaced,
 };
 
 use super::qobject::GeneratedCppQObjectBlocks;

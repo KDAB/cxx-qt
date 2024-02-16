@@ -10,14 +10,12 @@ use crate::{
             qobject::GeneratedCppQObjectBlocks,
         },
         naming::{method::QMethodName, qobject::QObjectName},
-        utils::cpp::{
-            syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
-        },
     },
-    parser::{
-        method::{ParsedMethod, ParsedQInvokableSpecifiers},
-        naming::TypeNames,
+    naming::cpp::{
+        syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
     },
+    naming::TypeNames,
+    parser::method::{ParsedMethod, ParsedQInvokableSpecifiers},
 };
 use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};

@@ -5,7 +5,7 @@
 
 use crate::{
     generator::{naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment},
-    parser::naming::TypeNames,
+    naming::TypeNames,
 };
 use quote::quote;
 use syn::Result;

@@ -11,7 +11,7 @@ use crate::{
         },
         rust::fragment::GeneratedRustFragment,
     },
-    parser::naming::TypeNames,
+    naming::TypeNames,
 };
 use quote::quote;
 use syn::{Ident, Result};
@@ -155,7 +155,7 @@ pub fn generate(
 mod tests {
     use super::*;
 
-    use crate::parser::naming::TypeNames;
+    use crate::naming::TypeNames;
     use crate::tests::assert_tokens_eq;
 
     use crate::parser::qobject::tests::create_parsed_qobject;

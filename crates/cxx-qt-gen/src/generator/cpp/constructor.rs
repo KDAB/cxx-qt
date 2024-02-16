@@ -5,9 +5,8 @@
 
 use super::qobject::GeneratedCppQObjectBlocks;
 use crate::{
-    generator::{cpp::GeneratedCppQObject, utils::cpp::syn_type_to_cpp_type},
-    parser::{constructor::Constructor, naming::TypeNames},
-    CppFragment,
+    generator::cpp::GeneratedCppQObject, naming::cpp::syn_type_to_cpp_type, naming::TypeNames,
+    parser::constructor::Constructor, CppFragment,
 };
 
 use indoc::formatdoc;

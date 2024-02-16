@@ -5,7 +5,7 @@
 
 use syn::{GenericArgument, PathArguments, PathSegment, ReturnType, Type, TypeReference};
 
-use crate::parser::naming::TypeNames;
+use crate::naming::TypeNames;
 
 /// Return a qualified version of the type that can by used outside of a CXX bridge
 ///

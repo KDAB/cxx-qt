@@ -16,7 +16,8 @@ use crate::{
             threading,
         },
     },
-    parser::{naming::TypeNames, qobject::ParsedQObject},
+    naming::TypeNames,
+    parser::qobject::ParsedQObject,
 };
 use quote::quote;
 use syn::{Ident, Result};

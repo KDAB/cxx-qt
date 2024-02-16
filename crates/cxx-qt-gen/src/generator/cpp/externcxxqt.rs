@@ -4,9 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::cpp::signal::generate_cpp_signal,
-    parser::{externcxxqt::ParsedExternCxxQt, naming::TypeNames},
-    CppFragment,
+    generator::cpp::signal::generate_cpp_signal, naming::TypeNames,
+    parser::externcxxqt::ParsedExternCxxQt, CppFragment,
 };
 use std::collections::BTreeSet;
 use syn::Result;

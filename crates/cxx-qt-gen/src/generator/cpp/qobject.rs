@@ -11,7 +11,7 @@ use crate::generator::{
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
 };
-use crate::parser::{naming::TypeNames, qobject::ParsedQObject};
+use crate::{naming::TypeNames, parser::qobject::ParsedQObject};
 use std::collections::BTreeSet;
 use syn::Result;
 

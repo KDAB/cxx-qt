@@ -8,7 +8,6 @@ pub mod cxxqtdata;
 pub mod externcxxqt;
 pub mod inherit;
 pub mod method;
-pub mod naming;
 pub mod parameter;
 pub mod property;
 pub mod qenum;
@@ -16,9 +15,11 @@ pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::{attribute::attribute_take_path, expr::expr_to_string};
+use crate::{
+    naming::TypeNames,
+    syntax::{attribute::attribute_take_path, expr::expr_to_string},
+};
 use cxxqtdata::ParsedCxxQtData;
-use naming::TypeNames;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
 };

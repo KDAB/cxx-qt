@@ -10,9 +10,10 @@ use crate::{
             qobject::QObjectName,
             signals::{QSignalHelperName, QSignalName},
         },
-        utils::cpp::syn_type_to_cpp_type,
     },
-    parser::{naming::TypeNames, parameter::ParsedFunctionParameter, signals::ParsedSignal},
+    naming::cpp::syn_type_to_cpp_type,
+    naming::TypeNames,
+    parser::{parameter::ParsedFunctionParameter, signals::ParsedSignal},
 };
 use indoc::formatdoc;
 use std::collections::BTreeSet;

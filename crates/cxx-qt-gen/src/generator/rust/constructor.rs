@@ -7,9 +7,10 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
         rust::fragment::GeneratedRustFragment,
-        utils::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
     },
-    parser::{constructor::Constructor, naming::TypeNames},
+    naming::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
+    naming::TypeNames,
+    parser::constructor::Constructor,
     syntax::lifetimes,
 };
 
