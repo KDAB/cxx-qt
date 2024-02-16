@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `VCPKG` is now set to off by default and packages are only built in release mode in the cache
+- Connection now return a `QMetaObjectConnectionGuard` and `QMetaObjectConnection` is a separate type
+- Internal `cxx-qt` headers have moved to the namespace `cxxqt1` and the folder `cxx-qt`
+- `cxx-qt-gen` now does not generate code requiring `cxx-qt-lib`, this allows for `cxx-qt-lib` to be optional
 
 ### Fixed
 
