@@ -12,13 +12,13 @@ class MyObject;
 
 namespace rust::cxxqtgen1::cxx_qt::multi_object {
 using MyObjectCxxQtSignalHandlerpropertyNameChanged =
-  ::rust::cxxqtlib1::SignalHandler<
+  ::rust::cxxqt1::SignalHandler<
     struct MyObjectCxxQtSignalParamspropertyNameChanged*>;
 } // namespace rust::cxxqtgen1::cxx_qt::multi_object
 
 namespace rust::cxxqtgen1::cxx_qt::multi_object {
 using MyObjectCxxQtSignalHandlerready =
-  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
 } // namespace rust::cxxqtgen1::cxx_qt::multi_object
 
 namespace second_object {
@@ -28,29 +28,28 @@ class SecondObject;
 
 namespace rust::cxxqtgen1::second_object {
 using SecondObjectCxxQtSignalHandlerpropertyNameChanged =
-  ::rust::cxxqtlib1::SignalHandler<
+  ::rust::cxxqt1::SignalHandler<
     struct SecondObjectCxxQtSignalParamspropertyNameChanged*>;
 } // namespace rust::cxxqtgen1::second_object
 
 namespace rust::cxxqtgen1::second_object {
 using SecondObjectCxxQtSignalHandlerready =
-  ::rust::cxxqtlib1::SignalHandler<struct SecondObjectCxxQtSignalParamsready*>;
+  ::rust::cxxqt1::SignalHandler<struct SecondObjectCxxQtSignalParamsready*>;
 } // namespace rust::cxxqtgen1::second_object
 
 namespace rust::cxxqtgen1 {
 using QPushButtonCxxQtSignalHandlerclicked =
-  ::rust::cxxqtlib1::SignalHandler<struct QPushButtonCxxQtSignalParamsclicked*>;
+  ::rust::cxxqt1::SignalHandler<struct QPushButtonCxxQtSignalParamsclicked*>;
 } // namespace rust::cxxqtgen1
 
 namespace rust::cxxqtgen1::mynamespace {
 using ExternObjectCxxQtSignalHandlerdataReady =
-  ::rust::cxxqtlib1::SignalHandler<
-    struct ExternObjectCxxQtSignalParamsdataReady*>;
+  ::rust::cxxqt1::SignalHandler<struct ExternObjectCxxQtSignalParamsdataReady*>;
 } // namespace rust::cxxqtgen1::mynamespace
 
 namespace rust::cxxqtgen1::mynamespace {
 using ExternObjectCxxQtSignalHandlererrorOccurred =
-  ::rust::cxxqtlib1::SignalHandler<
+  ::rust::cxxqt1::SignalHandler<
     struct ExternObjectCxxQtSignalParamserrorOccurred*>;
 } // namespace rust::cxxqtgen1::mynamespace
 
@@ -103,8 +102,8 @@ MyObject_readyConnect(
 namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -153,7 +152,7 @@ SecondObject_readyConnect(
 namespace second_object {
 class SecondObject
   : public QObject
-  , public ::rust::cxxqtlib1::CxxQtType<SecondObjectRust>
+  , public ::rust::cxxqt1::CxxQtType<SecondObjectRust>
 {
   Q_OBJECT
 public:

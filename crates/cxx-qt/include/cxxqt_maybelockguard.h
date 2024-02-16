@@ -12,7 +12,7 @@
 #include <mutex>
 #include <type_traits>
 
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 
 // An empty implementation of MaybeLockGuard
 //

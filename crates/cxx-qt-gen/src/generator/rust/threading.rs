@@ -59,7 +59,7 @@ pub fn generate(
                     // - Send + 'static: argument closure can be transferred to QObject thread.
                     // - FnOnce: QMetaObject::invokeMethod() should call the function at most once.
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadQueue"]
                     fn #cxx_qt_thread_queue_fn(
                         cxx_qt_thread: &#cxx_qt_thread_ident,
@@ -68,12 +68,12 @@ pub fn generate(
                     ) -> Result<()>;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadClone"]
                     fn #cxx_qt_thread_clone(cxx_qt_thread: &#cxx_qt_thread_ident) -> #cxx_qt_thread_ident;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadDrop"]
                     fn #cxx_qt_thread_drop(cxx_qt_thread: &mut #cxx_qt_thread_ident);
                 }
@@ -197,7 +197,7 @@ mod tests {
                     // - Send + 'static: argument closure can be transferred to QObject thread.
                     // - FnOnce: QMetaObject::invokeMethod() should call the function at most once.
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadQueue"]
                     fn cxx_qt_ffi_my_object_queue_boxed_fn(
                         cxx_qt_thread: &MyObjectCxxQtThread,
@@ -206,12 +206,12 @@ mod tests {
                     ) -> Result<()>;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadClone"]
                     fn cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtlib1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadDrop"]
                     fn cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
                 }

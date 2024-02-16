@@ -13,7 +13,7 @@
 #include <cxx-qt-common/cxxqt_locking.h>
 #include <cxx-qt-common/cxxqt_thread.h>
 
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 
 template<typename T>
 class CxxQtThreading : public CxxQtLocking

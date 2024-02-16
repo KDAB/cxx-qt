@@ -17,7 +17,7 @@ mod ffi {
         #[rust_name = "CxxQtConnectionType"]
         type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtcommon1"]
+        #[namespace = "rust::cxxqt1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
@@ -100,7 +100,7 @@ mod ffi {
         #[cxx_name = "qtThread"]
         fn cxx_qt_ffi_qt_thread(self: &MyObject) -> MyObjectCxxQtThread;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqt1"]
         #[cxx_name = "cxxQtThreadQueue"]
         fn cxx_qt_ffi_my_object_queue_boxed_fn(
             cxx_qt_thread: &MyObjectCxxQtThread,
@@ -108,13 +108,13 @@ mod ffi {
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
         ) -> Result<()>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqt1"]
         #[cxx_name = "cxxQtThreadClone"]
         fn cxx_qt_ffi_my_object_threading_clone(
             cxx_qt_thread: &MyObjectCxxQtThread,
         ) -> MyObjectCxxQtThread;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtlib1"]
+        #[namespace = "rust::cxxqt1"]
         #[cxx_name = "cxxQtThreadDrop"]
         fn cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
     }

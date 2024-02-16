@@ -113,7 +113,7 @@ pub fn generate_cpp_methods(
                     {return_cxx_ty}
                     {qobject_ident}::{ident}({parameter_types}){is_const}
                     {{
-                        const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
+                        const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident}> guard(*this);
                         {body};
                     }}
                     "#,
@@ -246,7 +246,7 @@ mod tests {
             void
             MyObject::voidInvokable() const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 voidInvokableWrapper();
             }
             "#}
@@ -267,7 +267,7 @@ mod tests {
             ::std::int32_t
             MyObject::trivialInvokable(::std::int32_t param) const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return trivialInvokableWrapper(param);
             }
             "#}
@@ -288,7 +288,7 @@ mod tests {
             ::std::unique_ptr<QColor>
             MyObject::opaqueInvokable(QColor const& param)
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return opaqueInvokableWrapper(param);
             }
             "#}
@@ -309,7 +309,7 @@ mod tests {
             ::std::int32_t
             MyObject::specifiersInvokable(::std::int32_t param) const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return specifiersInvokableWrapper(param);
             }
             "#}
@@ -327,7 +327,7 @@ mod tests {
             void
             MyObject::cppMethod() const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 cppMethodWrapper();
             }
             "#}
@@ -418,7 +418,7 @@ mod tests {
             B2
             MyObject::trivialInvokable(A1 param) const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return trivialInvokableWrapper(param);
             }
             "#}

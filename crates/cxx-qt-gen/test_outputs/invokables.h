@@ -6,7 +6,7 @@
 
 namespace cxx_qt::my_object {
 class MyObject;
-using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
+using MyObjectCxxQtThread = ::rust::cxxqt1::CxxQtThread<MyObject>;
 
 } // namespace cxx_qt::my_object
 
@@ -15,8 +15,8 @@ using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtThreading<MyObject>
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtThreading<MyObject>
 {
   Q_OBJECT
 public:

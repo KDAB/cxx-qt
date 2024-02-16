@@ -17,7 +17,7 @@
 #include "rust/cxx.h"
 
 namespace rust {
-namespace cxxqtlib1 {
+namespace cxxqt1 {
 
 template<typename T>
 class CxxQtGuardedPointer final
@@ -115,7 +115,7 @@ cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
   cxxQtThread.queue(::std::move(func), ::std::move(arg));
 }
 
-} // namespace cxxqtlib1
+} // namespace cxxqt1
 } // namespace rust
 
 // Define namespace otherwise we hit a GCC bug
@@ -123,7 +123,7 @@ cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
 namespace rust {
 
 template<typename T>
-struct IsRelocatable<::rust::cxxqtlib1::CxxQtThread<T>> : ::std::true_type
+struct IsRelocatable<::rust::cxxqt1::CxxQtThread<T>> : ::std::true_type
 {
 };
 

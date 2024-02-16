@@ -12,7 +12,7 @@
 
 #include "rust/cxx.h"
 
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 
 template<typename T>
 class CxxQtType

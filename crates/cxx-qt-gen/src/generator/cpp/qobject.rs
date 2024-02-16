@@ -215,12 +215,9 @@ mod tests {
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqtlib1::CxxQtType<MyObjectRust>"
+            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(
-            cpp.blocks.base_classes[2],
-            "::rust::cxxqtlib1::CxxQtLocking"
-        );
+        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
@@ -248,12 +245,9 @@ mod tests {
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqtlib1::CxxQtType<MyObjectRust>"
+            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(
-            cpp.blocks.base_classes[2],
-            "::rust::cxxqtlib1::CxxQtLocking"
-        );
+        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 

@@ -2,7 +2,7 @@
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
                 QTimerCxxQtSignalParamstimeout*>::~SignalHandler() noexcept
@@ -36,7 +36,7 @@ static_assert(
       ::rust::cxxqtgen1::cxx_qt::my_object::QTimerCxxQtSignalParamstimeout*>) ==
     sizeof(::std::size_t[2]),
   "unexpected size");
-} // namespace rust::cxxqtlib1
+} // namespace rust::cxxqt1
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 ::QMetaObject::Connection
@@ -50,8 +50,8 @@ QTimer_timeoutConnect(
     &::cxx_qt::my_object::QTimer::timeout,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::QTimer>
-        guard(self);
+      const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::QTimer> guard(
+        self);
       closure.template operator()<::cxx_qt::my_object::QTimer&>(self);
     },
     type);
@@ -60,7 +60,7 @@ QTimer_timeoutConnect(
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
                 MyObjectCxxQtSignalParamsready*>::~SignalHandler() noexcept
@@ -94,7 +94,7 @@ static_assert(
       ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalParamsready*>) ==
     sizeof(::std::size_t[2]),
   "unexpected size");
-} // namespace rust::cxxqtlib1
+} // namespace rust::cxxqt1
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 ::QMetaObject::Connection
@@ -108,8 +108,8 @@ MyObject_readyConnect(
     &::cxx_qt::my_object::MyObject::ready,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::MyObject>
-        guard(self);
+      const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::MyObject> guard(
+        self);
       closure.template operator()<::cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -118,7 +118,7 @@ MyObject_readyConnect(
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 template<>
 SignalHandler<
   ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalParamsdataChanged*>::
@@ -162,7 +162,7 @@ static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
                                      MyObjectCxxQtSignalParamsdataChanged*>) ==
                 sizeof(::std::size_t[2]),
               "unexpected size");
-} // namespace rust::cxxqtlib1
+} // namespace rust::cxxqt1
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 ::QMetaObject::Connection
@@ -180,8 +180,8 @@ MyObject_dataChangedConnect(
                                         ::std::unique_ptr<Opaque> second,
                                         QPoint third,
                                         QPoint const& fourth) mutable {
-      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::MyObject>
-        guard(self);
+      const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::MyObject> guard(
+        self);
       closure.template operator()<::cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
@@ -198,7 +198,7 @@ MyObject_dataChangedConnect(
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 template<>
 SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
                 MyObjectCxxQtSignalParamsnewData*>::~SignalHandler() noexcept
@@ -241,7 +241,7 @@ static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::cxx_qt::my_object::
                                      MyObjectCxxQtSignalParamsnewData*>) ==
                 sizeof(::std::size_t[2]),
               "unexpected size");
-} // namespace rust::cxxqtlib1
+} // namespace rust::cxxqt1
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 ::QMetaObject::Connection
@@ -259,8 +259,8 @@ MyObject_newDataConnect(
                                         ::std::unique_ptr<Opaque> second,
                                         QPoint third,
                                         QPoint const& fourth) mutable {
-      const ::rust::cxxqtlib1::MaybeLockGuard<::cxx_qt::my_object::MyObject>
-        guard(self);
+      const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::MyObject> guard(
+        self);
       closure.template operator()<::cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
@@ -279,15 +279,15 @@ namespace cxx_qt::my_object {
 void
 MyObject::invokable()
 {
-  const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   invokableWrapper();
 }
 
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
-  , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(
+  , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::createRs())
-  , ::rust::cxxqtlib1::CxxQtLocking()
+  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 

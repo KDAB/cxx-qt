@@ -23,7 +23,7 @@ struct IsRelocatable<::QMetaObject::Connection> : ::std::true_type
 } // namespace rust
 
 namespace rust {
-namespace cxxqtcommon1 {
+namespace cxxqt1 {
 
 using QMetaObjectConnection = ::QMetaObject::Connection;
 

@@ -10,8 +10,8 @@ class MyObject;
 
 class MyObject
   : public QAbstractItemModel
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
