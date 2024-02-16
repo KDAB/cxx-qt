@@ -12,7 +12,8 @@ use crate::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::fragment::GeneratedRustFragment,
     },
-    parser::{naming::TypeNames, property::ParsedQProperty},
+    naming::TypeNames,
+    parser::property::ParsedQProperty,
 };
 use syn::{Ident, Result};
 

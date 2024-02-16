@@ -7,9 +7,9 @@ use crate::{
     generator::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::fragment::RustFragmentPair,
-        utils::rust::syn_type_cxx_bridge_to_qualified,
     },
-    parser::naming::TypeNames,
+    naming::rust::syn_type_cxx_bridge_to_qualified,
+    naming::TypeNames,
 };
 use quote::quote;
 use syn::Type;

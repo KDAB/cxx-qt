@@ -6,9 +6,10 @@
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
     naming::{property::QPropertyName, qobject::QObjectName},
-    utils::cpp::syn_type_to_cpp_type,
 };
-use crate::parser::{naming::TypeNames, property::ParsedQProperty};
+use crate::{
+    naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
+};
 use syn::Result;
 
 mod getter;

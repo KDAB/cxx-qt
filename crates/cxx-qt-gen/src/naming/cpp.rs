@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::naming::TypeNames;
+use crate::naming::TypeNames;
 use syn::{
     spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,

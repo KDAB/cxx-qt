@@ -3,7 +3,18 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This module provides utils for working with syn, CXX, and C++.
+//!
+//! Such as converting a [syn::Type] into a C++ string, or determining
+//! if a type is unsafe in a CXX bridge.
+//!
+//! The idea of this module is that it should be independent as
+//! these methods could be split out into a cxx-utils crate later on.
+
 use std::collections::BTreeMap;
+
+pub(crate) mod cpp;
+pub(crate) mod rust;
 
 use quote::format_ident;
 use syn::{
@@ -16,7 +27,7 @@ use crate::syntax::{
     foreignmod::foreign_mod_to_foreign_item_types, path::path_from_idents,
 };
 
-use super::{cxxqtdata::ParsedCxxQtData, qenum::ParsedQEnum, qobject::ParsedQObject};
+use crate::parser::{cxxqtdata::ParsedCxxQtData, qenum::ParsedQEnum, qobject::ParsedQObject};
 
 /// The purpose of this struct is to store all nameable types.
 ///
