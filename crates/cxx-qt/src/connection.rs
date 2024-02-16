@@ -9,7 +9,7 @@ use std::mem::MaybeUninit;
 mod ffi {
     #[namespace = "rust::cxxqt1"]
     unsafe extern "C++" {
-        include!("cxx-qt-common/cxxqt_connection.h");
+        include!("cxx-qt/cxxqt_connection.h");
 
         #[doc(hidden)]
         type QMetaObjectConnection = crate::QMetaObjectConnection;

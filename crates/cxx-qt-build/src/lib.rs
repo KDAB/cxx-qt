@@ -445,7 +445,7 @@ impl CxxQtBuilder {
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
         // Write cxx-qt-gen, cxx-qt-lib and cxx headers
-        cxx_qt::write_headers(format!("{header_root}/cxx-qt-common"));
+        cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
         cxx_qt_lib_headers::write_headers(format!("{header_root}/cxx-qt-lib"));
         std::fs::create_dir_all(format!("{header_root}/rust"))
             .expect("Could not create cxx header directory");

@@ -30,7 +30,7 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQOb
 
     result
         .includes
-        .insert("#include <cxx-qt-common/cxxqt_threading.h>".to_owned());
+        .insert("#include <cxx-qt/cxxqt_threading.h>".to_owned());
 
     result
         .base_classes
@@ -89,7 +89,7 @@ mod tests {
         assert_eq!(generated.includes.len(), 1);
         assert!(generated
             .includes
-            .contains("#include <cxx-qt-common/cxxqt_threading.h>"));
+            .contains("#include <cxx-qt/cxxqt_threading.h>"));
 
         // base class
         assert_eq!(generated.base_classes.len(), 1);

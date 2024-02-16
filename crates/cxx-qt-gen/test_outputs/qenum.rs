@@ -2,7 +2,7 @@
 mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt-common/cxxqt_connection.h");
+        include!("cxx-qt/cxxqt_connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]

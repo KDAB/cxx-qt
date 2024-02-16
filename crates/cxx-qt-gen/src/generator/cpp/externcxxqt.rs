@@ -34,7 +34,7 @@ pub fn generate(
             // Ensure that we include MaybeLockGuard<T> that is used in multiple places
             block
                 .includes
-                .insert("#include <cxx-qt-common/cxxqt_maybelockguard.h>".to_owned());
+                .insert("#include <cxx-qt/cxxqt_maybelockguard.h>".to_owned());
             block.forward_declares = data.forward_declares;
             block.fragments = data.fragments;
             debug_assert!(data.methods.is_empty());

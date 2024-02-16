@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <cxx-qt-common/cxxqt_locking.h>
+#include <cxx-qt/cxxqt_locking.h>
 #include <memory>
 #include <mutex>
 #include <type_traits>
