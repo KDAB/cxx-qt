@@ -12,14 +12,13 @@ class MyObject;
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 using MyObjectCxxQtSignalHandlerprimitiveChanged =
-  ::rust::cxxqtlib1::SignalHandler<
+  ::rust::cxxqt1::SignalHandler<
     struct MyObjectCxxQtSignalParamsprimitiveChanged*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
-using MyObjectCxxQtSignalHandlertrivialChanged =
-  ::rust::cxxqtlib1::SignalHandler<
-    struct MyObjectCxxQtSignalParamstrivialChanged*>;
+using MyObjectCxxQtSignalHandlertrivialChanged = ::rust::cxxqt1::SignalHandler<
+  struct MyObjectCxxQtSignalParamstrivialChanged*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 #include "cxx-qt-gen/ffi.cxx.h"
@@ -45,8 +44,8 @@ MyObject_trivialChangedConnect(
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

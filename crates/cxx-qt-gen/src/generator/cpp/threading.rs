@@ -17,7 +17,7 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQOb
     let cxx_qt_thread_ident = &qobject_idents.cxx_qt_thread_class;
 
     result.forward_declares.push(format!(
-        "using {cxx_qt_thread_ident} = ::rust::cxxqtlib1::CxxQtThread<{cpp_class}>;"
+        "using {cxx_qt_thread_ident} = ::rust::cxxqt1::CxxQtThread<{cpp_class}>;"
     ));
     // Ensure that the CxxQtThread<T> is of the correct size and alignment
     // which should be two std::shared_ptr which are two size_t each
@@ -34,9 +34,9 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQOb
 
     result
         .base_classes
-        .push(format!("::rust::cxxqtlib1::CxxQtThreading<{cpp_class}>"));
+        .push(format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>"));
 
-    let class_initializer = format!("::rust::cxxqtlib1::CxxQtThreading<{cpp_class}>(this)");
+    let class_initializer = format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>(this)");
 
     Ok((class_initializer, result))
 }
@@ -60,13 +60,13 @@ mod tests {
 
         assert_str_eq!(
             generated.forward_declares[0],
-            "using MyObjectCxxQtThread = ::rust::cxxqtlib1::CxxQtThread<MyObject>;"
+            "using MyObjectCxxQtThread = ::rust::cxxqt1::CxxQtThread<MyObject>;"
         );
 
         // initialiser
         assert_str_eq!(
             initializer,
-            "::rust::cxxqtlib1::CxxQtThreading<MyObject>(this)"
+            "::rust::cxxqt1::CxxQtThreading<MyObject>(this)"
         );
 
         // methods
@@ -95,7 +95,7 @@ mod tests {
         assert_eq!(generated.base_classes.len(), 1);
         assert_eq!(
             generated.base_classes[0],
-            "::rust::cxxqtlib1::CxxQtThreading<MyObject>"
+            "::rust::cxxqt1::CxxQtThreading<MyObject>"
         );
     }
 }

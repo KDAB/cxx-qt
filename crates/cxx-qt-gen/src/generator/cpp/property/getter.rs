@@ -17,7 +17,7 @@ pub fn generate(idents: &QPropertyName, qobject_ident: &str, return_cxx_ty: &str
             {return_cxx_ty} const&
             {qobject_ident}::{ident_getter}() const
             {{
-                const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident}> guard(*this);
                 return {ident_getter_wrapper}();
             }}
             "#,

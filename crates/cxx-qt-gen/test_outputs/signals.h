@@ -12,22 +12,22 @@ class MyObject;
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 using MyObjectCxxQtSignalHandlerready =
-  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
-using MyObjectCxxQtSignalHandlerdataChanged = ::rust::cxxqtlib1::SignalHandler<
-  struct MyObjectCxxQtSignalParamsdataChanged*>;
+using MyObjectCxxQtSignalHandlerdataChanged =
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsdataChanged*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 using MyObjectCxxQtSignalHandlernewData =
-  ::rust::cxxqtlib1::SignalHandler<struct MyObjectCxxQtSignalParamsnewData*>;
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsnewData*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 namespace rust::cxxqtgen1::cxx_qt::my_object {
 using QTimerCxxQtSignalHandlertimeout =
-  ::rust::cxxqtlib1::SignalHandler<struct QTimerCxxQtSignalParamstimeout*>;
+  ::rust::cxxqt1::SignalHandler<struct QTimerCxxQtSignalParamstimeout*>;
 } // namespace rust::cxxqtgen1::cxx_qt::my_object
 
 #include "cxx-qt-gen/ffi.cxx.h"
@@ -69,8 +69,8 @@ MyObject_newDataConnect(
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

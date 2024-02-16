@@ -53,7 +53,7 @@ pub mod ffi {
         #[rust_name = "CxxQtConnectionType"]
         type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtcommon1"]
+        #[namespace = "rust::cxxqt1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }

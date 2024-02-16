@@ -31,7 +31,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 type ConnectionType = cxx_qt::ConnectionType;
 
                 #[doc(hidden)]
-                #[namespace = "rust::cxxqtcommon1"]
+                #[namespace = "rust::cxxqt1"]
                 // Rename to CxxQtQMetaObjectConnection so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtQMetaObjectConnection"]
@@ -199,7 +199,7 @@ mod tests {
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtcommon1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
@@ -245,7 +245,7 @@ mod tests {
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
-                    #[namespace = "rust::cxxqtcommon1"]
+                    #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }

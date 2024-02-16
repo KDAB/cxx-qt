@@ -10,7 +10,7 @@
 #include <memory>
 #include <mutex>
 
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 
 class CxxQtLocking
 {

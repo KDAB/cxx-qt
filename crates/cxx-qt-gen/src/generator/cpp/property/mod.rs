@@ -103,7 +103,7 @@ mod tests {
             ::std::int32_t const&
             MyObject::getTrivialProperty() const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return getTrivialPropertyWrapper();
             }
             "#}
@@ -124,7 +124,7 @@ mod tests {
                 void
                 MyObject::setTrivialProperty(::std::int32_t const& value)
                 {
-                    const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                    const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                     setTrivialPropertyWrapper(value);
                 }
                 "#}
@@ -145,7 +145,7 @@ mod tests {
             ::std::unique_ptr<QColor> const&
             MyObject::getOpaqueProperty() const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return getOpaquePropertyWrapper();
             }
             "#}
@@ -166,7 +166,7 @@ mod tests {
             void
             MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 setOpaquePropertyWrapper(value);
             }
             "#}
@@ -207,7 +207,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>::~SignalHandler() noexcept
             {
@@ -228,7 +228,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamstrivialPropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -239,7 +239,7 @@ mod tests {
                     &MyObject::trivialPropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -268,7 +268,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>::~SignalHandler() noexcept
             {
@@ -289,7 +289,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsopaquePropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -300,7 +300,7 @@ mod tests {
                     &MyObject::opaquePropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -383,7 +383,7 @@ mod tests {
             A1 const&
             MyObject::getMappedProperty() const
             {
-                const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return getMappedPropertyWrapper();
             }
             "#}
@@ -401,7 +401,7 @@ mod tests {
                 void
                 MyObject::setMappedProperty(A1 const& value)
                 {
-                    const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(*this);
+                    const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                     setMappedPropertyWrapper(value);
                 }
                 "#}
@@ -434,7 +434,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>::~SignalHandler() noexcept
             {
@@ -455,7 +455,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmappedPropertyChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -466,7 +466,7 @@ mod tests {
                     &MyObject::mappedPropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);

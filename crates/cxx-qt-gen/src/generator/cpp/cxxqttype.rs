@@ -17,7 +17,7 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlock
 
     result
         .base_classes
-        .push(format!("::rust::cxxqtlib1::CxxQtType<{rust_ident}>"));
+        .push(format!("::rust::cxxqt1::CxxQtType<{rust_ident}>"));
 
     Ok(result)
 }
@@ -44,7 +44,7 @@ mod tests {
         assert_eq!(generated.base_classes.len(), 1);
         assert_eq!(
             generated.base_classes[0],
-            "::rust::cxxqtlib1::CxxQtType<MyObjectRust>"
+            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
     }
 }

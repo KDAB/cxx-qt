@@ -25,7 +25,7 @@ static_assert(
   !::std::is_trivially_destructible<::QMetaObject::Connection>::value);
 
 namespace rust {
-namespace cxxqtcommon1 {
+namespace cxxqt1 {
 
 ::QMetaObject::Connection
 qmetaobjectconnectionDefault()

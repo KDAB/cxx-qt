@@ -122,7 +122,7 @@ pub fn generate_cpp_signal(
     generated.forward_declares.push(formatdoc! {
         r#"
         namespace {namespace} {{
-        using {signal_handler_alias} = ::rust::cxxqtlib1::SignalHandler<struct {param_struct} *>;
+        using {signal_handler_alias} = ::rust::cxxqt1::SignalHandler<struct {param_struct} *>;
         }} // namespace {namespace}
         "#
     });
@@ -147,7 +147,7 @@ pub fn generate_cpp_signal(
             r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {{
+            namespace rust::cxxqt1 {{
             template <>
             {signal_handler_type}::~SignalHandler() noexcept
             {{
@@ -168,7 +168,7 @@ pub fn generate_cpp_signal(
 
             static_assert(alignof({signal_handler_type}) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof({signal_handler_type}) == sizeof(::std::size_t[2]), "unexpected size");
-            }} // namespace rust::cxxqtlib1
+            }} // namespace rust::cxxqt1
 
             namespace {namespace} {{
             ::QMetaObject::Connection
@@ -179,7 +179,7 @@ pub fn generate_cpp_signal(
                     &{qobject_ident_namespaced}::{signal_ident},
                     &self,
                     [&, closure = ::std::move(closure)]({parameters_named_types}) mutable {{
-                        const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident_namespaced}> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident_namespaced}> guard(self);
                         closure.template operator()<{parameter_types_with_self}>({parameter_values_with_self});
                     }},
                     type);
@@ -287,7 +287,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler() noexcept
             {
@@ -308,7 +308,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -319,7 +319,7 @@ mod tests {
                     &MyObject::dataChanged,
                     &self,
                     [&, closure = ::std::move(closure)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&, ::std::int32_t, ::std::unique_ptr<QColor>>(self, ::std::move(trivial), ::std::move(opaque));
                     },
                     type);
@@ -385,7 +385,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>::~SignalHandler() noexcept
             {
@@ -406,7 +406,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -417,7 +417,7 @@ mod tests {
                     &MyObject::dataChanged,
                     &self,
                     [&, closure = ::std::move(closure)](A1 mapped) mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&, A1>(self, ::std::move(mapped));
                     },
                     type);
@@ -473,7 +473,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsbaseName *>::~SignalHandler() noexcept
             {
@@ -494,7 +494,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsbaseName *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamsbaseName *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -505,7 +505,7 @@ mod tests {
                     &MyObject::baseName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<MyObject> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -561,7 +561,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>::~SignalHandler() noexcept
             {
@@ -582,7 +582,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
@@ -593,7 +593,7 @@ mod tests {
                     &ObjRust::signalRustName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<ObjRust> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<ObjRust> guard(self);
                         closure.template operator()<ObjRust&>(self);
                     },
                     type);
@@ -652,7 +652,7 @@ mod tests {
             indoc! {r#"
             // Define namespace otherwise we hit a GCC bug
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-            namespace rust::cxxqtlib1 {
+            namespace rust::cxxqt1 {
             template <>
             SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
             {
@@ -673,7 +673,7 @@ mod tests {
 
             static_assert(alignof(SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>) <= alignof(::std::size_t), "unexpected aligment");
             static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>) == sizeof(::std::size_t[2]), "unexpected size");
-            } // namespace rust::cxxqtlib1
+            } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1::mynamespace {
             ::QMetaObject::Connection
@@ -684,7 +684,7 @@ mod tests {
                     &::mynamespace::ObjCpp::signalCxxName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqtlib1::MaybeLockGuard<::mynamespace::ObjCpp> guard(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<::mynamespace::ObjCpp> guard(self);
                         closure.template operator()<::mynamespace::ObjCpp&>(self);
                     },
                     type);

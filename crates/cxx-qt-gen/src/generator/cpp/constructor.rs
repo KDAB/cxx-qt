@@ -27,7 +27,7 @@ fn default_constructor(
                 r#"
             {class_name}::{class_name}(QObject* parent)
               : {base_class}(parent)
-              , ::rust::cxxqtlib1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
+              , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
             "#,
                 class_name = qobject.ident,
@@ -118,7 +118,7 @@ pub fn generate(
                 r#"
                 {class_name}::{class_name}(::{namespace_internals}::CxxQtConstructorArguments{index}&& args)
                   : {base_class}({base_args})
-                  , ::rust::cxxqtlib1::CxxQtType<{rust_obj}>(::{namespace_internals}::newRs{index}(::std::move(args.new_))){initializers}
+                  , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::newRs{index}(::std::move(args.new_))){initializers}
                 {{
                   ::{namespace_internals}::initialize{index}(*this, ::std::move(args.initialize));
                 }}
@@ -184,7 +184,7 @@ mod tests {
                     "
                     MyObject::MyObject(QObject* parent)
                       : BaseClass(parent)
-                      , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::createRs())
+                      , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::createRs())
                       , member1(1)
                       , member2{{ 2 }}
                     {{ }}
@@ -214,7 +214,7 @@ mod tests {
                     "
                     MyObject::MyObject(QObject* parent)
                       : BaseClass(parent)
-                      , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::createRs())
+                      , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::createRs())
                     {{ }}
                     "
                 ),
@@ -245,7 +245,7 @@ mod tests {
                     "
                     MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
                       : BaseClass()
-                      , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
+                      , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
                     {{
                       ::rust::initialize0(*this, ::std::move(args.initialize));
                     }}
@@ -308,7 +308,7 @@ mod tests {
                     "
                     MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
                       : BaseClass(::std::move(args.base.arg0), ::std::move(args.base.arg1))
-                      , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
+                      , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
                       , initializer
                     {{
                       ::rust::initialize0(*this, ::std::move(args.initialize));
@@ -378,7 +378,7 @@ mod tests {
                         "
                         MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
                           : BaseClass()
-                          , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
+                          , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::newRs0(::std::move(args.new_)))
                           , initializer
                         {{
                           ::rust::initialize0(*this, ::std::move(args.initialize));
@@ -393,7 +393,7 @@ mod tests {
                         "
                         MyObject::MyObject(::rust::CxxQtConstructorArguments1&& args)
                           : BaseClass(::std::move(args.base.arg0))
-                          , ::rust::cxxqtlib1::CxxQtType<MyObjectRust>(::rust::newRs1(::std::move(args.new_)))
+                          , ::rust::cxxqt1::CxxQtType<MyObjectRust>(::rust::newRs1(::std::move(args.new_)))
                           , initializer
                         {{
                           ::rust::initialize1(*this, ::std::move(args.initialize));

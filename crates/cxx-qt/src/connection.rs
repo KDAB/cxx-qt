@@ -7,7 +7,7 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-    #[namespace = "rust::cxxqtcommon1"]
+    #[namespace = "rust::cxxqt1"]
     unsafe extern "C++" {
         include!("cxx-qt-common/cxxqt_connection.h");
 
@@ -90,7 +90,7 @@ impl QMetaObjectConnection {
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QMetaObjectConnection {
-    type Id = type_id!("rust::cxxqtcommon1::QMetaObjectConnection");
+    type Id = type_id!("rust::cxxqt1::QMetaObjectConnection");
     type Kind = cxx::kind::Trivial;
 }
 

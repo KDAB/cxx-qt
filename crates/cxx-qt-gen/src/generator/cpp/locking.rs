@@ -15,9 +15,9 @@ pub fn generate() -> Result<(String, GeneratedCppQObjectBlocks)> {
 
     result
         .base_classes
-        .push("::rust::cxxqtlib1::CxxQtLocking".to_owned());
+        .push("::rust::cxxqt1::CxxQtLocking".to_owned());
 
-    let class_initializer = "::rust::cxxqtlib1::CxxQtLocking()".to_owned();
+    let class_initializer = "::rust::cxxqt1::CxxQtLocking()".to_owned();
 
     Ok((class_initializer, result))
 }
@@ -31,7 +31,7 @@ mod tests {
         let (initializer, generated) = generate().unwrap();
 
         // initializer
-        assert_eq!(initializer, "::rust::cxxqtlib1::CxxQtLocking()");
+        assert_eq!(initializer, "::rust::cxxqt1::CxxQtLocking()");
 
         // includes
         assert_eq!(generated.includes.len(), 1);
@@ -41,6 +41,6 @@ mod tests {
 
         // base class
         assert_eq!(generated.base_classes.len(), 1);
-        assert_eq!(generated.base_classes[0], "::rust::cxxqtlib1::CxxQtLocking");
+        assert_eq!(generated.base_classes[0], "::rust::cxxqt1::CxxQtLocking");
     }
 }

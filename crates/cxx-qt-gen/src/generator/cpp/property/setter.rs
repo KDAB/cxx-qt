@@ -17,7 +17,7 @@ pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &str) -> Cp
             void
             {qobject_ident}::{ident_setter}({cxx_ty} const& value)
             {{
-                const ::rust::cxxqtlib1::MaybeLockGuard<{qobject_ident}> guard(*this);
+                const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident}> guard(*this);
                 {ident_setter_wrapper}(value);
             }}
             "#,

@@ -58,8 +58,8 @@ Q_ENUM_NS(MyOtherNamespacedEnum)
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqtlib1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqtlib1::CxxQtLocking
+  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

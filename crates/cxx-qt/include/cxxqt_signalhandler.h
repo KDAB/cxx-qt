@@ -11,7 +11,7 @@
 
 #include "rust/cxx.h"
 
-namespace rust::cxxqtlib1 {
+namespace rust::cxxqt1 {
 
 // This represents a Rust Box<dyn FnMut>
 //
@@ -39,14 +39,14 @@ private:
   void* data[2];
 };
 
-} // rust::cxxqtlib1
+} // rust::cxxqt1
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust {
 
 template<typename CXXArguments>
-struct IsRelocatable<rust::cxxqtlib1::SignalHandler<CXXArguments>>
+struct IsRelocatable<rust::cxxqt1::SignalHandler<CXXArguments>>
   : ::std::true_type
 {
 };
