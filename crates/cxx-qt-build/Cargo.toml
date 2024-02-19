@@ -24,7 +24,4 @@ codespan-reporting = "0.11"
 version_check = "0.9"
 
 [features]
-default = ["qt_gui", "qt_qml"]
-qt_gui = []
-qt_qml = []
 link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
