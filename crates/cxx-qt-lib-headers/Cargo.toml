@@ -13,8 +13,8 @@ repository.workspace = true
 
 [features]
 default = []
-qt_gui = ["cxx-qt-build/qt_gui"]
-qt_qml = ["cxx-qt-build/qt_qml"]
+qt_gui = []
+qt_qml = []
 
 [dependencies]
 cxx-qt-build.workspace = true

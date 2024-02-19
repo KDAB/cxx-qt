@@ -108,9 +108,16 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
     }
 
     #[cfg(feature = "qt_gui")]
-    opts.defines.insert("CXX_QT_GUI_FEATURE".to_owned());
+    {
+        opts.defines.insert("CXX_QT_GUI_FEATURE".to_owned());
+        opts.qt_modules.insert("Gui".to_owned());
+    }
+
     #[cfg(feature = "qt_qml")]
-    opts.defines.insert("CXX_QT_QML_FEATURE".to_owned());
+    {
+        opts.defines.insert("CXX_QT_QML_FEATURE".to_owned());
+        opts.qt_modules.insert("Qml".to_owned());
+    }
 
     opts
 }
