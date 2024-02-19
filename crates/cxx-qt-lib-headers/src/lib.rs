@@ -100,23 +100,17 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         (include_str!("../include/qml/qqmlengine.h"), "qqmlengine.h"),
         (include_str!("../include/common.h"), "common.h"),
     ] {
-        opts.headers.push((
-            file_contents.to_owned(),
-            "cxx-qt-lib".to_owned(),
-            file_name.to_owned(),
-        ));
+        opts = opts.header(file_contents, "cxx-qt-lib", file_name);
     }
 
     #[cfg(feature = "qt_gui")]
     {
-        opts.defines.insert("CXX_QT_GUI_FEATURE".to_owned());
-        opts.qt_modules.insert("Gui".to_owned());
+        opts = opts.define("CXX_QT_GUI_FEATURE").qt_module("Gui");
     }
 
     #[cfg(feature = "qt_qml")]
     {
-        opts.defines.insert("CXX_QT_QML_FEATURE".to_owned());
-        opts.qt_modules.insert("Qml".to_owned());
+        opts = opts.define("CXX_QT_QML_FEATURE").qt_module("Qml");
     }
 
     opts

@@ -14,6 +14,9 @@
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
+mod opts;
+pub use opts::CxxQtBuildersOpts;
+
 mod qml_modules;
 use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
@@ -306,17 +309,6 @@ pub struct CxxQtBuilder {
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
     extra_defines: HashSet<String>,
-}
-
-/// Options for external crates to use
-#[derive(Default)]
-pub struct CxxQtBuildersOpts {
-    /// Any extra definitions
-    pub defines: HashSet<String>,
-    /// Contents, directory, file name
-    pub headers: Vec<(String, String, String)>,
-    /// Qt modules that are required
-    pub qt_modules: HashSet<String>,
 }
 
 impl CxxQtBuilder {
