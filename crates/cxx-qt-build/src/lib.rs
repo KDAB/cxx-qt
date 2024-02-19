@@ -315,6 +315,8 @@ pub struct CxxQtBuildersOpts {
     pub defines: HashSet<String>,
     /// Contents, directory, file name
     pub headers: Vec<(String, String, String)>,
+    /// Qt modules that are required
+    pub qt_modules: HashSet<String>,
 }
 
 impl CxxQtBuilder {
@@ -322,10 +324,6 @@ impl CxxQtBuilder {
     pub fn new() -> Self {
         let mut qt_modules = HashSet::new();
         qt_modules.insert("Core".to_owned());
-        #[cfg(feature = "qt_gui")]
-        qt_modules.insert("Gui".to_owned());
-        #[cfg(feature = "qt_qml")]
-        qt_modules.insert("Qml".to_owned());
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
@@ -374,7 +372,7 @@ impl CxxQtBuilder {
 
     /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html).
     /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
-    /// The Core and any feature enabled modules are linked automatically; there is no need to specify them.
+    /// The `Core` module and any modules from [CxxQtBuildersOpts] are linked automatically; there is no need to specify them.
     pub fn qt_module(mut self, module: &str) -> Self {
         self.qt_modules.insert(module.to_owned());
         self
@@ -470,6 +468,9 @@ impl CxxQtBuilder {
 
         // Add any of the defines
         self.extra_defines.extend(opts.defines);
+
+        // Add any of the Qt modules
+        self.qt_modules.extend(opts.qt_modules);
 
         self
     }
