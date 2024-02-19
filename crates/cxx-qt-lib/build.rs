@@ -5,7 +5,6 @@
 
 use cxx_qt_build::CxxQtBuilder;
 use qt_build_utils::QtBuild;
-use std::{fs::File, io::Write};
 
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
@@ -16,14 +15,6 @@ fn main() {
     };
 
     let mut builder = CxxQtBuilder::new();
-    // Not strictly required to enable modules as the feature should do this
-    // build lets be explicit for now.
-    if feature_qt_gui_enabled {
-        builder = builder.qt_module("Gui");
-    }
-    if feature_qt_qml_enabled {
-        builder = builder.qt_module("Qml");
-    }
 
     // Find the Qt version and tell the Rust compiler
     // this allows us to have conditional Rust code
@@ -260,36 +251,5 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    // Write this library's manually written C++ headers to files and add them to include paths
-    let header_root = format!("{}/include", std::env::var("OUT_DIR").unwrap());
-    for (file_contents, dir_name, file_name) in cxx_qt_lib_headers::build_opts().headers {
-        let directory = if dir_name.is_empty() {
-            header_root.clone()
-        } else {
-            format!("{header_root}/{dir_name}")
-        };
-        std::fs::create_dir_all(directory.clone())
-            .expect("Could not create {directory} header directory");
-
-        let h_path = format!("{directory}/{file_name}");
-        let mut header = File::create(h_path).expect("Could not create header: {h_path}");
-        write!(header, "{file_contents}").expect("Could not write header: {h_path}");
-    }
-
-    builder = builder.cc_builder(|cc| {
-        // Load the include path
-        cc.include(&header_root);
-
-        // Enable Qt Gui in C++ if the feature is enabled
-        if feature_qt_gui_enabled {
-            cc.define("CXX_QT_GUI_FEATURE", None);
-        }
-
-        // Enable Qt Qml in C++ if the feature is enabled
-        if feature_qt_gui_enabled {
-            cc.define("CXX_QT_QML_FEATURE", None);
-        }
-    });
-
-    builder.build();
+    builder.with_opts(cxx_qt_lib_headers::build_opts()).build();
 }
