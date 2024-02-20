@@ -3,27 +3,24 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
-use crate::generator::{
-    naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment,
-    utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
+use crate::{
+    generator::{naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment},
+    naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Path, Result};
+use syn::Result;
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_ident: &QObjectName,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
     let cpp_struct_ident = &qobject_ident.cpp_class.rust;
     let rust_struct_ident = &qobject_ident.rust_struct.rust;
-    let qualified_impl =
-        syn_ident_cxx_bridge_to_qualified_impl(cpp_struct_ident, qualified_mappings);
+    let qualified_impl = type_names.rust_qualified(cpp_struct_ident);
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -91,7 +88,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_idents = QObjectName::from(&qobject);
 
-        let generated = generate(&qobject_idents, &BTreeMap::<Ident, Path>::default()).unwrap();
+        let generated = generate(&qobject_idents, &TypeNames::default()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

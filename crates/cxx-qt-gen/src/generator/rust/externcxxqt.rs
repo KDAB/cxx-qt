@@ -8,7 +8,8 @@ use crate::{
         fragment::{GeneratedRustFragment, RustFragmentPair},
         signals::generate_rust_signal,
     },
-    parser::{externcxxqt::ParsedExternCxxQt, naming::TypeNames},
+    naming::TypeNames,
+    parser::externcxxqt::ParsedExternCxxQt,
 };
 use quote::quote;
 use syn::{Ident, Result};

@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 mod generator;
+mod naming;
 mod parser;
 mod syntax;
 mod writer;

@@ -3,25 +3,25 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
-
-use crate::generator::{
-    naming::{
-        namespace::{namespace_combine_ident, NamespaceName},
-        qobject::QObjectName,
+use crate::{
+    generator::{
+        naming::{
+            namespace::{namespace_combine_ident, NamespaceName},
+            qobject::QObjectName,
+        },
+        rust::fragment::GeneratedRustFragment,
     },
-    rust::fragment::GeneratedRustFragment,
-    utils::rust::syn_ident_cxx_bridge_to_qualified_impl,
+    naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Path, Result};
+use syn::{Ident, Result};
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_ident: &QObjectName,
     namespace_ident: &NamespaceName,
-    qualified_mappings: &BTreeMap<Ident, Path>,
+    type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
@@ -35,8 +35,7 @@ pub fn generate(
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
-    let qualified_impl =
-        syn_ident_cxx_bridge_to_qualified_impl(cpp_struct_ident, qualified_mappings);
+    let qualified_impl = type_names.rust_qualified(cpp_struct_ident);
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -156,6 +155,7 @@ pub fn generate(
 mod tests {
     use super::*;
 
+    use crate::naming::TypeNames;
     use crate::tests::assert_tokens_eq;
 
     use crate::parser::qobject::tests::create_parsed_qobject;
@@ -171,7 +171,7 @@ mod tests {
         let generated = generate(
             &qobject_idents,
             &namespace_ident,
-            &BTreeMap::<Ident, Path>::default(),
+            &TypeNames::default(),
             &format_ident!("ffi"),
         )
         .unwrap();

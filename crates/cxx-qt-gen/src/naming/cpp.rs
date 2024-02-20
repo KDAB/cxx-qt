@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::naming::TypeNames;
+use crate::naming::TypeNames;
 use syn::{
     spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
@@ -127,7 +127,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 }
 
                 // Use the CXX mapped name
-                Ok(type_names.cxx(first))
+                Ok(type_names.cxx_qualified(first))
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -232,7 +232,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
         ident = if let Some(built_in) = possible_built_in_template_base(&ident) {
             built_in.to_owned()
         } else {
-            type_names.cxx(&ident)
+            type_names.cxx_qualified(&ident)
         };
     }
 
@@ -287,27 +287,8 @@ fn possible_built_in_template_base(ty: &str) -> Option<&str> {
     }
 }
 
-/// A trait to allow indenting multi-line string
-/// This is specifically useful when using formatdoc! with a multi-line string argument.
-/// As the formatdoc! formatting doesn't support indenting multi-line arguments, we can indent
-/// those ourselves.
-pub(crate) trait Indent {
-    fn indented(&self, indent: usize) -> String;
-}
-
-impl Indent for str {
-    fn indented(&self, indent: usize) -> String {
-        self.lines()
-            .map(|line| " ".repeat(indent) + line)
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use indoc::{formatdoc, indoc};
-    use pretty_assertions::assert_str_eq;
     use syn::parse_quote;
 
     use super::*;
@@ -330,173 +311,59 @@ mod tests {
         assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
     }
 
-    #[test]
-    fn test_syn_type_to_cpp_type_built_in_one_part() {
-        let ty = parse_quote! { i32 };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::int32_t"
-        );
+    macro_rules! test_syn_types_to_cpp_types {
+        [$($input_type:tt => $output_type:literal),*] => {
+            $(
+            assert_eq!(
+                syn_type_to_cpp_type(&parse_quote! $input_type, &TypeNames::default()).unwrap(),
+                $output_type);
+            )*
+        }
     }
 
     #[test]
-    fn test_syn_type_to_cpp_type_unknown_one_part() {
-        let ty = parse_quote! { QPoint };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "QPoint"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_const_one_part() {
-        let ty = parse_quote! { &QPoint };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "QPoint const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_mut_one_part() {
-        let ty = parse_quote! { &mut QPoint };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "QPoint&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_const_ptr_mut_one_part() {
-        let ty = parse_quote! { &*mut T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T* const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_const_ptr_const_one_part() {
-        let ty = parse_quote! { &*const T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "const T* const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_mut_ptr_mut_one_part() {
-        let ty = parse_quote! { &mut *mut T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T*&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ref_mut_ptr_const_one_part() {
-        let ty = parse_quote! { &mut *const T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "const T*&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ptr_mut_one_part() {
-        let ty = parse_quote! { *mut T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T*"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_ptr_const_one_part() {
-        let ty = parse_quote! { *const T };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "const T*"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_built_in() {
-        let ty = parse_quote! { Vec<f64> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Vec<double>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_unknown() {
-        let ty = parse_quote! { UniquePtr<QColor> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<QColor>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_built_in_ref_const() {
-        let ty = parse_quote! { &Vec<f64> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Vec<double> const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_built_in_ptr_mut() {
-        let ty = parse_quote! { &Vec<*mut T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Vec<T*> const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_built_in_ptr_const() {
-        let ty = parse_quote! { &Vec<*const T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Vec<const T*> const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_unknown_ref_mut() {
-        let ty = parse_quote! { &mut UniquePtr<QColor> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<QColor>&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_unknown_ptr_mut() {
-        let ty = parse_quote! { &mut UniquePtr<*mut T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<T*>&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_templated_unknown_ptr_const() {
-        let ty = parse_quote! { &mut UniquePtr<*const T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<const T*>&"
-        );
+    fn test_syn_type_to_cpp_type() {
+        test_syn_types_to_cpp_types! [
+            { i32 } => "::std::int32_t",
+            { () } => "void",
+            { fn() } => "::rust::Fn<void, ()>",
+            { fn(i32, i32) -> bool } => "::rust::Fn<bool, (::std::int32_t, ::std::int32_t)>",
+            { [i32; 10] } => "::std::array<::std::int32_t, 10>",
+            { Vec<&str> } => "::rust::Vec<::rust::Str>",
+            { &str } => "::rust::Str",
+            { &mut [i32] } => "::rust::Slice<::std::int32_t>",
+            { &[i32] } => "::rust::Slice<::std::int32_t const>",
+            { Pin<&mut UniquePtr<T>> } => "::std::unique_ptr<T>&",
+            { Pin<&UniquePtr<T>> } => "::std::unique_ptr<T> const&",
+            { Pin<UniquePtr<T>> } => "::std::unique_ptr<T>",
+            { Pin<&mut T> } => "T&",
+            { Pin<&T> } => "T const&",
+            { Pin<T> } => "T",
+            { &mut UniquePtr<*const T> } => "::std::unique_ptr<const T*>&",
+            { &mut UniquePtr<*mut T> } => "::std::unique_ptr<T*>&",
+            { &mut UniquePtr<QColor> } => "::std::unique_ptr<QColor>&",
+            { &Vec<*const T> } => "::rust::Vec<const T*> const&",
+            { &Vec<*mut T> } => "::rust::Vec<T*> const&",
+            { &Vec<f64> } => "::rust::Vec<double> const&",
+            { UniquePtr<QColor> } => "::std::unique_ptr<QColor>",
+            { Vec<f64> } => "::rust::Vec<double>",
+            { *const T } => "const T*",
+            { *mut T } => "T*",
+            { &mut *const T } => "const T*&",
+            { &mut *mut T } => "T*&",
+            { &*const T } => "const T* const&",
+            { &*mut T } => "T* const&",
+            { &mut QPoint } => "QPoint&",
+            { &QPoint } => "QPoint const&",
+            { QPoint} => "QPoint"
+        ];
     }
 
     #[test]
     fn test_syn_type_to_cpp_type_mapped() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "A1");
     }
 
@@ -504,110 +371,8 @@ mod tests {
     fn test_syn_type_to_cpp_type_mapped_with_namespace() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
-        type_names
-            .namespaces
-            .insert("A".to_owned(), "N1".to_owned());
+        type_names.insert("A", None, Some("A1"), Some("N1"));
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::N1::A1");
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin() {
-        let ty = parse_quote! { Pin<T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin_ref() {
-        let ty = parse_quote! { Pin<&T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin_ref_mut() {
-        let ty = parse_quote! { Pin<&mut T> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "T&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin_template() {
-        let ty = parse_quote! { Pin<UniquePtr<T>> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<T>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin_template_ref() {
-        let ty = parse_quote! { Pin<&UniquePtr<T>> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<T> const&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_pin_template_ref_mut() {
-        let ty = parse_quote! { Pin<&mut UniquePtr<T>> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::unique_ptr<T>&"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_slice() {
-        let ty = parse_quote! { &[i32] };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Slice<::std::int32_t const>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_slice_mut() {
-        let ty = parse_quote! { &mut [i32] };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Slice<::std::int32_t>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_str() {
-        let ty = parse_quote! { &str };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Str"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_str_template() {
-        let ty = parse_quote! { Vec<&str> };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Vec<::rust::Str>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_array() {
-        let ty = parse_quote! { [i32; 10] };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::std::array<::std::int32_t, 10>"
-        );
     }
 
     #[test]
@@ -620,33 +385,6 @@ mod tests {
     fn test_syn_type_to_cpp_type_array_length_invalid() {
         let ty = parse_quote! { [i32; String] };
         assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_fn() {
-        let ty = parse_quote! { fn(i32, i32) -> bool };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Fn<bool, (::std::int32_t, ::std::int32_t)>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_fn_void() {
-        let ty = parse_quote! { fn() };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "::rust::Fn<void, ()>"
-        );
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_tuple_empty() {
-        let ty = parse_quote! { () };
-        assert_eq!(
-            syn_type_to_cpp_type(&ty, &TypeNames::default()).unwrap(),
-            "void"
-        );
     }
 
     #[test]
@@ -700,28 +438,6 @@ mod tests {
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             None
-        );
-    }
-
-    #[test]
-    fn indent_string() {
-        let multiline_string = indoc! { r#"
-            A,
-            B,
-        "#};
-
-        assert_str_eq!(
-            formatdoc! { r#"
-                enum Test {{
-                {multiline_string}
-                }}
-            "#, multiline_string = multiline_string.indented(2) },
-            indoc! { r#"
-                enum Test {
-                  A,
-                  B,
-                }
-            "#}
         );
     }
 }

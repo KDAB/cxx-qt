@@ -4,9 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::cpp::signal::generate_cpp_signal,
-    parser::{externcxxqt::ParsedExternCxxQt, naming::TypeNames},
-    CppFragment,
+    generator::cpp::signal::generate_cpp_signal, naming::TypeNames,
+    parser::externcxxqt::ParsedExternCxxQt, CppFragment,
 };
 use std::collections::BTreeSet;
 use syn::Result;
@@ -84,12 +83,7 @@ mod tests {
         })
         .unwrap()];
         let mut type_names = TypeNames::default();
-        type_names
-            .cxx_names
-            .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        type_names
-            .namespaces
-            .insert("ObjRust".to_owned(), "mynamespace".to_owned());
+        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate(&blocks, &type_names).unwrap();
         assert_eq!(generated.len(), 1);

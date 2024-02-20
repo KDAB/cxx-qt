@@ -12,7 +12,8 @@ use crate::{
         naming::{property::QPropertyName, qobject::QObjectName},
         rust::fragment::GeneratedRustFragment,
     },
-    parser::{naming::TypeNames, property::ParsedQProperty},
+    naming::TypeNames,
+    parser::property::ParsedQProperty,
 };
 use syn::{Ident, Result};
 
@@ -31,7 +32,7 @@ pub fn generate_rust_properties(
         let idents = QPropertyName::from(property);
 
         // Getters
-        let getter = getter::generate(&idents, qobject_idents, &property.ty, &type_names.qualified);
+        let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names);
         generated
             .cxx_mod_contents
             .append(&mut getter.cxx_bridge_as_items()?);
@@ -40,7 +41,7 @@ pub fn generate_rust_properties(
             .append(&mut getter.implementation_as_items()?);
 
         // Setters
-        let setter = setter::generate(&idents, qobject_idents, &property.ty, &type_names.qualified);
+        let setter = setter::generate(&idents, qobject_idents, &property.ty, type_names);
         generated
             .cxx_mod_contents
             .append(&mut setter.cxx_bridge_as_items()?);

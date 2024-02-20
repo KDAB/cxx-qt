@@ -6,9 +6,10 @@
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
     naming::{property::QPropertyName, qobject::QObjectName},
-    utils::cpp::syn_type_to_cpp_type,
 };
-use crate::parser::{naming::TypeNames, property::ParsedQProperty};
+use crate::{
+    naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
+};
 use syn::Result;
 
 mod getter;
@@ -360,7 +361,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
 

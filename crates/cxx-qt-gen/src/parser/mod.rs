@@ -8,7 +8,6 @@ pub mod cxxqtdata;
 pub mod externcxxqt;
 pub mod inherit;
 pub mod method;
-pub mod naming;
 pub mod parameter;
 pub mod property;
 pub mod qenum;
@@ -16,9 +15,11 @@ pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 
-use crate::syntax::{attribute::attribute_take_path, expr::expr_to_string};
+use crate::{
+    naming::TypeNames,
+    syntax::{attribute::attribute_take_path, expr::expr_to_string},
+};
 use cxxqtdata::ParsedCxxQtData;
-use naming::TypeNames;
 use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
 };
@@ -203,14 +204,10 @@ mod tests {
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
         assert_eq!(parser.cxx_qt_data.namespace, "cxx_qt");
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
-        assert_eq!(parser.type_names.qualified.len(), 1);
+        assert_eq!(parser.type_names.num_types(), 1);
         assert_eq!(
-            parser
-                .type_names
-                .qualified
-                .get(&format_ident!("MyObject"))
-                .unwrap(),
-            &parse_quote! { ffi::MyObject }
+            parser.type_names.rust_qualified(&format_ident!("MyObject")),
+            parse_quote! { ffi::MyObject }
         );
     }
 
@@ -300,17 +297,17 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.type_names.namespaces.len(), 3);
+        assert_eq!(parser.type_names.num_types(), 3);
         assert_eq!(
-            parser.type_names.namespaces.get("MyObjectA").unwrap(),
+            parser.type_names.namespace("MyObjectA").unwrap(),
             "bridge_namespace"
         );
         assert_eq!(
-            parser.type_names.namespaces.get("MyObjectB").unwrap(),
+            parser.type_names.namespace("MyObjectB").unwrap(),
             "type_namespace"
         );
         assert_eq!(
-            parser.type_names.namespaces.get("MyObjectC").unwrap(),
+            parser.type_names.namespace("MyObjectC").unwrap(),
             "extern_namespace"
         );
     }

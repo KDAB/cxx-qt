@@ -10,9 +10,10 @@ use crate::{
             qobject::QObjectName,
             signals::{QSignalHelperName, QSignalName},
         },
-        utils::cpp::syn_type_to_cpp_type,
     },
-    parser::{naming::TypeNames, parameter::ParsedFunctionParameter, signals::ParsedSignal},
+    naming::cpp::syn_type_to_cpp_type,
+    naming::TypeNames,
+    parser::{parameter::ParsedFunctionParameter, signals::ParsedSignal},
 };
 use indoc::formatdoc;
 use std::collections::BTreeSet;
@@ -65,7 +66,7 @@ fn parameter_types_and_values(
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
     // Insert the extra argument into the closure
-    let self_ty = type_names.cxx(self_ty);
+    let self_ty = type_names.cxx_qualified(self_ty);
     parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
     parameter_types_with_self.insert(0, format!("{self_ty}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
@@ -92,7 +93,7 @@ pub fn generate_cpp_signal(
 
     // Build a namespace that includes any namespace for the T
     let qobject_ident_str = qobject_ident.to_string();
-    let qobject_ident_namespaced = type_names.cxx(&qobject_ident_str);
+    let qobject_ident_namespaced = type_names.cxx_qualified(&qobject_ident_str);
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
@@ -351,7 +352,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
@@ -622,12 +623,7 @@ mod tests {
         };
 
         let mut type_names = TypeNames::default();
-        type_names
-            .cxx_names
-            .insert("ObjRust".to_owned(), "ObjCpp".to_owned());
-        type_names
-            .namespaces
-            .insert("ObjRust".to_owned(), "mynamespace".to_owned());
+        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 

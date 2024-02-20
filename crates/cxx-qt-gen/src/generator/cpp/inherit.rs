@@ -5,11 +5,10 @@
 use indoc::formatdoc;
 
 use crate::{
-    generator::{
-        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
-        utils::cpp::syn_type_to_cpp_return_type,
-    },
-    parser::{inherit::ParsedInheritedMethod, naming::TypeNames},
+    generator::cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+    naming::cpp::syn_type_to_cpp_return_type,
+    naming::TypeNames,
+    parser::inherit::ParsedInheritedMethod,
 };
 
 use syn::Result;

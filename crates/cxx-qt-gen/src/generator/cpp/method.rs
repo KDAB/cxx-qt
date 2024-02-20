@@ -10,14 +10,12 @@ use crate::{
             qobject::GeneratedCppQObjectBlocks,
         },
         naming::{method::QMethodName, qobject::QObjectName},
-        utils::cpp::{
-            syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
-        },
     },
-    parser::{
-        method::{ParsedMethod, ParsedQInvokableSpecifiers},
-        naming::TypeNames,
+    naming::cpp::{
+        syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
     },
+    naming::TypeNames,
+    parser::method::{ParsedMethod, ParsedQInvokableSpecifiers},
 };
 use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
@@ -400,8 +398,8 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.cxx_names.insert("A".to_owned(), "A1".to_owned());
-        type_names.cxx_names.insert("B".to_owned(), "B2".to_owned());
+        type_names.insert("A", None, Some("A1"), None);
+        type_names.insert("B", None, Some("B2"), None);
 
         let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 

@@ -10,9 +10,10 @@ use crate::{
             signals::{QSignalHelperName, QSignalName},
         },
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
-        utils::rust::{syn_ident_cxx_bridge_to_qualified_impl, syn_type_cxx_bridge_to_qualified},
     },
-    parser::{naming::TypeNames, signals::ParsedSignal},
+    naming::rust::syn_type_cxx_bridge_to_qualified,
+    naming::TypeNames,
+    parser::signals::ParsedSignal,
     syntax::attribute::attribute_find_path,
 };
 use quote::quote;
@@ -51,8 +52,7 @@ pub fn generate_rust_signal(
         .cloned()
         .map(|mut parameter| {
             if let FnArg::Typed(pat_type) = &mut parameter {
-                *pat_type.ty =
-                    syn_type_cxx_bridge_to_qualified(&pat_type.ty, &type_names.qualified);
+                *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names);
             }
             parameter
         })
@@ -66,9 +66,7 @@ pub fn generate_rust_signal(
         .iter()
         .cloned()
         .map(|parameter| match parameter {
-            FnArg::Typed(pat_type) => {
-                syn_type_cxx_bridge_to_qualified(&pat_type.ty, &type_names.qualified)
-            }
+            FnArg::Typed(pat_type) => syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names),
             _ => unreachable!("should only have typed no receiver"),
         })
         .collect();
@@ -78,10 +76,8 @@ pub fn generate_rust_signal(
     } else {
         parse_quote! { &#qobject_name }
     };
-    let self_type_qualified =
-        syn_type_cxx_bridge_to_qualified(&self_type_cxx, &type_names.qualified);
-    let qualified_impl =
-        syn_ident_cxx_bridge_to_qualified_impl(qobject_name, &type_names.qualified);
+    let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names);
+    let qualified_impl = type_names.rust_qualified(qobject_name);
 
     let mut unsafe_block = None;
     let mut unsafe_call = Some(quote! { unsafe });
