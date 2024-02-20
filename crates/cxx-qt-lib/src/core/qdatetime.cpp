@@ -149,7 +149,7 @@ void
 qdatetimeSetTimeZone(QDateTime& datetime, const QTimeZone& timeZone)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-  datetime.setTimeZone(timeZone, TransitionResolution::LegacyBehavior);
+  datetime.setTimeZone(timeZone, QDateTime::TransitionResolution::LegacyBehavior);
 #else
   datetime.setTimeZone(timeZone);
 #endif
