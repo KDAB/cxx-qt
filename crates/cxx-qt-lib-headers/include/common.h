@@ -96,5 +96,12 @@ make_unique(Args... args)
   return std::make_unique<T>(args...);
 }
 
+template<typename T, typename... Args>
+std::shared_ptr<T>
+make_shared(Args... args)
+{
+  return std::make_shared<T>(args...);
+}
+
 } // namespace cxxqtlib1
 } // namespace rust
