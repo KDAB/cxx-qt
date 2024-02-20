@@ -145,5 +145,16 @@ qdatetimeToSecsSinceEpoch(const QDateTime& datetime)
   return static_cast<::std::int64_t>(datetime.toSecsSinceEpoch());
 }
 
+void
+qdatetimeSetTimeZone(QDateTime& datetime, const QTimeZone& timeZone)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+  datetime.setTimeZone(timeZone,
+                       QDateTime::TransitionResolution::LegacyBehavior);
+#else
+  datetime.setTimeZone(timeZone);
+#endif
+}
+
 }
 }
