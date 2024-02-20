@@ -63,10 +63,6 @@ mod ffi {
         #[rust_name = "set_time_spec"]
         fn setTimeSpec(self: &mut QDateTime, spec: TimeSpec);
 
-        /// Sets the time zone used in this datetime to toZone. The datetime will refer to a different point in time.
-        #[rust_name = "set_time_zone"]
-        fn setTimeZone(self: &mut QDateTime, time_zone: &QTimeZone);
-
         /// Returns the time part of the datetime.
         fn time(self: &QDateTime) -> QTime;
 
@@ -162,6 +158,8 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_to_secs_since_epoch"]
         fn qdatetimeToSecsSinceEpoch(datetime: &QDateTime) -> i64;
+        #[rust_name = "qdatetime_settimezone"]
+        fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -208,6 +206,11 @@ pub struct QDateTime {
 }
 
 impl QDateTime {
+    /// Sets the time zone used in this datetime to toZone. The datetime will refer to a different point in time.
+    pub fn set_time_zone(&mut self, time_zone: &ffi::QTimeZone) {
+        ffi::qdatetime_settimezone(self, time_zone)
+    }
+
     /// Returns a QDateTime object containing a datetime ndays days later than the datetime of this object (or earlier if ndays is negative).
     pub fn add_days(&self, ndays: i64) -> Self {
         ffi::qdatetime_add_days(self, ndays)

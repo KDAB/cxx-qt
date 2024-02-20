@@ -67,6 +67,7 @@ qdatetimeTimeZone(const QDateTime& datetime);
 qdatetimeToMSecsSinceEpoch(const QDateTime& datetime);
 ::std::int64_t
 qdatetimeToSecsSinceEpoch(const QDateTime& datetime);
-
+void
+qdatetimeSetTimeZone(QDateTime& datetime, const QTimeZone& timeZone);
 }
 }
