@@ -138,6 +138,7 @@ pub(crate) fn syn_type_is_cxx_bridge_unsafe(ty: &syn::Type) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use quote::format_ident;
     use syn::parse_quote;
 
     #[test]
@@ -257,10 +258,10 @@ mod tests {
     #[test]
     fn test_syn_type_cxx_bridge_to_qualified_mapped() {
         let mut mappings = TypeNames::default();
-        mappings.insert("A", Some(parse_quote! { ffi::B }), None, None);
+        mappings.insert("A", Some(format_ident!("ffi")), Some("B"), None);
         assert_eq!(
             syn_type_cxx_bridge_to_qualified(&parse_quote! { A }, &mappings),
-            parse_quote! { ffi::B }
+            parse_quote! { ffi::A }
         );
     }
 

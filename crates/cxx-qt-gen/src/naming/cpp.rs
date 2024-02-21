@@ -127,7 +127,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 }
 
                 // Use the CXX mapped name
-                Ok(type_names.cxx_qualified(first))
+                Ok(first.to_owned())
             } else {
                 Ok(ty_strings.join("::"))
             }
@@ -205,15 +205,19 @@ fn path_argument_to_string(
 
 /// Convert a segment of a path to C++
 fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Result<String> {
-    let mut ident = segment.ident.to_string();
+    let ident = &segment.ident;
+    let ident_string = ident.to_string();
 
     // If we are a Pin<T> then for C++ it becomes just T
-    let args = match ident.as_str() {
+    let args = match &*ident_string {
         "Pin" => {
-            ident = path_argument_to_string(&segment.arguments, type_names)?
-                .map_or_else(|| "".to_owned(), |values| values.join(", "));
+            let mut args =
+                path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_else(Vec::new);
 
-            None
+            if args.len() != 1 {
+                return Err(Error::new(segment.span(), "Pin must have one argument"));
+            }
+            return Ok(args.pop().unwrap());
         }
         "Result" => {
             return Err(Error::new(segment.span(), "Result is not supported"));
@@ -226,15 +230,20 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
         }
     };
 
-    // If there are template args check that we aren't a recognised A of A<B>
-    if args.is_some() {
+    // If there are template args check that its a supported template type.
+    let ident = if args.is_some() {
         // A built in template base cannot have a cxx_name or a namespace
-        ident = if let Some(built_in) = possible_built_in_template_base(&ident) {
+        if let Some(built_in) = possible_built_in_template_base(&ident_string) {
             built_in.to_owned()
         } else {
-            type_names.cxx_qualified(&ident)
-        };
-    }
+            return Err(Error::new_spanned(
+                ident,
+                format!("Unsupported template base: {ident}"),
+            ));
+        }
+    } else {
+        type_names.cxx_qualified(&segment.ident)
+    };
 
     Ok(format!(
         "{ident}{args}",

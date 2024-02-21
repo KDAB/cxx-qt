@@ -57,7 +57,7 @@ impl QSignalHelperName {
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
         let namespace = {
             let mut namespace = vec!["rust::cxxqtgen1".to_owned()];
-            if let Some(qobject_namespace) = type_names.namespace(&qobject_ident.to_string()) {
+            if let Some(qobject_namespace) = type_names.namespace(qobject_ident) {
                 namespace.push(qobject_namespace);
             }
 

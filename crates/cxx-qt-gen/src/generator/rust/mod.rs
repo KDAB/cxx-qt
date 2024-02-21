@@ -70,7 +70,7 @@ impl GeneratedRustBlocks {
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
             cxx_mod_contents,
-            namespace: parser.cxx_qt_data.namespace.clone(),
+            namespace: parser.cxx_qt_data.namespace.clone().unwrap_or_default(),
             fragments,
         })
     }

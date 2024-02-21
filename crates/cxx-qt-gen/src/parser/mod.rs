@@ -40,8 +40,8 @@ pub struct Parser {
 }
 
 impl Parser {
-    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(String, String)> {
-        let mut namespace = "".to_owned();
+    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(Option<String>, String)> {
+        let mut namespace = None;
         let mut cxx_file_stem = module.ident.to_string();
 
         // Remove the cxx_qt::bridge attribute
@@ -55,7 +55,7 @@ impl Parser {
                         Meta::NameValue(name_value) => {
                             // Parse any namespace in the cxx_qt::bridge macro
                             if name_value.path.is_ident("namespace") {
-                                namespace = expr_to_string(&name_value.value)?;
+                                namespace = Some(expr_to_string(&name_value.value)?);
                             // Parse any custom file stem
                             } else if name_value.path.is_ident("cxx_file_stem") {
                                 cxx_file_stem = expr_to_string(&name_value.value)?;
@@ -77,7 +77,7 @@ impl Parser {
 
     fn parse_module_contents(
         mut module: ItemMod,
-        namespace: String,
+        namespace: Option<String>,
     ) -> Result<(ParsedCxxQtData, ItemMod)> {
         let mut others = vec![];
 
@@ -115,7 +115,7 @@ impl Parser {
                 .as_ref()
                 .map(|brace_and_items| &brace_and_items.1)
                 .unwrap_or(&vec![]),
-            &cxx_qt_data.namespace,
+            cxx_qt_data.namespace.as_deref(),
             &module.ident,
         )?;
 
@@ -152,7 +152,7 @@ mod tests {
             mod ffi {}
         };
         assert_eq!(parser.passthrough_module, expected_module);
-        assert_eq!(parser.cxx_qt_data.namespace, "");
+        assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
@@ -175,7 +175,7 @@ mod tests {
             }
         };
         assert_eq!(parser.passthrough_module, expected_module);
-        assert_eq!(parser.cxx_qt_data.namespace, "");
+        assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
 
@@ -202,7 +202,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
-        assert_eq!(parser.cxx_qt_data.namespace, "cxx_qt");
+        assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
         assert_eq!(parser.type_names.num_types(), 1);
         assert_eq!(
@@ -238,7 +238,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 1);
-        assert_eq!(parser.cxx_qt_data.namespace, "");
+        assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
     }
 
@@ -299,15 +299,24 @@ mod tests {
         let parser = Parser::from(module).unwrap();
         assert_eq!(parser.type_names.num_types(), 3);
         assert_eq!(
-            parser.type_names.namespace("MyObjectA").unwrap(),
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectA"))
+                .unwrap(),
             "bridge_namespace"
         );
         assert_eq!(
-            parser.type_names.namespace("MyObjectB").unwrap(),
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectB"))
+                .unwrap(),
             "type_namespace"
         );
         assert_eq!(
-            parser.type_names.namespace("MyObjectC").unwrap(),
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectC"))
+                .unwrap(),
             "extern_namespace"
         );
     }
