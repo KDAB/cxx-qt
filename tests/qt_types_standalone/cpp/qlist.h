@@ -9,7 +9,7 @@
 #include <QtCore/QList>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qlist.cxx.h"
+#include "qt_types_standalone/src/qlist.cxx.h"
 
 class QListTest : public QObject
 {

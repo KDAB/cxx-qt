@@ -9,7 +9,7 @@
 #include <QtCore/QByteArray>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qbytearray.cxx.h"
+#include "qt_types_standalone/src/qbytearray.cxx.h"
 
 class QByteArrayTest : public QObject
 {
