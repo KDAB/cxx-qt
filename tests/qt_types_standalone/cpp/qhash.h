@@ -10,7 +10,7 @@
 #include <QtCore/QVariant>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qhash.cxx.h"
+#include "qt_types_standalone/src/qhash.cxx.h"
 
 class QHashTest : public QObject
 {

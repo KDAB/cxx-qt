@@ -9,7 +9,7 @@
 #include <QtCore/QTimeZone>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qtimezone.cxx.h"
+#include "qt_types_standalone/src/qtimezone.cxx.h"
 
 class QTimeZoneTest : public QObject
 {
