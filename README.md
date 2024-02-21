@@ -23,6 +23,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 | cxx-qt-lib | [![docs.rs](https://img.shields.io/docsrs/cxx-qt-lib?logo=docsdotrs)](https://docs.rs/cxx-qt-lib) [![Crates.io](https://img.shields.io/crates/v/cxx-qt-lib)](https://crates.io/crates/cxx-qt-lib) |
 | qt-build-utils | [![docs.rs](https://img.shields.io/docsrs/qt-build-utils?logo=docsdotrs)](https://docs.rs/qt-build-utils) [![Crates.io](https://img.shields.io/crates/v/qt-build-utils)](https://crates.io/crates/qt-build-utils) |
 
+If you want to get in touch with us, feel free to join our Zulip Chat at:
+[https://cxx-qt.zulipchat.com](https://cxx-qt.zulipchat.com).
+There we openly discuss all things about CXX-Qt development.
+
 CXX-Qt is a set of Rust crates for creating bidirectional Rust ⇄ C++ bindings with [Qt](https://www.qt.io/).
 It can be used to integrate Rust into C++ applications using CMake or used to build Rust applications with Cargo.
 CXX-Qt provides tools for implementing [QObject](https://doc.qt.io/qt-6/object.html) subclasses in Rust which can
