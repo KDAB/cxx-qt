@@ -21,7 +21,7 @@ using MyObjectCxxQtSignalHandlertrivialChanged = ::rust::cxxqt1::SignalHandler<
   struct MyObjectCxxQtSignalParamstrivialChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
-#include "cxx-qt-gen/ffi.cxx.h"
+#include "ffi.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection

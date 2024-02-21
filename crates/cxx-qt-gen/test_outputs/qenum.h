@@ -53,7 +53,7 @@ enum class MyOtherNamespacedEnum : ::std::int32_t
 Q_ENUM_NS(MyOtherNamespacedEnum)
 } // namespace other_namespace
 
-#include "cxx-qt-gen/ffi.cxx.h"
+#include "ffi.cxx.h"
 
 namespace cxx_qt::my_object {
 class MyObject

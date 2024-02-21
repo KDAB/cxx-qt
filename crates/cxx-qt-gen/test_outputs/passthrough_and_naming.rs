@@ -67,7 +67,7 @@ pub mod ffi {
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {
-        include!("cxx-qt-gen/multi_object.cxxqt.h");
+        include!("multi_object.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

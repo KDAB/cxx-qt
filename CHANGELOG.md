@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File name is used for CXX bridges rather than module name to match upstream
 - `#[qobject]` attribute is now optional on types in `extern "RustQt"`
 - `#[qobject]` attribute is now required on types in `extern "C++Qt"`
+- Folder structure of Rust bridges is now considered in the same way as CXX in `CxxQtBuilder`
 
 ### Fixed
 

@@ -9,7 +9,7 @@
 #include <QtGui/QPen>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qpen.cxx.h"
+#include "cxx-qt-gen/src/qpen.cxx.h"
 
 class QPenTest : public QObject
 {

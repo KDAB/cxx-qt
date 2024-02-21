@@ -79,7 +79,7 @@ impl GeneratedRustBlocks {
 
 /// Generate the include line for this parsed block
 fn generate_include(parser: &Parser) -> Result<Item> {
-    let import_path = format!("cxx-qt-gen/{}.cxxqt.h", parser.cxx_file_stem);
+    let import_path = format!("{}.cxxqt.h", parser.cxx_file_stem);
 
     syn::parse2(quote! {
         unsafe extern "C++" {
@@ -116,7 +116,7 @@ mod tests {
             &rust.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    include!("cxx-qt-gen/ffi.cxxqt.h");
+                    include!("ffi.cxxqt.h");
                 }
             },
         );
@@ -164,7 +164,7 @@ mod tests {
             &rust.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    include!("cxx-qt-gen/my_object.cxxqt.h");
+                    include!("my_object.cxxqt.h");
                 }
             },
         );

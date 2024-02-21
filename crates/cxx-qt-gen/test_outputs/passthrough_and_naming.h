@@ -53,7 +53,7 @@ using ExternObjectCxxQtSignalHandlererrorOccurred =
     struct ExternObjectCxxQtSignalParamserrorOccurred*>;
 } // namespace mynamespace::rust::cxxqtgen1
 
-#include "cxx-qt-gen/multi_object.cxx.h"
+#include "multi_object.cxx.h"
 
 namespace rust::cxxqtgen1 {
 ::QMetaObject::Connection

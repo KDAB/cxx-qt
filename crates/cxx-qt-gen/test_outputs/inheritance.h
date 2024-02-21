@@ -6,7 +6,7 @@
 
 class MyObject;
 
-#include "cxx-qt-gen/inheritance.cxx.h"
+#include "inheritance.cxx.h"
 
 class MyObject
   : public QAbstractItemModel
