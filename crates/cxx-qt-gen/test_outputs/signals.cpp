@@ -139,12 +139,12 @@ SignalHandler<
 operator()<::cxx_qt::my_object::MyObject&,
            ::std::int32_t,
            ::std::unique_ptr<Opaque>,
-           QPoint,
-           QPoint const&>(::cxx_qt::my_object::MyObject& self,
-                          ::std::int32_t first,
-                          ::std::unique_ptr<Opaque> second,
-                          QPoint third,
-                          QPoint const& fourth)
+           ::QPoint,
+           ::QPoint const&>(::cxx_qt::my_object::MyObject& self,
+                            ::std::int32_t first,
+                            ::std::unique_ptr<Opaque> second,
+                            ::QPoint third,
+                            ::QPoint const& fourth)
 {
   call_MyObject_signal_handler_dataChanged(*this,
                                            self,
@@ -178,19 +178,19 @@ MyObject_dataChangedConnect(
     &self,
     [&, closure = ::std::move(closure)](::std::int32_t first,
                                         ::std::unique_ptr<Opaque> second,
-                                        QPoint third,
-                                        QPoint const& fourth) mutable {
+                                        ::QPoint third,
+                                        ::QPoint const& fourth) mutable {
       const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::MyObject> guard(
         self);
       closure.template operator()<::cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
-                                  QPoint,
-                                  QPoint const&>(self,
-                                                 ::std::move(first),
-                                                 ::std::move(second),
-                                                 ::std::move(third),
-                                                 ::std::move(fourth));
+                                  ::QPoint,
+                                  ::QPoint const&>(self,
+                                                   ::std::move(first),
+                                                   ::std::move(second),
+                                                   ::std::move(third),
+                                                   ::std::move(fourth));
     },
     type);
 }
@@ -218,12 +218,12 @@ SignalHandler<
 operator()<::cxx_qt::my_object::MyObject&,
            ::std::int32_t,
            ::std::unique_ptr<Opaque>,
-           QPoint,
-           QPoint const&>(::cxx_qt::my_object::MyObject& self,
-                          ::std::int32_t first,
-                          ::std::unique_ptr<Opaque> second,
-                          QPoint third,
-                          QPoint const& fourth)
+           ::QPoint,
+           ::QPoint const&>(::cxx_qt::my_object::MyObject& self,
+                            ::std::int32_t first,
+                            ::std::unique_ptr<Opaque> second,
+                            ::QPoint third,
+                            ::QPoint const& fourth)
 {
   call_MyObject_signal_handler_newData(*this,
                                        self,
@@ -257,19 +257,19 @@ MyObject_newDataConnect(
     &self,
     [&, closure = ::std::move(closure)](::std::int32_t first,
                                         ::std::unique_ptr<Opaque> second,
-                                        QPoint third,
-                                        QPoint const& fourth) mutable {
+                                        ::QPoint third,
+                                        ::QPoint const& fourth) mutable {
       const ::rust::cxxqt1::MaybeLockGuard<::cxx_qt::my_object::MyObject> guard(
         self);
       closure.template operator()<::cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
-                                  QPoint,
-                                  QPoint const&>(self,
-                                                 ::std::move(first),
-                                                 ::std::move(second),
-                                                 ::std::move(third),
-                                                 ::std::move(fourth));
+                                  ::QPoint,
+                                  ::QPoint const&>(self,
+                                                   ::std::move(first),
+                                                   ::std::move(second),
+                                                   ::std::move(third),
+                                                   ::std::move(fourth));
     },
     type);
 }

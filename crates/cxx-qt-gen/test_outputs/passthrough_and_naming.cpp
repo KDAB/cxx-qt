@@ -18,7 +18,7 @@ template<>
 template<>
 void
 SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::
-operator()<QPushButton&, bool>(QPushButton& self, bool checked)
+operator()<::QPushButton&, bool>(::QPushButton& self, bool checked)
 {
   call_QPushButton_signal_handler_clicked(*this, self, ::std::move(checked));
 }
@@ -38,18 +38,18 @@ static_assert(
 namespace rust::cxxqtgen1 {
 ::QMetaObject::Connection
 QPushButton_clickedConnect(
-  QPushButton& self,
+  ::QPushButton& self,
   ::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked closure,
   ::Qt::ConnectionType type)
 {
   return ::QObject::connect(
     &self,
-    &QPushButton::clicked,
+    &::QPushButton::clicked,
     &self,
     [&, closure = ::std::move(closure)](bool checked) mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<QPushButton> guard(self);
-      closure.template operator()<QPushButton&, bool>(self,
-                                                      ::std::move(checked));
+      const ::rust::cxxqt1::MaybeLockGuard<::QPushButton> guard(self);
+      closure.template operator()<::QPushButton&, bool>(self,
+                                                        ::std::move(checked));
     },
     type);
 }

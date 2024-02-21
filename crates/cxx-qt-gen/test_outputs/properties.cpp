@@ -131,7 +131,7 @@ MyObject::setPrimitive(::std::int32_t const& value)
   setPrimitiveWrapper(value);
 }
 
-QPoint const&
+::QPoint const&
 MyObject::getTrivial() const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
@@ -139,7 +139,7 @@ MyObject::getTrivial() const
 }
 
 void
-MyObject::setTrivial(QPoint const& value)
+MyObject::setTrivial(::QPoint const& value)
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   setTrivialWrapper(value);

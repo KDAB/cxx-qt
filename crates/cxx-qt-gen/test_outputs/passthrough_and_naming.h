@@ -58,7 +58,7 @@ using ExternObjectCxxQtSignalHandlererrorOccurred =
 namespace rust::cxxqtgen1 {
 ::QMetaObject::Connection
 QPushButton_clickedConnect(
-  QPushButton& self,
+  ::QPushButton& self,
   ::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked closure,
   ::Qt::ConnectionType type);
 } // namespace rust::cxxqtgen1

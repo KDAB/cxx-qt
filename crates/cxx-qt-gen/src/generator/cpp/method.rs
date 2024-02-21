@@ -411,12 +411,15 @@ mod tests {
         } else {
             panic!("Expected pair")
         };
-        assert_str_eq!(header, "Q_INVOKABLE B2 trivialInvokable(A1 param) const;");
+        assert_str_eq!(
+            header,
+            "Q_INVOKABLE ::B2 trivialInvokable(::A1 param) const;"
+        );
         assert_str_eq!(
             source,
             indoc! {r#"
-            B2
-            MyObject::trivialInvokable(A1 param) const
+            ::B2
+            MyObject::trivialInvokable(::A1 param) const
             {
                 const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
                 return trivialInvokableWrapper(param);
@@ -434,7 +437,7 @@ mod tests {
         };
         assert_str_eq!(
             header,
-            "B2 trivialInvokableWrapper(A1 param) const noexcept;"
+            "::B2 trivialInvokableWrapper(::A1 param) const noexcept;"
         );
     }
 }
