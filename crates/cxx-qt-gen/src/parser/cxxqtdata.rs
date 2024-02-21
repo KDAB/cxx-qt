@@ -36,14 +36,14 @@ pub struct ParsedCxxQtData {
     /// Blocks of extern "C++Qt"
     pub extern_cxxqt_blocks: Vec<ParsedExternCxxQt>,
     /// The namespace of the CXX-Qt module
-    pub namespace: String,
+    pub namespace: Option<String>,
     /// The ident of the module, used for mappings
     pub module_ident: Ident,
 }
 
 impl ParsedCxxQtData {
     /// Create a ParsedCxxQtData from a given module and namespace
-    pub fn new(module_ident: Ident, namespace: String) -> Self {
+    pub fn new(module_ident: Ident, namespace: Option<String>) -> Self {
         Self {
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
             qenums: vec![],
@@ -69,7 +69,7 @@ impl ParsedCxxQtData {
                             )
                         })
                         .transpose()?
-                        .unwrap_or_else(|| self.namespace.clone());
+                        .or_else(|| self.namespace.clone());
 
                     for foreign_item in &foreign_mod.items {
                         match foreign_item {
@@ -87,8 +87,8 @@ impl ParsedCxxQtData {
                                     let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
 
                                     // Inject the bridge namespace if the qobject one is empty
-                                    if qobject.namespace.is_empty() && !namespace.is_empty() {
-                                        qobject.namespace = namespace.clone();
+                                    if qobject.namespace.is_empty() && namespace.is_some() {
+                                        qobject.namespace = namespace.clone().unwrap();
                                     }
 
                                     // Note that we assume a compiler error will occur later
@@ -147,7 +147,7 @@ impl ParsedCxxQtData {
     fn parse_namespaced_qenum(&mut self, item: ItemEnum) -> Result<()> {
         let mut qenum = ParsedQEnum::parse(item)?;
         if qenum.namespace.is_empty() {
-            qenum.namespace = self.namespace.clone();
+            qenum.namespace = self.namespace.clone().unwrap_or_default();
         }
         if qenum.namespace.is_empty() {
             return Err(syn::Error::new_spanned(
@@ -293,7 +293,7 @@ mod tests {
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
     pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
         cxx_qt_data
             .qobjects
             .insert(qobject_ident(), create_parsed_qobject());
@@ -302,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_one_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -320,7 +320,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_multiple_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -344,7 +344,7 @@ mod tests {
     #[test]
     fn test_find_qobjects_namespace() {
         let mut cxx_qt_data =
-            ParsedCxxQtData::new(format_ident!("ffi"), "bridge_namespace".to_string());
+            ParsedCxxQtData::new(format_ident!("ffi"), Some("bridge_namespace".to_string()));
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_find_qobjects_no_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), "".to_string());
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
 
         let module: ItemMod = parse_quote! {
             mod module {
@@ -708,7 +708,7 @@ mod tests {
         let qenum = &cxxqtdata.qenums[0];
         assert_eq!("my_namespace", &qenum.namespace);
 
-        cxxqtdata.namespace = "other_namespace".to_string();
+        cxxqtdata.namespace = Some("other_namespace".to_string());
 
         assert!(cxxqtdata
             .parse_cxx_qt_item(qenum_without_namespace)

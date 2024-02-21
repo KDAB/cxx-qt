@@ -29,24 +29,76 @@ use crate::syntax::{
 
 use crate::parser::{cxxqtdata::ParsedCxxQtData, qenum::ParsedQEnum, qobject::ParsedQObject};
 
+/// This struct contains all names a certain syntax element may have
+///
+/// This includes the rust_name, cxx_name, as well as qualifications like
+/// the rust module and C++ namespace.
+#[derive(Debug)]
+pub struct Name {
+    rust: Ident,
+    cxx: Option<String>,
+    module: Ident,
+    namespace: Option<String>,
+}
+
+impl Name {
+    fn from_ident_and_attrs(
+        ident: &Ident,
+        attrs: &[Attribute],
+        parent_namespace: Option<&str>,
+        module: &Ident,
+    ) -> Result<Self> {
+        // Find if there is a namespace (for C++ generation)
+        let mut namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
+            Some(expr_to_string(
+                &attrs[index].meta.require_name_value()?.value,
+            )?)
+        } else {
+            parent_namespace.map(|namespace| namespace.to_owned())
+        };
+
+        // This is an important check as it allows for the namespace to be cleared by assigning an
+        // empty namespace (i.e. #[namespace = ""])
+        if let Some(namespace_name) = &namespace {
+            if namespace_name.is_empty() {
+                namespace = None;
+            }
+        }
+
+        // Find if there is a cxx_name mapping (for C++ generation)
+        let cxx_name = attribute_find_path(attrs, &["cxx_name"])
+            .map(|index| -> Result<_> {
+                expr_to_string(&attrs[index].meta.require_name_value()?.value)
+            })
+            .transpose()?;
+
+        // Find if there is a rust_name mapping
+        let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
+            format_ident!(
+                "{}",
+                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
+                span = attrs[index].span()
+            )
+        } else {
+            ident.clone()
+        };
+
+        Ok(Self {
+            rust: rust_ident,
+            cxx: cxx_name,
+            namespace,
+            module: module.clone(),
+        })
+    }
+}
+
 /// The purpose of this struct is to store all nameable types.
 ///
 /// This is used by the generator phase to find types by their identifier, such that they can be
 /// fully qualified in Rust and C++.
 #[derive(Default, Debug)]
 pub struct TypeNames {
-    /// Map of the cxx_name of any types defined in CXX extern blocks
-    ///
-    /// This is used in the C++ generation to map the Rust type name to the C++ name
-    cxx_names: BTreeMap<String, String>,
-    /// Map of the namespace of any types or methods defined in CXX extern blocks
-    ///
-    /// This is used in the C++ generation to map the Rust type name to the C++ name
-    namespaces: BTreeMap<String, String>,
-    /// Mappings for CXX types when used outside the bridge
-    ///
-    /// This is used in the Rust generation to map the bridge type A to ffi::B
-    qualified: BTreeMap<Ident, Path>,
+    names: BTreeMap<Ident, Name>,
 }
 
 impl TypeNames {
@@ -57,7 +109,7 @@ impl TypeNames {
     pub fn from_parsed_data(
         cxx_qt_data: &ParsedCxxQtData,
         cxx_items: &[Item],
-        bridge_namespace: &str,
+        bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<Self> {
         let mut type_names = Self::default();
@@ -71,7 +123,7 @@ impl TypeNames {
     fn populate_from_cxx_items(
         &mut self,
         cxx_items: &[Item],
-        bridge_namespace: &str,
+        bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
         // Load any CXX name mappings
@@ -84,7 +136,7 @@ impl TypeNames {
     fn populate_from_cxx_qt_data(
         &mut self,
         cxx_qt_data: &ParsedCxxQtData,
-        bridge_namespace: &str,
+        bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
         let populate_qenum = |type_names: &mut TypeNames, qenum: &ParsedQEnum| {
@@ -97,7 +149,7 @@ impl TypeNames {
         };
 
         for qobject in cxx_qt_data.qobjects.values() {
-            self.insert_qobject(qobject, bridge_namespace, module_ident);
+            self.insert_qobject(qobject, bridge_namespace, module_ident)?;
             for qenum in &qobject.qenums {
                 populate_qenum(self, qenum)?;
             }
@@ -131,34 +183,33 @@ impl TypeNames {
         // The QObject is parsed weirdly
         // It will self-assign the bridge namespace if it doesn't have one itself.
         // TODO: Fix this and do that in the naming phase
-        _namespace: &str,
+        _namespace: Option<&str>,
         module_ident: &Ident,
-    ) {
-        self.qualified.insert(
-            qobject.qobject_ty.ident_left.clone(),
-            path_from_idents(module_ident, &qobject.qobject_ty.ident_left),
-        );
-
-        if !qobject.namespace.is_empty() {
-            self.namespaces.insert(
-                qobject.qobject_ty.ident_left.to_string(),
-                qobject.namespace.clone(),
-            );
-        }
+    ) -> Result<()> {
+        let name = Name::from_ident_and_attrs(
+            &qobject.qobject_ty.ident_left,
+            &qobject.qobject_ty.attrs,
+            Some(&qobject.namespace),
+            module_ident,
+        )?;
+        self.names.insert(name.rust.clone(), name);
+        Ok(())
     }
 
     fn populate_from_foreign_mod_item(
         &mut self,
         foreign_mod: &ItemForeignMod,
-        bridge_namespace: &str,
+        bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
         // Retrieve a namespace from the mod or the bridge
         let block_namespace =
             if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value)?
+                Some(expr_to_string(
+                    &foreign_mod.attrs[index].meta.require_name_value()?.value,
+                )?)
             } else {
-                bridge_namespace.to_owned()
+                bridge_namespace.map(str::to_owned)
             };
 
         // Read each of the types in the mod (type A;)
@@ -166,7 +217,7 @@ impl TypeNames {
             self.populate(
                 &foreign_type.ident,
                 &foreign_type.attrs,
-                &block_namespace,
+                block_namespace.as_deref(),
                 module_ident,
             )?;
         }
@@ -181,7 +232,7 @@ impl TypeNames {
     fn populate_from_item(
         &mut self,
         item: &Item,
-        namespace: &str,
+        namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
         // Consider if shared types have mappings
@@ -202,27 +253,38 @@ impl TypeNames {
     }
 
     /// For a given rust ident return the CXX name with its namespace
-    pub fn cxx_qualified(&self, ident: &str) -> String {
+    pub fn cxx_qualified(&self, ident: &Ident) -> String {
         // Check if there is a cxx_name or namespace to handle
-        let cxx_name = self
-            .cxx_names
-            .get(ident)
-            .cloned()
-            .unwrap_or_else(|| ident.to_owned());
+        let name = self.names.get(ident);
 
-        if let Some(namespace) = self.namespace(ident) {
+        if name.is_none() {
+            return ident.to_string();
+        }
+        let name = name.unwrap();
+
+        let cxx_name = name.cxx.clone().unwrap_or_else(|| name.rust.to_string());
+
+        if let Some(namespace) = &name.namespace {
             format!("::{namespace}::{cxx_name}")
         } else {
-            cxx_name
+            cxx_name.clone()
+        }
+    }
+
+    /// For a given rust ident return the CXX name **without** its namespace
+    pub fn cxx_unqualified(&self, ident: &Ident) -> Result<String> {
+        if let Some(name) = self.names.get(ident) {
+            Ok(name.cxx.clone().unwrap_or_else(|| ident.to_string()))
+        } else {
+            Err(syn::Error::new_spanned(ident, "Unknown type!"))
         }
     }
 
     /// For a given rust ident return the namespace if it's not empty
-    pub fn namespace(&self, ident: &str) -> Option<String> {
-        self.namespaces
+    pub fn namespace(&self, ident: &Ident) -> Option<String> {
+        self.names
             .get(ident)
-            .filter(|namespace| !namespace.is_empty())
-            .cloned()
+            .and_then(|name| name.namespace.clone())
     }
 
     /// Return a qualified version of the ident that can by used to refer to the type T outside of a CXX bridge
@@ -232,61 +294,29 @@ impl TypeNames {
     /// Note that this only handles types that are declared inside this bridge.
     /// E.g. UniquePtr -> cxx::UniquePtr isn't handled here.
     pub fn rust_qualified(&self, ident: &Ident) -> syn::Path {
-        if let Some(qualified_path) = self.qualified.get(ident) {
-            qualified_path.clone()
+        if let Some(name) = self.names.get(ident) {
+            path_from_idents(&name.module, &name.rust)
         } else {
             Path::from(ident.clone())
         }
     }
 
     /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
-    pub fn populate(
+    fn populate(
         &mut self,
         ident: &Ident,
         attrs: &[Attribute],
-        parent_namespace: &str,
+        parent_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
-        // Find if there is a namespace (for C++ generation)
-        let namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
-            expr_to_string(&attrs[index].meta.require_name_value()?.value)?
-        } else {
-            parent_namespace.to_string()
-        };
-
-        if !namespace.is_empty() {
-            self.namespaces.insert(ident.to_string(), namespace);
-        }
-
-        // Find if there is a cxx_name mapping (for C++ generation)
-        if let Some(index) = attribute_find_path(attrs, &["cxx_name"]) {
-            self.cxx_names.insert(
-                ident.to_string(),
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-            );
-        }
-
-        // Find if there is a rust_name mapping
-        let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
-            format_ident!(
-                "{}",
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-                span = attrs[index].span()
-            )
-        } else {
-            ident.clone()
-        };
-
-        // Add the rust_ident to qualified mappings (for Rust generation using ffi::T)
-        self.qualified
-            .insert(ident.clone(), path_from_idents(module_ident, &rust_ident));
-
+        let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, module_ident)?;
+        self.names.insert(name.rust.clone(), name);
         Ok(())
     }
 
     #[cfg(test)]
     pub fn num_types(&self) -> usize {
-        self.qualified.len()
+        self.names.len()
     }
 
     #[cfg(test)]
@@ -294,21 +324,19 @@ impl TypeNames {
     pub fn insert(
         &mut self,
         ident: &str,
-        qualified: Option<Path>,
+        module: Option<Ident>,
         cxx_name: Option<&str>,
         namespace: Option<&str>,
     ) {
-        if let Some(qualified) = qualified {
-            self.qualified.insert(format_ident!("{}", ident), qualified);
-        }
-        if let Some(cxx_name) = cxx_name {
-            self.cxx_names
-                .insert(ident.to_string(), cxx_name.to_string());
-        }
-        if let Some(namespace) = namespace {
-            self.namespaces
-                .insert(ident.to_string(), namespace.to_string());
-        }
+        let module = module.unwrap_or(format_ident!("A"));
+        let name = Name {
+            rust: format_ident!("{ident}"),
+            cxx: cxx_name.map(str::to_owned),
+            namespace: namespace.map(str::to_owned),
+            module,
+        };
+
+        self.names.insert(name.rust.clone(), name);
     }
 }
 
@@ -321,127 +349,110 @@ mod tests {
 
     #[test]
     fn test_attribute_none() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
-            .populate(&format_ident!("A"), &[], "", &format_ident!("ffi"))
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
+            .populate(&ident, &[], None, &format_ident!("ffi"))
             .is_ok());
 
-        assert!(mappings.cxx_names.is_empty());
-        assert!(mappings.namespaces.is_empty());
-        assert_eq!(mappings.qualified.len(), 1);
-        assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
-        );
-        assert!(mappings.namespace("A").is_none());
+        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
+        assert_eq!(types.cxx_qualified(&ident), "A"); // TODO Should this be "::A"?
+        assert!(types.namespace(&ident).is_none());
     }
 
     #[test]
     fn test_attribute_cxx_name() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
             .populate(
-                &format_ident!("A"),
+                &ident,
                 &[parse_quote! { #[cxx_name = "B"] }],
-                "",
+                None,
                 &format_ident!("ffi")
             )
             .is_ok());
 
-        assert_eq!(mappings.cxx_names.len(), 1);
-        assert_eq!(mappings.cxx_names.get("A").unwrap(), "B");
-        assert!(mappings.namespaces.is_empty());
-        assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
-        );
+        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.cxx_qualified(&ident), "B");
+        assert!(types.namespace(&ident).is_none());
+        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
     }
 
     #[test]
     fn test_attribute_namespace() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
             .populate(
-                &format_ident!("A"),
+                &ident,
                 &[parse_quote! { #[namespace = "type_namespace"] }],
-                "bridge_namespace",
+                Some("bridge_namespace"),
                 &format_ident!("ffi")
             )
             .is_ok());
 
-        assert!(mappings.cxx_names.is_empty());
-        assert_eq!(mappings.namespaces.get("A").unwrap(), "type_namespace");
-        assert_eq!(mappings.qualified.len(), 1);
-        assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
-        );
-        assert_eq!(mappings.namespace("A"), Some("type_namespace".to_owned()));
+        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.namespace(&ident), Some("type_namespace".to_owned()));
+        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
     }
 
     #[test]
     fn test_attribute_rust_name() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
             .populate(
-                &format_ident!("A"),
+                &ident,
                 &[parse_quote! { #[rust_name = "B"] }],
-                "",
+                None,
                 &format_ident!("ffi")
             )
             .is_ok());
 
-        assert!(mappings.cxx_names.is_empty());
-        assert!(mappings.namespaces.is_empty());
-        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(types.num_types(), 1);
+        assert!(types.namespace(&ident).is_none());
         assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::B }
+            types.rust_qualified(&format_ident!("B")),
+            parse_quote! { ffi::B }
         );
     }
 
     #[test]
     fn test_parent_namespace() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
-            .populate(
-                &format_ident!("A"),
-                &[],
-                "bridge_namespace",
-                &format_ident!("ffi")
-            )
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
+            .populate(&ident, &[], Some("bridge_namespace"), &format_ident!("ffi"))
             .is_ok());
 
-        assert!(mappings.cxx_names.is_empty());
-        assert_eq!(mappings.namespaces.get("A").unwrap(), "bridge_namespace");
-        assert_eq!(mappings.qualified.len(), 1);
+        assert_eq!(types.cxx_qualified(&ident), "::bridge_namespace::A");
+        assert_eq!(types.namespace(&ident).unwrap(), "bridge_namespace");
+        assert_eq!(types.num_types(), 1);
         assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
+            types.rust_qualified(&format_ident!("A")),
+            parse_quote! { ffi::A }
         );
-        assert_eq!(mappings.namespace("A"), Some("bridge_namespace".to_owned()));
     }
 
     #[test]
     fn test_qualified() {
-        let mut mappings = TypeNames::default();
-        assert!(mappings
-            .populate(&format_ident!("A"), &[], "", &format_ident!("my_module"))
+        let mut types = TypeNames::default();
+        let ident = format_ident!("A");
+        assert!(types
+            .populate(&ident, &[], None, &format_ident!("my_module"))
             .is_ok());
 
-        assert!(mappings.cxx_names.is_empty());
-        assert!(mappings.namespaces.is_empty());
-        assert_eq!(mappings.qualified.len(), 1);
-        assert_eq!(
-            mappings.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { my_module::A }
-        );
+        assert!(types.namespace(&ident).is_none());
+        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.rust_qualified(&ident), parse_quote! { my_module::A });
     }
 
     fn parse_cxx_item(item: Item) -> TypeNames {
         let mut type_names = TypeNames::default();
         assert!(type_names
-            .populate_from_cxx_items(&[item], "", &format_ident!("ffi"))
+            .populate_from_cxx_items(&[item], None, &format_ident!("ffi"))
             .is_ok());
         type_names
     }
@@ -457,14 +468,11 @@ mod tests {
         };
 
         let type_names = parse_cxx_item(item);
-        assert_eq!(type_names.cxx_names.len(), 1);
-        assert_eq!(type_names.cxx_names.get("A").unwrap(), "B");
+        let ident = format_ident!("A");
+        assert_eq!(type_names.num_types(), 1);
+        assert_eq!(type_names.cxx_qualified(&ident), "B");
 
-        assert_eq!(type_names.qualified.len(), 1);
-        assert_eq!(
-            type_names.qualified.get(&format_ident!("A")).unwrap(),
-            &parse_quote! { ffi::A }
-        );
+        assert_eq!(type_names.rust_qualified(&ident), parse_quote! { ffi::A });
     }
 
     #[test]
@@ -487,31 +495,49 @@ mod tests {
                 }
             },
         ];
-        let mut type_names = TypeNames::default();
-        assert!(type_names
-            .populate_from_cxx_items(&items, "bridge_namespace", &format_ident!("ffi"))
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, Some("bridge_namespace"), &format_ident!("ffi"))
             .is_ok());
 
-        assert_eq!(type_names.num_types(), 3);
-
-        assert_eq!(type_names.cxx_qualified("A"), "::type_namespace::B");
-        assert_eq!(type_names.cxx_qualified("C"), "::extern_namespace::D");
-        assert_eq!(type_names.cxx_qualified("E"), "::bridge_namespace::E");
-
-        assert_eq!(type_names.namespace("A").unwrap(), "type_namespace");
-        assert_eq!(type_names.namespace("C").unwrap(), "extern_namespace");
-        assert_eq!(type_names.namespace("E").unwrap(), "bridge_namespace");
+        assert_eq!(types.num_types(), 3);
 
         assert_eq!(
-            type_names.rust_qualified(&format_ident!("A")),
+            &types.cxx_qualified(&format_ident!("A")),
+            "::type_namespace::B"
+        );
+        assert_eq!(
+            &types.cxx_qualified(&format_ident!("C")),
+            "::extern_namespace::D"
+        );
+        assert_eq!(
+            &types.cxx_qualified(&format_ident!("E")),
+            "::bridge_namespace::E"
+        );
+
+        assert_eq!(
+            types.namespace(&format_ident!("A")).unwrap(),
+            "type_namespace"
+        );
+        assert_eq!(
+            types.namespace(&format_ident!("C")).unwrap(),
+            "extern_namespace"
+        );
+        assert_eq!(
+            types.namespace(&format_ident!("E")).unwrap(),
+            "bridge_namespace"
+        );
+
+        assert_eq!(
+            types.rust_qualified(&format_ident!("A")),
             parse_quote! { ffi::A }
         );
         assert_eq!(
-            type_names.rust_qualified(&format_ident!("C")),
+            types.rust_qualified(&format_ident!("C")),
             parse_quote! { ffi::C }
         );
         assert_eq!(
-            type_names.rust_qualified(&format_ident!("E")),
+            types.rust_qualified(&format_ident!("E")),
             parse_quote! { ffi::E }
         );
     }
@@ -526,21 +552,16 @@ mod tests {
             }
         };
 
+        let ident = format_ident!("EnumA");
         let type_names = parse_cxx_item(item);
 
-        assert_eq!(type_names.cxx_names.len(), 1);
-        assert_eq!(type_names.cxx_names.get("EnumA").unwrap(), "EnumB");
-
-        assert_eq!(type_names.namespaces.len(), 1);
+        assert_eq!(type_names.num_types(), 1);
+        assert_eq!(type_names.cxx_unqualified(&ident).unwrap(), "EnumB");
+        assert_eq!(type_names.namespace(&ident).unwrap(), "enum_namespace");
+        assert_eq!(type_names.cxx_qualified(&ident), "::enum_namespace::EnumB");
         assert_eq!(
-            type_names.namespaces.get("EnumA").unwrap(),
-            "enum_namespace"
-        );
-
-        assert_eq!(type_names.qualified.len(), 1);
-        assert_eq!(
-            type_names.qualified.get(&format_ident!("EnumA")).unwrap(),
-            &parse_quote! { ffi::EnumA }
+            type_names.rust_qualified(&ident),
+            parse_quote! { ffi::EnumA }
         );
     }
 
@@ -554,21 +575,13 @@ mod tests {
             }
         };
 
-        let type_names = parse_cxx_item(item);
+        let ident = format_ident!("StructA");
+        let types = parse_cxx_item(item);
 
-        assert_eq!(type_names.cxx_names.len(), 1);
-        assert_eq!(type_names.cxx_names.get("StructA").unwrap(), "StructB");
-
-        assert_eq!(type_names.namespaces.len(), 1);
-        assert_eq!(
-            type_names.namespaces.get("StructA").unwrap(),
-            "struct_namespace"
-        );
-
-        assert_eq!(type_names.qualified.len(), 1);
-        assert_eq!(
-            type_names.qualified.get(&format_ident!("StructA")).unwrap(),
-            &parse_quote! { ffi::StructA }
-        );
+        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.cxx_unqualified(&ident).unwrap(), "StructB");
+        assert_eq!(types.cxx_qualified(&ident), "::struct_namespace::StructB");
+        assert_eq!(types.namespace(&ident).unwrap(), "struct_namespace");
+        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::StructA });
     }
 }
