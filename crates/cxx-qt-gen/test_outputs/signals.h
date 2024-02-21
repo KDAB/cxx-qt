@@ -81,8 +81,8 @@ public:
   Q_SIGNAL void ready();
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             ::std::unique_ptr<Opaque> second,
-                            QPoint third,
-                            QPoint const& fourth);
+                            ::QPoint third,
+                            ::QPoint const& fourth);
   explicit MyObject(QObject* parent = nullptr);
 
 private:

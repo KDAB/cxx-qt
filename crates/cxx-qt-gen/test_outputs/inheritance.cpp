@@ -1,14 +1,14 @@
 #include "cxx-qt-gen/inheritance.cxxqt.h"
 
-QVariant
-MyObject::data(QModelIndex const& _index, ::std::int32_t _role) const
+::QVariant
+MyObject::data(::QModelIndex const& _index, ::std::int32_t _role) const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   return dataWrapper(_index, _role);
 }
 
 bool
-MyObject::hasChildren(QModelIndex const& _parent) const
+MyObject::hasChildren(::QModelIndex const& _parent) const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   return hasChildrenWrapper(_parent);

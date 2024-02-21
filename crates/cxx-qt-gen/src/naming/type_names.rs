@@ -192,7 +192,7 @@ impl TypeNames {
         if let Some(namespace) = &name.namespace {
             format!("::{namespace}::{cxx_name}")
         } else {
-            cxx_name.clone()
+            format!("::{cxx_name}")
         }
     }
 
@@ -284,7 +284,7 @@ mod tests {
 
         assert_eq!(types.num_types(), 1);
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
-        assert_eq!(types.cxx_qualified(&ident), "A"); // TODO Should this be "::A"?
+        assert_eq!(types.cxx_qualified(&ident), "::A");
         assert!(types.namespace(&ident).is_none());
     }
 
@@ -302,7 +302,7 @@ mod tests {
             .is_ok());
 
         assert_eq!(types.num_types(), 1);
-        assert_eq!(types.cxx_qualified(&ident), "B");
+        assert_eq!(types.cxx_qualified(&ident), "::B");
         assert!(types.namespace(&ident).is_none());
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
     }
@@ -397,7 +397,7 @@ mod tests {
         let type_names = parse_cxx_item(item);
         let ident = format_ident!("A");
         assert_eq!(type_names.num_types(), 1);
-        assert_eq!(type_names.cxx_qualified(&ident), "B");
+        assert_eq!(type_names.cxx_qualified(&ident), "::B");
 
         assert_eq!(type_names.rust_qualified(&ident), parse_quote! { ffi::A });
     }

@@ -52,15 +52,15 @@ public:
   Q_PROPERTY(::std::int32_t primitive READ getPrimitive WRITE setPrimitive
                NOTIFY primitiveChanged)
   Q_PROPERTY(
-    QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
+    ::QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
 
   virtual ~MyObject() = default;
 
 public:
   ::std::int32_t const& getPrimitive() const;
   Q_SLOT void setPrimitive(::std::int32_t const& value);
-  QPoint const& getTrivial() const;
-  Q_SLOT void setTrivial(QPoint const& value);
+  ::QPoint const& getTrivial() const;
+  Q_SLOT void setTrivial(::QPoint const& value);
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   explicit MyObject(QObject* parent = nullptr);
@@ -68,8 +68,8 @@ public:
 private:
   ::std::int32_t const& getPrimitiveWrapper() const noexcept;
   void setPrimitiveWrapper(::std::int32_t value) noexcept;
-  QPoint const& getTrivialWrapper() const noexcept;
-  void setTrivialWrapper(QPoint value) noexcept;
+  ::QPoint const& getTrivialWrapper() const noexcept;
+  void setTrivialWrapper(::QPoint value) noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

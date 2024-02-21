@@ -26,11 +26,11 @@ public:
   void cppMethod() const;
   Q_INVOKABLE void invokable() const;
   Q_INVOKABLE void invokableMutable();
-  Q_INVOKABLE void invokableParameters(QColor const& opaque,
-                                       QPoint const& trivial,
+  Q_INVOKABLE void invokableParameters(::QColor const& opaque,
+                                       ::QPoint const& trivial,
                                        ::std::int32_t primitive) const;
   Q_INVOKABLE ::std::unique_ptr<Opaque> invokableReturnOpaque();
-  Q_INVOKABLE QPoint invokableReturnTrivial();
+  Q_INVOKABLE ::QPoint invokableReturnTrivial();
   Q_INVOKABLE void invokableFinal() const final;
   Q_INVOKABLE void invokableOverride() const override;
   Q_INVOKABLE virtual void invokableVirtual() const;
@@ -43,11 +43,11 @@ private:
   void cppMethodWrapper() const noexcept;
   void invokableWrapper() const noexcept;
   void invokableMutableWrapper() noexcept;
-  void invokableParametersWrapper(QColor const& opaque,
-                                  QPoint const& trivial,
+  void invokableParametersWrapper(::QColor const& opaque,
+                                  ::QPoint const& trivial,
                                   ::std::int32_t primitive) const noexcept;
   ::std::unique_ptr<Opaque> invokableReturnOpaqueWrapper() noexcept;
-  QPoint invokableReturnTrivialWrapper() noexcept;
+  ::QPoint invokableReturnTrivialWrapper() noexcept;
   void invokableFinalWrapper() const noexcept;
   void invokableOverrideWrapper() const noexcept;
   void invokableVirtualWrapper() const noexcept;
