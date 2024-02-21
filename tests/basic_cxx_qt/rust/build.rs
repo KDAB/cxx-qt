@@ -12,6 +12,6 @@ fn main() {
         .file("src/lib.rs")
         .file("src/locking.rs")
         .file("src/types.rs")
-        .with_opts(cxx_qt_lib_headers::build_opts())
+        .with_opts(cxx_qt_lib::build_opts())
         .build();
 }

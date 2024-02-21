@@ -251,5 +251,60 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    builder.with_opts(cxx_qt_lib_headers::build_opts()).build();
+    fn copy_dir(src: impl AsRef<std::path::Path>, dest: impl AsRef<std::path::Path>) {
+        let dest = dest.as_ref();
+        let src = src.as_ref();
+        if src.is_dir() {
+            std::fs::create_dir_all(dest).expect("could not create directory {dest}");
+            for entry in std::fs::read_dir(src).expect("could not read dir {src}") {
+                let entry = entry.expect("could not retrieve entry for dir {src}");
+                let path = entry.path();
+                let file_name = entry
+                    .file_name()
+                    .into_string()
+                    .expect("cannot convert OsString to String");
+                let dest = dest.display();
+                if path.is_file() {
+                    std::fs::copy(path, format!("{dest}/{file_name}"))
+                        .expect("could not copy {path}");
+                }
+            }
+        }
+    }
+
+    // Write this library's manually written C++ headers to files and add them to include paths
+    let header_root = format!("{}/include", std::env::var("OUT_DIR").unwrap());
+    copy_dir("include/core", format!("{header_root}/cxx-qt-lib"));
+    copy_dir("include/gui", format!("{header_root}/cxx-qt-lib"));
+    copy_dir("include/qml", format!("{header_root}/cxx-qt-lib"));
+    std::fs::copy(
+        "include/common.h",
+        format!("{header_root}/cxx-qt-lib/common.h"),
+    )
+    .expect("could not copy common.h");
+
+    if feature_qt_gui_enabled {
+        builder = builder.qt_module("Gui");
+    }
+
+    if feature_qt_qml_enabled {
+        builder = builder.qt_module("Qml");
+    }
+
+    builder = builder.cc_builder(|cc| {
+        // Load the include path
+        cc.include(&header_root);
+
+        // Enable Qt Gui in C++ if the feature is enabled
+        if feature_qt_gui_enabled {
+            cc.define("CXX_QT_GUI_FEATURE", None);
+        }
+
+        // Enable Qt Qml in C++ if the feature is enabled
+        if feature_qt_gui_enabled {
+            cc.define("CXX_QT_QML_FEATURE", None);
+        }
+    });
+
+    builder.build();
 }
