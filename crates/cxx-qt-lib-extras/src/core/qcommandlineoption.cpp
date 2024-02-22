@@ -4,7 +4,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "cxx-qt-lib/qcommandlineoption.h"
+#include "cxx-qt-lib-extras/qcommandlineoption.h"
 
 #include "../assertion_utils.h"
 
