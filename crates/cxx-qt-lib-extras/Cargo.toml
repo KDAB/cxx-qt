@@ -15,6 +15,7 @@ exclude = [ "**/generate.sh" ]
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
+cxx-qt-lib.workspace = true
 
 [build-dependencies]
 cxx-qt-build.workspace = true
