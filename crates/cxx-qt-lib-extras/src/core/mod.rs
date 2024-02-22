@@ -5,3 +5,6 @@
 
 mod qcommandlineoption;
 pub use qcommandlineoption::QCommandLineOption;
+
+mod qcommandlineparser;
+pub use qcommandlineparser::QCommandLineParser;

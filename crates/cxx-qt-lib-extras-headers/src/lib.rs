@@ -10,10 +10,16 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
     let mut opts = cxx_qt_build::CxxQtBuildersOpts::default();
 
     #[allow(clippy::single_element_loop)]
-    for (file_contents, file_name) in [(
-        include_str!("../include/core/qcommandlineoption.h"),
-        "qcommandlineoption.h",
-    )] {
+    for (file_contents, file_name) in [
+        (
+            include_str!("../include/core/qcommandlineoption.h"),
+            "qcommandlineoption.h",
+        ),
+        (
+            include_str!("../include/core/qcommandlineparser.h"),
+            "qcommandlineparser.h",
+        ),
+    ] {
         opts = opts.header(file_contents, "cxx-qt-lib-extras", file_name);
     }
 
