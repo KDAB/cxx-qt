@@ -11,9 +11,9 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib-extras/qcommandlineoption.h");
         type QCommandLineOption = super::QCommandLineOption;
-        include!("cxx-qt-lib/qstring.h");
+        include!("qstring.h");
         type QString = crate::QString;
-        include!("cxx-qt-lib/qstringlist.h");
+        include!("qstringlist.h");
         type QStringList = crate::QStringList;
 
         /// Returns the default values set for this option.
