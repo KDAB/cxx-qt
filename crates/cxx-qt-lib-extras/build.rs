@@ -7,11 +7,6 @@ use cxx_qt_build::CxxQtBuilder;
 use qt_build_utils::QtBuild;
 
 fn main() {
-    let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
-        Ok(val) => val == "emscripten",
-        Err(_) => false,
-    };
-
     let mut builder = CxxQtBuilder::new();
 
     // Find the Qt version and tell the Rust compiler
@@ -26,13 +21,13 @@ fn main() {
             .major
     );
 
-    let mut rust_bridges = vec!["core/qcommandlineoption"];
+    let rust_bridges = vec!["core/qcommandlineoption"];
 
     for rust_source in &rust_bridges {
         builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
-    let mut cpp_files = vec!["core/qcommandlineoption"];
+    let cpp_files = vec!["core/qcommandlineoption"];
 
     builder = builder.cc_builder(move |cc| {
         for cpp_file in &cpp_files {
