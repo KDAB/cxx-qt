@@ -9,7 +9,6 @@
 pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
     let mut opts = cxx_qt_build::CxxQtBuildersOpts::default();
 
-    #[allow(clippy::single_element_loop)]
     for (file_contents, file_name) in [
         (
             include_str!("../include/core/qcommandlineoption.h"),
