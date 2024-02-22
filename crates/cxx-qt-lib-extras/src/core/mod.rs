@@ -5,4 +5,3 @@
 
 mod qcommandlineoption;
 pub use qcommandlineoption::QCommandLineOption;
-
