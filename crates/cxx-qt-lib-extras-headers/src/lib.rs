@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![deny(missing_docs)]
-
 /// Retrieves the headers for cxx-qt-lib-extras
 ///
 /// These can be passed into [cxx_qt_build::CxxQtBuilder].
