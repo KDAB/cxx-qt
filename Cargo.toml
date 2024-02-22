@@ -11,6 +11,8 @@ members = [
     "crates/cxx-qt-lib",
     "crates/cxx-qt-lib-headers",
     "crates/qt-build-utils",
+    "crates/cxx-qt-lib-extras-headers",
+    "crates/cxx-qt-lib-extras",
 
     "examples/cargo_without_cmake",
     "examples/demo_threading/rust",
@@ -39,6 +41,8 @@ cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.6.0" }
 cxx-qt-lib = { path = "crates/cxx-qt-lib", version = "0.6.0" }
 cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.6.0" }
 qt-build-utils = { path = "crates/qt-build-utils", version = "0.6.0" }
+cxx-qt-lib-extras-headers = { path = "crates/cxx-qt-lib-extras-headers", version = "0.6.0" }
+cxx-qt-lib-extras = { path = "crates/cxx-qt-lib-extras", version = "0.6.0" }
 
 cc = { version = "1.0.86", features = ["parallel"] }
 # Ensure that the example comments are kept in sync
