@@ -21,13 +21,13 @@ fn main() {
             .major
     );
 
-    let rust_bridges = vec!["core/qcommandlineoption"];
+    let rust_bridges = vec!["core/qcommandlineoption", "core/qcommandlineparser"];
 
     for rust_source in &rust_bridges {
         builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
-    let cpp_files = vec!["core/qcommandlineoption"];
+    let cpp_files = vec!["core/qcommandlineoption", "core/qcommandlineparser"];
 
     builder = builder.cc_builder(move |cc| {
         for cpp_file in &cpp_files {
