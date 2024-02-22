@@ -26,17 +26,13 @@ fn main() {
             .major
     );
 
-    let mut rust_bridges = vec![
-        "core/qcommandlineoption",
-    ];
+    let mut rust_bridges = vec!["core/qcommandlineoption"];
 
     for rust_source in &rust_bridges {
         builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
-    let mut cpp_files = vec![
-        "core/qcommandlineoption",
-    ];
+    let mut cpp_files = vec!["core/qcommandlineoption"];
 
     builder = builder.cc_builder(move |cc| {
         for cpp_file in &cpp_files {
@@ -48,5 +44,7 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    builder.with_opts(cxx_qt_lib_extras_headers::build_opts()).build();
+    builder
+        .with_opts(cxx_qt_lib_extras_headers::build_opts())
+        .build();
 }
