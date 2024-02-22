@@ -35,10 +35,29 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib-extras/qcommandlineparser.h");
         type QCommandLineParser = super::QCommandLineParser;
+        include!("cxx-qt-lib-extras/qcommandlineoption.h");
+        type QCommandLineOption = crate::QCommandLineOption;
+
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
+
+        /// Adds help options to the command-line parser.
+        #[rust_name = "add_help_option"]
+        fn addHelpOption(self: &mut QCommandLineParser) -> QCommandLineOption;
+
+        /// Adds the option option to look for while parsing.
+        /// Returns true if adding the option was successful; otherwise returns false.
+        /// Adding the option fails if there is no name attached to the option,
+        /// or the option has a name that clashes with an option name added before.
+        #[rust_name = "add_option"]
+        fn addOption(self: &mut QCommandLineParser, option: &QCommandLineOption) -> bool;
+
+        /// Adds the -v / --version option, which displays the version string of the application.
+        /// This option is handled automatically by QCommandLineParser.
+        #[rust_name = "add_version_option"]
+        fn addVersionOption(self: &mut QCommandLineParser) -> QCommandLineOption;
 
         /// Returns the application description.
         #[rust_name = "application_description"]
