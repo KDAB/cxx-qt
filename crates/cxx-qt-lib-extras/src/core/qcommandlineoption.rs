@@ -11,10 +11,10 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib-extras/qcommandlineoption.h");
         type QCommandLineOption = super::QCommandLineOption;
-        include!("qstring.h");
-        type QString = crate::QString;
-        include!("qstringlist.h");
-        type QStringList = crate::QStringList;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = cxx_qt_lib::QString;
+        include!("cxx-qt-lib/qstringlist.h");
+        type QStringList = cxx_qt_lib::QStringList;
 
         /// Returns the default values set for this option.
         #[rust_name = "default_values"]

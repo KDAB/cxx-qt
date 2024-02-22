@@ -40,6 +40,7 @@ fn main() {
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     builder
+        .with_opts(cxx_qt_lib_headers::build_opts())
         .with_opts(cxx_qt_lib_extras_headers::build_opts())
         .build();
 }
