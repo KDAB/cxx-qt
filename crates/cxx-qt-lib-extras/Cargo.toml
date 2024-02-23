@@ -8,9 +8,8 @@ version.workspace = true
 authors = ["Laurent Montel <laurent.montel@kdab.com>"]
 edition.workspace = true
 license.workspace = true
-description = "Qt types for integrating `cxx-qt` crate with `cxx`"
+description = "Extra Qt types for integrating `cxx-qt` crate with `cxx` that are not available in `cxx-qt-lib`"
 repository.workspace = true
-exclude = [ "**/generate.sh" ]
 
 [dependencies]
 cxx.workspace = true
