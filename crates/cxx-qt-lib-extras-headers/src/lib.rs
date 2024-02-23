@@ -11,12 +11,16 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
 
     for (file_contents, file_name) in [
         (
-            include_str!("../include/core/qcommandlineoption.h"),
-            "qcommandlineoption.h",
+            include_str!("../include/core/qelapsedtimer.h"),
+            "qelapsedtimer.h",
         ),
         (
             include_str!("../include/core/qcommandlineparser.h"),
             "qcommandlineparser.h",
+        ),
+        (
+            include_str!("../include/core/qcommandlineoption.h"),
+            "qcommandlineoption.h",
         ),
     ] {
         opts = opts.header(file_contents, "cxx-qt-lib-extras", file_name);
