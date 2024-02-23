@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod qelapsedtimer;
+pub use qelapsedtimer::QElapsedTimer;
+
 mod qcommandlineoption;
 pub use qcommandlineoption::QCommandLineOption;
 
