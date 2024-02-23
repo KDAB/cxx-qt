@@ -134,6 +134,29 @@ mod ffi {
         IntersectClip,
     }
 
+    #[repr(i32)]
+    enum BrushStyle {
+        NoBrush,
+        SolidPattern,
+        Dense1Pattern,
+        Dense2Pattern,
+        Dense3Pattern,
+        Dense4Pattern,
+        Dense5Pattern,
+        Dense6Pattern,
+        Dense7Pattern,
+        HorPattern,
+        VerPattern,
+        CrossPattern,
+        BDiagPattern,
+        FDiagPattern,
+        DiagCrossPattern,
+        LinearGradientPattern,
+        RadialGradientPattern,
+        ConicalGradientPattern,
+        TexturePattern = 24,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -149,12 +172,14 @@ mod ffi {
         type LayoutDirection;
         type BGMode;
         type ClipOperation;
+        type BrushStyle;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
 
 // Reexport ConnectionType from cxx-qt

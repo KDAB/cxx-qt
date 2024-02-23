@@ -7,6 +7,12 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type BrushStyle = crate::BrushStyle;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbrush.h");
         type QBrush = super::QBrush;
@@ -22,6 +28,10 @@ mod ffi {
         /// Returns the brush color.
         fn color(self: &QBrush) -> &QColor;
 
+        /// Sets the brush style to style.
+        #[rust_name = "set_style"]
+        fn setStyle(self: &mut QBrush, style: BrushStyle);
+
         /// Sets the brush color to the given color.
         #[rust_name = "set_color"]
         fn setColor(self: &mut QBrush, color: &QColor);
@@ -29,6 +39,9 @@ mod ffi {
         /// Sets the brush image to image. The style is set to Qt::TexturePattern.
         #[rust_name = "set_texture_image"]
         fn setTextureImage(self: &mut QBrush, image: &QImage);
+
+        /// Returns the brush style.
+        fn style(self: &QBrush) -> BrushStyle;
 
         /// Returns the custom brush pattern, or a null image if no custom brush pattern has been set.
         #[rust_name = "texture_image"]
