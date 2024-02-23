@@ -42,6 +42,7 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
             "qmodelindex.h",
         ),
         #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qbrush.h"), "qbrush.h"),
         (include_str!("../include/gui/qpen.h"), "qpen.h"),
         (
             include_str!("../include/core/qpersistentmodelindex.h"),
