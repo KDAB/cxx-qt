@@ -23,8 +23,8 @@ MyObject::invokableMutable()
 }
 
 void
-MyObject::invokableParameters(::QColor const& opaque,
-                              ::QPoint const& trivial,
+MyObject::invokableParameters(QColor const& opaque,
+                              QPoint const& trivial,
                               ::std::int32_t primitive) const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
@@ -38,7 +38,7 @@ MyObject::invokableReturnOpaque()
   return invokableReturnOpaqueWrapper();
 }
 
-::QPoint
+QPoint
 MyObject::invokableReturnTrivial()
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
