@@ -112,7 +112,7 @@ impl GeneratedCppQObject {
         generated
             .blocks
             .includes
-            .insert("#include <cxx-qt/cxxqt_maybelockguard.h>".to_owned());
+            .insert("#include <cxx-qt/maybelockguard.h>".to_owned());
 
         // Build the base class
         let base_class = qobject

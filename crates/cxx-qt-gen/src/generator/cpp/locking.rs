@@ -11,7 +11,7 @@ pub fn generate() -> Result<(String, GeneratedCppQObjectBlocks)> {
 
     result
         .includes
-        .insert("#include <cxx-qt/cxxqt_locking.h>".to_owned());
+        .insert("#include <cxx-qt/locking.h>".to_owned());
 
     result
         .base_classes
@@ -35,9 +35,7 @@ mod tests {
 
         // includes
         assert_eq!(generated.includes.len(), 1);
-        assert!(generated
-            .includes
-            .contains("#include <cxx-qt/cxxqt_locking.h>"));
+        assert!(generated.includes.contains("#include <cxx-qt/locking.h>"));
 
         // base class
         assert_eq!(generated.base_classes.len(), 1);

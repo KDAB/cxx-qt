@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cxx-qt/cxxqt_locking.h>
-#include <cxx-qt/cxxqt_maybelockguard.h>
-#include <cxx-qt/cxxqt_type.h>
+#include <cxx-qt/locking.h>
+#include <cxx-qt/maybelockguard.h>
+#include <cxx-qt/type.h>
 
 class MyObject;
 
