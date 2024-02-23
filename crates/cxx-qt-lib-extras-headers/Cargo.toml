@@ -11,10 +11,5 @@ license.workspace = true
 description = "A small crate for cxx-qt-lib-extras to share cxx-qt-lib's C++ headers"
 repository.workspace = true
 
-[features]
-default = []
-qt_gui = []
-qt_qml = []
-
 [dependencies]
 cxx-qt-build.workspace = true
