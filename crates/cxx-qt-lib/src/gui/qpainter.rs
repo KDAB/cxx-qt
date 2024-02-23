@@ -39,10 +39,18 @@ mod ffi {
         type QPen = crate::QPen;
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qbrush.h");
+        type QBrush = crate::QBrush;
+
+        /// Returns the current background brush.
+        fn background(self: &QPainter) -> &QBrush;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
         fn backgroundMode(self: &QPainter) -> BGMode;
+
+        /// Returns the painter's current brush.
+        fn brush(self: &QPainter) -> &QBrush;
 
         /// Returns the currently set brush origin.
         #[rust_name = "brush_origin"]
@@ -131,6 +139,10 @@ mod ffi {
         #[rust_name = "erase_rect"]
         fn eraseRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
 
+        /// Fills the given path using the given brush. The outline is not drawn.
+        #[rust_name = "fill_path"]
+        fn fillPath(self: Pin<&mut QPainter>, path: &QPainterPath, brush: &QBrush);
+
         /// Fills the given rectangle with the color specified.
         #[rust_name = "fill_rect"]
         fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
@@ -160,9 +172,17 @@ mod ffi {
         /// A save() must be followed by a corresponding restore(); the end() function unwinds the stack.
         fn save(self: Pin<&mut QPainter>);
 
+        /// Sets the background brush of the painter to the given brush.
+        #[rust_name = "set_background"]
+        fn setBackground(self: Pin<&mut QPainter>, brush: &QBrush);
+
         /// Sets the background mode of the painter to the given mode
         #[rust_name = "set_background_mode"]
         fn setBackgroundMode(self: Pin<&mut QPainter>, mode: BGMode);
+
+        /// Sets the painter's brush to the given brush.
+        #[rust_name = "set_brush"]
+        fn setBrush(self: Pin<&mut QPainter>, brush: &QBrush);
 
         /// Enables clipping if enable is true, or disables clipping if enable is false.
         #[rust_name = "set_clipping"]
