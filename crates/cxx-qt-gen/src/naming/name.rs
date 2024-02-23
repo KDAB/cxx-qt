@@ -12,11 +12,30 @@ use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 ///
 /// This includes the rust_name, cxx_name, as well as qualifications like
 /// the rust module and C++ namespace.
+///
+/// Naming in CXX can be rather complex.
+/// The following Rules apply:
+/// - If only a cxx_name **or** a rust_name is given, the identifier of the type/function will be
+///     used for part that wasn't specified explicitly.
+/// - If **both** attributes are present, the identifier itself is not used!
+/// - The `rust_name` is always used to refer to the type within the bridge!.
 #[derive(Debug)]
 pub struct Name {
+    /// The name of the type in Rust. This is also the name used to refer to the type within the
+    /// bridge.
+    /// Usually set by either the `rust_name` attribute or the identifier of the type.
     pub(super) rust: Ident,
+
+    /// The name of the type in C++. This is used to refer to the type in C++.
+    /// Usually set by the `cxx_name` attribute, or by using the identifier when specifying a `rust_name` attribute.
     pub(super) cxx: Option<String>,
+
+    /// The module of the type in Rust.
+    /// Currently this is only used for the bridge module
     pub(super) module: Ident,
+
+    /// The namespace of the type in C++.
+    /// Originates from the `namespace` attribute
     pub(super) namespace: Option<String>,
 }
 
