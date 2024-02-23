@@ -8,7 +8,7 @@ mod inheritance {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt/cxxqt_connection.h");
+        include!("cxx-qt/connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
