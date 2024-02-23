@@ -12,7 +12,7 @@ fn main() {
     // Required for tests
     qt_build_utils::setup_linker();
 
-    let cpp_files = ["src/cxxqt_connection.cpp"];
+    let cpp_files = ["src/connection.cpp"];
     let rust_bridges = ["src/connection.rs"];
 
     for bridge in &rust_bridges {
@@ -32,28 +32,16 @@ fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let directory = format!("{out_dir}/cxx-qt");
     std::fs::create_dir_all(&directory).expect("Could not create cxx-qt header directory");
-    // Note we only need cxxqt_connection.h for now, but lets move all headers to be consistent
+    // Note we only need connection.h for now, but lets move all headers to be consistent
     // ensure src/lib write_headers is consistent
     for (file_contents, file_name) in [
-        (
-            include_str!("include/cxxqt_connection.h"),
-            "cxxqt_connection.h",
-        ),
-        (include_str!("include/cxxqt_locking.h"), "cxxqt_locking.h"),
-        (
-            include_str!("include/cxxqt_maybelockguard.h"),
-            "cxxqt_maybelockguard.h",
-        ),
-        (
-            include_str!("include/cxxqt_signalhandler.h"),
-            "cxxqt_signalhandler.h",
-        ),
-        (include_str!("include/cxxqt_thread.h"), "cxxqt_thread.h"),
-        (
-            include_str!("include/cxxqt_threading.h"),
-            "cxxqt_threading.h",
-        ),
-        (include_str!("include/cxxqt_type.h"), "cxxqt_type.h"),
+        (include_str!("include/connection.h"), "connection.h"),
+        (include_str!("include/locking.h"), "locking.h"),
+        (include_str!("include/maybelockguard.h"), "maybelockguard.h"),
+        (include_str!("include/signalhandler.h"), "signalhandler.h"),
+        (include_str!("include/thread.h"), "thread.h"),
+        (include_str!("include/threading.h"), "threading.h"),
+        (include_str!("include/type.h"), "type.h"),
     ] {
         let h_path = format!("{directory}/{file_name}");
         let mut header = File::create(h_path).expect("Could not create cxx-qt header");

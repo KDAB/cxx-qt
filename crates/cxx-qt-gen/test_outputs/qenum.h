@@ -3,9 +3,9 @@
 #include <QtCore/QObject>
 #include <QtQml/QQmlEngine>
 #include <cstdint>
-#include <cxx-qt/cxxqt_locking.h>
-#include <cxx-qt/cxxqt_maybelockguard.h>
-#include <cxx-qt/cxxqt_type.h>
+#include <cxx-qt/locking.h>
+#include <cxx-qt/maybelockguard.h>
+#include <cxx-qt/type.h>
 
 namespace cxx_qt::my_object {
 class MyObject;

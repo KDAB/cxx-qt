@@ -7,4 +7,4 @@
 #pragma once
 
 // Re-export QMetaObjectConnection from cxx-qt
-#include "cxx-qt/cxxqt_connection.h"
+#include "cxx-qt/connection.h"
