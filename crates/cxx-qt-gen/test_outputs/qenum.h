@@ -83,14 +83,14 @@ public:
 
 public:
   Q_INVOKABLE void myInvokable(
-    ::cxx_qt::my_object::MyEnum qenum,
-    ::cxx_qt::my_object::MyOtherEnum other_qenum) const;
+    cxx_qt::my_object::MyEnum qenum,
+    cxx_qt::my_object::MyOtherEnum other_qenum) const;
   explicit MyObject(QObject* parent = nullptr);
 
 private:
   void myInvokableWrapper(
-    ::cxx_qt::my_object::MyEnum qenum,
-    ::cxx_qt::my_object::MyOtherEnum other_qenum) const noexcept;
+    cxx_qt::my_object::MyEnum qenum,
+    cxx_qt::my_object::MyOtherEnum other_qenum) const noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

@@ -56,10 +56,22 @@ impl QSignalHelperName {
         let signal_ident = &idents.name.cpp;
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
         let namespace = {
-            let mut namespace = vec!["rust::cxxqtgen1".to_owned()];
-            if let Some(qobject_namespace) = type_names.namespace(qobject_ident) {
-                namespace.push(qobject_namespace);
-            }
+            // This namespace will take the form of:
+            // qobject_namespace::rust::cxxqtgen1
+            //
+            // We experimented with using rust::cxxqtgen1::qobject_namespace.
+            // However, this currently doesn't work, as we can't fully-qualify all C++ access.
+            // Therefore when refering to the QObject type (e.g. qobject_namespace::QObject),
+            // It would fail, as it would look up in this helper namespace, instead of the actual
+            // qobject_namespace.
+            //
+            // See the comment on TypeNames::cxx_qualified for why fully qualifying is
+            // unfortunately not possible.
+            let qobject_namespace = type_names.namespace(qobject_ident);
+            let namespace: Vec<_> = qobject_namespace
+                .into_iter()
+                .chain(vec!["rust::cxxqtgen1".to_owned()])
+                .collect();
 
             namespace.join("::")
         };

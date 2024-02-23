@@ -88,13 +88,13 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlerpropertyNameChanged =
             cxx_qt::signalhandler::CxxQtSignalHandler<
                 super::MyObjectCxxQtSignalClosurepropertyNameChanged,
             >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_property_name_changed"]
         fn MyObject_propertyNameChangedConnect(
@@ -103,7 +103,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+    #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_propertyNameChanged(
@@ -126,11 +126,11 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlerready =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_ready"]
         fn MyObject_readyConnect(
@@ -139,7 +139,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::multi_object"]
+    #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_ready(handler: MyObjectCxxQtSignalHandlerready);
@@ -192,13 +192,13 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::second_object"]
+        #[namespace = "second_object::rust::cxxqtgen1"]
         type SecondObjectCxxQtSignalHandlerpropertyNameChanged =
             cxx_qt::signalhandler::CxxQtSignalHandler<
                 super::SecondObjectCxxQtSignalClosurepropertyNameChanged,
             >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::second_object"]
+        #[namespace = "second_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "SecondObject_connect_property_name_changed"]
         fn SecondObject_propertyNameChangedConnect(
@@ -207,7 +207,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::second_object"]
+    #[namespace = "second_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_SecondObject_signal_handler_propertyNameChanged(
@@ -231,11 +231,11 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::second_object"]
+        #[namespace = "second_object::rust::cxxqtgen1"]
         type SecondObjectCxxQtSignalHandlerready =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::SecondObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::second_object"]
+        #[namespace = "second_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "SecondObject_connect_ready"]
         fn SecondObject_readyConnect(
@@ -244,7 +244,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::second_object"]
+    #[namespace = "second_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_SecondObject_signal_handler_ready(handler: SecondObjectCxxQtSignalHandlerready);
@@ -311,12 +311,12 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::mynamespace"]
+        #[namespace = "mynamespace::rust::cxxqtgen1"]
         type ExternObjectCxxQtSignalHandlerdataReady = cxx_qt::signalhandler::CxxQtSignalHandler<
             super::ExternObjectCxxQtSignalClosuredataReady,
         >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::mynamespace"]
+        #[namespace = "mynamespace::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "ExternObject_connect_data_ready"]
         fn ExternObject_dataReadyConnect(
@@ -325,7 +325,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::mynamespace"]
+    #[namespace = "mynamespace::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_ExternObject_signal_handler_dataReady(
@@ -343,13 +343,13 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::mynamespace"]
+        #[namespace = "mynamespace::rust::cxxqtgen1"]
         type ExternObjectCxxQtSignalHandlererrorOccurred =
             cxx_qt::signalhandler::CxxQtSignalHandler<
                 super::ExternObjectCxxQtSignalClosureerrorOccurred,
             >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::mynamespace"]
+        #[namespace = "mynamespace::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "ExternObject_connect_error_occurred"]
         fn ExternObject_errorOccurredConnect(
@@ -358,7 +358,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::mynamespace"]
+    #[namespace = "mynamespace::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_ExternObject_signal_handler_errorOccurred(
@@ -433,7 +433,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for MyObjectCxxQtSignalClosurepropertyNameChanged
 {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::cxx_qt::multi_object::MyObjectCxxQtSignalHandlerpropertyNameChanged"
+        "::cxx_qt::multi_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerpropertyNameChanged"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
 }
@@ -495,7 +495,7 @@ impl ffi::MyObject {
 pub struct MyObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureready {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::cxx_qt::multi_object::MyObjectCxxQtSignalHandlerready");
+        cxx::type_id!("::cxx_qt::multi_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerready");
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
@@ -597,7 +597,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for SecondObjectCxxQtSignalClosurepropertyNameChanged
 {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::second_object::SecondObjectCxxQtSignalHandlerpropertyNameChanged"
+        "::second_object::rust::cxxqtgen1::SecondObjectCxxQtSignalHandlerpropertyNameChanged"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>);
 }
@@ -659,7 +659,7 @@ impl ffi::SecondObject {
 pub struct SecondObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for SecondObjectCxxQtSignalClosureready {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::second_object::SecondObjectCxxQtSignalHandlerready");
+        cxx::type_id!("::second_object::rust::cxxqtgen1::SecondObjectCxxQtSignalHandlerready");
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>);
 }
 use core::mem::drop as drop_SecondObject_signal_handler_ready;
@@ -784,7 +784,7 @@ impl ffi::ExternObject {
 pub struct ExternObjectCxxQtSignalClosuredataReady {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for ExternObjectCxxQtSignalClosuredataReady {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalHandlerdataReady");
+        cxx::type_id!("::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlerdataReady");
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>);
 }
 use core::mem::drop as drop_ExternObject_signal_handler_dataReady;
@@ -851,7 +851,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for ExternObjectCxxQtSignalClosureerrorOccurred
 {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::mynamespace::ExternObjectCxxQtSignalHandlererrorOccurred"
+        "::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlererrorOccurred"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>);
 }

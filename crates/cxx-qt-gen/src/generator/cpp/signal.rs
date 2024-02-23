@@ -639,10 +639,10 @@ mod tests {
             header,
             indoc! {
             r#"
-            namespace rust::cxxqtgen1::mynamespace {
+            namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalCxxNameConnect(::mynamespace::ObjCpp& self, ::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
-            } // namespace rust::cxxqtgen1::mynamespace
+            ObjRust_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
+            } // namespace mynamespace::rust::cxxqtgen1
             "#}
         );
         assert_str_eq!(
@@ -652,7 +652,7 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqt1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
+            SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
@@ -664,30 +664,30 @@ mod tests {
 
             template <>
             template <>
-            void SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>::operator()<::mynamespace::ObjCpp&>(::mynamespace::ObjCpp& self)
+            void SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>::operator()<mynamespace::ObjCpp&>(mynamespace::ObjCpp& self)
             {
                 call_ObjRust_signal_handler_signalCxxName(*this, self);
             }
 
-            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>) <= alignof(::std::size_t), "unexpected aligment");
-            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalParamssignalCxxName *>) == sizeof(::std::size_t[2]), "unexpected size");
+            static_assert(alignof(SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>) == sizeof(::std::size_t[2]), "unexpected size");
             } // namespace rust::cxxqt1
 
-            namespace rust::cxxqtgen1::mynamespace {
+            namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalCxxNameConnect(::mynamespace::ObjCpp& self, ::rust::cxxqtgen1::mynamespace::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
+            ObjRust_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(
                     &self,
-                    &::mynamespace::ObjCpp::signalCxxName,
+                    &mynamespace::ObjCpp::signalCxxName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<::mynamespace::ObjCpp> guard(self);
-                        closure.template operator()<::mynamespace::ObjCpp&>(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<mynamespace::ObjCpp> guard(self);
+                        closure.template operator()<mynamespace::ObjCpp&>(self);
                     },
                     type);
             }
-            } // namespace rust::cxxqtgen1::mynamespace
+            } // namespace mynamespace::rust::cxxqtgen1
             "#}
         );
     }

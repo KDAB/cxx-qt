@@ -44,11 +44,11 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlerready =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_ready"]
         fn MyObject_readyConnect(
@@ -57,7 +57,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_ready(handler: MyObjectCxxQtSignalHandlerready);
@@ -79,11 +79,11 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlerdataChanged =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosuredataChanged>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_data_changed"]
         fn MyObject_dataChangedConnect(
@@ -92,7 +92,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_dataChanged(handler: MyObjectCxxQtSignalHandlerdataChanged);
@@ -118,11 +118,11 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlernewData =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosurenewData>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_base_class_new_data"]
         fn MyObject_newDataConnect(
@@ -131,7 +131,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_newData(handler: MyObjectCxxQtSignalHandlernewData);
@@ -167,11 +167,11 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type QTimerCxxQtSignalHandlertimeout =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "QTimer_connect_timeout"]
         fn QTimer_timeoutConnect(
@@ -180,7 +180,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QTimer_signal_handler_timeout(handler: QTimerCxxQtSignalHandlertimeout);
@@ -232,7 +232,7 @@ impl ffi::MyObject {
 pub struct MyObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureready {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlerready");
+        cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerready");
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
@@ -307,7 +307,7 @@ impl ffi::MyObject {
 pub struct MyObjectCxxQtSignalClosuredataChanged {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosuredataChanged {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlerdataChanged"
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged"
     );
     type FnType = dyn FnMut(
         core::pin::Pin<&mut ffi::MyObject>,
@@ -393,7 +393,7 @@ impl ffi::MyObject {
 pub struct MyObjectCxxQtSignalClosurenewData {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosurenewData {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlernewData");
+        cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlernewData");
     type FnType = dyn FnMut(
         core::pin::Pin<&mut ffi::MyObject>,
         i32,
@@ -482,7 +482,7 @@ impl ffi::QTimer {
 pub struct QTimerCxxQtSignalClosuretimeout {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosuretimeout {
     type Id =
-        cxx::type_id!("::rust::cxxqtgen1::cxx_qt::my_object::QTimerCxxQtSignalHandlertimeout");
+        cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlertimeout");
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QTimer>);
 }
 use core::mem::drop as drop_QTimer_signal_handler_timeout;

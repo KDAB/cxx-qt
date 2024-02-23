@@ -373,7 +373,7 @@ mod tests {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
         type_names.insert("A", None, Some("A1"), None);
-        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::A1");
+        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "A1");
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
         type_names.insert("A", None, Some("A1"), Some("N1"));
-        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::N1::A1");
+        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "N1::A1");
     }
 
     #[test]
