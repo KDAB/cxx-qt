@@ -49,7 +49,7 @@ struct Parameters {
 fn parameter_types_and_values(
     parameters: &[ParsedFunctionParameter],
     type_names: &TypeNames,
-    self_ty: &str,
+    self_ty: &Ident,
 ) -> Result<Parameters> {
     let mut parameter_named_types_with_self = vec![];
     let mut parameter_types_with_self = vec![];
@@ -92,8 +92,7 @@ pub fn generate_cpp_signal(
         .insert("#include <cxx-qt/signalhandler.h>".to_owned());
 
     // Build a namespace that includes any namespace for the T
-    let qobject_ident_str = qobject_ident.to_string();
-    let qobject_ident_namespaced = type_names.cxx_qualified(&qobject_ident_str);
+    let qobject_ident_namespaced = type_names.cxx_qualified(qobject_ident);
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
@@ -103,8 +102,7 @@ pub fn generate_cpp_signal(
     let free_connect_ident_cpp = idents_helper.connect_name.cpp;
 
     // Retrieve the parameters for the signal
-    let parameters =
-        parameter_types_and_values(&signal.parameters, type_names, &qobject_ident_namespaced)?;
+    let parameters = parameter_types_and_values(&signal.parameters, type_names, qobject_ident)?;
     let parameters_named_types = parameters.named_types;
     let parameters_named_types_with_self = parameters.named_types_with_self;
     let parameter_types_with_self = parameters.types_with_self;
