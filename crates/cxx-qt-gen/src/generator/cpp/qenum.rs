@@ -53,9 +53,8 @@ pub fn generate(
     let mut generated = GeneratedCppQObjectBlocks::default();
 
     for qenum in qenums {
-        let enum_name = &qenum.ident.to_string();
-
-        let mut qualified_name = type_names.cxx_qualified(enum_name);
+        let mut qualified_name = type_names.cxx_qualified(&qenum.ident);
+        let enum_name = type_names.cxx_unqualified(&qenum.ident)?;
         // TODO: this is a workaround for type_names.cxx_qualified not always returning a fully-qualified
         // identifier.
         // Once https://github.com/KDAB/cxx-qt/issues/619 is fixed, this can be removed.
@@ -74,7 +73,7 @@ pub fn generate(
               using {enum_name} = {qualified_name};
               Q_ENUM({enum_name})
             #endif
-        "#, enum_definition = enum_definition.indented(2) });
+        "#, enum_definition = enum_definition.indented(2)});
     }
 
     Ok(generated)
@@ -98,7 +97,9 @@ mod tests {
         })
         .unwrap()];
 
-        let generated = generate(&qenums, &TypeNames::default()).unwrap();
+        let mut types = TypeNames::default();
+        types.insert("MyEnum", None, None, None);
+        let generated = generate(&qenums, &types).unwrap();
         assert_eq!(generated.includes.len(), 1);
         assert!(generated.includes.contains("#include <cstdint>"));
         assert_eq!(generated.metaobjects.len(), 1);
