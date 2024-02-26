@@ -31,7 +31,7 @@ mod qpen;
 pub use qpen::QPen;
 
 mod qfont;
-pub use qfont::QFont;
+pub use qfont::{QFont, QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle};
 
 mod qpainterpath;
 pub use qpainterpath::QPainterPath;

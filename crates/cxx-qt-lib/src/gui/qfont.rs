@@ -265,6 +265,11 @@ mod ffi {
     }
 }
 
+pub use ffi::QFontCapitalization;
+pub use ffi::QFontHintingPreference;
+pub use ffi::QFontSpacingType;
+pub use ffi::QFontStyle;
+
 #[repr(C)]
 pub struct QFont {
     _cspec: MaybeUninit<i32>,
