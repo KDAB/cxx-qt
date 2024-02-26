@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::QRect;
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 
@@ -66,6 +67,10 @@ mod ffi {
         fn construct() -> QPolygon;
 
         #[doc(hidden)]
+        #[rust_name = "qpolygon_init_qrect"]
+        fn construct(rect: &QRect, closed: bool) -> QPolygon;
+
+        #[doc(hidden)]
         #[rust_name = "qpolygon_drop"]
         fn drop(pen: &mut QPolygon);
 
@@ -104,6 +109,13 @@ impl Drop for QPolygon {
 impl Clone for QPolygon {
     fn clone(&self) -> Self {
         ffi::qpolygon_clone(self)
+    }
+}
+
+impl QPolygon {
+    /// Constructs a point with the given coordinates (x, y).
+    pub fn new(rect: &QRect, closed: bool) -> Self {
+        ffi::qpolygon_init_qrect(rect, closed)
     }
 }
 
