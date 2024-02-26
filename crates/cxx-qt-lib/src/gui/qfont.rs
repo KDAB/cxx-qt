@@ -265,10 +265,7 @@ mod ffi {
     }
 }
 
-pub use ffi::QFontCapitalization;
-pub use ffi::QFontHintingPreference;
-pub use ffi::QFontSpacingType;
-pub use ffi::QFontStyle;
+pub use ffi::{QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle};
 
 #[repr(C)]
 pub struct QFont {
