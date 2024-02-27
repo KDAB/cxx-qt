@@ -23,11 +23,11 @@ private Q_SLOTS:
   }
   void clone()
   {
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))	  
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     const auto m = QPolygon(QList<QPoint>() << QPoint(1, 2) << QPoint(3, 4));
 #else
     const auto m = QPolygon(QVector<QPoint>() << QPoint(1, 2) << QPoint(3, 4));
-#endif    
+#endif
     const auto c = clone_qpolygon(m);
     QCOMPARE(c.point(0), { QPoint(1, 2) });
     QCOMPARE(c.point(1), QPoint(3, 4));
