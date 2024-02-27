@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qcolor;
-pub use qcolor::QColor;
+pub use qcolor::{QColor, QColorNameFormat, QColorSpec};
 
 mod qguiapplication;
 pub use qguiapplication::QGuiApplication;
