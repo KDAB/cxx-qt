@@ -134,6 +134,17 @@ mod ffi {
         IntersectClip,
     }
 
+    /// This enum is used by QPainter::drawRoundedRect() and QPainterPath::addRoundedRect()
+    /// functions to specify the radii of rectangle corners with respect to the dimensions
+    /// of the bounding rectangles specified.
+    #[repr(i32)]
+    enum SizeMode {
+        /// Specifies the size using absolute measurements.
+        AbsoluteSize,
+        /// Specifies the size relative to the bounding rectangle, typically using percentage measurements.
+        RelativeSize,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -149,12 +160,14 @@ mod ffi {
         type LayoutDirection;
         type BGMode;
         type ClipOperation;
+        type SizeMode;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
 
 // Reexport ConnectionType from cxx-qt
