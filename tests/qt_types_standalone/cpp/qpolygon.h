@@ -29,7 +29,7 @@ private Q_SLOTS:
     const auto m = QPolygon(QVector<QPoint>() << QPoint(1, 2) << QPoint(3, 4));
 #endif
     const auto c = clone_qpolygon(m);
-    QCOMPARE(c.point(0), { QPoint(1, 2) });
+    QCOMPARE(c.point(0), QPoint(1, 2));
     QCOMPARE(c.point(1), QPoint(3, 4));
   }
 };
