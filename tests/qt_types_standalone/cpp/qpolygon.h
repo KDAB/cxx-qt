@@ -23,7 +23,7 @@ private Q_SLOTS:
   }
   void clone()
   {
-    const auto m = QPolygon({ QPoint(1, 2), QPoint(3, 4) });
+    const auto m = QPolygon(QList() << QPoint(1, 2) << QPoint(3, 4));
     const auto c = clone_qpolygon(m);
     QCOMPARE(c.point(0), { QPoint(1, 2) });
     QCOMPARE(c.point(1), QPoint(3, 4));
