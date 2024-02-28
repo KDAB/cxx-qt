@@ -170,10 +170,10 @@ jobs:
         # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
         MACOSX_DEPLOYMENT_TARGET: 12.7
         # sccache is around 180-300M in size for a normal build
-        # With GitHub caches we have a 10 GB limit / 6 conditions = 1666 MB
+        # With GitHub caches we have a 10 GB limit / 6 compiler caches = 1666 MB
         # Allow a larger cache size so that code in branches can be cached
         # but still leave room for the tools cache
-        SCCACHE_CACHE_SIZE: 600M
+        SCCACHE_CACHE_SIZE: 1000M
 
     steps:
     # On Windows, the D drive that the workspace is on by default runs out of space when
