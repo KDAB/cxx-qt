@@ -113,8 +113,8 @@ impl Clone for QPolygon {
 }
 
 impl QPolygon {
-    /// Constructs a polygon from the given rectangle. If closed is false, the polygon 
-    /// just contains the four points of the rectangle ordered clockwise, otherwise the 
+    /// Constructs a polygon from the given rectangle. If closed is false, the polygon
+    /// just contains the four points of the rectangle ordered clockwise, otherwise the
     /// polygon's fifth point is set to rectangle.topLeft().
     pub fn new(rect: &QRect, closed: bool) -> Self {
         ffi::qpolygon_init_qrect(rect, closed)
