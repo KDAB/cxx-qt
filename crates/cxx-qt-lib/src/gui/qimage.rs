@@ -240,7 +240,7 @@ mod ffi {
     }
 }
 
-pub use ffi::QImageFormat;
+pub use ffi::{QImageFormat, QImageInvertMode};
 
 /// This struct is the Rust representation of the [`QImage`](https://doc.qt.io/qt-6/qimage.html)
 /// class.
