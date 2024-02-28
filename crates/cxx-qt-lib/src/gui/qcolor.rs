@@ -268,6 +268,8 @@ mod ffi {
     }
 }
 
+pub use ffi::{QColorNameFormat, QColorSpec};
+
 /// The QColor class provides colors based on RGB, HSL, HSV or CMYK values.
 #[derive(Clone)]
 #[repr(C)]

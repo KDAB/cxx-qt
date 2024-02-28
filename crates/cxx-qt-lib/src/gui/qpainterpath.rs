@@ -12,6 +12,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type FillRule = crate::FillRule;
+        type SizeMode = crate::SizeMode;
     }
 
     unsafe extern "C++" {
@@ -44,6 +45,16 @@ mod ffi {
         /// Adds the given rectangle to this path as a closed subpath.
         #[rust_name = "add_rect"]
         fn addRect(self: &mut QPainterPath, rectangle: &QRectF);
+
+        /// Adds the given rectangle rect with rounded corners to the path.
+        #[rust_name = "add_rounded_rect"]
+        fn addRoundedRect(
+            self: &mut QPainterPath,
+            rect: &QRectF,
+            xRadius: f64,
+            yRadius: f64,
+            mode: SizeMode,
+        );
 
         /// Creates a move to that lies on the arc that occupies the given rectangle at angle.
         #[rust_name = "arc_move_to"]

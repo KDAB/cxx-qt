@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qcolor;
-pub use qcolor::QColor;
+pub use qcolor::{QColor, QColorNameFormat, QColorSpec};
 
 mod qguiapplication;
 pub use qguiapplication::QGuiApplication;
@@ -19,7 +19,7 @@ mod qvector4d;
 pub use qvector4d::QVector4D;
 
 mod qimage;
-pub use qimage::{QImage, QImageFormat};
+pub use qimage::{QImage, QImageFormat, QImageInvertMode};
 
 mod qpolygon;
 pub use qpolygon::QPolygon;
@@ -31,7 +31,7 @@ mod qpen;
 pub use qpen::QPen;
 
 mod qfont;
-pub use qfont::QFont;
+pub use qfont::{QFont, QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle};
 
 mod qpainterpath;
 pub use qpainterpath::QPainterPath;

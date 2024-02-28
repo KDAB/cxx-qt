@@ -265,6 +265,8 @@ mod ffi {
     }
 }
 
+pub use ffi::{QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle};
+
 #[repr(C)]
 pub struct QFont {
     _cspec: MaybeUninit<i32>,
