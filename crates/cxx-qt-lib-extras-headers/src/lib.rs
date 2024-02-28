@@ -15,6 +15,10 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
             "qelapsedtimer.h",
         ),
         (
+            include_str!("../include/gui/qapplication.h"),
+            "qapplication.h",
+        ),
+        (
             include_str!("../include/core/qcommandlineparser.h"),
             "qcommandlineparser.h",
         ),
