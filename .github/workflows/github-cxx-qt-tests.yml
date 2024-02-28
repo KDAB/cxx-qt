@@ -325,7 +325,7 @@ jobs:
     - name: "Delete previous compiler cache"
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
-      if: ${{ steps.compiler-cache-restore.outputs.cache-hit }} && ${{ github.event_name == 'push' }}
+      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
       working-directory: ${{ matrix.workspace }}
       continue-on-error: true
       run: |
