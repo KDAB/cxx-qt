@@ -15,6 +15,102 @@ mod ffi {
         type SizeMode = crate::SizeMode;
     }
 
+    /// The type of image format available in Qt.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QPainterCompositionMode {
+        /// This is the default mode. The alpha of the source is used to blend the pixel on top of the destination.
+        CompositionMode_SourceOver,
+        /// The alpha of the destination is used to blend it on top of the source pixels. This mode is the inverse of CompositionMode_SourceOver.
+        CompositionMode_DestinationOver,
+        /// The pixels in the destination are cleared (set to fully transparent) independent of the source.
+        CompositionMode_Clear,
+        /// The output is the source pixel. (This means a basic copy operation and is identical to SourceOver when the source pixel is opaque).
+        CompositionMode_Source,
+        /// The output is the destination pixel. This means that the blending has no effect. This mode is the inverse of CompositionMode_Source.
+        CompositionMode_Destination,
+        /// The output is the source, where the alpha is reduced by that of the destination.
+        CompositionMode_SourceIn,
+        /// The output is the destination, where the alpha is reduced by that of the source. This mode is the inverse of CompositionMode_SourceIn.
+        CompositionMode_DestinationIn,
+        /// The output is the source, where the alpha is reduced by the inverse of destination.
+        CompositionMode_SourceOut,
+        /// The output is the destination, where the alpha is reduced by the inverse of the source. This mode is the inverse of CompositionMode_SourceOut.
+        CompositionMode_DestinationOut,
+        /// The source pixel is blended on top of the destination, with the alpha of the source pixel reduced by the alpha of the destination pixel.
+        CompositionMode_SourceAtop,
+        /// The destination pixel is blended on top of the source, with the alpha of the destination pixel is reduced by the alpha of the destination pixel.
+        /// This mode is the inverse of CompositionMode_SourceAtop.
+        CompositionMode_DestinationAtop,
+        /// The source, whose alpha is reduced with the inverse of the destination alpha, is merged with the destination, whose alpha is reduced by the
+        /// inverse of the source alpha. CompositionMode_Xor is not the same as the bitwise Xor.
+        CompositionMode_Xor,
+
+        //svg 1.2 blend modes
+        /// Both the alpha and color of the source and destination pixels are added together.
+        CompositionMode_Plus,
+        /// The output is the source color multiplied by the destination. Multiplying a color with white leaves
+        /// the color unchanged, while multiplying a color with black produces black.
+        CompositionMode_Multiply,
+        /// The source and destination colors are inverted and then multiplied. Screening a color with white produces
+        /// white, whereas screening a color with black leaves the color unchanged.
+        CompositionMode_Screen,
+        /// Multiplies or screens the colors depending on the destination color. The destination color is mixed with
+        /// the source color to reflect the lightness or darkness of the destination.
+        CompositionMode_Overlay,
+        /// The darker of the source and destination colors is selected.
+        CompositionMode_Darken,
+        /// The lighter of the source and destination colors is selected.
+        CompositionMode_Lighten,
+        /// The destination color is brightened to reflect the source color.
+        /// A black source color leaves the destination color unchanged.
+        CompositionMode_ColorDodge,
+        /// The destination color is darkened to reflect the source color. A white source color leaves the destination color unchanged.
+        CompositionMode_ColorBurn,
+        /// Multiplies or screens the colors depending on the source color. A light source color will lighten
+        /// the destination color, whereas a dark source color will darken the destination color.
+        CompositionMode_HardLight,
+        /// Darkens or lightens the colors depending on the source color. Similar to CompositionMode_HardLight.
+        CompositionMode_SoftLight,
+        /// Subtracts the darker of the colors from the lighter. Painting with white inverts the destination
+        /// color, whereas painting with black leaves the destination color unchanged.
+        CompositionMode_Difference,
+        /// Similar to CompositionMode_Difference, but with a lower contrast. Painting with white inverts
+        /// the destination color, whereas painting with black leaves the destination color unchanged.
+        CompositionMode_Exclusion,
+
+        // ROPs
+        /// Does a bitwise OR operation on the source and destination pixels (src OR dst).
+        RasterOp_SourceOrDestination,
+        /// Does a bitwise AND operation on the source and destination pixels (src AND dst).
+        RasterOp_SourceAndDestination,
+        /// Does a bitwise XOR operation on the source and destination pixels (src XOR dst).
+        RasterOp_SourceXorDestination,
+        /// Does a bitwise NOR operation on the source and destination pixels ((NOT src) AND (NOT dst)).
+        RasterOp_NotSourceAndNotDestination,
+        /// Does a bitwise NAND operation on the source and destination pixels ((NOT src) OR (NOT dst)).
+        RasterOp_NotSourceOrNotDestination,
+        /// Does a bitwise operation where the source pixels are inverted and then XOR'ed with the destination ((NOT src) XOR dst).
+        RasterOp_NotSourceXorDestination,
+        /// Does a bitwise operation where the source pixels are inverted (NOT src).
+        RasterOp_NotSource,
+        ///Does a bitwise operation where the source is inverted and then AND'ed with the destination ((NOT src) AND dst).
+        RasterOp_NotSourceAndDestination,
+        /// Does a bitwise operation where the source is AND'ed with the inverted destination pixels (src AND (NOT dst)).
+        RasterOp_SourceAndNotDestination,
+        /// Does a bitwise operation where the source is inverted and then OR'ed with the destination ((NOT src) OR dst).
+        RasterOp_NotSourceOrDestination,
+        /// The pixels in the destination are cleared (set to 0) independent of the source
+        RasterOp_SourceOrNotDestination,
+        /// The pixels in the destination are set (set to 1) independent of the source.
+        RasterOp_ClearDestination,
+        /// Does a bitwise operation where the destination pixels are inverted (NOT dst).
+        RasterOp_SetDestination,
+        /// Does a bitwise operation where the source is OR'ed with the inverted destination pixels (src OR (NOT dst)).
+        RasterOp_NotDestination,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpainter.h");
         type QPainter;
@@ -57,6 +153,10 @@ mod ffi {
         /// Returns the current clip path in logical coordinates.
         #[rust_name = "clip_path"]
         fn clipPath(self: &QPainter) -> QPainterPath;
+
+        /// Returns the current composition mode.
+        #[rust_name = "composition_mode"]
+        fn compositionMode(self: &QPainter) -> QPainterCompositionMode;
 
         /// Draws the arc defined by the rectangle beginning at (x, y) with the specified width and height,
         /// and the given startAngle and spanAngle.
@@ -189,6 +289,10 @@ mod ffi {
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
 
+        /// Sets the composition mode to the given mode.
+        #[rust_name = "set_composition_mode"]
+        fn setCompositionMode(self: Pin<&mut QPainter>, mode: QPainterCompositionMode);
+
         /// Sets the painter's font to the given font.
         #[rust_name = "set_font"]
         fn setFont(self: Pin<&mut QPainter>, font: &QFont);
@@ -238,6 +342,7 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
+        type QPainterCompositionMode;
 
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
@@ -245,7 +350,7 @@ mod ffi {
     }
 }
 
-pub use ffi::QPainter;
+pub use ffi::{QPainter, QPainterCompositionMode};
 
 impl QPainter {
     /// Create a QPainter
