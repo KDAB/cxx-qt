@@ -210,10 +210,9 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, CaseSensitivity, ClipOperation,
-    ClipOperation, DateFormat, DateFormat, FillRule, FillRule, LayoutDirection, LayoutDirection,
-    PenCapStyle, PenCapStyle, PenJoinStyle, PenJoinStyle, PenStyle, PenStyle, SizeMode, SizeMode,
-    SplitBehaviorFlags, SplitBehaviorFlags, TimeSpec, TimeSpec, TransformationMode,
+    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, DateFormat,
+    FillRule, LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags,
+    TimeSpec, TransformationMode,
 };
 
 // Reexport ConnectionType from cxx-qt
