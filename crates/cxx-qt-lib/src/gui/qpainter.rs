@@ -12,6 +12,7 @@ mod ffi {
         type BGMode = crate::BGMode;
         type ClipOperation = crate::ClipOperation;
         type FillRule = crate::FillRule;
+        type SizeMode = crate::SizeMode;
     }
 
     unsafe extern "C++" {
@@ -130,6 +131,16 @@ mod ffi {
         /// Draws the current rectangle with the current pen and brush.
         #[rust_name = "draw_rect_f"]
         fn drawRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
+
+        /// Draws the given rectangle rect with rounded corners.
+        #[rust_name = "draw_rounded_rect"]
+        fn drawRoundedRect(
+            self: Pin<&mut QPainter>,
+            rect: &QRectF,
+            xRadius: f64,
+            yRadius: f64,
+            mode: SizeMode,
+        );
 
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]

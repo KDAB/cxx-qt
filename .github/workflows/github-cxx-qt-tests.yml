@@ -206,12 +206,24 @@ jobs:
         cargo install --no-default-features sccache
         cargo install mdbook mdbook-linkcheck
 
-    - name: "Compiler cache"
-      # Always cache and save all branches
-      # otherwise if we only restore here and only save the main branch
-      # we don't update the cache until something reaches main which
-      # causes an eviction of the cache if the cache isn't accessed for 1 week
-      uses: actions/cache@v4
+    # We want our compiler cache to always update to the newest state.
+    # The best way for us to achieve this is to **always** update the cache after every landed commit.
+    # That way it will closely follow our development.
+    # And if a PR diverges a lot with its cache that's not a big deal, as it will be merged eventually.
+    #
+    # This is a workaround for the fact that GH doesn't support updating existing caches.
+    # See: https://github.com/azu/github-actions-overwrite-cache-example
+    #
+    # Ideally we'd like to use this:
+    # - name: "Compiler cache"
+    #   uses: actions/cache@v4
+    #   with:
+    #     update: true <------- THIS DOESN'T EXIST YET
+    #     path: ${{ matrix.compiler_cache_path }}
+    #     key: ${{ matrix.name }}_compiler_cache
+    - name: "Restore Compiler Cache"
+      id: compiler-cache-restore
+      uses: actions/cache/restore@v3
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
@@ -306,6 +318,29 @@ jobs:
 
     - name: "Print compiler cache statistics"
       run: sccache --show-stats
+
+
+    # This is a workaround for the fact that GH doesn't support updating existing caches.
+    # See: https://github.com/azu/github-actions-overwrite-cache-example
+    - name: "Delete previous compiler cache"
+      # Updating th cache doesn't work from forks
+      # So update it once it's merged into the repo
+      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+      working-directory: ${{ matrix.workspace }}
+      continue-on-error: true
+      run: |
+        gh extension install actions/gh-actions-cache
+        gh actions-cache delete "${{ matrix.name }}_compiler_cache" --confirm
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: "Save Compiler Cache"
+      # Updating th cache doesn't work from forks
+      # So update it once it's merged into the repo
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/cache/save@v3
+      with:
+        path: ${{ matrix.compiler_cache_path }}
+        key: ${{ matrix.name }}_compiler_cache
 
     - name: Upload GitHub Actions artifacts of vcpkg logs
       if: always()

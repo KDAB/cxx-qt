@@ -177,6 +177,17 @@ mod ffi {
         /// Custom pattern (see QBrush::setTexture()).
         TexturePattern = 24,
     }
+  
+    /// This enum is used by QPainter::drawRoundedRect() and QPainterPath::addRoundedRect()
+    /// functions to specify the radii of rectangle corners with respect to the dimensions
+    /// of the bounding rectangles specified.
+    #[repr(i32)]
+    enum SizeMode {
+        /// Specifies the size using absolute measurements.
+        AbsoluteSize,
+        /// Specifies the size relative to the bounding rectangle, typically using percentage measurements.
+        RelativeSize,
+    }
 
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
@@ -194,12 +205,15 @@ mod ffi {
         type BGMode;
         type ClipOperation;
         type BrushStyle;
+        type SizeMode;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule,
-    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SplitBehaviorFlags, TimeSpec,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
+    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
     TransformationMode,
 };
 
