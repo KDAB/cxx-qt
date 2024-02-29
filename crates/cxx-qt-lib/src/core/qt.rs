@@ -177,7 +177,7 @@ mod ffi {
         /// Custom pattern (see QBrush::setTexture()).
         TexturePattern = 24,
     }
-  
+
     /// This enum is used by QPainter::drawRoundedRect() and QPainterPath::addRoundedRect()
     /// functions to specify the radii of rectangle corners with respect to the dimensions
     /// of the bounding rectangles specified.
@@ -210,11 +210,11 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule,
-    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
-    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
-    TransformationMode,
+    AspectRatioMode, AspectRatioMode, BGMode, BGMode, BrushStyle, BrushStyle, CaseSensitivity,
+    CaseSensitivity, ClipOperation, ClipOperation, DateFormat, DateFormat, FillRule, FillRule,
+    LayoutDirection, LayoutDirection, PenCapStyle, PenCapStyle, PenJoinStyle, PenJoinStyle,
+    PenStyle, PenStyle, SizeMode, SizeMode, SplitBehaviorFlags, SplitBehaviorFlags, TimeSpec,
+    TimeSpec, TransformationMode,
 };
 
 // Reexport ConnectionType from cxx-qt
