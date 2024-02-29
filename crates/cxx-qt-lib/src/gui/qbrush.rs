@@ -57,12 +57,23 @@ mod ffi {
         fn construct() -> QBrush;
 
         #[doc(hidden)]
+        #[rust_name = "qcolor_init_from_qimage"]
+        fn construct(image: &QImage) -> QBrush;
+
+        #[doc(hidden)]
+        #[rust_name = "qcolor_init_from_brush_style"]
+        fn construct(brushstyle: &BrushStyle) -> QBrush;
+
         #[rust_name = "qbrush_drop"]
         fn drop(brush: &mut QBrush);
 
         #[doc(hidden)]
         #[rust_name = "qbrush_clone"]
         fn construct(brush: &QBrush) -> QBrush;
+
+        #[doc(hidden)]
+        #[rust_name = "qbrush_eq"]
+        fn operatorEq(a: &QBrush, b: &QBrush) -> bool;
     }
 }
 
@@ -87,6 +98,26 @@ impl Drop for QBrush {
 impl Clone for QBrush {
     fn clone(&self) -> Self {
         ffi::qbrush_clone(self)
+    }
+}
+
+impl PartialEq for QBrush {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qbrush_eq(self, other)
+    }
+}
+
+impl Eq for QBrush {}
+
+impl From<&ffi::QImage> for QBrush {
+    fn from(image: &ffi::QImage) -> Self {
+        ffi::qcolor_init_from_qimage(image)
+    }
+}
+
+impl From<&ffi::BrushStyle> for QBrush {
+    fn from(brushstyle: &ffi::BrushStyle) -> Self {
+        ffi::qcolor_init_from_brush_style(brushstyle)
     }
 }
 
