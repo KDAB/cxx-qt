@@ -68,10 +68,7 @@ mod ffi {
 
 #[repr(C)]
 pub struct QBrush {
-    #[cfg(qt_version_major = "5")]
-    _cspec: MaybeUninit<[i32; 2]>,
-    #[cfg(qt_version_major = "6")]
-    _cspec: MaybeUninit<i32>,
+    _cspec: MaybeUninit<usize>,
 }
 
 impl Default for QBrush {
