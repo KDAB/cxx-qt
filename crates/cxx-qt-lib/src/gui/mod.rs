@@ -37,4 +37,4 @@ mod qpainterpath;
 pub use qpainterpath::QPainterPath;
 
 mod qpainter;
-pub use qpainter::{QPainter, QPainterCompositionMode};
+pub use qpainter::{QPainter, QPainterCompositionMode, QPainterRenderHint};

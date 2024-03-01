@@ -22,6 +22,7 @@ mod qmodelindex;
 mod qpersistentmodelindex;
 mod qpoint;
 mod qpointf;
+mod qpolygon;
 mod qqmlapplicationengine;
 mod qqmlengine;
 mod qrect;

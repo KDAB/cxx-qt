@@ -178,6 +178,15 @@ impl TypeNames {
     }
 
     /// For a given rust ident return the CXX name with its namespace
+    ///
+    /// Ideally we'd want this type name to always be **fully** qualified, staring with `::`.
+    /// Unfortunately, this isn't always possible, as the Qt5 meta object system doesn't register
+    /// types with the fully qualified path :(
+    /// E.g. it will recognize `QString`, but not `::QString` from QML.
+    ///
+    /// This needs to be considered in many places (properties, signals, invokables, etc.)
+    /// Therefore, for now we'll use the qualified, but not fully qualified version of `namespace::type`.
+    /// This should work in most cases, but it's not perfect.
     pub fn cxx_qualified(&self, ident: &Ident) -> String {
         // Check if there is a cxx_name or namespace to handle
         let name = self.names.get(ident);
@@ -190,9 +199,9 @@ impl TypeNames {
         let cxx_name = name.cxx.clone().unwrap_or_else(|| name.rust.to_string());
 
         if let Some(namespace) = &name.namespace {
-            format!("::{namespace}::{cxx_name}")
+            format!("{namespace}::{cxx_name}")
         } else {
-            cxx_name.clone()
+            cxx_name
         }
     }
 
@@ -284,7 +293,7 @@ mod tests {
 
         assert_eq!(types.num_types(), 1);
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
-        assert_eq!(types.cxx_qualified(&ident), "A"); // TODO Should this be "::A"?
+        assert_eq!(types.cxx_qualified(&ident), "A");
         assert!(types.namespace(&ident).is_none());
     }
 
@@ -354,7 +363,7 @@ mod tests {
             .populate(&ident, &[], Some("bridge_namespace"), &format_ident!("ffi"))
             .is_ok());
 
-        assert_eq!(types.cxx_qualified(&ident), "::bridge_namespace::A");
+        assert_eq!(types.cxx_qualified(&ident), "bridge_namespace::A");
         assert_eq!(types.namespace(&ident).unwrap(), "bridge_namespace");
         assert_eq!(types.num_types(), 1);
         assert_eq!(
@@ -431,15 +440,15 @@ mod tests {
 
         assert_eq!(
             &types.cxx_qualified(&format_ident!("A")),
-            "::type_namespace::B"
+            "type_namespace::B"
         );
         assert_eq!(
             &types.cxx_qualified(&format_ident!("C")),
-            "::extern_namespace::D"
+            "extern_namespace::D"
         );
         assert_eq!(
             &types.cxx_qualified(&format_ident!("E")),
-            "::bridge_namespace::E"
+            "bridge_namespace::E"
         );
 
         assert_eq!(
@@ -485,7 +494,7 @@ mod tests {
         assert_eq!(type_names.num_types(), 1);
         assert_eq!(type_names.cxx_unqualified(&ident).unwrap(), "EnumB");
         assert_eq!(type_names.namespace(&ident).unwrap(), "enum_namespace");
-        assert_eq!(type_names.cxx_qualified(&ident), "::enum_namespace::EnumB");
+        assert_eq!(type_names.cxx_qualified(&ident), "enum_namespace::EnumB");
         assert_eq!(
             type_names.rust_qualified(&ident),
             parse_quote! { ffi::EnumA }
@@ -507,7 +516,7 @@ mod tests {
 
         assert_eq!(types.num_types(), 1);
         assert_eq!(types.cxx_unqualified(&ident).unwrap(), "StructB");
-        assert_eq!(types.cxx_qualified(&ident), "::struct_namespace::StructB");
+        assert_eq!(types.cxx_qualified(&ident), "struct_namespace::StructB");
         assert_eq!(types.namespace(&ident).unwrap(), "struct_namespace");
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::StructA });
     }

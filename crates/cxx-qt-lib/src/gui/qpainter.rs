@@ -127,6 +127,27 @@ mod ffi {
         RasterOp_NotDestination,
     }
 
+    /// Renderhints are used to specify flags to QPainter that may or may not be respected by any given engine.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QPainterRenderHint {
+        /// Indicates that the engine should antialias edges of primitives if possible.
+        Antialiasing = 0x01,
+        /// Indicates that the engine should antialias text if possible.
+        /// To forcibly disable antialiasing for text, do not use this hint.
+        /// Instead, set QFont::NoAntialias on your font's style strategy.
+        TextAntialiasing = 0x02,
+        /// Indicates that the engine should use a smooth pixmap transformation algorithm
+        /// (such as bilinear) rather than nearest neighbor.
+        SmoothPixmapTransform = 0x04,
+        /// Use a lossless image rendering, whenever possible. Currently, this hint is only
+        /// used when QPainter is employed to output a PDF file through QPrinter or QPdfWriter,
+        /// where drawImage()/drawPixmap() calls will encode images using a lossless compression
+        /// algorithm instead of lossy JPEG compression. This value was added in Qt 5.13.
+        LosslessImageRendering = 0x40,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpainter.h");
         type QPainter;
@@ -317,14 +338,18 @@ mod ffi {
         #[rust_name = "set_layout_direction"]
         fn setLayoutDirection(self: Pin<&mut QPainter>, direction: LayoutDirection);
 
-        /// Sets the painter's pen to be the given pen.
-        #[rust_name = "set_pen"]
-        fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
-
         /// Sets the opacity of the painter to opacity. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
         #[rust_name = "set_opacity"]
         fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
+
+        /// Sets the painter's pen to be the given pen.
+        #[rust_name = "set_pen"]
+        fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
+
+        /// Sets the given render hint on the painter if on is true; otherwise clears the render hint.
+        #[rust_name = "set_render_hint"]
+        fn setRenderHint(self: Pin<&mut QPainter>, hint: QPainterRenderHint, on: bool);
 
         /// Sets the painter's viewport rectangle to the given rectangle, and enables view transformations.
         #[rust_name = "set_viewport"]
@@ -337,6 +362,10 @@ mod ffi {
         /// Draws the outline (strokes) the path path with the pen specified by pen
         #[rust_name = "stroke_path"]
         fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
+
+        /// Returns true if hint is set; otherwise returns false.
+        #[rust_name = "test_render_hint"]
+        fn testRenderHint(self: &QPainter, hint: QPainterRenderHint) -> bool;
 
         /// Restores the current painter state (pops a saved state off the stack).
         fn restore(self: Pin<&mut QPainter>);
@@ -360,13 +389,15 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
         type QPainterCompositionMode;
 
+        type QPainterRenderHint;
+
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
         fn make_unique() -> UniquePtr<QPainter>;
     }
 }
 
-pub use ffi::{QPainter, QPainterCompositionMode};
+pub use ffi::{QPainter, QPainterCompositionMode, QPainterRenderHint};
 
 impl QPainter {
     /// Create a QPainter

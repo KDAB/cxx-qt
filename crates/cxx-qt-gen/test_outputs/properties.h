@@ -10,36 +10,36 @@ class MyObject;
 
 } // namespace cxx_qt::my_object
 
-namespace rust::cxxqtgen1::cxx_qt::my_object {
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
 using MyObjectCxxQtSignalHandlerprimitiveChanged =
   ::rust::cxxqt1::SignalHandler<
     struct MyObjectCxxQtSignalParamsprimitiveChanged*>;
-} // namespace rust::cxxqtgen1::cxx_qt::my_object
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
 
-namespace rust::cxxqtgen1::cxx_qt::my_object {
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
 using MyObjectCxxQtSignalHandlertrivialChanged = ::rust::cxxqt1::SignalHandler<
   struct MyObjectCxxQtSignalParamstrivialChanged*>;
-} // namespace rust::cxxqtgen1::cxx_qt::my_object
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 #include "cxx-qt-gen/ffi.cxx.h"
 
-namespace rust::cxxqtgen1::cxx_qt::my_object {
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
 MyObject_primitiveChangedConnect(
-  ::cxx_qt::my_object::MyObject& self,
-  ::rust::cxxqtgen1::cxx_qt::my_object::
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
     MyObjectCxxQtSignalHandlerprimitiveChanged closure,
   ::Qt::ConnectionType type);
-} // namespace rust::cxxqtgen1::cxx_qt::my_object
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
 
-namespace rust::cxxqtgen1::cxx_qt::my_object {
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
 MyObject_trivialChangedConnect(
-  ::cxx_qt::my_object::MyObject& self,
-  ::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlertrivialChanged
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialChanged
     closure,
   ::Qt::ConnectionType type);
-} // namespace rust::cxxqtgen1::cxx_qt::my_object
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object {
 class MyObject
