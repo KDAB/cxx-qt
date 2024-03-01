@@ -9,8 +9,11 @@ use quote::{ToTokens, TokenStreamExt};
 use syn::parse::{Parse, ParseStream};
 use syn::{AttrStyle, Attribute, Result};
 
+/// Representation of a CxxQtFile as Syn items
 pub struct CxxQtFile {
+    /// A vector of [syn::Attribute] in the file
     pub attrs: Vec<Attribute>,
+    /// A vector of [CxxQtItem] items in the file
     pub items: Vec<CxxQtItem>,
 }
 
@@ -40,6 +43,7 @@ impl ToTokens for CxxQtFile {
     }
 }
 
+/// Parse the given [std::path::Path] into a [CxxQtFile]
 pub fn parse_qt_file(path: impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
     let source = std::fs::read_to_string(path.as_ref()).unwrap_or_else(|err| {
         // todo: fixme with a proper error propagation
