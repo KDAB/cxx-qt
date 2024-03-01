@@ -77,6 +77,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpolygon_clone"]
         fn construct(p: &QPolygon) -> QPolygon;
+
+        #[doc(hidden)]
+        #[rust_name = "qpolygon_eq"]
+        fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
     }
 }
 
@@ -120,6 +124,14 @@ impl QPolygon {
         ffi::qpolygon_init_qrect(rect, closed)
     }
 }
+
+impl PartialEq for QPolygon {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpolygon_eq(self, other)
+    }
+}
+
+impl Eq for QPolygon {}
 
 // Safety:
 //
