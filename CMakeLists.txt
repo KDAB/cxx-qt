@@ -141,6 +141,12 @@ if(UNIX AND NOT APPLE)
 endif()
 
 find_program(MEMORYCHECK_COMMAND valgrind)
+if(NOT "${MEMORYCHECK_COMMAND}" STREQUAL "MEMORYCHECK_COMMAND-NOTFOUND")
+    if (NOT WIN32)
+       MESSAGE(STATUS "Valgrind found! Tests based on valgrind must be executed.") 
+    endif()
+endif()
+
 # Set our extra command options for valgrind
 # TODO: we need to come up with a better way to suppress "possibly lost" errors.
 # Suppression file doesn't work because there is a ton of mangled names that won't remain stable.
