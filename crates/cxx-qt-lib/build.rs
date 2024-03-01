@@ -13,8 +13,6 @@ fn main() {
         Err(_) => false,
     };
 
-    let mut builder = CxxQtBuilder::new();
-
     let mut rust_bridges = vec![
         "core/qbytearray",
         "core/qcoreapplication",
@@ -171,10 +169,6 @@ fn main() {
         ]);
     }
 
-    for rust_source in &rust_bridges {
-        builder = builder.file(format!("src/{rust_source}.rs"));
-    }
-
     let mut cpp_files = vec![
         "core/qbytearray",
         "core/qcoreapplication",
@@ -226,6 +220,12 @@ fn main() {
 
     if !emscripten_targeted {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
+    }
+
+    let mut builder = CxxQtBuilder::new();
+
+    for rust_source in &rust_bridges {
+        builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
     builder = builder.cc_builder(move |cc| {
