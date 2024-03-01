@@ -4,8 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cfg(not(any(qt_version_major = "5", qt_version_major = "6")))]
-compile_error!("qt_version_major must be either \"5\" or \"6\"");
+#[cfg(not(any(cxxqt_qt_version_major = "5", cxxqt_qt_version_major = "6")))]
+compile_error!("cxxqt_qt_version_major must be either \"5\" or \"6\"");
 
 mod core;
 

@@ -122,9 +122,9 @@ mod ffi {
 
 #[repr(C)]
 pub struct QPen {
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _cspec: MaybeUninit<[i32; 2]>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _cspec: MaybeUninit<i32>,
 }
 
