@@ -134,6 +134,50 @@ mod ffi {
         IntersectClip,
     }
 
+    /// This enum type defines the brush styles supported by Qt, i.e.
+    /// the fill pattern of shapes drawn using QPainter.
+    #[repr(i32)]
+    enum BrushStyle {
+        /// No brush pattern.
+        NoBrush,
+        /// Uniform color.
+        SolidPattern,
+        /// Extremely dense brush pattern.
+        Dense1Pattern,
+        /// Very dense brush pattern.
+        Dense2Pattern,
+        /// Somewhat dense brush pattern.
+        Dense3Pattern,
+        /// Half dense brush pattern.
+        Dense4Pattern,
+        /// Somewhat sparse brush pattern.
+        Dense5Pattern,
+        /// Very sparse brush pattern.
+        Dense6Pattern,
+        /// Extremely sparse brush pattern.
+        Dense7Pattern,
+        /// Horizontal lines.
+        HorPattern,
+        /// Vertical lines.
+        VerPattern,
+        /// Crossing horizontal and vertical lines.
+        CrossPattern,
+        /// Backward diagonal lines.
+        BDiagPattern,
+        /// Forward diagonal lines.
+        FDiagPattern,
+        /// Crossing diagonal lines.
+        DiagCrossPattern,
+        /// Linear gradient (set using a dedicated QBrush constructor).
+        LinearGradientPattern,
+        /// Conical gradient (set using a dedicated QBrush constructor).
+        RadialGradientPattern,
+        /// Radial gradient (set using a dedicated QBrush constructor).
+        ConicalGradientPattern,
+        /// Custom pattern (see QBrush::setTexture()).
+        TexturePattern = 24,
+    }
+
     /// This enum is used by QPainter::drawRoundedRect() and QPainterPath::addRoundedRect()
     /// functions to specify the radii of rectangle corners with respect to the dimensions
     /// of the bounding rectangles specified.
@@ -160,13 +204,14 @@ mod ffi {
         type LayoutDirection;
         type BGMode;
         type ClipOperation;
+        type BrushStyle;
         type SizeMode;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    AspectRatioMode, BGMode, BrushStyle, CaseSensitivity, ClipOperation, DateFormat, FillRule,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
     TransformationMode,
 };
 

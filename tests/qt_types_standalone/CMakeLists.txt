@@ -49,6 +49,7 @@ target_link_libraries(${CRATE} INTERFACE
 add_executable(${APP_NAME}
     cpp/main.cpp
     cpp/qbytearray.h
+    cpp/qbrush.h
     cpp/qcolor.h
     cpp/qcoreapplication.h
     cpp/qdate.h

@@ -38,3 +38,6 @@ pub use qpainterpath::QPainterPath;
 
 mod qpainter;
 pub use qpainter::QPainter;
+
+mod qbrush;
+pub use qbrush::QBrush;
