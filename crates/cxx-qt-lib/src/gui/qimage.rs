@@ -237,6 +237,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qimage_cache_key"]
         fn qimageCacheKey(image: &QImage) -> i64;
+
+        #[doc(hidden)]
+        #[rust_name = "qimage_eq"]
+        fn operatorEq(a: &QImage, b: &QImage) -> bool;
     }
 }
 
@@ -269,6 +273,14 @@ impl Default for QImage {
         ffi::qimage_init_default()
     }
 }
+
+impl PartialEq for QImage {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qimage_eq(self, other)
+    }
+}
+
+impl Eq for QImage {}
 
 // Safety:
 //
