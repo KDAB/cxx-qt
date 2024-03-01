@@ -15,7 +15,23 @@ mod ffi {
         type SizeMode = crate::SizeMode;
     }
 
-    /// The type of image format available in Qt.
+    /// Warning: Only a [QPainter](https://doc.qt.io/qt-6/qpainter.html) operating on a [QImage](https://doc.qt.io/qt-6/qimage.html)
+    /// fully supports all composition modes. The RasterOp modes are supported for X11 as described
+    /// in [compositionMode](https://doc.qt.io/qt-6/qpainter.html#compositionMode)().
+    ///
+    /// Defines the modes supported for digital image compositing. Composition modes are used to specify
+    /// how the pixels in one image, the source, are merged with the pixel in another image, the destination.
+    /// Please note that the bitwise raster operation modes, denoted with a RasterOp prefix,
+    /// are only natively supported in the X11 and raster paint engines. This means that the only way to utilize
+    /// these modes on the Mac is via a QImage. The RasterOp denoted blend modes are not supported for pens
+    /// and brushes with alpha components. Also, turning on the QPainter::Antialiasing render hint will
+    /// effectively disable the RasterOp modes.
+    /// The most common type is SourceOver (often referred to as just alpha blending) where the source pixel
+    /// is blended on top of the destination pixel in such a way that the alpha component of the source
+    /// defines the translucency of the pixel.
+    /// Several composition modes require an alpha channel in the source or target images to have an effect.
+    /// For optimal performance the image format Format_ARGB32_Premultiplied is preferred.
+    /// When a composition mode is set it applies to all painting operator, pens, brushes, gradients and pixmap/image drawing.
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
