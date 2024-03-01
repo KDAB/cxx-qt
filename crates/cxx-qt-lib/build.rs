@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_build::CxxQtBuilder;
-use qt_build_utils::QtBuild;
 
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
@@ -13,20 +12,6 @@ fn main() {
         Ok(val) => val == "emscripten",
         Err(_) => false,
     };
-
-    let mut builder = CxxQtBuilder::new();
-
-    // Find the Qt version and tell the Rust compiler
-    // this allows us to have conditional Rust code
-    //
-    // TODO: is this useful to have in cxx-qt-build?
-    println!(
-        "cargo:rustc-cfg=qt_version_major=\"{}\"",
-        QtBuild::new(vec!())
-            .expect("Could not find Qt installation")
-            .version()
-            .major
-    );
 
     let mut rust_bridges = vec![
         "core/qbytearray",
@@ -184,10 +169,6 @@ fn main() {
         ]);
     }
 
-    for rust_source in &rust_bridges {
-        builder = builder.file(format!("src/{rust_source}.rs"));
-    }
-
     let mut cpp_files = vec![
         "core/qbytearray",
         "core/qcoreapplication",
@@ -239,6 +220,12 @@ fn main() {
 
     if !emscripten_targeted {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
+    }
+
+    let mut builder = CxxQtBuilder::new();
+
+    for rust_source in &rust_bridges {
+        builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
     builder = builder.cc_builder(move |cc| {
