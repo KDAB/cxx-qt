@@ -9,10 +9,6 @@ use qt_build_utils::QtBuild;
 fn main() {
     let mut builder = CxxQtBuilder::new();
 
-    // Find the Qt version and tell the Rust compiler
-    // this allows us to have conditional Rust code
-    //
-    // TODO: is this useful to have in cxx-qt-build?
     println!(
         "cargo:rustc-cfg=qt_version_major=\"{}\"",
         QtBuild::new(vec!())
