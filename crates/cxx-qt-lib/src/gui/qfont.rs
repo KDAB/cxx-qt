@@ -235,6 +235,10 @@ mod ffi {
         #[rust_name = "style_name"]
         fn styleName(self: &QFont) -> QString;
 
+        /// Returns a description of the font.
+        #[rust_name = "to_string"]
+        fn toString(self: &QFont) -> QString;
+
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
 
