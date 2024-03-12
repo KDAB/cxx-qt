@@ -62,6 +62,7 @@ mod tests {
                     rust_ident: "MyObjectRust".to_owned(),
                     namespace: "cxx_qt::my_object".to_owned(),
                     namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
+                    has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
@@ -185,6 +186,7 @@ mod tests {
                     rust_ident: "FirstObjectRust".to_owned(),
                     namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
+                    has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {
@@ -228,6 +230,7 @@ mod tests {
                     rust_ident: "SecondObjectRust".to_owned(),
                     namespace: "cxx_qt".to_owned(),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
+                    has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
                         base_classes: vec!["QStringListModel".to_owned()],
                         includes: {

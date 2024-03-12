@@ -3,6 +3,11 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+
+#![deny(missing_docs)]
+
+//! The cxx-qt-gen crate provides methods for generated C++ and Rust code from a TokenStream.
+
 mod generator;
 mod naming;
 mod parser;
@@ -13,8 +18,8 @@ pub use generator::{
     cpp::{fragment::CppFragment, GeneratedCppBlocks},
     rust::GeneratedRustBlocks,
 };
-pub use parser::{qobject::QmlElementMetadata, Parser};
-pub use syntax::{parse_qt_file, CxxQtItem};
+pub use parser::Parser;
+pub use syntax::{parse_qt_file, CxxQtFile, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
 pub use syn::{Error, Result};

@@ -22,6 +22,9 @@ pub fn generate(
 
     for method in inherited_methods {
         let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, type_names)?;
+        // Note that no qobject macro with no base class is an error
+        //
+        // So a default of QObject is fine here
         let base_class = base_class.as_deref().unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {

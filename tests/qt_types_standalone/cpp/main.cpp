@@ -25,6 +25,7 @@
 #include "qpersistentmodelindex.h"
 #include "qpoint.h"
 #include "qpointf.h"
+#include "qpolygon.h"
 #include "qqmlapplicationengine.h"
 #include "qqmlengine.h"
 #include "qrect.h"
@@ -90,6 +91,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QVector2DTest));
   runTest(QScopedPointer<QObject>(new QVector3DTest));
   runTest(QScopedPointer<QObject>(new QVector4DTest));
+  runTest(QScopedPointer<QObject>(new QPolygonTest));
 
   return status;
 }

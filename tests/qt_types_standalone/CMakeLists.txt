@@ -66,6 +66,7 @@ add_executable(${APP_NAME}
     cpp/qpersistentmodelindex.h
     cpp/qpoint.h
     cpp/qpointf.h
+    cpp/qpolygon.h
     cpp/qqmlapplicationengine.h
     cpp/qqmlengine.h
     cpp/qrect.h

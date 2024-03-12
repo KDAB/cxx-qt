@@ -188,6 +188,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpainterpath_drop"]
         fn drop(painterPath: &mut QPainterPath);
+
+        #[doc(hidden)]
+        #[rust_name = "qpainterpath_eq"]
+        fn operatorEq(a: &QPainterPath, b: &QPainterPath) -> bool;
     }
 }
 
@@ -221,6 +225,14 @@ impl From<&QPointF> for QPainterPath {
         ffi::qpainterpath_from_qpointf(p)
     }
 }
+
+impl PartialEq for QPainterPath {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpainterpath_eq(self, other)
+    }
+}
+
+impl Eq for QPainterPath {}
 
 // Safety:
 //

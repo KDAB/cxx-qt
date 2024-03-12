@@ -56,12 +56,12 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlerprimitiveChanged = cxx_qt::signalhandler::CxxQtSignalHandler<
             super::MyObjectCxxQtSignalClosureprimitiveChanged,
         >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_primitive_changed"]
         fn MyObject_primitiveChangedConnect(
@@ -70,7 +70,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_primitiveChanged(
@@ -89,12 +89,12 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlertrivialChanged = cxx_qt::signalhandler::CxxQtSignalHandler<
             super::MyObjectCxxQtSignalClosuretrivialChanged,
         >;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[must_use]
         #[rust_name = "MyObject_connect_trivial_changed"]
         fn MyObject_trivialChangedConnect(
@@ -103,7 +103,7 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1::cxx_qt::my_object"]
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_trivialChanged(
@@ -216,7 +216,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for MyObjectCxxQtSignalClosureprimitiveChanged
 {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlerprimitiveChanged"
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerprimitiveChanged"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
 }
@@ -266,7 +266,7 @@ impl ffi::MyObject {
 pub struct MyObjectCxxQtSignalClosuretrivialChanged {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosuretrivialChanged {
     type Id = cxx::type_id!(
-        "::rust::cxxqtgen1::cxx_qt::my_object::MyObjectCxxQtSignalHandlertrivialChanged"
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialChanged"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
 }

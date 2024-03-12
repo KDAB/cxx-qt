@@ -20,11 +20,15 @@ function(add_acceptance_tests TEST_NAME)
     )
 
     if (NOT WIN32)
-       # Add valgrind test
-       add_valgrind_test(
-           ${NAME_WITH_PREFIX} $<TARGET_FILE:${TARGET_NAME}>
-           ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
-       )
+       if (COMMAND add_valgrind_test)
+          # Add valgrind test
+          add_valgrind_test(
+              ${NAME_WITH_PREFIX} $<TARGET_FILE:${TARGET_NAME}>
+              ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+          )
+       else()
+	  MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+       endif()
     endif()
 endfunction()
 

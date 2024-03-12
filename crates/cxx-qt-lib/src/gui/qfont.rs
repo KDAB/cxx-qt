@@ -262,6 +262,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_clone"]
         fn construct(font: &QFont) -> QFont;
+
+        #[doc(hidden)]
+        #[rust_name = "qfont_eq"]
+        fn operatorEq(a: &QFont, b: &QFont) -> bool;
     }
 }
 
@@ -290,6 +294,14 @@ impl Clone for QFont {
         ffi::qfont_clone(self)
     }
 }
+
+impl PartialEq for QFont {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qfont_eq(self, other)
+    }
+}
+
+impl Eq for QFont {}
 
 impl QFont {
     /// Returns the bounding rectangle of the current clip if there is a clip;

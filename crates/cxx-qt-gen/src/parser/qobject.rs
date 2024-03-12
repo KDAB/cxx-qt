@@ -57,6 +57,8 @@ pub struct ParsedQObject {
     pub locking: bool,
     /// Whether threading has been enabled for this QObject
     pub threading: bool,
+    /// Whether this type has a #[qobject] / Q_OBJECT macro
+    pub has_qobject_macro: bool,
 }
 
 impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
@@ -97,6 +99,7 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
             qml_metadata,
             locking: true,
             threading: false,
+            has_qobject_macro: false,
         })
     }
 }

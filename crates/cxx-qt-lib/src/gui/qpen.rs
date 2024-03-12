@@ -113,14 +113,18 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpen_clone"]
         fn construct(pen: &QPen) -> QPen;
+
+        #[doc(hidden)]
+        #[rust_name = "qpen_eq"]
+        fn operatorEq(a: &QPen, b: &QPen) -> bool;
     }
 }
 
 #[repr(C)]
 pub struct QPen {
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _cspec: MaybeUninit<[i32; 2]>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _cspec: MaybeUninit<i32>,
 }
 
@@ -142,6 +146,14 @@ impl Clone for QPen {
         ffi::qpen_clone(self)
     }
 }
+
+impl PartialEq for QPen {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpen_eq(self, other)
+    }
+}
+
+impl Eq for QPen {}
 
 impl From<&ffi::QColor> for QPen {
     fn from(color: &ffi::QColor) -> Self {

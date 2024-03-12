@@ -75,6 +75,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpolygonf_clone"]
         fn construct(p: &QPolygonF) -> QPolygonF;
+
+        #[doc(hidden)]
+        #[rust_name = "qpolygonf_eq"]
+        fn operatorEq(a: &QPolygonF, b: &QPolygonF) -> bool;
     }
 }
 
@@ -85,9 +89,9 @@ pub struct QPolygonF {
     ///
     /// Qt5 QPolygon has one pointer as a member
     /// Qt6 QPolygon has one member, which contains two pointers and a size_t
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _space: MaybeUninit<usize>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _space: MaybeUninit<[usize; 3]>,
 }
 
@@ -109,6 +113,14 @@ impl Clone for QPolygonF {
         ffi::qpolygonf_clone(self)
     }
 }
+
+impl PartialEq for QPolygonF {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpolygonf_eq(self, other)
+    }
+}
+
+impl Eq for QPolygonF {}
 
 // Safety:
 //

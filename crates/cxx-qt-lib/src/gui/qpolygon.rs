@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::QRect;
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 
@@ -66,12 +67,20 @@ mod ffi {
         fn construct() -> QPolygon;
 
         #[doc(hidden)]
+        #[rust_name = "qpolygon_init_qrect"]
+        fn construct(rect: &QRect, closed: bool) -> QPolygon;
+
+        #[doc(hidden)]
         #[rust_name = "qpolygon_drop"]
         fn drop(pen: &mut QPolygon);
 
         #[doc(hidden)]
         #[rust_name = "qpolygon_clone"]
         fn construct(p: &QPolygon) -> QPolygon;
+
+        #[doc(hidden)]
+        #[rust_name = "qpolygon_eq"]
+        fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
     }
 }
 
@@ -82,9 +91,9 @@ pub struct QPolygon {
     ///
     /// Qt5 QPolygon has one pointer as a member
     /// Qt6 QPolygon has one member, which contains two pointers and a size_t
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _space: MaybeUninit<usize>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _space: MaybeUninit<[usize; 3]>,
 }
 
@@ -106,6 +115,23 @@ impl Clone for QPolygon {
         ffi::qpolygon_clone(self)
     }
 }
+
+impl QPolygon {
+    /// Constructs a polygon from the given rectangle. If closed is false, the polygon
+    /// just contains the four points of the rectangle ordered clockwise, otherwise the
+    /// polygon's fifth point is set to rectangle.topLeft().
+    pub fn new(rect: &QRect, closed: bool) -> Self {
+        ffi::qpolygon_init_qrect(rect, closed)
+    }
+}
+
+impl PartialEq for QPolygon {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpolygon_eq(self, other)
+    }
+}
+
+impl Eq for QPolygon {}
 
 // Safety:
 //

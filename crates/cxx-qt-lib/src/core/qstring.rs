@@ -188,9 +188,9 @@ pub struct QString {
     ///
     /// Qt5 QString has one pointer as a member
     /// Qt6 QString has one member, which contains two pointers and a size_t
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _space: MaybeUninit<usize>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _space: MaybeUninit<[usize; 3]>,
 }
 

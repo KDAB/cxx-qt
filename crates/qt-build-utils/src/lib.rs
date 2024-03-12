@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#![deny(missing_docs)]
+
 //! This crate provides information about the Qt installation and can invoke Qt's
 //! [moc](https://doc.qt.io/qt-6/moc.html) code generator. This crate does not build
 //! any C++ code on its own. It is intended to be used in [build.rs scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html)
@@ -28,11 +30,14 @@ pub use versions::SemVer;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+/// Errors that can occur while using [QtBuild]
 pub enum QtBuildError {
     /// `QMAKE` environment variable was set but Qt was not detected
     #[error("QMAKE environment variable specified as {qmake_env_var} but could not detect Qt: {error:?}")]
     QMakeSetQtMissing {
+        /// The value of the qmake environment variable when the error occurred
         qmake_env_var: String,
+        /// The inner [QtBuildError] that occurred
         error: Box<QtBuildError>,
     },
     /// Qt was not found
@@ -44,13 +49,17 @@ pub enum QtBuildError {
     /// `QT_VERSION_MAJOR` environment variable was specified but could not be parsed as an integer
     #[error("QT_VERSION_MAJOR environment variable specified as {qt_version_major_env_var} but could not parse as integer: {source:?}")]
     QtVersionMajorInvalid {
+        /// The Qt major version from `QT_VERSION_MAJOR`
         qt_version_major_env_var: String,
+        /// The [std::num::ParseIntError] when parsing the `QT_VERSION_MAJOR`
         source: std::num::ParseIntError,
     },
     /// `QT_VERSION_MAJOR` environment variable was specified but the Qt version specified by `qmake -query QT_VERSION` did not match
     #[error("qmake version ({qmake_version}) does not match version specified by QT_VERSION_MAJOR ({qt_version_major})")]
     QtVersionMajorDoesNotMatch {
+        /// The qmake version
         qmake_version: u32,
+        /// The Qt major version from `QT_VERSION_MAJOR`
         qt_version_major: u32,
     },
 }

@@ -33,6 +33,7 @@ pub struct GeneratedRustBlocks {
 }
 
 impl GeneratedRustBlocks {
+    /// Create a [GeneratedRustBlocks] from the given [Parser] object
     pub fn from(parser: &Parser) -> Result<GeneratedRustBlocks> {
         let mut fragments = vec![];
         fragments.extend(

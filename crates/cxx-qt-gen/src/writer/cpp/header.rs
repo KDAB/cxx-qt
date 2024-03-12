@@ -76,12 +76,23 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
 /// For a given GeneratedCppBlocks write the classes
 fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
     generated.qobjects.iter().map(|qobject| {
+        let ident = &qobject.ident;
+        let qobject_macro = if qobject.has_qobject_macro {
+            "Q_OBJECT"
+        } else {
+            ""
+        };
+        let qobject_assert = if qobject.has_qobject_macro {
+            format!("static_assert(::std::is_base_of<QObject, {ident}>::value, \"{ident} must inherit from QObject\");")
+        } else {
+            "".to_owned()
+        };
         let class_definition = namespaced(
             &qobject.namespace,
             &formatdoc! { r#"
                 class {ident} : {base_classes}
                 {{
-                  Q_OBJECT
+                  {qobject_macro}
                 public:
                   {metaobjects}
 
@@ -91,8 +102,8 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
                 {private_methods}
                 }};
 
-                static_assert(::std::is_base_of<QObject, {ident}>::value, "{ident} must inherit from QObject");"#,
-            ident = qobject.ident,
+                {qobject_assert}"#,
+            // Note that there is always a base class as we always have CxxQtType
             base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
             metaobjects = qobject.blocks.metaobjects.join("\n  "),
             public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
@@ -107,17 +118,24 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             .collect::<Vec<String>>()
             .join("\n");
 
+        let declare_metatype = if qobject.has_qobject_macro {
+            let ty = if qobject.namespace.is_empty() {
+                qobject.ident.clone()
+            } else {
+                format!("{namespace}::{ident}", namespace = qobject.namespace, ident = qobject.ident)
+            };
+            format!("Q_DECLARE_METATYPE({ty}*)")
+        } else {
+            "".to_owned()
+        };
+
         formatdoc! {r#"
             {fragments}
             {class_definition}
 
-            Q_DECLARE_METATYPE({metatype}*)
-            "#,
-        metatype = if qobject.namespace.is_empty() {
-            qobject.ident.clone()
-        } else {
-            format!("{namespace}::{ident}", namespace = qobject.namespace, ident = qobject.ident)
-        },}
+            {declare_metatype}
+            "#
+        }
     }).collect::<Vec<String>>()
 }
 

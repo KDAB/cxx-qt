@@ -10,8 +10,7 @@ use syn::parse::{Parse, ParseStream};
 use syn::{Attribute, Item, ItemMod, Result, Token, Visibility};
 
 #[derive(Clone, PartialEq, Eq)]
-// This warning is triggered when running clippy on crates that depend on cxx-qt-gen,
-// but not when running clippy on cxx-qt-gen.
+/// Representation of either a Syn Item, a CXX module, or a CXX-Qt module
 pub enum CxxQtItem {
     /// A normal syntax item that we pass through
     Item(Item),

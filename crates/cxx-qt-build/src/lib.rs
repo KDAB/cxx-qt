@@ -480,6 +480,13 @@ impl CxxQtBuilder {
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
+        // Find the Qt version and tell the Rust compiler
+        // this allows us to have conditional Rust code
+        println!(
+            "cargo:rustc-cfg=cxxqt_qt_version_major=\"{}\"",
+            qtbuild.version().major
+        );
+
         // Write cxx-qt and cxx headers
         cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
         std::fs::create_dir_all(format!("{header_root}/rust"))
