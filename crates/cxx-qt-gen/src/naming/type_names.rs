@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::BTreeMap;
+use std::collections::{btree_map::Entry, BTreeMap};
 
 use syn::{
-    token::Brace, Attribute, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
+    token::Brace, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
 };
 
 use crate::syntax::{
@@ -177,8 +177,8 @@ impl TypeNames {
         Ok(())
     }
 
-    fn unknown_type(&self, ident: &Ident) -> syn::Error {
-        syn::Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
+    fn unknown_type(&self, ident: &Ident) -> Error {
+        Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
     /// For a given rust ident return the CXX name with its namespace
@@ -246,9 +246,19 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, module_ident)?;
-        // TODO: Check for duplicates
-        self.names.insert(name.rust.clone(), name);
-        Ok(())
+
+        let entry = self.names.entry(name.rust.clone());
+
+        match entry {
+            Entry::Occupied(_) => Err(Error::new_spanned(
+                ident,
+                format!("The type name `{ident}` is defined multiple times"),
+            )),
+            Entry::Vacant(entry) => {
+                entry.insert(name);
+                Ok(())
+            }
+        }
     }
 
     #[cfg(test)]
@@ -566,5 +576,27 @@ mod tests {
             "struct_namespace"
         );
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::StructA });
+    }
+
+    #[test]
+    fn test_duplicate_types() {
+        let items = [
+            parse_quote! {
+                extern "C++" {
+                    #[rust_name="B"]
+                    type A;
+                }
+            },
+            parse_quote! {
+                extern "Rust" {
+                    type B;
+                }
+            },
+        ];
+
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_err());
     }
 }
