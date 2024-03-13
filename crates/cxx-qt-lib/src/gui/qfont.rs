@@ -73,6 +73,47 @@ mod ffi {
         AbsoluteSpacing,
     }
 
+    /// The style strategy tells the font matching algorithm what type of fonts should
+    /// be used to find an appropriate default family.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QFontStyleStrategy {
+        /// the default style strategy. It does not prefer any type of font
+        PreferDefault = 0x0001,
+        /// prefers bitmap fonts (as opposed to outline fonts).
+        PreferBitmap = 0x0002,
+        /// prefers device fonts.
+        PreferDevice = 0x0004,
+        /// prefers outline fonts (as opposed to bitmap fonts).
+        PreferOutline = 0x0008,
+        /// forces the use of outline fonts.
+        ForceOutline = 0x0010,
+        // don't antialias the fonts.
+        // PreferMatch = 0x0020,
+        // avoid subpixel antialiasing on the fonts if possible
+        // PreferQuality = 0x0040,
+        /// antialias if possible.
+        PreferAntialias = 0x0080,
+        /// don't antialias the fonts.
+        NoAntialias = 0x0100,
+        /// avoid subpixel antialiasing on the fonts if possible.
+        NoSubpixelAntialias = 0x0800,
+        /// Sometimes, a font will apply complex rules to a set of characters
+        /// in order to display them correctly. In some writing systems, such
+        /// as Brahmic scripts, this is required in order for the text to be legible,
+        /// but in e.g. Latin script, it is merely a cosmetic feature.
+        /// The PreferNoShaping flag will disable all such features when they are not
+        /// required, which will improve performance in most cases (since Qt 5.10).
+        PreferNoShaping = 0x1000,
+        /// If the font selected for a certain writing system does not contain a character
+        /// requested to draw, then Qt automatically chooses a similar looking font that
+        /// contains the character. The NoFontMerging flag disables this feature. Please note
+        /// that enabling this flag will not prevent Qt from automatically picking a
+        /// suitable font when the selected font does not support the writing system of the text.
+        NoFontMerging = 0x8000,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = super::QFont;
@@ -176,6 +217,10 @@ mod ffi {
         #[rust_name = "set_fixed_pitch"]
         fn setFixedPitch(self: &mut QFont, enable: bool);
 
+        /// Sets the style strategy for the font to s.
+        #[rust_name = "set_style_strategy"]
+        fn setStyleStrategy(self: &mut QFont, strategy: QFontStyleStrategy);
+
         /// Set the preference for the hinting level of the glyphs to hintingPreference.
         #[rust_name = "set_hinting_preference"]
         fn setHintingPreference(self: &mut QFont, hintingPreference: QFontHintingPreference);
@@ -235,6 +280,10 @@ mod ffi {
         #[rust_name = "style_name"]
         fn styleName(self: &QFont) -> QString;
 
+        /// Returns the StyleStrategy.
+        #[rust_name = "style_strategy"]
+        fn styleStrategy(self: &QFont) -> QFontStyleStrategy;
+
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
 
@@ -250,6 +299,7 @@ mod ffi {
         type QFontHintingPreference;
         type QFontCapitalization;
         type QFontSpacingType;
+        type QFontStyleStrategy;
 
         #[doc(hidden)]
         #[rust_name = "qfont_init_default"]
@@ -269,7 +319,9 @@ mod ffi {
     }
 }
 
-pub use ffi::{QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle};
+pub use ffi::{
+    QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle, QFontStyleStrategy,
+};
 
 #[repr(C)]
 pub struct QFont {

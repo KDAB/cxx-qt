@@ -24,6 +24,7 @@ using QFontStyle = QFont::Style;
 using QFontHintingPreference = QFont::HintingPreference;
 using QFontCapitalization = QFont::Capitalization;
 using QFontSpacingType = QFont::SpacingType;
+using QFontStyleStrategy = QFont::StyleStrategy;
 
 } // namespace cxxqtlib1
 } // namespace rust
