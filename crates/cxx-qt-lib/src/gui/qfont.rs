@@ -89,10 +89,10 @@ mod ffi {
         PreferOutline = 0x0008,
         /// forces the use of outline fonts.
         ForceOutline = 0x0010,
-        /// don't antialias the fonts.
-        /// PreferMatch = 0x0020,
-        /// avoid subpixel antialiasing on the fonts if possible
-        /// PreferQuality = 0x0040,
+        // don't antialias the fonts.
+        // PreferMatch = 0x0020,
+        // avoid subpixel antialiasing on the fonts if possible
+        // PreferQuality = 0x0040,
         /// antialias if possible.
         PreferAntialias = 0x0080,
         /// don't antialias the fonts.
