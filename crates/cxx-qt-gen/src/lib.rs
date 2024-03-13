@@ -44,7 +44,20 @@ mod tests {
 
     /// Helper to ensure that a given syn item is the same as the given TokenStream
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
-        assert_str_eq!(item.to_token_stream().to_string(), tokens.to_string());
+        // For understanding what's going on, it is nicer to use format_rs_source
+        // So that the TokenStream is actually legible.
+        //
+        // We don't want to use format_rs_source for the comparison, because it means calling out
+        // to rustfmt, which is slow.
+        // So only pretty-print if the comparison fails.
+        let left = tokens.to_string();
+        let right = item.to_token_stream().to_string();
+        if left != right {
+            assert_str_eq!(format_rs_source(&left), format_rs_source(&right));
+            // Fallback, in case assert_str_eq doesn't actually panic after formatting for some
+            // reason.
+            panic!("assertion failed: left != right");
+        }
     }
 
     /// Helper for formating C++ code
