@@ -302,6 +302,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectA"))
+                .unwrap()
                 .unwrap(),
             "bridge_namespace"
         );
@@ -309,6 +310,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectB"))
+                .unwrap()
                 .unwrap(),
             "type_namespace"
         );
@@ -316,6 +318,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectC"))
+                .unwrap()
                 .unwrap(),
             "extern_namespace"
         );

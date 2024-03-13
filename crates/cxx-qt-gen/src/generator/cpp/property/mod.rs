@@ -82,7 +82,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &TypeNames::default()).unwrap();
+            generate_cpp_properties(&properties, &qobject_idents, &TypeNames::mock()).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -360,7 +360,7 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut type_names = TypeNames::default();
+        let mut type_names = TypeNames::mock();
         type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();

@@ -96,7 +96,7 @@ pub fn generate_cpp_signal(
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names);
+    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names)?;
 
     let signal_ident = idents.name.cpp;
     let free_connect_ident_cpp = idents_helper.connect_name.cpp;
@@ -251,7 +251,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -349,7 +349,7 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut type_names = TypeNames::default();
+        let mut type_names = TypeNames::mock();
         type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
@@ -444,9 +444,8 @@ mod tests {
             private: false,
         }];
         let qobject_idents = create_qobjectname();
-
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);
@@ -531,8 +530,9 @@ mod tests {
             private: false,
         };
 
-        let generated =
-            generate_cpp_signal(&signal, &signal.qobject_ident, &TypeNames::default()).unwrap();
+        let mut type_names = TypeNames::default();
+        type_names.insert("ObjRust", None, None, None);
+        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 
