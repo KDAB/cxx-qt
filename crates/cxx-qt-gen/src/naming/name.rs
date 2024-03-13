@@ -93,4 +93,12 @@ impl Name {
             module: module.clone(),
         })
     }
+
+    /// Get the unqualified name of the type in C++.
+    /// This is either:
+    /// - The cxx_name attribute value, if one is provided
+    /// - The original ident, if no cxx_name was provided
+    pub(super) fn cxx_unqualified(&self) -> String {
+        self.cxx.clone().unwrap_or_else(|| self.rust.to_string())
+    }
 }

@@ -177,6 +177,10 @@ impl TypeNames {
         Ok(())
     }
 
+    fn unknown_type(&self, ident: &Ident) -> syn::Error {
+        syn::Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
+    }
+
     /// For a given rust ident return the CXX name with its namespace
     ///
     /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
@@ -187,35 +191,28 @@ impl TypeNames {
     /// This needs to be considered in many places (properties, signals, invokables, etc.)
     /// Therefore, for now we'll use the qualified, but not fully qualified version of `namespace::type`.
     /// This should work in most cases, but it's not perfect.
-    pub fn cxx_qualified(&self, ident: &Ident) -> String {
+    pub fn cxx_qualified(&self, ident: &Ident) -> Result<String> {
         // Check if there is a cxx_name or namespace to handle
-        let name = self.names.get(ident);
+        let name = self
+            .names
+            .get(ident)
+            .ok_or_else(|| self.unknown_type(ident))?;
 
-        if name.is_none() {
-            return ident.to_string();
-        }
-        let name = name.unwrap();
-
-        let cxx_name = name.cxx.clone().unwrap_or_else(|| name.rust.to_string());
+        let cxx_name = name.cxx_unqualified();
 
         if let Some(namespace) = &name.namespace {
-            format!("{namespace}::{cxx_name}")
+            Ok(format!("{namespace}::{cxx_name}"))
         } else {
-            cxx_name
+            Ok(cxx_name)
         }
-    }
-
-    fn unknown_type(&self, ident: &Ident) -> syn::Error {
-        syn::Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
     /// For a given rust ident return the CXX name **without** its namespace
     pub fn cxx_unqualified(&self, ident: &Ident) -> Result<String> {
-        if let Some(name) = self.names.get(ident) {
-            Ok(name.cxx.clone().unwrap_or_else(|| ident.to_string()))
-        } else {
-            Err(self.unknown_type(ident))
-        }
+        self.names
+            .get(ident)
+            .ok_or_else(|| self.unknown_type(ident))
+            .map(Name::cxx_unqualified)
     }
 
     /// For a given rust ident return the namespace if it's not empty
@@ -249,6 +246,7 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, module_ident)?;
+        // TODO: Check for duplicates
         self.names.insert(name.rust.clone(), name);
         Ok(())
     }
@@ -306,8 +304,8 @@ mod tests {
         assert_eq!(types.num_types(), 0);
 
         assert!(types.cxx_unqualified(&format_ident!("A")).is_err());
+        assert!(types.cxx_qualified(&format_ident!("A")).is_err());
         assert!(types.namespace(&format_ident!("A")).is_err());
-        // assert!(types.cxx_qualified(&format_ident!("A")).is_err());
     }
 
     #[test]
@@ -320,7 +318,7 @@ mod tests {
 
         assert_eq!(types.num_types(), 1);
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
-        assert_eq!(types.cxx_qualified(&ident), "A");
+        assert_eq!(types.cxx_qualified(&ident).unwrap(), "A");
         assert!(types.namespace(&ident).unwrap().is_none());
     }
 
@@ -338,7 +336,7 @@ mod tests {
             .is_ok());
 
         assert_eq!(types.num_types(), 1);
-        assert_eq!(types.cxx_qualified(&ident), "B");
+        assert_eq!(types.cxx_qualified(&ident).unwrap(), "B");
         assert!(types.namespace(&ident).unwrap().is_none());
         assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
     }
@@ -397,7 +395,7 @@ mod tests {
             .populate(&ident, &[], Some("bridge_namespace"), &format_ident!("ffi"))
             .is_ok());
 
-        assert_eq!(types.cxx_qualified(&ident), "bridge_namespace::A");
+        assert_eq!(types.cxx_qualified(&ident).unwrap(), "bridge_namespace::A");
         assert_eq!(
             types.namespace(&ident).unwrap().unwrap(),
             "bridge_namespace"
@@ -443,7 +441,7 @@ mod tests {
         let type_names = parse_cxx_item(item);
         let ident = format_ident!("A");
         assert_eq!(type_names.num_types(), 1);
-        assert_eq!(type_names.cxx_qualified(&ident), "B");
+        assert_eq!(type_names.cxx_qualified(&ident).unwrap(), "B");
 
         assert_eq!(type_names.rust_qualified(&ident), parse_quote! { ffi::A });
     }
@@ -476,15 +474,15 @@ mod tests {
         assert_eq!(types.num_types(), 3);
 
         assert_eq!(
-            &types.cxx_qualified(&format_ident!("A")),
+            types.cxx_qualified(&format_ident!("A")).unwrap(),
             "type_namespace::B"
         );
         assert_eq!(
-            &types.cxx_qualified(&format_ident!("C")),
+            types.cxx_qualified(&format_ident!("C")).unwrap(),
             "extern_namespace::D"
         );
         assert_eq!(
-            &types.cxx_qualified(&format_ident!("E")),
+            types.cxx_qualified(&format_ident!("E")).unwrap(),
             "bridge_namespace::E"
         );
 
@@ -534,7 +532,10 @@ mod tests {
             type_names.namespace(&ident).unwrap().unwrap(),
             "enum_namespace"
         );
-        assert_eq!(type_names.cxx_qualified(&ident), "enum_namespace::EnumB");
+        assert_eq!(
+            type_names.cxx_qualified(&ident).unwrap(),
+            "enum_namespace::EnumB"
+        );
         assert_eq!(
             type_names.rust_qualified(&ident),
             parse_quote! { ffi::EnumA }
@@ -556,7 +557,10 @@ mod tests {
 
         assert_eq!(types.num_types(), 1);
         assert_eq!(types.cxx_unqualified(&ident).unwrap(), "StructB");
-        assert_eq!(types.cxx_qualified(&ident), "struct_namespace::StructB");
+        assert_eq!(
+            types.cxx_qualified(&ident).unwrap(),
+            "struct_namespace::StructB"
+        );
         assert_eq!(
             types.namespace(&ident).unwrap().unwrap(),
             "struct_namespace"

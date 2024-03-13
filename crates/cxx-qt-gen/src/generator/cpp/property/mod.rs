@@ -81,8 +81,9 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_properties(&properties, &qobject_idents, &TypeNames::mock()).unwrap();
+        let mut type_names = TypeNames::mock();
+        type_names.insert("QColor", None, None, None);
+        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -356,7 +357,7 @@ mod tests {
     fn test_generate_cpp_properties_mapped_cxx_name() {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
-            ty: parse_quote! { A1 },
+            ty: parse_quote! { A },
         }];
         let qobject_idents = create_qobjectname();
 
