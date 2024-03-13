@@ -162,6 +162,12 @@ mod tests {
 
     use syn::parse_quote;
 
+    fn type_names_with_qobject() -> TypeNames {
+        let mut type_names = TypeNames::mock();
+        type_names.insert("QObject", None, None, None);
+        type_names
+    }
+
     fn qobject_for_testing() -> GeneratedCppQObject {
         GeneratedCppQObject {
             ident: "MyObject".to_string(),
@@ -197,7 +203,7 @@ mod tests {
             &[],
             "BaseClass".to_owned(),
             &["member1(1)".to_string(), "member2{ 2 }".to_string()],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
@@ -227,7 +233,7 @@ mod tests {
             &[],
             "BaseClass".to_owned(),
             &[],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
@@ -258,7 +264,7 @@ mod tests {
             &[],
             "BaseClass".to_owned(),
             &[],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
@@ -290,7 +296,7 @@ mod tests {
             }],
             "BaseClass".to_owned(),
             &[],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
@@ -340,7 +346,7 @@ mod tests {
             }],
             "BaseClass".to_owned(),
             &["initializer".to_string()],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
@@ -394,7 +400,7 @@ mod tests {
             ],
             "BaseClass".to_owned(),
             &["initializer".to_string()],
-            &TypeNames::default(),
+            &type_names_with_qobject(),
         )
         .unwrap();
 
