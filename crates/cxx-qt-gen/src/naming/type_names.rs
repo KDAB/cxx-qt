@@ -179,7 +179,7 @@ impl TypeNames {
 
     /// For a given rust ident return the CXX name with its namespace
     ///
-    /// Ideally we'd want this type name to always be **fully** qualified, staring with `::`.
+    /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
     /// Unfortunately, this isn't always possible, as the Qt5 meta object system doesn't register
     /// types with the fully qualified path :(
     /// E.g. it will recognize `QString`, but not `::QString` from QML.
