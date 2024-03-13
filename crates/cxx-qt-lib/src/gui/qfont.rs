@@ -90,9 +90,9 @@ mod ffi {
         /// forces the use of outline fonts.
         ForceOutline = 0x0010,
         /// don't antialias the fonts.
-        PreferMatch = 0x0020,
+        /// PreferMatch = 0x0020,
         /// avoid subpixel antialiasing on the fonts if possible
-        PreferQuality = 0x0040,
+        /// PreferQuality = 0x0040,
         /// antialias if possible.
         PreferAntialias = 0x0080,
         /// don't antialias the fonts.
@@ -219,7 +219,7 @@ mod ffi {
 
         /// Sets the style strategy for the font to s.
         #[rust_name = "set_style_strategy"]
-        fn setStyleStrategy(self: &mut QFont, s: QFontStyleStrategy);
+        fn setStyleStrategy(self: &mut QFont, strategy: QFontStyleStrategy);
 
         /// Set the preference for the hinting level of the glyphs to hintingPreference.
         #[rust_name = "set_hinting_preference"]
