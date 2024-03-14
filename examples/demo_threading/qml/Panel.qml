@@ -93,10 +93,10 @@ Item {
             font.weight: Font.Light
             lineHeight: 0.9
             color: "#a9deff"
-            text:"<p><b>Rust</b></p>
+            text: qsTr("<p><b>Rust</b></p>
             <p>A programming language empowering everyone to build reliable and efficient software.</p>
             <p>Blazingly fast and memory-efficient: with no runtime or garbage collector, it can power performance-critical services, run on embedded devices, and easily integrate with other languages.</p>
-            <p>Rust's rich type system and ownership model guarantee memory-safety and thread-safety - enabling you to eliminate many classes of bugs at compile-time.</p>"
+            <p>Rust's rich type system and ownership model guarantee memory-safety and thread-safety - enabling you to eliminate many classes of bugs at compile-time.</p>")
             anchors.left: kdabL.right
             anchors.leftMargin: 25
             y: rust.y - 10
