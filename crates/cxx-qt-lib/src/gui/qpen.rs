@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -20,6 +21,8 @@ mod ffi {
         type QPen = super::QPen;
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         /// Returns the pen's cap style.
         #[rust_name = "cap_style"]
@@ -117,6 +120,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpen_eq"]
         fn operatorEq(a: &QPen, b: &QPen) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qpen_to_qstring"]
+        fn toQString(value: &QPen) -> QString;
     }
 }
 
@@ -164,6 +171,12 @@ impl From<&ffi::QColor> for QPen {
 impl From<&ffi::PenStyle> for QPen {
     fn from(penstyle: &ffi::PenStyle) -> Self {
         ffi::qpen_init_from_penstyle(penstyle)
+    }
+}
+
+impl fmt::Display for QPen {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpen_to_qstring(self))
     }
 }
 
