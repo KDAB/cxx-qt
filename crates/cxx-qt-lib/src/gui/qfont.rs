@@ -114,6 +114,32 @@ mod ffi {
         NoFontMerging = 0x8000,
     }
 
+    /// Style hints are used by the font matching algorithm to find an appropriate default
+    /// family if a selected font family is not available.
+    #[repr(i32)]
+    #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
+    enum QFontStyleHint {
+        /// is a synonym for SansSerif.
+        Helvetica,
+        /// is a synonym for Serif.
+        Times,
+        /// a synonym for TypeWriter.
+        Courier,
+        /// the font matcher prefers decorative fonts.
+        OldEnglish,
+        /// the font matcher prefers system fonts.
+        System,
+        /// leaves the font matching algorithm to choose the family. This is the default.
+        AnyStyle,
+        /// the font matcher prefers fonts that map to the CSS generic font-family 'cursive'.
+        Cursive,
+        /// the font matcher prefers fonts that map to the CSS generic font-family 'monospace'.
+        Monospace,
+        /// the font matcher prefers fonts that map to the CSS generic font-family 'fantasy'.
+        Fantasy,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = super::QFont;
@@ -257,6 +283,11 @@ mod ffi {
         #[rust_name = "set_style"]
         fn setStyle(self: &mut QFont, style: QFontStyle);
 
+        /// Sets the style hint and strategy to hint and strategy, respectively.
+        /// Qt does not support style hints on X11 since this information is not provided by the window system.
+        #[rust_name = "set_style_hint"]
+        fn setStyleHint(self: &mut QFont, hint: QFontStyleHint, strategy: QFontStyleStrategy);
+
         /// Sets the style name of the font to styleName.
         #[rust_name = "set_style_name"]
         fn setStyleName(self: &mut QFont, styleName: &QString);
@@ -274,6 +305,10 @@ mod ffi {
 
         /// Returns true if strikeout has been set; otherwise returns false.
         fn strikeOut(self: &QFont) -> bool;
+
+        /// Returns the StyleHint.
+        #[rust_name = "style_hint"]
+        fn styleHint(self: &QFont) -> QFontStyleHint;
 
         /// Returns the requested font style name. This can be used to match the font
         /// with irregular styles (that can't be normalized in other style properties).
@@ -300,6 +335,7 @@ mod ffi {
         type QFontCapitalization;
         type QFontSpacingType;
         type QFontStyleStrategy;
+        type QFontStyleHint;
 
         #[doc(hidden)]
         #[rust_name = "qfont_init_default"]
@@ -320,7 +356,8 @@ mod ffi {
 }
 
 pub use ffi::{
-    QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle, QFontStyleStrategy,
+    QFontCapitalization, QFontHintingPreference, QFontSpacingType, QFontStyle, QFontStyleHint,
+    QFontStyleStrategy,
 };
 
 #[repr(C)]
