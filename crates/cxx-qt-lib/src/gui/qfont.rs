@@ -235,10 +235,6 @@ mod ffi {
         #[rust_name = "style_name"]
         fn styleName(self: &QFont) -> QString;
 
-        /// Returns a description of the font.
-        #[rust_name = "to_string"]
-        fn toString(self: &QFont) -> QString;
-
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
 
@@ -270,6 +266,11 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_eq"]
         fn operatorEq(a: &QFont, b: &QFont) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qfont_to_qstring"]
+        fn toQString(value: &QFont) -> QString;
+
     }
 }
 
@@ -296,6 +297,12 @@ impl Drop for QFont {
 impl Clone for QFont {
     fn clone(&self) -> Self {
         ffi::qfont_clone(self)
+    }
+}
+
+impl std::fmt::Display for QFont {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qfont_to_qstring(self))
     }
 }
 
