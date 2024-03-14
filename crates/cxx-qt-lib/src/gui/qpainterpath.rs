@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::QPointF;
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -192,6 +193,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpainterpath_eq"]
         fn operatorEq(a: &QPainterPath, b: &QPainterPath) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qpainterpath_to_qstring"]
+        fn toQString(value: &QPainterPath) -> QString;
     }
 }
 
@@ -229,6 +234,12 @@ impl From<&QPointF> for QPainterPath {
 impl PartialEq for QPainterPath {
     fn eq(&self, other: &Self) -> bool {
         ffi::qpainterpath_eq(self, other)
+    }
+}
+
+impl fmt::Display for QPainterPath {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpainterpath_to_qstring(self))
     }
 }
 
