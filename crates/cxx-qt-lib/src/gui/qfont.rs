@@ -304,6 +304,7 @@ mod ffi {
         fn stretch(self: &QFont) -> i32;
 
         /// Returns true if strikeout has been set; otherwise returns false.
+        #[rust_name = "strike_out"]
         fn strikeOut(self: &QFont) -> bool;
 
         /// Returns the StyleHint.
