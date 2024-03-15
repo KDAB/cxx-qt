@@ -14,6 +14,8 @@ mod ffi {
         type QRect = crate::QRect;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
 
         /// Returns the ascent of the font.
         fn ascent(self: &QFontMetrics) -> i32;
@@ -100,6 +102,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfontmetrics_clone"]
         fn construct(font: &QFontMetrics) -> QFontMetrics;
+
+        #[doc(hidden)]
+        #[rust_name = "qfontmetrics_init_from_qfont"]
+        fn construct(font: &QFont) -> QFontMetrics;
     }
 }
 
@@ -117,6 +123,12 @@ impl Drop for QFontMetrics {
 impl Clone for QFontMetrics {
     fn clone(&self) -> Self {
         ffi::qfontmetrics_clone(self)
+    }
+}
+
+impl From<&ffi::QFont> for QFontMetrics {
+    fn from(font: &ffi::QFont) -> Self {
+        ffi::qfontmetrics_init_from_qfont(font)
     }
 }
 
