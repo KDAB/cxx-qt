@@ -6,8 +6,13 @@ mod ffi {
         type QColor = cxx_qt_lib::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = cxx_qt_lib::QString;
+
         include!(<QtCore/QObject>);
         type QObject;
+
+        type Opaque;
     }
 
     unsafe extern "RustQt" {

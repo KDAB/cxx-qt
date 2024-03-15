@@ -53,7 +53,7 @@ pub fn generate(
     let mut generated = GeneratedCppQObjectBlocks::default();
 
     for qenum in qenums {
-        let mut qualified_name = type_names.cxx_qualified(&qenum.ident);
+        let mut qualified_name = type_names.cxx_qualified(&qenum.ident)?;
         let enum_name = type_names.cxx_unqualified(&qenum.ident)?;
         // TODO: this is a workaround for type_names.cxx_qualified not always returning a fully-qualified
         // identifier.

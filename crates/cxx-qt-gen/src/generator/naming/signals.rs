@@ -6,7 +6,7 @@ use crate::parser::signals::ParsedSignal;
 use crate::{generator::naming::CombinedIdent, naming::TypeNames};
 use convert_case::{Case, Casing};
 use quote::format_ident;
-use syn::Ident;
+use syn::{Ident, Result};
 
 /// Names for parts of a Q_SIGNAL
 pub struct QSignalName {
@@ -52,7 +52,11 @@ pub struct QSignalHelperName {
 }
 
 impl QSignalHelperName {
-    pub fn new(idents: &QSignalName, qobject_ident: &Ident, type_names: &TypeNames) -> Self {
+    pub fn new(
+        idents: &QSignalName,
+        qobject_ident: &Ident,
+        type_names: &TypeNames,
+    ) -> Result<Self> {
         let signal_ident = &idents.name.cpp;
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
         let namespace = {
@@ -67,7 +71,7 @@ impl QSignalHelperName {
             //
             // See the comment on TypeNames::cxx_qualified for why fully qualifying is
             // unfortunately not possible.
-            let qobject_namespace = type_names.namespace(qobject_ident);
+            let qobject_namespace = type_names.namespace(qobject_ident)?;
             let namespace: Vec<_> = qobject_namespace
                 .into_iter()
                 .chain(vec!["rust::cxxqtgen1".to_owned()])
@@ -78,7 +82,7 @@ impl QSignalHelperName {
 
         // TODO: in the future we might improve the naming of the methods
         // to avoid collisions (maybe use a separator similar to how CXX uses $?)
-        Self {
+        Ok(Self {
             connect_name: CombinedIdent {
                 cpp: format_ident!("{}_{}", qobject_ident, idents.connect_name.cpp),
                 rust: format_ident!("{}_{}", qobject_ident, idents.connect_name.rust),
@@ -90,7 +94,7 @@ impl QSignalHelperName {
             struct_param: format_ident!("{qobject_ident}CxxQtSignalParams{signal_ident}"),
             namespace,
             handler_alias,
-        }
+        })
     }
 }
 

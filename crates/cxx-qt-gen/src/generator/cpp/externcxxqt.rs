@@ -58,14 +58,18 @@ mod tests {
                 type MyObject;
 
                 #[qsignal]
-                fn signal1(self: Pin<&mut ObjRust>);
+                fn signal1(self: Pin<&mut MyObject>);
 
                 #[qsignal]
-                fn signal2(self: Pin<&mut ObjRust>);
+                fn signal2(self: Pin<&mut MyObject>);
             }
         })
         .unwrap()];
-        let generated = generate(&blocks, &TypeNames::default()).unwrap();
+
+        // Unknown types
+        assert!(generate(&blocks, &TypeNames::default()).is_err());
+
+        let generated = generate(&blocks, &TypeNames::mock()).unwrap();
         assert_eq!(generated.len(), 2);
     }
 

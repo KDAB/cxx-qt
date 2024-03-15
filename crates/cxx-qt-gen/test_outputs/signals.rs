@@ -4,6 +4,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
+        type Opaque;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
@@ -258,7 +259,7 @@ impl ffi::MyObject {
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
-                cxx::UniquePtr<Opaque>,
+                cxx::UniquePtr<ffi::Opaque>,
                 ffi::QPoint,
                 &ffi::QPoint,
             ) + 'static,
@@ -286,7 +287,7 @@ impl ffi::MyObject {
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
-                cxx::UniquePtr<Opaque>,
+                cxx::UniquePtr<ffi::Opaque>,
                 ffi::QPoint,
                 &ffi::QPoint,
             ) + 'static,
@@ -312,7 +313,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(
         core::pin::Pin<&mut ffi::MyObject>,
         i32,
-        cxx::UniquePtr<Opaque>,
+        cxx::UniquePtr<ffi::Opaque>,
         ffi::QPoint,
         &ffi::QPoint,
     );
@@ -322,7 +323,7 @@ fn call_MyObject_signal_handler_dataChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuredataChanged>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
     first: i32,
-    second: cxx::UniquePtr<Opaque>,
+    second: cxx::UniquePtr<ffi::Opaque>,
     third: ffi::QPoint,
     fourth: &ffi::QPoint,
 ) {
@@ -344,7 +345,7 @@ impl ffi::MyObject {
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
-                cxx::UniquePtr<Opaque>,
+                cxx::UniquePtr<ffi::Opaque>,
                 ffi::QPoint,
                 &'a ffi::QPoint,
             ) + 'static,
@@ -372,7 +373,7 @@ impl ffi::MyObject {
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
-                cxx::UniquePtr<Opaque>,
+                cxx::UniquePtr<ffi::Opaque>,
                 ffi::QPoint,
                 &'a ffi::QPoint,
             ) + 'static,
@@ -397,7 +398,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(
         core::pin::Pin<&mut ffi::MyObject>,
         i32,
-        cxx::UniquePtr<Opaque>,
+        cxx::UniquePtr<ffi::Opaque>,
         ffi::QPoint,
         &'a ffi::QPoint,
     );
@@ -407,7 +408,7 @@ fn call_MyObject_signal_handler_newData(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenewData>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
     first: i32,
-    second: cxx::UniquePtr<Opaque>,
+    second: cxx::UniquePtr<ffi::Opaque>,
     third: ffi::QPoint,
     fourth: &'a ffi::QPoint,
 ) {

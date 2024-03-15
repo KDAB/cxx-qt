@@ -228,8 +228,10 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_methods(&invokables, &qobject_idents, &TypeNames::default()).unwrap();
+        let mut type_names = TypeNames::mock();
+        type_names.insert("QColor", None, None, None);
+
+        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
