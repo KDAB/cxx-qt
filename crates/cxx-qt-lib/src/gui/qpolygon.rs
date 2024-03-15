@@ -19,6 +19,8 @@ mod ffi {
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = super::QPolygon;
@@ -81,6 +83,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpolygon_eq"]
         fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qpolygon_to_qstring"]
+        fn toQString(value: &QPolygon) -> QString;
     }
 }
 
@@ -128,6 +134,12 @@ impl QPolygon {
 impl PartialEq for QPolygon {
     fn eq(&self, other: &Self) -> bool {
         ffi::qpolygon_eq(self, other)
+    }
+}
+
+impl std::fmt::Display for QPolygon {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qpolygon_to_qstring(self))
     }
 }
 
