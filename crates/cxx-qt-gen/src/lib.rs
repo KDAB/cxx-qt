@@ -56,7 +56,7 @@ mod tests {
             assert_str_eq!(format_rs_source(&left), format_rs_source(&right));
             // Fallback, in case assert_str_eq doesn't actually panic after formatting for some
             // reason.
-            panic!("assertion failed: left != right");
+            assert_str_eq!(left, right);
         }
     }
 

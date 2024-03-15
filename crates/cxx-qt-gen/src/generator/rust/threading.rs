@@ -35,7 +35,7 @@ pub fn generate(
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
-    let qualified_impl = type_names.rust_qualified(cpp_struct_ident);
+    let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -171,8 +171,8 @@ mod tests {
         let generated = generate(
             &qobject_idents,
             &namespace_ident,
-            &TypeNames::default(),
-            &format_ident!("ffi"),
+            &TypeNames::mock(),
+            &format_ident!("qobject"),
         )
         .unwrap();
 
@@ -231,19 +231,19 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl cxx_qt::Threading for MyObject {
+                impl cxx_qt::Threading for qobject::MyObject {
                     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
                     type ThreadingTypeId = cxx::type_id!("MyObjectCxxQtThread");
 
-                    fn qt_thread(&self) -> ffi::MyObjectCxxQtThread
+                    fn qt_thread(&self) -> qobject::MyObjectCxxQtThread
                     {
                         self.cxx_qt_ffi_qt_thread()
                     }
 
                     #[doc(hidden)]
-                    fn queue<F>(cxx_qt_thread: &ffi::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
+                    fn queue<F>(cxx_qt_thread: &qobject::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
                     where
-                        F: FnOnce(core::pin::Pin<&mut MyObject>),
+                        F: FnOnce(core::pin::Pin<&mut qobject::MyObject>),
                         F: Send + 'static,
                     {
                         // Wrap the given closure and pass in to C++ function as an opaque type
@@ -252,25 +252,25 @@ mod tests {
                         #[allow(clippy::boxed_local)]
                         #[doc(hidden)]
                         fn func(
-                            obj: core::pin::Pin<&mut MyObject>,
+                            obj: core::pin::Pin<&mut qobject::MyObject>,
                             arg: std::boxed::Box<MyObjectCxxQtThreadQueuedFn>,
                         ) {
                             (arg.inner)(obj)
                         }
                         let arg = MyObjectCxxQtThreadQueuedFn { inner: std::boxed::Box::new(f) };
-                        ffi::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        qobject::cxx_qt_ffi_my_object_queue_boxed_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
                     }
 
                     #[doc(hidden)]
-                    fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread
+                    fn threading_clone(cxx_qt_thread: &qobject::MyObjectCxxQtThread) -> qobject::MyObjectCxxQtThread
                     {
-                        ffi::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
+                        qobject::cxx_qt_ffi_my_object_threading_clone(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread)
+                    fn threading_drop(cxx_qt_thread: &mut qobject::MyObjectCxxQtThread)
                     {
-                        ffi::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
+                        qobject::cxx_qt_ffi_my_object_threading_drop(cxx_qt_thread);
                     }
                 }
             },
@@ -282,7 +282,7 @@ mod tests {
                 pub struct MyObjectCxxQtThreadQueuedFn {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
-                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut MyObject>) + Send>,
+                    inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut qobject::MyObject>) + Send>,
                 }
             },
         );

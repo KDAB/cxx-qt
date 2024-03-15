@@ -10,6 +10,18 @@ pub mod ffi {
         MyEvent,
     }
 
+    unsafe extern "C++" {
+        type Event;
+    }
+
+    struct MyStruct {
+        a: i32,
+    }
+
+    unsafe extern "C++" {
+        type MyStruct;
+    }
+
     // ItemExternCrate
     extern crate serde;
 

@@ -50,13 +50,13 @@ pub fn generate_rust_signal(
     let parameters_qualified_arg: Vec<FnArg> = parameters_cxx
         .iter()
         .cloned()
-        .map(|mut parameter| {
+        .map(|mut parameter| -> Result<_> {
             if let FnArg::Typed(pat_type) = &mut parameter {
-                *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names);
+                *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names)?;
             }
-            parameter
+            Ok(parameter)
         })
-        .collect();
+        .collect::<Result<_>>()?;
     let parameters_name: Vec<Ident> = signal
         .parameters
         .iter()
@@ -69,15 +69,15 @@ pub fn generate_rust_signal(
             FnArg::Typed(pat_type) => syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names),
             _ => unreachable!("should only have typed no receiver"),
         })
-        .collect();
+        .collect::<Result<_>>()?;
 
     let self_type_cxx = if signal.mutable {
         parse_quote! { Pin<&mut #qobject_name> }
     } else {
         parse_quote! { &#qobject_name }
     };
-    let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names);
-    let qualified_impl = type_names.rust_qualified(qobject_name);
+    let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
+    let qualified_impl = type_names.rust_qualified(qobject_name)?;
 
     let mut unsafe_block = None;
     let mut unsafe_call = Some(quote! { unsafe });
@@ -438,10 +438,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
+        let mut type_names = TypeNames::mock();
+        type_names.insert("QColor", None, None, None);
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &TypeNames::mock(),
+            &type_names,
             &format_ident!("ffi"),
         )
         .unwrap();
@@ -598,10 +600,12 @@ mod tests {
         };
         let qobject_idents = create_qobjectname();
 
+        let mut type_names = TypeNames::mock();
+        type_names.insert("T", None, None, None);
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
-            &TypeNames::mock(),
+            &type_names,
             &format_ident!("ffi"),
         )
         .unwrap();

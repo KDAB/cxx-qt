@@ -12,23 +12,23 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Type;
+use syn::{Result, Type};
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_idents: &QObjectName,
     cxx_ty: &Type,
     type_names: &TypeNames,
-) -> RustFragmentPair {
+) -> Result<RustFragmentPair> {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let getter_wrapper_cpp = idents.getter_wrapper.cpp.to_string();
     let getter_rust = &idents.getter.rust;
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names);
-    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust);
+    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
+    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 
-    RustFragmentPair {
+    Ok(RustFragmentPair {
         cxx_bridge: vec![quote! {
             extern "Rust" {
                 #[cxx_name = #getter_wrapper_cpp]
@@ -44,5 +44,5 @@ pub fn generate(
                 }
             }
         }],
-    }
+    })
 }
