@@ -45,6 +45,11 @@ mod ffi {
         /// Returns the height of the font.
         fn height(self: &QFontMetrics) -> i32;
 
+        /// Returns the horizontal advance in pixels of the first len characters of text. If len is negative (the default),
+        /// the entire string is used. The entire length of text is analysed even if len is substantially shorter.
+        #[rust_name = "horizontal_advance"]
+        fn horizontalAdvance(self: &QFontMetrics, text: &QString, len: i32) -> i32;
+
         /// Returns the leading of the font.
         fn leading(self: &QFontMetrics) -> i32;
 
