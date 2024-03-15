@@ -6,6 +6,15 @@ pub mod ffi {
     enum Event {
         MyEvent,
     }
+    unsafe extern "C++" {
+        type Event;
+    }
+    struct MyStruct {
+        a: i32,
+    }
+    unsafe extern "C++" {
+        type MyStruct;
+    }
     extern crate serde;
     fn do_something() {
         println!("I am a free function");
