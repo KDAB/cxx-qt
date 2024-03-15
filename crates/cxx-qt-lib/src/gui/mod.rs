@@ -36,6 +36,9 @@ pub use qfont::{
     QFontStyleHint, QFontStyleStrategy,
 };
 
+mod qfontmetrics;
+pub use qfontmetrics::QFontMetrics;
+
 mod qpainterpath;
 pub use qpainterpath::QPainterPath;
 

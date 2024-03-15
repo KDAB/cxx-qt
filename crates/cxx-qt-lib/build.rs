@@ -141,6 +141,7 @@ fn main() {
             "core/qvector/qvector_qcolor",
             "gui/qcolor",
             "gui/qfont",
+            "gui/qfontmetrics",
             "gui/qguiapplication",
             "gui/qimage",
             "gui/qpainterpath",
@@ -201,6 +202,7 @@ fn main() {
         cpp_files.extend([
             "gui/qcolor",
             "gui/qfont",
+            "gui/qfontmetrics",
             "gui/qguiapplication",
             "gui/qimage",
             "gui/qpainterpath",
