@@ -5,6 +5,7 @@
 
 use crate::QPoint;
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
@@ -13,6 +14,8 @@ mod ffi {
         type QLine = super::QLine;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         /// Returns the line's start point.
         fn p1(self: &QLine) -> QPoint;
@@ -79,6 +82,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qline_new"]
         fn construct(pt1: QPoint, pt2: QPoint) -> QLine;
+
+        #[doc(hidden)]
+        #[rust_name = "qline_to_qstring"]
+        fn toQString(value: &QLine) -> QString;
     }
 }
 
@@ -101,6 +108,12 @@ impl Default for QLine {
     /// Constructs a null line.
     fn default() -> Self {
         ffi::qline_default()
+    }
+}
+
+impl fmt::Display for QLine {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qline_to_qstring(self))
     }
 }
 

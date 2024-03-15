@@ -6,6 +6,7 @@
 use crate::QLine;
 use crate::QPointF;
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
@@ -16,6 +17,8 @@ mod ffi {
         type QLine = crate::QLine;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
 
         /// Returns the angle of the line in degrees.
         fn angle(self: &QLineF) -> f64;
@@ -121,6 +124,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qlinef_from_qline"]
         fn construct(line: &QLine) -> QLineF;
+
+        #[doc(hidden)]
+        #[rust_name = "qlinef_to_qstring"]
+        fn toQString(value: &QLineF) -> QString;
     }
 }
 
@@ -158,6 +165,12 @@ impl From<QLineF> for ffi::QLine {
     /// Note that the returned line's start and end points are rounded to the nearest integer.
     fn from(value: QLineF) -> Self {
         value.to_line()
+    }
+}
+
+impl fmt::Display for QLineF {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qlinef_to_qstring(self))
     }
 }
 
