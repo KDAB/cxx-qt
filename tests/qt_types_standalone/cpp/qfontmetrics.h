@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <QtGui/QFontMetrics>
 #include <QtGui/QFont>
+#include <QtGui/QFontMetrics>
 #include <QtTest/QTest>
 
 #include "cxx-qt-gen/qfontmetrics.cxx.h"
