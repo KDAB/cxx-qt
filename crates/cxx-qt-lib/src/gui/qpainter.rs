@@ -173,6 +173,8 @@ mod ffi {
         type QPen = crate::QPen;
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qfontmetrics.h");
+        type QFontMetrics = crate::QFontMetrics;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -285,6 +287,10 @@ mod ffi {
 
         /// Returns the currently set font used for drawing text.
         fn font(self: &QPainter) -> &QFont;
+
+        /// Returns the font metrics for the painter if the painter is active.
+        #[rust_name = "font_metrics_or_undefined"]
+        fn fontMetrics(self: &QPainter) -> QFontMetrics;
 
         /// Returns true if clipping has been set; otherwise returns false.
         #[rust_name = "has_clipping"]
@@ -411,6 +417,16 @@ impl QPainter {
         let result = self.clip_bounding_rect_or_empty();
         if result.is_valid() {
             Some(result)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the bounding rectangle of the current clip if there is a clip;
+    /// otherwise returns `None`. Note that the clip region is given in logical coordinates.
+    pub fn font_metrics(&self) -> Option<ffi::QFontMetrics> {
+        if self.is_active() {
+            Some(self.font_metrics_or_undefined())
         } else {
             None
         }

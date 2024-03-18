@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support for further types: `QLine`, `QLineF`, `QImage`, `QPainter`, `QFont`, `QPen`, `QPolygon`, `QPolygonF`
+- Support for further types: `QLine`, `QLineF`, `QImage`, `QPainter`, `QFont`, `QPen`, `QPolygon`, `QPolygonF`, `QFontMetrics`
 - `internal_pointer_mut()` function on `QModelIndex`
 - `c_void` in CXX-Qt-lib for easy access to `void *`
 - `CxxQtThread` is now marked as `Sync` so that it can be used by reference

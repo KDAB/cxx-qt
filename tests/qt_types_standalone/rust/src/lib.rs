@@ -9,6 +9,7 @@ mod qcolor;
 mod qcoreapplication;
 mod qdate;
 mod qdatetime;
+mod qfontmetrics;
 mod qguiapplication;
 mod qhash;
 mod qline;
