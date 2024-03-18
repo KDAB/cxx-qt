@@ -17,9 +17,6 @@ class QFontMetricsTest : public QObject
   Q_OBJECT
 
 private Q_SLOTS:
-  void construct()
-  {
-  }
   void clone()
   {
     QFont f;
