@@ -12,6 +12,7 @@ pub mod ffi {
     unsafe extern "C++Qt" {
         include!("external_qobject.h");
         /// ExternalQObject C++ class
+        #[qobject]
         type ExternalQObject;
 
         /// Trigger emitting the signal "amount" times

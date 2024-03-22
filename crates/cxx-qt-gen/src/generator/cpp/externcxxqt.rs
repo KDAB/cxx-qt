@@ -55,6 +55,7 @@ mod tests {
     fn test_generate_cpp_extern_qt() {
         let blocks = vec![ParsedExternCxxQt::parse(parse_quote! {
             unsafe extern "C++Qt" {
+                #[qobject]
                 type MyObject;
 
                 #[qsignal]
@@ -79,6 +80,7 @@ mod tests {
             unsafe extern "C++Qt" {
                 #[cxx_name = "ObjCpp"]
                 #[namespace = "mynamespace"]
+                #[qobject]
                 type ObjRust;
 
                 #[qsignal]

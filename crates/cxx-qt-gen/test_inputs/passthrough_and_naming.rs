@@ -81,6 +81,7 @@ pub mod ffi {
 
     #[namespace = ""]
     unsafe extern "C++Qt" {
+        #[qobject]
         type QPushButton;
 
         #[qsignal]
@@ -88,6 +89,7 @@ pub mod ffi {
 
         #[namespace = "mynamespace"]
         #[cxx_name = "ExternObjectCpp"]
+        #[qobject]
         type ExternObject;
 
         #[qsignal]
