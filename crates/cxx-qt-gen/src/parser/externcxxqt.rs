@@ -38,23 +38,28 @@ impl ParsedExternCxxQt {
 
         // Parse any signals, other items are passed through
         for item in foreign_mod.items.drain(..) {
-            if let ForeignItem::Fn(foreign_fn) = &item {
-                // Test if the function is a signal
-                if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qsignal"]) {
-                    let mut foreign_fn = foreign_fn.clone();
-                    // Remove the signals attribute
-                    foreign_fn.attrs.remove(index);
+            match item {
+                ForeignItem::Fn(mut foreign_fn) => {
+                    // Test if the function is a signal
+                    if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qsignal"]) {
+                        // Remove the signals attribute
+                        foreign_fn.attrs.remove(index);
 
-                    let mut signal = ParsedSignal::parse(foreign_fn, safe_call)?;
-                    // extern "C++Qt" signals are always inherit = true
-                    // as they always exist on an existing QObject
-                    signal.inherit = true;
-                    extern_cxx_block.signals.push(signal);
-                    continue;
+                        let mut signal = ParsedSignal::parse(foreign_fn, safe_call)?;
+                        // extern "C++Qt" signals are always inherit = true
+                        // as they always exist on an existing QObject
+                        signal.inherit = true;
+                        extern_cxx_block.signals.push(signal);
+                    } else {
+                        extern_cxx_block
+                            .passthrough_items
+                            .push(ForeignItem::Fn(foreign_fn));
+                    }
+                }
+                others => {
+                    extern_cxx_block.passthrough_items.push(others);
                 }
             }
-
-            extern_cxx_block.passthrough_items.push(item);
         }
 
         Ok(extern_cxx_block)
@@ -74,6 +79,8 @@ mod tests {
             unsafe extern "C++Qt" {
                 type QPushButton;
 
+                fn method(self: Pin<&mut QPushButton>);
+
                 #[qsignal]
                 fn clicked(self: Pin<&mut QPushButton>, checked: bool);
             }
@@ -81,7 +88,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(extern_cxx_qt.attrs.len(), 1);
-        assert_eq!(extern_cxx_qt.passthrough_items.len(), 1);
+        assert_eq!(extern_cxx_qt.passthrough_items.len(), 2);
         assert_eq!(extern_cxx_qt.signals.len(), 1);
         assert!(extern_cxx_qt.unsafety.is_some());
     }
