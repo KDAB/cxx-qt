@@ -7,6 +7,7 @@
 mod ffi {
     unsafe extern "C++Qt" {
         include!("cxx-qt-lib/qqmlengine.h");
+        #[qobject]
         type QQmlEngine;
 
         /// This signal is emitted when the QML loaded by the engine would like to exit from the event loop with the specified return code ret_code.

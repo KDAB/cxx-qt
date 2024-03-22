@@ -7,7 +7,7 @@ use crate::{
     parser::signals::ParsedSignal,
     syntax::{attribute::attribute_find_path, safety::Safety},
 };
-use syn::{Attribute, ForeignItem, ItemForeignMod, Result, Token};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItem, ItemForeignMod, Result, Token};
 
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
@@ -56,6 +56,23 @@ impl ParsedExternCxxQt {
                             .push(ForeignItem::Fn(foreign_fn));
                     }
                 }
+                ForeignItem::Type(mut foreign_ty) => {
+                    // Test that there is a #[qobject] attribute on any type
+                    if let Some(index) = attribute_find_path(&foreign_ty.attrs, &["qobject"]) {
+                        // Remove the #[qobject] attribute
+                        foreign_ty.attrs.remove(index);
+
+                        // Pass through the item as it's the same
+                        extern_cxx_block
+                            .passthrough_items
+                            .push(ForeignItem::Type(foreign_ty));
+                    } else {
+                        return Err(Error::new(
+                            foreign_ty.span(),
+                            "Types in extern \"C++Qt\" blocks must be tagged with #[qobject], use a extern \"C++\" block for non QObject types",
+                        ));
+                    }
+                }
                 others => {
                     extern_cxx_block.passthrough_items.push(others);
                 }
@@ -77,6 +94,7 @@ mod tests {
         let extern_cxx_qt = ParsedExternCxxQt::parse(parse_quote! {
             #[namespace = "rust"]
             unsafe extern "C++Qt" {
+                #[qobject]
                 type QPushButton;
 
                 fn method(self: Pin<&mut QPushButton>);
@@ -91,5 +109,37 @@ mod tests {
         assert_eq!(extern_cxx_qt.passthrough_items.len(), 2);
         assert_eq!(extern_cxx_qt.signals.len(), 1);
         assert!(extern_cxx_qt.unsafety.is_some());
+    }
+
+    #[test]
+    fn test_extern_cxxqt_type_missing_qobject() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(parse_quote! {
+            unsafe extern "C++Qt" {
+                type QPushButton;
+            }
+        });
+        assert!(extern_cxx_qt.is_err());
+    }
+
+    #[test]
+    fn test_extern_cxxqt_type_qobject_attr() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(parse_quote! {
+            extern "C++Qt" {
+                #[qobject]
+                type QPushButton;
+            }
+        })
+        .unwrap();
+
+        assert_eq!(extern_cxx_qt.attrs.len(), 0);
+        assert_eq!(extern_cxx_qt.passthrough_items.len(), 1);
+        // Check that the attribute is removed
+        if let ForeignItem::Type(foreign_ty) = &extern_cxx_qt.passthrough_items[0] {
+            assert_eq!(foreign_ty.attrs.len(), 0);
+        } else {
+            panic!("Item should be ForeignItem::Type");
+        }
+        assert_eq!(extern_cxx_qt.signals.len(), 0);
+        assert!(extern_cxx_qt.unsafety.is_none());
     }
 }
