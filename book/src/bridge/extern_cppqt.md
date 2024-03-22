@@ -35,11 +35,14 @@ Types defined in C++ that are made available to Rust, but only behind an indirec
 
 This is the same as [CXX Opaque C++ types](https://cxx.rs/extern-c++.html#opaque-c-types).
 
+> Note that types are required to have a `#[qobject]` attribute
+
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
 mod ffi {
     extern "C++Qt" {
         include!(<QtWidgets/QPushButton>);
+        #[qobject]
         type QPushButton;
     }
 }
@@ -65,6 +68,7 @@ mod ffi {
 
     extern "C++Qt" {
         include!(<QtWidgets/QPushButton>);
+        #[qobject]
         type QPushButton;
 
         fn text(self: &QPushButton) -> QString;
@@ -86,6 +90,7 @@ Signals can be specified on the Qt type in the same way as [`extern "RustQt"` bl
 mod ffi {
     extern "C++Qt" {
         include!(<QtWidgets/QPushButton>);
+        #[qobject]
         type QPushButton;
 
         #[qsignal]

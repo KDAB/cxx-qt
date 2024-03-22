@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cxx-qt-lib` headers must be given to `cxx-qt-build` with `.with_opts(cxx_qt_lib_headers::build_opts())`
 - File name is used for CXX bridges rather than module name to match upstream
 - `#[qobject]` attribute is now optional on types in `extern "RustQt"`
+- `#[qobject]` attribute is now required on types in `extern "C++Qt"`
 
 ### Fixed
 
