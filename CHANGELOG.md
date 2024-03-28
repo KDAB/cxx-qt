@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.0...HEAD)
 
+### Added
+
+- Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
+
 ## [0.7.0](https://github.com/KDAB/cxx-qt/compare/v0.6.1...v0.7.0) - 2024-10-30
 
 ### Added
