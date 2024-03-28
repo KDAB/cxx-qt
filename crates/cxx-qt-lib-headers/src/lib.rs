@@ -61,6 +61,7 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         ),
         (include_str!("../include/core/qt.h"), "qt.h"),
         (include_str!("../include/core/qtime.h"), "qtime.h"),
+        (include_str!("../include/core/qtypes.h"), "qtypes.h"),
         (include_str!("../include/core/qtimezone.h"), "qtimezone.h"),
         (include_str!("../include/core/qurl.h"), "qurl.h"),
         (include_str!("../include/core/qvariant.h"), "qvariant.h"),
