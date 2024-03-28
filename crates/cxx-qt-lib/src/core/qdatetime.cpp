@@ -28,24 +28,6 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QDateTime
-qdatetimeAddDays(const QDateTime& datetime, ::std::int64_t ndays)
-{
-  return datetime.addDays(static_cast<qint64>(ndays));
-}
-
-QDateTime
-qdatetimeAddMSecs(const QDateTime& datetime, ::std::int64_t msecs)
-{
-  return datetime.addMSecs(static_cast<qint64>(msecs));
-}
-
-QDateTime
-qdatetimeAddSecs(const QDateTime& datetime, ::std::int64_t secs)
-{
-  return datetime.addSecs(static_cast<qint64>(secs));
-}
-
-QDateTime
 qdatetimeCurrentDateTime()
 {
   return QDateTime::currentDateTime();
@@ -57,66 +39,34 @@ qdatetimeCurrentDateTimeUtc()
   return QDateTime::currentDateTimeUtc();
 }
 
-::std::int64_t
+qint64
 qdatetimeCurrentMSecsSinceEpoch()
 {
   return QDateTime::currentMSecsSinceEpoch();
 }
 
-::std::int64_t
+qint64
 qdatetimeCurrentSecsSinceEpoch()
 {
   return QDateTime::currentSecsSinceEpoch();
 }
 
-::std::int64_t
-qdatetimeDaysTo(const QDateTime& datetime, const QDateTime& other)
+QDateTime
+qdatetimeFromMSecsSinceEpoch(qint64 msecs, const QTimeZone& timeZone)
 {
-  return static_cast<::std::int64_t>(datetime.daysTo(other));
+  return QDateTime::fromMSecsSinceEpoch(msecs, timeZone);
 }
 
 QDateTime
-qdatetimeFromMSecsSinceEpoch(::std::int64_t msecs, const QTimeZone& timeZone)
+qdatetimeFromSecsSinceEpoch(qint64 secs, const QTimeZone& timeZone)
 {
-  return QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(msecs), timeZone);
-}
-
-QDateTime
-qdatetimeFromSecsSinceEpoch(::std::int64_t secs, const QTimeZone& timeZone)
-{
-  return QDateTime::fromSecsSinceEpoch(static_cast<qint64>(secs), timeZone);
-}
-
-::std::int64_t
-qdatetimeMSecsTo(const QDateTime& datetime, const QDateTime& other)
-{
-
-  return static_cast<::std::int64_t>(datetime.msecsTo(other));
-}
-
-::std::int64_t
-qdatetimeSecsTo(const QDateTime& datetime, const QDateTime& other)
-{
-
-  return static_cast<::std::int64_t>(datetime.secsTo(other));
+  return QDateTime::fromSecsSinceEpoch(secs, timeZone);
 }
 
 void
 qdatetimeSetDate(QDateTime& datetime, QDate date)
 {
   datetime.setDate(date);
-}
-
-void
-qdatetimeSetMSecsSinceEpoch(QDateTime& datetime, ::std::int64_t msecs)
-{
-  datetime.setMSecsSinceEpoch(static_cast<qint64>(msecs));
-}
-
-void
-qdatetimeSetSecsSinceEpoch(QDateTime& datetime, ::std::int64_t secs)
-{
-  datetime.setSecsSinceEpoch(static_cast<qint64>(secs));
 }
 
 void
@@ -129,18 +79,6 @@ qdatetimeSetTime(QDateTime& datetime, QTime time)
 qdatetimeTimeZone(const QDateTime& datetime)
 {
   return ::std::make_unique<QTimeZone>(datetime.timeZone());
-}
-
-::std::int64_t
-qdatetimeToMSecsSinceEpoch(const QDateTime& datetime)
-{
-  return static_cast<::std::int64_t>(datetime.toMSecsSinceEpoch());
-}
-
-::std::int64_t
-qdatetimeToSecsSinceEpoch(const QDateTime& datetime)
-{
-  return static_cast<::std::int64_t>(datetime.toSecsSinceEpoch());
 }
 
 void
