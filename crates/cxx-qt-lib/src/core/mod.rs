@@ -83,6 +83,9 @@ pub use qt::{
 mod qtime;
 pub use qtime::QTime;
 
+mod qtypes;
+pub use qtypes::{qint64, qintptr, qreal, qsizetype, quint64, quintptr};
+
 #[cfg(not(target_os = "emscripten"))]
 mod qtimezone;
 #[cfg(not(target_os = "emscripten"))]
