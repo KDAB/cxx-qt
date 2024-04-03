@@ -91,23 +91,23 @@ operatorDiv(const S scalar, const T& t)
 
 template<typename T, typename... Args>
 std::unique_ptr<T>
-make_unique(Args&&... args)
+make_unique(Args... args)
 {
   return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 template<typename T, typename... Args>
 std::shared_ptr<T>
-make_shared(Args&&... args)
+make_shared(Args... args)
 {
   return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
 template<typename T, typename... Args>
 T*
-new_ptr(Args&&... args)
+new_ptr(Args... args)
 {
-    return new T(std::forward<Args>(args)...)
+    return new T(std::forward<Args>(args)...);
 }
 
 } // namespace cxxqtlib1
