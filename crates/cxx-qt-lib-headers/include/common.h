@@ -107,7 +107,7 @@ template<typename T, typename... Args>
 T*
 new_ptr(Args... args)
 {
-    return new T(std::forward<Args>(args)...);
+  return new T(std::forward<Args>(args)...);
 }
 
 } // namespace cxxqtlib1
