@@ -11,6 +11,8 @@
 //! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
+mod cfg_evaluator;
+
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
@@ -138,7 +140,8 @@ impl GeneratedCpp {
             }
         }
 
-        let opt = cxx_gen::Opt::default();
+        let mut opt = cxx_gen::Opt::default();
+        opt.cfg_evaluator = Box::new(cfg_evaluator::CargoEnvCfgEvaluator);
         let cxx = cxx_gen::generate_header_and_cc(tokens, &opt)
             .map_err(GeneratedError::from)
             .map_err(to_diagnostic)?;
@@ -487,6 +490,12 @@ impl CxxQtBuilder {
         println!(
             "cargo:rustc-cfg=cxxqt_qt_version_major=\"{}\"",
             qtbuild.version().major
+        );
+        // Also set to env so our cfg evaulator finds it
+        // note we need this before generate_cxxqt_cpp_files
+        env::set_var(
+            "CARGO_CFG_cxxqt_qt_version_major",
+            qtbuild.version().major.to_string(),
         );
 
         // Write cxx-qt and cxx headers
