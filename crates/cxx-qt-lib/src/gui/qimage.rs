@@ -140,6 +140,10 @@ mod ffi {
         /// Returns the height of the image.
         fn height(self: &QImage) -> i32;
 
+        /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether horizontal and vertical are set to true or false.
+        #[cfg(cxxqt_qt_version_major = "6")]
+        fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
+
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
 
