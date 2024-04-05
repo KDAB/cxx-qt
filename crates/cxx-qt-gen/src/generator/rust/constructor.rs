@@ -461,7 +461,7 @@ mod tests {
     }
 
     fn mock_namespace() -> NamespaceName {
-        NamespaceName::from_pair_str("ffi", &format_ident!("MyObject"))
+        NamespaceName::from_pair_str("qobject", &format_ident!("MyObject"))
     }
 
     fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {
@@ -469,8 +469,8 @@ mod tests {
             constructors,
             &mock_name(),
             &mock_namespace(),
-            &TypeNames::default(),
-            &format_ident!("ffi"),
+            &TypeNames::mock(),
+            &format_ident!("qobject"),
         )
         .unwrap()
     }
@@ -487,7 +487,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name="createRs"]
-                    #[namespace="ffi::cxx_qt_my_object"]
+                    #[namespace="qobject::cxx_qt_my_object"]
                     fn create_rs_my_object_rust() -> Box<MyObjectRust>;
                 }
             },
@@ -513,7 +513,7 @@ mod tests {
         assert_tokens_eq(
             tokens,
             quote! {
-                #[namespace = "ffi::cxx_qt_my_object"]
+                #[namespace = "qobject::cxx_qt_my_object"]
                 #[cxx_name = #cxx_name]
                 #[doc(hidden)]
                 struct #rust_name {
@@ -583,17 +583,17 @@ mod tests {
             &blocks.cxx_qt_mod_contents[0],
             quote! {
                 #[doc(hidden)]
-                pub fn route_arguments_my_object_0() -> ffi::CxxQtConstructorArgumentsMyObject0
+                pub fn route_arguments_my_object_0() -> qobject::CxxQtConstructorArgumentsMyObject0
                 {
                     #[allow(unused_variables)]
                     #[allow(clippy::let_unit_value)]
                     let (new_arguments, base_arguments, initialize_arguments) =
-                        <MyObject as cxx_qt::Constructor<()> >::route_arguments(());
+                        <qobject::MyObject as cxx_qt::Constructor<()> >::route_arguments(());
 
-                    ffi::CxxQtConstructorArgumentsMyObject0 {
-                        base: ffi::CxxQtConstructorBaseArgumentsMyObject0 { not_empty: 0 },
-                        initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
-                        new: ffi::CxxQtConstructorNewArgumentsMyObject0 { not_empty : 0 },
+                    qobject::CxxQtConstructorArgumentsMyObject0 {
+                        base: qobject::CxxQtConstructorBaseArgumentsMyObject0 { not_empty: 0 },
+                        initialize: qobject::CxxQtConstructorInitializeArgumentsMyObject0 { not_empty: 0 },
+                        new: qobject::CxxQtConstructorNewArgumentsMyObject0 { not_empty : 0 },
                     }
                 }
             },
@@ -604,9 +604,9 @@ mod tests {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
-                pub fn new_rs_my_object_0(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
+                pub fn new_rs_my_object_0(new_arguments: qobject::CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
-                        <MyObject as cxx_qt::Constructor<()> >::new(())
+                        <qobject::MyObject as cxx_qt::Constructor<()> >::new(())
                     )
                 }
             },
@@ -618,10 +618,10 @@ mod tests {
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
                 pub fn initialize_my_object_0(
-                    qobject: core::pin::Pin<&mut MyObject>,
-                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0)
+                    qobject: core::pin::Pin<&mut qobject::MyObject>,
+                    initialize_arguments: qobject::CxxQtConstructorInitializeArgumentsMyObject0)
                 {
-                    <MyObject as cxx_qt::Constructor<()> >::initialize(qobject, ());
+                    <qobject::MyObject as cxx_qt::Constructor<()> >::initialize(qobject, ());
                 }
             },
         );
@@ -707,24 +707,24 @@ mod tests {
             &blocks.cxx_qt_mod_contents[3],
             quote! {
                 #[doc(hidden)]
-                pub fn route_arguments_my_object_1<'lifetime>(arg0: *const QObject) -> ffi::CxxQtConstructorArgumentsMyObject1<'lifetime>
+                pub fn route_arguments_my_object_1<'lifetime>(arg0: *const QObject) -> qobject::CxxQtConstructorArgumentsMyObject1<'lifetime>
                 {
                     #[allow(unused_variables)]
                     #[allow(clippy::let_unit_value)]
                     let (new_arguments, base_arguments, initialize_arguments) =
-                        <MyObject as cxx_qt::Constructor<(*const QObject,)> >::route_arguments((arg0,));
+                        <qobject::MyObject as cxx_qt::Constructor<(*const QObject,)> >::route_arguments((arg0,));
 
-                    ffi::CxxQtConstructorArgumentsMyObject1 {
-                        base: ffi::CxxQtConstructorBaseArgumentsMyObject1 {
+                    qobject::CxxQtConstructorArgumentsMyObject1 {
+                        base: qobject::CxxQtConstructorBaseArgumentsMyObject1 {
                             arg0: base_arguments.0,
                             arg1: base_arguments.1,
                             arg2: base_arguments.2,
                         },
-                        initialize: ffi::CxxQtConstructorInitializeArgumentsMyObject1 {
+                        initialize: qobject::CxxQtConstructorInitializeArgumentsMyObject1 {
                             arg0: initialize_arguments.0,
                             arg1: initialize_arguments.1,
                         },
-                        new: ffi::CxxQtConstructorNewArgumentsMyObject1 {
+                        new: qobject::CxxQtConstructorNewArgumentsMyObject1 {
                             arg0: new_arguments.0,
                         },
                     }
@@ -737,9 +737,9 @@ mod tests {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
-                pub fn new_rs_my_object_1(new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
+                pub fn new_rs_my_object_1(new_arguments: qobject::CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
-                        <MyObject as cxx_qt::Constructor<(*const QObject,)> >::new(
+                        <qobject::MyObject as cxx_qt::Constructor<(*const QObject,)> >::new(
                             (new_arguments.arg0,)))
                 }
             },
@@ -751,10 +751,10 @@ mod tests {
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
                 pub fn initialize_my_object_1<'lifetime>(
-                    qobject: core::pin::Pin<&mut MyObject>,
-                    initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject1<'lifetime>)
+                    qobject: core::pin::Pin<&mut qobject::MyObject>,
+                    initialize_arguments: qobject::CxxQtConstructorInitializeArgumentsMyObject1<'lifetime>)
                 {
-                    <MyObject as cxx_qt::Constructor<(*const QObject,)> >::initialize(
+                    <qobject::MyObject as cxx_qt::Constructor<(*const QObject,)> >::initialize(
                         qobject,
                         (initialize_arguments.arg0, initialize_arguments.arg1,));
                 }
@@ -787,7 +787,7 @@ mod tests {
         assert_eq!(blocks.cxx_qt_mod_contents.len(), 6);
 
         let namespace_attr = quote! {
-                #[namespace = "ffi::cxx_qt_my_object"]
+                #[namespace = "qobject::cxx_qt_my_object"]
         };
 
         assert_empty_constructor_blocks(&blocks, &namespace_attr);
