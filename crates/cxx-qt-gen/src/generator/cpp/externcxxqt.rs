@@ -55,17 +55,22 @@ mod tests {
     fn test_generate_cpp_extern_qt() {
         let blocks = vec![ParsedExternCxxQt::parse(parse_quote! {
             unsafe extern "C++Qt" {
+                #[qobject]
                 type MyObject;
 
                 #[qsignal]
-                fn signal1(self: Pin<&mut ObjRust>);
+                fn signal1(self: Pin<&mut MyObject>);
 
                 #[qsignal]
-                fn signal2(self: Pin<&mut ObjRust>);
+                fn signal2(self: Pin<&mut MyObject>);
             }
         })
         .unwrap()];
-        let generated = generate(&blocks, &TypeNames::default()).unwrap();
+
+        // Unknown types
+        assert!(generate(&blocks, &TypeNames::default()).is_err());
+
+        let generated = generate(&blocks, &TypeNames::mock()).unwrap();
         assert_eq!(generated.len(), 2);
     }
 
@@ -75,6 +80,7 @@ mod tests {
             unsafe extern "C++Qt" {
                 #[cxx_name = "ObjCpp"]
                 #[namespace = "mynamespace"]
+                #[qobject]
                 type ObjRust;
 
                 #[qsignal]

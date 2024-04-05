@@ -4,11 +4,14 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
+
+        type Opaque;
     }
 
     unsafe extern "C++Qt" {
         include!(<QtCore/QTimer>);
         /// QTimer
+        #[qobject]
         type QTimer;
 
         /// When the QTimer timeout occurs

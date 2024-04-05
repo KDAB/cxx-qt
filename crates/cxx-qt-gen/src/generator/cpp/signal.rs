@@ -66,7 +66,7 @@ fn parameter_types_and_values(
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
     // Insert the extra argument into the closure
-    let self_ty = type_names.cxx_qualified(self_ty);
+    let self_ty = type_names.cxx_qualified(self_ty)?;
     parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
     parameter_types_with_self.insert(0, format!("{self_ty}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
@@ -92,11 +92,11 @@ pub fn generate_cpp_signal(
         .insert("#include <cxx-qt/signalhandler.h>".to_owned());
 
     // Build a namespace that includes any namespace for the T
-    let qobject_ident_namespaced = type_names.cxx_qualified(qobject_ident);
+    let qobject_ident_namespaced = type_names.cxx_qualified(qobject_ident)?;
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names);
+    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names)?;
 
     let signal_ident = idents.name.cpp;
     let free_connect_ident_cpp = idents_helper.connect_name.cpp;
@@ -250,8 +250,9 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
+        let mut type_names = TypeNames::mock();
+        type_names.insert("QColor", None, None, None);
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -331,13 +332,13 @@ mod tests {
     fn test_generate_cpp_signals_mapped_cxx_name() {
         let signals = vec![ParsedSignal {
             method: parse_quote! {
-                fn data_changed(self: Pin<&mut MyObject>, mapped: A1);
+                fn data_changed(self: Pin<&mut MyObject>, mapped: A);
             },
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
-                ty: parse_quote! { A1 },
+                ty: parse_quote! { A },
             }],
             ident: CombinedIdent {
                 cpp: format_ident!("dataChanged"),
@@ -349,7 +350,7 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let mut type_names = TypeNames::default();
+        let mut type_names = TypeNames::mock();
         type_names.insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
@@ -444,9 +445,8 @@ mod tests {
             private: false,
         }];
         let qobject_idents = create_qobjectname();
-
         let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::default()).unwrap();
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);
@@ -531,8 +531,9 @@ mod tests {
             private: false,
         };
 
-        let generated =
-            generate_cpp_signal(&signal, &signal.qobject_ident, &TypeNames::default()).unwrap();
+        let mut type_names = TypeNames::default();
+        type_names.insert("ObjRust", None, None, None);
+        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 

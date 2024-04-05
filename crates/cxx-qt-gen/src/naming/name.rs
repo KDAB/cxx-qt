@@ -64,7 +64,7 @@ impl Name {
         }
 
         // Find if there is a cxx_name mapping (for C++ generation)
-        let cxx_name = attribute_find_path(attrs, &["cxx_name"])
+        let mut cxx_name = attribute_find_path(attrs, &["cxx_name"])
             .map(|index| -> Result<_> {
                 expr_to_string(&attrs[index].meta.require_name_value()?.value)
             })
@@ -72,6 +72,11 @@ impl Name {
 
         // Find if there is a rust_name mapping
         let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
+            // If we have a rust_name, but no cxx_name, the original ident is the cxx_name.
+            if cxx_name.is_none() {
+                cxx_name = Some(ident.to_string());
+            }
+
             format_ident!(
                 "{}",
                 expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
@@ -87,5 +92,13 @@ impl Name {
             namespace,
             module: module.clone(),
         })
+    }
+
+    /// Get the unqualified name of the type in C++.
+    /// This is either:
+    /// - The cxx_name attribute value, if one is provided
+    /// - The original ident, if no cxx_name was provided
+    pub(super) fn cxx_unqualified(&self) -> String {
+        self.cxx.clone().unwrap_or_else(|| self.rust.to_string())
     }
 }

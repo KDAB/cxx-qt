@@ -567,6 +567,7 @@ mod tests {
         let item: Item = parse_quote! {
             #[namespace = "rust"]
             unsafe extern "C++Qt" {
+                #[qobject]
                 type QPushButton;
 
                 #[qsignal]
