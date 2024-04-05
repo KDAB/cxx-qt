@@ -4,18 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_build::CxxQtBuilder;
-use qt_build_utils::QtBuild;
 
 fn main() {
     let mut builder = CxxQtBuilder::new();
-
-    println!(
-        "cargo:rustc-cfg=qt_version_major=\"{}\"",
-        QtBuild::new(vec!())
-            .expect("Could not find Qt installation")
-            .version()
-            .major
-    );
 
     let rust_bridges = vec![
         "core/qelapsedtimer",
