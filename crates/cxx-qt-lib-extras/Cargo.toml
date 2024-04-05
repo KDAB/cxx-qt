@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "cxx-qt-lib-extras"
+version.workspace = true
+authors = ["Laurent Montel <laurent.montel@kdab.com>"]
+edition.workspace = true
+license.workspace = true
+description = "Extra Qt types for integrating `cxx-qt` crate with `cxx` that are not available in `cxx-qt-lib`"
+repository.workspace = true
+
+[dependencies]
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib.workspace = true
+
+[build-dependencies]
+cxx-qt-build.workspace = true
+cxx-qt-lib-headers.workspace = true
+cxx-qt-lib-extras-headers.workspace = true
+
+[features]
+default = []
+link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
