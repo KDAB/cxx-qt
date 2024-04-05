@@ -20,8 +20,7 @@ cxx-qt-lib.workspace = true
 cxx-qt-build.workspace = true
 cxx-qt-lib-headers.workspace = true
 cxx-qt-lib-extras-headers.workspace = true
-qt-build-utils.workspace = true
 
 [features]
 default = []
-link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
+link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
