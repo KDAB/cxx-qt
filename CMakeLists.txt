@@ -143,7 +143,7 @@ endif()
 find_program(MEMORYCHECK_COMMAND valgrind)
 if(NOT "${MEMORYCHECK_COMMAND}" STREQUAL "MEMORYCHECK_COMMAND-NOTFOUND")
     if (NOT WIN32)
-       MESSAGE(STATUS "Valgrind found! Tests based on valgrind must be executed.") 
+       MESSAGE(STATUS "Valgrind found! Tests based on valgrind must be executed.")
     endif()
 endif()
 
@@ -242,7 +242,7 @@ add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TE
 add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
 
 # Add test which checks that a build rerun doesn't recompile and uses caches instead
-add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Ensure that cargo_build_rerun doesn't run while we are already building
 set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)

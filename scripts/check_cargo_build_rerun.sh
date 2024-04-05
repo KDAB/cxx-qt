@@ -10,7 +10,7 @@ set -e
 # Ensure we are in the right directory
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-cd "$SCRIPTPATH"
+cd "$SCRIPTPATH/../"
 
 # Ensure that we do see a "Compiling" in the output
 # as if we do it means we have a cargo:rerun-if-changed incorrectly
@@ -41,14 +41,14 @@ cargo build -p qml-minimal-no-cmake &> /dev/null
 check_build_no_compiling
 
 # Modify a qml file
-touch "$SCRIPTPATH/examples/cargo_without_cmake/qml/main.qml"
+touch "$SCRIPTPATH/../examples/cargo_without_cmake/qml/main.qml"
 
 # Build a third and fourth time
 check_build_contains_compiling
 check_build_no_compiling
 
 # Modify a Rust file
-touch "$SCRIPTPATH/examples/cargo_without_cmake/src/cxxqt_object.rs"
+touch "$SCRIPTPATH/../examples/cargo_without_cmake/src/cxxqt_object.rs"
 
 # Build a fifth and sixth time
 check_build_contains_compiling
