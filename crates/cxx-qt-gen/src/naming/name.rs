@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use quote::format_ident;
-use syn::{spanned::Spanned, Attribute, Ident, Result};
+use syn::{spanned::Spanned, Attribute, Ident, Path, Result};
 
 use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 
@@ -19,7 +19,7 @@ use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 ///     used for part that wasn't specified explicitly.
 /// - If **both** attributes are present, the identifier itself is not used!
 /// - The `rust_name` is always used to refer to the type within the bridge!.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Name {
     /// The name of the type in Rust. This is also the name used to refer to the type within the
     /// bridge.
@@ -31,8 +31,7 @@ pub struct Name {
     pub(super) cxx: Option<String>,
 
     /// The module of the type in Rust.
-    /// Currently this is only used for the bridge module
-    pub(super) module: Ident,
+    pub(super) module: Option<Path>,
 
     /// The namespace of the type in C++.
     /// Originates from the `namespace` attribute
@@ -90,7 +89,7 @@ impl Name {
             rust: rust_ident,
             cxx: cxx_name,
             namespace,
-            module: module.clone(),
+            module: Some(module.clone().into()),
         })
     }
 

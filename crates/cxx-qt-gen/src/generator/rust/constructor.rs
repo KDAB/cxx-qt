@@ -191,7 +191,7 @@ pub fn generate(
 
     let qobject_name = &qobject_idents.cpp_class.cpp;
     let qobject_name_rust = &qobject_idents.cpp_class.rust;
-    let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust);
+    let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust)?;
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
@@ -258,7 +258,7 @@ pub fn generate(
             .arguments
             .iter()
             .map(|arg| syn_type_cxx_bridge_to_qualified(arg, type_names))
-            .collect();
+            .collect::<Result<_>>()?;
 
         let route_arguments_parameters: Vec<FnArg> = constructor
             .arguments
@@ -272,13 +272,13 @@ pub fn generate(
         let route_arguments_parameter_qualified: Vec<FnArg> = route_arguments_parameters
             .iter()
             .cloned()
-            .map(|mut parameter| {
+            .map(|mut parameter| -> Result<_> {
                 if let FnArg::Typed(pat_type) = &mut parameter {
-                    *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names);
+                    *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names)?;
                 }
-                parameter
+                Ok(parameter)
             })
-            .collect();
+            .collect::<Result<_>>()?;
 
         // As the function implementations cast to `Constructor<(Args)>`, these `Args` may
         // include the lifetime.
@@ -465,11 +465,15 @@ mod tests {
     }
 
     fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {
+        let mut type_names = TypeNames::mock();
+
+        type_names.insert("QString", None, None, None);
+        type_names.insert("QObject", None, None, None);
         generate(
             constructors,
             &mock_name(),
             &mock_namespace(),
-            &TypeNames::mock(),
+            &type_names,
             &format_ident!("qobject"),
         )
         .unwrap()
