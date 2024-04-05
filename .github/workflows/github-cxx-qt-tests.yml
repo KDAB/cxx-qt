@@ -251,15 +251,6 @@ jobs:
       if: runner.os == 'Linux' && matrix.qt_version == 6
       run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
 
-    # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
-    # for now force Python 3.11
-    # https://github.com/microsoft/vcpkg/issues/35332
-    - name: "[macOS] Force python 3.11 for vcpkg"
-      if: runner.os == 'macOS'
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
       # FIXME: clang-format-14 causes formatting differences if it is selected by brew

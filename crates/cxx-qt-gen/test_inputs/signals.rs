@@ -11,6 +11,7 @@ mod ffi {
     unsafe extern "C++Qt" {
         include!(<QtCore/QTimer>);
         /// QTimer
+        #[qobject]
         type QTimer;
 
         /// When the QTimer timeout occurs
