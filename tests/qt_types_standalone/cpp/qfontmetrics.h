@@ -17,6 +17,15 @@ class QFontMetricsTest : public QObject
   Q_OBJECT
 
 private Q_SLOTS:
+  void construct()
+  {
+    QFont f;
+    const int pointSize = 40;
+    f.setPointSize(40);
+    const auto m = constructor_qfontmetrics(f);
+    QCOMPARE(m.ascent(), 40);
+    QCOMPARE(m.height(), 30);
+  }
   void clone()
   {
     QFont f;
