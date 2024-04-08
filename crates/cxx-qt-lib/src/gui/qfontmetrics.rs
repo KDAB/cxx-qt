@@ -116,7 +116,7 @@ mod ffi {
 
 #[repr(C)]
 pub struct QFontMetrics {
-    _cspec: MaybeUninit<i32>,
+    _cspec: MaybeUninit<usize>,
 }
 
 impl Drop for QFontMetrics {
