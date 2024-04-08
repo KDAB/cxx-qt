@@ -80,27 +80,44 @@ impl ParsedCxxQtData {
                                     syn::parse2(tokens.clone())?;
 
                                 // Check this type is tagged with a #[qobject]
-                                if attribute_take_path(&mut foreign_alias.attrs, &["qobject"])
-                                    .is_some()
+                                let has_qobject_macro =
+                                    attribute_take_path(&mut foreign_alias.attrs, &["qobject"])
+                                        .is_some();
+
+                                // Load the QObject
+                                let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
+                                qobject.has_qobject_macro = has_qobject_macro;
+
+                                // Ensure that the base class attribute is not empty, as this is not valid in both cases
+                                // - when there is a qobject macro it is not valid
+                                // - when there is not a qobject macro it is not valid
+                                if qobject
+                                    .base_class
+                                    .as_ref()
+                                    .is_some_and(|base| base.is_empty())
                                 {
-                                    // Load the QObject
-                                    let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
-
-                                    // Inject the bridge namespace if the qobject one is empty
-                                    if qobject.namespace.is_empty() && namespace.is_some() {
-                                        qobject.namespace = namespace.clone().unwrap();
-                                    }
-
-                                    // Note that we assume a compiler error will occur later
-                                    // if you had two structs with the same name
-                                    self.qobjects
-                                        .insert(foreign_alias.ident_left.clone(), qobject);
-                                } else {
                                     return Err(Error::new(
                                         foreign_item.span(),
-                                        "type A = super::B must be tagged with #[qobject]",
+                                        "The #[base] attribute cannot be empty",
                                     ));
                                 }
+
+                                // Ensure that if there is no qobject macro that a base class is specificed
+                                //
+                                // Note this assumes the check above
+                                if !qobject.has_qobject_macro && qobject.base_class.is_none() {
+                                    return Err(Error::new(foreign_item.span(), "A type without a #[qobject] attribute must specify a #[base] attribute"));
+                                }
+
+                                // Inject the bridge namespace if the qobject one is empty
+                                if qobject.namespace.is_empty() && namespace.is_some() {
+                                    qobject.namespace = namespace.clone().unwrap();
+                                }
+
+                                // Note that we assume a compiler error will occur later
+                                // if you had two structs with the same name
+                                self.qobjects
+                                    .insert(foreign_alias.ident_left.clone(), qobject);
                             }
                             // Const Macro, Type are unsupported in extern "RustQt" for now
                             _others => {
@@ -316,6 +333,13 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(cxx_qt_data.qobjects.len(), 1);
         assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
+        assert!(
+            cxx_qt_data
+                .qobjects
+                .get(&qobject_ident())
+                .unwrap()
+                .has_qobject_macro
+        );
     }
 
     #[test]
@@ -380,7 +404,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_qobjects_no_qobject() {
+    fn test_find_qobjects_no_qobject_no_base() {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
 
         let module: ItemMod = parse_quote! {
@@ -393,6 +417,39 @@ mod tests {
         };
         let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_find_qobjects_no_qobject_with_base() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[base = "OtherBase"]
+                    type Other = super::OtherRust;
+                    #[base = "MyObjectBase"]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
+        assert!(result.is_ok());
+        assert_eq!(cxx_qt_data.qobjects.len(), 2);
+        assert!(
+            !cxx_qt_data
+                .qobjects
+                .get(&format_ident!("Other"))
+                .unwrap()
+                .has_qobject_macro
+        );
+        assert!(
+            !cxx_qt_data
+                .qobjects
+                .get(&format_ident!("MyObject"))
+                .unwrap()
+                .has_qobject_macro
+        );
     }
 
     #[test]
@@ -510,6 +567,7 @@ mod tests {
         let item: Item = parse_quote! {
             #[namespace = "rust"]
             unsafe extern "C++Qt" {
+                #[qobject]
                 type QPushButton;
 
                 #[qsignal]

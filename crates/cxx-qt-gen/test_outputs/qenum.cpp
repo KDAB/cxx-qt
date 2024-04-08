@@ -2,8 +2,8 @@
 
 namespace cxx_qt::my_object {
 void
-MyObject::myInvokable(::cxx_qt::my_object::MyEnum qenum,
-                      ::cxx_qt::my_object::MyOtherEnum other_qenum) const
+MyObject::myInvokable(cxx_qt::my_object::MyEnum qenum,
+                      cxx_qt::my_object::MyOtherEnum other_qenum) const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   myInvokableWrapper(qenum, other_qenum);

@@ -6,8 +6,11 @@ mod ffi {
         type QColor = cxx_qt_lib::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = cxx_qt_lib::QPoint;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = cxx_qt_lib::QString;
         include ! (< QtCore / QObject >);
         type QObject;
+        type Opaque;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
@@ -267,12 +270,14 @@ impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_my_object_0<'a>(
     arg0: i32,
-    arg1: &'a QString,
+    arg1: &'a ffi::QString,
 ) -> ffi::CxxQtConstructorArgumentsMyObject0<'a> {
     #[allow(unused_variables)]
     #[allow(clippy::let_unit_value)]
     let (new_arguments, base_arguments, initialize_arguments) =
-        <ffi::MyObject as cxx_qt::Constructor<(i32, &'a QString)>>::route_arguments((arg0, arg1));
+        <ffi::MyObject as cxx_qt::Constructor<(i32, &'a ffi::QString)>>::route_arguments((
+            arg0, arg1,
+        ));
     ffi::CxxQtConstructorArgumentsMyObject0 {
         base: ffi::CxxQtConstructorBaseArgumentsMyObject0 {
             arg0: base_arguments.0,
@@ -289,9 +294,10 @@ pub fn route_arguments_my_object_0<'a>(
 pub fn new_rs_my_object_0<'a>(
     new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0<'a>,
 ) -> std::boxed::Box<MyObjectRust> {
-    std::boxed::Box::new(
-        <ffi::MyObject as cxx_qt::Constructor<(i32, &'a QString)>>::new((new_arguments.arg0,)),
-    )
+    std::boxed::Box::new(<ffi::MyObject as cxx_qt::Constructor<(
+        i32,
+        &'a ffi::QString,
+    )>>::new((new_arguments.arg0,)))
 }
 #[doc(hidden)]
 #[allow(unused_variables)]
@@ -300,7 +306,7 @@ pub fn initialize_my_object_0<'a>(
     qobject: core::pin::Pin<&mut ffi::MyObject>,
     initialize_arguments: ffi::CxxQtConstructorInitializeArgumentsMyObject0,
 ) {
-    <ffi::MyObject as cxx_qt::Constructor<(i32, &'a QString)>>::initialize(qobject, ());
+    <ffi::MyObject as cxx_qt::Constructor<(i32, &'a ffi::QString)>>::initialize(qobject, ());
 }
 #[doc(hidden)]
 pub fn route_arguments_my_object_1() -> ffi::CxxQtConstructorArgumentsMyObject1 {

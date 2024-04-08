@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::QPointF;
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -12,6 +13,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type FillRule = crate::FillRule;
+        type SizeMode = crate::SizeMode;
     }
 
     unsafe extern "C++" {
@@ -44,6 +46,16 @@ mod ffi {
         /// Adds the given rectangle to this path as a closed subpath.
         #[rust_name = "add_rect"]
         fn addRect(self: &mut QPainterPath, rectangle: &QRectF);
+
+        /// Adds the given rectangle rect with rounded corners to the path.
+        #[rust_name = "add_rounded_rect"]
+        fn addRoundedRect(
+            self: &mut QPainterPath,
+            rect: &QRectF,
+            xRadius: f64,
+            yRadius: f64,
+            mode: SizeMode,
+        );
 
         /// Creates a move to that lies on the arc that occupies the given rectangle at angle.
         #[rust_name = "arc_move_to"]
@@ -177,6 +189,14 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpainterpath_drop"]
         fn drop(painterPath: &mut QPainterPath);
+
+        #[doc(hidden)]
+        #[rust_name = "qpainterpath_eq"]
+        fn operatorEq(a: &QPainterPath, b: &QPainterPath) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qpainterpath_to_qstring"]
+        fn toQString(value: &QPainterPath) -> QString;
     }
 }
 
@@ -210,6 +230,20 @@ impl From<&QPointF> for QPainterPath {
         ffi::qpainterpath_from_qpointf(p)
     }
 }
+
+impl PartialEq for QPainterPath {
+    fn eq(&self, other: &Self) -> bool {
+        ffi::qpainterpath_eq(self, other)
+    }
+}
+
+impl fmt::Display for QPainterPath {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpainterpath_to_qstring(self))
+    }
+}
+
+impl Eq for QPainterPath {}
 
 // Safety:
 //

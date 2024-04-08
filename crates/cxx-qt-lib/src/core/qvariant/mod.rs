@@ -51,18 +51,18 @@ pub struct QVariant {
     _data: MaybeUninit<f64>,
 
     // Compiler optimisations reduce the size of the uint to a ushort
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _type: MaybeUninit<u16>,
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _is_shared: MaybeUninit<u16>,
-    #[cfg(qt_version_major = "5")]
+    #[cfg(cxxqt_qt_version_major = "5")]
     _is_null: MaybeUninit<u16>,
 
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _is_shared: MaybeUninit<usize>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _is_null: MaybeUninit<usize>,
-    #[cfg(qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
     _packed_type: MaybeUninit<usize>,
 }
 

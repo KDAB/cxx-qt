@@ -30,11 +30,11 @@ use syn::{
 /// [syn::Item]'s that are not handled specially by CXX-Qt are passed through for CXX to process.
 pub struct Parser {
     /// The module which unknown (eg CXX) blocks are stored into
-    pub passthrough_module: ItemMod,
+    pub(crate) passthrough_module: ItemMod,
     /// Any CXX-Qt data that needs generation later
-    pub cxx_qt_data: ParsedCxxQtData,
+    pub(crate) cxx_qt_data: ParsedCxxQtData,
     /// all type names that were found in this module, including CXX types
-    pub type_names: TypeNames,
+    pub(crate) type_names: TypeNames,
     /// The stem of the file that the CXX headers for this module will be generated into
     pub cxx_file_stem: String,
 }
@@ -302,6 +302,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectA"))
+                .unwrap()
                 .unwrap(),
             "bridge_namespace"
         );
@@ -309,6 +310,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectB"))
+                .unwrap()
                 .unwrap(),
             "type_namespace"
         );
@@ -316,6 +318,7 @@ mod tests {
             parser
                 .type_names
                 .namespace(&format_ident!("MyObjectC"))
+                .unwrap()
                 .unwrap(),
             "extern_namespace"
         );
