@@ -39,6 +39,7 @@ pub struct GeneratedCppBlocks {
 }
 
 impl GeneratedCppBlocks {
+    /// Create a [GeneratedCppBlocks] from the given [Parser] object
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
         let mut includes = BTreeSet::new();
 

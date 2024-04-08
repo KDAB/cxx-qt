@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `internal_pointer_mut()` function on `QModelIndex`
 - `c_void` in CXX-Qt-lib for easy access to `void *`
 - `CxxQtThread` is now marked as `Sync` so that it can be used by reference
+- Add cxx-qt-lib-extras crate which contains: `QCommandLineOption`, `QCommandLineParser`, `QElapsedTimer`
 
 ### Changed
 
@@ -32,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cxx-qt-gen` now does not generate code requiring `cxx-qt-lib`, this allows for `cxx-qt-lib` to be optional
 - `cxx-qt-lib` headers must be given to `cxx-qt-build` with `.with_opts(cxx_qt_lib_headers::build_opts())`
 - File name is used for CXX bridges rather than module name to match upstream
+- `#[qobject]` attribute is now optional on types in `extern "RustQt"`
+- `#[qobject]` attribute is now required on types in `extern "C++Qt"`
 
 ### Fixed
 

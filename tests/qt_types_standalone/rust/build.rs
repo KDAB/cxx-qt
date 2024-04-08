@@ -26,6 +26,7 @@ fn main() {
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")
         .file("src/qpointf.rs")
+        .file("src/qpolygon.rs")
         .file("src/qqmlapplicationengine.rs")
         .file("src/qqmlengine.rs")
         .file("src/qrect.rs")

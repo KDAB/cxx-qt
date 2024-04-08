@@ -10,3 +10,11 @@
 #include <memory>
 
 #include <QtGui/QPainter>
+
+namespace rust {
+namespace cxxqtlib1 {
+using QPainterCompositionMode = QPainter::CompositionMode;
+using QPainterRenderHint = QPainter::RenderHint;
+
+} // namespace cxxqtlib1
+} // namespace rust

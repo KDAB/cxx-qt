@@ -209,7 +209,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
     let ident_string = ident.to_string();
 
     // If we are a Pin<T> then for C++ it becomes just T
-    let args = match &*ident_string {
+    let arg = match &*ident_string {
         "Pin" => {
             let mut args =
                 path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_else(Vec::new);
@@ -231,25 +231,27 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
     };
 
     // If there are template args check that its a supported template type.
-    let ident = if args.is_some() {
+    if let Some(arg) = arg {
         // A built in template base cannot have a cxx_name or a namespace
-        if let Some(built_in) = possible_built_in_template_base(&ident_string) {
-            built_in.to_owned()
+        if let Some(ident) = possible_built_in_template_base(&ident_string) {
+            Ok(format!("{ident}<{arg}>"))
         } else {
-            return Err(Error::new_spanned(
+            Err(Error::new_spanned(
                 ident,
                 format!("Unsupported template base: {ident}"),
-            ));
+            ))
         }
     } else {
-        type_names.cxx_qualified(&segment.ident)
-    };
-
-    Ok(format!(
-        "{ident}{args}",
-        ident = ident,
-        args = args.map_or_else(|| "".to_owned(), |arg| format!("<{arg}>"))
-    ))
+        // Currently, type_names only includes the names of types that are declared within the bridge.
+        // Some types are built-in and available without declaration though.
+        // Check whether its one of those, as otherwise the call to `cxx_qualified` will result in
+        // an "unknown type" error.
+        if let Some(built_in) = possible_built_in(&segment.ident.to_string()) {
+            Ok(built_in.to_owned())
+        } else {
+            type_names.cxx_qualified(&segment.ident)
+        }
+    }
 }
 
 /// Convert any built in types to known C++ equivalents
@@ -322,9 +324,14 @@ mod tests {
 
     macro_rules! test_syn_types_to_cpp_types {
         [$($input_type:tt => $output_type:literal),*] => {
+            let mut type_names = TypeNames::default();
+            // Add some types to the list of available types so we can use them in tests.
+            type_names.insert("T", None, None, None);
+            type_names.insert("QColor", None, None, None);
+            type_names.insert("QPoint", None, None, None);
             $(
             assert_eq!(
-                syn_type_to_cpp_type(&parse_quote! $input_type, &TypeNames::default()).unwrap(),
+                syn_type_to_cpp_type(&parse_quote! $input_type, &type_names).unwrap(),
                 $output_type);
             )*
         }
@@ -381,7 +388,7 @@ mod tests {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
         type_names.insert("A", None, Some("A1"), Some("N1"));
-        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "::N1::A1");
+        assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "N1::A1");
     }
 
     #[test]

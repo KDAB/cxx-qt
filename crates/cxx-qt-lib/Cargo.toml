@@ -26,7 +26,6 @@ url = { version = "2.3", optional = true }
 [build-dependencies]
 cxx-qt-build.workspace = true
 cxx-qt-lib-headers.workspace = true
-qt-build-utils.workspace = true
 
 [features]
 default = ["qt_gui", "qt_qml"]
@@ -38,4 +37,4 @@ qt_gui = ["cxx-qt-lib-headers/qt_gui"]
 qt_qml = ["cxx-qt-lib-headers/qt_qml"]
 time = ["dep:time"]
 url = ["dep:url"]
-link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
+link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]

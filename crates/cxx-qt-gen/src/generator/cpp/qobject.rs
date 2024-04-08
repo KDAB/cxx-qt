@@ -92,6 +92,8 @@ pub struct GeneratedCppQObject {
     pub namespace_internals: String,
     /// The blocks of the QObject
     pub blocks: GeneratedCppQObjectBlocks,
+    /// Whether this type has a #[qobject] / Q_OBJECT macro
+    pub has_qobject_macro: bool,
 }
 
 impl GeneratedCppQObject {
@@ -106,6 +108,7 @@ impl GeneratedCppQObject {
             namespace: qobject.namespace.clone(),
             namespace_internals: namespace_idents.internal,
             blocks: GeneratedCppQObjectBlocks::from(qobject),
+            has_qobject_macro: qobject.has_qobject_macro,
         };
 
         // Ensure that we include MaybeLockGuard<T> that is used in multiple places
@@ -115,10 +118,16 @@ impl GeneratedCppQObject {
             .insert("#include <cxx-qt/maybelockguard.h>".to_owned());
 
         // Build the base class
-        let base_class = qobject
-            .base_class
-            .clone()
-            .unwrap_or_else(|| "QObject".to_string());
+        let base_class = qobject.base_class.clone().unwrap_or_else(|| {
+            // If there is a QObject macro then assume the base class is QObject
+            if qobject.has_qobject_macro {
+                "QObject".to_string()
+            } else {
+                unreachable!(
+                    "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
+                );
+            }
+        });
         generated.blocks.base_classes.push(base_class.clone());
 
         // Add the CxxQtType rust and rust_mut methods
