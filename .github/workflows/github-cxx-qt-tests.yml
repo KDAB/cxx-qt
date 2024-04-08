@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y clang-format-12
-      - run: ./clang_format_check.sh .
+      - run: ./scripts/clang_format_check.sh .
 
   license_check:
     runs-on: ubuntu-latest
@@ -250,15 +250,6 @@ jobs:
     - name: "[Ubuntu] Add Qt6 tools to PATH"
       if: runner.os == 'Linux' && matrix.qt_version == 6
       run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
-
-    # FIXME: Workaround until meson supports Python 3.12+ in vcpkg
-    # for now force Python 3.11
-    # https://github.com/microsoft/vcpkg/issues/35332
-    - name: "[macOS] Force python 3.11 for vcpkg"
-      if: runner.os == 'macOS'
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
 
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'

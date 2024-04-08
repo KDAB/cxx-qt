@@ -735,7 +735,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
             std::fs::create_dir_all(&qmlcachegen_dir)
                 .expect("Could not create qmlcachegen directory for QML module");
 
-            let common_args = vec![
+            let common_args = [
                 "-i".to_string(),
                 qmldir_file_path.to_string(),
                 "--resource".to_string(),
