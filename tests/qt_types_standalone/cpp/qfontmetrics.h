@@ -8,6 +8,7 @@
 
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
+#include <QtGui/QGuiApplication>
 #include <QtTest/QTest>
 
 #include "cxx-qt-gen/qfontmetrics.cxx.h"
@@ -19,15 +20,33 @@ class QFontMetricsTest : public QObject
 private Q_SLOTS:
   void construct()
   {
+    std::vector<char*> args;
+    std::string path = "/path";
+    args.push_back(path.data());
+    auto argc = static_cast<int>(args.size());
+
+    // QFontDatabase needs a QGuiApplication first
+    QGuiApplication app(argc, args.data());
+    app.setApplicationName(QStringLiteral("kdab"));
+
     QFont f;
     const int pointSize = 40;
-    f.setPointSize(40);
+    f.setPointSize(pointSize);
     const auto m = constructor_qfontmetrics(f);
-    QCOMPARE(m.ascent(), 40);
-    QCOMPARE(m.height(), 30);
+    QCOMPARE(m.ascent(), 57);
+    QCOMPARE(m.height(), 73);
   }
   void clone()
   {
+    std::vector<char*> args;
+    std::string path = "/path";
+    args.push_back(path.data());
+    auto argc = static_cast<int>(args.size());
+
+    // QFontDatabase needs a QGuiApplication first
+    QGuiApplication app(argc, args.data());
+    app.setApplicationName(QStringLiteral("kdab"));
+
     QFont f;
     f.setBold(true);
     f.setPointSize(30);
