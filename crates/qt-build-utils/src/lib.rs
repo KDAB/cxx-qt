@@ -402,6 +402,21 @@ impl QtBuild {
         println!("cargo:rustc-link-search={lib_path}");
 
         let target = env::var("TARGET");
+
+        // Add the QT_INSTALL_LIBS as a framework link search path as well
+        //
+        // Note that leaving the kind empty should default to all,
+        // but this doesn't appear to find frameworks in all situations
+        // https://github.com/KDAB/cxx-qt/issues/885
+        //
+        // Note this doesn't have an adverse affect running all the time
+        // as it appears that all rustc-link-search are added
+        if let Ok(target) = &target {
+            if target.contains("apple") {
+                println!("cargo:rustc-link-search=framework={lib_path}");
+            }
+        }
+
         let prefix = match &target {
             Ok(target) => {
                 if target.contains("windows") {
