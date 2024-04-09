@@ -69,7 +69,7 @@ mod ffi {
 
 #[repr(C)]
 pub struct QRegion {
-    _cspec: MaybeUninit<i32>,
+    _cspec: MaybeUninit<usize>,
 }
 
 impl Default for QRegion {

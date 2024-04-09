@@ -30,6 +30,7 @@
 #include "qqmlengine.h"
 #include "qrect.h"
 #include "qrectf.h"
+#include "qregion.h"
 #include "qset.h"
 #include "qsize.h"
 #include "qsizef.h"
@@ -92,6 +93,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QVector3DTest));
   runTest(QScopedPointer<QObject>(new QVector4DTest));
   runTest(QScopedPointer<QObject>(new QPolygonTest));
+  runTest(QScopedPointer<QObject>(new QRegionTest));
 
   return status;
 }

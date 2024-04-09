@@ -71,6 +71,7 @@ add_executable(${APP_NAME}
     cpp/qqmlengine.h
     cpp/qrect.h
     cpp/qrectf.h
+    cpp/qregion.h
     cpp/qset.h
     cpp/qsize.h
     cpp/qsizef.h
