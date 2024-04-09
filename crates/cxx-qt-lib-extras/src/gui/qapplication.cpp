@@ -7,8 +7,6 @@
 
 #include "cxx-qt-lib-extras/qapplication.h"
 
-#include "cxx-qt-lib/qcoreapplication.h"
-
 namespace rust {
 namespace cxxqtlib1 {
 
