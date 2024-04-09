@@ -25,9 +25,11 @@ private Q_SLOTS:
 
   void clone()
   {
-    const auto p = QPen(Qt::DashLine);
+    auto p = QPen(Qt::DashLine);
+    p.setWidth(5);
     const auto c = clone_qpen(p);
     QCOMPARE(c.style(), Qt::DashLine);
     QCOMPARE(c.color(), Qt::black);
+    QCOMPARE(c.width(), 5);
   }
 };
