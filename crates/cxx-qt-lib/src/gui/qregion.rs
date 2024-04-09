@@ -36,6 +36,13 @@ mod ffi {
         #[rust_name = "is_null"]
         fn isNull(self: &QRegion) -> bool;
 
+        /// Returns the number of rectangles that this region is composed of.
+        #[rust_name = "rect_count"]
+        fn rectCount(self: &QRegion) -> i32;
+
+        /// Returns a region which is r subtracted from this region.
+        fn subtracted(self: &QRegion, r: &QRegion) -> QRegion;
+
         /// Translates the region point.x() along the x axis and point.y() along the y axis, relative to the current position.
         /// Positive values move the region to the right and down.
         /// Translates to the given point.
@@ -47,6 +54,9 @@ mod ffi {
 
         /// Returns a region which is the union of this region and r.
         fn united(self: &QRegion, r: &QRegion) -> QRegion;
+
+        /// Returns a region which is the exclusive or (XOR) of this region and r.
+        fn xored(self: &QRegion, r: &QRegion) -> QRegion;
     }
 
     #[namespace = "rust::cxxqtlib1"]
