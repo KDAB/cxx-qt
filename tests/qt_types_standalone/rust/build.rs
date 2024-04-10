@@ -22,6 +22,7 @@ fn main() {
         .file("src/qmarginsf.rs")
         .file("src/qmetaobjectconnection.rs")
         .file("src/qmodelindex.rs")
+        .file("src/qpainterpath.rs")
         .file("src/qpersistentmodelindex.rs")
         .file("src/qpoint.rs")
         .file("src/qpointf.rs")

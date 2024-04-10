@@ -19,6 +19,7 @@ mod qmargins;
 mod qmarginsf;
 mod qmetaobjectconnection;
 mod qmodelindex;
+mod qpainterpath;
 mod qpersistentmodelindex;
 mod qpoint;
 mod qpointf;

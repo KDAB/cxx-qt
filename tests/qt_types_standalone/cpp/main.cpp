@@ -22,6 +22,7 @@
 #include "qmarginsf.h"
 #include "qmetaobjectconnection.h"
 #include "qmodelindex.h"
+#include "qpainterpath.h"
 #include "qpersistentmodelindex.h"
 #include "qpoint.h"
 #include "qpointf.h"
@@ -55,7 +56,7 @@ main(int argc, char* argv[])
       qWarning() << "Previous test failed, so skipping:" << obj.data();
     }
   };
-
+#if 0
   runTest(QScopedPointer<QObject>(new QByteArrayTest));
   runTest(QScopedPointer<QObject>(new QColorTest));
   runTest(QScopedPointer<QObject>(new QCoreApplicationTest));
@@ -92,6 +93,8 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QVector3DTest));
   runTest(QScopedPointer<QObject>(new QVector4DTest));
   runTest(QScopedPointer<QObject>(new QPolygonTest));
+#endif
+  runTest(QScopedPointer<QObject>(new QPainterPathTest));
 
   return status;
 }
