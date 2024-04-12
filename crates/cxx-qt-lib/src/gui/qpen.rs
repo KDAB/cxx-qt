@@ -21,8 +21,13 @@ mod ffi {
         type QPen = super::QPen;
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
+        include!("cxx-qt-lib/qbrush.h");
+        type QBrush = crate::QBrush;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        /// Returns the brush used to fill strokes generated with this pen.
+        fn brush(self: &QPen) -> QBrush;
 
         /// Returns the pen's cap style.
         #[rust_name = "cap_style"]
@@ -51,6 +56,10 @@ mod ffi {
         /// relevant when the join style is set to Qt::MiterJoin.
         #[rust_name = "miter_limit"]
         fn miterLimit(self: &QPen) -> f64;
+
+        /// Sets the brush used to fill strokes generated with this pen to the given brush.
+        #[rust_name = "set_brush"]
+        fn setBrush(self: &mut QPen, brush: &QBrush);
 
         /// Sets the pen's cap style to the given style. The default value is Qt::SquareCap.
         #[rust_name = "set_cap_style"]

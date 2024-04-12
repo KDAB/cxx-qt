@@ -41,3 +41,6 @@ pub use qpainterpath::QPainterPath;
 
 mod qpainter;
 pub use qpainter::{QPainter, QPainterCompositionMode, QPainterRenderHint};
+
+mod qbrush;
+pub use qbrush::QBrush;
