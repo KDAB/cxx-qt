@@ -12,6 +12,7 @@
 #include "qcoreapplication.h"
 #include "qdate.h"
 #include "qdatetime.h"
+#include "qfontmetrics.h"
 #include "qguiapplication.h"
 #include "qhash.h"
 #include "qline.h"
@@ -92,6 +93,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QVector3DTest));
   runTest(QScopedPointer<QObject>(new QVector4DTest));
   runTest(QScopedPointer<QObject>(new QPolygonTest));
+  runTest(QScopedPointer<QObject>(new QFontMetricsTest));
 
   return status;
 }

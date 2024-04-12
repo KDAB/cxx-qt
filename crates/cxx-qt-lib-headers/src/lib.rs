@@ -71,6 +71,11 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         (include_str!("../include/gui/qfont.h"), "qfont.h"),
         #[cfg(feature = "qt_gui")]
         (
+            include_str!("../include/gui/qfontmetrics.h"),
+            "qfontmetrics.h",
+        ),
+        #[cfg(feature = "qt_gui")]
+        (
             include_str!("../include/gui/qguiapplication.h"),
             "qguiapplication.h",
         ),
