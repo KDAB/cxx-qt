@@ -3,15 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 
+use quote::format_ident;
 use syn::{
-    token::Brace, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
+    parse_quote, token::Brace, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct,
+    Path, Result,
 };
 
 use crate::syntax::{
     attribute::attribute_find_path, expr::expr_to_string,
-    foreignmod::foreign_mod_to_foreign_item_types, path::path_from_idents,
+    foreignmod::foreign_mod_to_foreign_item_types,
 };
 
 use super::Name;
@@ -21,9 +23,88 @@ use crate::parser::{cxxqtdata::ParsedCxxQtData, qenum::ParsedQEnum, qobject::Par
 ///
 /// This is used by the generator phase to find types by their identifier, such that they can be
 /// fully qualified in Rust and C++.
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct TypeNames {
     names: BTreeMap<Ident, Name>,
+    // Currently, there is only a single case for which duplicate type names are allowed.
+    // That is if a type is declared as a shared type, and declared as external.
+    // So store the names of the types that are declared as shared and external, so we can
+    // check for duplicates in all other cases.
+    extern_types: BTreeSet<Ident>,
+    shared_types: BTreeSet<Ident>,
+}
+
+impl Default for TypeNames {
+    fn default() -> Self {
+        let trivial = |rust_name, namespace: &str, cxx_name: &str| Name {
+            rust: format_ident!("{}", rust_name),
+            cxx: Some(cxx_name.to_owned()),
+            module: None,
+            namespace: Some(namespace.to_owned()),
+        };
+
+        // By default, CXX supports a set of types that don't need to be declared:
+        // See: https://github.com/dtolnay/cxx/blob/master/syntax/atom.rs
+        // and: https://github.com/dtolnay/cxx/blob/a6e1cd1e8d9d6df20e88e7443963dc4c5c8c4875/gen/src/write.rs#L1311
+        let cxx_types = [
+            Name {
+                rust: format_ident!("bool"),
+                module: None,
+                cxx: None,
+                namespace: None,
+            },
+            Name {
+                rust: format_ident!("c_char"),
+                module: Some(parse_quote! { ::std::ffi }),
+                cxx: Some("char".to_owned()),
+                namespace: None,
+            },
+            trivial("u8", "::std", "uint8_t"),
+            trivial("u16", "::std", "uint16_t"),
+            trivial("u32", "::std", "uint32_t"),
+            trivial("u64", "::std", "uint64_t"),
+            trivial("usize", "::std", "size_t"),
+            trivial("i8", "::std", "int8_t"),
+            trivial("i16", "::std", "int16_t"),
+            trivial("i32", "::std", "int32_t"),
+            trivial("i64", "::std", "int64_t"),
+            trivial("isize", "::rust", "isize"),
+            Name {
+                rust: format_ident!("f32"),
+                module: None,
+                cxx: Some("float".to_owned()),
+                namespace: None,
+            },
+            Name {
+                rust: format_ident!("f64"),
+                module: None,
+                cxx: Some("double".to_owned()),
+                namespace: None,
+            },
+            Name {
+                rust: format_ident!("CxxString"),
+                module: Some(parse_quote! { ::cxx }),
+                cxx: Some("string".to_owned()),
+                namespace: Some("::std".to_owned()),
+            },
+            Name {
+                rust: format_ident!("String"),
+                module: None,
+                cxx: None,
+                namespace: Some("::rust".to_owned()),
+            },
+        ];
+
+        let mut this = Self {
+            names: BTreeMap::default(),
+            extern_types: BTreeSet::default(),
+            shared_types: BTreeSet::default(),
+        };
+        for name in cxx_types {
+            this.names.insert(name.rust.clone(), name);
+        }
+        this
+    }
 }
 
 impl TypeNames {
@@ -139,15 +220,42 @@ impl TypeNames {
 
         // Read each of the types in the mod (type A;)
         for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {
-            self.populate(
+            self.populate_or_else(
                 &foreign_type.ident,
                 &foreign_type.attrs,
                 block_namespace.as_deref(),
                 module_ident,
+                |this, name| {
+                    // Shared types can be declared as external, in which case duplicates
+                    // are allowed.
+                    // TODO: Check that we're in `extern "C++"` and not `extern "Rust"`
+                    if !this.shared_types.contains(&name.rust)
+                        || this.extern_types.contains(&name.rust)
+                    {
+                        return Err(this.duplicate_type(&name.rust));
+                    }
+                    this.check_duplicate_compatability(&name)
+                },
             )?;
+
+            self.extern_types.insert(foreign_type.ident.clone());
         }
 
         Ok(())
+    }
+
+    fn check_duplicate_compatability(&self, duplicate: &Name) -> Result<()> {
+        if Some(duplicate) != self.names.get(&duplicate.rust) {
+            Err(Error::new_spanned(
+                &duplicate.rust,
+                format!(
+                    "The type `{}` is defined multiple times with different mappings",
+                    duplicate.rust
+                ),
+            ))
+        } else {
+            Ok(())
+        }
     }
 
     /// Add this item to the available types.
@@ -164,7 +272,17 @@ impl TypeNames {
         match item {
             Item::Enum(ItemEnum { attrs, ident, .. })
             | Item::Struct(ItemStruct { attrs, ident, .. }) => {
-                self.populate(ident, attrs, namespace, module_ident)?;
+                self.populate_or_else(ident, attrs, namespace, module_ident, |this, name| {
+                    // Shared types may appear twice in the bridge, but only together
+                    // with a declaration of the same external type.
+                    if !this.extern_types.contains(&name.rust)
+                        || this.shared_types.contains(&name.rust)
+                    {
+                        return Err(this.duplicate_type(&name.rust));
+                    }
+                    this.check_duplicate_compatability(&name)
+                })?;
+                self.shared_types.insert(ident.clone());
             }
             _others => {}
         }
@@ -229,12 +347,26 @@ impl TypeNames {
     ///
     /// Note that this only handles types that are declared inside this bridge.
     /// E.g. UniquePtr -> cxx::UniquePtr isn't handled here.
-    pub fn rust_qualified(&self, ident: &Ident) -> syn::Path {
-        if let Some(name) = self.names.get(ident) {
-            path_from_idents(&name.module, &name.rust)
-        } else {
-            Path::from(ident.clone())
-        }
+    pub fn rust_qualified(&self, ident: &Ident) -> Result<Path> {
+        self.names
+            .get(ident)
+            .ok_or_else(|| self.unknown_type(ident))
+            .map(|name| {
+                if let Some(module) = &name.module {
+                    let mut qualified_ident = module.clone();
+                    qualified_ident.segments.push(name.rust.clone().into());
+                    qualified_ident
+                } else {
+                    Path::from(name.rust.clone())
+                }
+            })
+    }
+
+    fn duplicate_type(&self, ident: &Ident) -> Error {
+        Error::new_spanned(
+            ident,
+            format!("The type name `{ident}` is defined multiple times"),
+        )
     }
 
     /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
@@ -245,15 +377,29 @@ impl TypeNames {
         parent_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
+        self.populate_or_else(
+            ident,
+            attrs,
+            parent_namespace,
+            module_ident,
+            |this, name| Err(this.duplicate_type(&name.rust)),
+        )
+    }
+
+    fn populate_or_else(
+        &mut self,
+        ident: &Ident,
+        attrs: &[Attribute],
+        parent_namespace: Option<&str>,
+        module_ident: &Ident,
+        fallback: impl FnOnce(&mut Self, Name) -> Result<()>,
+    ) -> Result<()> {
         let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, module_ident)?;
 
         let entry = self.names.entry(name.rust.clone());
 
         match entry {
-            Entry::Occupied(_) => Err(Error::new_spanned(
-                ident,
-                format!("The type name `{ident}` is defined multiple times"),
-            )),
+            Entry::Occupied(_) => fallback(self, name),
             Entry::Vacant(entry) => {
                 entry.insert(name);
                 Ok(())
@@ -269,11 +415,7 @@ impl TypeNames {
     #[cfg(test)]
     // Only for testing, return a TypeNames struct that contains a qobject::MyObject
     pub fn mock() -> Self {
-        use quote::format_ident;
-
-        let mut this = Self {
-            names: BTreeMap::new(),
-        };
+        let mut this = Self::default();
         this.insert("MyObject", Some(format_ident!("qobject")), None, None);
         this
     }
@@ -287,9 +429,7 @@ impl TypeNames {
         cxx_name: Option<&str>,
         namespace: Option<&str>,
     ) {
-        use quote::format_ident;
-
-        let module = module.unwrap_or(format_ident!("A"));
+        let module = module.map(Path::from);
         let name = Name {
             rust: format_ident!("{ident}"),
             cxx: cxx_name.map(str::to_owned),
@@ -311,7 +451,8 @@ mod tests {
     #[test]
     fn test_unknown_type() {
         let types = TypeNames::default();
-        assert_eq!(types.num_types(), 0);
+        // By default, 16 types are known to CXX
+        assert_eq!(types.num_types(), 16);
 
         assert!(types.cxx_unqualified(&format_ident!("A")).is_err());
         assert!(types.cxx_qualified(&format_ident!("A")).is_err());
@@ -326,8 +467,11 @@ mod tests {
             .populate(&ident, &[], None, &format_ident!("ffi"))
             .is_ok());
 
-        assert_eq!(types.num_types(), 1);
-        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
+        assert_eq!(types.num_types(), 17);
+        assert_eq!(
+            types.rust_qualified(&ident).unwrap(),
+            parse_quote! { ffi::A }
+        );
         assert_eq!(types.cxx_qualified(&ident).unwrap(), "A");
         assert!(types.namespace(&ident).unwrap().is_none());
     }
@@ -345,10 +489,13 @@ mod tests {
             )
             .is_ok());
 
-        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.num_types(), 17);
         assert_eq!(types.cxx_qualified(&ident).unwrap(), "B");
         assert!(types.namespace(&ident).unwrap().is_none());
-        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
+        assert_eq!(
+            types.rust_qualified(&ident).unwrap(),
+            parse_quote! { ffi::A }
+        );
     }
 
     #[test]
@@ -364,12 +511,15 @@ mod tests {
             )
             .is_ok());
 
-        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.num_types(), 17);
         assert_eq!(
             types.namespace(&ident).unwrap(),
             Some("type_namespace".to_owned())
         );
-        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::A });
+        assert_eq!(
+            types.rust_qualified(&ident).unwrap(),
+            parse_quote! { ffi::A }
+        );
     }
 
     #[test]
@@ -385,14 +535,17 @@ mod tests {
             )
             .is_ok());
 
-        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.num_types(), 17);
         // The rust_name must be used as the key to the TypeNames struct, otherwise most methods
         // return an error.
         assert!(types.cxx_unqualified(&ident).is_err());
         assert!(types.namespace(&ident).is_err());
 
         let rust_ident = &format_ident!("B");
-        assert_eq!(types.rust_qualified(rust_ident), parse_quote! { ffi::B });
+        assert_eq!(
+            types.rust_qualified(rust_ident).unwrap(),
+            parse_quote! { ffi::B }
+        );
         assert_eq!(types.cxx_unqualified(rust_ident).unwrap(), "A");
         assert!(types.namespace(rust_ident).unwrap().is_none());
     }
@@ -410,9 +563,9 @@ mod tests {
             types.namespace(&ident).unwrap().unwrap(),
             "bridge_namespace"
         );
-        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.num_types(), 17);
         assert_eq!(
-            types.rust_qualified(&format_ident!("A")),
+            types.rust_qualified(&format_ident!("A")).unwrap(),
             parse_quote! { ffi::A }
         );
     }
@@ -426,8 +579,11 @@ mod tests {
             .is_ok());
 
         assert!(types.namespace(&ident).unwrap().is_none());
-        assert_eq!(types.num_types(), 1);
-        assert_eq!(types.rust_qualified(&ident), parse_quote! { my_module::A });
+        assert_eq!(types.num_types(), 17);
+        assert_eq!(
+            types.rust_qualified(&ident).unwrap(),
+            parse_quote! { my_module::A }
+        );
     }
 
     fn parse_cxx_item(item: Item) -> TypeNames {
@@ -450,10 +606,13 @@ mod tests {
 
         let type_names = parse_cxx_item(item);
         let ident = format_ident!("A");
-        assert_eq!(type_names.num_types(), 1);
+        assert_eq!(type_names.num_types(), 17);
         assert_eq!(type_names.cxx_qualified(&ident).unwrap(), "B");
 
-        assert_eq!(type_names.rust_qualified(&ident), parse_quote! { ffi::A });
+        assert_eq!(
+            type_names.rust_qualified(&ident).unwrap(),
+            parse_quote! { ffi::A }
+        );
     }
 
     #[test]
@@ -481,7 +640,7 @@ mod tests {
             .populate_from_cxx_items(&items, Some("bridge_namespace"), &format_ident!("ffi"))
             .is_ok());
 
-        assert_eq!(types.num_types(), 3);
+        assert_eq!(types.num_types(), 19);
 
         assert_eq!(
             types.cxx_qualified(&format_ident!("A")).unwrap(),
@@ -510,15 +669,15 @@ mod tests {
         );
 
         assert_eq!(
-            types.rust_qualified(&format_ident!("A")),
+            types.rust_qualified(&format_ident!("A")).unwrap(),
             parse_quote! { ffi::A }
         );
         assert_eq!(
-            types.rust_qualified(&format_ident!("C")),
+            types.rust_qualified(&format_ident!("C")).unwrap(),
             parse_quote! { ffi::C }
         );
         assert_eq!(
-            types.rust_qualified(&format_ident!("E")),
+            types.rust_qualified(&format_ident!("E")).unwrap(),
             parse_quote! { ffi::E }
         );
     }
@@ -536,7 +695,7 @@ mod tests {
         let ident = format_ident!("EnumA");
         let type_names = parse_cxx_item(item);
 
-        assert_eq!(type_names.num_types(), 1);
+        assert_eq!(type_names.num_types(), 17);
         assert_eq!(type_names.cxx_unqualified(&ident).unwrap(), "EnumB");
         assert_eq!(
             type_names.namespace(&ident).unwrap().unwrap(),
@@ -547,7 +706,7 @@ mod tests {
             "enum_namespace::EnumB"
         );
         assert_eq!(
-            type_names.rust_qualified(&ident),
+            type_names.rust_qualified(&ident).unwrap(),
             parse_quote! { ffi::EnumA }
         );
     }
@@ -565,7 +724,7 @@ mod tests {
         let ident = format_ident!("StructA");
         let types = parse_cxx_item(item);
 
-        assert_eq!(types.num_types(), 1);
+        assert_eq!(types.num_types(), 17);
         assert_eq!(types.cxx_unqualified(&ident).unwrap(), "StructB");
         assert_eq!(
             types.cxx_qualified(&ident).unwrap(),
@@ -575,7 +734,10 @@ mod tests {
             types.namespace(&ident).unwrap().unwrap(),
             "struct_namespace"
         );
-        assert_eq!(types.rust_qualified(&ident), parse_quote! { ffi::StructA });
+        assert_eq!(
+            types.rust_qualified(&ident).unwrap(),
+            parse_quote! { ffi::StructA }
+        );
     }
 
     #[test]
@@ -590,6 +752,52 @@ mod tests {
             parse_quote! {
                 extern "Rust" {
                     type B;
+                }
+            },
+        ];
+
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_err());
+    }
+
+    #[test]
+    fn test_extern_shared_type() {
+        let items = [
+            parse_quote! {
+                enum A { }
+            },
+            parse_quote! {
+                extern "C++" {
+                    type A;
+                }
+            },
+            parse_quote! {
+                struct B { }
+            },
+            parse_quote! {
+                extern "C++" {
+                    type B;
+                }
+            },
+        ];
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_ok());
+    }
+
+    #[test]
+    fn test_extern_shared_type_incompatible() {
+        let items = [
+            parse_quote! {
+                #[namespace="X"]
+                enum A { }
+            },
+            parse_quote! {
+                extern "C++" {
+                    type A;
                 }
             },
         ];

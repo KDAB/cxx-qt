@@ -120,13 +120,6 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 .collect::<Result<Vec<String>>>()?;
             if ty_strings.len() == 1 {
                 let first = ty_strings.first().unwrap();
-
-                // A built in type cannot have a cxx_name or a namespace
-                if let Some(built_in) = possible_built_in(first) {
-                    return Ok(built_in.to_owned());
-                }
-
-                // Use the CXX mapped name
                 Ok(first.to_owned())
             } else {
                 Ok(ty_strings.join("::"))
@@ -242,43 +235,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
             ))
         }
     } else {
-        // Currently, type_names only includes the names of types that are declared within the bridge.
-        // Some types are built-in and available without declaration though.
-        // Check whether its one of those, as otherwise the call to `cxx_qualified` will result in
-        // an "unknown type" error.
-        if let Some(built_in) = possible_built_in(&segment.ident.to_string()) {
-            Ok(built_in.to_owned())
-        } else {
-            type_names.cxx_qualified(&segment.ident)
-        }
-    }
-}
-
-/// Convert any built in types to known C++ equivalents
-///
-/// This is similar to the methods in CXX
-/// https://github.com/dtolnay/cxx/blob/9c1737feff7208cd4825984614beaf09a27aefcf/syntax/atom.rs#L30
-/// https://github.com/dtolnay/cxx/blob/a6e1cd1e8d9d6df20e88e7443963dc4c5c8c4875/gen/src/write.rs#L1311
-fn possible_built_in(ty: &str) -> Option<&str> {
-    match ty {
-        "bool" => Some("bool"),
-        "c_char" => Some("char"),
-        "u8" => Some("::std::uint8_t"),
-        "u16" => Some("::std::uint16_t"),
-        "u32" => Some("::std::uint32_t"),
-        "u64" => Some("::std::uint64_t"),
-        "usize" => Some("::std::size_t"),
-        "i8" => Some("::std::int8_t"),
-        "i16" => Some("::std::int16_t"),
-        "i32" => Some("::std::int32_t"),
-        "i64" => Some("::std::int64_t"),
-        "isize" => Some("::rust::isize"),
-        "f32" => Some("float"),
-        "f64" => Some("double"),
-        "CxxString" => Some("::std::string"),
-        "String" => Some("::rust::String"),
-        // TODO: handle pointer
-        _others => None,
+        type_names.cxx_qualified(&segment.ident)
     }
 }
 

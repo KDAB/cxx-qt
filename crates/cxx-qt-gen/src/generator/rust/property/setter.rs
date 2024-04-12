@@ -12,22 +12,22 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Type;
+use syn::{Result, Type};
 
 pub fn generate(
     idents: &QPropertyName,
     qobject_idents: &QObjectName,
     cxx_ty: &Type,
     type_names: &TypeNames,
-) -> RustFragmentPair {
+) -> Result<RustFragmentPair> {
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
     let setter_wrapper_cpp = idents.setter_wrapper.cpp.to_string();
     let setter_rust = &idents.setter.rust;
     let ident = &idents.name.rust;
     let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust;
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names);
-    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust);
+    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
+    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 
     // Determine if unsafe is required due to an unsafe type
     let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {
@@ -36,7 +36,7 @@ pub fn generate(
         quote! {}
     };
 
-    RustFragmentPair {
+    Ok(RustFragmentPair {
         cxx_bridge: vec![quote! {
             extern "Rust" {
                 #[cxx_name = #setter_wrapper_cpp]
@@ -59,5 +59,5 @@ pub fn generate(
                 }
             }
         }],
-    }
+    })
 }
