@@ -25,7 +25,7 @@ pub struct QObjectName {
 impl From<&ParsedQObject> for QObjectName {
     fn from(qobject: &ParsedQObject) -> Self {
         Self::from_idents(
-            qobject.qobject_ty.ident_left.clone(),
+            qobject.name.rust_unqualified().clone(),
             qobject.qobject_ty.ident_right.clone(),
         )
     }

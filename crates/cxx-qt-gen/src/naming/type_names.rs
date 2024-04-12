@@ -155,7 +155,7 @@ impl TypeNames {
         };
 
         for qobject in cxx_qt_data.qobjects.values() {
-            self.insert_qobject(qobject, bridge_namespace, module_ident)?;
+            self.insert_qobject(qobject)?;
             for qenum in &qobject.qenums {
                 populate_qenum(self, qenum)?;
             }
@@ -183,22 +183,9 @@ impl TypeNames {
         Ok(())
     }
 
-    fn insert_qobject(
-        &mut self,
-        qobject: &ParsedQObject,
-        // The QObject is parsed weirdly
-        // It will self-assign the bridge namespace if it doesn't have one itself.
-        // TODO: Fix this and do that in the naming phase
-        _namespace: Option<&str>,
-        module_ident: &Ident,
-    ) -> Result<()> {
-        let name = Name::from_ident_and_attrs(
-            &qobject.qobject_ty.ident_left,
-            &qobject.qobject_ty.attrs,
-            Some(&qobject.namespace),
-            module_ident,
-        )?;
-        self.names.insert(name.rust.clone(), name);
+    fn insert_qobject(&mut self, qobject: &ParsedQObject) -> Result<()> {
+        self.names
+            .insert(qobject.name.rust.clone(), qobject.name.clone());
         Ok(())
     }
 

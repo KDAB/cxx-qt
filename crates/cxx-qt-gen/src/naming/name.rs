@@ -19,7 +19,7 @@ use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 ///     used for part that wasn't specified explicitly.
 /// - If **both** attributes are present, the identifier itself is not used!
 /// - The `rust_name` is always used to refer to the type within the bridge!.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Name {
     /// The name of the type in Rust. This is also the name used to refer to the type within the
     /// bridge.
@@ -39,7 +39,7 @@ pub struct Name {
 }
 
 impl Name {
-    pub(super) fn from_ident_and_attrs(
+    pub fn from_ident_and_attrs(
         ident: &Ident,
         attrs: &[Attribute],
         parent_namespace: Option<&str>,
@@ -97,7 +97,27 @@ impl Name {
     /// This is either:
     /// - The cxx_name attribute value, if one is provided
     /// - The original ident, if no cxx_name was provided
-    pub(super) fn cxx_unqualified(&self) -> String {
+    pub fn cxx_unqualified(&self) -> String {
         self.cxx.clone().unwrap_or_else(|| self.rust.to_string())
+    }
+
+    /// Get the unqualified name of the type in Rust.
+    /// This is either;
+    /// - The rust_name attribute value, if one is provided
+    /// - The original ident, of no rust_name was provided
+    pub fn rust_unqualified(&self) -> &Ident {
+        &self.rust
+    }
+
+    /// Get the namespace of the type in C++.
+    /// This is either:
+    /// - The namespace attribute value, if one is provided
+    /// - The surrounding namespace of the type, if any
+    ///
+    /// Note that there is a subtle difference between `None` and `Some("")` here.
+    /// `Some("")` means that the namespace is explicitly cleared.
+    /// `None` means that no namespace was provided or inherited.
+    pub fn namespace(&self) -> Option<&str> {
+        self.namespace.as_deref()
     }
 }

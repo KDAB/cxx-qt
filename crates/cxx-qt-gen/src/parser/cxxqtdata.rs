@@ -85,7 +85,11 @@ impl ParsedCxxQtData {
                                         .is_some();
 
                                 // Load the QObject
-                                let mut qobject = ParsedQObject::try_from(&foreign_alias)?;
+                                let mut qobject = ParsedQObject::parse(
+                                    foreign_alias,
+                                    namespace.as_deref(),
+                                    &self.module_ident,
+                                )?;
                                 qobject.has_qobject_macro = has_qobject_macro;
 
                                 // Ensure that the base class attribute is not empty, as this is not valid in both cases
@@ -109,15 +113,10 @@ impl ParsedCxxQtData {
                                     return Err(Error::new(foreign_item.span(), "A type without a #[qobject] attribute must specify a #[base] attribute"));
                                 }
 
-                                // Inject the bridge namespace if the qobject one is empty
-                                if qobject.namespace.is_empty() && namespace.is_some() {
-                                    qobject.namespace = namespace.clone().unwrap();
-                                }
-
                                 // Note that we assume a compiler error will occur later
                                 // if you had two structs with the same name
                                 self.qobjects
-                                    .insert(foreign_alias.ident_left.clone(), qobject);
+                                    .insert(qobject.name.rust_unqualified().clone(), qobject);
                             }
                             // Const Macro, Type are unsupported in extern "RustQt" for now
                             _others => {
@@ -353,16 +352,20 @@ mod tests {
                     type MyObject = super::MyObjectRust;
                     #[qobject]
                     type SecondObject = super::SecondObjectRust;
+                    #[qobject]
+                    #[rust_name="ThirdObjectQt"]
+                    type ThirdObject = super::ThirdObjectRust;
                 }
             }
         };
         let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
         assert!(result.is_ok());
-        assert_eq!(cxx_qt_data.qobjects.len(), 2);
-        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
-        assert!(cxx_qt_data
-            .qobjects
-            .contains_key(&format_ident!("SecondObject")));
+        let qobjects = &cxx_qt_data.qobjects;
+        assert_eq!(qobjects.len(), 3);
+        assert!(qobjects.contains_key(&qobject_ident()));
+        assert!(qobjects.contains_key(&format_ident!("SecondObject")));
+        // Ensure the rust_name attribute is used as the key.
+        assert!(qobjects.contains_key(&format_ident!("ThirdObjectQt")));
     }
 
     #[test]
@@ -390,7 +393,9 @@ mod tests {
                 .qobjects
                 .get(&format_ident!("MyObject"))
                 .unwrap()
-                .namespace,
+                .name
+                .namespace()
+                .unwrap(),
             "qobject_namespace"
         );
         assert_eq!(
@@ -398,7 +403,9 @@ mod tests {
                 .qobjects
                 .get(&format_ident!("SecondObject"))
                 .unwrap()
-                .namespace,
+                .name
+                .namespace()
+                .unwrap(),
             "bridge_namespace"
         );
     }

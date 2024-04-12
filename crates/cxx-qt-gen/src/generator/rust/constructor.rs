@@ -461,7 +461,7 @@ mod tests {
     }
 
     fn mock_namespace() -> NamespaceName {
-        NamespaceName::from_pair_str("qobject", &format_ident!("MyObject"))
+        NamespaceName::from_namespace_and_ident("qobject", &format_ident!("MyObject"))
     }
 
     fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {

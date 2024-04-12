@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
+    naming::Name,
     parser::{
         constructor::Constructor, inherit::ParsedInheritedMethod, method::ParsedMethod,
         property::ParsedQProperty, qenum::ParsedQEnum, signals::ParsedSignal,
@@ -32,9 +33,10 @@ pub struct ParsedQObject {
     pub base_class: Option<String>,
     /// QObject type that stores the invokables for the QObject
     pub qobject_ty: ForeignTypeIdentAlias,
-    /// The namespace of the QObject. If one isn't specified for the QObject,
-    /// this will be the same as the module
-    pub namespace: String,
+    /// The name of the QObject
+    pub name: Name,
+    /// The ident of the inner type of the QObject
+    pub inner: Ident,
     /// Representation of the Q_SIGNALS for the QObject
     pub signals: Vec<ParsedSignal>,
     /// The Q_ENUM enums associated with this QObject
@@ -61,13 +63,13 @@ pub struct ParsedQObject {
     pub has_qobject_macro: bool,
 }
 
-impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
-    type Error = syn::Error;
-
+impl ParsedQObject {
     /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
-    fn try_from(qobject_ty: &ForeignTypeIdentAlias) -> Result<Self> {
-        let mut qobject_ty = qobject_ty.clone();
-
+    pub fn parse(
+        mut qobject_ty: ForeignTypeIdentAlias,
+        namespace: Option<&str>,
+        module: &Ident,
+    ) -> Result<Self> {
         // Find any QML metadata
         let qml_metadata = Self::parse_qml_metadata(&qobject_ty.ident_left, &mut qobject_ty.attrs)?;
 
@@ -76,20 +78,23 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
             .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?;
 
-        // Load the namespace, if it is empty then the ParsedCxxQtData will inject any global namespace
-        let namespace = attribute_take_path(&mut qobject_ty.attrs, &["namespace"])
-            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
-            .transpose()?
-            .unwrap_or_else(|| "".to_owned());
+        let name = Name::from_ident_and_attrs(
+            &qobject_ty.ident_left,
+            &qobject_ty.attrs,
+            namespace,
+            module,
+        )?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
         let properties = Self::parse_property_attributes(&mut qobject_ty.attrs)?;
+        let inner = qobject_ty.ident_right.clone();
 
         Ok(Self {
             base_class,
             qobject_ty,
-            namespace,
+            name,
+            inner,
             signals: vec![],
             qenums: vec![],
             methods: vec![],
@@ -102,9 +107,7 @@ impl TryFrom<&ForeignTypeIdentAlias> for ParsedQObject {
             has_qobject_macro: false,
         })
     }
-}
 
-impl ParsedQObject {
     fn parse_qml_metadata(
         qobject_ident: &Ident,
         attrs: &mut Vec<Attribute>,
@@ -221,6 +224,7 @@ pub mod tests {
     use super::*;
 
     use crate::parser::tests::f64_type;
+    use quote::format_ident;
     use syn::{parse_quote, ItemImpl};
 
     pub fn create_parsed_qobject() -> ParsedQObject {
@@ -228,7 +232,7 @@ pub mod tests {
             #[qobject]
             type MyObject = super::MyObjectRust;
         };
-        ParsedQObject::try_from(&qobject_struct).unwrap()
+        ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap()
     }
 
     #[test]
@@ -238,7 +242,8 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
+        let qobject =
+            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert!(qobject.base_class.is_none());
         assert!(qobject.qml_metadata.is_none());
     }
@@ -251,7 +256,8 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
+        let qobject =
+            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
     }
 
@@ -264,7 +270,8 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
+        let qobject =
+            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.properties.len(), 2);
     }
 
@@ -275,7 +282,8 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject = ParsedQObject::try_from(&qobject_struct).unwrap();
+        let qobject =
+            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.properties.len(), 0);
     }
 
@@ -329,7 +337,9 @@ pub mod tests {
             #[qproperty(f64, public_property)]
             type T = super::TRust;
         };
-        let properties = ParsedQObject::try_from(&item).unwrap().properties;
+        let properties = ParsedQObject::parse(item, None, &format_ident!("qobject"))
+            .unwrap()
+            .properties;
         assert_eq!(properties.len(), 2);
 
         assert_eq!(properties[0].ident, "f64_property");
@@ -346,7 +356,7 @@ pub mod tests {
             #[qml_element]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::try_from(&item).unwrap();
+        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -364,7 +374,7 @@ pub mod tests {
             #[qml_element = "OtherName"]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::try_from(&item).unwrap();
+        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -383,7 +393,7 @@ pub mod tests {
             #[qml_singleton]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::try_from(&item).unwrap();
+        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -402,7 +412,7 @@ pub mod tests {
             #[qml_uncreatable]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::try_from(&item).unwrap();
+        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {

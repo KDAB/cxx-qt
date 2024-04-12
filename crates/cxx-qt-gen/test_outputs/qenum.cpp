@@ -18,3 +18,14 @@ MyObject::MyObject(QObject* parent)
 }
 
 } // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object {
+MyRenamedObject::MyRenamedObject(QObject* parent)
+  : QObject(parent)
+  , ::rust::cxxqt1::CxxQtType<InternalObject>(
+      ::cxx_qt::my_object::cxx_qt_my_renamed_object::createRs())
+  , ::rust::cxxqt1::CxxQtLocking()
+{
+}
+
+} // namespace cxx_qt::my_object

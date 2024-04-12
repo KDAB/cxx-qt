@@ -15,13 +15,16 @@ pub struct NamespaceName {
 
 impl From<&ParsedQObject> for NamespaceName {
     fn from(qobject: &ParsedQObject) -> Self {
-        NamespaceName::from_pair_str(&qobject.namespace, &qobject.qobject_ty.ident_left)
+        NamespaceName::from_namespace_and_ident(
+            qobject.name.namespace().unwrap_or_default(),
+            qobject.name.rust_unqualified(),
+        )
     }
 }
 
 impl NamespaceName {
     /// Build the namespace names from a given module and qobject ident
-    pub fn from_pair_str(namespace: &str, ident: &Ident) -> Self {
+    pub fn from_namespace_and_ident(namespace: &str, ident: &Ident) -> Self {
         Self {
             namespace: namespace.to_string(),
             internal: namespace_internal_from_pair(namespace, ident),
@@ -56,20 +59,14 @@ mod tests {
 
     #[test]
     fn test_namespace_pair() {
-        let mut qobject = create_parsed_qobject();
-        qobject.namespace = "cxx_qt".to_owned();
-
-        let names = NamespaceName::from(&qobject);
+        let names = NamespaceName::from_namespace_and_ident("cxx_qt", &format_ident!("MyObject"));
         assert_eq!(names.internal, "cxx_qt::cxx_qt_my_object");
         assert_eq!(names.namespace, "cxx_qt");
     }
 
     #[test]
     fn test_namespace_pair_empty_base() {
-        let mut qobject = create_parsed_qobject();
-        qobject.namespace = "".to_owned();
-
-        let names = NamespaceName::from(&qobject);
+        let names = NamespaceName::from_namespace_and_ident("", &format_ident!("MyObject"));
         assert_eq!(names.internal, "cxx_qt_my_object");
         assert_eq!(names.namespace, "");
     }
@@ -80,5 +77,12 @@ mod tests {
         let ident = format_ident!("Ident");
         let string = namespace_combine_ident(base, &ident);
         assert_eq!(string, "base::namespace::Ident");
+    }
+
+    #[test]
+    fn test_namespace_from_qobject() {
+        let names = NamespaceName::from(&create_parsed_qobject());
+        assert_eq!(names.internal, "cxx_qt_my_object");
+        assert_eq!(names.namespace, "");
     }
 }

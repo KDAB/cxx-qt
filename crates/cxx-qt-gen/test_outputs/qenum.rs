@@ -84,6 +84,43 @@ mod ffi {
         #[doc(hidden)]
         fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
+    unsafe extern "C++" {
+        #[doc = "The C++ type for the QObject "]
+        #[doc = "InternalObject"]
+        #[doc = "\n"]
+        #[doc = "Use this type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[namespace = "cxx_qt::my_object"]
+        type MyRenamedObject;
+    }
+    extern "Rust" {
+        type InternalObject;
+    }
+    #[repr(i32)]
+    enum MyRenamedEnum {
+        A,
+        B,
+        C,
+    }
+    extern "C++" {
+        type MyRenamedEnum;
+    }
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_my_renamed_object"]
+        fn create_rs_internal_object() -> Box<InternalObject>;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "unsafeRust"]
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust(self: &MyRenamedObject) -> &InternalObject;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "unsafeRustMut"]
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyRenamedObject>) -> Pin<&mut InternalObject>;
+    }
 }
 impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
@@ -98,6 +135,26 @@ impl core::ops::Deref for ffi::MyObject {
 }
 impl cxx_qt::CxxQtType for ffi::MyObject {
     type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
+    }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
+    }
+}
+impl cxx_qt::Locking for ffi::MyRenamedObject {}
+#[doc(hidden)]
+pub fn create_rs_internal_object() -> std::boxed::Box<InternalObject> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for ffi::MyRenamedObject {
+    type Target = InternalObject;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
+    }
+}
+impl cxx_qt::CxxQtType for ffi::MyRenamedObject {
+    type Rust = InternalObject;
     fn rust(&self) -> &Self::Rust {
         self.cxx_qt_ffi_rust()
     }
