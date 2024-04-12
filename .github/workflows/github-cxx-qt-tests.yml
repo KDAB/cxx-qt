@@ -229,7 +229,7 @@ jobs:
     #     key: ${{ matrix.name }}_compiler_cache
     - name: "Restore Compiler Cache"
       id: compiler-cache-restore
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
@@ -334,7 +334,7 @@ jobs:
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
       if: ${{ github.event_name == 'push' }}
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
