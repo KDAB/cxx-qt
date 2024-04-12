@@ -24,6 +24,17 @@ enum class MyOtherEnum : ::std::int32_t
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object {
+class MyRenamedObject;
+enum class MyRenamedEnum : ::std::int32_t
+{
+  A,
+  B,
+  C
+};
+
+} // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object {
 Q_NAMESPACE
 QML_ELEMENT
 } // namespace cxx_qt::my_object
@@ -98,3 +109,31 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 } // namespace cxx_qt::my_object
 
 Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
+
+namespace cxx_qt::my_object {
+class MyRenamedObject
+  : public QObject
+  , public ::rust::cxxqt1::CxxQtType<InternalObject>
+  , public ::rust::cxxqt1::CxxQtLocking
+{
+  Q_OBJECT
+public:
+#ifdef Q_MOC_RUN
+  enum class MyRenamedEnum : ::std::int32_t{ A, B, C };
+  Q_ENUM(MyRenamedEnum)
+#else
+  using MyRenamedEnum = ::cxx_qt::my_object::MyRenamedEnum;
+  Q_ENUM(MyRenamedEnum)
+#endif
+
+  virtual ~MyRenamedObject() = default;
+
+public:
+  explicit MyRenamedObject(QObject* parent = nullptr);
+};
+
+static_assert(::std::is_base_of<QObject, MyRenamedObject>::value,
+              "MyRenamedObject must inherit from QObject");
+} // namespace cxx_qt::my_object
+
+Q_DECLARE_METATYPE(cxx_qt::my_object::MyRenamedObject*)

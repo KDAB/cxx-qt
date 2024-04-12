@@ -105,7 +105,7 @@ impl GeneratedCppQObject {
         let mut generated = GeneratedCppQObject {
             ident: cpp_class.clone(),
             rust_ident: qobject_idents.rust_struct.cpp.to_string(),
-            namespace: qobject.namespace.clone(),
+            namespace: qobject.name.namespace().unwrap_or_default().to_owned(),
             namespace_internals: namespace_idents.internal,
             blocks: GeneratedCppQObjectBlocks::from(qobject),
             has_qobject_macro: qobject.has_qobject_macro,

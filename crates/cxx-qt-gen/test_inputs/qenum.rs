@@ -39,4 +39,18 @@ mod ffi {
         #[qinvokable]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
+
+    // Test that we can correctly associate a QEnum to a renamed QObject
+    #[qenum(MyRenamedObject)]
+    enum MyRenamedEnum {
+        A,
+        B,
+        C,
+    }
+
+    extern "RustQt" {
+        #[qobject]
+        #[rust_name = "MyRenamedObject"]
+        type CxxName = super::InternalObject;
+    }
 }
