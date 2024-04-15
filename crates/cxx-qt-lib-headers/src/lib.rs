@@ -50,8 +50,6 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         (include_str!("../include/core/qpoint.h"), "qpoint.h"),
         (include_str!("../include/core/qpointf.h"), "qpointf.h"),
         (include_str!("../include/core/qrect.h"), "qrect.h"),
-        #[cfg(feature = "qt_gui")]
-        (include_str!("../include/gui/qregion.h"), "qregion.h"),
         (include_str!("../include/core/qrectf.h"), "qrectf.h"),
         (include_str!("../include/core/qset.h"), "qset.h"),
         (include_str!("../include/core/qsize.h"), "qsize.h"),
@@ -87,6 +85,8 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         ),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qpainter.h"), "qpainter.h"),
+        #[cfg(feature = "qt_gui")]
+        (include_str!("../include/gui/qregion.h"), "qregion.h"),
         #[cfg(feature = "qt_gui")]
         (include_str!("../include/gui/qvector2d.h"), "qvector2d.h"),
         #[cfg(feature = "qt_gui")]
