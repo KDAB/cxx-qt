@@ -48,7 +48,7 @@ mod ffi {
         /// Translates to the given point.
         fn translate(self: &mut QRegion, point: &QPoint);
 
-        /// Returns a copy of the regtion that is translated p.x() along the x axis and p.y() along the y axis,
+        /// Returns a copy of the region that is translated p.x() along the x axis and p.y() along the y axis,
         /// relative to the current position. Positive values move the rectangle to the right and down.
         fn translated(self: &QRegion, p: &QPoint) -> QRegion;
 
