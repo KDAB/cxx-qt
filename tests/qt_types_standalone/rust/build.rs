@@ -31,6 +31,7 @@ fn main() {
         .file("src/qqmlengine.rs")
         .file("src/qrect.rs")
         .file("src/qrectf.rs")
+        .file("src/qregion.rs")
         .file("src/qset.rs")
         .file("src/qsize.rs")
         .file("src/qsizef.rs")
