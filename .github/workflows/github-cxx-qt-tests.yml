@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DavidAnson/markdownlint-cli2-action@v14
+      - uses: DavidAnson/markdownlint-cli2-action@v16
         with:
           globs: '**/*.md'
 
@@ -229,7 +229,7 @@ jobs:
     #     key: ${{ matrix.name }}_compiler_cache
     - name: "Restore Compiler Cache"
       id: compiler-cache-restore
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
@@ -277,7 +277,7 @@ jobs:
     # Required for CMake to find Ninja
     - name: "[Windows] Set up MSVC Developer Command Prompt"
       if: runner.os == 'Windows'
-      uses: seanmiddleditch/gha-setup-vsdevenv@v3
+      uses: seanmiddleditch/gha-setup-vsdevenv@v4
 
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     #
@@ -334,7 +334,7 @@ jobs:
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
       if: ${{ github.event_name == 'push' }}
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
