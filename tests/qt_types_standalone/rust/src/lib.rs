@@ -28,6 +28,7 @@ mod qqmlapplicationengine;
 mod qqmlengine;
 mod qrect;
 mod qrectf;
+mod qregion;
 mod qset;
 mod qsize;
 mod qsizef;
