@@ -20,7 +20,7 @@ pub fn generate(
 
     let cpp_struct_ident = &qobject_ident.cpp_class.rust;
     let rust_struct_ident = &qobject_ident.rust_struct.rust;
-    let qualified_impl = type_names.rust_qualified(cpp_struct_ident);
+    let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
@@ -88,7 +88,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_idents = QObjectName::from(&qobject);
 
-        let generated = generate(&qobject_idents, &TypeNames::default()).unwrap();
+        let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
@@ -120,7 +120,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl core::ops::Deref for MyObject {
+                impl core::ops::Deref for qobject::MyObject {
                     type Target = MyObjectRust;
 
                     fn deref(&self) -> &Self::Target {
@@ -132,7 +132,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[1],
             quote! {
-                impl cxx_qt::CxxQtType for MyObject {
+                impl cxx_qt::CxxQtType for qobject::MyObject {
                     type Rust = MyObjectRust;
 
                     fn rust(&self) -> &Self::Rust {
