@@ -32,7 +32,7 @@ pub fn generate_rust_properties(
         let idents = QPropertyName::from(property);
 
         // Getters
-        let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names);
+        let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names)?;
         generated
             .cxx_mod_contents
             .append(&mut getter.cxx_bridge_as_items()?);
@@ -41,7 +41,7 @@ pub fn generate_rust_properties(
             .append(&mut getter.implementation_as_items()?);
 
         // Setters
-        let setter = setter::generate(&idents, qobject_idents, &property.ty, type_names);
+        let setter = setter::generate(&idents, qobject_idents, &property.ty, type_names)?;
         generated
             .cxx_mod_contents
             .append(&mut setter.cxx_bridge_as_items()?);
@@ -89,10 +89,13 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
+        let mut type_names = TypeNames::mock();
+        type_names.insert("T", None, None, None);
+        type_names.insert("QColor", None, None, None);
         let generated = generate_rust_properties(
             &properties,
             &qobject_idents,
-            &TypeNames::mock(),
+            &type_names,
             &format_ident!("ffi"),
         )
         .unwrap();
