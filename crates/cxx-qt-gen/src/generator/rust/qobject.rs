@@ -95,7 +95,7 @@ impl GeneratedRustFragment {
         // This could be implemented using an auto trait in the future once stable
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
         if qobject.locking {
-            let qualified_impl = type_names.rust_qualified(&qobject_idents.cpp_class.rust);
+            let qualified_impl = type_names.rust_qualified(&qobject_idents.cpp_class.rust)?;
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
             });
@@ -186,7 +186,7 @@ mod tests {
 
         let rust = GeneratedRustFragment::from_qobject(
             parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
+            &parser.type_names,
             &format_ident!("ffi"),
         )
         .unwrap();
