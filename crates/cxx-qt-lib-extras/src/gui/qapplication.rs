@@ -3,22 +3,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
+use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
-        type QByteArray = crate::QByteArray;
+        type QByteArray = cxx_qt_lib::QByteArray;
         include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
+        type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
-        type QStringList = crate::QStringList;
+        type QStringList = cxx_qt_lib::QStringList;
         include!("cxx-qt-lib/qvector.h");
-        type QVector_QByteArray = crate::QVector<QByteArray>;
+        type QVector_QByteArray = cxx_qt_lib::QVector<QByteArray>;
         include!("cxx-qt-lib/qfont.h");
-        type QFont = crate::QFont;
+        type QFont = cxx_qt_lib::QFont;
 
         include!("cxx-qt-lib-extras/qapplication.h");
         type QApplication;
@@ -27,7 +27,7 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qpplication_new"]
+        #[rust_name = "qapplication_new"]
         fn qapplicationNew(args: &QVector_QByteArray) -> UniquePtr<QApplication>;
     }
 
