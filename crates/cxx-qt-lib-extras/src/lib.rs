@@ -7,5 +7,7 @@
 compile_error!("cxxqt_qt_version_major must be either \"5\" or \"6\"");
 
 mod core;
-
 pub use crate::core::*;
+
+mod gui;
+pub use crate::gui::*;
