@@ -173,6 +173,8 @@ mod ffi {
         type QPen = crate::QPen;
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qregion.h");
+        type QRegion = crate::QRegion;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -190,6 +192,10 @@ mod ffi {
         /// Returns the current clip path in logical coordinates.
         #[rust_name = "clip_path"]
         fn clipPath(self: &QPainter) -> QPainterPath;
+
+        /// Returns the currently set clip region. Note that the clip region is given in logical coordinates.
+        #[rust_name = "clip_region"]
+        fn clipRegion(self: &QPainter) -> QRegion;
 
         /// Returns the current composition mode.
         #[rust_name = "composition_mode"]
@@ -325,6 +331,12 @@ mod ffi {
         /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
         fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
+
+        /// Sets the clip region to the given region using the specified clip operation. The default
+        /// clip operation is to replace the current clip region.
+        /// Note that the clip region is given in logical coordinates.
+        #[rust_name = "set_clip_region"]
+        fn setClipRegion(self: Pin<&mut QPainter>, region: &QRegion, operation: ClipOperation);
 
         /// Sets the composition mode to the given mode.
         #[rust_name = "set_composition_mode"]

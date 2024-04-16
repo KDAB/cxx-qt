@@ -29,6 +29,8 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qpolygonf.h");
         type QPolygonF = crate::QPolygonF;
+        include!("cxx-qt-lib/qregion.h");
+        type QRegion = crate::QRegion;
 
         /// Creates an ellipse within the specified boundingRectangle and adds it to the painter
         /// path as a closed subpath.
@@ -46,6 +48,9 @@ mod ffi {
         /// Adds the given rectangle to this path as a closed subpath.
         #[rust_name = "add_rect"]
         fn addRect(self: &mut QPainterPath, rectangle: &QRectF);
+
+        #[rust_name = "add_region"]
+        fn addRegion(self: &mut QPainterPath, region: &QRegion);
 
         /// Adds the given rectangle rect with rounded corners to the path.
         #[rust_name = "add_rounded_rect"]
