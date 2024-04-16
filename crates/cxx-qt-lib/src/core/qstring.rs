@@ -17,6 +17,14 @@ mod ffi {
         type SplitBehaviorFlags = crate::SplitBehaviorFlags;
     }
 
+    #[cfg(cxxqt_qt_version_major = "6")]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qtypes.h");
+
+        #[cxx_name = "qsizetype"]
+        type QSizeType = crate::QSizeType;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
@@ -42,6 +50,23 @@ mod ffi {
         /// Returns true if the string ends with s; otherwise returns false.
         #[rust_name = "ends_with"]
         fn endsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
+
+        /// Returns the index position of the first occurrence of the string str in this string,
+        /// searching forward from index position from. Returns -1 if str is not found.
+        #[cfg(cxxqt_qt_version_major = "5")]
+        #[rust_name = "index_of"]
+        fn indexOf(self: &QString, str: &QString, from: i32, cs: CaseSensitivity) -> i32;
+
+        /// Returns the index position of the first occurrence of the string str in this string,
+        /// searching forward from index position from. Returns -1 if str is not found.
+        #[cfg(cxxqt_qt_version_major = "6")]
+        #[rust_name = "index_of"]
+        fn indexOf(
+            self: &QString,
+            str: &QString,
+            from: QSizeType,
+            cs: CaseSensitivity,
+        ) -> QSizeType;
 
         /// Returns true if the string has no characters; otherwise returns false.
         #[rust_name = "is_empty"]
@@ -135,14 +160,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_arg"]
         fn qstringArg(string: &QString, a: &QString) -> QString;
-        #[doc(hidden)]
-        #[rust_name = "qstring_index_of"]
-        fn qstringIndexOf(
-            string: &QString,
-            str: &QString,
-            from: isize,
-            cs: CaseSensitivity,
-        ) -> isize;
         #[doc(hidden)]
         #[rust_name = "qstring_insert"]
         fn qstringInsert<'a>(string: &'a mut QString, pos: isize, str: &QString)
@@ -335,12 +352,6 @@ impl QString {
     /// returns if this string is less than, equal to, or greater than the other string.
     pub fn compare(&self, other: &QString, cs: ffi::CaseSensitivity) -> Ordering {
         self.compare_i32(other, cs).cmp(&0)
-    }
-
-    /// Returns the index position of the first occurrence of the string str in this string,
-    /// searching forward from index position from. Returns -1 if str is not found.
-    pub fn index_of(&self, str: &QString, from: isize, cs: ffi::CaseSensitivity) -> isize {
-        ffi::qstring_index_of(self, str, from, cs)
     }
 
     /// Inserts the string str at the given index position and returns a mutable reference to this string.

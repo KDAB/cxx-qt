@@ -61,22 +61,6 @@ qstringArg(const QString& string, const QString& a)
   return string.arg(a);
 }
 
-::rust::isize
-qstringIndexOf(const QString& string,
-               const QString& str,
-               ::rust::isize from,
-               Qt::CaseSensitivity cs)
-{
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return static_cast<::rust::isize>(
-    string.indexOf(str, static_cast<qsizetype>(from), cs));
-#else
-  return static_cast<::rust::isize>(
-    string.indexOf(str, static_cast<int>(from), cs));
-#endif
-}
-
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str)
 {
