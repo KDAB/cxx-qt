@@ -668,6 +668,11 @@ impl CxxQtBuilder {
         if cc_builder_whole_archive_files_added {
             cc_builder_whole_archive.compile("qt-static-initializers");
         }
-        self.cc_builder.compile(lib_name);
+
+        // Only compile if we have added files to the builder
+        // otherwise we end up with no static library but ask cargo to link to it which causes an error
+        if self.cc_builder.get_files().count() > 0 {
+            self.cc_builder.compile(lib_name);
+        }
     }
 }
