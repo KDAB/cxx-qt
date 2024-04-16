@@ -30,5 +30,5 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         opts = opts.header(file_contents, "cxx-qt-lib-extras", file_name);
     }
 
-    opts
+    opts.qt_module("Gui").qt_module("Widgets")
 }
