@@ -5,3 +5,6 @@
 
 mod qapplication;
 pub use qapplication::QApplication;
+
+mod qpushbutton;
+pub use qpushbutton::QPushButton;
