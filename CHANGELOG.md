@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.6.0...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.6.1...HEAD)
 
 ### Added
 
@@ -36,13 +36,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[qobject]` attribute is now optional on types in `extern "RustQt"`
 - `#[qobject]` attribute is now required on types in `extern "C++Qt"`
 
-### Fixed
-
-- Missing include for `MaybeLockGuard` when using only `extern "C++Qt"` signals
-
 ### Removed
 
 - `qt_gui` and `qt_qml` features from `cxx-qt-build` they are only used in `cxx-qt-lib(-headers)` now
+
+## [0.6.1](https://github.com/KDAB/cxx-qt/compare/v0.6.0...v0.6.1) - 2024-04-19
+
+### Fixed
+
+- Missing include for `MaybeLockGuard` when using only `extern "C++Qt"` signals
+- Fix build issues with Qt 6.7
+- Improve handling of Apple frameworks with Qt
+- Run qmlcachegen only when required
+- Support for building with no Rust or C++ files in the builder script
 
 ## [0.6.0](https://github.com/KDAB/cxx-qt/compare/v0.5.3...v0.6.0) - 2023-11-17
 
