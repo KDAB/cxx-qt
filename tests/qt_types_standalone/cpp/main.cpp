@@ -22,6 +22,7 @@
 #include "qmarginsf.h"
 #include "qmetaobjectconnection.h"
 #include "qmodelindex.h"
+#include "qpen.h"
 #include "qpersistentmodelindex.h"
 #include "qpoint.h"
 #include "qpointf.h"
@@ -94,6 +95,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QVector3DTest));
   runTest(QScopedPointer<QObject>(new QVector4DTest));
   runTest(QScopedPointer<QObject>(new QPolygonTest));
+  runTest(QScopedPointer<QObject>(new QPenTest));
   runTest(QScopedPointer<QObject>(new QPolygonFTest));
   runTest(QScopedPointer<QObject>(new QRegionTest));
 
