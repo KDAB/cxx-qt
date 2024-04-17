@@ -68,6 +68,7 @@ add_executable(${APP_NAME}
     cpp/qpoint.h
     cpp/qpointf.h
     cpp/qpolygon.h
+    cpp/qpolygonf.h
     cpp/qqmlapplicationengine.h
     cpp/qqmlengine.h
     cpp/qrect.h

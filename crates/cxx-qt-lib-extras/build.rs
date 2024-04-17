@@ -12,6 +12,7 @@ fn main() {
         "core/qelapsedtimer",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
+        "gui/qapplication",
     ];
 
     for rust_source in &rust_bridges {
@@ -22,6 +23,7 @@ fn main() {
         "core/qelapsedtimer",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
+        "gui/qapplication",
     ];
 
     builder = builder.cc_builder(move |cc| {
