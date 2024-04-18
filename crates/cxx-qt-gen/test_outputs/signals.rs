@@ -50,7 +50,6 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_ready"]
         fn MyObject_readyConnect(
             self_value: Pin<&mut MyObject>,
@@ -85,7 +84,6 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosuredataChanged>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_data_changed"]
         fn MyObject_dataChangedConnect(
             self_value: Pin<&mut MyObject>,
@@ -124,7 +122,6 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosurenewData>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_base_class_new_data"]
         fn MyObject_newDataConnect(
             self_value: Pin<&mut MyObject>,
@@ -173,7 +170,6 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "QTimer_connect_timeout"]
         fn QTimer_timeoutConnect(
             self_value: Pin<&mut QTimer>,

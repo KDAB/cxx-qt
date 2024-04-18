@@ -30,9 +30,12 @@ fn main() {
 
     if let Some(engine) = engine.as_mut() {
         // Listen to a signal from the QML Engine
-        engine.as_qqmlengine().on_quit(|_| {
-            println!("QML Quit!");
-        });
+        engine
+            .as_qqmlengine()
+            .on_quit(|_| {
+                println!("QML Quit!");
+            })
+            .release();
     }
 
     // Start the app

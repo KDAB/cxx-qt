@@ -11,7 +11,8 @@ use crate::QMetaObjectConnection;
 ///
 /// Note that when this struct is dropped the connection is disconnected.
 /// So to keep a connection active either hold onto the struct for the duration
-/// that the connection should be active or call `release`.
+/// that the connection should be active or call `release`, hence the `#[must_use]`.
+#[must_use]
 pub struct QMetaObjectConnectionGuard {
     connection: QMetaObjectConnection,
 }
