@@ -21,9 +21,9 @@ mod ffi {
         type QRect = crate::QRect;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[allow(unused_include)]
         include!("cxx-qt-lib/qpolygonf.h");
-        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[allow(unused_variables)]
         type QPolygonF = crate::QPolygonF;
 
         include!("cxx-qt-lib/qpolygon.h");
