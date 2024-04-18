@@ -9,7 +9,7 @@
 #include <QtGui/QPolygon>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qpolygon.cxx.h"
+#include "cxx-qt-gen/src/qpolygon.cxx.h"
 
 class QPolygonTest : public QObject
 {

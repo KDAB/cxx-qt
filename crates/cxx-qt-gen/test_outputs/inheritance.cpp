@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/inheritance.cxxqt.h"
+#include "inheritance.cxxqt.h"
 
 QVariant
 MyObject::data(QModelIndex const& _index, ::std::int32_t _role) const

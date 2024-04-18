@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "ffi.cxxqt.h"
 
 namespace cxx_qt::my_object {
 void

@@ -9,7 +9,7 @@
 #include <QtCore/QUrl>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qurl.cxx.h"
+#include "cxx-qt-gen/src/qurl.cxx.h"
 
 class QUrlTest : public QObject
 {

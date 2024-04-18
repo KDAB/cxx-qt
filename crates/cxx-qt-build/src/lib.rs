@@ -61,7 +61,10 @@ struct GeneratedCpp {
 
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
-    pub fn new(rust_file_path: impl AsRef<Path>) -> Result<Self, Diagnostic> {
+    pub fn new(
+        rust_file_path: impl AsRef<Path>,
+        relative_path: impl AsRef<Path>,
+    ) -> Result<Self, Diagnostic> {
         let to_diagnostic = |err| Diagnostic::new(rust_file_path.as_ref().to_owned(), err);
 
         let rust_file_path = rust_file_path.as_ref();
@@ -91,15 +94,13 @@ impl GeneratedCpp {
                             rust_file_path.display());
                     }
 
-                    // Match upstream where they use the file name as the ident
+                    // Match upstream where they use the file name and folders as the ident
                     //
-                    // TODO: what happens if there are folders?
-                    //
-                    // TODO: ideally CXX-Qt would also use the file name
-                    // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
-                    file_ident = rust_file_path
-                        .file_stem()
-                        .unwrap()
+                    // We need the relative path here as we want the folders
+                    file_ident = relative_path
+                        .as_ref()
+                        // Remove the .rs extension
+                        .with_extension("")
                         .to_str()
                         .unwrap()
                         .to_owned();
@@ -128,7 +129,13 @@ impl GeneratedCpp {
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let rust_tokens = write_rust(&generated_rust);
-                    file_ident = parser.cxx_file_stem.clone();
+                    // Use the relative path with the cxx_file_stem
+                    file_ident = relative_path
+                        .as_ref()
+                        .with_file_name(parser.cxx_file_stem())
+                        .to_str()
+                        .unwrap()
+                        .to_owned();
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
@@ -161,10 +168,6 @@ impl GeneratedCpp {
     ) -> GeneratedCppFilePaths {
         let cpp_directory = cpp_directory.as_ref();
         let header_directory = header_directory.as_ref();
-        for directory in [cpp_directory, header_directory] {
-            std::fs::create_dir_all(directory)
-                .expect("Could not create directory to write cxx-qt generated files");
-        }
 
         let mut cpp_file_paths = GeneratedCppFilePaths {
             plain_cpp: PathBuf::new(),
@@ -177,6 +180,10 @@ impl GeneratedCpp {
                 header_directory.display(),
                 self.file_ident
             ));
+            if let Some(directory) = header_path.parent() {
+                std::fs::create_dir_all(directory)
+                    .expect("Could not create directory to write cxx-qt generated files");
+            }
             let mut header =
                 File::create(&header_path).expect("Could not create cxx-qt header file");
             let header_generated = match cxx_qt_generated {
@@ -194,6 +201,10 @@ impl GeneratedCpp {
                 cpp_directory.display(),
                 self.file_ident
             ));
+            if let Some(directory) = cpp_path.parent() {
+                std::fs::create_dir_all(directory)
+                    .expect("Could not create directory to write cxx-qt generated files");
+            }
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
             let source_generated = match cxx_qt_generated {
                 CppFragment::Pair { header: _, source } => source,
@@ -210,6 +221,10 @@ impl GeneratedCpp {
             header_directory.display(),
             self.file_ident
         ));
+        if let Some(directory) = header_path.parent() {
+            std::fs::create_dir_all(directory)
+                .expect("Could not create directory to write cxx-qt generated header files");
+        }
         let mut header = File::create(header_path).expect("Could not create cxx header file");
         header
             .write_all(&self.cxx.header)
@@ -220,6 +235,10 @@ impl GeneratedCpp {
             cpp_directory.display(),
             self.file_ident
         ));
+        if let Some(directory) = cpp_path.parent() {
+            std::fs::create_dir_all(directory)
+                .expect("Could not create directory to write cxx-qt generated source files");
+        }
         let mut cpp = File::create(&cpp_path).expect("Could not create cxx source file");
         cpp.write_all(&self.cxx.implementation)
             .expect("Could not write cxx source file");
@@ -238,11 +257,11 @@ fn generate_cxxqt_cpp_files(
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
-        let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
+        let cpp_directory = format!("{}/cxx-qt-gen", env::var("OUT_DIR").unwrap());
         let path = format!("{manifest_dir}/{}", rs_path.as_ref().display());
         println!("cargo:rerun-if-changed={path}");
 
-        let generated_code = match GeneratedCpp::new(&path) {
+        let generated_code = match GeneratedCpp::new(&path, rs_path) {
             Ok(v) => v,
             Err(diagnostic) => {
                 diagnostic.report();
@@ -455,11 +474,12 @@ impl CxxQtBuilder {
             } else {
                 format!("{header_root}/{dir_name}")
             };
-            std::fs::create_dir_all(directory.clone())
-                .expect("Could not create {directory} header directory");
-
-            let h_path = format!("{directory}/{file_name}");
-            let mut header = File::create(h_path).expect("Could not create header: {h_path}");
+            let h_path = PathBuf::from(format!("{directory}/{file_name}"));
+            if let Some(directory) = h_path.parent() {
+                std::fs::create_dir_all(directory)
+                    .expect("Could not create {directory} header directory");
+            }
+            let mut header = File::create(&h_path).expect("Could not create header: {h_path}");
             write!(header, "{file_contents}").expect("Could not write header: {h_path}");
         }
 

@@ -33,7 +33,7 @@ mod ffi {
         type MyOtherNamespacedEnum;
     }
     unsafe extern "C++" {
-        include!("cxx-qt-gen/ffi.cxxqt.h");
+        include!("ffi.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

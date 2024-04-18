@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/multi_object.cxxqt.h"
+#include "multi_object.cxxqt.h"
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480

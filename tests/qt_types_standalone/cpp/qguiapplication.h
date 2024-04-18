@@ -9,7 +9,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qguiapplication.cxx.h"
+#include "cxx-qt-gen/src/qguiapplication.cxx.h"
 
 class QGuiApplicationTest : public QObject
 {

@@ -60,7 +60,7 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         .join("\n");
 
     formatdoc! {r#"
-        #include "cxx-qt-gen/{cxx_file_stem}.cxxqt.h"
+        #include "{cxx_file_stem}.cxxqt.h"
 
         {extern_cxx_qt}
         {qobjects}

@@ -10,7 +10,7 @@
 #include <QtCore/QVariant>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qmap.cxx.h"
+#include "cxx-qt-gen/src/qmap.cxx.h"
 
 class QMapTest : public QObject
 {

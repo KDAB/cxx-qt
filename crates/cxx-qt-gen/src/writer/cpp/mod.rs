@@ -305,7 +305,7 @@ mod tests {
 
 
 
-        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+        #include "cxx_file_stem.cxx.h"
 
 
 
@@ -367,7 +367,7 @@ mod tests {
 
 
 
-        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+        #include "cxx_file_stem.cxx.h"
 
 
 
@@ -435,7 +435,7 @@ mod tests {
 
 
 
-        #include "cxx-qt-gen/cxx_file_stem.cxx.h"
+        #include "cxx_file_stem.cxx.h"
 
 
 
@@ -474,7 +474,7 @@ mod tests {
     /// Helper for the expected source
     pub fn expected_source() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
+        #include "cxx_file_stem.cxxqt.h"
 
 
         namespace cxx_qt::my_object {
@@ -531,7 +531,7 @@ mod tests {
     /// Helper for the expected source with multiple QObjects
     pub fn expected_source_multi_qobjects() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
+        #include "cxx_file_stem.cxxqt.h"
 
 
         namespace cxx_qt {
@@ -574,7 +574,7 @@ mod tests {
     /// Helper for the expected source with no namespace
     pub fn expected_source_no_namespace() -> &'static str {
         indoc! {r#"
-        #include "cxx-qt-gen/cxx_file_stem.cxxqt.h"
+        #include "cxx_file_stem.cxxqt.h"
 
 
         int
