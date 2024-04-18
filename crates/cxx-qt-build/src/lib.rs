@@ -492,6 +492,13 @@ impl CxxQtBuilder {
             qtbuild.version().major
         );
 
+        // Also set to env so our cfg evaulator finds it
+        // note we need this before generate_cxxqt_cpp_files
+        env::set_var(
+            "CARGO_CFG_cxxqt_qt_version_major",
+            qtbuild.version().major.to_string(),
+        );
+
         for minor in 0..qtbuild.version().minor {
             let at_least_qt_version = format!(
                 "cxxqt_at_least_qt_version_{}_{}",
@@ -502,13 +509,6 @@ impl CxxQtBuilder {
             let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_version);
             env::set_var(variable_cargo, "true");
         }
-
-        // Also set to env so our cfg evaulator finds it
-        // note we need this before generate_cxxqt_cpp_files
-        env::set_var(
-            "CARGO_CFG_cxxqt_qt_version_major",
-            qtbuild.version().major.to_string(),
-        );
 
         // Write cxx-qt and cxx headers
         cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
