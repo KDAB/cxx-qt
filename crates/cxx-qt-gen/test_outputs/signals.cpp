@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "cxx-qt-gen/signals.cxxqt.h"
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480

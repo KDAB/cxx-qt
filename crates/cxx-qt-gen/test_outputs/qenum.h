@@ -70,7 +70,7 @@ enum class MyRenamedEnum : ::std::int32_t
 };
 } // namespace cxx_qt::my_object
 
-#include "cxx-qt-gen/ffi.cxx.h"
+#include "cxx-qt-gen/qenum.cxx.h"
 
 namespace cxx_qt::my_object {
 class MyObject

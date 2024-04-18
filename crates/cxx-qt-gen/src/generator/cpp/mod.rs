@@ -65,7 +65,7 @@ impl GeneratedCppBlocks {
         Ok(GeneratedCppBlocks {
             forward_declares,
             includes,
-            cxx_file_stem: parser.cxx_file_stem.clone(),
+            cxx_file_stem: parser.cxx_file_stem(),
             qobjects: structures
                 .qobjects
                 .iter()
@@ -118,7 +118,7 @@ mod tests {
     #[test]
     fn test_generated_cpp_blocks() {
         let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
+            #[cxx_qt::bridge(cxx_file_stem = "ffi")]
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn test_generated_cpp_blocks_namespace() {
         let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            #[cxx_qt::bridge(cxx_file_stem = "ffi", namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
                     #[qobject]

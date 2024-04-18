@@ -28,7 +28,7 @@ using QTimerCxxQtSignalHandlertimeout =
   ::rust::cxxqt1::SignalHandler<struct QTimerCxxQtSignalParamstimeout*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
-#include "cxx-qt-gen/ffi.cxx.h"
+#include "cxx-qt-gen/signals.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection

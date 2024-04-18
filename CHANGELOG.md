@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add CMake wrappers around corrosion to simplify importing crates and qml modules that were built with cxx-qt-build
   - CMake code has been extracted into a separate repository for faster downloads (kdab/cxx-qt-cmake)
 - Folder structure of Rust bridges is now considered in the same way as CXX in `CxxQtBuilder`
+- All `#[cxx_qt::bridge]` macros must specify a `cxx_file_stem` until `Span::source_file()` is stable
 
 ### Removed
 

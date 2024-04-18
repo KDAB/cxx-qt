@@ -64,13 +64,13 @@ pub struct Parser {
     /// all type names that were found in this module, including CXX types
     pub(crate) type_names: TypeNames,
     /// The stem of the file that the CXX headers for this module will be generated into
-    pub cxx_file_stem: String,
+    pub(crate) cxx_file_stem: Option<String>,
 }
 
 impl Parser {
-    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(Option<String>, String)> {
+    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(Option<String>, Option<String>)> {
         let mut namespace = None;
-        let mut cxx_file_stem = module.ident.to_string();
+        let mut cxx_file_stem = None;
 
         // Remove the cxx_qt::bridge attribute
         if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
@@ -86,12 +86,20 @@ impl Parser {
                                 namespace = Some(expr_to_string(&name_value.value)?);
                                 // Parse any custom file stem
                             } else if name_value.path.is_ident("cxx_file_stem") {
-                                cxx_file_stem = expr_to_string(&name_value.value)?;
+                                cxx_file_stem = Some(expr_to_string(&name_value.value)?);
                             }
                         }
                         _others => {}
                     }
                 }
+            }
+
+            // Temporary until Span::source_file() is stable
+            if cxx_file_stem.is_none() {
+                return Err(Error::new(
+                    module.span(),
+                    "All cxx_qt::bridge macros specify a cxx_file_stem until Span::source_file() is stable https://github.com/rust-lang/rust/issues/54725",
+                ));
             }
         } else {
             return Err(Error::new(
@@ -170,6 +178,17 @@ impl Parser {
             cxx_qt_data,
             cxx_file_stem,
         })
+    }
+
+    /// Determine the file stem to use for this macro
+    pub fn cxx_file_stem(&self) -> String {
+        if let Some(cxx_file_stem) = self.cxx_file_stem.as_ref() {
+            cxx_file_stem.clone()
+        } else {
+            // TODO: ideally CXX-Qt would also use the file name but it uses the cxx_file_stem for now
+            // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
+            unimplemented!("Missing cxx_file_stem, once Span::source_file() is stable we can determine the file name")
+        }
     }
 }
 

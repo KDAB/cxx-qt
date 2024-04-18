@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "cxx-qt-gen/qenum.cxxqt.h"
 
 namespace cxx_qt::my_object {
 MyObject::MyObject(QObject* parent)

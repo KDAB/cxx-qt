@@ -76,7 +76,7 @@ impl GeneratedRustBlocks {
 fn generate_include(parser: &Parser) -> Result<Item> {
     let import_path = format!(
         "{header_prefix}/{}.cxxqt.h",
-        parser.cxx_file_stem,
+        parser.cxx_file_stem(),
         header_prefix = writer::get_header_prefix()
     );
 

@@ -23,7 +23,9 @@ mod ffi {
 
 The `extern "RustQt"` section of a CXX bridge declares Rust types and signatures to be made available to Qt and C++.
 
-The CXX code generator uses your `extern "Rust"` section(s) to produce a C++ header file containing the corresponding C++ declarations. The generated header has a file name matching the module ident or the `cxx_file_stem` field in the `#[cxx_qt::bridge]` attribute and with a `.cxxqt.h` file extension.
+The CXX code generator uses your `extern "Rust"` section(s) to produce a C++ header file containing the corresponding C++ declarations. The generated header has a file name of the `cxx_file_stem` field in the `#[cxx_qt::bridge]` attribute and with a `.cxxqt.h` file extension.
+
+> Note that once there is support for `source_file` or similar in the `Span` macro we want to support copying the file name like CXX.
 
 A bridge module may contain zero or more `extern "RustQt"` blocks.
 
