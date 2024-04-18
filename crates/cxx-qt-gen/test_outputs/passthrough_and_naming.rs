@@ -104,7 +104,6 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_property_name_changed"]
         fn MyObject_propertyNameChangedConnect(
             self_value: Pin<&mut MyObject>,
@@ -140,7 +139,6 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_ready"]
         fn MyObject_readyConnect(
             self_value: Pin<&mut MyObject>,
@@ -208,7 +206,6 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "SecondObject_connect_property_name_changed"]
         fn SecondObject_propertyNameChangedConnect(
             self_value: Pin<&mut SecondObject>,
@@ -245,7 +242,6 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::SecondObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "SecondObject_connect_ready"]
         fn SecondObject_readyConnect(
             self_value: Pin<&mut SecondObject>,
@@ -295,7 +291,6 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QPushButtonCxxQtSignalClosureclicked>;
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "QPushButton_connect_clicked"]
         fn QPushButton_clickedConnect(
             self_value: Pin<&mut QPushButton>,
@@ -326,7 +321,6 @@ pub mod ffi {
         >;
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "ExternObject_connect_data_ready"]
         fn ExternObject_dataReadyConnect(
             self_value: Pin<&mut ExternObject>,
@@ -359,7 +353,6 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "ExternObject_connect_error_occurred"]
         fn ExternObject_errorOccurredConnect(
             self_value: Pin<&mut ExternObject>,
