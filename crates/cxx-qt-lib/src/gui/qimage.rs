@@ -147,6 +147,11 @@ mod ffi {
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
 
+        /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
+        #[cfg(cxxqt_qt_version_major = "6")]
+        #[rust_name = "rgb_swap"]
+        fn rgbSwap(self: &mut QImage);
+
         /// Returns a copy of the image scaled to a rectangle with the given width and height according to the given aspectRatioMode and transformMode.
         fn scaled(
             self: &QImage,
