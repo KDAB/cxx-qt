@@ -22,7 +22,7 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qpolygonf.h");
-        #[allow(unused_variables)]
+        #[allow(dead_code)]
         type QPolygonF = crate::QPolygonF;
 
         include!("cxx-qt-lib/qpolygon.h");
