@@ -138,13 +138,9 @@ impl GeneratedCpp {
                     let rust_tokens = write_rust(&generated_rust);
 
                     // Use the relative path with the cxx_file_stem
-                    //
-                    // TODO: ideally CXX-Qt would also use the file name
-                    // but it uses the module or cxx_file_stem for now
-                    // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
                     file_ident = relative_path
                         .as_ref()
-                        .with_file_name(parser.cxx_file_stem)
+                        .with_file_name(parser.cxx_file_stem())
                         .to_str()
                         .unwrap()
                         .clone_into(&mut file_ident);
@@ -275,7 +271,6 @@ fn generate_cxxqt_cpp_files(
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
-        let cpp_directory = cxx_qt_dir.join("src");
         let path = manifest_dir.join(rs_path);
         println!("cargo:rerun-if-changed={}", path.to_string_lossy());
 
@@ -286,7 +281,7 @@ fn generate_cxxqt_cpp_files(
                 std::process::exit(1);
             }
         };
-        generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
+        generated_file_paths.push(generated_code.write_to_directories(cxx_qt_dir, &header_dir));
     }
 
     generated_file_paths

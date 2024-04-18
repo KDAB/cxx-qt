@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "cxx-qt-gen/invokables.cxxqt.h"
 
 namespace cxx_qt::my_object {
 static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),
