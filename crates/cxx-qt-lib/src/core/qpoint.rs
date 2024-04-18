@@ -15,6 +15,10 @@ mod ffi {
         type QPoint = super::QPoint;
         type QString = crate::QString;
 
+        include!("cxx-qt-lib/qpointf.h");
+        #[allow(dead_code)]
+        type QPointF = crate::QPointF;
+
         /// Returns true if both the x and y coordinates are set to 0, otherwise returns false.
         #[rust_name = "is_null"]
         fn isNull(self: &QPoint) -> bool;
@@ -31,6 +35,12 @@ mod ffi {
         /// Sets the y coordinate of this point to the given y coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QPoint, y: i32);
+
+        /// Returns this point as a point with floating point accuracy.
+        /// This function was introduced in Qt 6.4.
+        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[rust_name = "to_pointf"]
+        fn toPointF(self: &QPoint) -> QPointF;
 
         /// Returns a point with x and y coordinates exchanged
         fn transposed(self: &QPoint) -> QPoint;

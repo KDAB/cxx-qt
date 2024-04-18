@@ -13,6 +13,9 @@ mod ffi {
         type QMargins = super::QMargins;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qmarginsf.h");
+        #[allow(dead_code)]
+        type QMarginsF = crate::QMarginsF;
 
         /// Returns the bottom margin.
         fn bottom(self: &QMargins) -> i32;
@@ -42,6 +45,12 @@ mod ffi {
         /// Sets the Top margin to Top.
         #[rust_name = "set_top"]
         fn setTop(self: &mut QMargins, top: i32);
+
+        /// Returns these margins as margins with floating point accuracy.
+        /// since Qt6.4
+        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[rust_name = "to_marginsf"]
+        fn toMarginsF(self: &QMargins) -> QMarginsF;
 
         /// Returns the top margin.
         fn top(self: &QMargins) -> i32;

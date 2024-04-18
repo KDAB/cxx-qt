@@ -21,6 +21,9 @@ mod ffi {
         type QSize = super::QSize;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qsizef.h");
+        #[allow(dead_code)]
+        type QSizeF = crate::QSizeF;
 
         /// Returns a size holding the minimum width and height of this size and the given otherSize.
         #[rust_name = "bounded_to"]
@@ -66,6 +69,12 @@ mod ffi {
         /// Returns the size that results from shrinking this size by margins.
         #[rust_name = "shrunk_by"]
         fn shrunkBy(self: &QSize, margins: QMargins) -> QSize;
+
+        /// Returns this size as a size with floating point accuracy.
+        /// since 6.4
+        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[rust_name = "to_sizef"]
+        fn toSizeF(self: &QSize) -> QSizeF;
 
         /// Swaps the width and height values.
         fn transpose(self: &mut QSize);

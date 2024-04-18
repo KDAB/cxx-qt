@@ -16,6 +16,9 @@ mod ffi {
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qlinef.h");
+        #[allow(dead_code)]
+        type QLineF = crate::QLineF;
 
         /// Returns the line's start point.
         fn p1(self: &QLine) -> QPoint;
@@ -63,6 +66,12 @@ mod ffi {
         /// Sets the start point of this line to p1 and the end point of this line to p2.
         #[rust_name = "set_points"]
         fn setPoints(self: &mut QLine, p1: &QPoint, p2: &QPoint);
+
+        /// Returns this line as a line with floating point accuracy.
+        /// since Qt 6.4.
+        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[rust_name = "to_linef"]
+        fn toLineF(self: &QLine) -> QLineF;
 
         /// Translates this line by the given offset.
         fn translate(self: &mut QLine, offset: &QPoint);
