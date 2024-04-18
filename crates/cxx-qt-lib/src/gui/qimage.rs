@@ -144,6 +144,9 @@ mod ffi {
         #[cfg(cxxqt_qt_version_major = "6")]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
 
+        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        fn mirror2dfsd(self: &mut QImage, horizontal: bool, vertical: bool);
+
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
 

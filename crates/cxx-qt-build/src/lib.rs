@@ -491,6 +491,18 @@ impl CxxQtBuilder {
             "cargo:rustc-cfg=cxxqt_qt_version_major=\"{}\"",
             qtbuild.version().major
         );
+
+        for minor in 0..qtbuild.version().minor {
+            let at_least_qt_version = format!(
+                "cxxqt_at_least_qt_version{}_{}",
+                qtbuild.version().major,
+                minor
+            );
+            println!("cargo:rustc-cfg={}", at_least_qt_version);
+            let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_version);
+            env::set_var(variable_cargo, at_least_qt_version);
+        }
+
         // Also set to env so our cfg evaulator finds it
         // note we need this before generate_cxxqt_cpp_files
         env::set_var(
