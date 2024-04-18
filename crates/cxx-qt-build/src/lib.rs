@@ -494,7 +494,7 @@ impl CxxQtBuilder {
 
         for minor in 0..qtbuild.version().minor {
             let at_least_qt_version = format!(
-                "cxxqt_at_least_qt_version{}_{}",
+                "cxxqt_at_least_qt_version_{}_{}",
                 qtbuild.version().major,
                 minor
             );
