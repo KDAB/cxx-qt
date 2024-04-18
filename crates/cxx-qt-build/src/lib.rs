@@ -500,7 +500,7 @@ impl CxxQtBuilder {
             );
             println!("cargo:rustc-cfg={}", at_least_qt_version);
             let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_version);
-            env::set_var(variable_cargo, at_least_qt_version);
+            env::set_var(variable_cargo, "true");
         }
 
         // Also set to env so our cfg evaulator finds it
