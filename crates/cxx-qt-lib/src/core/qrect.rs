@@ -207,7 +207,7 @@ mod ffi {
 
         /// Returns this rectangle as a rectangle with floating point accuracy.
         /// This function was introduced in Qt 6.4.
-        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_4))]
         #[rust_name = "to_rectf"]
         fn toRectF(self: &QRect) -> QRectF;
 

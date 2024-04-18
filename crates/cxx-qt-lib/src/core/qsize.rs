@@ -72,7 +72,7 @@ mod ffi {
 
         /// Returns this size as a size with floating point accuracy.
         /// since 6.4
-        #[cfg(cxxqt_at_least_qt_version_6_4)]
+        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_4))]
         #[rust_name = "to_sizef"]
         fn toSizeF(self: &QSize) -> QSizeF;
 

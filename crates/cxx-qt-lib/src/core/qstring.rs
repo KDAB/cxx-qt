@@ -76,13 +76,13 @@ mod ffi {
 
         /// Removes the first character in this string. If the string is empty, this function does nothing.
         /// This function was introduced in Qt 6.5.
-        #[cfg(cxxqt_at_least_qt_version_6_5)]
+        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_5))]
         #[rust_name = "remove_first"]
         fn removeFirst(self: &mut QString) -> &mut QString;
 
         /// Removes the last character in this string. If the string is empty, this function does nothing.
         /// This function was introduced in Qt 6.5.
-        #[cfg(cxxqt_at_least_qt_version_6_5)]
+        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_5))]
         #[rust_name = "remove_last"]
         fn removeLast(self: &mut QString) -> &mut QString;
 

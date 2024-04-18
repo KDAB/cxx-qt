@@ -109,7 +109,7 @@ mod ffi {
         /// Returns the size of the image in device independent pixels.
         /// This value should be used when using the image size in user interface size calculations.
         /// The return value is equivalent to image.size() / image.devicePixelRatio().
-        #[cfg(cxxqt_at_least_qt_version_6_2)]
+        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_2))]
         #[rust_name = "device_independent_size"]
         fn deviceIndependentSize(self: &QImage) -> QSizeF;
 
