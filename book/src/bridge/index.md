@@ -30,7 +30,7 @@ By default, the name of the generated C++ header file will be the name of the mo
 
 This can cause issues as the module is normally called `ffi` or `qobject`, so collisions would occur.
 
-The `cxx_file_stem` option allow a file name to be specified to avoid collisions.
+The `cxx_file_stem` option allows a file name to be specified to avoid collisions.
 
 ```rust,ignore
 {{#include ../../../examples/qml_features/rust/src/types.rs:book_cxx_file_stem}}

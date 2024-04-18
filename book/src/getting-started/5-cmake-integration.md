@@ -38,10 +38,14 @@ You can add as much C++ code as you want in addition to this.
 
 For every `#[cxx_qt::bridge]` that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
 They will always be in the `cxx-qt-gen/` include path and use the snake_case naming convention.
-The name of the header file will be the name of the Rust module of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
-So in our case: `#include cxx-qt-gen/qobject.cxxqt.h`
+The name of the header file will be the `cxx_file_stem` of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
+So in our case: `#include cxx-qt-gen/src/cxxqt_object.cxxqt.h`
 
 > Note that the [`cxx_file_stem`](../bridge/index.md#cxx_file_stem) option can be specified in the bridge macro to choose the file name.
+
+> Note that once `Span::source_file()` is stable the `cxx_file_stem` will be optional and the file name will be the default like CXX>
+
+> Note any folders relative to the fargo manifest are considered hence the `src` folder.
 
 Including the generated header allows accessing the `MyObject` C++ class, just like any other C++ class.
 Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
