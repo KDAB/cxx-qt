@@ -510,13 +510,12 @@ impl CxxQtBuilder {
         }
 
         // We don't support Qt < 5
-        (5..qtbuild.version().major + 1).for_each(|_: u32| {
-            let at_least_qt_major_version =
-                format!("cxxqt_at_least_qt_version_{}", qtbuild.version().major);
+        for n in 5..qtbuild.version().major {
+            let at_least_qt_major_version = format!("cxxqt_at_least_qt_version_{}", n);
             println!("cargo:rustc-cfg={}", at_least_qt_major_version);
             let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_major_version);
             env::set_var(variable_cargo, "true");
-        });
+        }
 
         // Write cxx-qt and cxx headers
         cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
