@@ -498,7 +498,7 @@ impl CxxQtBuilder {
             qtbuild.version().major.to_string(),
         );
 
-        for minor in 0..qtbuild.version().minor {
+        for minor in 0..=qtbuild.version().minor {
             let at_least_qt_version = format!(
                 "cxxqt_at_least_qt_version_{}_{}",
                 qtbuild.version().major,
@@ -510,7 +510,7 @@ impl CxxQtBuilder {
         }
 
         // We don't support Qt < 5
-        for n in 5..qtbuild.version().major {
+        for n in 5..=qtbuild.version().major {
             let at_least_qt_major_version = format!("cxxqt_at_least_qt_version_{}", n);
             println!("cargo:rustc-cfg={}", at_least_qt_major_version);
             let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_major_version);
