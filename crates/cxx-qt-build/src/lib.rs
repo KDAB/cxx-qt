@@ -510,7 +510,7 @@ impl CxxQtBuilder {
         }
 
         // We don't support Qt < 5
-        (5..qtbuild.version().major + 1).for_each(|_: u32| {
+        (5..qtbuild.version().major).for_each(|_: u32| {
             let at_least_qt_major_version =
                 format!("cxxqt_at_least_qt_version_{}", qtbuild.version().major);
             println!("cargo:rustc-cfg={}", at_least_qt_major_version);
