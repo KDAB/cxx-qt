@@ -80,6 +80,9 @@ mod ffi {
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qsizef.h");
+        #[allow(dead_code)]
+        type QSizeF = crate::QSizeF;
 
         /// Returns true if all the colors in the image are shades of gray
         #[rust_name = "all_gray"]
@@ -102,6 +105,13 @@ mod ffi {
 
         /// Returns the depth of the image.
         fn depth(self: &QImage) -> i32;
+
+        /// Returns the size of the image in device independent pixels.
+        /// This value should be used when using the image size in user interface size calculations.
+        /// The return value is equivalent to image.size() / image.devicePixelRatio().
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_2))]
+        #[rust_name = "device_independent_size"]
+        fn deviceIndependentSize(self: &QImage) -> QSizeF;
 
         /// Returns the number of pixels that fit horizontally in a physical meter.
         #[rust_name = "dots_per_meter_x"]
@@ -141,8 +151,13 @@ mod ffi {
         fn height(self: &QImage) -> i32;
 
         /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether horizontal and vertical are set to true or false.
-        #[cfg(cxxqt_qt_version_major = "6")]
+        #[cfg(cxxqt_qt_version_at_least_6)]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
+
+        /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
+        #[cfg(cxxqt_qt_version_at_least_6)]
+        #[rust_name = "rgb_swap"]
+        fn rgbSwap(self: &mut QImage);
 
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;

@@ -21,6 +21,9 @@ mod ffi {
         type QRect = crate::QRect;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qpolygonf.h");
+        #[allow(dead_code)]
+        type QPolygonF = crate::QPolygonF;
 
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = super::QPolygon;
@@ -49,6 +52,12 @@ mod ffi {
 
         /// Returns a polygon which is r subtracted from this polygon.
         fn subtracted(self: &QPolygon, r: &QPolygon) -> QPolygon;
+
+        /// Returns this polygon as a polygon with floating point accuracy.
+        /// since Qt 6.4.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
+        #[rust_name = "to_polygonf"]
+        fn toPolygonF(self: &QPolygon) -> QPolygonF;
 
         /// Translates all points in the polygon by (dx, dy).
         fn translate(self: &mut QPolygon, dx: i32, dy: i32);

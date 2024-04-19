@@ -74,6 +74,18 @@ mod ffi {
         fn remove<'a>(self: &'a mut QString, str: &QString, cs: CaseSensitivity)
             -> &'a mut QString;
 
+        /// Removes the first character in this string. If the string is empty, this function does nothing.
+        /// This function was introduced in Qt 6.5.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+        #[rust_name = "remove_first"]
+        fn removeFirst(self: &mut QString) -> &mut QString;
+
+        /// Removes the last character in this string. If the string is empty, this function does nothing.
+        /// This function was introduced in Qt 6.5.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+        #[rust_name = "remove_last"]
+        fn removeLast(self: &mut QString) -> &mut QString;
+
         /// Replaces every occurrence of the string before with the string after and returns a reference to this string.
         fn replace<'a>(
             self: &'a mut QString,

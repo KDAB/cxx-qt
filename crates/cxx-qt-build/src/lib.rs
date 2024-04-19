@@ -472,6 +472,16 @@ impl CxxQtBuilder {
         self
     }
 
+    fn define_cfg_variable(key: String, value: Option<&str>) {
+        if let Some(value) = value {
+            println!("cargo:rustc-cfg={key}=\"{value}\"");
+        } else {
+            println!("cargo:rustc-cfg={key}");
+        }
+        let variable_cargo = format!("CARGO_CFG_{}", key);
+        env::set_var(variable_cargo, value.unwrap_or("true"));
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
@@ -487,16 +497,25 @@ impl CxxQtBuilder {
 
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
-        println!(
-            "cargo:rustc-cfg=cxxqt_qt_version_major=\"{}\"",
-            qtbuild.version().major
+        CxxQtBuilder::define_cfg_variable(
+            "cxxqt_qt_version_major".to_string(),
+            Some(qtbuild.version().major.to_string().as_str()),
         );
-        // Also set to env so our cfg evaulator finds it
-        // note we need this before generate_cxxqt_cpp_files
-        env::set_var(
-            "CARGO_CFG_cxxqt_qt_version_major",
-            qtbuild.version().major.to_string(),
-        );
+
+        for minor in 0..=qtbuild.version().minor {
+            let qt_version_at_least = format!(
+                "cxxqt_qt_version_at_least_{}_{}",
+                qtbuild.version().major,
+                minor
+            );
+            CxxQtBuilder::define_cfg_variable(qt_version_at_least.to_string(), None);
+        }
+
+        // We don't support Qt < 5
+        for major in 5..=qtbuild.version().major {
+            let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{}", major);
+            CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
+        }
 
         // Write cxx-qt and cxx headers
         cxx_qt::write_headers(format!("{header_root}/cxx-qt"));

@@ -19,6 +19,9 @@ mod ffi {
         type QSize = crate::QSize;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+        include!("cxx-qt-lib/qrectf.h");
+        #[allow(dead_code)]
+        type QRectF = crate::QRectF;
 
         /// Adds dx1, dy1, dx2 and dy2 respectively to the existing coordinates of the rectangle.
         fn adjust(self: &mut QRect, dx1: i32, dy1: i32, dx2: i32, dy2: i32);
@@ -201,6 +204,12 @@ mod ffi {
 
         /// Returns the size of the rectangle.
         fn size(self: &QRect) -> QSize;
+
+        /// Returns this rectangle as a rectangle with floating point accuracy.
+        /// This function was introduced in Qt 6.4.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
+        #[rust_name = "to_rectf"]
+        fn toRectF(self: &QRect) -> QRectF;
 
         /// Returns the y-coordinate of the rectangle's top edge. Equivalent to y().
         fn top(self: &QRect) -> i32;
