@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{generator::rust::fragment::GeneratedRustFragment, parser::qenum::ParsedQEnum};
+use crate::parser::qenum::ParsedQEnum;
 use quote::quote;
 use syn::{parse_quote_spanned, spanned::Spanned, Item};
 
@@ -12,9 +12,17 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
         .iter()
         .flat_map(|qenum| {
             let qenum_item = &qenum.item;
-            let qenum_ident = &qenum.ident;
-            let namespace = &qenum.namespace;
-            let namespace = if namespace.is_empty() {
+            let qenum_ident = &qenum.name.rust_unqualified();
+            let namespace = &qenum.name.namespace();
+
+            // If the QEnum has a namespace inherited from its QObject, it won't have the
+            // `#[namespace=...]` attribute, so we need to inject it.
+            let shared_namespace = if namespace.is_some() && qenum.qobject.is_some() {
+                quote! { #[namespace = #namespace] }
+            } else {
+                quote! {}
+            };
+            let cxx_namespace = if namespace.is_none() {
                 quote! {}
             } else {
                 quote! { #[namespace = #namespace ] }
@@ -23,12 +31,13 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
                 parse_quote_spanned! {
                     qenum.item.span() =>
                     #[repr(i32)]
+                    #shared_namespace
                     #qenum_item
                 },
                 parse_quote_spanned! {
                     qenum.item.span() =>
                     extern "C++" {
-                        #namespace
+                        #cxx_namespace
                         type #qenum_ident;
                     }
                 },
@@ -38,32 +47,38 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
         .collect()
 }
 
-pub fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustFragment {
-    GeneratedRustFragment {
-        cxx_mod_contents: generate_cxx_mod_contents(qenums),
-        ..Default::default()
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::tests::assert_tokens_eq;
-    use quote::quote;
+    use crate::{generator::rust::fragment::GeneratedRustFragment, tests::assert_tokens_eq};
+    use quote::{format_ident, quote};
     use syn::parse_quote;
 
     use super::*;
 
+    fn generate(qenums: &[ParsedQEnum]) -> GeneratedRustFragment {
+        GeneratedRustFragment {
+            cxx_mod_contents: generate_cxx_mod_contents(qenums),
+            ..Default::default()
+        }
+    }
+
     #[test]
     fn generates() {
-        let qenums = vec![ParsedQEnum::parse(parse_quote! {
-            /// Doc comment
-            enum MyEnum {
-                /// Document Variant1
-                Variant1,
-                /// Document Variant2
-                Variant2,
-            }
-        })
+        let qenums = vec![ParsedQEnum::parse(
+            parse_quote! {
+                /// Doc comment
+                enum MyEnum {
+                    /// Document Variant1
+                    Variant1,
+                    /// Document Variant2
+                    Variant2,
+                }
+            },
+            // The Ident of the QObject shouldn't matter
+            Some(format_ident!("MyObject")),
+            None,
+            &format_ident!("qobject"),
+        )
         .unwrap()];
 
         let generated = generate(&qenums);

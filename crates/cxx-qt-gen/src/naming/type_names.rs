@@ -17,7 +17,7 @@ use crate::syntax::{
 };
 
 use super::Name;
-use crate::parser::{cxxqtdata::ParsedCxxQtData, qenum::ParsedQEnum, qobject::ParsedQObject};
+use crate::parser::cxxqtdata::ParsedCxxQtData;
 
 /// The purpose of this struct is to store all nameable types.
 ///
@@ -108,7 +108,7 @@ impl Default for TypeNames {
 }
 
 impl TypeNames {
-    /// The "Naming" phase.
+    /// Part of the The "Naming" phase.
     /// Extract all nameable types from the CXX-Qt data and the CXX items.
     ///
     /// This allows the generator to fully-qualify all types in the generated code.
@@ -145,24 +145,12 @@ impl TypeNames {
         bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
-        let populate_qenum = |type_names: &mut TypeNames, qenum: &ParsedQEnum| {
-            type_names.populate(
-                &qenum.ident,
-                &qenum.item.attrs,
-                bridge_namespace,
-                module_ident,
-            )
-        };
-
         for qobject in cxx_qt_data.qobjects.values() {
-            self.insert_qobject(qobject)?;
-            for qenum in &qobject.qenums {
-                populate_qenum(self, qenum)?;
-            }
+            self.insert(qobject.name.clone())?;
         }
 
         for qenum in &cxx_qt_data.qenums {
-            populate_qenum(self, qenum)?;
+            self.insert(qenum.name.clone())?;
         }
 
         for extern_cxxqt in &cxx_qt_data.extern_cxxqt_blocks {
@@ -180,12 +168,6 @@ impl TypeNames {
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
         }
 
-        Ok(())
-    }
-
-    fn insert_qobject(&mut self, qobject: &ParsedQObject) -> Result<()> {
-        self.names
-            .insert(qobject.name.rust.clone(), qobject.name.clone());
         Ok(())
     }
 
@@ -286,6 +268,12 @@ impl TypeNames {
         Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
+    fn lookup(&self, ident: &Ident) -> Result<&Name> {
+        self.names
+            .get(ident)
+            .ok_or_else(|| self.unknown_type(ident))
+    }
+
     /// For a given rust ident return the CXX name with its namespace
     ///
     /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
@@ -297,35 +285,17 @@ impl TypeNames {
     /// Therefore, for now we'll use the qualified, but not fully qualified version of `namespace::type`.
     /// This should work in most cases, but it's not perfect.
     pub fn cxx_qualified(&self, ident: &Ident) -> Result<String> {
-        // Check if there is a cxx_name or namespace to handle
-        let name = self
-            .names
-            .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))?;
-
-        let cxx_name = name.cxx_unqualified();
-
-        if let Some(namespace) = &name.namespace {
-            Ok(format!("{namespace}::{cxx_name}"))
-        } else {
-            Ok(cxx_name)
-        }
+        self.lookup(ident).map(Name::cxx_qualified)
     }
 
     /// For a given rust ident return the CXX name **without** its namespace
     pub fn cxx_unqualified(&self, ident: &Ident) -> Result<String> {
-        self.names
-            .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))
-            .map(Name::cxx_unqualified)
+        self.lookup(ident).map(Name::cxx_unqualified)
     }
 
     /// For a given rust ident return the namespace if it's not empty
     pub fn namespace(&self, ident: &Ident) -> Result<Option<String>> {
-        self.names
-            .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))
-            .map(|name| name.namespace.clone())
+        self.lookup(ident).map(|name| name.namespace.clone())
     }
 
     /// Return a qualified version of the ident that can by used to refer to the type T outside of a CXX bridge
@@ -335,18 +305,15 @@ impl TypeNames {
     /// Note that this only handles types that are declared inside this bridge.
     /// E.g. UniquePtr -> cxx::UniquePtr isn't handled here.
     pub fn rust_qualified(&self, ident: &Ident) -> Result<Path> {
-        self.names
-            .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))
-            .map(|name| {
-                if let Some(module) = &name.module {
-                    let mut qualified_ident = module.clone();
-                    qualified_ident.segments.push(name.rust.clone().into());
-                    qualified_ident
-                } else {
-                    Path::from(name.rust.clone())
-                }
-            })
+        self.lookup(ident).map(|name| {
+            if let Some(module) = &name.module {
+                let mut qualified_ident = module.clone();
+                qualified_ident.segments.push(name.rust.clone().into());
+                qualified_ident
+            } else {
+                Path::from(name.rust.clone())
+            }
+        })
     }
 
     fn duplicate_type(&self, ident: &Ident) -> Error {
@@ -357,6 +324,7 @@ impl TypeNames {
     }
 
     /// Helper which builds mappings from namespace, cxx_name, and rust_name attributes
+    #[cfg(test)]
     fn populate(
         &mut self,
         ident: &Ident,
@@ -387,6 +355,18 @@ impl TypeNames {
 
         match entry {
             Entry::Occupied(_) => fallback(self, name),
+            Entry::Vacant(entry) => {
+                entry.insert(name);
+                Ok(())
+            }
+        }
+    }
+
+    fn insert(&mut self, name: Name) -> Result<()> {
+        let entry = self.names.entry(name.rust.clone());
+
+        match entry {
+            Entry::Occupied(_) => Err(self.duplicate_type(&name.rust)),
             Entry::Vacant(entry) => {
                 entry.insert(name);
                 Ok(())

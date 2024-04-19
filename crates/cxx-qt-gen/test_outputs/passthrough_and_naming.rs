@@ -178,7 +178,7 @@ pub mod ffi {
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
-        #[namespace = "cxx_qt::multi_object"]
+        #[namespace = "my_namespace"]
         #[doc = "\n\nNote: The C++ name of this QObject is: "]
         #[doc = "MyCxxName"]
         #[cxx_name = "MyCxxName"]
@@ -189,7 +189,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_my_rust_name"]
+        #[namespace = "my_namespace::cxx_qt_my_rust_name"]
         fn create_rs_third_object_rust() -> Box<ThirdObjectRust>;
     }
     unsafe extern "C++" {

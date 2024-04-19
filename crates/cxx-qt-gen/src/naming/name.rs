@@ -109,6 +109,14 @@ impl Name {
         &self.rust
     }
 
+    /// Set the namespace to the given value.
+    ///
+    /// Returns the previous value of the namespace.
+    pub fn set_namespace(&mut self, mut namespace: Option<String>) -> Option<String> {
+        std::mem::swap(&mut self.namespace, &mut namespace);
+        namespace
+    }
+
     /// Get the namespace of the type in C++.
     /// This is either:
     /// - The namespace attribute value, if one is provided
@@ -119,5 +127,27 @@ impl Name {
     /// `None` means that no namespace was provided or inherited.
     pub fn namespace(&self) -> Option<&str> {
         self.namespace.as_deref()
+    }
+
+    /// Get the fully qualified name of the type in C++.
+    ///
+    /// This is the namespace followed by the unqualified name.
+    ///
+    /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
+    /// Unfortunately, this isn't always possible, as the Qt5 meta object system doesn't register
+    /// types with the fully qualified path :(
+    /// E.g. it will recognize `QString`, but not `::QString` from QML.
+    ///
+    /// This needs to be considered in many places (properties, signals, invokables, etc.)
+    /// Therefore, for now we'll use the qualified, but not fully qualified version of `namespace::type`.
+    /// This should work in most cases, but it's not perfect.
+    pub fn cxx_qualified(&self) -> String {
+        let cxx_name = self.cxx_unqualified();
+
+        if let Some(namespace) = &self.namespace {
+            format!("{namespace}::{cxx_name}")
+        } else {
+            cxx_name
+        }
     }
 }

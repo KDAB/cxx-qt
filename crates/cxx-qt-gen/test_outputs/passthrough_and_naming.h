@@ -21,10 +21,10 @@ using MyObjectCxxQtSignalHandlerready =
   ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
 } // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
-namespace cxx_qt::multi_object {
+namespace my_namespace {
 class MyCxxName;
 
-} // namespace cxx_qt::multi_object
+} // namespace my_namespace
 
 namespace second_object {
 class SecondObject;
@@ -137,7 +137,7 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
 
-namespace cxx_qt::multi_object {
+namespace my_namespace {
 class MyCxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
@@ -153,9 +153,9 @@ public:
 
 static_assert(::std::is_base_of<QObject, MyCxxName>::value,
               "MyCxxName must inherit from QObject");
-} // namespace cxx_qt::multi_object
+} // namespace my_namespace
 
-Q_DECLARE_METATYPE(cxx_qt::multi_object::MyCxxName*)
+Q_DECLARE_METATYPE(my_namespace::MyCxxName*)
 
 namespace second_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection

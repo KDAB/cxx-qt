@@ -151,6 +151,7 @@ pub mod ffi {
         #[qobject]
         #[cxx_name = "MyCxxName"]
         #[rust_name = "MyRustName"]
+        #[namespace = "my_namespace"]
         type MyUnusedName = super::ThirdObjectRust;
     }
 }

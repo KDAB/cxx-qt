@@ -19,7 +19,7 @@ pub mod threading;
 
 use std::collections::BTreeSet;
 
-use crate::parser::Parser;
+use crate::{generator::structuring, parser::Parser};
 use externcxxqt::GeneratedCppExternCxxQtBlocks;
 use qobject::GeneratedCppQObject;
 use syn::Result;
@@ -41,6 +41,8 @@ pub struct GeneratedCppBlocks {
 impl GeneratedCppBlocks {
     /// Create a [GeneratedCppBlocks] from the given [Parser] object
     pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
+        let structures = structuring::Structures::new(&parser.cxx_qt_data)?;
+
         let mut includes = BTreeSet::new();
 
         let mut forward_declares: Vec<_> = parser
@@ -54,16 +56,16 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qenums
                 .iter()
+                .filter(|parsed_qenum| parsed_qenum.qobject.is_none())
                 .map(|parsed_qenum| qenum::generate_declaration(parsed_qenum, &mut includes)),
         );
         Ok(GeneratedCppBlocks {
             forward_declares,
             includes,
             cxx_file_stem: parser.cxx_file_stem.clone(),
-            qobjects: parser
-                .cxx_qt_data
+            qobjects: structures
                 .qobjects
-                .values()
+                .iter()
                 .map(|qobject| GeneratedCppQObject::from(qobject, &parser.type_names))
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
             extern_cxx_qt: externcxxqt::generate(
