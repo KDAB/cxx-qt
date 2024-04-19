@@ -472,6 +472,16 @@ impl CxxQtBuilder {
         self
     }
 
+    fn define_cfg_variable(key: String, value: Option<&str>) {
+        if let Some(value) = value {
+            println!("cargo:rustc-cfg={key}=\"{value}\"");
+        } else {
+            println!("cargo:rustc-cfg={key}");
+        }
+        let variable_cargo = format!("CARGO_CFG_{}", key);
+        env::set_var(variable_cargo, value.unwrap_or("true"));
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
@@ -487,15 +497,9 @@ impl CxxQtBuilder {
 
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
-        println!(
-            "cargo:rustc-cfg=cxxqt_qt_version_major=\"{}\"",
-            qtbuild.version().major
-        );
-        // Also set to env so our cfg evaulator finds it
-        // note we need this before generate_cxxqt_cpp_files
-        env::set_var(
-            "CARGO_CFG_cxxqt_qt_version_major",
-            qtbuild.version().major.to_string(),
+        CxxQtBuilder::define_cfg_variable(
+            "cxxqt_qt_version_major".to_string(),
+            Some(qtbuild.version().major.to_string().as_str()),
         );
 
         for minor in 0..=qtbuild.version().minor {
@@ -504,17 +508,13 @@ impl CxxQtBuilder {
                 qtbuild.version().major,
                 minor
             );
-            println!("cargo:rustc-cfg={}", qt_version_at_least);
-            let variable_cargo = format!("CARGO_CFG_{}", qt_version_at_least);
-            env::set_var(variable_cargo, "true");
+            CxxQtBuilder::define_cfg_variable(qt_version_at_least.to_string(), None);
         }
 
         // We don't support Qt < 5
         for major in 5..=qtbuild.version().major {
             let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{}", major);
-            println!("cargo:rustc-cfg={}", at_least_qt_major_version);
-            let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_major_version);
-            env::set_var(variable_cargo, "true");
+            CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
         }
 
         // Write cxx-qt and cxx headers
