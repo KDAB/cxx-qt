@@ -92,6 +92,9 @@ mod ffi {
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
         #[namespace = "cxx_qt::my_object"]
+        #[doc = "\n\nNote: The C++ name of this QObject is: "]
+        #[doc = "CxxName"]
+        #[cxx_name = "CxxName"]
         type MyRenamedObject;
     }
     extern "Rust" {

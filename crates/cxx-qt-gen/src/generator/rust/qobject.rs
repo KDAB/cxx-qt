@@ -122,12 +122,24 @@ fn generate_qobject_definitions(
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+    let cpp_class_name_cpp = &qobject_idents.cpp_class.cpp;
+
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
     let namespace = if !namespace.is_empty() {
         Some(quote! { #[namespace=#namespace] })
     } else {
         None
+    };
+    let cxx_name = if cpp_class_name_rust == cpp_class_name_cpp {
+        quote! {}
+    } else {
+        let cpp_class_name_cpp = cpp_class_name_cpp.to_string();
+        quote! {
+            #[doc = "\n\nNote: The C++ name of this QObject is: "]
+            #[doc = #cpp_class_name_cpp]
+            #[cxx_name = #cpp_class_name_cpp]
+        }
     };
 
     let fragment = RustFragmentPair {
@@ -141,6 +153,7 @@ fn generate_qobject_definitions(
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     #namespace
+                    #cxx_name
                     type #cpp_class_name_rust;
                 }
             },

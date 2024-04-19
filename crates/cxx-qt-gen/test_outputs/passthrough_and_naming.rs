@@ -173,6 +173,37 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
+        #[doc = "ThirdObjectRust"]
+        #[doc = "\n"]
+        #[doc = "Use this type when referring to the QObject as a pointer"]
+        #[doc = "\n"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[namespace = "cxx_qt::multi_object"]
+        #[doc = "\n\nNote: The C++ name of this QObject is: "]
+        #[doc = "MyCxxName"]
+        #[cxx_name = "MyCxxName"]
+        type MyRustName;
+    }
+    extern "Rust" {
+        type ThirdObjectRust;
+    }
+    extern "Rust" {
+        #[cxx_name = "createRs"]
+        #[namespace = "cxx_qt::multi_object::cxx_qt_my_rust_name"]
+        fn create_rs_third_object_rust() -> Box<ThirdObjectRust>;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "unsafeRust"]
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust(self: &MyRustName) -> &ThirdObjectRust;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "unsafeRustMut"]
+        #[doc(hidden)]
+        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyRustName>) -> Pin<&mut ThirdObjectRust>;
+    }
+    unsafe extern "C++" {
+        #[doc = "The C++ type for the QObject "]
         #[doc = "SecondObjectRust"]
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
@@ -528,6 +559,26 @@ impl core::ops::Deref for ffi::MyObject {
 }
 impl cxx_qt::CxxQtType for ffi::MyObject {
     type Rust = MyObjectRust;
+    fn rust(&self) -> &Self::Rust {
+        self.cxx_qt_ffi_rust()
+    }
+    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+        self.cxx_qt_ffi_rust_mut()
+    }
+}
+impl cxx_qt::Locking for ffi::MyRustName {}
+#[doc(hidden)]
+pub fn create_rs_third_object_rust() -> std::boxed::Box<ThirdObjectRust> {
+    std::boxed::Box::new(core::default::Default::default())
+}
+impl core::ops::Deref for ffi::MyRustName {
+    type Target = ThirdObjectRust;
+    fn deref(&self) -> &Self::Target {
+        self.cxx_qt_ffi_rust()
+    }
+}
+impl cxx_qt::CxxQtType for ffi::MyRustName {
+    type Rust = ThirdObjectRust;
     fn rust(&self) -> &Self::Rust {
         self.cxx_qt_ffi_rust()
     }

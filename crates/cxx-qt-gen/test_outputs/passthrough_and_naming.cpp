@@ -318,6 +318,17 @@ MyObject::MyObject(QObject* parent)
 
 } // namespace cxx_qt::multi_object
 
+namespace cxx_qt::multi_object {
+MyCxxName::MyCxxName(QObject* parent)
+  : QObject(parent)
+  , ::rust::cxxqt1::CxxQtType<ThirdObjectRust>(
+      ::cxx_qt::multi_object::cxx_qt_my_rust_name::createRs())
+  , ::rust::cxxqt1::CxxQtLocking()
+{
+}
+
+} // namespace cxx_qt::multi_object
+
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqt1 {
