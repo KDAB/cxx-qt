@@ -23,7 +23,7 @@ pub struct QObjectName {
 
 impl From<&ParsedQObject> for QObjectName {
     fn from(qobject: &ParsedQObject) -> Self {
-        Self::from_name_and_ident(&qobject.name, qobject.qobject_ty.ident_right.clone())
+        Self::from_name_and_ident(&qobject.name, qobject.rust_type.clone())
     }
 }
 
