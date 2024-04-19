@@ -33,11 +33,6 @@ qstringToRustString(const QString& string);
 
 QString
 qstringArg(const QString& string, const QString& a);
-::rust::isize
-qstringIndexOf(const QString& string,
-               const QString& str,
-               ::rust::isize from,
-               Qt::CaseSensitivity cs);
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str);
 QString
