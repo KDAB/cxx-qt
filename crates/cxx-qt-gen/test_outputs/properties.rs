@@ -62,7 +62,6 @@ mod ffi {
         >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_primitive_changed"]
         fn MyObject_primitiveChangedConnect(
             self_value: Pin<&mut MyObject>,
@@ -95,7 +94,6 @@ mod ffi {
         >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[must_use]
         #[rust_name = "MyObject_connect_trivial_changed"]
         fn MyObject_trivialChangedConnect(
             self_value: Pin<&mut MyObject>,
