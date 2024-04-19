@@ -151,8 +151,13 @@ mod ffi {
         fn height(self: &QImage) -> i32;
 
         /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether horizontal and vertical are set to true or false.
-        #[cfg(cxxqt_qt_version_major = "6")]
+        #[cfg(cxxqt_at_least_qt_version_6)]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
+
+        /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
+        #[cfg(cxxqt_at_least_qt_version_6)]
+        #[rust_name = "rgb_swap"]
+        fn rgbSwap(self: &mut QImage);
 
         /// Returns the enclosing rectangle (0, 0, width(), height()) of the image.
         fn rect(self: &QImage) -> QRect;
