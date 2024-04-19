@@ -7,7 +7,7 @@ use crate::{
     naming::Name,
     parser::{
         constructor::Constructor, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        property::ParsedQProperty, qenum::ParsedQEnum, signals::ParsedSignal,
+        property::ParsedQProperty, signals::ParsedSignal,
     },
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
@@ -37,8 +37,6 @@ pub struct ParsedQObject {
     pub rust_type: Ident,
     /// Representation of the Q_SIGNALS for the QObject
     pub signals: Vec<ParsedSignal>,
-    /// The Q_ENUM enums associated with this QObject
-    pub qenums: Vec<ParsedQEnum>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// These could also be exposed as Q_INVOKABLE on the C++ object
@@ -98,7 +96,6 @@ impl ParsedQObject {
             name,
             rust_type: inner,
             signals: vec![],
-            qenums: vec![],
             methods: vec![],
             inherited_methods: vec![],
             constructors: vec![],

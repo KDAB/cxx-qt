@@ -10,6 +10,7 @@ use crate::generator::{
         signal::generate_cpp_signals, threading,
     },
     naming::{namespace::NamespaceName, qobject::QObjectName},
+    structuring::StructuredQObject,
 };
 use crate::{naming::TypeNames, parser::qobject::ParsedQObject};
 use std::collections::BTreeSet;
@@ -97,7 +98,12 @@ pub struct GeneratedCppQObject {
 }
 
 impl GeneratedCppQObject {
-    pub fn from(qobject: &ParsedQObject, type_names: &TypeNames) -> Result<GeneratedCppQObject> {
+    pub fn from(
+        structured_qobject: &StructuredQObject,
+        type_names: &TypeNames,
+    ) -> Result<GeneratedCppQObject> {
+        let qobject = structured_qobject.declaration;
+
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
@@ -156,9 +162,9 @@ impl GeneratedCppQObject {
             &qobject.base_class,
             type_names,
         )?);
-        generated
-            .blocks
-            .append(&mut qenum::generate(&qobject.qenums, type_names)?);
+        generated.blocks.append(&mut qenum::generate(
+            structured_qobject.qenums.iter().cloned(),
+        )?);
 
         let mut class_initializers = vec![];
 
@@ -195,7 +201,7 @@ impl GeneratedCppQObject {
 mod tests {
     use super::*;
 
-    use crate::parser::Parser;
+    use crate::{generator::structuring::Structures, parser::Parser};
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -210,12 +216,11 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let cpp = GeneratedCppQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
-        )
-        .unwrap();
+        let cpp =
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+                .unwrap();
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.rust_ident, "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
@@ -243,12 +248,11 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let cpp = GeneratedCppQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
-        )
-        .unwrap();
+        let cpp =
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+                .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(cpp.blocks.base_classes.len(), 3);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
@@ -273,12 +277,11 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let cpp = GeneratedCppQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
-        )
-        .unwrap();
+        let cpp =
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+                .unwrap();
         assert_eq!(cpp.ident, "MyNamedObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 1);
         assert_eq!(
@@ -301,12 +304,11 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let cpp = GeneratedCppQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
-        )
-        .unwrap();
+        let cpp =
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+                .unwrap();
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
         assert_eq!(
@@ -330,12 +332,11 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let cpp = GeneratedCppQObject::from(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
-            &TypeNames::default(),
-        )
-        .unwrap();
+        let cpp =
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+                .unwrap();
         assert_eq!(cpp.ident, "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
         assert_eq!(

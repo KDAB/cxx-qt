@@ -48,6 +48,7 @@ pub fn generate(
                     // For now we use a type alias in C++ then use it like a normal type here
                     // <https://github.com/dtolnay/cxx/issues/683>
                     #[doc(hidden)]
+                    // TODO: Generate the correct #[namespace] attribute.
                     type #cxx_qt_thread_ident = cxx_qt::CxxQtThread<#cpp_struct_ident>;
                     include!("cxx-qt/thread.h");
 

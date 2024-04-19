@@ -318,16 +318,16 @@ MyObject::MyObject(QObject* parent)
 
 } // namespace cxx_qt::multi_object
 
-namespace cxx_qt::multi_object {
+namespace my_namespace {
 MyCxxName::MyCxxName(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<ThirdObjectRust>(
-      ::cxx_qt::multi_object::cxx_qt_my_rust_name::createRs())
+      ::my_namespace::cxx_qt_my_rust_name::createRs())
   , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 
-} // namespace cxx_qt::multi_object
+} // namespace my_namespace
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
