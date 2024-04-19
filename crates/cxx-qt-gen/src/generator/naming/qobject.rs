@@ -2,8 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::generator::naming::CombinedIdent;
-use crate::parser::qobject::ParsedQObject;
+use crate::{generator::naming::CombinedIdent, naming::Name, parser::qobject::ParsedQObject};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
@@ -24,14 +23,28 @@ pub struct QObjectName {
 
 impl From<&ParsedQObject> for QObjectName {
     fn from(qobject: &ParsedQObject) -> Self {
-        Self::from_idents(
-            qobject.name.rust_unqualified().clone(),
-            qobject.qobject_ty.ident_right.clone(),
-        )
+        Self::from_name_and_ident(&qobject.name, qobject.qobject_ty.ident_right.clone())
     }
 }
 
 impl QObjectName {
+    pub fn from_name_and_ident(qobject_name: &Name, ident_right: Ident) -> Self {
+        Self {
+            cpp_class: CombinedIdent {
+                cpp: format_ident!("{}", qobject_name.cxx_unqualified()),
+                rust: qobject_name.rust_unqualified().clone(),
+            },
+            rust_struct: CombinedIdent::from_ident(ident_right),
+            cxx_qt_thread_class: cxx_qt_thread_class_from_ident(qobject_name.rust_unqualified()),
+            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(
+                qobject_name.rust_unqualified(),
+            ),
+            ident: qobject_name.rust_unqualified().clone(),
+        }
+    }
+
+    // Only for mocking in tests
+    #[cfg(test)]
     pub fn from_idents(ident_left: Ident, ident_right: Ident) -> Self {
         Self {
             cpp_class: CombinedIdent::from_ident(ident_left.clone()),

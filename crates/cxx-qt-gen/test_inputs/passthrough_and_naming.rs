@@ -145,4 +145,12 @@ pub mod ffi {
         #[qinvokable]
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
+
+    extern "RustQt" {
+        // Test that we can correctly rename a QObject with cxx_name and rust_name
+        #[qobject]
+        #[cxx_name = "MyCxxName"]
+        #[rust_name = "MyRustName"]
+        type MyUnusedName = super::ThirdObjectRust;
+    }
 }

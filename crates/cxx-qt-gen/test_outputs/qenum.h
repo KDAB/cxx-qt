@@ -24,7 +24,7 @@ enum class MyOtherEnum : ::std::int32_t
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object {
-class MyRenamedObject;
+class CxxName;
 enum class MyRenamedEnum : ::std::int32_t
 {
   A,
@@ -111,7 +111,7 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 
 namespace cxx_qt::my_object {
-class MyRenamedObject
+class CxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<InternalObject>
   , public ::rust::cxxqt1::CxxQtLocking
@@ -126,14 +126,14 @@ public:
   Q_ENUM(MyRenamedEnum)
 #endif
 
-  virtual ~MyRenamedObject() = default;
+  virtual ~CxxName() = default;
 
 public:
-  explicit MyRenamedObject(QObject* parent = nullptr);
+  explicit CxxName(QObject* parent = nullptr);
 };
 
-static_assert(::std::is_base_of<QObject, MyRenamedObject>::value,
-              "MyRenamedObject must inherit from QObject");
+static_assert(::std::is_base_of<QObject, CxxName>::value,
+              "CxxName must inherit from QObject");
 } // namespace cxx_qt::my_object
 
-Q_DECLARE_METATYPE(cxx_qt::my_object::MyRenamedObject*)
+Q_DECLARE_METATYPE(cxx_qt::my_object::CxxName*)
