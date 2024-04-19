@@ -499,19 +499,19 @@ impl CxxQtBuilder {
         );
 
         for minor in 0..=qtbuild.version().minor {
-            let at_least_qt_version = format!(
-                "cxxqt_at_least_qt_version_{}_{}",
+            let qt_version_at_least = format!(
+                "cxxqt_qt_version_at_least_{}_{}",
                 qtbuild.version().major,
                 minor
             );
-            println!("cargo:rustc-cfg={}", at_least_qt_version);
-            let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_version);
+            println!("cargo:rustc-cfg={}", qt_version_at_least);
+            let variable_cargo = format!("CARGO_CFG_{}", qt_version_at_least);
             env::set_var(variable_cargo, "true");
         }
 
         // We don't support Qt < 5
         for major in 5..=qtbuild.version().major {
-            let at_least_qt_major_version = format!("cxxqt_at_least_qt_version_{}", major);
+            let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{}", major);
             println!("cargo:rustc-cfg={}", at_least_qt_major_version);
             let variable_cargo = format!("CARGO_CFG_{}", at_least_qt_major_version);
             env::set_var(variable_cargo, "true");

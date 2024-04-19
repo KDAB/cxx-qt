@@ -69,7 +69,7 @@ mod ffi {
 
         /// Returns this line as a line with floating point accuracy.
         /// since Qt 6.4.
-        #[cfg(any(cxxqt_at_least_qt_version_7, cxxqt_at_least_qt_version_6_4))]
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_linef"]
         fn toLineF(self: &QLine) -> QLineF;
 
