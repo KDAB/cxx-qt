@@ -437,7 +437,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
-        type_names.insert("QColor", None, None, None);
+        type_names.mock_insert("QColor", None, None, None);
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,
@@ -598,7 +598,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
-        type_names.insert("T", None, None, None);
+        type_names.mock_insert("T", None, None, None);
         let generated = generate_rust_signals(
             &vec![qsignal],
             &qobject_idents,

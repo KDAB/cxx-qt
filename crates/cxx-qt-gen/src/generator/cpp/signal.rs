@@ -251,7 +251,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
-        type_names.insert("QColor", None, None, None);
+        type_names.mock_insert("QColor", None, None, None);
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
@@ -351,7 +351,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
-        type_names.insert("A", None, Some("A1"), None);
+        type_names.mock_insert("A", None, Some("A1"), None);
 
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
@@ -532,7 +532,7 @@ mod tests {
         };
 
         let mut type_names = TypeNames::default();
-        type_names.insert("ObjRust", None, None, None);
+        type_names.mock_insert("ObjRust", None, None, None);
         let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
@@ -622,7 +622,7 @@ mod tests {
         };
 
         let mut type_names = TypeNames::default();
-        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
+        type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
 

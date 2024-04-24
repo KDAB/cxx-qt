@@ -403,13 +403,13 @@ impl TypeNames {
     // Only for testing, return a TypeNames struct that contains a qobject::MyObject
     pub fn mock() -> Self {
         let mut this = Self::default();
-        this.insert("MyObject", Some(format_ident!("qobject")), None, None);
+        this.mock_insert("MyObject", Some(format_ident!("qobject")), None, None);
         this
     }
 
     #[cfg(test)]
     // This function only exists for testing, to allow mocking of the type names
-    pub fn insert(
+    pub fn mock_insert(
         &mut self,
         ident: &str,
         module: Option<Ident>,

@@ -283,9 +283,9 @@ mod tests {
         [$($input_type:tt => $output_type:literal),*] => {
             let mut type_names = TypeNames::default();
             // Add some types to the list of available types so we can use them in tests.
-            type_names.insert("T", None, None, None);
-            type_names.insert("QColor", None, None, None);
-            type_names.insert("QPoint", None, None, None);
+            type_names.mock_insert("T", None, None, None);
+            type_names.mock_insert("QColor", None, None, None);
+            type_names.mock_insert("QPoint", None, None, None);
             $(
             assert_eq!(
                 syn_type_to_cpp_type(&parse_quote! $input_type, &type_names).unwrap(),
@@ -336,7 +336,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_mapped() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.insert("A", None, Some("A1"), None);
+        type_names.mock_insert("A", None, Some("A1"), None);
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "A1");
     }
 
@@ -344,7 +344,7 @@ mod tests {
     fn test_syn_type_to_cpp_type_mapped_with_namespace() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
-        type_names.insert("A", None, Some("A1"), Some("N1"));
+        type_names.mock_insert("A", None, Some("A1"), Some("N1"));
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "N1::A1");
     }
 

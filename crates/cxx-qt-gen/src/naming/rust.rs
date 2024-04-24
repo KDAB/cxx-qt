@@ -135,7 +135,7 @@ mod tests {
     macro_rules! test_bridge_types_qualified {
         [$($input_type:tt => $output_type:tt),*] => {
             let mut type_names = TypeNames::mock();
-            type_names.insert("T", None, None, None);
+            type_names.mock_insert("T", None, None, None);
 
             $(
             let expected_type : syn::Type = parse_quote! $output_type ;
