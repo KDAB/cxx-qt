@@ -89,7 +89,7 @@ mod tests {
         })
         .unwrap()];
         let mut type_names = TypeNames::default();
-        type_names.insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
+        type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate(&blocks, &type_names).unwrap();
         assert_eq!(generated.len(), 1);

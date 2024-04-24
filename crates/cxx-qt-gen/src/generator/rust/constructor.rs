@@ -467,8 +467,8 @@ mod tests {
     fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {
         let mut type_names = TypeNames::mock();
 
-        type_names.insert("QString", None, None, None);
-        type_names.insert("QObject", None, None, None);
+        type_names.mock_insert("QString", None, None, None);
+        type_names.mock_insert("QObject", None, None, None);
         generate(
             constructors,
             &mock_name(),

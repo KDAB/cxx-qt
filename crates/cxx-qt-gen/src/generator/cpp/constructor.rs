@@ -164,7 +164,7 @@ mod tests {
 
     fn type_names_with_qobject() -> TypeNames {
         let mut type_names = TypeNames::mock();
-        type_names.insert("QObject", None, None, None);
+        type_names.mock_insert("QObject", None, None, None);
         type_names
     }
 
