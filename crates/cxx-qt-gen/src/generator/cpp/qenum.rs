@@ -30,7 +30,11 @@ fn generate_definition(qenum: &ParsedQEnum) -> String {
 }
 
 pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>) -> String {
-    includes.insert("#include <QtCore/QObject>".to_string());
+    let is_standalone = qenum.qobject.is_none();
+    if is_standalone {
+        // required for Q_NAMESPACE and Q_ENUM_NS if we're not on a QObject
+        includes.insert("#include <QtCore/QObject>".to_string());
+    }
 
     let enum_definition = generate_definition(qenum).indented(2);
     let enum_name = &qenum.name.cxx_unqualified();
@@ -39,14 +43,18 @@ pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>
         // The declaration must still include Q_NAMESPACE, as otherwise moc will complain.
         // This is redundant with `qnamespace!`, which is now only required if you want to specify
         // it as QML_ELEMENT.
-        &formatdoc! {r#"
-            Q_NAMESPACE
-            {enum_definition}
-            Q_ENUM_NS({enum_name}) "# },
+        &if is_standalone {
+            formatdoc! {r#"
+                Q_NAMESPACE
+                {enum_definition}
+                Q_ENUM_NS({enum_name}) "# }
+        } else {
+            enum_definition
+        },
     )
 }
 
-pub fn generate<'a>(
+pub fn generate_on_qobject<'a>(
     qenums: impl Iterator<Item = &'a ParsedQEnum>,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
@@ -63,7 +71,6 @@ pub fn generate<'a>(
 
         generated.includes.insert("#include <cstdint>".to_string());
         let enum_definition = generate_definition(qenum);
-        generated.forward_declares.push(enum_definition.clone());
         generated.metaobjects.push(formatdoc! {r#"
             #ifdef Q_MOC_RUN
             {enum_definition}
@@ -102,7 +109,7 @@ mod tests {
         )
         .unwrap()];
 
-        let generated = generate(qenums.iter()).unwrap();
+        let generated = generate_on_qobject(qenums.iter()).unwrap();
         assert_eq!(generated.includes.len(), 1);
         assert!(generated.includes.contains("#include <cstdint>"));
         assert_eq!(generated.metaobjects.len(), 1);
@@ -122,16 +129,6 @@ mod tests {
             "#},
             generated.metaobjects[0],
         );
-        assert_eq!(generated.forward_declares.len(), 1);
-        assert_str_eq!(
-            indoc! { r#"
-                enum class MyEnum : ::std::int32_t {
-                  A,
-                  B,
-                  C
-                };
-            "# },
-            generated.forward_declares[0],
-        );
+        assert_eq!(generated.forward_declares.len(), 0);
     }
 }

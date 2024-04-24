@@ -16,13 +16,7 @@ pub mod qobject;
 pub use qobject::StructuredQObject;
 
 use crate::parser::cxxqtdata::ParsedCxxQtData;
-use syn::{Error, Ident, Result};
-
-/// The naming phase may already associate QEnums with QObjects.
-/// In this case, we want to use the same error message, as in this module.
-pub(crate) fn error_unknown_qobject(ident: &Ident) -> Error {
-    Error::new_spanned(ident, format!("Unknown QObject: {ident}"))
-}
+use syn::{Error, Result};
 
 /// The list of all structures that could be associated from the parsed data.
 /// Most importantly, this includes the list of qobjects.
@@ -52,7 +46,10 @@ impl<'a> Structures<'a> {
                 {
                     qobject.qenums.push(qenum);
                 } else {
-                    return Err(error_unknown_qobject(qobject_ident));
+                    return Err(Error::new_spanned(
+                        qobject_ident,
+                        format!("Unknown QObject: {qobject_ident}"),
+                    ));
                 }
             }
         }

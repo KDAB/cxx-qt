@@ -17,7 +17,6 @@ pub mod signals;
 
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
-    generator::structuring,
     naming::TypeNames,
     syntax::{attribute::attribute_take_path, expr::expr_to_string},
 };
@@ -41,9 +40,6 @@ pub struct Parser {
     /// The stem of the file that the CXX headers for this module will be generated into
     pub cxx_file_stem: String,
 }
-
-const QENUM_QOBJECT_AND_NAMESPACE_ERROR: &str =
-    "Namespace attributes are not allowed on QEnums that belong to a QObject.";
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<(Option<String>, String)> {
@@ -110,41 +106,12 @@ impl Parser {
         Ok((cxx_qt_data, module))
     }
 
-    /// This function sets the namespace of any associated QEnum to the namespace of the QObject it
-    /// is associated to.
-    ///
-    /// It remains to be discussed whether this is the right way to go in the future (see:
-    /// https://github.com/KDAB/cxx-qt/issues/945)
-    fn resolve_qenum_inherited_namespaces(cxx_qt_data: &mut ParsedCxxQtData) -> Result<()> {
-        for qenum in &mut cxx_qt_data.qenums {
-            if let Some(qobject_ident) = &qenum.qobject {
-                if let Some(qobject) = cxx_qt_data.qobjects.get(qobject_ident) {
-                    let old_namespace = qenum
-                        .name
-                        .set_namespace(qobject.name.namespace().map(str::to_owned));
-                    if old_namespace.is_some() {
-                        return Err(Error::new_spanned(
-                            qenum.name.rust_unqualified(),
-                            QENUM_QOBJECT_AND_NAMESPACE_ERROR,
-                        ));
-                    }
-                } else {
-                    return Err(structuring::error_unknown_qobject(qobject_ident));
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    /// The "Naming phase", it resolves any names that couldn't be completed during parsing and
-    /// generates a list of all nameable types in our bridge.
+    /// The "Naming phase", it generates a list of all nameable types in our bridge.
     fn naming_phase(
         cxx_qt_data: &mut ParsedCxxQtData,
         cxx_items: &[Item],
         module_ident: &Ident,
     ) -> Result<TypeNames> {
-        Self::resolve_qenum_inherited_namespaces(cxx_qt_data)?;
         TypeNames::from_parsed_data(
             cxx_qt_data,
             cxx_items,
@@ -374,52 +341,5 @@ mod tests {
                 .unwrap(),
             "extern_namespace"
         );
-    }
-
-    #[test]
-    fn test_qenum_namespace_and_qobject() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                #[qenum(MyObject)]
-                #[namespace = "abc"]
-                enum MyEnum {
-                    A,
-                }
-
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let result = Parser::from(module);
-        assert!(result.is_err());
-        // We can't use unwrap_err() here, as that requires the Parser to implement Debug.
-        if let Err(err) = result {
-            assert!(err.to_string().contains(QENUM_QOBJECT_AND_NAMESPACE_ERROR));
-        }
-    }
-
-    #[test]
-    fn test_qenum_inherits_qobject_namespace() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                #[qenum(MyObject)]
-                enum MyEnum {
-                    A,
-                }
-
-                extern "RustQt" {
-                    #[qobject]
-                    #[namespace = "abc"]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.cxx_qt_data.qenums.len(), 1);
-        assert_eq!(parser.cxx_qt_data.qenums[0].name.namespace(), Some("abc"));
     }
 }

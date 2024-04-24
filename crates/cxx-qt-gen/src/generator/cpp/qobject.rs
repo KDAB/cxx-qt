@@ -162,7 +162,7 @@ impl GeneratedCppQObject {
             &qobject.base_class,
             type_names,
         )?);
-        generated.blocks.append(&mut qenum::generate(
+        generated.blocks.append(&mut qenum::generate_on_qobject(
             structured_qobject.qenums.iter().cloned(),
         )?);
 

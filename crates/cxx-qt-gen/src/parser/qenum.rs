@@ -61,12 +61,6 @@ impl ParsedQEnum {
             ));
         }
 
-        // If we have a QObject, we can't have a namespace, so also do not inherit one.
-        let parent_namespace = if qobject.is_some() {
-            None
-        } else {
-            parent_namespace
-        };
         let name =
             Name::from_ident_and_attrs(&qenum.ident, &qenum.attrs, parent_namespace, module)?;
 
@@ -227,7 +221,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_inherit_namespace_and_qobject() {
+    fn parse_qobject_and_qenum_namespace_are_independent() {
         let qenum: ItemEnum = parse_quote! {
             enum MyEnum {
                 A,
@@ -237,7 +231,7 @@ mod tests {
         let qobject = Some(format_ident!("MyObject"));
         let parsed =
             ParsedQEnum::parse(qenum, qobject.clone(), parent_namespace, &mock_module()).unwrap();
-        assert!(parsed.name.namespace().is_none());
+        assert_eq!(parsed.name.namespace(), Some("my_namespace"));
         assert_eq!(parsed.qobject, qobject);
     }
 }

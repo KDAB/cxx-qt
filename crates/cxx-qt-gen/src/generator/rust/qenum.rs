@@ -15,13 +15,6 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
             let qenum_ident = &qenum.name.rust_unqualified();
             let namespace = &qenum.name.namespace();
 
-            // If the QEnum has a namespace inherited from its QObject, it won't have the
-            // `#[namespace=...]` attribute, so we need to inject it.
-            let shared_namespace = if namespace.is_some() && qenum.qobject.is_some() {
-                quote! { #[namespace = #namespace] }
-            } else {
-                quote! {}
-            };
             let cxx_namespace = if namespace.is_none() {
                 quote! {}
             } else {
@@ -31,7 +24,6 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
                 parse_quote_spanned! {
                     qenum.item.span() =>
                     #[repr(i32)]
-                    #shared_namespace
                     #qenum_item
                 },
                 parse_quote_spanned! {
