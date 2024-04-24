@@ -32,6 +32,7 @@ pub fn generate(
         cxx_bridge: vec![quote! {
             extern "Rust" {
                 #[cxx_name = #getter_wrapper_cpp]
+                // TODO: Add #[namespace] of the QObject to the declaration
                 unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
             }
         }],
