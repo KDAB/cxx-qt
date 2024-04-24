@@ -13,7 +13,6 @@ mod ffi {
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
     enum MyEnum {
         A,
     }
@@ -22,14 +21,14 @@ mod ffi {
         type MyEnum;
     }
     #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
+    #[namespace = "my_namespace"]
     enum MyOtherEnum {
         X,
         Y,
         Z,
     }
     extern "C++" {
-        #[namespace = "cxx_qt::my_object"]
+        #[namespace = "my_namespace"]
         type MyOtherEnum;
     }
     #[repr(i32)]
@@ -53,7 +52,6 @@ mod ffi {
         type MyOtherNamespacedEnum;
     }
     #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
     enum MyRenamedEnum {
         A,
         B,

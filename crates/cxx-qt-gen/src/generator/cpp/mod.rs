@@ -56,7 +56,6 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qenums
                 .iter()
-                .filter(|parsed_qenum| parsed_qenum.qobject.is_none())
                 .map(|parsed_qenum| qenum::generate_declaration(parsed_qenum, &mut includes)),
         );
         Ok(GeneratedCppBlocks {
