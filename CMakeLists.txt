@@ -127,7 +127,12 @@ if(NOT USE_QT5)
     find_package(Qt6 COMPONENTS Core Gui Test QuickControls2)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Test QuickControls2 REQUIRED)
+    if(BUILD_WASM)
+        message(FATAL_ERROR 
+            "CXX-Qt for WebAssembly only currently supports Qt 6 builds."
+        )
+    endif()
+    find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
 endif()
 
 if (NOT Qt5_FOUND)

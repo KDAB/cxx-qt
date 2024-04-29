@@ -53,7 +53,7 @@ else()
     set(QML_COMPAT_RESOURCES qml/compat/compat_qt6.qrc)
 endif()
 
-add_executable(${APP_NAME}
+set(DEMO_THREADING_SOURCES
     cpp/helpers/energyusageproxymodel.h
     cpp/helpers/energyusageproxymodel.cpp
     cpp/main.cpp
@@ -62,6 +62,19 @@ add_executable(${APP_NAME}
     images/images.qrc
     ${QML_COMPAT_RESOURCES}
 )
+
+if(BUILD_WASM)
+    # Currently need to use qt_add_executable
+    # for WASM builds, otherwise there is no
+    # HTML output.
+    #
+    # TODO: Figure out how to configure such that
+    #       we can use add_executable for WASM
+    qt_add_executable(${APP_NAME} ${DEMO_THREADING_SOURCES})
+else()
+    add_executable(${APP_NAME} ${DEMO_THREADING_SOURCES})
+endif()
+
 target_link_libraries(${APP_NAME}
     PRIVATE
     ${CRATE}_qml
