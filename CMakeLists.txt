@@ -137,9 +137,8 @@ endif()
 if(NOT Qt6_FOUND)
     if(BUILD_WASM)
         message(FATAL_ERROR 
-                "CXX-Qt for WebAssembly only currently supports Qt 6 builds."
+            "CXX-Qt for WebAssembly only currently supports Qt 6 builds."
         )
-        set(BUILD_WASM OFF)
     endif()
     find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
 endif()
