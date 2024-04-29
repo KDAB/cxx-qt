@@ -17,12 +17,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
+if(BUILD_WASM)
+    # When building under emscripten tell CMake how to link using whole archive
+    set(CMAKE_LINK_LIBRARY_USING_WHOLE_ARCHIVE "-Wl,--whole-archive" "<LINK_ITEM>" "-Wl,--no-whole-archive")
+    set(CMAKE_LINK_LIBRARY_USING_WHOLE_ARCHIVE_SUPPORTED True)
+    # Ensure Rust build for the correct target
+    set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 QmlImportScanner QuickTest Test)
+    find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 QuickTest Test OPTIONAL_COMPONENTS QmlImportScanner)
 endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml Quick QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
@@ -60,9 +68,17 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
     Qt::QuickControls2
 )
 
-add_executable(${APP_NAME}
-    cpp/main.cpp
-)
+if(BUILD_WASM)
+    # Currently need to use qt_add_executable
+    # for WASM builds, otherwise there is no
+    # HTML output.
+    #
+    # TODO: Figure out how to configure such that
+    #       we can use add_executable for WASM
+    qt_add_executable(${APP_NAME} cpp/main.cpp)
+else()
+    add_executable(${APP_NAME} cpp/main.cpp)
+endif()
 
 target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)

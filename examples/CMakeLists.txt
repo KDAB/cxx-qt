@@ -7,6 +7,11 @@
 # No longer add cargo-without-cmake here.
 # This causes duplicate builds, as this crate is already entirely built
 # When using `cargo test`
+
 add_subdirectory(qml_features)
 add_subdirectory(qml_minimal)
-add_subdirectory(demo_threading)
+
+# TODO: get demo_threading working for wasm builds
+if(NOT BUILD_WASM)
+    add_subdirectory(demo_threading)
+endif()

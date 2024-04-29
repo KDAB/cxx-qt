@@ -14,6 +14,7 @@ option(VCPKG "Use vcpkg for release mode dependencies" OFF)
 option(VCPKG_BUILDTREES_ROOT "Use custom vcpkg buildtrees" "")
 
 option(BUILD_TESTING "Build the tests for CXX-Qt" ON)
+option(BUILD_WASM "Build CXX-Qt for WASM" OFF)
 
 if(VCPKG)
     # Until debug and release packages are split we only build release packages
@@ -121,12 +122,25 @@ add_compile_definitions(
     QT_USE_QSTRINGBUILDER
 )
 
+if(BUILD_WASM)
+    # TODO: fix wasm test failures
+    set(BUILD_TESTING OFF)
+    # Ensure Rust build for the correct target
+    set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
+endif()
+
 # QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
 if(NOT USE_QT5)
     find_package(Qt6 COMPONENTS Core Gui Test)
 endif()
 if(NOT Qt6_FOUND)
+    if(BUILD_WASM)
+        message(FATAL_ERROR 
+                "CXX-Qt for WebAssembly only currently supports Qt 6 builds."
+        )
+        set(BUILD_WASM OFF)
+    endif()
     find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
 endif()
 
