@@ -100,47 +100,49 @@ target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
 qt_import_qml_plugins(${APP_NAME})
 # ANCHOR_END: book_cmake_executable
 
-#
-# Unit test
-#
+if(BUILD_TESTING)
+    #
+    # Unit test
+    #
 
-if(TARGET Qt6::Core)
-    find_package(Qt6 COMPONENTS QuickTest Test REQUIRED)
-else()
-    find_package(Qt5 COMPONENTS QuickTest Test REQUIRED)
-endif()
-
-function(add_qml_test TEST_NAME)
-    set(APP_TEST_NAME ${APP_NAME}_${TEST_NAME}_test)
-    add_executable(${APP_TEST_NAME} tests/${TEST_NAME}/tst_${TEST_NAME}.cpp)
-    target_link_libraries(${APP_TEST_NAME} PRIVATE
-        ${APP_NAME}_lib
-        Qt::QuickTest
-    )
-    qt_import_qml_plugins(${APP_TEST_NAME})
-
-    set(TEST_CMD
-        $<TARGET_FILE:${APP_TEST_NAME}> -input
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml
-    )
-
-    add_test(
-        NAME ${APP_TEST_NAME}
-        COMMAND ${TEST_CMD}
-    )
-
-    # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
-    set_tests_properties(
-        ${APP_NAME}_${TEST_NAME}_test PROPERTIES ENVIRONMENT_MODIFICATION
-                                                 "${RUNTIME_ENV}"
-    )
-    if (COMMAND add_valgrind_test)
-       add_valgrind_test(
-          ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
-       )
+    if(TARGET Qt6::Core)
+        find_package(Qt6 COMPONENTS QuickTest Test REQUIRED)
     else()
-       MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+        find_package(Qt5 COMPONENTS QuickTest Test REQUIRED)
     endif()
-endfunction()
 
-add_qml_test(myobject)
+    function(add_qml_test TEST_NAME)
+        set(APP_TEST_NAME ${APP_NAME}_${TEST_NAME}_test)
+        add_executable(${APP_TEST_NAME} tests/${TEST_NAME}/tst_${TEST_NAME}.cpp)
+        target_link_libraries(${APP_TEST_NAME} PRIVATE
+            ${APP_NAME}_lib
+            Qt::QuickTest
+        )
+        qt_import_qml_plugins(${APP_TEST_NAME})
+
+        set(TEST_CMD
+            $<TARGET_FILE:${APP_TEST_NAME}> -input
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/${TEST_NAME}/tst_${TEST_NAME}.qml
+        )
+
+        add_test(
+            NAME ${APP_TEST_NAME}
+            COMMAND ${TEST_CMD}
+        )
+
+        # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
+        set_tests_properties(
+            ${APP_NAME}_${TEST_NAME}_test PROPERTIES ENVIRONMENT_MODIFICATION
+                                                    "${RUNTIME_ENV}"
+        )
+        if (COMMAND add_valgrind_test)
+            add_valgrind_test(
+                ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
+            )
+        else()
+            MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+        endif()
+    endfunction()
+
+    add_qml_test(myobject)
+endif()

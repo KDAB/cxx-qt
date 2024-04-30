@@ -68,36 +68,38 @@ target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
 qt_import_qml_plugins(${APP_NAME})
 
-#
-# Unit test
-#
+if(BUILD_TESTING)
+    #
+    # Unit test
+    #
 
-set(APP_TEST_NAME ${APP_NAME}_test)
-add_executable(${APP_TEST_NAME} tests/main.cpp)
-target_include_directories(${APP_TEST_NAME} PRIVATE cpp)
-target_link_libraries(
-    ${APP_TEST_NAME} PRIVATE ${APP_NAME}_lib Qt::Test Qt::QuickTest
-)
-qt_import_qml_plugins(${APP_TEST_NAME})
-
-set(TEST_CMD
-    $<TARGET_FILE:${APP_TEST_NAME}> -input ${CMAKE_CURRENT_SOURCE_DIR}/tests
-)
-
-add_test(
-    NAME ${APP_TEST_NAME}
-    COMMAND ${TEST_CMD}
-)
-
-if (COMMAND add_valgrind_test)
-    add_valgrind_test(
-      ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
+    set(APP_TEST_NAME ${APP_NAME}_test)
+    add_executable(${APP_TEST_NAME} tests/main.cpp)
+    target_include_directories(${APP_TEST_NAME} PRIVATE cpp)
+    target_link_libraries(
+        ${APP_TEST_NAME} PRIVATE ${APP_NAME}_lib Qt::Test Qt::QuickTest
     )
-else()
-    MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
-endif()
+    qt_import_qml_plugins(${APP_TEST_NAME})
 
-# RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
-set_tests_properties(
-    ${APP_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
-)
+    set(TEST_CMD
+        $<TARGET_FILE:${APP_TEST_NAME}> -input ${CMAKE_CURRENT_SOURCE_DIR}/tests
+    )
+
+    add_test(
+        NAME ${APP_TEST_NAME}
+        COMMAND ${TEST_CMD}
+    )
+
+    if (COMMAND add_valgrind_test)
+        add_valgrind_test(
+            ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}
+        )
+    else()
+        MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+    endif()
+
+    # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
+    set_tests_properties(
+        ${APP_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
+    )
+endif()

@@ -13,6 +13,8 @@ option(USE_QT5 "Use Qt5 even if Qt6 found" OFF)
 option(VCPKG "Use vcpkg for release mode dependencies" OFF)
 option(VCPKG_BUILDTREES_ROOT "Use custom vcpkg buildtrees" "")
 
+option(BUILD_TESTING "Build the tests for CXX-Qt" ON)
+
 if(VCPKG)
     # Until debug and release packages are split we only build release packages
     # to improve CI run times
@@ -176,7 +178,7 @@ set(CARGO_ENV "QMAKE=set:${QMAKE}")
 set(RUNTIME_ENV "")
 
 # On windows, Qt dll needs to be in the PATH for the tests to run
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND BUILD_TESTING)
     execute_process(
         COMMAND ${QMAKE} -query QT_INSTALL_BINS
         OUTPUT_VARIABLE QT_INSTALL_BINS
@@ -219,34 +221,39 @@ endif()
 # from the main build.
 set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
-# Add CMake tests for `cargo test/clippy/fmt/doc`.
-add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
-add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
-add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
+if(BUILD_TESTING)
+    # Add CMake tests for `cargo test/clippy/fmt/doc`.
+    add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
+    add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
+    add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
+    
+    set_tests_properties(cargo_tests cargo_clippy PROPERTIES
+        ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
+    )
+    set_tests_properties(cargo_doc PROPERTIES
+        ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
+    )
+    
+    # Ensure test inputs and outputs are formatted
+    file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_inputs/*.rs)
+    file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
+    add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
+    add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
+    
+    # Add test which checks that a build rerun doesn't recompile and uses caches instead
+    add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
+    
+    # Ensure that cargo_build_rerun doesn't run while we are already building
+    set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
+endif()
 
 if(CMAKE_RUSTC_WRAPPER)
     list(APPEND CARGO_ENV "RUSTC_WRAPPER=set:${CMAKE_RUSTC_WRAPPER}")
 endif()
 
-set_tests_properties(cargo_tests cargo_clippy PROPERTIES
-    ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
-)
-set_tests_properties(cargo_doc PROPERTIES
-    ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
-)
-
-# Ensure test inputs and outputs are formatted
-file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_inputs/*.rs)
-file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
-add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
-add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
-
-# Add test which checks that a build rerun doesn't recompile and uses caches instead
-add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Ensure that cargo_build_rerun doesn't run while we are already building
-set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
-
 add_subdirectory(book)
 add_subdirectory(examples)
-add_subdirectory(tests)
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
