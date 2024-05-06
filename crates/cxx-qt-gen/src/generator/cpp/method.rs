@@ -229,7 +229,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
-        type_names.insert("QColor", None, None, None);
+        type_names.mock_insert("QColor", None, None, None);
 
         let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 
@@ -400,8 +400,8 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
-        type_names.insert("A", None, Some("A1"), None);
-        type_names.insert("B", None, Some("B2"), None);
+        type_names.mock_insert("A", None, Some("A1"), None);
+        type_names.mock_insert("B", None, Some("B2"), None);
 
         let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 

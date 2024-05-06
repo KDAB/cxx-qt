@@ -13,6 +13,25 @@ mod ffi {
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     #[repr(i32)]
+    enum MyEnum {
+        A,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "my_namespace"]
+    enum MyOtherEnum {
+        X,
+        Y,
+        Z,
+    }
+    extern "C++" {
+        #[namespace = "my_namespace"]
+        type MyOtherEnum;
+    }
+    #[repr(i32)]
     enum MyNamespacedEnum {
         A,
         B,
@@ -31,6 +50,16 @@ mod ffi {
     extern "C++" {
         #[namespace = "other_namespace"]
         type MyOtherNamespacedEnum;
+    }
+    #[repr(i32)]
+    enum MyRenamedEnum {
+        A,
+        B,
+        C,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyRenamedEnum;
     }
     unsafe extern "C++" {
         include!("cxx-qt-gen/ffi.cxxqt.h");
@@ -52,22 +81,6 @@ mod ffi {
         #[doc(hidden)]
         #[cxx_name = "myInvokableWrapper"]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
-    }
-    #[repr(i32)]
-    enum MyEnum {
-        A,
-    }
-    extern "C++" {
-        type MyEnum;
-    }
-    #[repr(i32)]
-    enum MyOtherEnum {
-        X,
-        Y,
-        Z,
-    }
-    extern "C++" {
-        type MyOtherEnum;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -99,15 +112,6 @@ mod ffi {
     }
     extern "Rust" {
         type InternalObject;
-    }
-    #[repr(i32)]
-    enum MyRenamedEnum {
-        A,
-        B,
-        C,
-    }
-    extern "C++" {
-        type MyRenamedEnum;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]

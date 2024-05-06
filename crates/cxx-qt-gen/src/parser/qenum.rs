@@ -6,15 +6,15 @@
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
 
-use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string, path::path_compare_str};
+use crate::{naming::Name, syntax::path::path_compare_str};
 
 pub struct ParsedQEnum {
-    /// The ident of the QEnum
-    pub ident: Ident,
-    /// The namespace of the QEnum, either the bridge namespace or the namespace attribute
-    pub namespace: String,
+    /// The name of the QObject
+    pub name: Name,
     /// the values of the QEnum
     pub variants: Vec<Ident>,
+    /// The QObject to which this QEnum belongs.
+    pub qobject: Option<Ident>,
     /// The original enum item
     pub item: ItemEnum,
 }
@@ -48,7 +48,12 @@ impl ParsedQEnum {
         Ok(variant.ident.clone())
     }
 
-    pub fn parse(qenum: ItemEnum) -> Result<Self> {
+    pub fn parse(
+        qenum: ItemEnum,
+        qobject: Option<Ident>,
+        parent_namespace: Option<&str>,
+        module: &Ident,
+    ) -> Result<Self> {
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
                 qenum,
@@ -56,17 +61,18 @@ impl ParsedQEnum {
             ));
         }
 
-        let namespace = attribute_find_path(&qenum.attrs, &["namespace"])
-            .map(|attr_index| {
-                let attr = &qenum.attrs[attr_index];
-                expr_to_string(&attr.meta.require_name_value()?.value)
-            })
-            .transpose()?
-            .unwrap_or_default();
+        let name =
+            Name::from_ident_and_attrs(&qenum.ident, &qenum.attrs, parent_namespace, module)?;
 
-        // TODO: Add support for `cxx_name` and `rust_name` attributes.
+        if name.namespace().is_none() && qobject.is_none() {
+            return Err(syn::Error::new_spanned(
+                qenum.ident,
+                "A QEnum must either be namespaced or associated to a QObject!",
+            ));
+        }
+
         if let Some(attr) = qenum.attrs.iter().find(|attr| {
-            !["doc", "namespace"]
+            !["doc", "namespace", "cxx_name", "rust_name"]
                 .iter()
                 .any(|allowed_attr| path_compare_str(attr.path(), &[allowed_attr]))
         }) {
@@ -83,8 +89,8 @@ impl ParsedQEnum {
             .collect::<Result<_>>()?;
 
         Ok(Self {
-            namespace,
-            ident: qenum.ident.clone(),
+            name,
+            qobject,
             variants,
             item: qenum,
         })
@@ -96,7 +102,7 @@ mod tests {
     use crate::tests::assert_tokens_eq;
 
     use super::*;
-    use quote::quote;
+    use quote::format_ident;
     use syn::parse_quote;
 
     fn variants_to_strings(qenum: &ParsedQEnum) -> Vec<String> {
@@ -107,9 +113,13 @@ mod tests {
             .collect::<Vec<_>>()
     }
 
+    fn mock_module() -> Ident {
+        format_ident!("qobject")
+    }
+
     #[test]
     fn parse() {
-        let original_item = quote! {
+        let qenum: ItemEnum = parse_quote! {
             /// My doc comment
             enum MyEnum {
                 /// Variant1 doc comment
@@ -118,39 +128,41 @@ mod tests {
                 Variant2,
             }
         };
-        let qenum: ItemEnum = syn::parse2(original_item.clone()).unwrap();
+        let qobject = Some(format_ident!("MyObject"));
 
-        let parsed = ParsedQEnum::parse(qenum).unwrap();
-        assert_eq!(parsed.ident, "MyEnum");
-        assert_eq!(parsed.namespace, "");
+        let parsed =
+            ParsedQEnum::parse(qenum.clone(), qobject.clone(), None, &mock_module()).unwrap();
+        assert_eq!(parsed.name.rust_unqualified(), "MyEnum");
+        assert_eq!(parsed.name.namespace(), None);
+        assert_eq!(parsed.qobject, qobject);
 
         assert_eq!(*variants_to_strings(&parsed), ["Variant1", "Variant2"],);
-        assert_tokens_eq(&parsed.item, original_item);
+        assert_tokens_eq(&parsed.item, qenum.to_token_stream());
     }
 
     #[test]
     fn parse_namespaced() {
-        let original_item = quote! {
+        let qenum: ItemEnum = parse_quote! {
             #[namespace="my_namespace"]
             enum MyEnum {
                 A,
                 B,
             }
         };
-        let qenum: ItemEnum = syn::parse2(original_item.clone()).unwrap();
 
-        let qenum = ParsedQEnum::parse(qenum).unwrap();
-        assert_eq!(qenum.ident, "MyEnum");
-        assert_eq!(qenum.namespace, "my_namespace");
+        let parsed = ParsedQEnum::parse(qenum.clone(), None, None, &mock_module()).unwrap();
+        assert_eq!(parsed.name.rust_unqualified(), "MyEnum");
+        assert_eq!(parsed.name.namespace().unwrap(), "my_namespace");
+        assert!(parsed.qobject.is_none());
 
-        assert_eq!(*variants_to_strings(&qenum), ["A", "B"],);
-        assert_tokens_eq(&qenum.item, original_item);
+        assert_eq!(*variants_to_strings(&parsed), ["A", "B"],);
+        assert_tokens_eq(&parsed.item, qenum.to_token_stream());
     }
 
     macro_rules! assert_parse_error {
         ($( $input:tt )*) => {
             let qenum: ItemEnum = parse_quote! { $($input)* };
-            assert!(ParsedQEnum::parse(qenum).is_err());
+            assert!(ParsedQEnum::parse(qenum, Some(format_ident!("QObject")), None, &mock_module()).is_err());
         }
     }
 
@@ -196,5 +208,30 @@ mod tests {
                 A = 1
             }
         }
+    }
+
+    #[test]
+    fn parse_missing_namespace() {
+        let qenum: ItemEnum = parse_quote! {
+            enum MyEnum {
+                A,
+            }
+        };
+        assert!(ParsedQEnum::parse(qenum, None, None, &mock_module()).is_err());
+    }
+
+    #[test]
+    fn parse_qobject_and_qenum_namespace_are_independent() {
+        let qenum: ItemEnum = parse_quote! {
+            enum MyEnum {
+                A,
+            }
+        };
+        let parent_namespace = Some("my_namespace");
+        let qobject = Some(format_ident!("MyObject"));
+        let parsed =
+            ParsedQEnum::parse(qenum, qobject.clone(), parent_namespace, &mock_module()).unwrap();
+        assert_eq!(parsed.name.namespace(), Some("my_namespace"));
+        assert_eq!(parsed.qobject, qobject);
     }
 }

@@ -19,7 +19,7 @@ use syn::{
     spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
     Type, TypePath,
 };
-use syn::{Attribute, ItemMacro, Meta};
+use syn::{ItemMacro, Meta};
 
 use super::qnamespace::ParsedQNamespace;
 
@@ -144,48 +144,21 @@ impl ParsedCxxQtData {
         }
     }
 
-    fn parse_associated_qenum(&mut self, item: ItemEnum, attribute: Attribute) -> Result<()> {
-        let qobject: Ident = attribute.parse_args()?;
-
-        if let Some(qobject) = self.qobjects.get_mut(&qobject) {
-            let qenum = ParsedQEnum::parse(item)?;
-
-            qobject.qenums.push(qenum);
-            Ok(())
-        } else {
-            Err(Error::new_spanned(
-                &qobject,
-                format!("Could not find qobject {qobject}!"),
-            ))
-        }
-    }
-
-    fn parse_namespaced_qenum(&mut self, item: ItemEnum) -> Result<()> {
-        let mut qenum = ParsedQEnum::parse(item)?;
-        if qenum.namespace.is_empty() {
-            qenum.namespace = self.namespace.clone().unwrap_or_default();
-        }
-        if qenum.namespace.is_empty() {
-            return Err(syn::Error::new_spanned(
-                &qenum.ident,
-                "A QEnum must either be namespaced or be associated with a QObject.",
-            ));
-        }
-        self.qenums.push(qenum);
-        Ok(())
-    }
-
     fn parse_enum(&mut self, mut item: ItemEnum) -> Result<Option<Item>> {
         if let Some(qenum_attribute) = attribute_take_path(&mut item.attrs, &["qenum"]) {
             // A Meta::Path indicates no arguments were provided to the enum
             // It only contains the "qenum" path and nothing else.
-            if let Meta::Path(_) = qenum_attribute.meta {
-                self.parse_namespaced_qenum(item)?;
-                Ok(None)
+            let qobject: Option<Ident> = if let Meta::Path(_) = qenum_attribute.meta {
+                None
             } else {
-                self.parse_associated_qenum(item, qenum_attribute)?;
-                Ok(None)
-            }
+                Some(qenum_attribute.parse_args()?)
+            };
+
+            let qenum =
+                ParsedQEnum::parse(item, qobject, self.namespace.as_deref(), &self.module_ident)?;
+
+            self.qenums.push(qenum);
+            Ok(None)
         } else {
             Ok(Some(Item::Enum(item)))
         }
@@ -771,7 +744,7 @@ mod tests {
         assert_eq!(1, cxxqtdata.qenums.len());
 
         let qenum = &cxxqtdata.qenums[0];
-        assert_eq!("my_namespace", &qenum.namespace);
+        assert_eq!("my_namespace", qenum.name.namespace().unwrap());
 
         cxxqtdata.namespace = Some("other_namespace".to_string());
 
@@ -781,6 +754,9 @@ mod tests {
             .is_none());
 
         assert_eq!(2, cxxqtdata.qenums.len());
-        assert_eq!("other_namespace", &cxxqtdata.qenums[1].namespace);
+        assert_eq!(
+            "other_namespace",
+            cxxqtdata.qenums[1].name.namespace().unwrap()
+        );
     }
 }

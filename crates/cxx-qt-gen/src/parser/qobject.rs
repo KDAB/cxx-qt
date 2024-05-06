@@ -7,7 +7,7 @@ use crate::{
     naming::Name,
     parser::{
         constructor::Constructor, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        property::ParsedQProperty, qenum::ParsedQEnum, signals::ParsedSignal,
+        property::ParsedQProperty, signals::ParsedSignal,
     },
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
@@ -31,16 +31,12 @@ pub struct QmlElementMetadata {
 pub struct ParsedQObject {
     /// The base class of the struct
     pub base_class: Option<String>,
-    /// QObject type that stores the invokables for the QObject
-    pub qobject_ty: ForeignTypeIdentAlias,
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
-    pub inner: Ident,
+    pub rust_type: Ident,
     /// Representation of the Q_SIGNALS for the QObject
     pub signals: Vec<ParsedSignal>,
-    /// The Q_ENUM enums associated with this QObject
-    pub qenums: Vec<ParsedQEnum>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// These could also be exposed as Q_INVOKABLE on the C++ object
@@ -61,42 +57,45 @@ pub struct ParsedQObject {
     pub threading: bool,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
+
+    /// The original declaration entered by the user, i.e. a type alias with a list of attributes
+    pub declaration: ForeignTypeIdentAlias,
 }
 
 impl ParsedQObject {
     /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
     pub fn parse(
-        mut qobject_ty: ForeignTypeIdentAlias,
+        mut declaration: ForeignTypeIdentAlias,
         namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
         // Find any QML metadata
-        let qml_metadata = Self::parse_qml_metadata(&qobject_ty.ident_left, &mut qobject_ty.attrs)?;
+        let qml_metadata =
+            Self::parse_qml_metadata(&declaration.ident_left, &mut declaration.attrs)?;
 
         // Find if there is any base class
-        let base_class = attribute_take_path(&mut qobject_ty.attrs, &["base"])
+        let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
             .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?;
 
         let name = Name::from_ident_and_attrs(
-            &qobject_ty.ident_left,
-            &qobject_ty.attrs,
+            &declaration.ident_left,
+            &declaration.attrs,
             namespace,
             module,
         )?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_property_attributes(&mut qobject_ty.attrs)?;
-        let inner = qobject_ty.ident_right.clone();
+        let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
+        let inner = declaration.ident_right.clone();
 
         Ok(Self {
             base_class,
-            qobject_ty,
+            declaration,
             name,
-            inner,
+            rust_type: inner,
             signals: vec![],
-            qenums: vec![],
             methods: vec![],
             inherited_methods: vec![],
             constructors: vec![],

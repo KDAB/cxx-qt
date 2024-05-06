@@ -9,28 +9,11 @@
 
 namespace cxx_qt::my_object {
 class MyObject;
-enum class MyEnum : ::std::int32_t
-{
-  A
-};
-
-enum class MyOtherEnum : ::std::int32_t
-{
-  X,
-  Y,
-  Z
-};
 
 } // namespace cxx_qt::my_object
 
 namespace cxx_qt::my_object {
 class CxxName;
-enum class MyRenamedEnum : ::std::int32_t
-{
-  A,
-  B,
-  C
-};
 
 } // namespace cxx_qt::my_object
 
@@ -42,6 +25,22 @@ QML_ELEMENT
 namespace other_namespace {
 Q_NAMESPACE
 } // namespace other_namespace
+
+namespace cxx_qt::my_object {
+enum class MyEnum : ::std::int32_t
+{
+  A
+};
+} // namespace cxx_qt::my_object
+
+namespace my_namespace {
+enum class MyOtherEnum : ::std::int32_t
+{
+  X,
+  Y,
+  Z
+};
+} // namespace my_namespace
 
 namespace cxx_qt::my_object {
 Q_NAMESPACE
@@ -63,6 +62,15 @@ enum class MyOtherNamespacedEnum : ::std::int32_t
 };
 Q_ENUM_NS(MyOtherNamespacedEnum)
 } // namespace other_namespace
+
+namespace cxx_qt::my_object {
+enum class MyRenamedEnum : ::std::int32_t
+{
+  A,
+  B,
+  C
+};
+} // namespace cxx_qt::my_object
 
 #include "cxx-qt-gen/ffi.cxx.h"
 
@@ -86,22 +94,20 @@ public:
   enum class MyOtherEnum : ::std::int32_t{ X, Y, Z };
   Q_ENUM(MyOtherEnum)
 #else
-  using MyOtherEnum = ::cxx_qt::my_object::MyOtherEnum;
+  using MyOtherEnum = ::my_namespace::MyOtherEnum;
   Q_ENUM(MyOtherEnum)
 #endif
 
   virtual ~MyObject() = default;
 
 public:
-  Q_INVOKABLE void myInvokable(
-    cxx_qt::my_object::MyEnum qenum,
-    cxx_qt::my_object::MyOtherEnum other_qenum) const;
+  Q_INVOKABLE void myInvokable(cxx_qt::my_object::MyEnum qenum,
+                               my_namespace::MyOtherEnum other_qenum) const;
   explicit MyObject(QObject* parent = nullptr);
 
 private:
-  void myInvokableWrapper(
-    cxx_qt::my_object::MyEnum qenum,
-    cxx_qt::my_object::MyOtherEnum other_qenum) const noexcept;
+  void myInvokableWrapper(cxx_qt::my_object::MyEnum qenum,
+                          my_namespace::MyOtherEnum other_qenum) const noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

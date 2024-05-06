@@ -16,12 +16,14 @@ pub mod qobject;
 pub mod signals;
 
 use crate::{
+    // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
     syntax::{attribute::attribute_take_path, expr::expr_to_string},
 };
 use cxxqtdata::ParsedCxxQtData;
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Brace, Error, ItemMod, Meta, Result, Token,
+    punctuated::Punctuated, spanned::Spanned, token::Brace, Error, Ident, Item, ItemMod, Meta,
+    Result, Token,
 };
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
@@ -104,18 +106,31 @@ impl Parser {
         Ok((cxx_qt_data, module))
     }
 
+    /// The "Naming phase", it generates a list of all nameable types in our bridge.
+    fn naming_phase(
+        cxx_qt_data: &mut ParsedCxxQtData,
+        cxx_items: &[Item],
+        module_ident: &Ident,
+    ) -> Result<TypeNames> {
+        TypeNames::from_parsed_data(
+            cxx_qt_data,
+            cxx_items,
+            cxx_qt_data.namespace.as_deref(),
+            module_ident,
+        )
+    }
+
     /// Constructs a Parser object from a given [syn::ItemMod] block
     pub fn from(mut module: ItemMod) -> Result<Self> {
         let (namespace, cxx_file_stem) = Self::parse_mod_attributes(&mut module)?;
-        let (cxx_qt_data, module) = Self::parse_module_contents(module, namespace)?;
-        let type_names = TypeNames::from_parsed_data(
-            &cxx_qt_data,
+        let (mut cxx_qt_data, module) = Self::parse_module_contents(module, namespace)?;
+        let type_names = Self::naming_phase(
+            &mut cxx_qt_data,
             module
                 .content
                 .as_ref()
                 .map(|brace_and_items| &brace_and_items.1)
                 .unwrap_or(&vec![]),
-            cxx_qt_data.namespace.as_deref(),
             &module.ident,
         )?;
 
@@ -133,6 +148,7 @@ impl Parser {
 mod tests {
     use super::*;
 
+    use pretty_assertions::assert_eq;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, Type};
 

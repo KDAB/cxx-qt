@@ -22,8 +22,6 @@ use crate::{
 use quote::quote;
 use syn::{Ident, Result};
 
-use super::qenum;
-
 impl GeneratedRustFragment {
     pub fn from_qobject(
         qobject: &ParsedQObject,
@@ -61,7 +59,6 @@ impl GeneratedRustFragment {
             type_names,
             module_ident,
         )?);
-        generated.append(&mut qenum::generate(&qobject.qenums));
 
         // If this type is a singleton then we need to add an include
         if let Some(qml_metadata) = &qobject.qml_metadata {

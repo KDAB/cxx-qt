@@ -5,7 +5,9 @@ mod ffi {
         A,
     }
 
+    // Associated QEnums can be namespaced independently
     #[qenum(MyObject)]
+    #[namespace = "my_namespace"]
     enum MyOtherEnum {
         X,
         Y,
