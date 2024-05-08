@@ -482,6 +482,20 @@ impl CxxQtBuilder {
         env::set_var(variable_cargo, value.unwrap_or("true"));
     }
 
+    fn define_cfg_check_variable(key: String, values: Option<Vec<&str>>) {
+        if let Some(values) = values {
+            let values = values
+                .iter()
+                // Escape and add quotes
+                .map(|value| format!("\"{}\"", value.escape_default()))
+                .collect::<Vec<_>>()
+                .join(", ");
+            println!("cargo:rustc-check-cfg=cfg({key}, values({values}))");
+        } else {
+            println!("cargo:rustc-check-cfg=cfg({key})");
+        }
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
@@ -495,12 +509,32 @@ impl CxxQtBuilder {
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
+        // Allow for Qt 5 or Qt 6 as valid values
+        CxxQtBuilder::define_cfg_check_variable(
+            "cxxqt_qt_version_major".to_owned(),
+            Some(vec!["5", "6"]),
+        );
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
         CxxQtBuilder::define_cfg_variable(
             "cxxqt_qt_version_major".to_string(),
             Some(qtbuild.version().major.to_string().as_str()),
         );
+
+        // Seed all values from Qt 5.0 through to Qt 7.99
+        for major in 5..=7 {
+            CxxQtBuilder::define_cfg_check_variable(
+                format!("cxxqt_qt_version_at_least_{major}"),
+                None,
+            );
+
+            for minor in 0..=99 {
+                CxxQtBuilder::define_cfg_check_variable(
+                    format!("cxxqt_qt_version_at_least_{major}_{minor}"),
+                    None,
+                );
+            }
+        }
 
         for minor in 0..=qtbuild.version().minor {
             let qt_version_at_least = format!(
