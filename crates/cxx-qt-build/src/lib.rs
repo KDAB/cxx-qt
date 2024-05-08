@@ -97,12 +97,12 @@ impl GeneratedCpp {
                     //
                     // TODO: ideally CXX-Qt would also use the file name
                     // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
-                    file_ident = rust_file_path
+                    rust_file_path
                         .file_stem()
                         .unwrap()
                         .to_str()
                         .unwrap()
-                        .to_owned();
+                        .clone_into(&mut file_ident);
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {
@@ -128,7 +128,7 @@ impl GeneratedCpp {
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let rust_tokens = write_rust(&generated_rust);
-                    file_ident = parser.cxx_file_stem.clone();
+                    file_ident.clone_from(&parser.cxx_file_stem);
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
