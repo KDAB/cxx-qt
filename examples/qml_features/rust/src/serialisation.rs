@@ -10,22 +10,6 @@
 
 use serde::{Deserialize, Serialize};
 
-/// A struct representating our serialised form
-#[derive(Deserialize, Serialize)]
-pub struct DataSerde {
-    number: i32,
-    string: String,
-}
-
-impl From<&SerialisationRust> for DataSerde {
-    fn from(value: &SerialisationRust) -> DataSerde {
-        DataSerde {
-            number: value.number,
-            string: value.string.to_string(),
-        }
-    }
-}
-
 /// A CXX-Qt bridge which shows how use serde for (de)serialization of the data in a QObjects' QPROPERTY's
 #[cxx_qt::bridge(cxx_file_stem = "serialisation")]
 pub mod qobject {
@@ -63,6 +47,7 @@ use cxx_qt::CxxQtType;
 use cxx_qt_lib::QString;
 
 /// A QObject which can be serialised
+#[derive(Serialize, Deserialize)]
 pub struct SerialisationRust {
     /// The number Q_PROPERTY
     pub number: i32,
@@ -73,25 +58,14 @@ pub struct SerialisationRust {
 impl Default for SerialisationRust {
     fn default() -> Self {
         let string = r#"{"number": 4, "string": "Hello World!"}"#;
-        let data_serde: DataSerde = serde_json::from_str(string).unwrap();
-        data_serde.into()
-    }
-}
-
-impl From<DataSerde> for SerialisationRust {
-    fn from(value: DataSerde) -> Self {
-        Self {
-            number: value.number,
-            string: QString::from(&value.string),
-        }
+        serde_json::from_str(string).unwrap()
     }
 }
 
 impl qobject::Serialisation {
     /// Retrieve the JSON form of this QObject
     pub fn as_json_str(self: Pin<&mut Self>) -> QString {
-        let data_serde = DataSerde::from(self.rust());
-        match serde_json::to_string(&data_serde) {
+        match serde_json::to_string(&self.rust()) {
             Ok(data_string) => QString::from(&data_string),
             Err(err) => {
                 self.error(QString::from(&err.to_string()));
@@ -102,11 +76,11 @@ impl qobject::Serialisation {
 
     /// From a given JSON string try to load values for the Q_PROPERTYs
     // ANCHOR: book_grab_values
-    pub fn from_json_str(mut self: Pin<&mut Self>, string: &QString) {
-        match serde_json::from_str::<DataSerde>(&string.to_string()) {
+    pub fn from_json_str(mut self: Pin<&mut Self>, qstring: &QString) {
+        match serde_json::from_str::<SerialisationRust>(&qstring.to_string()) {
             Ok(data_serde) => {
                 self.as_mut().set_number(data_serde.number);
-                self.as_mut().set_string(QString::from(&data_serde.string));
+                self.as_mut().set_string(data_serde.string);
             }
             Err(err) => {
                 self.error(QString::from(&err.to_string()));

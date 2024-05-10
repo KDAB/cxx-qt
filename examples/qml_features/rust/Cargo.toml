@@ -16,7 +16,7 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
-cxx-qt-lib.workspace = true
+cxx-qt-lib = { workspace = true, features=["serde"] }
 serde.workspace = true
 serde_json.workspace = true
 

@@ -191,10 +191,15 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The QString class provides a Unicode character string.
 ///
 /// Note that QString is a UTF-16 whereas Rust strings are a UTF-8
 #[repr(C)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "String", into = "String"))]
 pub struct QString {
     /// The layout has changed between Qt 5 and Qt 6
     ///
@@ -293,12 +298,30 @@ impl From<&String> for QString {
     }
 }
 
+impl From<String> for QString {
+    /// Constructs a QString from a Rust string
+    ///
+    /// Note that this converts from UTF-8 to UTF-16
+    fn from(str: String) -> Self {
+        ffi::qstring_init_from_rust_string(&str)
+    }
+}
+
 impl From<&QString> for String {
     /// Convert the QString to a Rust string
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn from(qstring: &QString) -> Self {
         ffi::qstring_to_rust_string(qstring)
+    }
+}
+
+impl From<QString> for String {
+    /// Convert the QString to a Rust string
+    ///
+    /// Note that this converts from UTF-16 to UTF-8
+    fn from(qstring: QString) -> Self {
+        ffi::qstring_to_rust_string(&qstring)
     }
 }
 
