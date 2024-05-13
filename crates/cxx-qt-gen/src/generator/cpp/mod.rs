@@ -100,7 +100,7 @@ mod tests {
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
         assert_eq!(cpp.cxx_file_stem, "ffi");
         assert_eq!(cpp.qobjects.len(), 1);
-        assert_eq!(cpp.qobjects[0].namespace, "");
+        assert_eq!(cpp.qobjects[0].name.namespace(), None);
     }
 
     #[test]
@@ -119,7 +119,7 @@ mod tests {
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
         assert_eq!(cpp.cxx_file_stem, "my_object");
         assert_eq!(cpp.qobjects.len(), 1);
-        assert_eq!(&cpp.qobjects[0].namespace, "");
+        assert_eq!(cpp.qobjects[0].name.namespace(), None);
     }
 
     #[test]
@@ -136,6 +136,6 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        assert_eq!(cpp.qobjects[0].namespace, "cxx_qt");
+        assert_eq!(cpp.qobjects[0].name.namespace(), Some("cxx_qt"));
     }
 }

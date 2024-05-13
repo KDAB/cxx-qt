@@ -48,12 +48,12 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
         .iter()
         .map(|qobject| {
             let forward_declares = namespaced(
-                &qobject.namespace,
+                qobject.name.namespace().unwrap_or_default(),
                 &formatdoc! {r#"
                     class {ident};
                     {forward_declares}
                 "#,
-                ident = &qobject.ident,
+                ident = &qobject.name.cxx_unqualified(),
                 forward_declares = qobject.blocks.forward_declares.join("\n"),
                 },
             );
@@ -76,7 +76,7 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
 /// For a given GeneratedCppBlocks write the classes
 fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
     generated.qobjects.iter().map(|qobject| {
-        let ident = &qobject.ident;
+        let ident = &qobject.name.cxx_unqualified();
         let qobject_macro = if qobject.has_qobject_macro {
             "Q_OBJECT"
         } else {
@@ -88,7 +88,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             "".to_owned()
         };
         let class_definition = namespaced(
-            &qobject.namespace,
+            qobject.name.namespace().unwrap_or_default(),
             &formatdoc! { r#"
                 class {ident} : {base_classes}
                 {{
@@ -119,11 +119,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             .join("\n");
 
         let declare_metatype = if qobject.has_qobject_macro {
-            let ty = if qobject.namespace.is_empty() {
-                qobject.ident.clone()
-            } else {
-                format!("{namespace}::{ident}", namespace = qobject.namespace, ident = qobject.ident)
-            };
+            let ty = qobject.name.cxx_qualified();
             format!("Q_DECLARE_METATYPE({ty}*)")
         } else {
             "".to_owned()

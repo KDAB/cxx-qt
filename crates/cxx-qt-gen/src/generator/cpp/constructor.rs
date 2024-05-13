@@ -17,12 +17,11 @@ fn default_constructor(
     base_class: String,
     initializers: String,
 ) -> GeneratedCppQObjectBlocks {
+    let class_name = qobject.name.cxx_unqualified();
+    let rust_obj = qobject.rust_struct.cxx_qualified();
     let constructor = if qobject.has_qobject_macro {
         CppFragment::Pair {
-            header: format!(
-                "explicit {class_name}(QObject* parent = nullptr);",
-                class_name = qobject.ident
-            ),
+            header: format!("explicit {class_name}(QObject* parent = nullptr);",),
             source: formatdoc!(
                 r#"
             {class_name}::{class_name}(QObject* parent)
@@ -30,14 +29,12 @@ fn default_constructor(
               , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
             "#,
-                class_name = qobject.ident,
                 namespace_internals = qobject.namespace_internals,
-                rust_obj = qobject.rust_ident,
             ),
         }
     } else {
         CppFragment::Pair {
-            header: format!("explicit {class_name}();", class_name = qobject.ident),
+            header: format!("explicit {class_name}();"),
             source: formatdoc!(
                 r#"
             {class_name}::{class_name}()
@@ -52,9 +49,7 @@ fn default_constructor(
                 } else {
                     format!(": {base_class}()")
                 },
-                class_name = qobject.ident,
                 namespace_internals = qobject.namespace_internals,
-                rust_obj = qobject.rust_ident,
             ),
         }
     };
@@ -101,8 +96,8 @@ pub fn generate(
 
     let mut generated = GeneratedCppQObjectBlocks::default();
 
-    let class_name = qobject.ident.as_str();
-    let rust_obj = qobject.rust_ident.as_str();
+    let class_name = qobject.name.cxx_unqualified();
+    let rust_obj = qobject.rust_struct.cxx_qualified();
     let namespace_internals = &qobject.namespace_internals;
     for (index, constructor) in constructors.iter().enumerate() {
         let argument_list = expand_arguments(&constructor.arguments, type_names)?;
@@ -160,6 +155,7 @@ pub fn generate(
 mod tests {
     use super::*;
 
+    use crate::naming::Name;
     use syn::parse_quote;
 
     fn type_names_with_qobject() -> TypeNames {
@@ -170,9 +166,8 @@ mod tests {
 
     fn qobject_for_testing() -> GeneratedCppQObject {
         GeneratedCppQObject {
-            ident: "MyObject".to_string(),
-            rust_ident: "MyObjectRust".to_string(),
-            namespace: "".to_string(),
+            name: Name::mock("MyObject"),
+            rust_struct: Name::mock("MyObjectRust"),
             namespace_internals: "rust".to_string(),
             blocks: GeneratedCppQObjectBlocks::default(),
             has_qobject_macro: true,
