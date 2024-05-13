@@ -11,9 +11,12 @@ use syn::{
     Path, Result,
 };
 
-use crate::syntax::{
-    attribute::attribute_find_path, expr::expr_to_string,
-    foreignmod::foreign_mod_to_foreign_item_types,
+use crate::{
+    parser::qobject::ParsedQObject,
+    syntax::{
+        attribute::attribute_find_path, expr::expr_to_string,
+        foreignmod::foreign_mod_to_foreign_item_types,
+    },
 };
 
 use super::Name;
@@ -139,6 +142,17 @@ impl TypeNames {
         Ok(())
     }
 
+    fn populate_qobject(&mut self, qobject: &ParsedQObject) -> Result<()> {
+        self.insert(qobject.name.clone())?;
+        // Insert the Rust type.
+        self.insert(Name {
+            rust: qobject.rust_type.clone(),
+            cxx: None,
+            namespace: None,
+            module: qobject.name.module.clone(),
+        })
+    }
+
     fn populate_from_cxx_qt_data(
         &mut self,
         cxx_qt_data: &ParsedCxxQtData,
@@ -146,7 +160,7 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         for qobject in cxx_qt_data.qobjects.values() {
-            self.insert(qobject.name.clone())?;
+            self.populate_qobject(qobject)?;
         }
 
         for qenum in &cxx_qt_data.qenums {
@@ -268,7 +282,10 @@ impl TypeNames {
         Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
-    fn lookup(&self, ident: &Ident) -> Result<&Name> {
+    /// For a given ident in the CXX bridge, return the Name struct for the type or an error if it's not found.
+    /// This allows access to all parts (renamed CXX name, namespace, etc.) of a given type by
+    /// identifier.
+    pub fn lookup(&self, ident: &Ident) -> Result<&Name> {
         self.names
             .get(ident)
             .ok_or_else(|| self.unknown_type(ident))
@@ -381,9 +398,11 @@ impl TypeNames {
 
     #[cfg(test)]
     // Only for testing, return a TypeNames struct that contains a qobject::MyObject
+    // and an associated MyObjectRust
     pub fn mock() -> Self {
         let mut this = Self::default();
         this.mock_insert("MyObject", Some(format_ident!("qobject")), None, None);
+        this.mock_insert("MyObjectRust", Some(format_ident!("qobject")), None, None);
         this
     }
 

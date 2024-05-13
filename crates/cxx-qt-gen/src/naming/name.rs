@@ -150,4 +150,24 @@ impl Name {
             cxx_name
         }
     }
+
+    #[cfg(test)]
+    pub fn mock(ident: &str) -> Self {
+        Self {
+            rust: format_ident!("{ident}"),
+            cxx: None,
+            module: Some(Path::from(format_ident!("qobject"))),
+            namespace: None,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn mock_namespaced(ident: &str, namespace: &str) -> Self {
+        Self {
+            rust: format_ident!("{ident}"),
+            cxx: None,
+            module: Some(Path::from(format_ident!("qobject"))),
+            namespace: Some(namespace.to_owned()),
+        }
+    }
 }

@@ -3,14 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{
-    cpp::{
-        constructor, cxxqttype, fragment::CppFragment, inherit, locking,
-        method::generate_cpp_methods, property::generate_cpp_properties, qenum,
-        signal::generate_cpp_signals, threading,
+use crate::{
+    generator::{
+        cpp::{
+            constructor, cxxqttype, fragment::CppFragment, inherit, locking,
+            method::generate_cpp_methods, property::generate_cpp_properties, qenum,
+            signal::generate_cpp_signals, threading,
+        },
+        naming::{namespace::NamespaceName, qobject::QObjectName},
+        structuring::StructuredQObject,
     },
-    naming::{namespace::NamespaceName, qobject::QObjectName},
-    structuring::StructuredQObject,
+    naming::Name,
 };
 use crate::{naming::TypeNames, parser::qobject::ParsedQObject};
 use std::collections::BTreeSet;
@@ -80,15 +83,11 @@ impl GeneratedCppQObjectBlocks {
     }
 }
 
-#[derive(Default)]
 pub struct GeneratedCppQObject {
-    /// Ident of the C++ QObject
-    pub ident: String,
-    /// Ident of the Rust object
-    pub rust_ident: String,
-    /// Ident of the QObject namespace
-    /// If one isn't specified on the QObject, it's the same as the module.
-    pub namespace: String,
+    /// Name of the QObject, with associated namespace, cxx_name, etc.
+    pub name: Name,
+    /// Name of the Rust struct that this QObject is associated with
+    pub rust_struct: Name,
     /// Ident of the namespace for CXX-Qt internals of the QObject
     pub namespace_internals: String,
     /// The blocks of the QObject
@@ -107,11 +106,9 @@ impl GeneratedCppQObject {
         // Create the base object
         let qobject_idents = QObjectName::from(qobject);
         let namespace_idents = NamespaceName::from(qobject);
-        let cpp_class = qobject_idents.cpp_class.cpp.to_string();
         let mut generated = GeneratedCppQObject {
-            ident: cpp_class.clone(),
-            rust_ident: qobject_idents.rust_struct.cpp.to_string(),
-            namespace: qobject.name.namespace().unwrap_or_default().to_owned(),
+            name: qobject.name.clone(),
+            rust_struct: type_names.lookup(&qobject.rust_type)?.clone(),
             namespace_internals: namespace_idents.internal,
             blocks: GeneratedCppQObjectBlocks::from(qobject),
             has_qobject_macro: qobject.has_qobject_macro,
@@ -219,10 +216,10 @@ mod tests {
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
                 .unwrap();
-        assert_eq!(cpp.ident, "MyObject");
-        assert_eq!(cpp.rust_ident, "MyObjectRust");
+        assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
+        assert_eq!(cpp.rust_struct.cxx_unqualified(), "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
 
         assert_eq!(cpp.blocks.base_classes.len(), 3);
@@ -251,7 +248,7 @@ mod tests {
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
                 .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(cpp.blocks.base_classes.len(), 3);
@@ -279,10 +276,12 @@ mod tests {
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("MyNamedObject", None, None, None);
+        type_names.mock_insert("MyNamedObjectRust", None, None, None);
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
-                .unwrap();
-        assert_eq!(cpp.ident, "MyNamedObject");
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &type_names).unwrap();
+        assert_eq!(cpp.name.cxx_unqualified(), "MyNamedObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 1);
         assert_eq!(
             cpp.blocks.metaobjects[0],
@@ -307,9 +306,9 @@ mod tests {
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
                 .unwrap();
-        assert_eq!(cpp.ident, "MyObject");
+        assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
         assert_eq!(
             cpp.blocks.metaobjects[0],
@@ -335,9 +334,9 @@ mod tests {
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::default())
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
                 .unwrap();
-        assert_eq!(cpp.ident, "MyObject");
+        assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
         assert_eq!(
             cpp.blocks.metaobjects[0],

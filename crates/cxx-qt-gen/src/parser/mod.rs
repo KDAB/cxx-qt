@@ -220,13 +220,20 @@ mod tests {
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
-        assert_eq!(parser.type_names.num_types(), 17);
+        assert_eq!(parser.type_names.num_types(), 18);
         assert_eq!(
             parser
                 .type_names
                 .rust_qualified(&format_ident!("MyObject"))
                 .unwrap(),
             parse_quote! { ffi::MyObject }
+        );
+        assert_eq!(
+            parser
+                .type_names
+                .rust_qualified(&format_ident!("MyObjectRust"))
+                .unwrap(),
+            parse_quote! { ffi::MyObjectRust }
         );
     }
 
@@ -316,7 +323,7 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.type_names.num_types(), 19);
+        assert_eq!(parser.type_names.num_types(), 22);
         assert_eq!(
             parser
                 .type_names
@@ -340,6 +347,28 @@ mod tests {
                 .unwrap()
                 .unwrap(),
             "extern_namespace"
+        );
+
+        assert_eq!(
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectARust"))
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectBRust"))
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            parser
+                .type_names
+                .namespace(&format_ident!("MyObjectCRust"))
+                .unwrap(),
+            None
         );
     }
 }

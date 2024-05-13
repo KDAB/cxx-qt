@@ -44,13 +44,18 @@ mod tests {
 
     use crate::{
         generator::cpp::qobject::{GeneratedCppQObject, GeneratedCppQObjectBlocks},
+        naming::Name,
         tests::format_cpp,
     };
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
 
-    /// Helper to create a GeneratedCppBlocks for testing
     pub fn create_generated_cpp() -> GeneratedCppBlocks {
+        create_generated_cpp_with_namespace(Some("cxx_qt::my_object"))
+    }
+
+    /// Helper to create a GeneratedCppBlocks for testing
+    pub fn create_generated_cpp_with_namespace(namespace: Option<&str>) -> GeneratedCppBlocks {
         GeneratedCppBlocks {
             forward_declares: vec![],
             includes: BTreeSet::default(),
@@ -58,10 +63,17 @@ mod tests {
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
-                    ident: "MyObject".to_owned(),
-                    rust_ident: "MyObjectRust".to_owned(),
-                    namespace: "cxx_qt::my_object".to_owned(),
-                    namespace_internals: "cxx_qt::my_object::cxx_qt_my_object".to_owned(),
+                    name: if let Some(namespace) = namespace {
+                        Name::mock_namespaced("MyObject", namespace)
+                    } else {
+                        Name::mock("MyObject")
+                    },
+                    rust_struct: Name::mock("MyObjectRust"),
+                    namespace_internals: if let Some(namespace) = namespace {
+                        format!("{namespace}::cxx_qt_my_object")
+                    } else {
+                        "cxx_qt_my_object".to_owned()
+                    },
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
                         base_classes: vec!["QStringListModel".to_owned()],
@@ -182,9 +194,8 @@ mod tests {
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
-                    ident: "FirstObject".to_owned(),
-                    rust_ident: "FirstObjectRust".to_owned(),
-                    namespace: "cxx_qt".to_owned(),
+                    name: Name::mock_namespaced("FirstObject", "cxx_qt"),
+                    rust_struct: Name::mock("FirstObjectRust"),
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
@@ -226,9 +237,8 @@ mod tests {
                     }
                 },
                 GeneratedCppQObject {
-                    ident: "SecondObject".to_owned(),
-                    rust_ident: "SecondObjectRust".to_owned(),
-                    namespace: "cxx_qt".to_owned(),
+                    name: Name::mock_namespaced("SecondObject",  "cxx_qt"),
+                    rust_struct: Name::mock("SecondObjectRust"),
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
@@ -284,10 +294,7 @@ mod tests {
 
     /// Helper to create a GeneratedCppBlocks with no namespace for testing
     pub fn create_generated_cpp_no_namespace() -> GeneratedCppBlocks {
-        let mut generated = create_generated_cpp();
-        generated.qobjects[0].namespace = "".to_owned();
-        generated.qobjects[0].namespace_internals = "cxx_qt_my_object".to_owned();
-        generated
+        create_generated_cpp_with_namespace(None)
     }
 
     /// Helper for the expected header

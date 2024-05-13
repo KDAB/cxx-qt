@@ -30,7 +30,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
                 .filter_map(pair_as_source)
                 .collect::<Vec<String>>()
                 .join("\n");
-            let namespaced = namespaced(&qobject.namespace, &methods);
+            let namespaced = namespaced(qobject.name.namespace().unwrap_or_default(), &methods);
 
             qobject
                 .blocks
