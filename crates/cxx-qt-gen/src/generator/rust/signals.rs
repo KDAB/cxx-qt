@@ -11,8 +11,7 @@ use crate::{
         },
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
     },
-    naming::rust::syn_type_cxx_bridge_to_qualified,
-    naming::TypeNames,
+    naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
     syntax::attribute::attribute_find_path,
 };
@@ -21,12 +20,14 @@ use syn::{parse_quote, FnArg, Ident, Result, Type};
 
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
-    qobject_name: &Ident,
+    qobject_name: &Name,
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_name, type_names)?;
+    let idents_helper = QSignalHelperName::new(&idents, qobject_name)?;
+
+    let qobject_name_rust = qobject_name.rust_unqualified();
 
     let signal_name_cpp = idents.name.cpp;
     let signal_name_cpp_str = signal_name_cpp.to_string();
@@ -72,12 +73,12 @@ pub fn generate_rust_signal(
         .collect::<Result<_>>()?;
 
     let self_type_cxx = if signal.mutable {
-        parse_quote! { Pin<&mut #qobject_name> }
+        parse_quote! { Pin<&mut #qobject_name_rust> }
     } else {
-        parse_quote! { &#qobject_name }
+        parse_quote! { &#qobject_name_rust }
     };
     let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
-    let qualified_impl = type_names.rust_qualified(qobject_name)?;
+    let qualified_impl = qobject_name.rust_qualified();
 
     let mut unsafe_block = None;
     let mut unsafe_call = Some(quote! { unsafe });
@@ -211,7 +212,6 @@ pub fn generate_rust_signals(
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
-    let qobject_name = &qobject_idents.cpp_class.rust;
 
     // Create the methods for the other signals
     for signal in signals {
@@ -235,7 +235,7 @@ pub fn generate_rust_signals(
         };
         generated.append(&mut generate_rust_signal(
             &signal,
-            qobject_name,
+            &qobject_idents.name,
             type_names,
             module_ident,
         )?);
@@ -907,9 +907,13 @@ mod tests {
             private: false,
         };
 
+        let qobject_name = TypeNames::mock()
+            .lookup(&qsignal.qobject_ident)
+            .unwrap()
+            .clone();
         let generated = generate_rust_signal(
             &qsignal,
-            &qsignal.qobject_ident,
+            &qobject_name,
             &TypeNames::mock(),
             &format_ident!("ffi"),
         )
@@ -1058,9 +1062,13 @@ mod tests {
             private: true,
         };
 
+        let qobject_name = TypeNames::mock()
+            .lookup(&qsignal.qobject_ident)
+            .unwrap()
+            .clone();
         let generated = generate_rust_signal(
             &qsignal,
-            &qsignal.qobject_ident,
+            &qobject_name,
             &TypeNames::mock(),
             &format_ident!("ffi"),
         )

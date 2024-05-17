@@ -26,7 +26,7 @@ pub fn generate_cpp_methods(
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
-    let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
+    let qobject_ident = qobject_idents.name.cxx_unqualified();
     for invokable in invokables {
         let idents = QMethodName::from(invokable);
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;

@@ -13,7 +13,7 @@ use crate::{
 pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectName) -> ParsedSignal {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
-    let cpp_class_rust = &qobject_idents.cpp_class.rust;
+    let cpp_class_rust = &qobject_idents.name.rust_unqualified();
     let notify_rust = &idents.notify.rust;
     let notify_cpp_str = &idents.notify.cpp.to_string();
     let method: ForeignItemFn = syn::parse_quote! {
@@ -24,6 +24,6 @@ pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectName) -> ParsedS
     ParsedSignal::from_property_method(
         method,
         idents.notify.clone(),
-        qobject_idents.cpp_class.rust.clone(),
+        qobject_idents.name.rust_unqualified().clone(),
     )
 }

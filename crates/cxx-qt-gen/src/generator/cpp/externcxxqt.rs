@@ -29,7 +29,8 @@ pub fn generate(
     for block in blocks {
         for signal in &block.signals {
             let mut block = GeneratedCppExternCxxQtBlocks::default();
-            let data = generate_cpp_signal(signal, &signal.qobject_ident, type_names)?;
+            let qobject_name = type_names.lookup(&signal.qobject_ident)?;
+            let data = generate_cpp_signal(signal, qobject_name, type_names)?;
             block.includes = data.includes;
             // Ensure that we include MaybeLockGuard<T> that is used in multiple places
             block

@@ -29,7 +29,7 @@ impl GeneratedRustFragment {
         module_ident: &Ident,
     ) -> Result<Self> {
         // Create the base object
-        let qobject_idents = QObjectName::from(qobject);
+        let qobject_idents = QObjectName::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
@@ -92,7 +92,8 @@ impl GeneratedRustFragment {
         // This could be implemented using an auto trait in the future once stable
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
         if qobject.locking {
-            let qualified_impl = type_names.rust_qualified(&qobject_idents.cpp_class.rust)?;
+            let qualified_impl =
+                type_names.rust_qualified(qobject_idents.name.rust_unqualified())?;
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
             });
@@ -118,17 +119,17 @@ fn generate_qobject_definitions(
     namespace: &str,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
-    let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
-    let cpp_class_name_cpp = &qobject_idents.cpp_class.cpp;
+    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
-    let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
+    let rust_struct_name_rust = &qobject_idents.rust_struct.rust_unqualified();
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
     let namespace = if !namespace.is_empty() {
         Some(quote! { #[namespace=#namespace] })
     } else {
         None
     };
-    let cxx_name = if cpp_class_name_rust == cpp_class_name_cpp {
+    let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
         let cpp_class_name_cpp = cpp_class_name_cpp.to_string();

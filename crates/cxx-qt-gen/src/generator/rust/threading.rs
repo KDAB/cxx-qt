@@ -26,7 +26,7 @@ pub fn generate(
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let cpp_struct_ident = &qobject_ident.cpp_class.rust;
+    let cpp_struct_ident = qobject_ident.name.rust_unqualified();
     let cxx_qt_thread_ident = &qobject_ident.cxx_qt_thread_class;
     let cxx_qt_thread_queued_fn_ident = &qobject_ident.cxx_qt_thread_queued_fn_struct;
     let cxx_qt_thread_queue_fn = qobject_ident.cxx_qt_thread_method("queue_boxed_fn");
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectName::from(&qobject);
+        let qobject_idents = QObjectName::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
         let generated = generate(
