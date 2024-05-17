@@ -9,7 +9,7 @@ use crate::{
             fragment::{CppFragment, CppNamedType},
             qobject::GeneratedCppQObjectBlocks,
         },
-        naming::{method::QMethodName, qobject::QObjectName},
+        naming::{method::QMethodName, qobject::QObjectNames},
     },
     naming::cpp::{
         syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
@@ -22,7 +22,7 @@ use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 
 pub fn generate_cpp_methods(
     invokables: &Vec<ParsedMethod>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();

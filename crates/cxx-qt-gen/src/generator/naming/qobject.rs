@@ -11,7 +11,7 @@ use quote::format_ident;
 use syn::{Ident, Result};
 
 /// Names for parts of a Q_OBJECT
-pub struct QObjectName {
+pub struct QObjectNames {
     /// The name of the QObject itself.
     pub name: Name,
     /// The name of the inner Rust struct
@@ -22,11 +22,13 @@ pub struct QObjectName {
     pub cxx_qt_thread_queued_fn_struct: Ident,
 }
 
-impl QObjectName {
+impl QObjectNames {
+    /// For a given QObject, create the names associated with it for generation.
     pub fn from_qobject(qobject: &ParsedQObject, type_names: &TypeNames) -> Result<Self> {
         Self::from_name_and_ident(&qobject.name, &qobject.rust_type, type_names)
     }
 
+    /// From the QObject name and Rust struct ident, create the names needed for generation.
     pub fn from_name_and_ident(
         qobject_name: &Name,
         ident_right: &Ident,
@@ -78,14 +80,14 @@ pub mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
-    pub fn create_qobjectname() -> QObjectName {
-        QObjectName::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap()
+    pub fn create_qobjectname() -> QObjectNames {
+        QObjectNames::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap()
     }
 
     #[test]
     fn test_parsed_property() {
         let names =
-            QObjectName::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap();
+            QObjectNames::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap();
         assert_eq!(names.name.cxx_unqualified(), "MyObject");
         assert_eq!(names.name.rust_unqualified(), &format_ident!("MyObject"));
         assert_eq!(names.rust_struct.cxx_unqualified(), "MyObjectRust");

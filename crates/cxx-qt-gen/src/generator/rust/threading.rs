@@ -7,7 +7,7 @@ use crate::{
     generator::{
         naming::{
             namespace::{namespace_combine_ident, NamespaceName},
-            qobject::QObjectName,
+            qobject::QObjectNames,
         },
         rust::fragment::GeneratedRustFragment,
     },
@@ -19,7 +19,7 @@ use syn::{Ident, Result};
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
-    qobject_ident: &QObjectName,
+    qobject_ident: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
     module_ident: &Ident,
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectName::from_qobject(&qobject, &TypeNames::mock()).unwrap();
+        let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
         let generated = generate(

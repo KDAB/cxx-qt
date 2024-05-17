@@ -5,12 +5,12 @@
 
 use crate::generator::{
     cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
-    naming::qobject::QObjectName,
+    naming::qobject::QObjectNames,
 };
 use indoc::formatdoc;
 use syn::Result;
 
-pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQObjectBlocks)> {
+pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     let cpp_class = &qobject_idents.name.cxx_unqualified();

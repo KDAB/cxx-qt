@@ -5,7 +5,7 @@
 
 use crate::{
     generator::{
-        naming::{namespace::NamespaceName, qobject::QObjectName},
+        naming::{namespace::NamespaceName, qobject::QObjectNames},
         rust::{
             constructor, cxxqttype,
             fragment::{GeneratedRustFragment, RustFragmentPair},
@@ -29,7 +29,7 @@ impl GeneratedRustFragment {
         module_ident: &Ident,
     ) -> Result<Self> {
         // Create the base object
-        let qobject_idents = QObjectName::from_qobject(qobject, type_names)?;
+        let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
@@ -115,7 +115,7 @@ impl GeneratedRustFragment {
 
 /// Generate the C++ and Rust CXX definitions for the QObject
 fn generate_qobject_definitions(
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     namespace: &str,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();

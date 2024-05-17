@@ -6,11 +6,11 @@
 use syn::ForeignItemFn;
 
 use crate::{
-    generator::naming::{property::QPropertyName, qobject::QObjectName},
+    generator::naming::{property::QPropertyName, qobject::QObjectNames},
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectName) -> ParsedSignal {
+pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectNames) -> ParsedSignal {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();

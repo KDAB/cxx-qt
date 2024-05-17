@@ -5,7 +5,7 @@
 
 use crate::{
     generator::{
-        naming::{method::QMethodName, qobject::QObjectName},
+        naming::{method::QMethodName, qobject::QObjectNames},
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
     },
     parser::method::ParsedMethod,
@@ -16,7 +16,7 @@ use syn::{spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
     invokables: &Vec<ParsedMethod>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();

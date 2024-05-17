@@ -5,7 +5,7 @@
 
 use crate::{
     generator::{
-        naming::{namespace::NamespaceName, qobject::QObjectName, CombinedIdent},
+        naming::{namespace::NamespaceName, qobject::QObjectNames, CombinedIdent},
         rust::fragment::GeneratedRustFragment,
     },
     naming::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
@@ -60,7 +60,7 @@ fn argument_members(args: &[Type]) -> Vec<TokenStream> {
 }
 
 fn generate_default_constructor(
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     namespace: &NamespaceName,
 ) -> GeneratedRustFragment {
     let rust_struct_ident = qobject_idents.rust_struct.rust_unqualified();
@@ -177,7 +177,7 @@ fn unsafe_if(condition: bool) -> Option<TokenStream> {
 
 pub fn generate(
     constructors: &[Constructor],
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
     module_ident: &Ident,
@@ -456,8 +456,8 @@ mod tests {
         }
     }
 
-    fn mock_name() -> QObjectName {
-        QObjectName::from_idents(format_ident!("MyObject"), format_ident!("MyObjectRust"))
+    fn mock_name() -> QObjectNames {
+        QObjectNames::from_idents(format_ident!("MyObject"), format_ident!("MyObjectRust"))
     }
 
     fn mock_namespace() -> NamespaceName {

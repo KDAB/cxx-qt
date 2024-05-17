@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{cpp::qobject::GeneratedCppQObjectBlocks, naming::qobject::QObjectName};
+use crate::generator::{cpp::qobject::GeneratedCppQObjectBlocks, naming::qobject::QObjectNames};
 use syn::Result;
 
-pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlocks> {
+pub fn generate(qobject_idents: &QObjectNames) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     let rust_struct = qobject_idents.rust_struct.cxx_qualified();

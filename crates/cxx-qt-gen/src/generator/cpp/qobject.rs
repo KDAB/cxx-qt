@@ -10,7 +10,7 @@ use crate::{
             method::generate_cpp_methods, property::generate_cpp_properties, qenum,
             signal::generate_cpp_signals, threading,
         },
-        naming::{namespace::NamespaceName, qobject::QObjectName},
+        naming::{namespace::NamespaceName, qobject::QObjectNames},
         structuring::StructuredQObject,
     },
     naming::Name,
@@ -104,7 +104,7 @@ impl GeneratedCppQObject {
         let qobject = structured_qobject.declaration;
 
         // Create the base object
-        let qobject_idents = QObjectName::from_qobject(qobject, type_names)?;
+        let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = GeneratedCppQObject {
             name: qobject.name.clone(),
