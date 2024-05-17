@@ -89,6 +89,11 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 )
 # ANCHOR_END: book_cmake_use_corrosion
 
+if (MSVC)
+    add_link_options("/FORCE:MULTIPLE")
+endif()
+
+
 # ANCHOR: book_cmake_executable
 # Define the executable with the C++ source
 add_executable(${APP_NAME} cpp/main.cpp)

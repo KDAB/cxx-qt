@@ -60,6 +60,10 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
     Qt::QuickControls2
 )
 
+if (MSVC)
+    add_link_options("/FORCE:MULTIPLE")
+endif()
+
 # Qt Graphical Effects imports changed in Qt 6 so provide proxies
 if(Qt5_FOUND)
     set(QML_COMPAT_RESOURCES qml/compat/compat_qt5.qrc)

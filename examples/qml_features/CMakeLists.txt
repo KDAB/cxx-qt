@@ -60,6 +60,10 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
     Qt::QuickControls2
 )
 
+if (MSVC)
+    add_link_options("/FORCE:MULTIPLE")
+endif()
+
 add_executable(${APP_NAME}
     cpp/main.cpp
 )
