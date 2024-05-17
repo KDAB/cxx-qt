@@ -5,7 +5,7 @@
 
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
-    naming::{property::QPropertyName, qobject::QObjectName},
+    naming::{property::QPropertyName, qobject::QObjectNames},
 };
 use crate::{
     naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
@@ -19,7 +19,7 @@ mod signal;
 
 pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();

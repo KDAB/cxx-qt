@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::{naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment},
+    generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     naming::TypeNames,
 };
 use quote::quote;
@@ -13,7 +13,7 @@ use syn::Result;
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
-    qobject_ident: &QObjectName,
+    qobject_ident: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_generate_rust_cxxqttype() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectName::from_qobject(&qobject, &TypeNames::mock()).unwrap();
+        let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
         let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
 

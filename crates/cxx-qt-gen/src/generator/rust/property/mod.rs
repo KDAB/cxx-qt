@@ -9,7 +9,7 @@ pub mod signal;
 
 use crate::{
     generator::{
-        naming::{property::QPropertyName, qobject::QObjectName},
+        naming::{property::QPropertyName, qobject::QObjectNames},
         rust::fragment::GeneratedRustFragment,
     },
     naming::TypeNames,
@@ -21,7 +21,7 @@ use super::signals::generate_rust_signals;
 
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {

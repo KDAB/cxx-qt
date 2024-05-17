@@ -6,7 +6,7 @@
 use crate::{
     generator::{
         naming::{
-            qobject::QObjectName,
+            qobject::QObjectNames,
             signals::{QSignalHelperName, QSignalName},
         },
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
@@ -207,7 +207,7 @@ pub fn generate_rust_signal(
 
 pub fn generate_rust_signals(
     signals: &Vec<ParsedSignal>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {

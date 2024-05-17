@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::{naming::qobject::QObjectName, rust::fragment::GeneratedRustFragment},
+    generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     parser::inherit::ParsedInheritedMethod,
 };
 use proc_macro2::TokenStream;
@@ -12,7 +12,7 @@ use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Item, Result};
 
 pub fn generate(
-    qobject_ident: &QObjectName,
+    qobject_ident: &QObjectNames,
     methods: &[ParsedInheritedMethod],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();

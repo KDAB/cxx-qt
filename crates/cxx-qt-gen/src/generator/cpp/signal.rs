@@ -7,7 +7,7 @@ use crate::{
     generator::{
         cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         naming::{
-            qobject::QObjectName,
+            qobject::QObjectNames,
             signals::{QSignalHelperName, QSignalName},
         },
     },
@@ -191,7 +191,7 @@ pub fn generate_cpp_signal(
 
 pub fn generate_cpp_signals(
     signals: &Vec<ParsedSignal>,
-    qobject_idents: &QObjectName,
+    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
