@@ -13,7 +13,7 @@ use syn::Result;
 pub fn generate(qobject_idents: &QObjectName) -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
-    let cpp_class = &qobject_idents.cpp_class.cpp;
+    let cpp_class = &qobject_idents.name.cxx_unqualified();
     let cxx_qt_thread_ident = &qobject_idents.cxx_qt_thread_class;
 
     result.forward_declares.push(format!(

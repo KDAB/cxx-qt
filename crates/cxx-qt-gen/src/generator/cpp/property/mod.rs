@@ -24,7 +24,7 @@ pub fn generate_cpp_properties(
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
-    let qobject_ident = qobject_idents.cpp_class.cpp.to_string();
+    let qobject_ident = qobject_idents.name.cxx_unqualified();
 
     for property in properties {
         // Cache the idents as they are used in multiple places

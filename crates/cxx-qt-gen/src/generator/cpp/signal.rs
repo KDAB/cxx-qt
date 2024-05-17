@@ -11,13 +11,12 @@ use crate::{
             signals::{QSignalHelperName, QSignalName},
         },
     },
-    naming::cpp::syn_type_to_cpp_type,
-    naming::TypeNames,
+    naming::{cpp::syn_type_to_cpp_type, Name, TypeNames},
     parser::{parameter::ParsedFunctionParameter, signals::ParsedSignal},
 };
 use indoc::formatdoc;
 use std::collections::BTreeSet;
-use syn::{Ident, Result};
+use syn::Result;
 
 #[derive(Default)]
 pub struct CppSignalFragment {
@@ -49,7 +48,7 @@ struct Parameters {
 fn parameter_types_and_values(
     parameters: &[ParsedFunctionParameter],
     type_names: &TypeNames,
-    self_ty: &Ident,
+    self_ty: &Name,
 ) -> Result<Parameters> {
     let mut parameter_named_types_with_self = vec![];
     let mut parameter_types_with_self = vec![];
@@ -66,7 +65,7 @@ fn parameter_types_and_values(
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
     // Insert the extra argument into the closure
-    let self_ty = type_names.cxx_qualified(self_ty)?;
+    let self_ty = self_ty.cxx_qualified();
     parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
     parameter_types_with_self.insert(0, format!("{self_ty}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
@@ -81,7 +80,7 @@ fn parameter_types_and_values(
 
 pub fn generate_cpp_signal(
     signal: &ParsedSignal,
-    qobject_ident: &Ident,
+    qobject_name: &Name,
     type_names: &TypeNames,
 ) -> Result<CppSignalFragment> {
     let mut generated = CppSignalFragment::default();
@@ -92,17 +91,17 @@ pub fn generate_cpp_signal(
         .insert("#include <cxx-qt/signalhandler.h>".to_owned());
 
     // Build a namespace that includes any namespace for the T
-    let qobject_ident_namespaced = type_names.cxx_qualified(qobject_ident)?;
+    let qobject_ident_namespaced = qobject_name.cxx_qualified();
 
     // Prepare the idents
     let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_ident, type_names)?;
+    let idents_helper = QSignalHelperName::new(&idents, qobject_name)?;
 
     let signal_ident = idents.name.cpp;
     let free_connect_ident_cpp = idents_helper.connect_name.cpp;
 
     // Retrieve the parameters for the signal
-    let parameters = parameter_types_and_values(&signal.parameters, type_names, qobject_ident)?;
+    let parameters = parameter_types_and_values(&signal.parameters, type_names, qobject_name)?;
     let parameters_named_types = parameters.named_types;
     let parameters_named_types_with_self = parameters.named_types_with_self;
     let parameter_types_with_self = parameters.types_with_self;
@@ -196,11 +195,10 @@ pub fn generate_cpp_signals(
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
-    let qobject_ident = &qobject_idents.cpp_class.cpp;
 
     for signal in signals {
         let mut block = GeneratedCppQObjectBlocks::default();
-        let data = generate_cpp_signal(signal, qobject_ident, type_names)?;
+        let data = generate_cpp_signal(signal, &qobject_idents.name, type_names)?;
         block.includes = data.includes;
         block.forward_declares_namespaced = data.forward_declares;
         block.fragments = data.fragments;
@@ -533,7 +531,8 @@ mod tests {
 
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, None, None);
-        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
+        let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
+        let generated = generate_cpp_signal(&signal, &qobject_name, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 
@@ -623,8 +622,8 @@ mod tests {
 
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
-
-        let generated = generate_cpp_signal(&signal, &signal.qobject_ident, &type_names).unwrap();
+        let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
+        let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 

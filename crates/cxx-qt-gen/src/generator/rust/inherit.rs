@@ -16,7 +16,7 @@ pub fn generate(
     methods: &[ParsedInheritedMethod],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
-    let qobject_name = &qobject_ident.cpp_class.rust;
+    let qobject_name = qobject_ident.name.rust_unqualified();
 
     let mut bridges = methods
         .iter()

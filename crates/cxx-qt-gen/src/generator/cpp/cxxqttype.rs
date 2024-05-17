@@ -9,7 +9,7 @@ use syn::Result;
 pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
-    let rust_ident = qobject_idents.rust_struct.cpp.to_string();
+    let rust_struct = qobject_idents.rust_struct.cxx_qualified();
 
     result
         .includes
@@ -17,7 +17,7 @@ pub fn generate(qobject_idents: &QObjectName) -> Result<GeneratedCppQObjectBlock
 
     result
         .base_classes
-        .push(format!("::rust::cxxqt1::CxxQtType<{rust_ident}>"));
+        .push(format!("::rust::cxxqt1::CxxQtType<{rust_struct}>"));
 
     Ok(result)
 }

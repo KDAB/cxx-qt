@@ -322,15 +322,7 @@ impl TypeNames {
     /// Note that this only handles types that are declared inside this bridge.
     /// E.g. UniquePtr -> cxx::UniquePtr isn't handled here.
     pub fn rust_qualified(&self, ident: &Ident) -> Result<Path> {
-        self.lookup(ident).map(|name| {
-            if let Some(module) = &name.module {
-                let mut qualified_ident = module.clone();
-                qualified_ident.segments.push(name.rust.clone().into());
-                qualified_ident
-            } else {
-                Path::from(name.rust.clone())
-            }
-        })
+        self.lookup(ident).map(Name::rust_qualified)
     }
 
     fn duplicate_type(&self, ident: &Ident) -> Error {

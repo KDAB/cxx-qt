@@ -19,7 +19,7 @@ pub fn generate_rust_methods(
     qobject_idents: &QObjectName,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
-    let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
     for invokable in invokables {
         let idents = QMethodName::from(invokable);

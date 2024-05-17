@@ -20,7 +20,7 @@ pub fn generate(
     cxx_ty: &Type,
     type_names: &TypeNames,
 ) -> Result<RustFragmentPair> {
-    let cpp_class_name_rust = &qobject_idents.cpp_class.rust;
+    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let getter_wrapper_cpp = idents.getter_wrapper.cpp.to_string();
     let getter_rust = &idents.getter.rust;
     let ident = &idents.name.rust;

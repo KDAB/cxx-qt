@@ -18,8 +18,8 @@ pub fn generate(
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let cpp_struct_ident = &qobject_ident.cpp_class.rust;
-    let rust_struct_ident = &qobject_ident.rust_struct.rust;
+    let cpp_struct_ident = &qobject_ident.name.rust_unqualified();
+    let rust_struct_ident = &qobject_ident.rust_struct.rust_unqualified();
     let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
     let fragment = RustFragmentPair {
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_generate_rust_cxxqttype() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectName::from(&qobject);
+        let qobject_idents = QObjectName::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
         let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
 

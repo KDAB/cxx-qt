@@ -109,6 +109,17 @@ impl Name {
         &self.rust
     }
 
+    /// Get the qualified name of this type in Rust, including its source module.
+    pub fn rust_qualified(&self) -> Path {
+        if let Some(module) = &self.module {
+            let mut qualified_ident = module.clone();
+            qualified_ident.segments.push(self.rust.clone().into());
+            qualified_ident
+        } else {
+            Path::from(self.rust.clone())
+        }
+    }
+
     /// Set the namespace to the given value.
     ///
     /// Returns the previous value of the namespace.

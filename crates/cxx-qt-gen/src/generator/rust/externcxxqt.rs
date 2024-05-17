@@ -41,7 +41,7 @@ impl GeneratedRustFragment {
 
         // Build the signals
         for signal in &extern_cxxqt_block.signals {
-            let qobject_name = &signal.qobject_ident;
+            let qobject_name = type_names.lookup(&signal.qobject_ident)?;
 
             generated.append(&mut generate_rust_signal(
                 signal,

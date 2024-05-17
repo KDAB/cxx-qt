@@ -63,7 +63,7 @@ fn generate_default_constructor(
     qobject_idents: &QObjectName,
     namespace: &NamespaceName,
 ) -> GeneratedRustFragment {
-    let rust_struct_ident = &qobject_idents.rust_struct.rust;
+    let rust_struct_ident = qobject_idents.rust_struct.rust_unqualified();
 
     let create_rs_ident = format_ident!(
         "create_rs_{object_name}",
@@ -189,12 +189,12 @@ pub fn generate(
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
 
-    let qobject_name = &qobject_idents.cpp_class.cpp;
-    let qobject_name_rust = &qobject_idents.cpp_class.rust;
+    let qobject_name = qobject_idents.name.cxx_unqualified();
+    let qobject_name_rust = qobject_idents.name.rust_unqualified();
     let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust)?;
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
-    let rust_struct_name_rust = &qobject_idents.rust_struct.rust;
+    let rust_struct_name_rust = qobject_idents.rust_struct.rust_unqualified();
 
     for (index, constructor) in constructors.iter().enumerate() {
         let lifetime = constructor.lifetime.as_ref().map(|lifetime| {

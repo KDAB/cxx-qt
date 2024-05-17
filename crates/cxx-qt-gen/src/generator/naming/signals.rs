@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::signals::ParsedSignal;
-use crate::{generator::naming::CombinedIdent, naming::TypeNames};
+use crate::{generator::naming::CombinedIdent, naming::Name};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{Ident, Result};
@@ -52,12 +52,9 @@ pub struct QSignalHelperName {
 }
 
 impl QSignalHelperName {
-    pub fn new(
-        idents: &QSignalName,
-        qobject_ident: &Ident,
-        type_names: &TypeNames,
-    ) -> Result<Self> {
+    pub fn new(idents: &QSignalName, qobject_name: &Name) -> Result<Self> {
         let signal_ident = &idents.name.cpp;
+        let qobject_ident = qobject_name.rust_unqualified().to_string();
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
         let namespace = {
             // This namespace will take the form of:
@@ -71,10 +68,10 @@ impl QSignalHelperName {
             //
             // See the comment on TypeNames::cxx_qualified for why fully qualifying is
             // unfortunately not possible.
-            let qobject_namespace = type_names.namespace(qobject_ident)?;
+            let qobject_namespace = qobject_name.namespace();
             let namespace: Vec<_> = qobject_namespace
                 .into_iter()
-                .chain(vec!["rust::cxxqtgen1".to_owned()])
+                .chain(vec!["rust::cxxqtgen1"])
                 .collect();
 
             namespace.join("::")

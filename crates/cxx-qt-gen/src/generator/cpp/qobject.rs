@@ -104,7 +104,7 @@ impl GeneratedCppQObject {
         let qobject = structured_qobject.declaration;
 
         // Create the base object
-        let qobject_idents = QObjectName::from(qobject);
+        let qobject_idents = QObjectName::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = GeneratedCppQObject {
             name: qobject.name.clone(),
