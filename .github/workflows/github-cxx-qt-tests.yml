@@ -193,8 +193,13 @@ jobs:
     # Ensure clippy and rustfmt is installed, they should come from github runner
     #
     # Note we still need rustfmt for the cxx-qt-gen tests
+    #
+    # TODO: Remove the `rustup default 1.77` selection.
+    # This is a workaround for Github Actions, which cannot currently compile CXX-Qt with Rust 1.78.
+    #
+    # See: https://github.com/KDAB/cxx-qt/issues/958
     - name: "Install Rust toolchain"
-      run: rustup component add clippy rustfmt
+      run: rustup default 1.77 && rustup component add clippy rustfmt
 
     - name: "Rust tools cache"
       uses: actions/cache@v4
