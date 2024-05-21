@@ -6,7 +6,7 @@
 # ANCHOR: book_all
 # ANCHOR: book_static_lib
 [package]
-name = "qml-minimal"
+name = "qml_minimal"
 version = "0.1.0"
 authors = [
   "Andrew Hayzen <andrew.hayzen@kdab.com>",
