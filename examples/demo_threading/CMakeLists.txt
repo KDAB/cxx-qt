@@ -35,13 +35,13 @@ if(NOT Corrosion_FOUND)
     FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4.5
+        GIT_TAG v0.5.0
     )
 
     FetchContent_MakeAvailable(Corrosion)
 endif()
 
-set(CRATE cxx-qt-demo-threading)
+set(CRATE cxx_qt_demo_threading)
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}

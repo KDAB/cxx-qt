@@ -43,7 +43,7 @@ if(NOT Corrosion_FOUND)
     FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4.5
+        GIT_TAG v0.5.0
     )
 
     FetchContent_MakeAvailable(Corrosion)
@@ -51,7 +51,7 @@ endif()
 # ANCHOR_END: book_cmake_find_corrosion
 
 # ANCHOR: book_cmake_use_corrosion
-set(CRATE qml-minimal)
+set(CRATE qml_minimal)
 # Corrosion creates a CMake target with the same name as the crate.
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 

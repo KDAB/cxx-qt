@@ -54,7 +54,7 @@ If you've generated your project with the `cargo new --lib` or `cargo init --lib
 
 ```toml,ignore
 [package]
-name = "qml-minimal"
+name = "qml_minimal"
 version = "0.1.0"
 edition = "2021"
 

@@ -31,7 +31,7 @@ if(NOT Qt6_FOUND)
 endif()
 get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
-set(CRATE basic-cxx-qt)
+set(CRATE basic_cxx_qt)
 corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
 corrosion_set_env_vars(${CRATE}
