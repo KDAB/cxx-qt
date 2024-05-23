@@ -255,13 +255,21 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
+/// The export directory, if one was specified through the environment.
+fn export_dir() -> Option<String> {
+    env::var("CXXQT_EXPORT_DIR")
+        .ok()
+        .map(|export_dir| format!("{export_dir}/{}", crate_name()))
+}
+
+/// The export directory needs to be namespaced by crate name when exporting for a C++ build system,
 /// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
 fn header_root() -> String {
-    match env::var("CXXQT_EXPORT_DIR") {
-        Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
-        Err(_) => env::var("OUT_DIR").unwrap(),
-    }
+    export_dir().unwrap_or_else(|| env::var("OUT_DIR").unwrap())
+}
+
+fn crate_name() -> String {
+    env::var("CARGO_PKG_NAME").unwrap()
 }
 
 fn panic_duplicate_file_and_qml_module(
@@ -570,8 +578,17 @@ impl CxxQtBuilder {
         // from within main when static linking, which would result in discarding those static variables.
         // Use a separate cc::Build for the little amount of code that needs to be linked with +whole-archive
         // to avoid bloating the binary.
-        let mut cc_builder_whole_archive = cc::Build::new();
-        cc_builder_whole_archive.link_lib_modifier("+whole-archive");
+        let mut cc_builder_static_initializers = cc::Build::new();
+        if let Some(export_dir) = export_dir() {
+            // We have an export dir, so output the static-initializers library there, but avoid
+            // linking to it
+            cc_builder_static_initializers.out_dir(export_dir);
+        } else {
+            // We don't have an export dir, so this is likely a cargo-only build.
+            // Therefore make sure we link to the static-initializers library with +whole-archive,
+            // which ensures everything is linked, even without any references.
+            cc_builder_static_initializers.link_lib_modifier("+whole-archive");
+        }
 
         // Ensure we are not using rustc 1.69
         if let Some(version) = version_check::Version::read() {
@@ -593,7 +610,7 @@ impl CxxQtBuilder {
             }
         }
 
-        for builder in [&mut self.cc_builder, &mut cc_builder_whole_archive] {
+        for builder in [&mut self.cc_builder, &mut cc_builder_static_initializers] {
             // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
             builder.cpp(true);
             builder.std("c++17");
@@ -668,10 +685,10 @@ impl CxxQtBuilder {
             self.cc_builder
                 .file(qml_module_registration_files.qmltyperegistrar);
             self.cc_builder.file(qml_module_registration_files.plugin);
-            cc_builder_whole_archive.file(qml_module_registration_files.plugin_init);
-            cc_builder_whole_archive.file(qml_module_registration_files.rcc);
+            cc_builder_static_initializers.file(qml_module_registration_files.plugin_init);
+            cc_builder_static_initializers.file(qml_module_registration_files.rcc);
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
-                cc_builder_whole_archive.file(qmlcachegen_file);
+                cc_builder_static_initializers.file(qmlcachegen_file);
             }
             self.cc_builder.define("QT_STATICPLUGIN", None);
             cc_builder_whole_archive_files_added = true;
@@ -688,7 +705,7 @@ impl CxxQtBuilder {
         }
 
         for qrc_file in self.qrc_files {
-            cc_builder_whole_archive.file(qtbuild.qrc(&qrc_file));
+            cc_builder_static_initializers.file(qtbuild.qrc(&qrc_file));
 
             // Also ensure that each of the files in the qrc can cause a change
             for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
@@ -723,12 +740,12 @@ impl CxxQtBuilder {
             let mut source =
                 File::create(&std_types_path).expect("Could not create std_types source");
             write!(source, "{std_types_contents}").expect("Could not write std_types source");
-            cc_builder_whole_archive.file(&std_types_path);
+            cc_builder_static_initializers.file(&std_types_path);
             cc_builder_whole_archive_files_added = true;
         }
 
         if cc_builder_whole_archive_files_added {
-            cc_builder_whole_archive.compile("qt-static-initializers");
+            cc_builder_static_initializers.compile(&format!("{}-initializers", crate_name()));
         }
 
         // Only compile if we have added files to the builder

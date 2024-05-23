@@ -52,8 +52,10 @@ corrosion_set_env_vars(${CRATE}
 
 add_library(${APP_NAME}_lib INTERFACE)
 target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 target_link_libraries(${APP_NAME}_lib INTERFACE
-    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-initializers>"
+    ${CRATE}
     Qt::Core
     Qt::Gui
     Qt::Qml
