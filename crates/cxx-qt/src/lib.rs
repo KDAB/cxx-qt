@@ -13,12 +13,14 @@ use std::{fs::File, io::Write, path::Path};
 
 mod connection;
 mod connectionguard;
+mod init;
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
 
 pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::qobject;
+pub use init::init;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
 pub use connectionguard::QMetaObjectConnectionGuard;

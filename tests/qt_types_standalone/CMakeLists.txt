@@ -39,8 +39,11 @@ corrosion_set_env_vars(${CRATE}
     "QMAKE=${QMAKE}"
     $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>
 )
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
-target_link_libraries(${CRATE} INTERFACE
+
+add_library(${APP_NAME}_lib INTERFACE)
+target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
+target_link_libraries(${APP_NAME}_lib INTERFACE
+    ${CRATE}
     Qt::Core
     Qt::Gui
     Qt::Qml
@@ -92,6 +95,6 @@ add_executable(${APP_NAME}
 target_include_directories(${APP_NAME} PRIVATE cpp)
 
 target_link_libraries(${APP_NAME} PRIVATE
-    ${CRATE}
+    ${APP_NAME}_lib
     Qt::Test
 )

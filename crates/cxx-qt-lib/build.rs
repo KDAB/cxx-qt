@@ -249,5 +249,9 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    builder.with_opts(cxx_qt_lib_headers::build_opts()).build();
+    builder
+        .with_opts(cxx_qt_lib_headers::build_opts())
+        // Disable init generation as we are not the final target
+        .disable_init_generation()
+        .build();
 }

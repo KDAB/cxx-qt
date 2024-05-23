@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::MocArguments;
+use crate::{CxxQtBuilderInit, MocArguments};
 
 /// Options for external crates to use
 #[derive(Default)]
@@ -19,6 +19,8 @@ pub struct CxxQtBuildersOpts {
     pub(crate) headers: Vec<(String, String, String)>,
     /// Qt modules that are required
     pub(crate) qt_modules: HashSet<String>,
+    /// Any initialisers for the builder to inject
+    pub(crate) inits: Vec<CxxQtBuilderInit>,
 }
 
 impl CxxQtBuildersOpts {
@@ -37,6 +39,12 @@ impl CxxQtBuildersOpts {
             directory.to_owned(),
             file_name.to_owned(),
         ));
+        self
+    }
+
+    /// Add any [CxxQtBuilderInit] initialisers
+    pub fn init(mut self, init: CxxQtBuilderInit) -> Self {
+        self.inits.push(init);
         self
     }
 

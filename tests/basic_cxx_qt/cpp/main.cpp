@@ -10,6 +10,8 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTest>
 
+#include <cxx-qt/init.h>
+
 #include "cxx-qt-gen/empty.cxxqt.h"
 #include "cxx-qt-gen/locking.cxxqt.h"
 #include "cxx-qt-gen/my_data.cxxqt.h"
@@ -38,6 +40,8 @@ class CxxQtTest : public QObject
   Q_OBJECT
 
 private Q_SLOTS:
+  void initTestCase() { cxx_qt::init(); }
+
   // CXX-Qt allows basic interaction between C++ (with Qt) and Rust
   void test_basic_interaction()
   {

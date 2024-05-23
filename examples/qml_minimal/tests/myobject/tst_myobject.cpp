@@ -9,9 +9,14 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
+#include <cxx-qt/init.h>
+
 class Setup : public QObject
 {
   Q_OBJECT
+
+public:
+  Setup() { cxx_qt::init(); }
 };
 
 QUICK_TEST_MAIN_WITH_SETUP(myobject, Setup)

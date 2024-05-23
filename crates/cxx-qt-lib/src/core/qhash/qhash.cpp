@@ -28,10 +28,3 @@
 
 CXX_QT_QHASH_ASSERTS(QString, QVariant, QString_QVariant);
 CXX_QT_QHASH_ASSERTS(::std::int32_t, QByteArray, i32_QByteArray);
-
-static const int register_QHash_i32_QByteArray =
-  qRegisterMetaType<::QHash_i32_QByteArray>("QHash_i32_QByteArray");
-// Ensure that QHash<QString, QVariant> (aka QVariantHash) is registered
-// otherwise it cannot be used in QML
-static const int register_QHash_QString_QVariant =
-  qRegisterMetaType<::QHash_QString_QVariant>("QHash_QString_QVariant");

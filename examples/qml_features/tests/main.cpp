@@ -7,6 +7,8 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
+#include <cxx-qt/init.h>
+
 #include "custom_object.h"
 #include "external_qobject.h"
 
@@ -17,6 +19,7 @@ class Setup : public QObject
 public:
   Setup()
   {
+    cxx_qt::init();
 
     qRegisterMetaType<CustomStruct>("CustomStruct");
     // Note the _cpp at the end of the URI. If qmlRegisterMetatype is used here

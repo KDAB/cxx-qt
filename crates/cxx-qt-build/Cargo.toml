@@ -17,6 +17,7 @@ cc.workspace = true
 cxx-gen.workspace = true
 cxx-qt.workspace = true
 cxx-qt-gen.workspace = true
+indoc.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
 qt-build-utils.workspace = true

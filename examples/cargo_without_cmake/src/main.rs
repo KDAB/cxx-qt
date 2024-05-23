@@ -19,6 +19,9 @@ use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 // ANCHOR: book_cargo_rust_main
 fn main() {
+    // Initialise CXX-Qt and any types
+    cxx_qt::init();
+
     // Create the application and engine
     let mut app = QGuiApplication::new();
     let mut engine = QQmlApplicationEngine::new();

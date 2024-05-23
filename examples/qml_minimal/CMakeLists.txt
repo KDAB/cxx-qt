@@ -79,9 +79,7 @@ add_library(${APP_NAME}_lib INTERFACE)
 target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
 
 target_link_libraries(${APP_NAME}_lib INTERFACE
-    # WHOLE_ARCHIVE is needed for the generated QML plugin to register on startup,
-    # otherwise the linker will discard the static variables that initialize it.
-    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
+    ${CRATE}
     Qt::Core
     Qt::Gui
     Qt::Qml

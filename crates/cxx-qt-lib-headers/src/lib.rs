@@ -8,6 +8,8 @@
 //! The headers for cxx-qt-lib, when combined into cxx-qt-lib crate this fails to build on Windows.
 //! The issue occurs when cxx-qt-lib is a build-dependency of an example
 
+use cxx_qt_build::CxxQtBuilderInit;
+
 /// Retrieves the headers for cxx-qt-lib
 ///
 /// These can be passed into [cxx_qt_build::CxxQtBuilder].
@@ -110,9 +112,21 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         opts = opts.header(file_contents, "cxx-qt-lib", file_name);
     }
 
+    // Add the Qt Core initialisers
+    opts = opts.init(CxxQtBuilderInit::new(
+        "cxx_qt_lib_core_init",
+        include_str!("../include/core/init.cpp"),
+    ));
+
     #[cfg(feature = "qt_gui")]
     {
-        opts = opts.define("CXX_QT_GUI_FEATURE").qt_module("Gui");
+        opts = opts
+            .define("CXX_QT_GUI_FEATURE")
+            .qt_module("Gui")
+            .init(CxxQtBuilderInit::new(
+                "cxx_qt_lib_gui_init",
+                include_str!("../include/gui/init.cpp"),
+            ));
     }
 
     #[cfg(feature = "qt_qml")]

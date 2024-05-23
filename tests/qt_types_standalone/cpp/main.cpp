@@ -7,6 +7,8 @@
 #include <QtCore/QScopedPointer>
 #include <QtTest/QTest>
 
+#include <cxx-qt/init.h>
+
 #include "qbytearray.h"
 #include "qcolor.h"
 #include "qcoreapplication.h"
@@ -50,6 +52,8 @@
 int
 main(int argc, char* argv[])
 {
+  cxx_qt::init();
+
   int status = 0;
   auto runTest = [&status, argc, argv](QScopedPointer<QObject> obj) {
     if (status == 0) {
