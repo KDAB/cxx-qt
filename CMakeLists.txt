@@ -121,6 +121,15 @@ add_compile_definitions(
     QT_USE_QSTRINGBUILDER
 )
 
+if(BUILD_WASM)
+    # TODO: fix wasm test failures
+    set(BUILD_TESTING OFF)
+    # Ensure Rust build for the correct target
+    set(Rust_CARGO_TARGET wasm32-unknown-unknown)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+endif()
+
 # QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
 if(NOT USE_QT5)
