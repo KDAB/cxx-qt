@@ -44,6 +44,7 @@ target_link_libraries(${CRATE} INTERFACE
     Qt::Core
     Qt::Gui
     Qt::Qml
+    Qt::QuickControls2
 )
 
 add_executable(${APP_NAME} cpp/main.cpp)

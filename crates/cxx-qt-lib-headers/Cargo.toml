@@ -15,6 +15,7 @@ repository.workspace = true
 default = []
 qt_gui = []
 qt_qml = []
+qt_quickcontrols = []
 
 [dependencies]
 cxx-qt-build.workspace = true

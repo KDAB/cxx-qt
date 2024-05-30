@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CxxQtThread` is now marked as `Sync` so that it can be used by reference
 - Add cxx-qt-lib-extras crate which contains: `QCommandLineOption`, `QCommandLineParser`, `QElapsedTimer`, `QApplication`
 - Serde support for `QString` (requires "serde" feature on cxx-qt-lib)
+- A new QuickControls module, which exposes `QQuickStyle`. This module is enabled by default and is behind the `qt_quickcontrols` feature.
 
 ### Changed
 
