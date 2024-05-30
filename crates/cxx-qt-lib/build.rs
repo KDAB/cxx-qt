@@ -8,6 +8,7 @@ use cxx_qt_build::CxxQtBuilder;
 fn main() {
     let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
     let feature_qt_qml_enabled = std::env::var("CARGO_FEATURE_QT_QML").is_ok();
+    let feature_qt_quickcontrols_enabled = std::env::var("CARGO_FEATURE_QT_QUICKCONTROLS").is_ok();
     let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
         Ok(val) => val == "emscripten",
         Err(_) => false,
@@ -159,6 +160,10 @@ fn main() {
         rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
+    if feature_qt_quickcontrols_enabled {
+        rust_bridges.extend(["quickcontrols/qquickstyle"]);
+    }
+
     if !emscripten_targeted {
         rust_bridges.extend([
             "core/qdatetime",
@@ -218,6 +223,10 @@ fn main() {
 
     if feature_qt_qml_enabled {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+    }
+
+    if feature_qt_quickcontrols_enabled {
+        cpp_files.extend(["quickcontrols/qquickstyle"]);
     }
 
     if !emscripten_targeted {

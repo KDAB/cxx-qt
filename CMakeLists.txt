@@ -124,10 +124,10 @@ add_compile_definitions(
 # QMAKE environment variable is needed by qt-build-utils to ensure that Cargo
 # uses the same installation of Qt as CMake does.
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Test)
+    find_package(Qt6 COMPONENTS Core Gui Test QuickControls2)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Test REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Test QuickControls2 REQUIRED)
 endif()
 
 if (NOT Qt5_FOUND)

@@ -100,6 +100,11 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         ),
         #[cfg(feature = "qt_qml")]
         (include_str!("../include/qml/qqmlengine.h"), "qqmlengine.h"),
+        #[cfg(feature = "qt_quickcontrols")]
+        (
+            include_str!("../include/quickcontrols/qquickstyle.h"),
+            "qquickstyle.h",
+        ),
         (include_str!("../include/common.h"), "common.h"),
     ] {
         opts = opts.header(file_contents, "cxx-qt-lib", file_name);
@@ -113,6 +118,13 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
     #[cfg(feature = "qt_qml")]
     {
         opts = opts.define("CXX_QT_QML_FEATURE").qt_module("Qml");
+    }
+
+    #[cfg(feature = "qt_quickcontrols")]
+    {
+        opts = opts
+            .define("CXX_QT_QUICKCONTROLS_FEATURE")
+            .qt_module("QuickControls2");
     }
 
     opts

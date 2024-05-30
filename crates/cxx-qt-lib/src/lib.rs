@@ -20,3 +20,8 @@ pub use crate::gui::*;
 mod qml;
 #[cfg(feature = "qt_qml")]
 pub use crate::qml::*;
+
+#[cfg(feature = "qt_quickcontrols")]
+mod quickcontrols;
+#[cfg(feature = "qt_quickcontrols")]
+pub use crate::quickcontrols::*;
