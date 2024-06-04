@@ -358,7 +358,7 @@ impl TypeNames {
         module_ident: &Ident,
         fallback: impl FnOnce(&mut Self, Name) -> Result<()>,
     ) -> Result<()> {
-        let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, module_ident)?;
+        let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, Some(module_ident))?;
 
         let entry = self.names.entry(name.rust.clone());
 

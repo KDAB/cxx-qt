@@ -62,7 +62,7 @@ impl ParsedQEnum {
         }
 
         let name =
-            Name::from_ident_and_attrs(&qenum.ident, &qenum.attrs, parent_namespace, module)?;
+            Name::from_ident_and_attrs(&qenum.ident, &qenum.attrs, parent_namespace, Some(module))?;
 
         if name.namespace().is_none() && qobject.is_none() {
             return Err(syn::Error::new_spanned(

@@ -29,8 +29,7 @@ pub fn generate_rust_signal(
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
-    let signal_name_cpp = idents.name.cpp;
-    let signal_name_cpp_str = signal_name_cpp.to_string();
+    let signal_name_cpp = idents.name.cxx_unqualified();
     let connect_ident_rust = idents.connect_name.rust;
     let on_ident_rust = idents.on_name;
     let original_method = &signal.method;
@@ -134,7 +133,7 @@ pub fn generate_rust_signal(
             quote! {
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
-                    #[doc = #signal_name_cpp_str]
+                    #[doc = #signal_name_cpp]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn #connect_ident_rust<F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'static>(self: #self_type_qualified, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
@@ -149,7 +148,7 @@ pub fn generate_rust_signal(
             quote! {
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
-                    #[doc = #signal_name_cpp_str]
+                    #[doc = #signal_name_cpp]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
@@ -223,11 +222,11 @@ pub fn generate_rust_signals(
                 && attribute_find_path(&signal.method.attrs, &["rust_name"]).is_none()
             {
                 let idents = QSignalName::from(&signal);
-                let signal_name_cpp_str = idents.name.cpp.to_string();
+                let signal_name_cpp = idents.name.cxx_unqualified();
                 signal
                     .method
                     .attrs
-                    .push(parse_quote!(#[cxx_name = #signal_name_cpp_str]));
+                    .push(parse_quote!(#[cxx_name = #signal_name_cpp]));
                 signal
             } else {
                 signal
@@ -263,10 +262,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready"),
-            },
+            name: Name::new(format_ident!("ready")),
             safe: true,
             inherit: false,
             private: false,
@@ -426,10 +422,7 @@ mod tests {
                     ty: parse_quote! { UniquePtr<QColor> },
                 },
             ],
-            name: CombinedIdent {
-                cpp: format_ident!("dataChanged"),
-                rust: format_ident!("data_changed"),
-            },
+            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
             safe: true,
             inherit: false,
             private: false,
@@ -587,10 +580,8 @@ mod tests {
                 ident: format_ident!("param"),
                 ty: parse_quote! { *mut T },
             }],
-            name: CombinedIdent {
-                cpp: format_ident!("unsafeSignal"),
-                rust: format_ident!("unsafe_signal"),
-            },
+            name: Name::new(format_ident!("unsafe_signal"))
+                .with_cxx_name("unsafeSignal".to_owned()),
             safe: false,
             inherit: false,
             private: false,
@@ -744,10 +735,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("baseName"),
-                rust: format_ident!("existing_signal"),
-            },
+            name: Name::new(format_ident!("existing_signal")).with_cxx_name("baseName".to_owned()),
             safe: true,
             inherit: true,
             private: false,
@@ -898,10 +886,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready"),
-            },
+            name: Name::new(format_ident!("ready")),
             safe: true,
             inherit: false,
             private: false,
@@ -1053,10 +1038,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready"),
-            },
+            name: Name::new(format_ident!("ready")),
             safe: true,
             inherit: false,
             private: true,

@@ -3,11 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use proc_macro2::Span;
-use syn::{ForeignItemFn, Ident};
+use syn::ForeignItemFn;
 
 use crate::{
-    generator::naming::{property::QPropertyNames, qobject::QObjectNames, CombinedIdent},
+    generator::naming::{property::QPropertyNames, qobject::QObjectNames},
     parser::signals::ParsedSignal,
 };
 
@@ -24,10 +23,7 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     };
     ParsedSignal::from_property_method(
         method,
-        CombinedIdent {
-            cpp: Ident::new(&idents.notify.cxx_unqualified(), Span::call_site()),
-            rust: idents.notify.rust_unqualified().clone(),
-        },
+        idents.notify.clone(),
         qobject_idents.name.rust_unqualified().clone(),
     )
 }

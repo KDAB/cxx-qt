@@ -270,7 +270,7 @@ impl ParsedCxxQtData {
 mod tests {
     use super::*;
 
-    use crate::{generator::naming::CombinedIdent, parser::qobject::tests::create_parsed_qobject};
+    use crate::{naming::Name, parser::qobject::tests::create_parsed_qobject};
     use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
@@ -635,19 +635,10 @@ mod tests {
         assert_eq!(signals[0].parameters.len(), 0);
         assert_eq!(signals[1].parameters.len(), 1);
         assert_eq!(signals[1].parameters[0].ident, "data");
-        assert_eq!(
-            signals[0].name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signals[0].name, Name::new(format_ident!("ready")));
         assert_eq!(
             signals[1].name,
-            CombinedIdent {
-                cpp: format_ident!("cppDataChanged"),
-                rust: format_ident!("data_changed")
-            }
+            Name::new(format_ident!("data_changed")).with_cxx_name("cppDataChanged".to_owned())
         );
         assert!(!signals[0].inherit);
         assert!(signals[1].inherit);
@@ -686,10 +677,7 @@ mod tests {
         assert_eq!(signals[0].parameters[0].ident, "arg");
         assert_eq!(
             signals[0].name,
-            CombinedIdent {
-                cpp: format_ident!("unsafeSignal"),
-                rust: format_ident!("unsafe_signal")
-            }
+            Name::new(format_ident!("unsafe_signal")).with_cxx_name("unsafeSignal".to_owned())
         );
         assert!(!signals[0].inherit);
     }

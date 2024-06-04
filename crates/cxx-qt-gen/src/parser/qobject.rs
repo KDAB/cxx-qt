@@ -82,7 +82,7 @@ impl ParsedQObject {
             &declaration.ident_left,
             &declaration.attrs,
             namespace,
-            module,
+            Some(module),
         )?;
 
         // Parse any properties in the type
