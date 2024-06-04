@@ -5,7 +5,7 @@
 
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
-    naming::{property::QPropertyName, qobject::QObjectNames},
+    naming::{property::QPropertyNames, qobject::QObjectNames},
 };
 use crate::{
     naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
@@ -28,7 +28,7 @@ pub fn generate_cpp_properties(
 
     for property in properties {
         // Cache the idents as they are used in multiple places
-        let idents = QPropertyName::from(property);
+        let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));

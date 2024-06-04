@@ -5,7 +5,7 @@
 
 use crate::{
     generator::{
-        naming::{property::QPropertyName, qobject::QObjectNames},
+        naming::{property::QPropertyNames, qobject::QObjectNames},
         rust::fragment::RustFragmentPair,
     },
     naming::rust::syn_type_cxx_bridge_to_qualified,
@@ -15,7 +15,7 @@ use quote::quote;
 use syn::{Result, Type};
 
 pub fn generate(
-    idents: &QPropertyName,
+    idents: &QPropertyNames,
     qobject_idents: &QObjectNames,
     cxx_ty: &Type,
     type_names: &TypeNames,
