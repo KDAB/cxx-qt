@@ -39,6 +39,50 @@ pub struct Name {
 }
 
 impl Name {
+    /// Create a new name with the given rust name and no other attributes.
+    pub fn new(rust_name: Ident) -> Self {
+        Self {
+            rust: rust_name,
+            cxx: None,
+            module: None,
+            namespace: None,
+        }
+    }
+
+    /// Create a new name from this name, with the given cxx_name
+    pub fn with_cxx_name(self, cxx_name: String) -> Self {
+        Self {
+            cxx: Some(cxx_name),
+            ..self
+        }
+    }
+
+    /// Create a new name from this name, with the given Rust module
+    pub fn with_module(self, module: Path) -> Self {
+        Self {
+            module: Some(module),
+            ..self
+        }
+    }
+
+    /// Create a new name from this name, with the given C++ namespace
+    pub fn with_namespace(self, namespace: String) -> Self {
+        Self {
+            namespace: Some(namespace),
+            ..self
+        }
+    }
+
+    /// Create a new name from this name, with the given rust_name namespace
+    ///
+    /// Note: If no cxx_name is set explicitly, this will also change the cxx_name.
+    pub fn with_rust_name(self, rust_name: Ident) -> Self {
+        Self {
+            rust: rust_name,
+            ..self
+        }
+    }
+
     pub fn from_ident_and_attrs(
         ident: &Ident,
         attrs: &[Attribute],

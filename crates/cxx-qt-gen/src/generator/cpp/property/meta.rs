@@ -10,9 +10,9 @@ pub fn generate(idents: &QPropertyName, cxx_ty: &str) -> String {
     format!(
         "Q_PROPERTY({ty} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_notify})",
         ty = cxx_ty,
-        ident = idents.name.cpp,
-        ident_getter = idents.getter.cpp,
-        ident_setter = idents.setter.cpp,
-        ident_notify = idents.notify.cpp,
+        ident = idents.name.cxx_unqualified(),
+        ident_getter = idents.getter.cxx_unqualified(),
+        ident_setter = idents.setter.cxx_unqualified(),
+        ident_notify = idents.notify.cxx_unqualified()
     )
 }
