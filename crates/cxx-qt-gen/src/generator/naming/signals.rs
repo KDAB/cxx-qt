@@ -10,7 +10,7 @@ use syn::{Ident, Result};
 
 /// Names for parts of a Q_SIGNAL
 pub struct QSignalName {
-    pub name: CombinedIdent,
+    pub name: Name,
     pub connect_name: CombinedIdent,
     pub on_name: Ident,
 }
@@ -20,7 +20,7 @@ impl From<&ParsedSignal> for QSignalName {
         Self {
             name: signal.name.clone(),
             connect_name: CombinedIdent::connect_from_signal(&signal.name),
-            on_name: on_from_signal(&signal.name.rust),
+            on_name: on_from_signal(signal.name.rust_unqualified()),
         }
     }
 }
@@ -30,12 +30,15 @@ fn on_from_signal(ident: &Ident) -> Ident {
 }
 
 impl CombinedIdent {
-    fn connect_from_signal(ident: &CombinedIdent) -> Self {
+    fn connect_from_signal(ident: &Name) -> Self {
         Self {
             // Use signalConnect instead of onSignal here so that we don't
             // create a C++ name that is similar to the QML naming scheme for signals
-            cpp: format_ident!("{}Connect", ident.cpp.to_string().to_case(Case::Camel)),
-            rust: format_ident!("connect_{}", ident.rust.to_string().to_case(Case::Snake)),
+            cpp: format_ident!("{}Connect", ident.cxx_unqualified().to_case(Case::Camel)),
+            rust: format_ident!(
+                "connect_{}",
+                ident.rust_unqualified().to_string().to_case(Case::Snake)
+            ),
         }
     }
 }
@@ -53,7 +56,7 @@ pub struct QSignalHelperName {
 
 impl QSignalHelperName {
     pub fn new(idents: &QSignalName, qobject_name: &Name) -> Result<Self> {
-        let signal_ident = &idents.name.cpp;
+        let signal_ident = &idents.name.cxx_unqualified();
         let qobject_ident = qobject_name.rust_unqualified().to_string();
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
         let namespace = {
@@ -110,18 +113,18 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("dataChanged"),
-                rust: format_ident!("data_changed"),
-            },
+            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
             safe: true,
             inherit: false,
             private: false,
         };
 
         let names = QSignalName::from(&qsignal);
-        assert_eq!(names.name.cpp, format_ident!("dataChanged"));
-        assert_eq!(names.name.rust, format_ident!("data_changed"));
+        assert_eq!(names.name.cxx_unqualified(), "dataChanged");
+        assert_eq!(
+            names.name.rust_unqualified(),
+            &format_ident!("data_changed")
+        );
         assert_eq!(names.connect_name.cpp, format_ident!("dataChangedConnect"));
         assert_eq!(
             names.connect_name.rust,
@@ -140,18 +143,18 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: CombinedIdent {
-                cpp: format_ident!("baseName"),
-                rust: format_ident!("existing_signal"),
-            },
+            name: Name::new(format_ident!("existing_signal")).with_cxx_name("baseName".to_owned()),
             safe: true,
             inherit: false,
             private: false,
         };
 
         let names = QSignalName::from(&qsignal);
-        assert_eq!(names.name.cpp, format_ident!("baseName"));
-        assert_eq!(names.name.rust, format_ident!("existing_signal"));
+        assert_eq!(names.name.cxx_unqualified(), "baseName");
+        assert_eq!(
+            names.name.rust_unqualified(),
+            &format_ident!("existing_signal")
+        );
         assert_eq!(names.connect_name.cpp, format_ident!("baseNameConnect"));
         assert_eq!(
             names.connect_name.rust,

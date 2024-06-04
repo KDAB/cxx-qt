@@ -3,14 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::parameter::ParsedFunctionParameter;
-use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
-use crate::syntax::expr::expr_to_string;
-use crate::syntax::foreignmod;
-use crate::syntax::path::path_compare_str;
-use crate::syntax::safety::Safety;
-use crate::{generator::naming::CombinedIdent, syntax::types};
-use quote::format_ident;
+use crate::{
+    naming::Name,
+    parser::parameter::ParsedFunctionParameter,
+    syntax::{
+        attribute::attribute_take_path, foreignmod, path::path_compare_str, safety::Safety, types,
+    },
+};
 use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result, Visibility};
 
 #[derive(Clone)]
@@ -27,7 +26,7 @@ pub struct ParsedSignal {
     /// The parameters of the signal
     pub parameters: Vec<ParsedFunctionParameter>,
     /// The name of the signal
-    pub name: CombinedIdent,
+    pub name: Name,
     /// If the signal is defined in the base class
     pub inherit: bool,
     /// Whether the signal is private
@@ -36,18 +35,14 @@ pub struct ParsedSignal {
 
 impl ParsedSignal {
     /// Builds a signal from a given property method
-    pub fn from_property_method(
-        method: ForeignItemFn,
-        ident: CombinedIdent,
-        qobject_ident: Ident,
-    ) -> Self {
+    pub fn from_property_method(method: ForeignItemFn, name: Name, qobject_ident: Ident) -> Self {
         Self {
             method,
             qobject_ident,
             mutable: true,
             safe: true,
             parameters: vec![],
-            name: ident,
+            name,
             inherit: false,
             private: false,
         }
@@ -73,20 +68,13 @@ impl ParsedSignal {
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
-        let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
+        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
-        if let Some(index) = attribute_find_path(&method.attrs, &["cxx_name"]) {
-            ident.cpp = format_ident!(
-                "{}",
-                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
-            );
-        }
-
-        if let Some(index) = attribute_find_path(&method.attrs, &["rust_name"]) {
-            ident.rust = format_ident!(
-                "{}",
-                expr_to_string(&method.attrs[index].meta.require_name_value()?.value)?
-            );
+        if name.namespace().is_some() {
+            return Err(Error::new_spanned(
+                method.sig.ident,
+                "Signals cannot have a namespace attribute",
+            ));
         }
 
         let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
@@ -102,7 +90,7 @@ impl ParsedSignal {
             qobject_ident,
             mutable,
             parameters,
-            name: ident,
+            name,
             safe,
             inherit,
             private,
@@ -117,6 +105,7 @@ mod tests {
     use super::*;
 
     use crate::parser::tests::f64_type;
+    use quote::format_ident;
 
     #[test]
     fn test_parse_signal() {
@@ -128,13 +117,7 @@ mod tests {
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
-        assert_eq!(
-            signal.name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);
@@ -158,10 +141,7 @@ mod tests {
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
             signal.name,
-            CombinedIdent {
-                cpp: format_ident!("cppReady"),
-                rust: format_ident!("ready")
-            }
+            Name::new(format_ident!("ready")).with_cxx_name("cppReady".to_owned())
         );
         assert!(signal.safe);
         assert!(!signal.inherit);
@@ -183,13 +163,7 @@ mod tests {
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
-        assert_eq!(
-            signal.name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
         assert!(signal.safe);
         assert!(signal.inherit);
         assert!(!signal.private);
@@ -218,13 +192,7 @@ mod tests {
         assert_eq!(signal.parameters[0].ty, f64_type());
         assert_eq!(signal.parameters[1].ident, format_ident!("y"));
         assert_eq!(signal.parameters[1].ty, f64_type());
-        assert_eq!(
-            signal.name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);
@@ -240,13 +208,7 @@ mod tests {
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
-        assert_eq!(
-            signal.name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(signal.private);
@@ -280,13 +242,7 @@ mod tests {
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
-        assert_eq!(
-            signal.name,
-            CombinedIdent {
-                cpp: format_ident!("ready"),
-                rust: format_ident!("ready")
-            }
-        );
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
         assert!(!signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);
