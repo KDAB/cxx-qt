@@ -263,7 +263,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready"),
             },
@@ -426,7 +426,7 @@ mod tests {
                     ty: parse_quote! { UniquePtr<QColor> },
                 },
             ],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("dataChanged"),
                 rust: format_ident!("data_changed"),
             },
@@ -587,7 +587,7 @@ mod tests {
                 ident: format_ident!("param"),
                 ty: parse_quote! { *mut T },
             }],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("unsafeSignal"),
                 rust: format_ident!("unsafe_signal"),
             },
@@ -744,7 +744,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("baseName"),
                 rust: format_ident!("existing_signal"),
             },
@@ -898,7 +898,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready"),
             },
@@ -1053,7 +1053,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready"),
             },

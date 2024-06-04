@@ -636,14 +636,14 @@ mod tests {
         assert_eq!(signals[1].parameters.len(), 1);
         assert_eq!(signals[1].parameters[0].ident, "data");
         assert_eq!(
-            signals[0].ident,
+            signals[0].name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
             }
         );
         assert_eq!(
-            signals[1].ident,
+            signals[1].name,
             CombinedIdent {
                 cpp: format_ident!("cppDataChanged"),
                 rust: format_ident!("data_changed")
@@ -685,7 +685,7 @@ mod tests {
         assert_eq!(signals[0].parameters.len(), 1);
         assert_eq!(signals[0].parameters[0].ident, "arg");
         assert_eq!(
-            signals[0].ident,
+            signals[0].name,
             CombinedIdent {
                 cpp: format_ident!("unsafeSignal"),
                 rust: format_ident!("unsafe_signal")
