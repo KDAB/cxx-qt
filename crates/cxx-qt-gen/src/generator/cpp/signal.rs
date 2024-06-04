@@ -8,7 +8,7 @@ use crate::{
         cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         naming::{
             qobject::QObjectNames,
-            signals::{QSignalHelperName, QSignalName},
+            signals::{QSignalHelperNames, QSignalNames},
         },
     },
     naming::{cpp::syn_type_to_cpp_type, Name, TypeNames},
@@ -94,8 +94,8 @@ pub fn generate_cpp_signal(
     let qobject_ident_namespaced = qobject_name.cxx_qualified();
 
     // Prepare the idents
-    let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_name)?;
+    let idents = QSignalNames::from(signal);
+    let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
 
     let signal_ident = idents.name.cxx_unqualified();
     let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();

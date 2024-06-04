@@ -8,13 +8,13 @@ use quote::format_ident;
 use syn::{Ident, Result};
 
 /// Names for parts of a Q_SIGNAL
-pub struct QSignalName {
+pub struct QSignalNames {
     pub name: Name,
     pub connect_name: Name,
     pub on_name: Ident,
 }
 
-impl From<&ParsedSignal> for QSignalName {
+impl From<&ParsedSignal> for QSignalNames {
     fn from(signal: &ParsedSignal) -> Self {
         Self {
             name: signal.name.clone(),
@@ -36,7 +36,7 @@ fn on_from_signal(ident: &Ident) -> Ident {
     format_ident!("on_{}", ident.to_string().to_case(Case::Snake))
 }
 
-pub struct QSignalHelperName {
+pub struct QSignalHelperNames {
     pub connect_name: Name,
     pub function_call: Ident,
     pub function_drop: Ident,
@@ -47,8 +47,8 @@ pub struct QSignalHelperName {
     pub struct_param: Ident,
 }
 
-impl QSignalHelperName {
-    pub fn new(idents: &QSignalName, qobject_name: &Name) -> Result<Self> {
+impl QSignalHelperNames {
+    pub fn new(idents: &QSignalNames, qobject_name: &Name) -> Result<Self> {
         let signal_ident = &idents.name.cxx_unqualified();
         let qobject_ident = qobject_name.rust_unqualified().to_string();
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
@@ -120,7 +120,7 @@ mod tests {
             private: false,
         };
 
-        let names = QSignalName::from(&qsignal);
+        let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "dataChanged");
         assert_eq!(
             names.name.rust_unqualified(),
@@ -150,7 +150,7 @@ mod tests {
             private: false,
         };
 
-        let names = QSignalName::from(&qsignal);
+        let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "baseName");
         assert_eq!(
             names.name.rust_unqualified(),

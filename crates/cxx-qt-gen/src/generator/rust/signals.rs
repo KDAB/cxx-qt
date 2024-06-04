@@ -7,7 +7,7 @@ use crate::{
     generator::{
         naming::{
             qobject::QObjectNames,
-            signals::{QSignalHelperName, QSignalName},
+            signals::{QSignalHelperNames, QSignalNames},
         },
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
     },
@@ -24,8 +24,8 @@ pub fn generate_rust_signal(
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
-    let idents = QSignalName::from(signal);
-    let idents_helper = QSignalHelperName::new(&idents, qobject_name)?;
+    let idents = QSignalNames::from(signal);
+    let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
@@ -220,7 +220,7 @@ pub fn generate_rust_signals(
             if attribute_find_path(&signal.method.attrs, &["cxx_name"]).is_none()
                 && attribute_find_path(&signal.method.attrs, &["rust_name"]).is_none()
             {
-                let idents = QSignalName::from(&signal);
+                let idents = QSignalNames::from(&signal);
                 let signal_name_cpp = idents.name.cxx_unqualified();
                 signal
                     .method
