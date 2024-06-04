@@ -21,9 +21,9 @@ pub fn generate(
     type_names: &TypeNames,
 ) -> Result<RustFragmentPair> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
-    let getter_wrapper_cpp = idents.getter_wrapper.cpp.to_string();
-    let getter_rust = &idents.getter.rust;
-    let ident = &idents.name.rust;
+    let getter_wrapper_cpp = idents.getter_wrapper.cxx_unqualified();
+    let getter_rust = idents.getter.rust_unqualified();
+    let ident = idents.name.rust_unqualified();
     let ident_str = ident.to_string();
     let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
     let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;

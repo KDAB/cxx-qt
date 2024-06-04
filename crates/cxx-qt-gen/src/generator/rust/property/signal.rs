@@ -3,10 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::ForeignItemFn;
+use proc_macro2::Span;
+use syn::{ForeignItemFn, Ident};
 
 use crate::{
-    generator::naming::{property::QPropertyName, qobject::QObjectNames},
+    generator::naming::{property::QPropertyName, qobject::QObjectNames, CombinedIdent},
     parser::signals::ParsedSignal,
 };
 
@@ -14,8 +15,8 @@ pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectNames) -> Parsed
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify_rust = &idents.notify.rust;
-    let notify_cpp_str = &idents.notify.cpp.to_string();
+    let notify_rust = &idents.notify.rust_unqualified();
+    let notify_cpp_str = &idents.notify.cxx_unqualified();
     let method: ForeignItemFn = syn::parse_quote! {
         #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = #notify_cpp_str]
@@ -23,7 +24,10 @@ pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectNames) -> Parsed
     };
     ParsedSignal::from_property_method(
         method,
-        idents.notify.clone(),
+        CombinedIdent {
+            cpp: Ident::new(&idents.notify.cxx_unqualified(), Span::call_site()),
+            rust: idents.notify.rust_unqualified().clone(),
+        },
         qobject_idents.name.rust_unqualified().clone(),
     )
 }
