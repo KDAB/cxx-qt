@@ -287,8 +287,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_trivial_property_changed"]
-                    fn MyObject_trivialPropertyChangedConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlertrivialPropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_trivialPropertyChangedConnect"]
+                    fn MyObject_connect_trivial_property_changed(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlertrivialPropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -412,8 +412,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_opaque_property_changed"]
-                    fn MyObject_opaquePropertyChangedConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandleropaquePropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_opaquePropertyChangedConnect"]
+                    fn MyObject_connect_opaque_property_changed(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandleropaquePropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -537,8 +537,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_unsafe_property_changed"]
-                    fn MyObject_unsafePropertyChangedConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerunsafePropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_unsafePropertyChangedConnect"]
+                    fn MyObject_connect_unsafe_property_changed(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerunsafePropertyChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );

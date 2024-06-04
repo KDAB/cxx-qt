@@ -2,8 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::signals::ParsedSignal;
-use crate::{generator::naming::CombinedIdent, naming::Name};
+use crate::{naming::Name, parser::signals::ParsedSignal};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{Ident, Result};
@@ -11,7 +10,7 @@ use syn::{Ident, Result};
 /// Names for parts of a Q_SIGNAL
 pub struct QSignalName {
     pub name: Name,
-    pub connect_name: CombinedIdent,
+    pub connect_name: Name,
     pub on_name: Ident,
 }
 
@@ -19,32 +18,26 @@ impl From<&ParsedSignal> for QSignalName {
     fn from(signal: &ParsedSignal) -> Self {
         Self {
             name: signal.name.clone(),
-            connect_name: CombinedIdent::connect_from_signal(&signal.name),
+            connect_name: connect_name_from_signal(&signal.name),
             on_name: on_from_signal(signal.name.rust_unqualified()),
         }
     }
+}
+
+fn connect_name_from_signal(name: &Name) -> Name {
+    name.clone()
+        .with_rust_name(format_ident!("connect_{}", name.rust_unqualified()))
+        // Use signalConnect instead of onSignal here so that we don't
+        // create a C++ name that is similar to the QML naming scheme for signals
+        .with_cxx_name(format!("{}Connect", name.cxx_unqualified()))
 }
 
 fn on_from_signal(ident: &Ident) -> Ident {
     format_ident!("on_{}", ident.to_string().to_case(Case::Snake))
 }
 
-impl CombinedIdent {
-    fn connect_from_signal(ident: &Name) -> Self {
-        Self {
-            // Use signalConnect instead of onSignal here so that we don't
-            // create a C++ name that is similar to the QML naming scheme for signals
-            cpp: format_ident!("{}Connect", ident.cxx_unqualified().to_case(Case::Camel)),
-            rust: format_ident!(
-                "connect_{}",
-                ident.rust_unqualified().to_string().to_case(Case::Snake)
-            ),
-        }
-    }
-}
-
 pub struct QSignalHelperName {
-    pub connect_name: CombinedIdent,
+    pub connect_name: Name,
     pub function_call: Ident,
     pub function_drop: Ident,
     pub handler_alias: Ident,
@@ -80,13 +73,21 @@ impl QSignalHelperName {
             namespace.join("::")
         };
 
+        let connect_name = Name::new(format_ident!(
+            "{}_{}",
+            qobject_name.rust_unqualified(),
+            idents.connect_name.rust_unqualified()
+        ))
+        .with_cxx_name(format!(
+            "{}_{}",
+            qobject_name.cxx_unqualified(),
+            idents.connect_name.cxx_unqualified()
+        ));
+
         // TODO: in the future we might improve the naming of the methods
         // to avoid collisions (maybe use a separator similar to how CXX uses $?)
         Ok(Self {
-            connect_name: CombinedIdent {
-                cpp: format_ident!("{}_{}", qobject_ident, idents.connect_name.cpp),
-                rust: format_ident!("{}_{}", qobject_ident, idents.connect_name.rust),
-            },
+            connect_name,
             function_drop: format_ident!("drop_{qobject_ident}_signal_handler_{signal_ident}"),
             function_call: format_ident!("call_{qobject_ident}_signal_handler_{signal_ident}"),
             handler_alias_namespaced: format!("::{namespace}::{handler_alias}"),
@@ -125,10 +126,10 @@ mod tests {
             names.name.rust_unqualified(),
             &format_ident!("data_changed")
         );
-        assert_eq!(names.connect_name.cpp, format_ident!("dataChangedConnect"));
+        assert_eq!(names.connect_name.cxx_unqualified(), "dataChangedConnect");
         assert_eq!(
-            names.connect_name.rust,
-            format_ident!("connect_data_changed")
+            names.connect_name.rust_unqualified(),
+            &format_ident!("connect_data_changed")
         );
         assert_eq!(names.on_name, format_ident!("on_data_changed"));
     }
@@ -155,10 +156,10 @@ mod tests {
             names.name.rust_unqualified(),
             &format_ident!("existing_signal")
         );
-        assert_eq!(names.connect_name.cpp, format_ident!("baseNameConnect"));
+        assert_eq!(names.connect_name.cxx_unqualified(), "baseNameConnect");
         assert_eq!(
-            names.connect_name.rust,
-            format_ident!("connect_existing_signal")
+            names.connect_name.rust_unqualified(),
+            &format_ident!("connect_existing_signal")
         );
         assert_eq!(names.on_name, format_ident!("on_existing_signal"));
     }

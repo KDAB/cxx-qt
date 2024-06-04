@@ -98,7 +98,7 @@ pub fn generate_cpp_signal(
     let idents_helper = QSignalHelperName::new(&idents, qobject_name)?;
 
     let signal_ident = idents.name.cxx_unqualified();
-    let free_connect_ident_cpp = idents_helper.connect_name.cpp;
+    let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();
 
     // Retrieve the parameters for the signal
     let parameters = parameter_types_and_values(&signal.parameters, type_names, qobject_name)?;
@@ -213,7 +213,7 @@ pub fn generate_cpp_signals(
 mod tests {
     use super::*;
 
-    use crate::generator::naming::{qobject::tests::create_qobjectname, CombinedIdent};
+    use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
@@ -628,7 +628,7 @@ mod tests {
             r#"
             namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
+            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
             } // namespace mynamespace::rust::cxxqtgen1
             "#}
         );
@@ -662,7 +662,7 @@ mod tests {
 
             namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
+            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(
                     &self,
