@@ -7,11 +7,11 @@ use proc_macro2::Span;
 use syn::{ForeignItemFn, Ident};
 
 use crate::{
-    generator::naming::{property::QPropertyName, qobject::QObjectNames, CombinedIdent},
+    generator::naming::{property::QPropertyNames, qobject::QObjectNames, CombinedIdent},
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyName, qobject_idents: &QObjectNames) -> ParsedSignal {
+pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> ParsedSignal {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();

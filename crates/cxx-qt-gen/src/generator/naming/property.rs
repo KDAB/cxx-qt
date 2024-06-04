@@ -8,7 +8,7 @@ use quote::format_ident;
 use syn::Ident;
 
 /// Names for parts of a Q_PROPERTY
-pub struct QPropertyName {
+pub struct QPropertyNames {
     pub name: Name,
     pub getter: Name,
     pub getter_wrapper: Name,
@@ -17,7 +17,7 @@ pub struct QPropertyName {
     pub notify: Name,
 }
 
-impl From<&ParsedQProperty> for QPropertyName {
+impl From<&ParsedQProperty> for QPropertyNames {
     fn from(property: &ParsedQProperty) -> Self {
         let property_name = property_name_from_rust_name(property.ident.clone());
         let getter = getter_name_from_property(&property_name);
@@ -78,13 +78,13 @@ pub mod tests {
 
     use super::*;
 
-    pub fn create_i32_qpropertyname() -> QPropertyName {
+    pub fn create_i32_qpropertyname() -> QPropertyNames {
         let ty: syn::Type = parse_quote! { i32 };
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,
         };
-        QPropertyName::from(&property)
+        QPropertyNames::from(&property)
     }
 
     #[test]

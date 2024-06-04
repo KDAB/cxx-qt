@@ -9,7 +9,7 @@ pub mod signal;
 
 use crate::{
     generator::{
-        naming::{property::QPropertyName, qobject::QObjectNames},
+        naming::{property::QPropertyNames, qobject::QObjectNames},
         rust::fragment::GeneratedRustFragment,
     },
     naming::TypeNames,
@@ -29,7 +29,7 @@ pub fn generate_rust_properties(
     let mut signals = vec![];
 
     for property in properties {
-        let idents = QPropertyName::from(property);
+        let idents = QPropertyNames::from(property);
 
         // Getters
         let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names)?;

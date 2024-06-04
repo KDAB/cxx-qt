@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyName};
+use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyNames};
 use indoc::formatdoc;
 
-pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &str) -> CppFragment {
+pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> CppFragment {
     CppFragment::Pair {
         header: format!(
             "Q_SLOT void {ident_setter}({cxx_ty} const& value);",
@@ -27,7 +27,7 @@ pub fn generate(idents: &QPropertyName, qobject_ident: &str, cxx_ty: &str) -> Cp
     }
 }
 
-pub fn generate_wrapper(idents: &QPropertyName, cxx_ty: &str) -> CppFragment {
+pub fn generate_wrapper(idents: &QPropertyNames, cxx_ty: &str) -> CppFragment {
     CppFragment::Header(format!(
         // Note that we pass T not const T& to Rust so that it is by-value
         // https://github.com/KDAB/cxx-qt/issues/463
