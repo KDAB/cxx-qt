@@ -30,13 +30,12 @@ pub fn generate_rust_signal(
     let qobject_name_rust = qobject_name.rust_unqualified();
 
     let signal_name_cpp = idents.name.cxx_unqualified();
-    let connect_ident_rust = idents.connect_name.rust;
+    let connect_ident_rust = idents.connect_name.rust_unqualified();
     let on_ident_rust = idents.on_name;
     let original_method = &signal.method;
 
-    let free_connect_ident_cpp = idents_helper.connect_name.cpp;
-    let free_connect_ident_rust = idents_helper.connect_name.rust;
-    let free_connect_ident_rust_str = free_connect_ident_rust.to_string();
+    let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();
+    let free_connect_ident_rust = idents_helper.connect_name.rust_unqualified();
 
     let parameters_cxx: Vec<FnArg> = signal
         .parameters
@@ -111,8 +110,8 @@ pub fn generate_rust_signal(
 
             #[doc(hidden)]
             #[namespace = #namespace_str]
-            #[rust_name = #free_connect_ident_rust_str]
-            fn #free_connect_ident_cpp(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+            #[cxx_name = #free_connect_ident_cpp]
+            fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
         }
     });
 
@@ -247,7 +246,7 @@ pub fn generate_rust_signals(
 mod tests {
     use super::*;
 
-    use crate::generator::naming::{qobject::tests::create_qobjectname, CombinedIdent};
+    use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
@@ -299,8 +298,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_ready"]
-                    fn MyObject_readyConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_readyConnect"]
+                    fn MyObject_connect_ready(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -462,8 +461,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_data_changed"]
-                    fn MyObject_dataChangedConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerdataChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_dataChangedConnect"]
+                    fn MyObject_connect_data_changed(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerdataChanged, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -620,8 +619,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_unsafe_signal"]
-                    fn MyObject_unsafeSignalConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerunsafeSignal, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_unsafeSignalConnect"]
+                    fn MyObject_connect_unsafe_signal(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerunsafeSignal, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -773,8 +772,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_existing_signal"]
-                    fn MyObject_baseNameConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerbaseName, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_baseNameConnect"]
+                    fn MyObject_connect_existing_signal(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerbaseName, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -925,8 +924,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_ready"]
-                    fn MyObject_readyConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_readyConnect"]
+                    fn MyObject_connect_ready(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );
@@ -1069,8 +1068,8 @@ mod tests {
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    #[rust_name = "MyObject_connect_ready"]
-                    fn MyObject_readyConnect(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                    #[cxx_name = "MyObject_readyConnect"]
+                    fn MyObject_connect_ready(self_value: Pin<&mut MyObject>, signal_handler: MyObjectCxxQtSignalHandlerready, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
                 }
             },
         );

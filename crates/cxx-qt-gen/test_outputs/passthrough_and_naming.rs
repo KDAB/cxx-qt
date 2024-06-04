@@ -104,8 +104,8 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        #[rust_name = "MyObject_connect_property_name_changed"]
-        fn MyObject_propertyNameChangedConnect(
+        #[cxx_name = "MyObject_propertyNameChangedConnect"]
+        fn MyObject_connect_property_name_changed(
             self_value: Pin<&mut MyObject>,
             signal_handler: MyObjectCxxQtSignalHandlerpropertyNameChanged,
             conn_type: CxxQtConnectionType,
@@ -139,8 +139,8 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        #[rust_name = "MyObject_connect_ready"]
-        fn MyObject_readyConnect(
+        #[cxx_name = "MyObject_readyConnect"]
+        fn MyObject_connect_ready(
             self_value: Pin<&mut MyObject>,
             signal_handler: MyObjectCxxQtSignalHandlerready,
             conn_type: CxxQtConnectionType,
@@ -237,8 +237,8 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        #[rust_name = "SecondObject_connect_property_name_changed"]
-        fn SecondObject_propertyNameChangedConnect(
+        #[cxx_name = "SecondObject_propertyNameChangedConnect"]
+        fn SecondObject_connect_property_name_changed(
             self_value: Pin<&mut SecondObject>,
             signal_handler: SecondObjectCxxQtSignalHandlerpropertyNameChanged,
             conn_type: CxxQtConnectionType,
@@ -273,8 +273,8 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::SecondObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        #[rust_name = "SecondObject_connect_ready"]
-        fn SecondObject_readyConnect(
+        #[cxx_name = "SecondObject_readyConnect"]
+        fn SecondObject_connect_ready(
             self_value: Pin<&mut SecondObject>,
             signal_handler: SecondObjectCxxQtSignalHandlerready,
             conn_type: CxxQtConnectionType,
@@ -322,8 +322,8 @@ pub mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QPushButtonCxxQtSignalClosureclicked>;
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        #[rust_name = "QPushButton_connect_clicked"]
-        fn QPushButton_clickedConnect(
+        #[cxx_name = "QPushButton_clickedConnect"]
+        fn QPushButton_connect_clicked(
             self_value: Pin<&mut QPushButton>,
             signal_handler: QPushButtonCxxQtSignalHandlerclicked,
             conn_type: CxxQtConnectionType,
@@ -352,8 +352,8 @@ pub mod ffi {
         >;
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        #[rust_name = "ExternObject_connect_data_ready"]
-        fn ExternObject_dataReadyConnect(
+        #[cxx_name = "ExternObjectCpp_dataReadyConnect"]
+        fn ExternObject_connect_data_ready(
             self_value: Pin<&mut ExternObject>,
             signal_handler: ExternObjectCxxQtSignalHandlerdataReady,
             conn_type: CxxQtConnectionType,
@@ -384,8 +384,8 @@ pub mod ffi {
             >;
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        #[rust_name = "ExternObject_connect_error_occurred"]
-        fn ExternObject_errorOccurredConnect(
+        #[cxx_name = "ExternObjectCpp_errorOccurredConnect"]
+        fn ExternObject_connect_error_occurred(
             self_value: Pin<&mut ExternObject>,
             signal_handler: ExternObjectCxxQtSignalHandlererrorOccurred,
             conn_type: CxxQtConnectionType,

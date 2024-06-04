@@ -50,8 +50,8 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[rust_name = "MyObject_connect_ready"]
-        fn MyObject_readyConnect(
+        #[cxx_name = "MyObject_readyConnect"]
+        fn MyObject_connect_ready(
             self_value: Pin<&mut MyObject>,
             signal_handler: MyObjectCxxQtSignalHandlerready,
             conn_type: CxxQtConnectionType,
@@ -84,8 +84,8 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosuredataChanged>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[rust_name = "MyObject_connect_data_changed"]
-        fn MyObject_dataChangedConnect(
+        #[cxx_name = "MyObject_dataChangedConnect"]
+        fn MyObject_connect_data_changed(
             self_value: Pin<&mut MyObject>,
             signal_handler: MyObjectCxxQtSignalHandlerdataChanged,
             conn_type: CxxQtConnectionType,
@@ -122,8 +122,8 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosurenewData>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[rust_name = "MyObject_connect_base_class_new_data"]
-        fn MyObject_newDataConnect(
+        #[cxx_name = "MyObject_newDataConnect"]
+        fn MyObject_connect_base_class_new_data(
             self_value: Pin<&mut MyObject>,
             signal_handler: MyObjectCxxQtSignalHandlernewData,
             conn_type: CxxQtConnectionType,
@@ -170,8 +170,8 @@ mod ffi {
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[rust_name = "QTimer_connect_timeout"]
-        fn QTimer_timeoutConnect(
+        #[cxx_name = "QTimer_timeoutConnect"]
+        fn QTimer_connect_timeout(
             self_value: Pin<&mut QTimer>,
             signal_handler: QTimerCxxQtSignalHandlertimeout,
             conn_type: CxxQtConnectionType,

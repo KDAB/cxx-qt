@@ -70,7 +70,7 @@ QPushButton_clickedConnect(
 
 namespace mynamespace::rust::cxxqtgen1 {
 ::QMetaObject::Connection
-ExternObject_dataReadyConnect(
+ExternObjectCpp_dataReadyConnect(
   mynamespace::ExternObjectCpp& self,
   ::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlerdataReady
     closure,
@@ -79,7 +79,7 @@ ExternObject_dataReadyConnect(
 
 namespace mynamespace::rust::cxxqtgen1 {
 ::QMetaObject::Connection
-ExternObject_errorOccurredConnect(
+ExternObjectCpp_errorOccurredConnect(
   mynamespace::ExternObjectCpp& self,
   ::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlererrorOccurred
     closure,
