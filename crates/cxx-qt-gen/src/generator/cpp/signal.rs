@@ -238,7 +238,7 @@ mod tests {
                     ty: parse_quote! { UniquePtr<QColor> },
                 },
             ],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("dataChanged"),
                 rust: format_ident!("data_changed"),
             },
@@ -338,7 +338,7 @@ mod tests {
                 ident: format_ident!("mapped"),
                 ty: parse_quote! { A },
             }],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("dataChanged"),
                 rust: format_ident!("data_changed"),
             },
@@ -434,7 +434,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("baseName"),
                 rust: format_ident!("existing_signal"),
             },
@@ -520,7 +520,7 @@ mod tests {
             qobject_ident: format_ident!("ObjRust"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("signalRustName"),
                 rust: format_ident!("signal_rust_name"),
             },
@@ -611,7 +611,7 @@ mod tests {
             qobject_ident: format_ident!("ObjRust"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("signalCxxName"),
                 rust: format_ident!("signal_rust_name"),
             },

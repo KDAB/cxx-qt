@@ -18,9 +18,9 @@ pub struct QSignalName {
 impl From<&ParsedSignal> for QSignalName {
     fn from(signal: &ParsedSignal) -> Self {
         Self {
-            name: signal.ident.clone(),
-            connect_name: CombinedIdent::connect_from_signal(&signal.ident),
-            on_name: on_from_signal(&signal.ident.rust),
+            name: signal.name.clone(),
+            connect_name: CombinedIdent::connect_from_signal(&signal.name),
+            on_name: on_from_signal(&signal.name.rust),
         }
     }
 }
@@ -110,7 +110,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("dataChanged"),
                 rust: format_ident!("data_changed"),
             },
@@ -140,7 +140,7 @@ mod tests {
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            ident: CombinedIdent {
+            name: CombinedIdent {
                 cpp: format_ident!("baseName"),
                 rust: format_ident!("existing_signal"),
             },

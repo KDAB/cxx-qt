@@ -27,7 +27,7 @@ pub struct ParsedSignal {
     /// The parameters of the signal
     pub parameters: Vec<ParsedFunctionParameter>,
     /// The name of the signal
-    pub ident: CombinedIdent,
+    pub name: CombinedIdent,
     /// If the signal is defined in the base class
     pub inherit: bool,
     /// Whether the signal is private
@@ -47,7 +47,7 @@ impl ParsedSignal {
             mutable: true,
             safe: true,
             parameters: vec![],
-            ident,
+            name: ident,
             inherit: false,
             private: false,
         }
@@ -102,7 +102,7 @@ impl ParsedSignal {
             qobject_ident,
             mutable,
             parameters,
-            ident,
+            name: ident,
             safe,
             inherit,
             private,
@@ -129,7 +129,7 @@ mod tests {
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
@@ -157,7 +157,7 @@ mod tests {
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("cppReady"),
                 rust: format_ident!("ready")
@@ -184,7 +184,7 @@ mod tests {
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
@@ -219,7 +219,7 @@ mod tests {
         assert_eq!(signal.parameters[1].ident, format_ident!("y"));
         assert_eq!(signal.parameters[1].ty, f64_type());
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
@@ -241,7 +241,7 @@ mod tests {
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
@@ -281,7 +281,7 @@ mod tests {
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
         assert_eq!(
-            signal.ident,
+            signal.name,
             CombinedIdent {
                 cpp: format_ident!("ready"),
                 rust: format_ident!("ready")
