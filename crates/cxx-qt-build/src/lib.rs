@@ -647,10 +647,15 @@ impl CxxQtBuilder {
         builder: &mut cc::Build,
         include_paths: &[impl AsRef<Path>],
         defines: &[(String, Option<String>)],
+        qtbuild: &qt_build_utils::QtBuild,
     ) {
         // Note, ensure our settings stay in sync across cxx-qt and cxx-qt-lib
         builder.cpp(true);
         builder.std("c++17");
+        // MacOS needs the framework path
+        for framework_path in qtbuild.framework_paths() {
+            builder.flag_if_supported(format!("-F{}", framework_path.display()));
+        }
         // MSVC
         builder.flag_if_supported("/Zc:__cplusplus");
         builder.flag_if_supported("/permissive-");
@@ -1044,9 +1049,19 @@ impl CxxQtBuilder {
 
         let compile_definitions =
             dependencies::all_compile_definitions(self.public_interface.as_ref(), &dependencies);
-        Self::setup_cc_builder(&mut self.cc_builder, &include_paths, &compile_definitions);
+        Self::setup_cc_builder(
+            &mut self.cc_builder,
+            &include_paths,
+            &compile_definitions,
+            &qtbuild,
+        );
 
-        Self::setup_cc_builder(&mut init_builder, &include_paths, &compile_definitions);
+        Self::setup_cc_builder(
+            &mut init_builder,
+            &include_paths,
+            &compile_definitions,
+            &qtbuild,
+        );
         // Note: From now on the init_builder is correctly configured.
         // When building object files with this builder, we always need to copy it first.
         // So remove `mut` to ensure that we can't accidentally change the configuration or add
