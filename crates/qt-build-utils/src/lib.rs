@@ -453,6 +453,9 @@ impl QtBuild {
         //
         // Note this doesn't have an adverse affect running all the time
         // as it appears that all rustc-link-search are added
+        //
+        // Note that this adds the framework path which allows for
+        // includes such as <QtCore/QObject> to be resolved correctly
         if let Ok(target) = &target {
             if target.contains("apple") {
                 println!("cargo:rustc-link-search=framework={lib_path}");
@@ -522,16 +525,48 @@ impl QtBuild {
         }
     }
 
+    /// Get the framework paths for Qt. This is intended
+    /// to be passed to whichever tool you are using to invoke the C++ compiler.
+    pub fn framework_paths(&self) -> Vec<PathBuf> {
+        let mut framework_paths = vec![];
+
+        let target = env::var("TARGET");
+        if let Ok(target) = &target {
+            if target.contains("apple") {
+                // Note that this adds the framework path which allows for
+                // includes such as <QtCore/QObject> to be resolved correctly
+                let framework_path = self.qmake_query("QT_INSTALL_LIBS");
+                framework_paths.push(framework_path);
+            }
+        }
+
+        framework_paths
+            .iter()
+            .map(PathBuf::from)
+            // Only add paths if they exist
+            .filter(|path| path.exists())
+            .collect()
+    }
+
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
     /// to be passed to whichever tool you are using to invoke the C++ compiler.
     pub fn include_paths(&self) -> Vec<PathBuf> {
         let root_path = self.qmake_query("QT_INSTALL_HEADERS");
         let mut paths = Vec::new();
         for qt_module in &self.qt_modules {
+            // Add the usual location for the Qt module
             paths.push(format!("{root_path}/Qt{qt_module}"));
         }
+
+        // Add the QT_INSTALL_HEADERS itself
         paths.push(root_path);
-        paths.iter().map(PathBuf::from).collect()
+
+        paths
+            .iter()
+            .map(PathBuf::from)
+            // Only add paths if they exist
+            .filter(|path| path.exists())
+            .collect()
     }
 
     /// Version of the detected Qt installation
