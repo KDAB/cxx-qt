@@ -134,8 +134,8 @@ jobs:
             cc: clang
             cxx: clang++
 
-          - name: Windows 2022 (MSVC) Qt5
-            os: windows-2022
+          - name: Windows 2019 (MSVC) Qt5
+            os: windows-2019
             qt_version: 5
             vcpkg: on
             # Use a short buildtrees root for building vcpkg
@@ -151,8 +151,8 @@ jobs:
             cxx: cl
             # The D drive runs out of space when building dependencies with vcpkg.
             workspace: C:\cxx-qt
-          - name: Windows 2022 (MSVC) Qt6
-            os: windows-2022
+          - name: Windows 2019 (MSVC) Qt6
+            os: windows-2019
             qt_version: 6
             vcpkg: on
             # Use a short buildtrees root for building vcpkg
