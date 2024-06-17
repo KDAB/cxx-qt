@@ -256,12 +256,21 @@ fn generate_cxxqt_cpp_files(
 }
 
 /// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
+/// The export directory, if one was specified through the environment.
+fn export_dir() -> Option<String> {
+    env::var("CXXQT_EXPORT_DIR")
+        .ok()
+        .map(|export_dir| format!("{export_dir}/{}", crate_name()))
+}
+
+/// The export directory needs to be namespaced by crate name when exporting for a C++ build system,
 /// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
 fn header_root() -> String {
-    match env::var("CXXQT_EXPORT_DIR") {
-        Ok(export_dir) => format!("{export_dir}/{}", env::var("CARGO_PKG_NAME").unwrap()),
-        Err(_) => env::var("OUT_DIR").unwrap(),
-    }
+    export_dir().unwrap_or_else(|| env::var("OUT_DIR").unwrap())
+}
+
+fn crate_name() -> String {
+    env::var("CARGO_PKG_NAME").unwrap()
 }
 
 fn panic_duplicate_file_and_qml_module(
@@ -571,7 +580,7 @@ impl CxxQtBuilder {
         // Use a separate cc::Build for the little amount of code that needs to be linked with +whole-archive
         // to avoid bloating the binary.
         let mut cc_builder_whole_archive = cc::Build::new();
-        cc_builder_whole_archive.link_lib_modifier("+whole-archive");
+        // cc_builder_whole_archive.link_lib_modifier("+whole-archive");
 
         // Ensure we are not using rustc 1.69
         if let Some(version) = version_check::Version::read() {
@@ -668,7 +677,33 @@ impl CxxQtBuilder {
             self.cc_builder
                 .file(qml_module_registration_files.qmltyperegistrar);
             self.cc_builder.file(qml_module_registration_files.plugin);
-            cc_builder_whole_archive.file(qml_module_registration_files.plugin_init);
+
+            let mut new_builder = cc_builder_whole_archive.clone();
+            new_builder.file(&qml_module_registration_files.plugin_init);
+            let obj_files = new_builder.compile_intermediates();
+            if let Some(export_dir) = export_dir() {
+                for file in obj_files {
+                    // Note: This needs to match the URI conversion in CxxQt.cmake!!!
+                    let uri_lowercase = qml_module.uri.replace('.', "_");
+                    let path = PathBuf::from(&export_dir).join("plugins");
+                    std::fs::create_dir_all(&path).unwrap();
+                    let obj_path = path.join(format!("{uri_lowercase}_plugin_init.o"));
+                    println!(
+                        "Copying initializers obj file: {file_path} -> {obj_path}",
+                        file_path = file.to_string_lossy(),
+                        obj_path = obj_path.to_string_lossy()
+                    );
+                    std::fs::copy(&file, obj_path).unwrap();
+                }
+            } else {
+                for file in obj_files {
+                    println!(
+                        "cargo::rustc-link-arg-bins={file_path}",
+                        file_path = file.to_string_lossy()
+                    )
+                }
+            }
+
             cc_builder_whole_archive.file(qml_module_registration_files.rcc);
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 cc_builder_whole_archive.file(qmlcachegen_file);

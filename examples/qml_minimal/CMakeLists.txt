@@ -81,12 +81,13 @@ target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRAT
 target_link_libraries(${APP_NAME}_lib INTERFACE
     # WHOLE_ARCHIVE is needed for the generated QML plugin to register on startup,
     # otherwise the linker will discard the static variables that initialize it.
-    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
-    Qt::Core
-    Qt::Gui
-    Qt::Qml
-    Qt::QuickControls2
+    ${CRATE}
 )
+
+cxxqt_import_qml_module(${CRATE}qml
+    URI "com.kdab.cxx_qt.demo"
+    EXPORT_DIR ${CXXQT_EXPORT_DIR}
+    SOURCE_CRATE ${CRATE})
 # ANCHOR_END: book_cmake_use_corrosion
 
 # ANCHOR: book_cmake_executable
@@ -94,7 +95,13 @@ target_link_libraries(${APP_NAME}_lib INTERFACE
 add_executable(${APP_NAME} cpp/main.cpp)
 
 # Link to the Rust library
-target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
+target_link_libraries(${APP_NAME}
+    PRIVATE
+    ${CRATE}qml
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2)
 
 # If we are using a statically linked Qt then we need to import any qml plugins
 qt_import_qml_plugins(${APP_NAME})
