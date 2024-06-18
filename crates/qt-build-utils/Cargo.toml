@@ -14,7 +14,7 @@ repository.workspace = true
 
 [dependencies]
 cc.workspace = true
-versions = "6.0.0"
+versions = "6.3"
 thiserror = "1.0"
 
 [features]
