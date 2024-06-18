@@ -253,7 +253,7 @@ impl QtBuild {
                             .unwrap()
                             .trim()
                             .to_string();
-                        let qmake_version = versions::SemVer::new(&version_string).unwrap();
+                        let qmake_version = versions::SemVer::new(version_string).unwrap();
                         if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
                             let env_version = match env_version.trim().parse::<u32>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
