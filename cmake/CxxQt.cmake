@@ -67,6 +67,7 @@ function(cxxqt_import_qml_module target)
   endif()
 
   get_target_property(QML_MODULE_EXPORT_DIR ${QML_MODULE_SOURCE_CRATE} CXXQT_EXPORT_DIR)
+  get_target_property(QML_MODULE_CRATE_TYPE ${QML_MODULE_SOURCE_CRATE} TYPE)
 
   if (${QML_MODULE_EXPORT_DIR} STREQUAL "QML_MODULE_EXPORT_DIR-NOTFOUND")
     message(FATAL_ERROR "cxxqt_import_qml_module: SOURCE_CRATE must be a valid target that has been imported with cxxqt_import_crate!")
@@ -78,9 +79,15 @@ function(cxxqt_import_qml_module target)
   file(MAKE_DIRECTORY ${QML_MODULE_PLUGIN_DIR})
 
   # QML plugin - init target
-  set_source_files_properties(
-    "${QML_MODULE_PLUGIN_DIR}/plugin_init.o"
-    PROPERTIES GENERATED ON)
+  # When using the Ninja generator, we need to provide **some** way to generate the object file
+  # Unfortunately I'm not able to tell corrosion that this obj file is indeed a byproduct, so
+  # create a fake target for it.
+  # This target doesn't need to do anything, because the file should already exist after building the crate.
+  add_custom_target(${target}_mock_obj_output
+    COMMAND ${CMAKE_COMMAND} -E true
+    DEPENDS ${QML_MODULE_SOURCE_CRATE}
+    BYPRODUCTS "${QML_MODULE_PLUGIN_DIR}/plugin_init.o")
+
   add_library(${target} OBJECT IMPORTED)
   set_target_properties(${target}
     PROPERTIES
