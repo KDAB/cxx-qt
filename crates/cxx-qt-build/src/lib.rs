@@ -255,18 +255,25 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
 /// The export directory, if one was specified through the environment.
+/// Note that this is not namspaced by crate.
 fn export_dir() -> Option<String> {
-    env::var("CXXQT_EXPORT_DIR")
-        .ok()
-        .map(|export_dir| format!("{export_dir}/{}", crate_name()))
+    env::var("CXXQT_EXPORT_DIR").ok()
 }
 
-/// The export directory needs to be namespaced by crate name when exporting for a C++ build system,
+fn plugin_dir(plugin_uri: &str) -> Option<String> {
+    let plugin_uri = plugin_uri.replace('.', "_");
+    export_dir().map(|export_dir| format!("{export_dir}/plugins/{plugin_uri}/"))
+}
+
+/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
 /// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
 fn header_root() -> String {
-    export_dir().unwrap_or_else(|| env::var("OUT_DIR").unwrap())
+    format!(
+        "{export_dir}/include/{}",
+        crate_name(),
+        export_dir = export_dir().unwrap_or_else(|| env::var("OUT_DIR").unwrap())
+    )
 }
 
 fn crate_name() -> String {
@@ -681,13 +688,12 @@ impl CxxQtBuilder {
             let mut new_builder = cc_builder_whole_archive.clone();
             new_builder.file(&qml_module_registration_files.plugin_init);
             let obj_files = new_builder.compile_intermediates();
-            if let Some(export_dir) = export_dir() {
+            if let Some(plugin_dir) = plugin_dir(&qml_module.uri) {
                 for file in obj_files {
                     // Note: This needs to match the URI conversion in CxxQt.cmake!!!
-                    let uri_lowercase = qml_module.uri.replace('.', "_");
-                    let path = PathBuf::from(&export_dir).join("plugins");
+                    let path = PathBuf::from(&plugin_dir);
                     std::fs::create_dir_all(&path).unwrap();
-                    let obj_path = path.join(format!("{uri_lowercase}_plugin_init.o"));
+                    let obj_path = path.join("plugin_init.o");
                     println!(
                         "Copying initializers obj file: {file_path} -> {obj_path}",
                         file_path = file.to_string_lossy(),
@@ -695,8 +701,13 @@ impl CxxQtBuilder {
                     );
                     std::fs::copy(&file, obj_path).unwrap();
                 }
-            } else {
+            } else if env::var("CARGO_BIN_NAME").is_ok() {
                 for file in obj_files {
+                    // Only print this if we're building a bin target, as otherwise we get this
+                    // error:
+                    //
+                    // error: invalid instruction `cargo::rustc-link-arg-bins` from build script of `...`
+                    // The package ... does not have a bin target.
                     println!(
                         "cargo::rustc-link-arg-bins={file_path}",
                         file_path = file.to_string_lossy()
