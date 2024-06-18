@@ -883,7 +883,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 &format!("qInitResources_qml_module_resources_{qml_uri_underscores}_qrc"),
             );
 
-            if !qml_files.is_empty() {
+            if !qml_files.is_empty() && self.qmlcachegen_executable.is_some() {
                 generate_usage(
                     "int",
                     &format!("qInitResources_qmlcache_{qml_uri_underscores}"),
