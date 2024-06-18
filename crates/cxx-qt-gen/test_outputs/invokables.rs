@@ -348,7 +348,7 @@ impl cxx_qt::CxxQtType for ffi::MyObject {
     fn rust(&self) -> &Self::Rust {
         self.cxx_qt_ffi_rust()
     }
-    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
+    fn rust_mut_consuming(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         self.cxx_qt_ffi_rust_mut()
     }
 }

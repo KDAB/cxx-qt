@@ -48,6 +48,7 @@ pub mod qobject {
 
 // ANCHOR: book_use
 use core::pin::Pin;
+use cxx_qt::CxxQtType;
 use cxx_qt_lib::QString;
 // ANCHOR_END: book_use
 

@@ -132,7 +132,7 @@ impl qobject::RustInvokables {
 impl qobject::RustInvokables {
     /// Mutable C++ context method that helps to store the color
     fn store_helper(mut self: Pin<&mut Self>, red: f32, green: f32, blue: f32) {
-        let mut rust_mut = self.as_mut().rust_mut();
+        let mut rust_mut = self.rust_mut();
         rust_mut.red = red;
         rust_mut.green = green;
         rust_mut.blue = blue;
