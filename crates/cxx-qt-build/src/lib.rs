@@ -701,7 +701,7 @@ impl CxxQtBuilder {
                     );
                     std::fs::copy(&file, obj_path).unwrap();
                 }
-            } else if env::var("CARGO_BIN_NAME").is_ok() {
+            } else {
                 for file in obj_files {
                     // Only print this if we're building a bin target, as otherwise we get this
                     // error:
@@ -709,7 +709,7 @@ impl CxxQtBuilder {
                     // error: invalid instruction `cargo::rustc-link-arg-bins` from build script of `...`
                     // The package ... does not have a bin target.
                     println!(
-                        "cargo::rustc-link-arg-bins={file_path}",
+                        "cargo::rustc-link-arg={file_path}",
                         file_path = file.to_string_lossy()
                     )
                 }
