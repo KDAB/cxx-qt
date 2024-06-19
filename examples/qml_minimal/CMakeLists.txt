@@ -44,8 +44,9 @@ endif()
 set(CRATE qml_minimal)
 # Corrosion (through CXX-Qt) creates a CMake target with the same name as the crate.
 cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+target_link_libraries(${CRATE} INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
 
-cxxqt_import_qml_module(${CRATE}qml
+cxxqt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
 # ANCHOR_END: book_cmake_use_corrosion
@@ -55,13 +56,7 @@ cxxqt_import_qml_module(${CRATE}qml
 add_executable(${APP_NAME} cpp/main.cpp)
 
 # Link to the Rust library
-target_link_libraries(${APP_NAME}
-    PRIVATE
-    ${CRATE}qml
-    Qt::Core
-    Qt::Gui
-    Qt::Qml
-    Qt::QuickControls2)
+target_link_libraries(${APP_NAME} PRIVATE ${CRATE}_qml)
 
 # If we are using a statically linked Qt then we need to import any qml plugins
 qt_import_qml_plugins(${APP_NAME})
@@ -81,14 +76,7 @@ if(BUILD_TESTING)
     function(add_qml_test TEST_NAME)
         set(APP_TEST_NAME ${APP_NAME}_${TEST_NAME}_test)
         add_executable(${APP_TEST_NAME} tests/${TEST_NAME}/tst_${TEST_NAME}.cpp)
-        target_link_libraries(${APP_TEST_NAME} PRIVATE
-            ${CRATE}qml
-            Qt::QuickTest
-            Qt::Core
-            Qt::Gui
-            Qt::Qml
-            Qt::QuickControls2
-        )
+        target_link_libraries(${APP_TEST_NAME} PRIVATE ${CRATE}_qml Qt::QuickTest)
         qt_import_qml_plugins(${APP_TEST_NAME})
 
         set(TEST_CMD

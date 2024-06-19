@@ -21,7 +21,7 @@ function(cxxqt_import_crate)
 
   corrosion_import_crate(IMPORTED_CRATES __cxxqt_imported_crates ${IMPORT_CRATE_UNPARSED_ARGUMENTS})
 
-  message(STATUS "Found CXX-Qt crate(s): ${__cxxqt_imported_crates}")
+  message(STATUS "CXX-Qt Found crate(s): ${__cxxqt_imported_crates}")
 
   if (NOT DEFINED IMPORT_CRATE_CXXQT_EXPORT_DIR)
     set(IMPORT_CRATE_CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt/")
@@ -37,8 +37,13 @@ function(cxxqt_import_crate)
     endif()
   endif()
 
-  foreach(CRATE ${__cxxqt_imported_crates})
+  if (Qt5_FOUND AND (NOT TARGET CXXQT_QT5_COMPATIBILITY))
+    message(VERBOSE "CXX-QT detected Qt5 - Adding compatibility target: CXXQT_QT5_COMPATIBILITY")
+    add_library(CXXQT_QT5_COMPATIBILITY OBJECT ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../crates/cxx-qt-build/src/std_types_qt5.cpp)
+    target_link_libraries(CXXQT_QT5_COMPATIBILITY PRIVATE Qt5::Core)
+  endif()
 
+  foreach(CRATE ${__cxxqt_imported_crates})
     corrosion_set_env_vars(${CRATE}
       "CXXQT_EXPORT_DIR=${IMPORT_CRATE_CXXQT_EXPORT_DIR}"
       "QMAKE=${IMPORT_CRATE_QMAKE}"
@@ -50,6 +55,16 @@ function(cxxqt_import_crate)
     set_target_properties(${CRATE}
       PROPERTIES
       CXXQT_EXPORT_DIR "${IMPORT_CRATE_CXXQT_EXPORT_DIR}")
+
+    if (Qt5_FOUND AND (QT_DEFAULT_MAJOR_VERSION EQUAL 5))
+      message(VERBOSE "CXX-QT - Linking ${CRATE} to compatibility target: CXXQT_QT5_COMPATIBILITY")
+
+      # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
+      # Only the linker flags from the compatibility target would be included, but not the actual object files.
+      # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:
+      # https://cmake.org/cmake/help/latest/command/target_link_libraries.html
+      target_link_libraries(${CRATE} INTERFACE CXXQT_QT5_COMPATIBILITY $<TARGET_OBJECTS:CXXQT_QT5_COMPATIBILITY>)
+    endif()
   endforeach()
 
 endfunction()
@@ -94,5 +109,5 @@ function(cxxqt_import_qml_module target)
     IMPORTED_OBJECTS "${QML_MODULE_PLUGIN_DIR}/plugin_init.o")
   target_link_libraries(${target} INTERFACE ${QML_MODULE_SOURCE_CRATE})
 
-  message(VERBOSE "Expecting CXX-Qt QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")
+  message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")
 endfunction()

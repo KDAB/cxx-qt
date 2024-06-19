@@ -685,9 +685,9 @@ impl CxxQtBuilder {
                 .file(qml_module_registration_files.qmltyperegistrar);
             self.cc_builder.file(qml_module_registration_files.plugin);
 
-            let mut new_builder = cc_builder_whole_archive.clone();
-            new_builder.file(&qml_module_registration_files.plugin_init);
-            let obj_files = new_builder.compile_intermediates();
+            let mut init_builder = cc_builder_whole_archive.clone();
+            init_builder.file(&qml_module_registration_files.plugin_init);
+            let obj_files = init_builder.compile_intermediates();
             if let Some(plugin_dir) = plugin_dir(&qml_module.uri) {
                 for file in obj_files {
                     // Note: This needs to match the URI conversion in CxxQt.cmake!!!
@@ -699,7 +699,8 @@ impl CxxQtBuilder {
                         file_path = file.to_string_lossy(),
                         obj_path = obj_path.to_string_lossy()
                     );
-                    std::fs::copy(&file, obj_path).unwrap();
+                    std::fs::copy(&file, obj_path)
+                        .expect("Failed to move plugin_init object file to CXXQT_EXPORT_DIR!");
                 }
             } else {
                 for file in obj_files {
@@ -712,6 +713,46 @@ impl CxxQtBuilder {
                         "cargo::rustc-link-arg={file_path}",
                         file_path = file.to_string_lossy()
                     )
+                }
+            }
+
+            // If we are using Qt 5 then write the std_types source
+            // This registers std numbers as a type for use in QML
+            //
+            // Note that we need this to be compiled into the whole_archive builder
+            // as they are stored in statics in the source.
+            //
+            // TODO: once +whole-archive and +bundle are allowed together in rlibs
+            // we should be able to move this into cxx-qt so that it's only built
+            // once rather than for every cxx-qt-build. When this happens also
+            // ensure that in a multi project that numbers work everywhere.
+            //
+            // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
+            // as path for cc::Build rather than copying the .cpp file
+            //
+            // https://github.com/rust-lang/rust/issues/108081
+            // https://github.com/KDAB/cxx-qt/pull/598
+            if qtbuild.version().major == 5 {
+                let mut std_types_builder = cc_builder_whole_archive.clone();
+
+                let std_types_contents = include_str!("std_types_qt5.cpp");
+                let std_types_path = format!(
+                    "{out_dir}/std_types_qt5.cpp",
+                    out_dir = env::var("OUT_DIR").unwrap()
+                );
+                let mut source =
+                    File::create(&std_types_path).expect("Could not create std_types source");
+                write!(source, "{std_types_contents}").expect("Could not write std_types source");
+                std_types_builder.file(&std_types_path);
+                let obj_files = std_types_builder.compile_intermediates();
+
+                if export_dir().is_none() {
+                    for file in obj_files {
+                        println!(
+                            "cargo:rustc-link-arg={file_path}",
+                            file_path = file.to_string_lossy()
+                        )
+                    }
                 }
             }
 
@@ -741,35 +782,6 @@ impl CxxQtBuilder {
                 println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
             }
 
-            cc_builder_whole_archive_files_added = true;
-        }
-
-        // If we are using Qt 5 then write the std_types source
-        // This registers std numbers as a type for use in QML
-        //
-        // Note that we need this to be compiled into the whole_archive builder
-        // as they are stored in statics in the source.
-        //
-        // TODO: once +whole-archive and +bundle are allowed together in rlibs
-        // we should be able to move this into cxx-qt so that it's only built
-        // once rather than for every cxx-qt-build. When this happens also
-        // ensure that in a multi project that numbers work everywhere.
-        //
-        // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
-        // as path for cc::Build rather than copying the .cpp file
-        //
-        // https://github.com/rust-lang/rust/issues/108081
-        // https://github.com/KDAB/cxx-qt/pull/598
-        if qtbuild.version().major == 5 {
-            let std_types_contents = include_str!("std_types_qt5.cpp");
-            let std_types_path = format!(
-                "{out_dir}/std_types_qt5.cpp",
-                out_dir = env::var("OUT_DIR").unwrap()
-            );
-            let mut source =
-                File::create(&std_types_path).expect("Could not create std_types source");
-            write!(source, "{std_types_contents}").expect("Could not write std_types source");
-            cc_builder_whole_archive.file(&std_types_path);
             cc_builder_whole_archive_files_added = true;
         }
 
