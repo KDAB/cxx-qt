@@ -743,6 +743,9 @@ impl CxxQtBuilder {
                 let mut source =
                     File::create(&std_types_path).expect("Could not create std_types source");
                 write!(source, "{std_types_contents}").expect("Could not write std_types source");
+                source.sync_all().expect("Failed to write std_types source");
+                drop(source);
+
                 std_types_builder.file(&std_types_path);
                 let obj_files = std_types_builder.compile_intermediates();
 
