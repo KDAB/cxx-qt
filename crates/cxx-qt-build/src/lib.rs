@@ -25,6 +25,7 @@ use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
+use qt_build_utils::SemVer;
 use quote::ToTokens;
 use std::{
     collections::HashSet,
@@ -257,23 +258,21 @@ fn generate_cxxqt_cpp_files(
 
 /// The export directory, if one was specified through the environment.
 /// Note that this is not namspaced by crate.
-fn export_dir() -> Option<String> {
-    env::var("CXXQT_EXPORT_DIR").ok()
+fn export_dir() -> Option<PathBuf> {
+    env::var("CXXQT_EXPORT_DIR").ok().map(PathBuf::from)
 }
 
-fn plugin_dir(plugin_uri: &str) -> Option<String> {
-    let plugin_uri = plugin_uri.replace('.', "_");
-    export_dir().map(|export_dir| format!("{export_dir}/plugins/{plugin_uri}/"))
+fn plugin_name_from_uri(plugin_uri: &str) -> String {
+    plugin_uri.replace('.', "_")
 }
 
 /// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
 /// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
-fn header_root() -> String {
-    format!(
-        "{export_dir}/include/{}",
-        crate_name(),
-        export_dir = export_dir().unwrap_or_else(|| env::var("OUT_DIR").unwrap())
-    )
+fn header_root() -> PathBuf {
+    export_dir()
+        .unwrap_or_else(|| PathBuf::from(env::var("OUT_DIR").unwrap()))
+        .join("include")
+        .join(crate_name())
 }
 
 fn crate_name() -> String {
@@ -469,14 +468,16 @@ impl CxxQtBuilder {
             let directory = if dir_name.is_empty() {
                 header_root.clone()
             } else {
-                format!("{header_root}/{dir_name}")
+                header_root.join(dir_name)
             };
             std::fs::create_dir_all(directory.clone())
                 .expect("Could not create {directory} header directory");
 
-            let h_path = format!("{directory}/{file_name}");
-            let mut header = File::create(h_path).expect("Could not create header: {h_path}");
-            write!(header, "{file_contents}").expect("Could not write header: {h_path}");
+            let h_path = directory.join(file_name);
+            std::fs::write(&h_path, file_contents).expect(&format!(
+                "Could not write header: {h_path}",
+                h_path = h_path.to_string_lossy()
+            ));
         }
 
         // Add any of the defines
@@ -512,19 +513,7 @@ impl CxxQtBuilder {
         }
     }
 
-    /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
-    /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
-    pub fn build(mut self) {
-        // Ensure that the linker is setup correctly for Cargo builds
-        qt_build_utils::setup_linker();
-
-        let header_root = header_root();
-        let generated_header_dir = format!("{header_root}/cxx-qt-gen");
-
-        let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
-            .expect("Could not find Qt installation");
-        qtbuild.cargo_link_libraries(&mut self.cc_builder);
-
+    fn define_qt_version_cfg_variables(version: &SemVer) {
         // Allow for Qt 5 or Qt 6 as valid values
         CxxQtBuilder::define_cfg_check_variable(
             "cxxqt_qt_version_major".to_owned(),
@@ -534,7 +523,7 @@ impl CxxQtBuilder {
         // this allows us to have conditional Rust code
         CxxQtBuilder::define_cfg_variable(
             "cxxqt_qt_version_major".to_string(),
-            Some(qtbuild.version().major.to_string().as_str()),
+            Some(version.major.to_string().as_str()),
         );
 
         // Seed all values from Qt 5.0 through to Qt 7.99
@@ -552,246 +541,309 @@ impl CxxQtBuilder {
             }
         }
 
-        for minor in 0..=qtbuild.version().minor {
-            let qt_version_at_least = format!(
-                "cxxqt_qt_version_at_least_{}_{}",
-                qtbuild.version().major,
-                minor
-            );
+        for minor in 0..=version.minor {
+            let qt_version_at_least =
+                format!("cxxqt_qt_version_at_least_{}_{}", version.major, minor);
             CxxQtBuilder::define_cfg_variable(qt_version_at_least.to_string(), None);
         }
 
         // We don't support Qt < 5
-        for major in 5..=qtbuild.version().major {
+        for major in 5..=version.major {
             let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{}", major);
             CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
         }
+    }
 
+    fn write_common_headers() {
+        let header_root = header_root();
         // Write cxx-qt and cxx headers
-        cxx_qt::write_headers(format!("{header_root}/cxx-qt"));
-        std::fs::create_dir_all(format!("{header_root}/rust"))
+        cxx_qt::write_headers(header_root.join("cxx-qt"));
+        std::fs::create_dir_all(header_root.join("rust"))
             .expect("Could not create cxx header directory");
-        let h_path = format!("{header_root}/rust/cxx.h");
+        let h_path = header_root.join("rust").join("cxx.h");
         // Wrap the File in a block scope so the file is closed before the compiler is run.
         // Otherwise MSVC fails to open cxx.h because the process for this build script already has it open.
         {
-            let mut header = File::create(h_path).expect("Could not create cxx.h");
-            write!(header, "{}", cxx_gen::HEADER).expect("Could not write cxx.h");
+            std::fs::write(h_path, cxx_gen::HEADER).expect("Failed to write cxx.h");
+        }
+    }
+
+    fn setup_cc_builder<'a>(
+        builder: &mut cc::Build,
+        include_paths: &[impl AsRef<Path>],
+        defines: impl Iterator<Item = &'a str>,
+    ) {
+        // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
+        builder.cpp(true);
+        builder.std("c++17");
+        // MSVC
+        builder.flag_if_supported("/Zc:__cplusplus");
+        builder.flag_if_supported("/permissive-");
+        builder.flag_if_supported("/bigobj");
+        // MinGW requires big-obj otherwise debug builds fail
+        builder.flag_if_supported("-Wa,-mbig-obj");
+
+        // Enable any extra defines
+        for define in defines {
+            builder.define(define, None);
         }
 
-        // Setup compiler
-        // Static QML plugin and Qt resource initialization need to be linked with +whole-archive
-        // because they use static variables which need to be initialized before main
-        // (regardless of whether main is in Rust or C++). Normally linkers only copy symbols referenced
-        // from within main when static linking, which would result in discarding those static variables.
-        // Use a separate cc::Build for the little amount of code that needs to be linked with +whole-archive
-        // to avoid bloating the binary.
-        let mut plugin_builder = cc::Build::new();
-        // cc_builder_whole_archive.link_lib_modifier("+whole-archive");
-
-        // Ensure we are not using rustc 1.69
-        if let Some(version) = version_check::Version::read() {
-            let (major, minor, _) = version.to_mmp();
-            if major == 1 && minor == 69 {
-                // rustc 1.69 had a regression where +whole-archive wouldn't
-                // work without specifying -bundle.
-                // https://github.com/rust-lang/rust/pull/110917
-                //
-                // However, we need to not have -bundle for qt-static-initializers to work
-                // with CMake builds, otherwise the statement below occurs where it's missing
-                // from the final binary.
-                //
-                // When building a staticlib -bundle means that the native static library
-                // is simply not included into the archive and some higher level build
-                // system will need to add it later during linking of the final binary.
-                // https://doc.rust-lang.org/rustc/command-line-arguments.html#option-l-link-lib
-                panic!("rustc 1.69.x is not supported with CXX-Qt due to a compiler bug.\nSee: https://github.com/rust-lang/rust/pull/110917\nPlease update your compiler using 'rustup update' or use an older compiler.");
-            }
+        for include_path in include_paths {
+            builder.include(include_path);
         }
+    }
 
-        for builder in [&mut self.cc_builder, &mut plugin_builder] {
-            // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
-            builder.cpp(true);
-            builder.std("c++17");
-            // MSVC
-            builder.flag_if_supported("/Zc:__cplusplus");
-            builder.flag_if_supported("/permissive-");
-            builder.flag_if_supported("/bigobj");
-            // MinGW requires big-obj otherwise debug builds fail
-            builder.flag_if_supported("-Wa,-mbig-obj");
-
-            // Enable any extra defines
-            for extra_define in &self.extra_defines {
-                builder.define(extra_define, None);
-            }
-
-            builder.includes(qtbuild.include_paths());
-            builder.include(&header_root);
-            builder.include(&generated_header_dir);
+    fn moc_qobject_headers(&mut self, qtbuild: &mut qt_build_utils::QtBuild) {
+        for QObjectHeaderOpts {
+            path,
+            moc_arguments,
+        } in &self.qobject_headers
+        {
+            let moc_products = qtbuild.moc(path, moc_arguments.clone());
+            self.cc_builder.file(moc_products.cpp);
         }
+    }
 
-        // Generate files
-        for files in generate_cxxqt_cpp_files(&self.rust_sources, &generated_header_dir) {
+    fn generate_cpp_files_from_cxxqt_bridges(&mut self, header_dir: impl AsRef<Path>) {
+        for files in generate_cxxqt_cpp_files(&self.rust_sources, &header_dir) {
             self.cc_builder.file(files.plain_cpp);
             if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
                 self.cc_builder.file(&qobject);
                 self.qobject_headers.push(qobject_header.into());
             }
         }
+    }
 
-        // Run moc on C++ headers with Q_OBJECT macro
-        for QObjectHeaderOpts {
-            path,
-            moc_arguments,
-        } in self.qobject_headers
-        {
-            let moc_products = qtbuild.moc(&path, moc_arguments);
-            self.cc_builder.file(moc_products.cpp);
+    fn build_object_file(
+        builder: &cc::Build,
+        file_path: impl AsRef<Path>,
+        export_path: Option<(&str, &str)>,
+    ) {
+        let mut obj_builder = builder.clone();
+        obj_builder.file(file_path);
+        let obj_files = obj_builder.compile_intermediates();
+
+        if let [obj_file] = &obj_files[..] {
+            if let Some(export_dir) = export_dir() {
+                if let Some((out_directory, out_file_name)) = export_path {
+                    let obj_dir = export_dir.join(out_directory);
+                    std::fs::create_dir_all(&obj_dir).unwrap_or_else(|_| {
+                        panic!(
+                            "Could not create directory for object file: {}",
+                            obj_dir.to_string_lossy()
+                        )
+                    });
+                    let obj_path = obj_dir.join(out_file_name);
+                    std::fs::copy(obj_file, &obj_path).unwrap_or_else(|_| {
+                        panic!(
+                            "Failed to move object file to {obj_path}!",
+                            obj_path = obj_path.to_string_lossy()
+                        )
+                    });
+                }
+            } else {
+                println!("cargo::rustc-link-arg={}", obj_file.to_string_lossy())
+            }
+        } else {
+            panic!(
+                "CXX-Qt internal error: Expected only one object file out of cc::Build! Got {}",
+                obj_files.len()
+            );
+        }
+    }
+
+    fn build_qml_module(
+        &mut self,
+        qml_module: &OwningQmlModule,
+        init_builder: &cc::Build,
+        qtbuild: &mut qt_build_utils::QtBuild,
+        generated_header_dir: impl AsRef<Path>,
+    ) {
+        let mut qml_metatypes_json = Vec::new();
+
+        for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
+            self.cc_builder.file(files.plain_cpp);
+            if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
+                self.cc_builder.file(&qobject);
+                let moc_products = qtbuild.moc(
+                    qobject_header,
+                    MocArguments::default().uri(qml_module.uri.clone()),
+                );
+                self.cc_builder.file(moc_products.cpp);
+                qml_metatypes_json.push(moc_products.metatypes_json);
+            }
         }
 
-        let mut plugin_builder_files_added = false;
+        let qml_module_registration_files = qtbuild.register_qml_module(
+            &qml_metatypes_json,
+            &qml_module.uri,
+            qml_module.version_major,
+            qml_module.version_minor,
+            // TODO: This will be passed to the `optional plugin ...` part of the qmldir
+            // We don't load any shared libraries, so the name shouldn't matter
+            // But make sure it still works
+            &plugin_name_from_uri(&qml_module.uri),
+            &qml_module.qml_files,
+            &qml_module.qrc_files,
+        );
+        self.cc_builder
+            .file(qml_module_registration_files.qmltyperegistrar);
+        self.cc_builder.file(qml_module_registration_files.plugin);
 
-        let lib_name = "cxx-qt-generated";
-        let init_builder = plugin_builder.clone();
+        // In comparison to the other RCC files, we don't need to link this with whole-archive or
+        // anything like that.
+        // The plugin_init file already takes care of loading the resources associated with this
+        // RCC file.
+        self.cc_builder.file(qml_module_registration_files.rcc);
+        for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
+            self.cc_builder.file(qmlcachegen_file);
+        }
+        // This is required, as described here: plugin_builder
+        self.cc_builder.define("QT_STATICPLUGIN", None);
+
+        // If any of the files inside the qml module change, then trigger a rerun
+        for path in qml_module.qml_files.iter().chain(
+            qml_module
+                .rust_files
+                .iter()
+                .chain(qml_module.qrc_files.iter()),
+        ) {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+
+        // Now all necessary symbols should be included in the cc_builder.
+        // However, the plugin needs to be initialized at runtime.
+        // This is done through the plugin_init file.
+        // It needs to be linked as an object file, to ensure that the linker doesn't throw away
+        // the static initializers in this file.
+        // For CMake builds, we export this file to then later include it as an object library in
+        // CMake.
+        // In cargo builds, add the object file as a direct argument to the linker.
+        Self::build_object_file(
+            init_builder,
+            &qml_module_registration_files.plugin_init,
+            Some((
+                &format!("plugins/{}", plugin_name_from_uri(&qml_module.uri)),
+                "plugin_init.o",
+            )),
+        );
+    }
+
+    fn setup_qt5_compatibility(init_builder: &cc::Build, qtbuild: &qt_build_utils::QtBuild) {
+        // If we are using Qt 5 then write the std_types source
+        // This registers std numbers as a type for use in QML
+        //
+        // Note that we need this to be compiled into the whole_archive builder
+        // as they are stored in statics in the source.
+        //
+        // TODO: once +whole-archive and +bundle are allowed together in rlibs
+        // we should be able to move this into cxx-qt so that it's only built
+        // once rather than for every cxx-qt-build. When this happens also
+        // ensure that in a multi project that numbers work everywhere.
+        //
+        // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
+        // as path for cc::Build rather than copying the .cpp file
+        //
+        // https://github.com/rust-lang/rust/issues/108081
+        // https://github.com/KDAB/cxx-qt/pull/598
+        if qtbuild.version().major == 5 {
+            let std_types_contents = include_str!("std_types_qt5.cpp");
+            let std_types_path = format!(
+                "{out_dir}/std_types_qt5.cpp",
+                out_dir = env::var("OUT_DIR").unwrap()
+            );
+            std::fs::write(&std_types_path, std_types_contents)
+                .expect("Could not write std_types source");
+
+            Self::build_object_file(init_builder, std_types_path, None);
+        }
+    }
+
+    /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
+    /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
+    pub fn build(mut self) {
+        // Ensure that the linker is setup correctly for Cargo builds
+        qt_build_utils::setup_linker();
+
+        let header_root = header_root();
+        let generated_header_dir = header_root.join("cxx-qt-gen/");
+
+        let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.drain().collect())
+            .expect("Could not find Qt installation");
+        qtbuild.cargo_link_libraries(&mut self.cc_builder);
+        Self::define_qt_version_cfg_variables(qtbuild.version());
+
+        Self::write_common_headers();
+
+        // Setup compilers
+        // Static QML plugin and Qt resource initializers need to be linked as their own separate
+        // object files because they use static variables which need to be initialized before main
+        // (regardless of whether main is in Rust or C++). Normally linkers only copy symbols referenced
+        // from within main when static linking, which would result in discarding those static variables.
+        // Use a separate cc::Build for the little amount of code that needs to be built & linked this way.
+        let mut init_builder = cc::Build::new();
+        let mut include_paths = qtbuild.include_paths();
+        include_paths.extend([header_root.clone(), generated_header_dir.clone()]);
+
+        Self::setup_cc_builder(
+            &mut self.cc_builder,
+            &include_paths,
+            self.extra_defines.iter().map(String::as_str),
+        );
+        Self::setup_cc_builder(
+            &mut init_builder,
+            &include_paths,
+            self.extra_defines.iter().map(String::as_str),
+        );
+        // Note: From now on the init_builder is correctly configured.
+        // When building object files with this builder, we always need to copy it first.
+        // So remove `mut` to ensure that we can't accidentally change the configuration or add
+        // files.
+        let init_builder = init_builder;
+
+        // Generate files
+        self.generate_cpp_files_from_cxxqt_bridges(&generated_header_dir);
+
+        self.moc_qobject_headers(&mut qtbuild);
 
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
-        for qml_module in self.qml_modules {
-            let mut qml_metatypes_json = Vec::new();
-
-            for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
-                self.cc_builder.file(files.plain_cpp);
-                if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
-                {
-                    self.cc_builder.file(&qobject);
-                    let moc_products = qtbuild.moc(
-                        qobject_header,
-                        MocArguments::default().uri(qml_module.uri.clone()),
-                    );
-                    self.cc_builder.file(moc_products.cpp);
-                    qml_metatypes_json.push(moc_products.metatypes_json);
-                }
-            }
-
-            let qml_module_registration_files = qtbuild.register_qml_module(
-                &qml_metatypes_json,
-                &qml_module.uri,
-                qml_module.version_major,
-                qml_module.version_minor,
-                lib_name,
-                &qml_module.qml_files,
-                &qml_module.qrc_files,
+        let qml_modules: Vec<_> = self.qml_modules.drain(..).collect();
+        for qml_module in &qml_modules {
+            self.build_qml_module(
+                qml_module,
+                &init_builder,
+                &mut qtbuild,
+                &generated_header_dir,
             );
-            self.cc_builder
-                .file(qml_module_registration_files.qmltyperegistrar);
-            self.cc_builder.file(qml_module_registration_files.plugin);
-
-            let mut plugin_init_builder = init_builder.clone();
-            plugin_init_builder.file(&qml_module_registration_files.plugin_init);
-            let obj_files = plugin_init_builder.compile_intermediates();
-            if let Some(plugin_dir) = plugin_dir(&qml_module.uri) {
-                for file in obj_files {
-                    // Note: This needs to match the URI conversion in CxxQt.cmake!!!
-                    let path = PathBuf::from(&plugin_dir);
-                    std::fs::create_dir_all(&path).unwrap();
-                    let obj_path = path.join("plugin_init.o");
-                    println!(
-                        "Copying initializers obj file: {file_path} -> {obj_path}",
-                        file_path = file.to_string_lossy(),
-                        obj_path = obj_path.to_string_lossy()
-                    );
-                    std::fs::copy(&file, obj_path)
-                        .expect("Failed to move plugin_init object file to CXXQT_EXPORT_DIR!");
-                }
-            } else {
-                for file in obj_files {
-                    println!(
-                        "cargo::rustc-link-arg={file_path}",
-                        file_path = file.to_string_lossy()
-                    )
-                }
-            }
-
-            // If we are using Qt 5 then write the std_types source
-            // This registers std numbers as a type for use in QML
-            //
-            // Note that we need this to be compiled into the whole_archive builder
-            // as they are stored in statics in the source.
-            //
-            // TODO: once +whole-archive and +bundle are allowed together in rlibs
-            // we should be able to move this into cxx-qt so that it's only built
-            // once rather than for every cxx-qt-build. When this happens also
-            // ensure that in a multi project that numbers work everywhere.
-            //
-            // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
-            // as path for cc::Build rather than copying the .cpp file
-            //
-            // https://github.com/rust-lang/rust/issues/108081
-            // https://github.com/KDAB/cxx-qt/pull/598
-            if qtbuild.version().major == 5 {
-                let mut std_types_builder = init_builder.clone();
-
-                let std_types_contents = include_str!("std_types_qt5.cpp");
-                let std_types_path = format!(
-                    "{out_dir}/std_types_qt5.cpp",
-                    out_dir = env::var("OUT_DIR").unwrap()
-                );
-                let mut source =
-                    File::create(&std_types_path).expect("Could not create std_types source");
-                write!(source, "{std_types_contents}").expect("Could not write std_types source");
-                source.sync_all().expect("Failed to write std_types source");
-                drop(source);
-
-                std_types_builder.file(&std_types_path);
-                let obj_files = std_types_builder.compile_intermediates();
-
-                if export_dir().is_none() {
-                    for file in obj_files {
-                        println!(
-                            "cargo:rustc-link-arg={file_path}",
-                            file_path = file.to_string_lossy()
-                        )
-                    }
-                }
-            }
-
-            plugin_builder.file(qml_module_registration_files.rcc);
-            for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
-                plugin_builder.file(qmlcachegen_file);
-            }
-            self.cc_builder.define("QT_STATICPLUGIN", None);
-            plugin_builder_files_added = true;
-
-            // If any of the files inside the qml module change, then trigger a rerun
-            for path in qml_module.qml_files.iter().chain(
-                qml_module
-                    .rust_files
-                    .iter()
-                    .chain(qml_module.qrc_files.iter()),
-            ) {
-                println!("cargo:rerun-if-changed={}", path.display());
-            }
         }
 
         for qrc_file in self.qrc_files {
-            plugin_builder.file(qtbuild.qrc(&qrc_file));
+            let obj_file_name = format!(
+                "{}.o",
+                qrc_file.file_name().unwrap_or_default().to_string_lossy()
+            );
+            let obj_file_dir = format!("qrc/{}", crate_name());
+            // TODO: Is it correct to use an obj file here, or should this just link normally?
+            Self::build_object_file(
+                &init_builder,
+                qtbuild.qrc(&qrc_file),
+                Some((&obj_file_dir, &*obj_file_name)),
+            );
 
             // Also ensure that each of the files in the qrc can cause a change
             for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
                 println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
             }
-
-            plugin_builder_files_added = true;
         }
 
-        if plugin_builder_files_added {
-            plugin_builder.compile("cxx-qt-plugins");
-        }
+        Self::setup_qt5_compatibility(&init_builder, &qtbuild);
 
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error
         if self.cc_builder.get_files().count() > 0 {
-            self.cc_builder.compile(lib_name);
+            self.cc_builder
+                .compile(&format!("{}-cxxqt-generated", crate_name()));
         }
     }
 }
