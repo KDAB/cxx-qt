@@ -65,6 +65,20 @@ function(cxxqt_import_crate)
       # https://cmake.org/cmake/help/latest/command/target_link_libraries.html
       target_link_libraries(${CRATE} INTERFACE CXXQT_QT5_COMPATIBILITY $<TARGET_OBJECTS:CXXQT_QT5_COMPATIBILITY>)
     endif()
+
+
+    add_custom_target(${CRATE}_mock_initializers
+      COMMAND ${CMAKE_COMMAND} -E true
+      DEPENDS ${CRATE}
+      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers.o")
+
+    add_library(${CRATE}_initializers OBJECT IMPORTED)
+    set_target_properties(${CRATE}_initializers
+      PROPERTIES
+      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers.o")
+    target_link_libraries(${CRATE} INTERFACE ${CRATE}_initializers $<TARGET_OBJECTS:${CRATE}_initializers>)
+
+    message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")
   endforeach()
 
 endfunction()

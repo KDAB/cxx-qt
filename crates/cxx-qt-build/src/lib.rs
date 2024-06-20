@@ -235,13 +235,13 @@ fn generate_cxxqt_cpp_files(
     rs_source: &[impl AsRef<Path>],
     header_dir: impl AsRef<Path>,
 ) -> Vec<GeneratedCppFilePaths> {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
-        let cpp_directory = format!("{}/cxx-qt-gen/src", env::var("OUT_DIR").unwrap());
-        let path = format!("{manifest_dir}/{}", rs_path.as_ref().display());
-        println!("cargo:rerun-if-changed={path}");
+        let cpp_directory = out_dir().join("cxx-qt-gen/src");
+        let path = manifest_dir.join(rs_path);
+        println!("cargo:rerun-if-changed={}", path.to_string_lossy());
 
         let generated_code = match GeneratedCpp::new(&path) {
             Ok(v) => v,
@@ -260,6 +260,10 @@ fn generate_cxxqt_cpp_files(
 /// Note that this is not namspaced by crate.
 fn export_dir() -> Option<PathBuf> {
     env::var("CXXQT_EXPORT_DIR").ok().map(PathBuf::from)
+}
+
+fn out_dir() -> PathBuf {
+    env::var("OUT_DIR").unwrap().into()
 }
 
 fn plugin_name_from_uri(plugin_uri: &str) -> String {
@@ -333,6 +337,7 @@ pub struct CxxQtBuilder {
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
     extra_defines: HashSet<String>,
+    initializers: Vec<String>,
 }
 
 impl CxxQtBuilder {
@@ -348,6 +353,7 @@ impl CxxQtBuilder {
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
             extra_defines: HashSet::new(),
+            initializers: Vec::new(),
         }
     }
 
@@ -488,6 +494,8 @@ impl CxxQtBuilder {
 
         // Add any of the defines
         self.extra_defines.extend(opts.defines);
+
+        self.initializers.extend(opts.initializers);
 
         // Add any of the Qt modules
         self.qt_modules.extend(opts.qt_modules);
@@ -663,81 +671,83 @@ impl CxxQtBuilder {
         }
     }
 
-    fn build_qml_module(
+    fn build_qml_modules(
         &mut self,
-        qml_module: &OwningQmlModule,
         init_builder: &cc::Build,
         qtbuild: &mut qt_build_utils::QtBuild,
         generated_header_dir: impl AsRef<Path>,
     ) {
-        let mut qml_metatypes_json = Vec::new();
+        for qml_module in &self.qml_modules {
+            let mut qml_metatypes_json = Vec::new();
 
-        for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
-            self.cc_builder.file(files.plain_cpp);
-            if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header) {
-                self.cc_builder.file(&qobject);
-                let moc_products = qtbuild.moc(
-                    qobject_header,
-                    MocArguments::default().uri(qml_module.uri.clone()),
-                );
-                self.cc_builder.file(moc_products.cpp);
-                qml_metatypes_json.push(moc_products.metatypes_json);
+            for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
+                self.cc_builder.file(files.plain_cpp);
+                if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
+                {
+                    self.cc_builder.file(&qobject);
+                    let moc_products = qtbuild.moc(
+                        qobject_header,
+                        MocArguments::default().uri(qml_module.uri.clone()),
+                    );
+                    self.cc_builder.file(moc_products.cpp);
+                    qml_metatypes_json.push(moc_products.metatypes_json);
+                }
             }
+
+            let qml_module_registration_files = qtbuild.register_qml_module(
+                &qml_metatypes_json,
+                &qml_module.uri,
+                qml_module.version_major,
+                qml_module.version_minor,
+                // TODO: This will be passed to the `optional plugin ...` part of the qmldir
+                // We don't load any shared libraries, so the name shouldn't matter
+                // But make sure it still works
+                &plugin_name_from_uri(&qml_module.uri),
+                &qml_module.qml_files,
+                &qml_module.qrc_files,
+            );
+            self.cc_builder
+                .file(qml_module_registration_files.qmltyperegistrar)
+                .file(qml_module_registration_files.plugin)
+                // In comparison to the other RCC files, we don't need to link this with whole-archive or
+                // anything like that.
+                // The plugin_init file already takes care of loading the resources associated with this
+                // RCC file.
+                .file(qml_module_registration_files.rcc);
+
+            for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
+                self.cc_builder.file(qmlcachegen_file);
+            }
+            // This is required, as described here: plugin_builder
+            self.cc_builder.define("QT_STATICPLUGIN", None);
+
+            // If any of the files inside the qml module change, then trigger a rerun
+            for path in qml_module.qml_files.iter().chain(
+                qml_module
+                    .rust_files
+                    .iter()
+                    .chain(qml_module.qrc_files.iter()),
+            ) {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+
+            // Now all necessary symbols should be included in the cc_builder.
+            // However, the plugin needs to be initialized at runtime.
+            // This is done through the plugin_init file.
+            // It needs to be linked as an object file, to ensure that the linker doesn't throw away
+            // the static initializers in this file.
+            // For CMake builds, we export this file to then later include it as an object library in
+            // CMake.
+            // In cargo builds, add the object file as a direct argument to the linker.
+            Self::build_object_file(
+                init_builder,
+                &qml_module_registration_files.plugin_init,
+                Some((
+                    &format!("plugins/{}", plugin_name_from_uri(&qml_module.uri)),
+                    "plugin_init.o",
+                )),
+            );
         }
-
-        let qml_module_registration_files = qtbuild.register_qml_module(
-            &qml_metatypes_json,
-            &qml_module.uri,
-            qml_module.version_major,
-            qml_module.version_minor,
-            // TODO: This will be passed to the `optional plugin ...` part of the qmldir
-            // We don't load any shared libraries, so the name shouldn't matter
-            // But make sure it still works
-            &plugin_name_from_uri(&qml_module.uri),
-            &qml_module.qml_files,
-            &qml_module.qrc_files,
-        );
-        self.cc_builder
-            .file(qml_module_registration_files.qmltyperegistrar)
-            .file(qml_module_registration_files.plugin)
-            // In comparison to the other RCC files, we don't need to link this with whole-archive or
-            // anything like that.
-            // The plugin_init file already takes care of loading the resources associated with this
-            // RCC file.
-            .file(qml_module_registration_files.rcc);
-
-        for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
-            self.cc_builder.file(qmlcachegen_file);
-        }
-        // This is required, as described here: plugin_builder
-        self.cc_builder.define("QT_STATICPLUGIN", None);
-
-        // If any of the files inside the qml module change, then trigger a rerun
-        for path in qml_module.qml_files.iter().chain(
-            qml_module
-                .rust_files
-                .iter()
-                .chain(qml_module.qrc_files.iter()),
-        ) {
-            println!("cargo:rerun-if-changed={}", path.display());
-        }
-
-        // Now all necessary symbols should be included in the cc_builder.
-        // However, the plugin needs to be initialized at runtime.
-        // This is done through the plugin_init file.
-        // It needs to be linked as an object file, to ensure that the linker doesn't throw away
-        // the static initializers in this file.
-        // For CMake builds, we export this file to then later include it as an object library in
-        // CMake.
-        // In cargo builds, add the object file as a direct argument to the linker.
-        Self::build_object_file(
-            init_builder,
-            &qml_module_registration_files.plugin_init,
-            Some((
-                &format!("plugins/{}", plugin_name_from_uri(&qml_module.uri)),
-                "plugin_init.o",
-            )),
-        );
     }
 
     fn setup_qt5_compatibility(init_builder: &cc::Build, qtbuild: &qt_build_utils::QtBuild) {
@@ -767,6 +777,38 @@ impl CxxQtBuilder {
                 .expect("Could not write std_types source");
 
             Self::build_object_file(init_builder, std_types_path, None);
+        }
+    }
+
+    fn build_initializers(&mut self, init_builder: &cc::Build) {
+        let initializers_path = out_dir().join("cxxqt_initializers.cpp");
+        std::fs::write(&initializers_path, self.initializers.join("\n"))
+            .expect("Could not write cxx_qt_initializers.cpp");
+        Self::build_object_file(
+            init_builder,
+            initializers_path,
+            Some(("", "initializers.o")),
+        );
+    }
+
+    fn build_qrc_files(&mut self, init_builder: &cc::Build, qtbuild: &mut qt_build_utils::QtBuild) {
+        for qrc_file in &self.qrc_files {
+            let obj_file_dir = format!("qrc/{}", crate_name());
+            let obj_file_name = format!(
+                "{}.o",
+                qrc_file.file_name().unwrap_or_default().to_string_lossy()
+            );
+            // TODO: Is it correct to use an obj file here, or should this just link normally?
+            Self::build_object_file(
+                init_builder,
+                qtbuild.qrc(&qrc_file),
+                Some((&obj_file_dir, &*obj_file_name)),
+            );
+
+            // Also ensure that each of the files in the qrc can cause a change
+            for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
+                println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
+            }
         }
     }
 
@@ -819,36 +861,13 @@ impl CxxQtBuilder {
 
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
-        let qml_modules: Vec<_> = self.qml_modules.drain(..).collect();
-        for qml_module in &qml_modules {
-            self.build_qml_module(
-                qml_module,
-                &init_builder,
-                &mut qtbuild,
-                &generated_header_dir,
-            );
-        }
+        self.build_qml_modules(&init_builder, &mut qtbuild, &generated_header_dir);
 
-        for qrc_file in self.qrc_files {
-            let obj_file_name = format!(
-                "{}.o",
-                qrc_file.file_name().unwrap_or_default().to_string_lossy()
-            );
-            let obj_file_dir = format!("qrc/{}", crate_name());
-            // TODO: Is it correct to use an obj file here, or should this just link normally?
-            Self::build_object_file(
-                &init_builder,
-                qtbuild.qrc(&qrc_file),
-                Some((&obj_file_dir, &*obj_file_name)),
-            );
-
-            // Also ensure that each of the files in the qrc can cause a change
-            for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
-                println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
-            }
-        }
+        self.build_qrc_files(&init_builder, &mut qtbuild);
 
         Self::setup_qt5_compatibility(&init_builder, &qtbuild);
+
+        self.build_initializers(&init_builder);
 
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error

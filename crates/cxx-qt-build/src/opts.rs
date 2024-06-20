@@ -19,6 +19,8 @@ pub struct CxxQtBuildersOpts {
     pub(crate) headers: Vec<(String, String, String)>,
     /// Qt modules that are required
     pub(crate) qt_modules: HashSet<String>,
+    /// Added initializer code required to be linked into a separate object file
+    pub(crate) initializers: Vec<String>,
 }
 
 impl CxxQtBuildersOpts {
@@ -44,6 +46,13 @@ impl CxxQtBuildersOpts {
     /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
     pub fn qt_module(mut self, module: &str) -> Self {
         self.qt_modules.insert(module.to_owned());
+        self
+    }
+
+    /// Add initializer C++ code that must be compiled into an object file or linked with
+    /// whole-archive so that the linker doesn't optimize it out.
+    pub fn initializer(mut self, initializers: &str) -> Self {
+        self.initializers.push(initializers.to_owned());
         self
     }
 }
