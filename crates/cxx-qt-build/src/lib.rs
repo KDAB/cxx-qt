@@ -279,8 +279,8 @@ fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
 
-fn is_binary() -> bool {
-    env::var("CARGO_BIN_NAME").is_ok()
+fn static_lib_name() -> String {
+    format!("{}-cxxqt-generated", crate_name())
 }
 
 fn panic_duplicate_file_and_qml_module(
@@ -647,8 +647,13 @@ impl CxxQtBuilder {
                         )
                     });
                 }
-            } else if is_binary() {
-                println!("cargo::rustc-link-arg-bins={}", obj_file.to_string_lossy())
+            } else {
+                println!("cargo::rustc-link-arg={}", obj_file.to_string_lossy());
+                // The linker argument order matters!
+                // We need to link the object file first, then link the static library.
+                // Otherwise, the linker will be unable to find the symbols in the static library file.
+                // See also: https://stackoverflow.com/questions/45135/why-does-the-order-in-which-libraries-are-linked-sometimes-cause-errors-in-gcc
+                println!("cargo::rustc-link-arg=-l{}", static_lib_name());
             }
         } else {
             panic!(
@@ -848,8 +853,7 @@ impl CxxQtBuilder {
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error
         if self.cc_builder.get_files().count() > 0 {
-            self.cc_builder
-                .compile(&format!("{}-cxxqt-generated", crate_name()));
+            self.cc_builder.compile(&static_lib_name());
         }
     }
 }
