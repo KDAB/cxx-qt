@@ -892,10 +892,10 @@ prefer :/qt/qml/{qml_uri_dirs}/
             let declarations = declarations.join("\n");
             let usages = usages.join("\n");
 
-            let mut qml_plugin_cpp = File::create(&qml_plugin_cpp_path).unwrap();
-            write!(
-                qml_plugin_cpp,
-                r#"
+            std::fs::write(
+                &qml_plugin_cpp_path,
+                format!(
+                    r#"
 #include <QtQml/qqmlextensionplugin.h>
 
 // TODO: Add missing handling for GHS (Green Hills Software compiler) that is in
@@ -916,9 +916,11 @@ public:
 
 // The moc-generated cpp file doesn't compile on its own; it needs to be #included here.
 #include "moc_{plugin_class_name}.cpp.cpp"
-"#
+"#,
+                ),
             )
-            .unwrap();
+            .expect("Failed to write plugin definition");
+
             self.moc(
                 &qml_plugin_cpp_path,
                 MocArguments {
@@ -928,15 +930,16 @@ public:
             );
 
             // Generate file to load static QQmlExtensionPlugin
-            let mut qml_plugin_init = File::create(&qml_plugin_init_path).unwrap();
-            write!(
-                qml_plugin_init,
-                r#"
+            std::fs::write(
+                &qml_plugin_init_path,
+                format!(
+                    r#"
 #include <QtPlugin>
 Q_IMPORT_PLUGIN({plugin_class_name});
 "#
+                ),
             )
-            .unwrap();
+            .expect("Failed to write plugin initializer file");
         }
 
         QmlModuleRegistrationFiles {
