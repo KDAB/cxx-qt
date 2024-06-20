@@ -279,6 +279,10 @@ fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
 
+fn is_binary() -> bool {
+    env::var("CARGO_BIN_NAME").is_ok()
+}
+
 fn panic_duplicate_file_and_qml_module(
     path: impl AsRef<Path>,
     uri: &str,
@@ -474,10 +478,12 @@ impl CxxQtBuilder {
                 .expect("Could not create {directory} header directory");
 
             let h_path = directory.join(file_name);
-            std::fs::write(&h_path, file_contents).expect(&format!(
-                "Could not write header: {h_path}",
-                h_path = h_path.to_string_lossy()
-            ));
+            std::fs::write(&h_path, file_contents).unwrap_or_else(|_| {
+                panic!(
+                    "Could not write header: {h_path}",
+                    h_path = h_path.to_string_lossy()
+                )
+            });
         }
 
         // Add any of the defines
@@ -641,8 +647,8 @@ impl CxxQtBuilder {
                         )
                     });
                 }
-            } else {
-                println!("cargo::rustc-link-arg={}", obj_file.to_string_lossy())
+            } else if is_binary() {
+                println!("cargo::rustc-link-arg-bins={}", obj_file.to_string_lossy())
             }
         } else {
             panic!(
@@ -687,14 +693,14 @@ impl CxxQtBuilder {
             &qml_module.qrc_files,
         );
         self.cc_builder
-            .file(qml_module_registration_files.qmltyperegistrar);
-        self.cc_builder.file(qml_module_registration_files.plugin);
+            .file(qml_module_registration_files.qmltyperegistrar)
+            .file(qml_module_registration_files.plugin)
+            // In comparison to the other RCC files, we don't need to link this with whole-archive or
+            // anything like that.
+            // The plugin_init file already takes care of loading the resources associated with this
+            // RCC file.
+            .file(qml_module_registration_files.rcc);
 
-        // In comparison to the other RCC files, we don't need to link this with whole-archive or
-        // anything like that.
-        // The plugin_init file already takes care of loading the resources associated with this
-        // RCC file.
-        self.cc_builder.file(qml_module_registration_files.rcc);
         for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
             self.cc_builder.file(qmlcachegen_file);
         }
