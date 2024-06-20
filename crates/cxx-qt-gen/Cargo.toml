@@ -19,7 +19,7 @@ syn.workspace = true
 quote.workspace = true
 convert_case.workspace = true
 clang-format = "0.3"
-indoc = "2.0"
+indoc.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1.2"

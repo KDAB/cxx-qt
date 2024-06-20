@@ -10,9 +10,13 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
+#include <cxx-qt/init.h>
+
 int
 main(int argc, char* argv[])
 {
+  cxx_qt::init();
+
   QGuiApplication app(argc, argv);
 
   QQmlApplicationEngine engine;

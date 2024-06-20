@@ -16,6 +16,9 @@ mod cfg_evaluator;
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
+mod init;
+pub use init::CxxQtBuilderInit;
+
 mod opts;
 pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
@@ -24,6 +27,7 @@ mod qml_modules;
 use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
+use indoc::formatdoc;
 pub use qt_build_utils::MocArguments;
 use quote::ToTokens;
 use std::{
@@ -314,6 +318,8 @@ pub struct CxxQtBuilder {
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
     extra_defines: HashSet<String>,
+    inits: Vec<CxxQtBuilderInit>,
+    generate_init: bool,
 }
 
 impl CxxQtBuilder {
@@ -329,6 +335,8 @@ impl CxxQtBuilder {
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
             extra_defines: HashSet::new(),
+            inits: vec![],
+            generate_init: true,
         }
     }
 
@@ -469,6 +477,18 @@ impl CxxQtBuilder {
         // Add any of the Qt modules
         self.qt_modules.extend(opts.qt_modules);
 
+        // Add any of the initialisers
+        self.inits.extend(opts.inits);
+
+        self
+    }
+
+    #[doc(hidden)]
+    /// Disable the init method generation
+    ///
+    /// This is used internally
+    pub fn disable_init_generation(mut self) -> Self {
+        self.generate_init = false;
         self
     }
 
@@ -496,6 +516,139 @@ impl CxxQtBuilder {
         }
     }
 
+    fn build_inits_for_qrc(&mut self) {
+        // Build the resources
+        let init_resources = self
+            .qrc_files
+            .iter()
+            .filter_map(|qrc| qrc.file_stem().and_then(|file_stem| file_stem.to_str()))
+            .map(|file_stem| {
+                // The name is the base name of the file with characters that cannot
+                // be part of a C++ function replaced by underscores
+                // https://doc.qt.io/qt-6/qtresource-qtcore-proxy.html#Q_INIT_RESOURCE
+                let qrc_name = file_stem.replace('-', "_");
+                // Note this cannot be inside a namespace
+                format!("  Q_INIT_RESOURCE({qrc_name};")
+            })
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        if !init_resources.is_empty() {
+            self.inits.push(CxxQtBuilderInit::new(
+                "cxx_qt_init_resources",
+                &formatdoc! {
+                    r#"
+                    #include <QtGlobal>
+
+                    #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+                    #include <QtCore/QDir>
+                    #else
+                    #include <QtCore/QtResource>
+                    #endif
+
+                    void
+                    cxx_qt_init_resources()
+                    {{
+                    {init_resources}
+                    }}
+                    "#
+                },
+            ));
+        }
+    }
+
+    fn build_inits_for_qml_plugins(&mut self) {
+        // Build the QML files
+        let import_plugins = self
+            .qml_modules
+            .iter()
+            .map(|qml_module| {
+                // The name is the URI with dots replaced by underscores
+                // and add _plugin to match the CLASS_NAME set in QtBuild::register_qml_module
+                //
+                // https://doc.qt.io/qt-6/qqmlengineextensionplugin.html#Q_IMPORT_QML_PLUGIN
+                let plugin_name = qml_module.uri.replace('.', "_");
+                format!("  Q_IMPORT_PLUGIN({plugin_name}_plugin);")
+            })
+            .collect::<Vec<String>>()
+            .join("\n");
+        if !import_plugins.is_empty() {
+            self.inits.push(CxxQtBuilderInit::new(
+                "cxx_qt_import_plugins",
+                &formatdoc! {
+                    r#"
+                    #include <QtQml/QQmlEngineExtensionPlugin>
+
+                    void
+                    cxx_qt_import_plugins()
+                    {{
+                    {import_plugins}
+                    }}
+                    "#
+                },
+            ));
+        }
+    }
+
+    fn write_init_method(&self) -> String {
+        // Build any initialisers from builder opts
+        let mut call_methods = vec![];
+        let mut sources = vec![];
+
+        for init in &self.inits {
+            call_methods.push(format!("{}();", init.method_name));
+            sources.push(init.source.as_str());
+        }
+
+        let call_methods = call_methods.join("\n");
+        let sources = sources.join("\n");
+
+        let header = formatdoc! {
+            r#"
+            #pragma once
+
+            extern "C" void __cxx_qt_init();
+
+            namespace cxx_qt {{
+            void
+            init();
+            }}
+            "#
+        };
+        let source = formatdoc! {
+            r#"
+            #include <cxx-qt/init.h>
+
+            void
+            __cxx_qt_init()
+            {{
+              cxx_qt::init();
+            }}
+
+            {sources}
+
+            namespace cxx_qt {{
+            void
+            init()
+            {{
+            {call_methods}
+            }}
+            }}
+            "#
+        };
+
+        let header_root = header_root();
+        std::fs::create_dir_all(format!("{header_root}/cxx-qt"))
+            .expect("Could not create cxx header directory");
+        let h_path = format!("{header_root}/cxx-qt/init.h");
+        let mut header_file = File::create(h_path).expect("Could not create init.h");
+        write!(header_file, "{}", header).expect("Could not write init.h");
+        let source_path = format!("{header_root}/cxx-qt/init.cpp");
+        let mut source_file = File::create(source_path.clone()).expect("Could not create init.cpp");
+        write!(source_file, "{}", source).expect("Could not write init.cpp");
+        source_path
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
@@ -505,7 +658,7 @@ impl CxxQtBuilder {
         let header_root = header_root();
         let generated_header_dir = format!("{header_root}/cxx-qt-gen");
 
-        let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.into_iter().collect())
+        let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.iter().cloned().collect())
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
@@ -623,6 +776,22 @@ impl CxxQtBuilder {
             }
         }
 
+        // Build inits which are generated
+        self.build_inits_for_qrc();
+        self.build_inits_for_qml_plugins();
+        if qtbuild.version().major < 6 {
+            // Inject Qt 5 compat type registers
+            self.inits.push(CxxQtBuilderInit::new(
+                "cxx_qt_qt5_compat",
+                include_str!("std_types_qt5.cpp"),
+            ));
+        }
+
+        // Generate init method
+        if self.generate_init {
+            cc_builder_whole_archive.file(self.write_init_method());
+        }
+
         // Run moc on C++ headers with Q_OBJECT macro
         for QObjectHeaderOpts {
             path,
@@ -632,8 +801,6 @@ impl CxxQtBuilder {
             let moc_products = qtbuild.moc(&path, moc_arguments);
             self.cc_builder.file(moc_products.cpp);
         }
-
-        let mut cc_builder_whole_archive_files_added = false;
 
         let lib_name = "cxx-qt-generated";
 
@@ -668,13 +835,11 @@ impl CxxQtBuilder {
             self.cc_builder
                 .file(qml_module_registration_files.qmltyperegistrar);
             self.cc_builder.file(qml_module_registration_files.plugin);
-            cc_builder_whole_archive.file(qml_module_registration_files.plugin_init);
             cc_builder_whole_archive.file(qml_module_registration_files.rcc);
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 cc_builder_whole_archive.file(qmlcachegen_file);
             }
             self.cc_builder.define("QT_STATICPLUGIN", None);
-            cc_builder_whole_archive_files_added = true;
 
             // If any of the files inside the qml module change, then trigger a rerun
             for path in qml_module.qml_files.iter().chain(
@@ -694,40 +859,10 @@ impl CxxQtBuilder {
             for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
                 println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
             }
-
-            cc_builder_whole_archive_files_added = true;
         }
 
-        // If we are using Qt 5 then write the std_types source
-        // This registers std numbers as a type for use in QML
-        //
-        // Note that we need this to be compiled into the whole_archive builder
-        // as they are stored in statics in the source.
-        //
-        // TODO: once +whole-archive and +bundle are allowed together in rlibs
-        // we should be able to move this into cxx-qt so that it's only built
-        // once rather than for every cxx-qt-build. When this happens also
-        // ensure that in a multi project that numbers work everywhere.
-        //
-        // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
-        // as path for cc::Build rather than copying the .cpp file
-        //
-        // https://github.com/rust-lang/rust/issues/108081
-        // https://github.com/KDAB/cxx-qt/pull/598
-        if qtbuild.version().major == 5 {
-            let std_types_contents = include_str!("std_types_qt5.cpp");
-            let std_types_path = format!(
-                "{out_dir}/std_types_qt5.cpp",
-                out_dir = env::var("OUT_DIR").unwrap()
-            );
-            let mut source =
-                File::create(&std_types_path).expect("Could not create std_types source");
-            write!(source, "{std_types_contents}").expect("Could not write std_types source");
-            cc_builder_whole_archive.file(&std_types_path);
-            cc_builder_whole_archive_files_added = true;
-        }
-
-        if cc_builder_whole_archive_files_added {
+        // We normally have initialisers due to cxx_qt::init
+        if cc_builder_whole_archive.get_files().count() > 0 {
             cc_builder_whole_archive.compile("qt-static-initializers");
         }
 

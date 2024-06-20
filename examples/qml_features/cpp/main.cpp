@@ -8,12 +8,16 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
+#include <cxx-qt/init.h>
+
 #include "custom_object.h"
 #include "external_qobject.h"
 
 int
 main(int argc, char* argv[])
 {
+  cxx_qt::init();
+
   QGuiApplication app(argc, argv);
 
   QQmlApplicationEngine engine;
