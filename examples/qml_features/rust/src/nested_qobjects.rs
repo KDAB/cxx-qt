@@ -5,6 +5,10 @@
 
 //! This example shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
 
+// Currently, there seems to be a clippy bug, that says the `called` signals don't have `# Safety`
+// docs, which they do have. So we disable the warning for now.
+#![allow(clippy::missing_safety_doc)]
+
 /// A CXX-Qt bridge which shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge(cxx_file_stem = "nested_qobjects")]
@@ -45,6 +49,10 @@ pub mod qobject {
 
     unsafe extern "RustQt" {
         /// Print the count of the given inner QObject
+        ///
+        /// # Safety
+        ///
+        /// As we deref a pointer in a public method this needs to be marked as unsafe
         #[qinvokable]
         unsafe fn print_count(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
 
