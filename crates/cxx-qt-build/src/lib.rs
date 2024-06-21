@@ -718,7 +718,7 @@ impl CxxQtBuilder {
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 self.cc_builder.file(qmlcachegen_file);
             }
-            // This is required, as described here: plugin_builder
+            // This is required, as described here: https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins
             self.cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
@@ -731,6 +731,23 @@ impl CxxQtBuilder {
                 println!("cargo:rerun-if-changed={}", path.display());
             }
 
+            // Export the .qmltypes and qmldir files into a stable path, so that tools like
+            // qmllint/qmlls can find them.
+            let plugin_dir_name = format!("plugins/{}", plugin_name_from_uri(&qml_module.uri));
+            if let Some(export_dir) = export_dir() {
+                let plugin_dir = export_dir.join(&plugin_dir_name);
+                std::fs::create_dir_all(&plugin_dir).expect("Could not create plugin directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmltypes,
+                    plugin_dir.join("plugin.qmltypes"),
+                )
+                .expect("Could not copy plugin.qmltypes to export directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmldir,
+                    plugin_dir.join("qmldir"),
+                )
+                .expect("Could not copy qmldir to export directory");
+            }
             // Now all necessary symbols should be included in the cc_builder.
             // However, the plugin needs to be initialized at runtime.
             // This is done through the plugin_init file.
@@ -742,10 +759,7 @@ impl CxxQtBuilder {
             Self::build_object_file(
                 init_builder,
                 &qml_module_registration_files.plugin_init,
-                Some((
-                    &format!("plugins/{}", plugin_name_from_uri(&qml_module.uri)),
-                    "plugin_init.o",
-                )),
+                Some((&plugin_dir_name, "plugin_init.o")),
             );
         }
     }
