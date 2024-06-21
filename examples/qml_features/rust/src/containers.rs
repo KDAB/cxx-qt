@@ -100,7 +100,7 @@ impl qobject::RustContainers {
     pub fn reset(mut self: Pin<&mut Self>) {
         // Update the private rust fields via the rust_mut
         {
-            let mut rust_mut = self.as_mut().rust_mut();
+            let mut rust_mut = self.rust_mut();
             rust_mut.hash = QHash::<QHashPair_QString_QVariant>::default();
             rust_mut.list = QList::<i32>::default();
             rust_mut.set = QSet::<i32>::default();
@@ -115,28 +115,28 @@ impl qobject::RustContainers {
 
     /// Append the given number to the vector container
     pub fn append_vector(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().rust_mut().vector.append(value);
+        self.rust_mut().vector.append(value);
 
         self.update_strings();
     }
 
     /// Append the given number to the list container
     pub fn append_list(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().rust_mut().list.append(value);
+        self.rust_mut().list.append(value);
 
         self.update_strings();
     }
 
     /// Insert the given number into the set container
     pub fn insert_set(mut self: Pin<&mut Self>, value: i32) {
-        self.as_mut().rust_mut().set.insert(value);
+        self.rust_mut().set.insert(value);
 
         self.update_strings();
     }
 
     /// Insert the given string and variant to the hash container
     pub fn insert_hash(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
-        self.as_mut().rust_mut().hash.insert(key, value);
+        self.rust_mut().hash.insert(key, value);
 
         self.update_strings();
     }
@@ -144,7 +144,7 @@ impl qobject::RustContainers {
     /// Insert the given string and variant to the map container
     pub fn insert_map(mut self: Pin<&mut Self>, key: QString, value: QVariant) {
         // Note: map is a Q_PROPERTY so ensure we manually trigger changed
-        self.as_mut().rust_mut().map.insert(key, value);
+        self.rust_mut().map.insert(key, value);
         self.as_mut().map_changed();
 
         self.update_strings();

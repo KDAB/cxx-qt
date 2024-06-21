@@ -95,7 +95,7 @@ impl qobject::RustProperties {
 
             // We are directly modifying the Rust struct to avoid creating an extra QUrl.
             // So we need to manually call the notify signal for the property ourselves.
-            std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
+            std::mem::swap(&mut self.rust_mut().connected_url, &mut url);
             self.as_mut().connected_url_changed();
 
             // Then we can store the old url without having to temporarily store it

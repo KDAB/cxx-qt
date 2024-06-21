@@ -122,7 +122,7 @@ impl cxx_qt::Initialize for qobject::RustSignals {
                             ConnectionType::QueuedConnection,
                         ),
                     ];
-                    qobject.as_mut().rust_mut().connections = Some(connections);
+                    qobject.rust_mut().connections = Some(connections);
                     // ANCHOR_END: book_signals_connect
                 }
             } else {
@@ -130,7 +130,7 @@ impl cxx_qt::Initialize for qobject::RustSignals {
                 // ANCHOR: book_signals_disconnect
                 // By making connections None, we trigger a drop on the connections
                 // this then causes disconnections
-                qobject.as_mut().rust_mut().connections = None;
+                qobject.rust_mut().connections = None;
                 // ANCHOR_END: book_signals_disconnect
             }
         })

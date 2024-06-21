@@ -146,12 +146,12 @@ impl cxx_qt::Constructor<()> for qobject::EnergyUsage {
         let sensors_changed = Arc::new(AtomicBool::new(false));
 
         // Make relevent clones so that we can pass them to the threads
-        let accumulator_sensors = Arc::clone(&self.as_mut().rust_mut().sensors_map);
+        let accumulator_sensors = Arc::clone(&self.rust_mut().sensors_map);
         let accumulator_sensors_changed = Arc::clone(&sensors_changed);
         let accumulator_qt_thread = self.qt_thread();
-        let sensors = Arc::clone(&self.as_mut().rust_mut().sensors_map);
+        let sensors = Arc::clone(&self.rust_mut().sensors_map);
         let sensors_qt_thread = self.qt_thread();
-        let timeout_sensors = Arc::clone(&self.as_mut().rust_mut().sensors_map);
+        let timeout_sensors = Arc::clone(&self.rust_mut().sensors_map);
         let timeout_network_tx = network_tx.clone();
 
         // Start our threads

@@ -233,7 +233,7 @@ impl qobject::CustomBaseClass {
     pub fn add_on_thread_delayed(mut self: Pin<&mut Self>, mut counter: i32, delay_ms: u64) {
         let qt_thread = self.qt_thread();
 
-        self.as_mut().rust_mut().pending_adds += counter;
+        self.rust_mut().pending_adds += counter;
         self.as_mut().set_state(qobject::State::Running);
 
         std::thread::spawn(move || {
@@ -248,7 +248,7 @@ impl qobject::CustomBaseClass {
                 qt_thread
                     .queue(|mut this| {
                         this.as_mut().add_cpp_context();
-                        this.as_mut().rust_mut().pending_adds -= 1;
+                        this.rust_mut().pending_adds -= 1;
                         if this.pending_adds == 0 {
                             this.set_state(qobject::State::Idle);
                         }
@@ -270,7 +270,7 @@ impl qobject::CustomBaseClass {
             self.as_mut()
                 .begin_insert_rows(&QModelIndex::default(), count as i32, count as i32);
             let id = self.id;
-            self.as_mut().rust_mut().id = id + 1;
+            self.rust_mut().id = id + 1;
             self.as_mut()
                 .rust_mut()
                 .vector
@@ -286,8 +286,8 @@ impl qobject::CustomBaseClass {
     pub fn clear(mut self: Pin<&mut Self>) {
         unsafe {
             self.as_mut().begin_reset_model();
-            self.as_mut().rust_mut().id = 0;
-            self.as_mut().rust_mut().vector.clear();
+            self.rust_mut().id = 0;
+            self.rust_mut().vector.clear();
             self.as_mut().end_reset_model();
         }
     }
@@ -297,7 +297,7 @@ impl qobject::CustomBaseClass {
 impl qobject::CustomBaseClass {
     /// Multiply the number in the row with the given index by the given factor
     pub fn multiply(mut self: Pin<&mut Self>, index: i32, factor: f64) {
-        if let Some((_, value)) = self.as_mut().rust_mut().vector.get_mut(index as usize) {
+        if let Some((_, value)) = self.rust_mut().vector.get_mut(index as usize) {
             *value *= factor;
 
             // Emit dataChanged for the index and value role
@@ -318,7 +318,7 @@ impl qobject::CustomBaseClass {
         unsafe {
             self.as_mut()
                 .begin_remove_rows(&QModelIndex::default(), index, index);
-            self.as_mut().rust_mut().vector.remove(index as usize);
+            self.rust_mut().vector.remove(index as usize);
             self.as_mut().end_remove_rows();
         }
     }

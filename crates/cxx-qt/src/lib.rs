@@ -41,7 +41,13 @@ pub trait CxxQtType {
     fn rust(&self) -> &Self::Rust;
 
     /// Retrieve a mutable reference to the Rust struct backing this C++ object
-    fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust>;
+    fn rust_mut_consuming(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust>;
+
+    /// Convenience method: Retrieve a mutable reference to the Rust struct backing this C++ object without having to
+    /// call `Pin::as_mut` first.
+    fn rust_mut<'a>(self: &'a mut core::pin::Pin<&mut Self>) -> core::pin::Pin<&'a mut Self::Rust> {
+        self.as_mut().rust_mut_consuming()
+    }
 }
 
 /// Types which implement the `Locking` trait are guarded from concurrent access in C++ (the default in CXX-Qt).
