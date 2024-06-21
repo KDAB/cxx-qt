@@ -50,6 +50,10 @@ function(cxxqt_import_crate)
       PROPERTIES
       CXXQT_EXPORT_DIR "${IMPORT_CRATE_CXXQT_EXPORT_DIR}")
 
+    # cxx-qt-build generates object files that need to be linked to the final target.
+    # These are the static initializers that would be removed as an optimization if they're not referenced.
+    # So add them to an object library instead.
+    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/")
     # When using the Ninja generator, we need to provide **some** way to generate the object file
     # Unfortunately I'm not able to tell corrosion that this obj file is indeed a byproduct, so
     # create a fake target for it.
@@ -57,12 +61,12 @@ function(cxxqt_import_crate)
     add_custom_target(${CRATE}_mock_initializers
       COMMAND ${CMAKE_COMMAND} -E true
       DEPENDS ${CRATE}
-      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers.o")
+      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/${CRATE}.o")
 
     add_library(${CRATE}_initializers OBJECT IMPORTED)
     set_target_properties(${CRATE}_initializers
       PROPERTIES
-      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers.o")
+      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/${CRATE}.o")
     # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
     # Only the linker flags from the object library would be included, but not the actual object files.
     # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:

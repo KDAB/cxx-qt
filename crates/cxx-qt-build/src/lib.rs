@@ -780,13 +780,16 @@ impl CxxQtBuilder {
     }
 
     fn build_initializers(&mut self, init_builder: &cc::Build) {
-        let initializers_path = out_dir().join("cxxqt_initializers.cpp");
+        let initializers_path = out_dir().join("cxx-qt-build").join("initializers");
+        std::fs::create_dir_all(&initializers_path).expect("Failed to create initializers path!");
+
+        let initializers_path = initializers_path.join(format!("{}.cpp", crate_name()));
         std::fs::write(&initializers_path, self.initializers.join("\n"))
-            .expect("Could not write cxx_qt_initializers.cpp");
+            .expect("Could not write initializers file");
         Self::build_object_file(
             init_builder,
             initializers_path,
-            Some(("", "initializers.o")),
+            Some(("initializers", &format!("{}.o", crate_name()))),
         );
     }
 
