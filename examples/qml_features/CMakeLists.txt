@@ -30,7 +30,7 @@ endif()
 
 set(CRATE qml_features)
 cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-cxxqt_import_qml_module(${CRATE}qml
+cxxqt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
 
@@ -41,7 +41,7 @@ add_executable(${APP_NAME}
 target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME}
     PRIVATE
-    ${CRATE}qml
+    ${CRATE}_qml
     Qt::Core
     Qt::Gui
     Qt::Qml
@@ -59,7 +59,7 @@ if(BUILD_TESTING)
     target_include_directories(${APP_TEST_NAME} PRIVATE cpp)
     target_link_libraries( ${APP_TEST_NAME}
         PRIVATE
-        ${CRATE}qml
+        ${CRATE}_qml
         Qt::Test
         Qt::QuickTest
         Qt::Core

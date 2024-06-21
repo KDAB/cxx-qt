@@ -55,7 +55,7 @@ cxxqt_import_qml_module(${CRATE}_qml
 # Define the executable with the C++ source
 add_executable(${APP_NAME} cpp/main.cpp)
 
-# Link to the Rust library
+# Link to the qml module, which in turn links to the Rust ${CRATE} library
 target_link_libraries(${APP_NAME} PRIVATE ${CRATE}_qml)
 
 # If we are using a statically linked Qt then we need to import any qml plugins

@@ -385,6 +385,10 @@ impl CxxQtBuilder {
     ///     .qrc("src/my_resources.qrc")
     ///     .build();
     /// ```
+    ///
+    /// ⚠️  In CMake projects, the .qrc file is typically added to the `SOURCES` of the target.
+    /// Prefer this to adding the qrc file through cxx-qt-build.
+    /// When using CMake, the qrc file will **not** be built by cxx-qt-build!
     pub fn qrc(mut self, qrc_file: impl AsRef<Path>) -> Self {
         let qrc_file = qrc_file.as_ref();
         self.qrc_files.push(qrc_file.to_path_buf());
@@ -637,6 +641,9 @@ impl CxxQtBuilder {
         obj_builder.file(file_path);
         let obj_files = obj_builder.compile_intermediates();
 
+        // We only expect a single file, so destructure the vec.
+        // If there's 0 or > 1 file, we panic in the `else` branch, because then the builder is
+        // probably not correctly configured.
         if let [obj_file] = &obj_files[..] {
             if let Some(export_dir) = export_dir() {
                 if let Some((out_directory, out_file_name)) = export_path {
@@ -785,17 +792,9 @@ impl CxxQtBuilder {
 
     fn build_qrc_files(&mut self, init_builder: &cc::Build, qtbuild: &mut qt_build_utils::QtBuild) {
         for qrc_file in &self.qrc_files {
-            let obj_file_dir = format!("qrc/{}", crate_name());
-            let obj_file_name = format!(
-                "{}.o",
-                qrc_file.file_name().unwrap_or_default().to_string_lossy()
-            );
-            // TODO: Is it correct to use an obj file here, or should this just link normally?
-            Self::build_object_file(
-                init_builder,
-                qtbuild.qrc(&qrc_file),
-                Some((&obj_file_dir, &*obj_file_name)),
-            );
+            // We need to link this using an obect file or +whole-achive, the static initializer of
+            // the qrc file isn't lost.
+            Self::build_object_file(init_builder, qtbuild.qrc(&qrc_file), None);
 
             // Also ensure that each of the files in the qrc can cause a change
             for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
