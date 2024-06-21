@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-set -e
+set -ex
 
 # Ensure we are in the right directory
 SCRIPT=$(realpath "$0")
@@ -35,7 +35,7 @@ function check_build_no_compiling() {
 }
 
 # Build once
-cargo build -p qml-minimal-no-cmake &> /dev/null
+cargo build -p qml-minimal-no-cmake
 
 # Build a second time
 check_build_no_compiling

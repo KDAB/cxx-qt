@@ -110,9 +110,14 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
         opts = opts.header(file_contents, "cxx-qt-lib", file_name);
     }
 
+    opts = opts.initializer(include_str!("../include/core/init.cpp"));
+
     #[cfg(feature = "qt_gui")]
     {
-        opts = opts.define("CXX_QT_GUI_FEATURE").qt_module("Gui");
+        opts = opts
+            .define("CXX_QT_GUI_FEATURE")
+            .qt_module("Gui")
+            .initializer(include_str!("../include/gui/init.cpp"));
     }
 
     #[cfg(feature = "qt_qml")]
