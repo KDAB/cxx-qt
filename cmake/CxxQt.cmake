@@ -37,12 +37,6 @@ function(cxxqt_import_crate)
     endif()
   endif()
 
-  if (Qt5_FOUND AND (NOT TARGET CXXQT_QT5_COMPATIBILITY))
-    message(VERBOSE "CXX-QT detected Qt5 - Adding compatibility target: CXXQT_QT5_COMPATIBILITY")
-    add_library(CXXQT_QT5_COMPATIBILITY OBJECT ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../crates/cxx-qt-build/src/std_types_qt5.cpp)
-    target_link_libraries(CXXQT_QT5_COMPATIBILITY PRIVATE Qt5::Core)
-  endif()
-
   foreach(CRATE ${__cxxqt_imported_crates})
     corrosion_set_env_vars(${CRATE}
       "CXXQT_EXPORT_DIR=${IMPORT_CRATE_CXXQT_EXPORT_DIR}"
@@ -56,17 +50,10 @@ function(cxxqt_import_crate)
       PROPERTIES
       CXXQT_EXPORT_DIR "${IMPORT_CRATE_CXXQT_EXPORT_DIR}")
 
-    if (Qt5_FOUND AND (QT_DEFAULT_MAJOR_VERSION EQUAL 5))
-      message(VERBOSE "CXX-QT - Linking ${CRATE} to compatibility target: CXXQT_QT5_COMPATIBILITY")
-
-      # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
-      # Only the linker flags from the compatibility target would be included, but not the actual object files.
-      # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:
-      # https://cmake.org/cmake/help/latest/command/target_link_libraries.html
-      target_link_libraries(${CRATE} INTERFACE CXXQT_QT5_COMPATIBILITY $<TARGET_OBJECTS:CXXQT_QT5_COMPATIBILITY>)
-    endif()
-
-
+    # When using the Ninja generator, we need to provide **some** way to generate the object file
+    # Unfortunately I'm not able to tell corrosion that this obj file is indeed a byproduct, so
+    # create a fake target for it.
+    # This target doesn't need to do anything, because the file should already exist after building the crate.
     add_custom_target(${CRATE}_mock_initializers
       COMMAND ${CMAKE_COMMAND} -E true
       DEPENDS ${CRATE}
@@ -76,6 +63,10 @@ function(cxxqt_import_crate)
     set_target_properties(${CRATE}_initializers
       PROPERTIES
       IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers.o")
+    # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
+    # Only the linker flags from the object library would be included, but not the actual object files.
+    # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:
+    # https://cmake.org/cmake/help/latest/command/target_link_libraries.html
     target_link_libraries(${CRATE} INTERFACE ${CRATE}_initializers $<TARGET_OBJECTS:${CRATE}_initializers>)
 
     message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")

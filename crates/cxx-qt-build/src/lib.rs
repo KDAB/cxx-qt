@@ -750,16 +750,15 @@ impl CxxQtBuilder {
         }
     }
 
-    fn setup_qt5_compatibility(init_builder: &cc::Build, qtbuild: &qt_build_utils::QtBuild) {
+    fn setup_qt5_compatibility(&mut self, qtbuild: &qt_build_utils::QtBuild) {
         // If we are using Qt 5 then write the std_types source
         // This registers std numbers as a type for use in QML
         //
-        // Note that we need this to be compiled into the whole_archive builder
+        // Note that we need this to be compiled into an object file
         // as they are stored in statics in the source.
         //
-        // TODO: once +whole-archive and +bundle are allowed together in rlibs
-        // we should be able to move this into cxx-qt so that it's only built
-        // once rather than for every cxx-qt-build. When this happens also
+        // TODO: Can we move this into cxx-qt so that it's only built
+        // once rather than for every cxx-qt-build? When we do this
         // ensure that in a multi project that numbers work everywhere.
         //
         // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
@@ -768,15 +767,8 @@ impl CxxQtBuilder {
         // https://github.com/rust-lang/rust/issues/108081
         // https://github.com/KDAB/cxx-qt/pull/598
         if qtbuild.version().major == 5 {
-            let std_types_contents = include_str!("std_types_qt5.cpp");
-            let std_types_path = format!(
-                "{out_dir}/std_types_qt5.cpp",
-                out_dir = env::var("OUT_DIR").unwrap()
-            );
-            std::fs::write(&std_types_path, std_types_contents)
-                .expect("Could not write std_types source");
-
-            Self::build_object_file(init_builder, std_types_path, None);
+            self.initializers
+                .push(include_str!("std_types_qt5.cpp").to_owned());
         }
     }
 
@@ -865,7 +857,7 @@ impl CxxQtBuilder {
 
         self.build_qrc_files(&init_builder, &mut qtbuild);
 
-        Self::setup_qt5_compatibility(&init_builder, &qtbuild);
+        self.setup_qt5_compatibility(&qtbuild);
 
         self.build_initializers(&init_builder);
 
