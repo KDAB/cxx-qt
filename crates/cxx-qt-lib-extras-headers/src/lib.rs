@@ -26,6 +26,10 @@ pub fn build_opts() -> cxx_qt_build::CxxQtBuildersOpts {
             include_str!("../include/gui/qapplication.h"),
             "qapplication.h",
         ),
+        (
+            include_str!("../include/gui/qpushbutton.h"),
+            "qpushbutton.h",
+        ),
     ] {
         opts = opts.header(file_contents, "cxx-qt-lib-extras", file_name);
     }
