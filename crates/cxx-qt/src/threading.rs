@@ -80,4 +80,9 @@ where
     {
         T::queue(self, f)
     }
+
+    /// Check if the Object is still alive and a closure can be queued
+    pub fn is_alive(&self) -> bool {
+        T::is_alive(self)
+    }
 }

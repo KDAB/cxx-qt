@@ -47,6 +47,12 @@ public:
   CxxQtThread(const CxxQtThread<T>& other) = default;
   CxxQtThread(CxxQtThread<T>&& other) = default;
 
+  bool isAlive() const
+  {
+    const auto guard = ::std::shared_lock(m_obj->mutex);
+    return m_obj->ptr != nullptr;
+  }
+
   template<typename A>
   void queue(::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
              ::rust::Box<A> arg) const
@@ -115,6 +121,13 @@ cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
   cxxQtThread.queue(::std::move(func), ::std::move(arg));
 }
 
+template<typename T>
+bool
+cxxQtThreadIsAlive(const CxxQtThread<T>& cxxQtThread)
+{
+  return cxxQtThread.isAlive();
+}
+
 } // namespace cxxqt1
 } // namespace rust
 
@@ -124,7 +137,6 @@ namespace rust {
 
 template<typename T>
 struct IsRelocatable<::rust::cxxqt1::CxxQtThread<T>> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust

@@ -149,6 +149,9 @@ pub trait Threading: Locking + Sized {
     fn qt_thread(&self) -> CxxQtThread<Self>;
 
     #[doc(hidden)]
+    fn is_alive(cxx_qt_thread: &CxxQtThread<Self>) -> bool;
+
+    #[doc(hidden)]
     fn queue<F>(cxx_qt_thread: &CxxQtThread<Self>, f: F) -> Result<(), cxx::Exception>
     where
         F: FnOnce(core::pin::Pin<&mut Self>),
