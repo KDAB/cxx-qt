@@ -9,7 +9,7 @@
 #include <QtGui/QColor>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qcolor.cxx.h"
+#include "qt_types_standalone/qcolor.cxx.h"
 
 class QColorTest : public QObject
 {

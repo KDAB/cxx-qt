@@ -16,7 +16,7 @@ mod cfg_evaluator;
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
-mod dir;
+pub mod dir;
 
 mod opts;
 pub use opts::CxxQtBuildersOpts;
@@ -323,6 +323,7 @@ pub struct CxxQtBuilder {
     cc_builder: cc::Build,
     extra_defines: HashSet<String>,
     initializers: Vec<String>,
+    dependencies: Vec<cxx_qt::build::Manifest>,
 }
 
 impl CxxQtBuilder {
@@ -339,6 +340,7 @@ impl CxxQtBuilder {
             cc_builder: cc::Build::new(),
             extra_defines: HashSet::new(),
             initializers: Vec::new(),
+            dependencies: Vec::new(),
         }
     }
 
@@ -460,6 +462,16 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Build with a dependency on another crate built with cxx-qt-build
+    pub fn with_dependency(mut self, manifest: cxx_qt::build::Manifest) -> Self {
+        self.extra_defines.extend(manifest.defines.iter().cloned());
+        self.initializers
+            .extend(manifest.initializers.iter().cloned());
+        self.qt_modules.extend(manifest.qt_modules.iter().cloned());
+        self.dependencies.push(manifest);
+        self
+    }
+
     /// Build with the given extra options
     pub fn with_opts(mut self, opts: CxxQtBuildersOpts) -> Self {
         let header_root = dir::header_root();
@@ -570,6 +582,23 @@ impl CxxQtBuilder {
         }
     }
 
+    fn setup_dependencies(&self) {
+        let header_root = dir::header_root();
+        for dependency in &self.dependencies {
+            let target = format!("../../{dep}/include/{dep}", dep = dependency.name);
+            let symlink = header_root.join(&dependency.name);
+            if !symlink.exists() {
+                #[cfg(unix)]
+                let result = std::os::unix::fs::symlink(target, symlink);
+
+                #[cfg(windows)]
+                let result = std::os::windows::fs::symlink_dir(target, symlink);
+
+                result.expect("Could not create symlink!");
+            }
+        }
+    }
+
     fn setup_cc_builder<'a>(
         builder: &mut cc::Build,
         include_paths: &[impl AsRef<Path>],
@@ -616,11 +645,7 @@ impl CxxQtBuilder {
         }
     }
 
-    fn build_object_file(
-        builder: &cc::Build,
-        file_path: impl AsRef<Path>,
-        object_path: Option<PathBuf>,
-    ) {
+    fn build_object_file(builder: &cc::Build, file_path: impl AsRef<Path>, object_path: PathBuf) {
         let mut obj_builder = builder.clone();
         obj_builder.file(file_path);
         let obj_files = obj_builder.compile_intermediates();
@@ -629,7 +654,7 @@ impl CxxQtBuilder {
         // If there's 0 or > 1 file, we panic in the `else` branch, because then the builder is
         // probably not correctly configured.
         if let [obj_file] = &obj_files[..] {
-            if let Some(object_path) = object_path {
+            if dir::is_exporting() {
                 if let Some(directory) = object_path.parent() {
                     std::fs::create_dir_all(directory).unwrap_or_else(|_| {
                         panic!(
@@ -667,9 +692,7 @@ impl CxxQtBuilder {
         generated_header_dir: impl AsRef<Path>,
     ) {
         for qml_module in &self.qml_modules {
-            if let Some(export_dir) = dir::module_target(&qml_module.uri) {
-                Self::clean_directory(export_dir);
-            }
+            Self::clean_directory(dir::module_target(&qml_module.uri));
 
             let mut qml_metatypes_json = Vec::new();
 
@@ -735,7 +758,7 @@ impl CxxQtBuilder {
             Self::build_object_file(
                 init_builder,
                 &qml_module_registration_files.plugin_init,
-                dir::module_target(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
+                dir::module_target(&qml_module.uri).join("plugin_init.o"),
             );
         }
     }
@@ -772,7 +795,7 @@ impl CxxQtBuilder {
         Self::build_object_file(
             init_builder,
             initializers_path,
-            dir::crate_target().map(|dir| dir.join("initializers.o")),
+            dir::crate_target().join("initializers.o"),
         );
     }
 
@@ -780,7 +803,11 @@ impl CxxQtBuilder {
         for qrc_file in &self.qrc_files {
             // We need to link this using an obect file or +whole-achive, the static initializer of
             // the qrc file isn't lost.
-            Self::build_object_file(init_builder, qtbuild.qrc(&qrc_file), None);
+            let out_path = qtbuild.qrc(&qrc_file);
+            let export_path = dir::crate_target()
+                .join("qrc")
+                .join(format!("{:?}.o", out_path.file_stem().unwrap()));
+            Self::build_object_file(init_builder, out_path, export_path);
 
             // Also ensure that each of the files in the qrc can cause a change
             for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
@@ -821,6 +848,7 @@ impl CxxQtBuilder {
         Self::define_qt_version_cfg_variables(qtbuild.version());
 
         Self::write_common_headers();
+        self.setup_dependencies();
 
         // Setup compilers
         // Static QML plugin and Qt resource initializers need to be linked as their own separate

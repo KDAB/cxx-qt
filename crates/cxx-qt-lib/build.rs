@@ -4,11 +4,64 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_build::CxxQtBuilder;
+use std::path::PathBuf;
+
+fn qt_gui_enabled() -> bool {
+    std::env::var("CARGO_FEATURE_QT_GUI").is_ok()
+}
+
+fn qt_qml_enabled() -> bool {
+    std::env::var("CARGO_FEATURE_QT_QML").is_ok()
+}
+
+fn qt_quickcontrols_enabled() -> bool {
+    std::env::var("CARGO_FEATURE_QT_QUICKCONTROLS").is_ok()
+}
+
+fn header_dir() -> PathBuf {
+    cxx_qt_build::dir::header_root().join("cxx-qt-lib")
+}
+
+fn write_headers_in(subfolder: &str) {
+    println!("cargo::rerun-if-changed=include/{subfolder}");
+
+    for entry in
+        std::fs::read_dir(format!("include/{subfolder}")).expect("Failed to read include directory")
+    {
+        let entry = entry.expect("Failed to read header file!");
+        let header_name = entry.file_name();
+        println!("cargo::rerun-if-changed=include/{subfolder}/{header_name:?}",);
+
+        // TODO: Do we want to add the headers into a subdirectory?
+        let header_dir = header_dir();
+        std::fs::create_dir_all(&header_dir).expect("Failed to create include directory");
+        std::fs::copy(entry.path(), header_dir.join(header_name))
+            .expect("Failed to copy header file!");
+    }
+}
+
+fn write_headers() {
+    println!("cargo::rerun-if-changed=include/");
+    std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
+    println!("cargo::rerun-if-changed=include/common.h");
+    std::fs::copy("include/common.h", header_dir().join("common.h"))
+        .expect("Failed to copy header file!");
+
+    write_headers_in("core");
+    if qt_gui_enabled() {
+        write_headers_in("gui");
+    }
+    if qt_qml_enabled() {
+        write_headers_in("qml");
+    }
+    if qt_quickcontrols_enabled() {
+        write_headers_in("quickcontrols");
+    }
+}
 
 fn main() {
-    let feature_qt_gui_enabled = std::env::var("CARGO_FEATURE_QT_GUI").is_ok();
-    let feature_qt_qml_enabled = std::env::var("CARGO_FEATURE_QT_QML").is_ok();
-    let feature_qt_quickcontrols_enabled = std::env::var("CARGO_FEATURE_QT_QUICKCONTROLS").is_ok();
+    write_headers();
+
     let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
         Ok(val) => val == "emscripten",
         Err(_) => false,
@@ -135,7 +188,7 @@ fn main() {
         "core/qvector/qvector_u64",
     ];
 
-    if feature_qt_gui_enabled {
+    if qt_gui_enabled() {
         rust_bridges.extend([
             "core/qlist/qlist_qcolor",
             "core/qvariant/qvariant_qcolor",
@@ -156,11 +209,11 @@ fn main() {
         ]);
     }
 
-    if feature_qt_qml_enabled {
+    if qt_qml_enabled() {
         rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
-    if feature_qt_quickcontrols_enabled {
+    if qt_quickcontrols_enabled() {
         rust_bridges.extend(["quickcontrols/qquickstyle"]);
     }
 
@@ -203,7 +256,7 @@ fn main() {
         "core/qvector/qvector",
     ];
 
-    if feature_qt_gui_enabled {
+    if qt_gui_enabled() {
         cpp_files.extend([
             "gui/qcolor",
             "gui/qfont",
@@ -221,11 +274,11 @@ fn main() {
         ]);
     }
 
-    if feature_qt_qml_enabled {
+    if qt_qml_enabled() {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
-    if feature_qt_quickcontrols_enabled {
+    if qt_quickcontrols_enabled() {
         cpp_files.extend(["quickcontrols/qquickstyle"]);
     }
 
@@ -249,5 +302,20 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
-    builder.with_opts(cxx_qt_lib_headers::build_opts()).build();
+    if qt_gui_enabled() {
+        builder = builder.qt_module("Gui").cc_builder(|cc| {
+            cc.define("CXX_QT_GUI_FEATURE", None);
+        });
+    }
+    if qt_qml_enabled() {
+        builder = builder.qt_module("Qml").cc_builder(|cc| {
+            cc.define("CXX_QT_QML_FEATURE", None);
+        });
+    }
+    if qt_quickcontrols_enabled() {
+        builder = builder.qt_module("QuickControls2").cc_builder(|cc| {
+            cc.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
+        });
+    }
+    builder.build();
 }

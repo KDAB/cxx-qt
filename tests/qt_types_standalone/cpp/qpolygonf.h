@@ -9,7 +9,7 @@
 #include <QtGui/QPolygonF>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qpolygonf.cxx.h"
+#include "qt_types_standalone/qpolygonf.cxx.h"
 
 class QPolygonFTest : public QObject
 {

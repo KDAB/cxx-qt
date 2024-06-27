@@ -32,4 +32,4 @@ cxx-qt-lib.workspace = true
 # The link_qt_object_files feature is required for statically linking Qt 6.
 cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
 # Use `cxx-qt-lib-headers = "0.6"` here instead!
-cxx-qt-lib-headers.workspace = true
+cxx-qt-lib.workspace = true

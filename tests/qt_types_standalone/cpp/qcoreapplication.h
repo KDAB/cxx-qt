@@ -9,7 +9,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qcoreapplication.cxx.h"
+#include "qt_types_standalone/qcoreapplication.cxx.h"
 
 class QCoreApplicationTest : public QObject
 {

@@ -9,7 +9,7 @@
 #include <QtCore/QMarginsF>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qmarginsf.cxx.h"
+#include "qt_types_standalone/qmarginsf.cxx.h"
 
 class QMarginsFTest : public QObject
 {

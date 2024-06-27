@@ -9,7 +9,7 @@
 #include <QtCore/QLineF>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qlinef.cxx.h"
+#include "qt_types_standalone/qlinef.cxx.h"
 
 class QLineFTest : public QObject
 {
