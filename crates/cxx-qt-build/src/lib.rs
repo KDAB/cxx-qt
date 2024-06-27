@@ -667,7 +667,7 @@ impl CxxQtBuilder {
         generated_header_dir: impl AsRef<Path>,
     ) {
         for qml_module in &self.qml_modules {
-            if let Some(export_dir) = dir::module_export(&qml_module.uri) {
+            if let Some(export_dir) = dir::module_target(&qml_module.uri) {
                 Self::clean_directory(export_dir);
             }
 
@@ -735,7 +735,7 @@ impl CxxQtBuilder {
             Self::build_object_file(
                 init_builder,
                 &qml_module_registration_files.plugin_init,
-                dir::module_export(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
+                dir::module_target(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
             );
         }
     }
@@ -772,7 +772,7 @@ impl CxxQtBuilder {
         Self::build_object_file(
             init_builder,
             initializers_path,
-            dir::crate_export().map(|dir| dir.join("initializers.o")),
+            dir::crate_target().map(|dir| dir.join("initializers.o")),
         );
     }
 
