@@ -26,17 +26,18 @@ serde = { version = "1", features=["derive"], optional = true }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
-cxx-qt-lib-headers.workspace = true
 
 [features]
 default = ["qt_gui", "qt_qml", "qt_quickcontrols"]
+
+qt_gui = []
+qt_qml = []
+qt_quickcontrols = []
+
 bytes = ["dep:bytes"]
 chrono = ["dep:chrono"]
 http = ["dep:http"]
 rgb = ["dep:rgb"]
-qt_gui = ["cxx-qt-lib-headers/qt_gui"]
-qt_qml = ["cxx-qt-lib-headers/qt_qml"]
-qt_quickcontrols = ["cxx-qt-lib-headers/qt_quickcontrols"]
 time = ["dep:time"]
 url = ["dep:url"]
 serde = ["dep:serde"]

@@ -9,7 +9,7 @@
 #include <QtCore/QTime>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qtime.cxx.h"
+#include "qt_types_standalone/qtime.cxx.h"
 
 class QTimeTest : public QObject
 {

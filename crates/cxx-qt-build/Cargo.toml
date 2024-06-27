@@ -22,6 +22,7 @@ quote.workspace = true
 qt-build-utils.workspace = true
 codespan-reporting = "0.11"
 version_check = "0.9"
+scratch = "1"
 
 [features]
 link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
