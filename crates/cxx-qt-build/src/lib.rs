@@ -16,6 +16,8 @@ mod cfg_evaluator;
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
+mod dir;
+
 mod opts;
 pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
@@ -27,6 +29,7 @@ pub use qml_modules::QmlModule;
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::SemVer;
 use quote::ToTokens;
+use std::io::ErrorKind;
 use std::{
     collections::HashSet,
     env,
@@ -239,7 +242,7 @@ fn generate_cxxqt_cpp_files(
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
-        let cpp_directory = out_dir().join("cxx-qt-gen/src");
+        let cpp_directory = dir::out().join("cxx-qt-gen/src");
         let path = manifest_dir.join(rs_path);
         println!("cargo:rerun-if-changed={}", path.to_string_lossy());
 
@@ -256,30 +259,12 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-/// The export directory, if one was specified through the environment.
-/// Note that this is not namspaced by crate.
-fn export_dir() -> Option<PathBuf> {
-    env::var("CXXQT_EXPORT_DIR").ok().map(PathBuf::from)
+pub(crate) fn module_name_from_uri(module_uri: &str) -> String {
+    // Note: We need to make sure this matches the conversion done in CMake!
+    module_uri.replace('.', "_")
 }
 
-fn out_dir() -> PathBuf {
-    env::var("OUT_DIR").unwrap().into()
-}
-
-fn plugin_name_from_uri(plugin_uri: &str) -> String {
-    plugin_uri.replace('.', "_")
-}
-
-/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
-/// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
-fn header_root() -> PathBuf {
-    export_dir()
-        .unwrap_or_else(|| PathBuf::from(env::var("OUT_DIR").unwrap()))
-        .join("include")
-        .join(crate_name())
-}
-
-fn crate_name() -> String {
+pub(crate) fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
 
@@ -477,15 +462,14 @@ impl CxxQtBuilder {
 
     /// Build with the given extra options
     pub fn with_opts(mut self, opts: CxxQtBuildersOpts) -> Self {
-        let header_root = header_root();
+        let header_root = dir::header_root();
         for (file_contents, dir_name, file_name) in opts.headers {
             let directory = if dir_name.is_empty() {
                 header_root.clone()
             } else {
                 header_root.join(dir_name)
             };
-            std::fs::create_dir_all(directory.clone())
-                .expect("Could not create {directory} header directory");
+            std::fs::create_dir_all(directory.clone()).expect("Could not create header directory");
 
             let h_path = directory.join(file_name);
             std::fs::write(&h_path, file_contents).unwrap_or_else(|_| {
@@ -573,7 +557,7 @@ impl CxxQtBuilder {
     }
 
     fn write_common_headers() {
-        let header_root = header_root();
+        let header_root = dir::header_root();
         // Write cxx-qt and cxx headers
         cxx_qt::write_headers(header_root.join("cxx-qt"));
         std::fs::create_dir_all(header_root.join("rust"))
@@ -635,7 +619,7 @@ impl CxxQtBuilder {
     fn build_object_file(
         builder: &cc::Build,
         file_path: impl AsRef<Path>,
-        export_path: Option<(&str, &str)>,
+        object_path: Option<PathBuf>,
     ) {
         let mut obj_builder = builder.clone();
         obj_builder.file(file_path);
@@ -645,23 +629,21 @@ impl CxxQtBuilder {
         // If there's 0 or > 1 file, we panic in the `else` branch, because then the builder is
         // probably not correctly configured.
         if let [obj_file] = &obj_files[..] {
-            if let Some(export_dir) = export_dir() {
-                if let Some((out_directory, out_file_name)) = export_path {
-                    let obj_dir = export_dir.join(out_directory);
-                    std::fs::create_dir_all(&obj_dir).unwrap_or_else(|_| {
+            if let Some(object_path) = object_path {
+                if let Some(directory) = object_path.parent() {
+                    std::fs::create_dir_all(directory).unwrap_or_else(|_| {
                         panic!(
                             "Could not create directory for object file: {}",
-                            obj_dir.to_string_lossy()
-                        )
-                    });
-                    let obj_path = obj_dir.join(out_file_name);
-                    std::fs::copy(obj_file, &obj_path).unwrap_or_else(|_| {
-                        panic!(
-                            "Failed to move object file to {obj_path}!",
-                            obj_path = obj_path.to_string_lossy()
+                            object_path.to_string_lossy()
                         )
                     });
                 }
+                std::fs::copy(obj_file, &object_path).unwrap_or_else(|_| {
+                    panic!(
+                        "Failed to move object file to {}!",
+                        object_path.to_string_lossy()
+                    )
+                });
             } else {
                 println!("cargo::rustc-link-arg={}", obj_file.to_string_lossy());
                 // The linker argument order matters!
@@ -685,6 +667,10 @@ impl CxxQtBuilder {
         generated_header_dir: impl AsRef<Path>,
     ) {
         for qml_module in &self.qml_modules {
+            if let Some(export_dir) = dir::module_export(&qml_module.uri) {
+                Self::clean_directory(export_dir);
+            }
+
             let mut qml_metatypes_json = Vec::new();
 
             for files in generate_cxxqt_cpp_files(&qml_module.rust_files, &generated_header_dir) {
@@ -709,7 +695,7 @@ impl CxxQtBuilder {
                 // TODO: This will be passed to the `optional plugin ...` part of the qmldir
                 // We don't load any shared libraries, so the name shouldn't matter
                 // But make sure it still works
-                &plugin_name_from_uri(&qml_module.uri),
+                &module_name_from_uri(&qml_module.uri),
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
@@ -749,10 +735,7 @@ impl CxxQtBuilder {
             Self::build_object_file(
                 init_builder,
                 &qml_module_registration_files.plugin_init,
-                Some((
-                    &format!("plugins/{}", plugin_name_from_uri(&qml_module.uri)),
-                    "plugin_init.o",
-                )),
+                dir::module_export(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
             );
         }
     }
@@ -780,7 +763,7 @@ impl CxxQtBuilder {
     }
 
     fn build_initializers(&mut self, init_builder: &cc::Build) {
-        let initializers_path = out_dir().join("cxx-qt-build").join("initializers");
+        let initializers_path = dir::out().join("cxx-qt-build").join("initializers");
         std::fs::create_dir_all(&initializers_path).expect("Failed to create initializers path!");
 
         let initializers_path = initializers_path.join(format!("{}.cpp", crate_name()));
@@ -789,7 +772,7 @@ impl CxxQtBuilder {
         Self::build_object_file(
             init_builder,
             initializers_path,
-            Some(("initializers", &format!("{}.o", crate_name()))),
+            dir::crate_export().map(|dir| dir.join("initializers.o")),
         );
     }
 
@@ -806,14 +789,31 @@ impl CxxQtBuilder {
         }
     }
 
+    fn clean_directory(path: impl AsRef<Path>) {
+        let result = std::fs::remove_dir_all(&path);
+        if let Err(err) = result {
+            // If the path doesn't exist that's fine, otherwise we want to panic
+            if err.kind() != ErrorKind::NotFound {
+                panic!("Could not delete export directory: {}", err);
+            }
+        }
+
+        std::fs::create_dir_all(path).expect("Failed to create export directory");
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
+        // TODO: Clean the export_dir
+        // This is currently not possible, as the header file from the build_opts are created
+        // already in the call to with_opts.
+        // We can enable this when we get rid of the current BuildOpts
+
         // Ensure that the linker is setup correctly for Cargo builds
         qt_build_utils::setup_linker();
 
-        let header_root = header_root();
-        let generated_header_dir = header_root.join("cxx-qt-gen/");
+        let header_root = dir::header_root();
+        let generated_header_dir = header_root.join(crate_name());
 
         let mut qtbuild = qt_build_utils::QtBuild::new(self.qt_modules.drain().collect())
             .expect("Could not find Qt installation");

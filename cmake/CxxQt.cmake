@@ -43,8 +43,8 @@ function(cxxqt_import_crate)
       "QMAKE=${IMPORT_CRATE_QMAKE}"
       $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>)
 
-    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/include/${CRATE}")
-    target_include_directories(${CRATE} INTERFACE "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/include/${CRATE}")
+    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/include/")
+    target_include_directories(${CRATE} INTERFACE "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/include/")
 
     set_target_properties(${CRATE}
       PROPERTIES
@@ -53,7 +53,7 @@ function(cxxqt_import_crate)
     # cxx-qt-build generates object files that need to be linked to the final target.
     # These are the static initializers that would be removed as an optimization if they're not referenced.
     # So add them to an object library instead.
-    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/")
+    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/")
     # When using the Ninja generator, we need to provide **some** way to generate the object file
     # Unfortunately I'm not able to tell corrosion that this obj file is indeed a byproduct, so
     # create a fake target for it.
@@ -61,19 +61,17 @@ function(cxxqt_import_crate)
     add_custom_target(${CRATE}_mock_initializers
       COMMAND ${CMAKE_COMMAND} -E true
       DEPENDS ${CRATE}
-      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/${CRATE}.o")
+      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
 
     add_library(${CRATE}_initializers OBJECT IMPORTED)
     set_target_properties(${CRATE}_initializers
       PROPERTIES
-      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/initializers/${CRATE}.o")
+      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
     # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
     # Only the linker flags from the object library would be included, but not the actual object files.
     # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:
     # https://cmake.org/cmake/help/latest/command/target_link_libraries.html
     target_link_libraries(${CRATE} INTERFACE ${CRATE}_initializers $<TARGET_OBJECTS:${CRATE}_initializers>)
-
-    message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")
   endforeach()
 
 endfunction()
@@ -98,9 +96,9 @@ function(cxxqt_import_qml_module target)
   endif()
 
   # Note: This needs to match the URI conversion in cxx-qt-build
-  string(REPLACE "." "_" plugin_name ${QML_MODULE_URI})
-  set(QML_MODULE_PLUGIN_DIR "${QML_MODULE_EXPORT_DIR}/plugins/${plugin_name}")
-  file(MAKE_DIRECTORY ${QML_MODULE_PLUGIN_DIR})
+  string(REPLACE "." "_" module_name ${QML_MODULE_URI})
+  set(QML_MODULE_DIR "${QML_MODULE_EXPORT_DIR}/qml_modules/${module_name}")
+  file(MAKE_DIRECTORY ${QML_MODULE_DIR})
 
   # QML plugin - init target
   # When using the Ninja generator, we need to provide **some** way to generate the object file
@@ -110,13 +108,13 @@ function(cxxqt_import_qml_module target)
   add_custom_target(${target}_mock_obj_output
     COMMAND ${CMAKE_COMMAND} -E true
     DEPENDS ${QML_MODULE_SOURCE_CRATE}
-    BYPRODUCTS "${QML_MODULE_PLUGIN_DIR}/plugin_init.o")
+    BYPRODUCTS "${QML_MODULE_DIR}/plugin_init.o")
 
   add_library(${target} OBJECT IMPORTED)
   set_target_properties(${target}
     PROPERTIES
-    IMPORTED_OBJECTS "${QML_MODULE_PLUGIN_DIR}/plugin_init.o")
+    IMPORTED_OBJECTS "${QML_MODULE_DIR}/plugin_init.o")
   target_link_libraries(${target} INTERFACE ${QML_MODULE_SOURCE_CRATE})
 
-  message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_PLUGIN_DIR}")
+  message(VERBOSE "CXX-Qt Expects QML plugin: ${QML_MODULE_URI} in directory: ${QML_MODULE_DIR}")
 endfunction()

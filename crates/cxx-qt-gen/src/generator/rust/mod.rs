@@ -79,7 +79,11 @@ impl GeneratedRustBlocks {
 
 /// Generate the include line for this parsed block
 fn generate_include(parser: &Parser) -> Result<Item> {
-    let import_path = format!("cxx-qt-gen/{}.cxxqt.h", parser.cxx_file_stem);
+    let import_path = format!(
+        "{crate_name}/{}.cxxqt.h",
+        parser.cxx_file_stem,
+        crate_name = std::env::var("CARGO_PKG_NAME").unwrap_or_else(|_| "cxx-qt-gen".to_owned())
+    );
 
     syn::parse2(quote! {
         unsafe extern "C++" {
