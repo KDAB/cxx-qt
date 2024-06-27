@@ -29,23 +29,9 @@ endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml Test REQUIRED)
 endif()
-get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
 
 set(CRATE basic_cxx_only)
-corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
-corrosion_set_env_vars(${CRATE}
-    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
-    "QMAKE=${QMAKE}"
-    $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>
-)
-target_include_directories(${CRATE} INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
-target_link_libraries(${CRATE} INTERFACE
-    Qt::Core
-    Qt::Gui
-    Qt::Qml
-    Qt::QuickControls2
-)
+cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 
 add_executable(${APP_NAME}
     cpp/cxx_test.h
@@ -55,4 +41,8 @@ target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME} PRIVATE
     ${CRATE}
     Qt::Test
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2
 )

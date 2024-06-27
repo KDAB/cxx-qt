@@ -27,38 +27,12 @@ endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 endif()
-get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
-
-find_package(Corrosion QUIET)
-if(NOT Corrosion_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-        Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.5.0
-    )
-
-    FetchContent_MakeAvailable(Corrosion)
-endif()
 
 set(CRATE cxx_qt_demo_threading)
-corrosion_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-set(CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt")
-corrosion_set_env_vars(${CRATE}
-    "CXXQT_EXPORT_DIR=${CXXQT_EXPORT_DIR}"
-    "QMAKE=${QMAKE}"
-    $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>
-)
-
-add_library(${APP_NAME}_lib INTERFACE)
-target_include_directories(${APP_NAME}_lib INTERFACE "${CXXQT_EXPORT_DIR}/${CRATE}")
-target_link_libraries(${APP_NAME}_lib INTERFACE
-    "$<LINK_LIBRARY:WHOLE_ARCHIVE,${CRATE}-static>"
-    Qt::Core
-    Qt::Gui
-    Qt::Qml
-    Qt::QuickControls2
-)
+cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxxqt_import_qml_module(${CRATE}_qml
+    URI "com.kdab.energy"
+    SOURCE_CRATE ${CRATE})
 
 # Qt Graphical Effects imports changed in Qt 6 so provide proxies
 if(Qt5_FOUND)
@@ -76,5 +50,12 @@ add_executable(${APP_NAME}
     images/images.qrc
     ${QML_COMPAT_RESOURCES}
 )
-target_link_libraries(${APP_NAME} PRIVATE ${APP_NAME}_lib)
+target_link_libraries(${APP_NAME}
+    PRIVATE
+    ${CRATE}_qml
+    Qt::Core
+    Qt::Gui
+    Qt::Qml
+    Qt::QuickControls2)
+
 qt_import_qml_plugins(${APP_NAME})
