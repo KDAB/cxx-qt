@@ -9,7 +9,7 @@
 #include <QtCore/QRect>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qrect.cxx.h"
+#include "qt_types_standalone/qrect.cxx.h"
 
 class QRectTest : public QObject
 {

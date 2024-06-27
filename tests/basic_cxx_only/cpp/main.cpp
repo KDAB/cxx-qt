@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/lib.cxx.h"
+#include "basic_cxx_only/lib.cxx.h"
 #include "cxx_test.h"
 
 class CxxTest : public QObject

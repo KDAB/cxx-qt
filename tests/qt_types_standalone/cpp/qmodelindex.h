@@ -11,7 +11,7 @@
 #include <QtCore/QStringListModel>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qmodelindex.cxx.h"
+#include "qt_types_standalone/qmodelindex.cxx.h"
 
 // We subclass from QAbstractListModel to have a valid model to use for
 // access to createIndex();

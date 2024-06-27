@@ -9,7 +9,7 @@
 #include <QtCore/QString>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qstring.cxx.h"
+#include "qt_types_standalone/qstring.cxx.h"
 
 class QStringTest : public QObject
 {

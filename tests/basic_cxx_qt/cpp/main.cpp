@@ -10,11 +10,11 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/empty.cxxqt.h"
-#include "cxx-qt-gen/locking.cxxqt.h"
-#include "cxx-qt-gen/my_data.cxxqt.h"
-#include "cxx-qt-gen/my_object.cxxqt.h"
-#include "cxx-qt-gen/my_types.cxxqt.h"
+#include "basic_cxx_qt/empty.cxxqt.h"
+#include "basic_cxx_qt/locking.cxxqt.h"
+#include "basic_cxx_qt/my_data.cxxqt.h"
+#include "basic_cxx_qt/my_object.cxxqt.h"
+#include "basic_cxx_qt/my_types.cxxqt.h"
 
 class LockingWorkerThread : public QThread
 {
