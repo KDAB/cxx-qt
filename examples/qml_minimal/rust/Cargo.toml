@@ -38,7 +38,7 @@ cxx-qt-lib.workspace = true
 [build-dependencies]
 # Use `cxx-qt-build = "0.6"` here instead!
 cxx-qt-build.workspace = true
-# Use `cxx-qt-lib-headers = "0.6"` here instead!
+# Use `cxx-qt-lib = "0.6"` here instead!
 cxx-qt-lib.workspace = true
 
 [features]

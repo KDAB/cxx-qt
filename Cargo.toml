@@ -9,7 +9,6 @@ members = [
     "crates/cxx-qt-build",
     "crates/cxx-qt-gen",
     "crates/cxx-qt-lib",
-    "crates/cxx-qt-lib-headers",
     "crates/qt-build-utils",
     "crates/cxx-qt-lib-extras-headers",
     "crates/cxx-qt-lib-extras",
@@ -39,7 +38,6 @@ cxx-qt-macro = { path = "crates/cxx-qt-macro", version = "0.6.1" }
 cxx-qt-build = { path = "crates/cxx-qt-build", version = "0.6.1" }
 cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.6.1" }
 cxx-qt-lib = { path = "crates/cxx-qt-lib", version = "0.6.1" }
-cxx-qt-lib-headers = { path = "crates/cxx-qt-lib-headers", version = "0.6.1" }
 qt-build-utils = { path = "crates/qt-build-utils", version = "0.6.1" }
 cxx-qt-lib-extras-headers = { path = "crates/cxx-qt-lib-extras-headers", version = "0.6.1" }
 cxx-qt-lib-extras = { path = "crates/cxx-qt-lib-extras", version = "0.6.1" }
