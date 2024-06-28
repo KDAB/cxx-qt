@@ -61,14 +61,11 @@ release_crate "cxx-qt"
 # Requires cxx-qt, cxx-qt-gen, and qt-build-utils
 release_crate "cxx-qt-build"
 
-# Requires cxx-qt-build
-release_crate "cxx-qt-lib-headers"
-
-# Requires cxx-qt, cxx-qt-build, cxx-qt-lib-headers
+# Requires cxx-qt, cxx-qt-build
 release_crate "cxx-qt-lib"
 
 # Requires cxx-qt-build
 release_crate "cxx-qt-lib-extras-headers"
 
-# Requires cxx-qt, cxx-qt-build, cxx-qt-lib, cxx-qt-lib-headers, cxx-qt-lib-extras-headers
+# Requires cxx-qt, cxx-qt-build, cxx-qt-lib, cxx-qt-lib-extras-headers
 release_crate "cxx-qt-lib-extras"
