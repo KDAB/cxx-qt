@@ -804,9 +804,10 @@ impl CxxQtBuilder {
             // We need to link this using an obect file or +whole-achive, the static initializer of
             // the qrc file isn't lost.
             let out_path = qtbuild.qrc(&qrc_file);
-            let export_path = dir::crate_target()
-                .join("qrc")
-                .join(format!("{:?}.o", out_path.file_stem().unwrap()));
+            let export_path = dir::crate_target().join("qrc").join(format!(
+                "{}.o",
+                out_path.file_stem().unwrap().to_string_lossy()
+            ));
             Self::build_object_file(init_builder, out_path, export_path);
 
             // Also ensure that each of the files in the qrc can cause a change

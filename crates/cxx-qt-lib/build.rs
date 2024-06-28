@@ -30,7 +30,10 @@ fn write_headers_in(subfolder: &str) {
     {
         let entry = entry.expect("Failed to read header file!");
         let header_name = entry.file_name();
-        println!("cargo::rerun-if-changed=include/{subfolder}/{header_name:?}",);
+        println!(
+            "cargo::rerun-if-changed=include/{subfolder}/{header_name}",
+            header_name = header_name.to_string_lossy()
+        );
 
         // TODO: Do we want to add the headers into a subdirectory?
         let header_dir = header_dir();
