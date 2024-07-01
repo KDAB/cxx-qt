@@ -20,7 +20,6 @@ fn main() {
             qml_files: &["qml/main.qml"],
             ..Default::default()
         })
-        .with_dependency(cxx_qt_lib::cxx_qt_build_manifest())
         .build();
 }
 // ANCHOR_END: book_cargo_executable_build_rs

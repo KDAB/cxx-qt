@@ -18,7 +18,6 @@ cxx-qt-lib.workspace = true
 
 [build-dependencies]
 cxx-qt-build.workspace = true
-cxx-qt-lib.workspace = true
 cxx-qt-lib-extras-headers.workspace = true
 
 [features]

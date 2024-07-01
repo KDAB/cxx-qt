@@ -57,7 +57,6 @@ fn main() {
         // Ensure that Quick module is linked, so that cargo test can work.
         // In a CMake project this isn't required as the linking happens in CMake.
         .qt_module("Quick")
-        .with_dependency(cxx_qt_lib::cxx_qt_build_manifest())
         .build();
 }
 // ANCHOR_END: book_build_rs

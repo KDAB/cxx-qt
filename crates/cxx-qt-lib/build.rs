@@ -36,9 +36,7 @@ fn write_headers_in(subfolder: &str) {
         );
 
         // TODO: Do we want to add the headers into a subdirectory?
-        let header_dir = header_dir();
-        std::fs::create_dir_all(&header_dir).expect("Failed to create include directory");
-        std::fs::copy(entry.path(), header_dir.join(header_name))
+        std::fs::copy(entry.path(), header_dir().join(header_name))
             .expect("Failed to copy header file!");
     }
 }
@@ -305,20 +303,41 @@ fn main() {
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
+    let mut manifest = cxx_qt_build::manifest::Manifest {
+        name: "cxx-qt-lib".to_owned(),
+        qt_modules: Vec::new(),
+        defines: Vec::new(),
+        initializers: vec![include_str!("../../crates/cxx-qt-lib/src/core/init.cpp").to_owned()],
+    };
+
     if qt_gui_enabled() {
         builder = builder.qt_module("Gui").cc_builder(|cc| {
             cc.define("CXX_QT_GUI_FEATURE", None);
         });
+        manifest.qt_modules.push("Gui".to_owned());
+        manifest.defines.push("CXX_QT_GUI_FEATURE".to_owned());
+        manifest
+            .initializers
+            .push(include_str!("../../crates/cxx-qt-lib/src/gui/init.cpp").to_owned());
     }
     if qt_qml_enabled() {
         builder = builder.qt_module("Qml").cc_builder(|cc| {
             cc.define("CXX_QT_QML_FEATURE", None);
         });
+        manifest.qt_modules.push("Qml".to_owned());
+        manifest.defines.push("CXX_QT_QML_FEATURE".to_owned());
     }
     if qt_quickcontrols_enabled() {
         builder = builder.qt_module("QuickControls2").cc_builder(|cc| {
             cc.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
         });
+        manifest.qt_modules.push("QuickControls2".to_owned());
+        manifest
+            .defines
+            .push("CXX_QT_QUICKCONTROLS_FEATURE".to_owned());
     }
+
+    cxx_qt_build::CxxQtBuilder::write_manifest(&manifest);
+
     builder.build();
 }

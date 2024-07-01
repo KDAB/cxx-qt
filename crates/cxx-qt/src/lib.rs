@@ -11,8 +11,6 @@
 
 use std::{fs::File, io::Write, path::Path};
 
-pub mod build;
-
 mod connection;
 mod connectionguard;
 #[doc(hidden)]
