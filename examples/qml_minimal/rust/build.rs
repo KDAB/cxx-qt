@@ -17,7 +17,6 @@ fn main() {
             ..Default::default()
         })
         // ANCHOR_END: book_qml_module
-        .with_dependency(cxx_qt_lib::cxx_qt_build_manifest())
         .build();
 }
 // ANCHOR_END: book_build_rs
