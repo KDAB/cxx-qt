@@ -46,6 +46,5 @@ fn main() {
             ],
             ..Default::default()
         })
-        .with_dependency(cxx_qt_lib::cxx_qt_build_manifest())
         .build();
 }

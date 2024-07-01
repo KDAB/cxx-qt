@@ -18,6 +18,9 @@ use diagnostics::{Diagnostic, GeneratedError};
 
 pub mod dir;
 
+pub mod manifest;
+use manifest::Manifest;
+
 mod opts;
 pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
@@ -323,7 +326,6 @@ pub struct CxxQtBuilder {
     cc_builder: cc::Build,
     extra_defines: HashSet<String>,
     initializers: Vec<String>,
-    dependencies: Vec<cxx_qt::build::Manifest>,
 }
 
 impl CxxQtBuilder {
@@ -340,7 +342,6 @@ impl CxxQtBuilder {
             cc_builder: cc::Build::new(),
             extra_defines: HashSet::new(),
             initializers: Vec::new(),
-            dependencies: Vec::new(),
         }
     }
 
@@ -462,16 +463,6 @@ impl CxxQtBuilder {
         self
     }
 
-    /// Build with a dependency on another crate built with cxx-qt-build
-    pub fn with_dependency(mut self, manifest: cxx_qt::build::Manifest) -> Self {
-        self.extra_defines.extend(manifest.defines.iter().cloned());
-        self.initializers
-            .extend(manifest.initializers.iter().cloned());
-        self.qt_modules.extend(manifest.qt_modules.iter().cloned());
-        self.dependencies.push(manifest);
-        self
-    }
-
     /// Build with the given extra options
     pub fn with_opts(mut self, opts: CxxQtBuildersOpts) -> Self {
         let header_root = dir::header_root();
@@ -582,20 +573,55 @@ impl CxxQtBuilder {
         }
     }
 
-    fn setup_dependencies(&self) {
-        let header_root = dir::header_root();
-        for dependency in &self.dependencies {
-            let target = format!("../../{dep}/include/{dep}", dep = dependency.name);
-            let symlink = header_root.join(&dependency.name);
-            if !symlink.exists() {
-                #[cfg(unix)]
-                let result = std::os::unix::fs::symlink(target, symlink);
+    fn find_dependencies() -> Vec<(PathBuf, Manifest)> {
+        std::env::vars_os()
+            .map(|(var, value)| (var.to_string_lossy().to_string(), value))
+            .filter(|(var, _)| var.starts_with("DEP_") && var.ends_with("_CXX_QT_MANIFEST_PATH"))
+            .map(|(_, manifest_path)| {
+                let manifest_path = PathBuf::from(manifest_path);
+                let manifest: Manifest = serde_json::from_str(
+                    &std::fs::read_to_string(&manifest_path)
+                        .expect("Could not read dependency manifest file!"),
+                )
+                .expect("Could not deserialize dependency manifest file!");
 
-                #[cfg(windows)]
-                let result = std::os::windows::fs::symlink_dir(target, symlink);
+                println!(
+                    "cxx-qt-build: Discovered dependency `{}` at: {}",
+                    manifest.name,
+                    manifest_path.to_string_lossy()
+                );
+                (manifest_path.parent().unwrap().to_owned(), manifest)
+            })
+            .collect()
+    }
 
-                result.expect("Could not create symlink!");
-            }
+    fn setup_dependency(&mut self, dependency_dir: PathBuf, manifest: Manifest) {
+        self.extra_defines.extend(manifest.defines);
+        self.initializers.extend(manifest.initializers);
+        self.qt_modules.extend(manifest.qt_modules);
+
+        // setup include directory
+        let target = dependency_dir.join("include").join(&manifest.name);
+        let symlink = dir::header_root().join(&manifest.name);
+        if !symlink.exists() {
+            #[cfg(unix)]
+            let result = std::os::unix::fs::symlink(target, symlink);
+
+            #[cfg(windows)]
+            let result = std::os::windows::fs::symlink_dir(target, symlink);
+
+            // TODO: If it's neither unix nor windows, we should probably just deep-copy the
+            // dependency headers into our own include directory.
+            #[cfg(not(any(unix, windows)))]
+            panic!("Unsupported platform! Only unix and windows are currently supported! Please file a bug report in the CXX-Qt repository.");
+
+            result.expect("Could not create symlink!");
+        }
+    }
+
+    fn setup_dependencies(&mut self) {
+        for (path, manifest) in Self::find_dependencies() {
+            self.setup_dependency(path, manifest);
         }
     }
 
@@ -829,13 +855,33 @@ impl CxxQtBuilder {
         std::fs::create_dir_all(path).expect("Failed to create export directory");
     }
 
+    #[doc(hidden)]
+    // For cxx-qt-lib only currently
+    pub fn write_manifest(manifest: &manifest::Manifest) {
+        let manifest_path = dir::crate_target().join("manifest.json");
+        let manifest_json =
+            serde_json::to_string_pretty(&manifest).expect("Failed to convert Manifest to JSON!");
+        std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
+        println!(
+            "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
+            manifest_path.to_string_lossy()
+        );
+    }
+
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
-        // TODO: Clean the export_dir
-        // This is currently not possible, as the header file from the build_opts are created
-        // already in the call to with_opts.
-        // We can enable this when we get rid of the current BuildOpts
+        // TODO: Clean the directory before we start building
+        // This is currently creating issues with cxx-qt-lib, as cxx-qt-lib is writing custom
+        // headers currently
+        // Self::clean_directory(dir::crate_target());
+
+        // We will do these two steps first, as setting up the dependencies can modify flags we
+        // need further down the line
+        // Also write the common headers first, to make sure they don't conflict with any
+        // dependencies
+        Self::write_common_headers();
+        self.setup_dependencies();
 
         // Ensure that the linker is setup correctly for Cargo builds
         qt_build_utils::setup_linker();
@@ -847,9 +893,6 @@ impl CxxQtBuilder {
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
         Self::define_qt_version_cfg_variables(qtbuild.version());
-
-        Self::write_common_headers();
-        self.setup_dependencies();
 
         // Setup compilers
         // Static QML plugin and Qt resource initializers need to be linked as their own separate
