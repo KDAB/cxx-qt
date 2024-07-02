@@ -4,9 +4,52 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_build::CxxQtBuilder;
+use std::path::PathBuf;
+
+fn header_dir() -> PathBuf {
+    PathBuf::from(std::env::var("OUT_DIR").unwrap())
+        .join("include")
+        .join("cxx-qt-lib-extras")
+}
+
+fn write_headers_in(subfolder: &str) {
+    println!("cargo::rerun-if-changed=include/{subfolder}");
+
+    for entry in
+        std::fs::read_dir(format!("include/{subfolder}")).expect("Failed to read include directory")
+    {
+        let entry = entry.expect("Failed to read header file!");
+        let header_name = entry.file_name();
+        println!(
+            "cargo::rerun-if-changed=include/{subfolder}/{header_name}",
+            header_name = header_name.to_string_lossy()
+        );
+
+        // TODO: Do we want to add the headers into a subdirectory?
+        std::fs::copy(entry.path(), header_dir().join(header_name))
+            .expect("Failed to copy header file!");
+    }
+}
+
+fn write_headers() {
+    println!("cargo::rerun-if-changed=include/");
+    std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
+
+    write_headers_in("core");
+    write_headers_in("gui");
+}
 
 fn main() {
-    let mut builder = CxxQtBuilder::new();
+    write_headers();
+
+    let mut builder = CxxQtBuilder::library(
+        cxx_qt_build::Interface::default()
+            .qt_module("Gui")
+            .qt_module("Widgets")
+            // Disable exporting the standard include directory, as we are exporting custom headers
+            .export_include_prefixes([])
+            .export_include_directory(header_dir(), "cxx-qt-lib-extras"),
+    );
 
     let rust_bridges = vec![
         "core/qelapsedtimer",
@@ -37,6 +80,6 @@ fn main() {
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     builder
-        .with_opts(cxx_qt_lib_extras_headers::build_opts())
+        .include_prefix("cxx-qt-lib-extras-internals")
         .build();
 }
