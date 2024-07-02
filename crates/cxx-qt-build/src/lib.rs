@@ -363,7 +363,7 @@ impl CxxQtBuilder {
         this.public_interface = Some(interface_definition);
 
         if std::env::var("CARGO_MANIFEST_LINKS").is_err() {
-            panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nFor example:\nlinks = \"{}\"\n", crate_name());
+            panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
         }
 
         this
