@@ -9,7 +9,7 @@ use crate::{crate_name, module_name_from_uri};
 use std::{env, path::PathBuf};
 
 /// The target directory, namespaced by crate
-pub fn crate_target() -> PathBuf {
+pub(crate) fn crate_target() -> PathBuf {
     target().join("crates").join(crate_name())
 }
 
@@ -46,9 +46,9 @@ pub(crate) fn export() -> Option<PathBuf> {
     env::var("CXXQT_EXPORT_DIR").ok().map(PathBuf::from)
 }
 
-/// The include directory needs to be namespaced by crate name when exporting for a C++ build system,
+/// The include directory is namespaced by crate name when exporting for a C++ build system,
 /// but for using cargo build without a C++ build system, OUT_DIR is already namespaced by crate name.
-pub fn header_root() -> PathBuf {
+pub(crate) fn header_root() -> PathBuf {
     crate_target().join("include")
 }
 

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespaced;
+use crate::writer::{self, cpp::namespaced};
 use indoc::formatdoc;
 
 /// Extract the source from a given CppFragment
@@ -60,14 +60,14 @@ pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
         .join("\n");
 
     formatdoc! {r#"
-        #include "{crate_name}/{cxx_file_stem}.cxxqt.h"
+        #include "{header_prefix}/{cxx_file_stem}.cxxqt.h"
 
         {extern_cxx_qt}
         {qobjects}
     "#,
     cxx_file_stem = generated.cxx_file_stem,
     qobjects = qobjects_source(generated).join("\n"),
-    crate_name = std::env::var("CARGO_PKG_NAME").unwrap_or_else(|_|"cxx-qt-gen".to_owned())
+    header_prefix = writer::get_header_prefix(),
     }
 }
 

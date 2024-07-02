@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
-use crate::writer::cpp::namespaced;
+use crate::writer::{self, cpp::namespaced};
 use indoc::formatdoc;
 
 /// Extract the header from a given CppFragment
@@ -181,7 +181,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         {includes}
 
         {forward_declare}
-        #include "{crate_name}/{cxx_file_stem}.cxx.h"
+        #include "{header_prefix}/{cxx_file_stem}.cxx.h"
 
         {extern_cxx_qt}
         {qobjects}
@@ -189,7 +189,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
     cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
     qobjects = qobjects_header(generated).join("\n"),
-    crate_name = std::env::var("CARGO_PKG_NAME").unwrap_or_else(|_|"cxx-qt-gen".to_owned())
+    header_prefix = writer::get_header_prefix()
     }
 }
 

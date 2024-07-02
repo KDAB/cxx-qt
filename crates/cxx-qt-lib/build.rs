@@ -19,7 +19,9 @@ fn qt_quickcontrols_enabled() -> bool {
 }
 
 fn header_dir() -> PathBuf {
-    cxx_qt_build::dir::header_root().join("cxx-qt-lib")
+    PathBuf::from(std::env::var("OUT_DIR").unwrap())
+        .join("include")
+        .join("cxx-qt-lib")
 }
 
 fn write_headers_in(subfolder: &str) {
@@ -287,7 +289,31 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let mut builder = CxxQtBuilder::new();
+    let mut interface = cxx_qt_build::Interface::default()
+        .initializer("src/core/init.cpp")
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt-lib");
+
+    if qt_gui_enabled() {
+        interface = interface
+            .qt_module("Gui")
+            .define("CXX_QT_GUI_FEATURE", None)
+            .initializer("src/gui/init.cpp");
+    }
+
+    if qt_qml_enabled() {
+        interface = interface
+            .qt_module("Qml")
+            .define("CXX_QT_QML_FEATURE", None);
+    }
+
+    if qt_quickcontrols_enabled() {
+        interface = interface
+            .qt_module("QuickControls2")
+            .define("CXX_QT_QUICKCONTROLS_FEATURE", None);
+    }
+
+    let mut builder = CxxQtBuilder::library(interface).include_prefix("cxx-qt-lib-internals");
 
     for rust_source in &rust_bridges {
         builder = builder.file(format!("src/{rust_source}.rs"));
@@ -302,42 +328,6 @@ fn main() {
         println!("cargo:rerun-if-changed=src/qt_types.cpp");
     });
     println!("cargo:rerun-if-changed=src/assertion_utils.h");
-
-    let mut manifest = cxx_qt_build::manifest::Manifest {
-        name: "cxx-qt-lib".to_owned(),
-        qt_modules: Vec::new(),
-        defines: Vec::new(),
-        initializers: vec![include_str!("../../crates/cxx-qt-lib/src/core/init.cpp").to_owned()],
-    };
-
-    if qt_gui_enabled() {
-        builder = builder.qt_module("Gui").cc_builder(|cc| {
-            cc.define("CXX_QT_GUI_FEATURE", None);
-        });
-        manifest.qt_modules.push("Gui".to_owned());
-        manifest.defines.push("CXX_QT_GUI_FEATURE".to_owned());
-        manifest
-            .initializers
-            .push(include_str!("../../crates/cxx-qt-lib/src/gui/init.cpp").to_owned());
-    }
-    if qt_qml_enabled() {
-        builder = builder.qt_module("Qml").cc_builder(|cc| {
-            cc.define("CXX_QT_QML_FEATURE", None);
-        });
-        manifest.qt_modules.push("Qml".to_owned());
-        manifest.defines.push("CXX_QT_QML_FEATURE".to_owned());
-    }
-    if qt_quickcontrols_enabled() {
-        builder = builder.qt_module("QuickControls2").cc_builder(|cc| {
-            cc.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
-        });
-        manifest.qt_modules.push("QuickControls2".to_owned());
-        manifest
-            .defines
-            .push("CXX_QT_QUICKCONTROLS_FEATURE".to_owned());
-    }
-
-    cxx_qt_build::CxxQtBuilder::write_manifest(&manifest);
 
     builder.build();
 }
