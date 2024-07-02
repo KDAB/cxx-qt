@@ -11,7 +11,7 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
-/// These are all specified by this Interface struct, which should be passed to the [CxxQtBuilder::library] function.
+/// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
 pub struct Interface {
     pub(crate) qt_modules: HashSet<String>,
     pub(crate) compile_definitions: Vec<(String, Option<String>)>,
@@ -75,7 +75,7 @@ impl Interface {
     /// header_prefix of this crate.
     ///
     /// This function will panic if any of the given prefixes are already exported through the
-    /// [export_include_directory] function.
+    /// [Self::export_include_directory] function.
     pub fn export_include_prefixes<'a>(
         mut self,
         prefixes: impl IntoIterator<Item = &'a str>,
@@ -100,7 +100,7 @@ impl Interface {
 
     /// Add a directory that will be added as an include directory under the given prefix.
     ///
-    /// The prefix will automatically be exported (see also: [export_header_prefix])
+    /// The prefix will automatically be exported (see also: [Self::export_include_prefixes])
     ///
     /// This function will panic if the given prefix is already exported.
     pub fn export_include_directory(mut self, directory: impl AsRef<Path>, prefix: &str) -> Self {
