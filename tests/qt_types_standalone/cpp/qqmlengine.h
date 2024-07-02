@@ -10,7 +10,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QTest>
 
-#include "cxx-qt-gen/qqmlengine.cxx.h"
+#include "qt_types_standalone/qqmlengine.cxx.h"
 
 class QQmlEngineTest : public QObject
 {

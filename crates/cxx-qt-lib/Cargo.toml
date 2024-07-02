@@ -13,6 +13,12 @@ description = "Qt types for integrating `cxx-qt` crate with `cxx`"
 repository.workspace = true
 exclude = [ "**/generate.sh" ]
 
+# When creating a library with cxx-qt-build, we need to set a fake "links" key
+# to make sure the build scripts are run in the correct order and the build scripts
+# can pass metadata from library to dependent.
+# See also: https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key
+links = "cxx-qt-lib"
+
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
@@ -26,17 +32,18 @@ serde = { version = "1", features=["derive"], optional = true }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
-cxx-qt-lib-headers.workspace = true
 
 [features]
 default = ["qt_gui", "qt_qml", "qt_quickcontrols"]
+
+qt_gui = []
+qt_qml = []
+qt_quickcontrols = []
+
 bytes = ["dep:bytes"]
 chrono = ["dep:chrono"]
 http = ["dep:http"]
 rgb = ["dep:rgb"]
-qt_gui = ["cxx-qt-lib-headers/qt_gui"]
-qt_qml = ["cxx-qt-lib-headers/qt_qml"]
-qt_quickcontrols = ["cxx-qt-lib-headers/qt_quickcontrols"]
 time = ["dep:time"]
 url = ["dep:url"]
 serde = ["dep:serde"]

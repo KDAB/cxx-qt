@@ -46,6 +46,5 @@ fn main() {
         .file("src/qvector2d.rs")
         .file("src/qvector3d.rs")
         .file("src/qvector4d.rs")
-        .with_opts(cxx_qt_lib_headers::build_opts())
         .build();
 }
