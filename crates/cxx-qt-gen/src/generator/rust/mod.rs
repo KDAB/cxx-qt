@@ -17,6 +17,7 @@ pub mod threading;
 
 use crate::generator::rust::fragment::GeneratedRustFragment;
 use crate::parser::Parser;
+use crate::writer;
 use quote::quote;
 use syn::{Item, ItemMod, Result};
 
@@ -80,9 +81,9 @@ impl GeneratedRustBlocks {
 /// Generate the include line for this parsed block
 fn generate_include(parser: &Parser) -> Result<Item> {
     let import_path = format!(
-        "{crate_name}/{}.cxxqt.h",
+        "{header_prefix}/{}.cxxqt.h",
         parser.cxx_file_stem,
-        crate_name = std::env::var("CARGO_PKG_NAME").unwrap_or_else(|_| "cxx-qt-gen".to_owned())
+        header_prefix = writer::get_header_prefix()
     );
 
     syn::parse2(quote! {
