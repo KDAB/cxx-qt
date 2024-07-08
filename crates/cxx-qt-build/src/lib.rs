@@ -929,9 +929,6 @@ impl CxxQtBuilder {
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
-        // TODO: Clean the directory before we start building
-        // This is currently creating issues with cxx-qt-lib, as cxx-qt-lib is writing custom
-        // headers currently
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we

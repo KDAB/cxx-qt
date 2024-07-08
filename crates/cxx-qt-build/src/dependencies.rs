@@ -145,23 +145,9 @@ impl Interface {
     }
 }
 
-// cxx-qt-lib example
-// Interface {
-//     export_crate_headers: false,
-//     exported_header_prefixes: Some(vec!["cxx-qt-lib/", "python3"]),
-//     generated_path: "cxx-qt-lib-internals",
-// }
-
-// cxx-qt-lib-headers example
-// Interface {
-//     export_crate_headers: true,
-//     exported_header_prefixes: Some(vec!["cxx-qt-lib-extras/..."]),
-//     reexport_links: vec!["cxx-qt-lib"],
-// }
-
 #[derive(Clone, Serialize, Deserialize)]
-// This struct is used by cxx-qt-build internally to propagate data through to downstream
-// dependencies
+/// This struct is used by cxx-qt-build internally to propagate data through to downstream
+/// dependencies
 pub(crate) struct Manifest {
     pub(crate) name: String,
     pub(crate) link_name: String,
@@ -172,12 +158,24 @@ pub(crate) struct Manifest {
 }
 
 #[derive(Clone)]
+/// A dependency that has been set up with [crate::CxxQtBuilder::library] and is available to
+/// the crate that is currently being built.
 pub(crate) struct Dependency {
+    /// The path of the dependencies export directory
     pub(crate) path: PathBuf,
+    /// The deserialized manifest of the dependency
     pub(crate) manifest: Manifest,
 }
 
 impl Dependency {
+    /// This function will search the environment for all dependencies that have been set up with
+    /// CxxQtBuilder::library.
+    /// They export their manifest paths as metadata, which will be exposed to us as an environment
+    /// variable.
+    /// We extract those paths here, parse the manifest and make sure to set it up correctly as a
+    /// dependency.
+    ///
+    /// See also the internals "build system" section of our book.
     pub(crate) fn find_all() -> Vec<Dependency> {
         std::env::vars_os()
             .map(|(var, value)| (var.to_string_lossy().to_string(), value))
@@ -283,12 +281,12 @@ pub(crate) fn all_compile_definitions(
                 }
                 Occupied(entry) => {
                     let existing_value = &entry.get().0;
+                    // Only allow duplicate definitions with the same value
                     if existing_value != value {
                         panic!("Conflicting compiler definitions requested!\nCrate {existing} exports {variable}={existing_value:?}, and crate {conflicting} exports {variable}={value:?}",
                             existing=entry.get().1,
                             conflicting = dependency.manifest.name);
                     }
-                    // else: Ignore Duplicate definition with the same value
                 }
             }
         }
