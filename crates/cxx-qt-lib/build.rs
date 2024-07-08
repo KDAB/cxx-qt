@@ -296,24 +296,31 @@ fn main() {
 
     if qt_gui_enabled() {
         interface = interface
-            .qt_module("Gui")
             .define("CXX_QT_GUI_FEATURE", None)
             .initializer("src/gui/init.cpp");
     }
 
     if qt_qml_enabled() {
-        interface = interface
-            .qt_module("Qml")
-            .define("CXX_QT_QML_FEATURE", None);
+        interface = interface.define("CXX_QT_QML_FEATURE", None);
     }
 
     if qt_quickcontrols_enabled() {
-        interface = interface
-            .qt_module("QuickControls2")
-            .define("CXX_QT_QUICKCONTROLS_FEATURE", None);
+        interface = interface.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
     }
 
     let mut builder = CxxQtBuilder::library(interface).include_prefix("cxx-qt-lib-internals");
+
+    if qt_gui_enabled() {
+        builder = builder.qt_module("Gui");
+    }
+
+    if qt_qml_enabled() {
+        builder = builder.qt_module("Qml");
+    }
+
+    if qt_quickcontrols_enabled() {
+        builder = builder.qt_module("QuickControls2");
+    }
 
     for rust_source in &rust_bridges {
         builder = builder.file(format!("src/{rust_source}.rs"));
