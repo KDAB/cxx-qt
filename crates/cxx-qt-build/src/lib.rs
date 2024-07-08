@@ -823,22 +823,21 @@ impl CxxQtBuilder {
         }
     }
 
-    fn generate_init_code(&self, dependencies: &[Dependency]) -> String {
-        let paths = dependencies::initializer_paths(self.public_interface.as_ref(), dependencies);
-        paths
-            .into_iter()
+    fn generate_init_code(&self, initializers: &HashSet<PathBuf>) -> String {
+        initializers
+            .iter()
             .map(|path| std::fs::read_to_string(path).expect("Could not read initializer file!"))
             .chain(self.initializers.iter().cloned())
             .collect::<Vec<_>>()
             .join("\n")
     }
 
-    fn build_initializers(&mut self, init_builder: &cc::Build, dependencies: &[Dependency]) {
+    fn build_initializers(&mut self, init_builder: &cc::Build, initializers: &HashSet<PathBuf>) {
         let initializers_path = dir::out().join("cxx-qt-build").join("initializers");
         std::fs::create_dir_all(&initializers_path).expect("Failed to create initializers path!");
 
         let initializers_path = initializers_path.join(format!("{}.cpp", crate_name()));
-        std::fs::write(&initializers_path, self.generate_init_code(dependencies))
+        std::fs::write(&initializers_path, self.generate_init_code(initializers))
             .expect("Could not write initializers file");
         Self::build_object_file(
             init_builder,
@@ -847,29 +846,29 @@ impl CxxQtBuilder {
         );
     }
 
-    fn build_qrc_files(&mut self, init_builder: &cc::Build, qtbuild: &mut qt_build_utils::QtBuild) {
-        for qrc_file in &self.qrc_files {
-            // We need to link this using an obect file or +whole-achive, the static initializer of
-            // the qrc file isn't lost.
-            let out_path = qtbuild.qrc(&qrc_file);
-            let export_path = dir::crate_target().join("qrc").join(format!(
-                "{}.o",
-                out_path.file_stem().unwrap().to_string_lossy()
-            ));
-            Self::build_object_file(init_builder, out_path, export_path);
-
-            // Also ensure that each of the files in the qrc can cause a change
-            for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
-                println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
-            }
-        }
+    fn generate_cpp_from_qrc_files(
+        &mut self,
+        qtbuild: &mut qt_build_utils::QtBuild,
+    ) -> HashSet<PathBuf> {
+        self.qrc_files
+            .iter()
+            .map(|qrc_file| {
+                // Also ensure that each of the files in the qrc can cause a change
+                for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
+                    println!("cargo:rerun-if-changed={}", qrc_inner_file.display());
+                }
+                // We need to link this using an object file or +whole-achive, the static initializer of
+                // the qrc file isn't lost.
+                qtbuild.qrc(&qrc_file)
+            })
+            .collect()
     }
 
     fn write_manifest(
         &self,
         dependencies: &[Dependency],
         qt_modules: HashSet<String>,
-        dependency_initializers: Vec<PathBuf>,
+        initializers: HashSet<PathBuf>,
     ) {
         if let Some(interface) = &self.public_interface {
             // We automatically reexport all qt_modules and initializers from downstream dependencies
@@ -878,11 +877,7 @@ impl CxxQtBuilder {
             // are marked as re-export.
             let dependencies = dependencies::reexported_dependencies(interface, dependencies);
 
-            let initializers = interface
-                .initializers
-                .iter()
-                .cloned()
-                .chain(dependency_initializers);
+            let initializers = initializers.into_iter().collect();
             let exported_include_prefixes =
                 dependencies::all_include_prefixes(interface, &dependencies);
             let defines = dependencies::all_compile_definitions(Some(interface), &dependencies);
@@ -892,7 +887,7 @@ impl CxxQtBuilder {
                 link_name: link_name()
                     .expect("The links key must be set when creating a library with CXX-Qt-build!"),
                 defines,
-                initializers: initializers.collect(),
+                initializers,
                 qt_modules: qt_modules.into_iter().collect(),
                 exported_include_prefixes,
             };
@@ -1002,11 +997,15 @@ impl CxxQtBuilder {
             &self.include_prefix.clone(),
         );
 
-        self.build_qrc_files(&init_builder, &mut qtbuild);
+        let mut initializers = self.generate_cpp_from_qrc_files(&mut qtbuild);
+        initializers.extend(dependencies::initializer_paths(
+            self.public_interface.as_ref(),
+            &dependencies,
+        ));
 
         self.setup_qt5_compatibility(&qtbuild);
 
-        self.build_initializers(&init_builder, &dependencies);
+        self.build_initializers(&init_builder, &initializers);
 
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error
@@ -1014,10 +1013,6 @@ impl CxxQtBuilder {
             self.cc_builder.compile(&static_lib_name());
         }
 
-        let dependency_initializers = dependencies
-            .iter()
-            .flat_map(|dep| dep.manifest.initializers.iter().cloned())
-            .collect();
-        self.write_manifest(&dependencies, qt_modules, dependency_initializers);
+        self.write_manifest(&dependencies, qt_modules, initializers);
     }
 }
