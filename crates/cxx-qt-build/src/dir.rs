@@ -6,7 +6,25 @@
 //! This modules contains information about the paths where artifacts are placed by cxx-qt-build.
 
 use crate::{crate_name, module_name_from_uri};
-use std::{env, path::PathBuf};
+use std::io::Result;
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
+
+// Clean a directory by removing it and recreating it.
+pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
+    let result = std::fs::remove_dir_all(&path);
+    if let Err(err) = result {
+        // If the path doesn't exist that's fine, otherwise we want to panic
+        if err.kind() != std::io::ErrorKind::NotFound {
+            return Err(err);
+        }
+    }
+
+    std::fs::create_dir_all(path)?;
+    Ok(())
+}
 
 /// The target directory, namespaced by crate
 pub(crate) fn crate_target() -> PathBuf {
