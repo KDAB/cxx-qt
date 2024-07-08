@@ -18,9 +18,9 @@ use diagnostics::{Diagnostic, GeneratedError};
 
 pub mod dir;
 
-mod manifest;
-pub use manifest::Interface;
-use manifest::{Dependency, Manifest};
+mod dependencies;
+pub use dependencies::Interface;
+use dependencies::{Dependency, Manifest};
 
 mod opts;
 pub use opts::CxxQtBuildersOpts;
@@ -278,6 +278,10 @@ pub(crate) fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
 
+pub(crate) fn link_name() -> Option<String> {
+    env::var("CARGO_MANIFEST_LINKS").ok()
+}
+
 fn static_lib_name() -> String {
     format!("{}-cxxqt-generated", crate_name())
 }
@@ -362,7 +366,7 @@ impl CxxQtBuilder {
         let mut this = Self::new();
         this.public_interface = Some(interface_definition);
 
-        if std::env::var("CARGO_MANIFEST_LINKS").is_err() {
+        if link_name().is_none() {
             panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
         }
 
@@ -410,7 +414,12 @@ impl CxxQtBuilder {
 
     /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html).
     /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
-    /// The `Core` module and any modules from [CxxQtBuildersOpts] are linked automatically; there is no need to specify them.
+    /// The `Core` module and any modules from dependencies are linked automatically; there is no need to specify them.
+    ///
+    /// Note that any qt_module you specify here will be enabled for all downstream
+    /// dependencies as well if this crate is built as a library with [CxxQtBuilder::library].
+    /// It is therefore best practice to specify features on your crate that allow downstream users
+    /// to disable any qt modules that are optional.
     pub fn qt_module(mut self, module: &str) -> Self {
         self.qt_modules.insert(module.to_owned());
         self
@@ -572,31 +581,6 @@ impl CxxQtBuilder {
         }
     }
 
-    fn find_dependencies() -> Vec<Dependency> {
-        std::env::vars_os()
-            .map(|(var, value)| (var.to_string_lossy().to_string(), value))
-            .filter(|(var, _)| var.starts_with("DEP_") && var.ends_with("_CXX_QT_MANIFEST_PATH"))
-            .map(|(_, manifest_path)| {
-                let manifest_path = PathBuf::from(manifest_path);
-                let manifest: Manifest = serde_json::from_str(
-                    &std::fs::read_to_string(&manifest_path)
-                        .expect("Could not read dependency manifest file!"),
-                )
-                .expect("Could not deserialize dependency manifest file!");
-
-                println!(
-                    "cxx-qt-build: Discovered dependency `{}` at: {}",
-                    manifest.name,
-                    manifest_path.to_string_lossy()
-                );
-                Dependency {
-                    path: manifest_path.parent().unwrap().to_owned(),
-                    manifest,
-                }
-            })
-            .collect()
-    }
-
     fn symlink_directory(target: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()> {
         #[cfg(unix)]
         let result = std::os::unix::fs::symlink(target, link);
@@ -607,7 +591,7 @@ impl CxxQtBuilder {
         // TODO: If it's neither unix nor windows, we should probably just deep-copy the
         // dependency headers into our own include directory.
         #[cfg(not(any(unix, windows)))]
-        panic!("Unsupported platform! Only unix and windows are currently supported! Please file a bug report in the CXX-Qt repository.");
+        panic!("Cxx-Qt-build: Unsupported platform! Only unix and windows are currently supported! Please file a bug report in the CXX-Qt repository.");
 
         result
     }
@@ -617,8 +601,28 @@ impl CxxQtBuilder {
             // setup include directory
             let target = dependency.path.join("include").join(include_prefix);
 
-            let symlink = dir::header_root().join(&dependency.manifest.name);
-            Self::symlink_directory(target, symlink).expect("Could not create symlink!");
+            let symlink = dir::header_root().join(include_prefix);
+            if symlink.exists() {
+                // Two dependencies may be reexporting the same shared dependency, which will
+                // result in conflicting symlinks.
+                // Try detecting this by resolving the symlinks and checking whether this leads us
+                // to the same paths. If so, it's the same include path for the same prefix, which
+                // is fine.
+                let symlink =
+                    std::fs::canonicalize(symlink).expect("Failed to canonicalize symlink!");
+                let target =
+                    std::fs::canonicalize(target).expect("Failed to canonicalize symlink target!");
+                if symlink != target {
+                    panic!(
+                        "Conflicting include_prefixes for {include_prefix}!\nDependency {dep_name} conflicts with existing include path",
+                        dep_name = dependency.manifest.name,
+                    );
+                }
+            } else {
+                Self::symlink_directory(target, symlink).unwrap_or_else(|_| {
+                    panic!("Could not create symlink for include_prefix {include_prefix}!")
+                });
+            }
         }
     }
 
@@ -818,10 +822,7 @@ impl CxxQtBuilder {
     }
 
     fn generate_init_code(&self, dependencies: &[Dependency]) -> String {
-        let paths: HashSet<PathBuf> = dependencies
-            .iter()
-            .flat_map(|dep| dep.manifest.initializers.iter().cloned())
-            .collect();
+        let paths = dependencies::initializer_paths(self.public_interface.as_ref(), dependencies);
         paths
             .into_iter()
             .map(|path| std::fs::read_to_string(path).expect("Could not read initializer file!"))
@@ -876,35 +877,34 @@ impl CxxQtBuilder {
 
     fn write_manifest(
         &self,
+        dependencies: &[Dependency],
         qt_modules: HashSet<String>,
         dependency_initializers: Vec<PathBuf>,
-        defines: Vec<(String, Option<String>)>,
     ) {
         if let Some(interface) = &self.public_interface {
+            // We automatically reexport all qt_modules and initializers from downstream dependencies
+            // as they will always need to be enabled in the final binary.
+            // However, we only reexport the headers and compile-time definitions of libraries that
+            // are marked as re-export.
+            let dependencies = dependencies::reexported_dependencies(interface, dependencies);
+
             let initializers = interface
                 .initializers
                 .iter()
                 .cloned()
                 .chain(dependency_initializers);
-            let exported_header_prefixes = interface
-                .exported_include_prefixes
-                .iter()
-                .cloned()
-                .chain(
-                    interface
-                        .exported_include_directories
-                        .iter()
-                        .map(|(_path, prefix)| prefix.clone()),
-                )
-                .collect();
-            // TODO: Is it correct that we export the qt_modules, initializers and especially the
-            // definitions of downstream dependencies are re-exported?
+            let exported_include_prefixes =
+                dependencies::all_include_prefixes(interface, &dependencies);
+            let defines = dependencies::all_compile_definitions(Some(interface), &dependencies);
+
             let manifest = Manifest {
                 name: crate_name(),
+                link_name: link_name()
+                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
                 defines,
                 initializers: initializers.collect(),
                 qt_modules: qt_modules.into_iter().collect(),
-                exported_include_prefixes: exported_header_prefixes,
+                exported_include_prefixes,
             };
 
             let manifest_path = dir::crate_target().join("manifest.json");
@@ -920,29 +920,10 @@ impl CxxQtBuilder {
 
     fn qt_modules(&self, dependencies: &[Dependency]) -> HashSet<String> {
         let mut qt_modules = self.qt_modules.clone();
-        if let Some(interface) = &self.public_interface {
-            qt_modules.extend(interface.qt_modules.iter().cloned())
-        }
         for dependency in dependencies {
             qt_modules.extend(dependency.manifest.qt_modules.iter().cloned());
         }
         qt_modules
-    }
-
-    fn compile_definitions(&self, dependencies: &[Dependency]) -> Vec<(String, Option<String>)> {
-        let mut definitions = self
-            .public_interface
-            .as_ref()
-            .map(|interface| interface.compile_definitions.clone())
-            .unwrap_or_default();
-
-        definitions.extend(
-            dependencies
-                .iter()
-                .flat_map(|dep| dep.manifest.defines.clone()),
-        );
-
-        definitions
     }
 
     fn write_interface_include_dirs(&self) {
@@ -974,7 +955,7 @@ impl CxxQtBuilder {
         // dependencies
         Self::write_common_headers();
         self.write_interface_include_dirs();
-        let dependencies = Self::find_dependencies();
+        let dependencies = Dependency::find_all();
         for dependency in &dependencies {
             self.include_dependency(dependency);
         }
@@ -1006,10 +987,11 @@ impl CxxQtBuilder {
         // to the generated files without any namespacing.
         include_paths.push(header_root.join(&self.include_prefix));
 
-        let extra_defines = self.compile_definitions(&dependencies);
-        Self::setup_cc_builder(&mut self.cc_builder, &include_paths, &extra_defines);
+        let compile_definitions =
+            dependencies::all_compile_definitions(self.public_interface.as_ref(), &dependencies);
+        Self::setup_cc_builder(&mut self.cc_builder, &include_paths, &compile_definitions);
 
-        Self::setup_cc_builder(&mut init_builder, &include_paths, &extra_defines);
+        Self::setup_cc_builder(&mut init_builder, &include_paths, &compile_definitions);
         // Note: From now on the init_builder is correctly configured.
         // When building object files with this builder, we always need to copy it first.
         // So remove `mut` to ensure that we can't accidentally change the configuration or add
@@ -1046,6 +1028,6 @@ impl CxxQtBuilder {
             .iter()
             .flat_map(|dep| dep.manifest.initializers.iter().cloned())
             .collect();
-        self.write_manifest(qt_modules, dependency_initializers, extra_defines);
+        self.write_manifest(&dependencies, qt_modules, dependency_initializers);
     }
 }

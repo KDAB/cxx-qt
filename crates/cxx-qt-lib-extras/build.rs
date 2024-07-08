@@ -42,14 +42,15 @@ fn write_headers() {
 fn main() {
     write_headers();
 
-    let mut builder = CxxQtBuilder::library(
-        cxx_qt_build::Interface::default()
-            .qt_module("Gui")
-            .qt_module("Widgets")
-            // Disable exporting the standard include directory, as we are exporting custom headers
-            .export_include_prefixes([])
-            .export_include_directory(header_dir(), "cxx-qt-lib-extras"),
-    );
+    let interface = cxx_qt_build::Interface::default()
+        // Disable exporting the standard include directory, as we are exporting custom headers
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt-lib-extras")
+        .reexport_dependency("cxx-qt-lib");
+
+    let mut builder = CxxQtBuilder::library(interface)
+        .qt_module("Gui")
+        .qt_module("Widgets");
 
     let rust_bridges = vec![
         "core/qelapsedtimer",

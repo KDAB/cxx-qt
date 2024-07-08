@@ -1,0 +1,301 @@
+// SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! This modules contains utilities for specifying dependencies with cxx-qt-build.
+
+use serde::{Deserialize, Serialize};
+
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
+
+/// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
+/// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
+pub struct Interface {
+    pub(crate) compile_definitions: HashMap<String, Option<String>>,
+    pub(crate) initializers: Vec<PathBuf>,
+    // The name of the links keys, whose CXX-Qt dependencies to reexport
+    pub(crate) reexport_links: HashSet<String>,
+    pub(crate) exported_include_prefixes: Vec<String>,
+    pub(crate) exported_include_directories: Vec<(PathBuf, String)>,
+    // TODO: In future, we want to also set up the include paths so that you can include anything
+    // from the crates source directory.
+    // Once this is done, this flag should indicate whether or not to export our own crates source
+    // directory to downstream dependencies?
+    // export_crate_directory: bool,
+}
+
+impl Default for Interface {
+    fn default() -> Self {
+        Self {
+            compile_definitions: HashMap::new(),
+            initializers: Vec::new(),
+            reexport_links: HashSet::new(),
+            exported_include_prefixes: vec![super::crate_name()],
+            exported_include_directories: Vec::new(),
+        }
+    }
+}
+
+impl Interface {
+    /// Add a compile-time-definition for the C++ code built by this crate and all downstream
+    /// dependencies
+    ///
+    /// This function will panic if the variable has already been defined with a different value.
+    ///
+    /// Also please note that any definitions added here will only be exported throughout the cargo
+    /// build. Due to technical limitations, they can not be imported into CMake with the
+    /// cxxqt_import_crate function.
+    pub fn define(mut self, variable: &str, value: Option<&str>) -> Self {
+        use std::collections::hash_map::Entry::*;
+
+        let entry = self.compile_definitions.entry(variable.to_owned());
+        match entry {
+            Vacant(entry) => entry.insert(value.map(String::from)),
+            Occupied(entry) => {
+                if entry.get().as_deref() == value {
+                    println!("Warning: Silently ignoring duplicate compiler definition for {variable} with {value:?}.");
+                }
+                panic!(
+                    "Cxx-Qt-build - Error: Interface::define - Duplicate compile-time definition for variable {variable} with value {value:?}!"
+                );
+            }
+        };
+        self
+    }
+
+    /// Add a C++ file path that will be exported as an initializer to downstream dependencies.
+    ///
+    /// Initializer files will be built into object files, instead of linked into the static
+    /// library.
+    /// This way, the static variables and their constructors in this code will not be optimized
+    /// out by the linker.
+    pub fn initializer(mut self, path: impl AsRef<Path>) -> Self {
+        let path = PathBuf::from(path.as_ref());
+        let path = path
+            .canonicalize()
+            .expect("Failed to canonicalize path to initializer! Does the path exist?");
+        self.initializers.push(path);
+        self
+    }
+
+    /// Export all headers with the given prefix to downstream dependencies
+    ///
+    /// Note: This will overwrite any previously specified header_prefixes, including the default
+    /// header_prefix of this crate.
+    ///
+    /// This function will panic if any of the given prefixes are already exported through the
+    /// [Self::export_include_directory] function.
+    pub fn export_include_prefixes<'a>(
+        mut self,
+        prefixes: impl IntoIterator<Item = &'a str>,
+    ) -> Self {
+        let prefixes = prefixes.into_iter().map(|item| item.to_string()).collect();
+
+        let mut exported_prefixes = self
+            .exported_include_directories
+            .iter()
+            .map(|(_path, prefix)| prefix);
+        for prefix in &prefixes {
+            if let Some(duplicate) =
+                exported_prefixes.find(|exported_prefix| exported_prefix.starts_with(prefix))
+            {
+                panic!("Duplicate export_prefix! Cannot export `{prefix}`, as `{duplicate}` is already exported as an export_include_directory!");
+            }
+        }
+
+        self.exported_include_prefixes = prefixes;
+        self
+    }
+
+    /// Add a directory that will be added as an include directory under the given prefix.
+    ///
+    /// The prefix will automatically be exported (see also: [Self::export_include_prefixes])
+    ///
+    /// This function will panic if the given prefix is already exported.
+    pub fn export_include_directory(mut self, directory: impl AsRef<Path>, prefix: &str) -> Self {
+        let mut exported_prefixes = self.exported_include_prefixes.iter().chain(
+            self.exported_include_directories
+                .iter()
+                .map(|(_path, prefix)| prefix),
+        );
+        if let Some(duplicate) =
+            exported_prefixes.find(|exported_prefix| exported_prefix.starts_with(prefix))
+        {
+            panic!("Duplicate export_prefix! Cannot export `{prefix}`, as `{duplicate}` is already exported!");
+        }
+
+        self.exported_include_directories
+            .push((directory.as_ref().into(), prefix.to_owned()));
+        self
+    }
+
+    /// Reexport the dependency with the given link name.
+    /// This will make the dependency available to downstream dependencies.
+    ///
+    /// Specifically it will reexport all include_prefixes of the given dependency
+    /// as well as any definitions made by that dependency.
+    ///
+    /// Note that the link name may differ from the crate name.
+    /// Check your dependencies manifest file for the correct link name.
+    pub fn reexport_dependency(mut self, link_name: &str) -> Self {
+        self.reexport_links.insert(link_name.to_owned());
+        self
+    }
+}
+
+// cxx-qt-lib example
+// Interface {
+//     export_crate_headers: false,
+//     exported_header_prefixes: Some(vec!["cxx-qt-lib/", "python3"]),
+//     generated_path: "cxx-qt-lib-internals",
+// }
+
+// cxx-qt-lib-headers example
+// Interface {
+//     export_crate_headers: true,
+//     exported_header_prefixes: Some(vec!["cxx-qt-lib-extras/..."]),
+//     reexport_links: vec!["cxx-qt-lib"],
+// }
+
+#[derive(Clone, Serialize, Deserialize)]
+// This struct is used by cxx-qt-build internally to propagate data through to downstream
+// dependencies
+pub(crate) struct Manifest {
+    pub(crate) name: String,
+    pub(crate) link_name: String,
+    pub(crate) qt_modules: Vec<String>,
+    pub(crate) defines: Vec<(String, Option<String>)>,
+    pub(crate) initializers: Vec<PathBuf>,
+    pub(crate) exported_include_prefixes: Vec<String>,
+}
+
+#[derive(Clone)]
+pub(crate) struct Dependency {
+    pub(crate) path: PathBuf,
+    pub(crate) manifest: Manifest,
+}
+
+impl Dependency {
+    pub(crate) fn find_all() -> Vec<Dependency> {
+        std::env::vars_os()
+            .map(|(var, value)| (var.to_string_lossy().to_string(), value))
+            .filter(|(var, _)| var.starts_with("DEP_") && var.ends_with("_CXX_QT_MANIFEST_PATH"))
+            .map(|(_, manifest_path)| {
+                let manifest_path = PathBuf::from(manifest_path);
+                let manifest: Manifest = serde_json::from_str(
+                    &std::fs::read_to_string(&manifest_path)
+                        .expect("Could not read dependency manifest file!"),
+                )
+                .expect("Could not deserialize dependency manifest file!");
+
+                println!(
+                    "cxx-qt-build: Discovered dependency `{}` at: {}",
+                    manifest.name,
+                    manifest_path.to_string_lossy()
+                );
+                Dependency {
+                    path: manifest_path.parent().unwrap().to_owned(),
+                    manifest,
+                }
+            })
+            .collect()
+    }
+}
+
+pub(crate) fn initializer_paths(
+    interface: Option<&Interface>,
+    dependencies: &[Dependency],
+) -> HashSet<PathBuf> {
+    dependencies
+        .iter()
+        .flat_map(|dep| dep.manifest.initializers.iter().cloned())
+        .chain(
+            interface
+                .iter()
+                .flat_map(|interface| interface.initializers.iter().cloned()),
+        )
+        .collect()
+}
+
+pub(crate) fn all_include_prefixes(
+    interface: &Interface,
+    dependencies: &[Dependency],
+) -> Vec<String> {
+    interface
+        .exported_include_prefixes
+        .iter()
+        .cloned()
+        .chain(
+            interface
+                .exported_include_directories
+                .iter()
+                .map(|(_path, prefix)| prefix.clone()),
+        )
+        .chain(
+            dependencies
+                .iter()
+                .flat_map(|dep| &dep.manifest.exported_include_prefixes)
+                .cloned(),
+        )
+        .collect()
+}
+
+pub(crate) fn reexported_dependencies(
+    interface: &Interface,
+    dependencies: &[Dependency],
+) -> Vec<Dependency> {
+    let mut exported_dependencies = Vec::new();
+    for link_name in &interface.reexport_links {
+        if let Some(dependency) = dependencies
+            .iter()
+            .find(|dep| &dep.manifest.link_name == link_name)
+        {
+            exported_dependencies.push(dependency.clone());
+        } else {
+            panic!("Could not find dependency with link name `{link_name}` to reexport!");
+        }
+    }
+    exported_dependencies
+}
+
+pub(crate) fn all_compile_definitions(
+    interface: Option<&Interface>,
+    dependencies: &[Dependency],
+) -> Vec<(String, Option<String>)> {
+    // For each definition, store the name of the crate that defines it so we can generate a
+    // nicer error message
+    let mut definitions: HashMap<String, (Option<String>, String)> = interface
+        .iter()
+        .flat_map(|interface| &interface.compile_definitions)
+        .map(|(key, value)| (key.clone(), (value.clone(), crate::crate_name())))
+        .collect();
+
+    for dependency in dependencies {
+        for (variable, value) in &dependency.manifest.defines {
+            use std::collections::hash_map::Entry::*;
+            let entry = definitions.entry(variable.to_owned());
+
+            match entry {
+                Vacant(entry) => {
+                    entry.insert((value.to_owned(), dependency.manifest.name.clone()));
+                }
+                Occupied(entry) => {
+                    let existing_value = &entry.get().0;
+                    if existing_value != value {
+                        panic!("Conflicting compiler definitions requested!\nCrate {existing} exports {variable}={existing_value:?}, and crate {conflicting} exports {variable}={value:?}",
+                            existing=entry.get().1,
+                            conflicting = dependency.manifest.name);
+                    }
+                    // else: Ignore Duplicate definition with the same value
+                }
+            }
+        }
+    }
+
+    definitions
+        .into_iter()
+        .map(|(key, (value, _crate_name))| (key, value))
+        .collect()
+}
