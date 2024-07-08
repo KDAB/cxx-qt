@@ -33,7 +33,6 @@ pub use qml_modules::QmlModule;
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::SemVer;
 use quote::ToTokens;
-use std::io::ErrorKind;
 use std::{
     collections::HashSet,
     env,
@@ -596,6 +595,8 @@ impl CxxQtBuilder {
         result
     }
 
+    // A dependency can specify which of its own include paths it wants to export.
+    // Set up each of these exported include paths as symlinks in our own include directory.
     fn include_dependency(&mut self, dependency: &Dependency) {
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
@@ -724,7 +725,8 @@ impl CxxQtBuilder {
         header_prefix: &str,
     ) {
         for qml_module in &self.qml_modules {
-            Self::clean_directory(dir::module_target(&qml_module.uri));
+            dir::clean(dir::module_target(&qml_module.uri))
+                .expect("Failed to clean qml module export directory!");
 
             let mut qml_metatypes_json = Vec::new();
 
@@ -863,18 +865,6 @@ impl CxxQtBuilder {
         }
     }
 
-    fn clean_directory(path: impl AsRef<Path>) {
-        let result = std::fs::remove_dir_all(&path);
-        if let Err(err) = result {
-            // If the path doesn't exist that's fine, otherwise we want to panic
-            if err.kind() != ErrorKind::NotFound {
-                panic!("Could not delete directory: {}", err);
-            }
-        }
-
-        std::fs::create_dir_all(path).expect("Failed to create directory");
-    }
-
     fn write_manifest(
         &self,
         dependencies: &[Dependency],
@@ -947,7 +937,7 @@ impl CxxQtBuilder {
         // TODO: Clean the directory before we start building
         // This is currently creating issues with cxx-qt-lib, as cxx-qt-lib is writing custom
         // headers currently
-        Self::clean_directory(dir::crate_target());
+        dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we
         // need further down the line
