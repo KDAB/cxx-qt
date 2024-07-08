@@ -28,6 +28,8 @@ TestCase {
         return [
             {
                 tag: "valid", source: "qrc:/images/red.png", status: Image.Ready,
+            },
+            {
                 tag: "invalid", source: "qrc:/images/invalid.png", status: Image.Error,
             }
         ]
