@@ -391,5 +391,11 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         let h_path = format!("{}/{file_name}", directory.display());
         let mut header = File::create(h_path).expect("Could not create cxx-qt header");
         write!(header, "{file_contents}").expect("Could not write cxx-qt header");
+        // On Windows, we're often experiencing issues with file synchronization, try forcing a
+        // synchronization here.
+        #[cfg(windows)]
+        header
+            .sync_all()
+            .expect("Failed to synchronize cxx-qt header file");
     }
 }

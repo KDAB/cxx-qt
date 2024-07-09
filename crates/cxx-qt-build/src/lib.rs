@@ -16,7 +16,8 @@ mod cfg_evaluator;
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
-pub mod dir;
+mod dir;
+mod out;
 
 mod dependencies;
 pub use dependencies::Interface;
@@ -244,7 +245,7 @@ fn generate_cxxqt_cpp_files(
 ) -> Vec<GeneratedCppFilePaths> {
     let cxx_qt_dir = dir::out().join("cxx-qt-gen");
     std::fs::create_dir_all(&cxx_qt_dir).expect("Failed to create cxx-qt-gen directory!");
-    std::fs::write(cxx_qt_dir.join("include-prefix.txt"), include_prefix).expect("");
+    out::write_file(cxx_qt_dir.join("include-prefix.txt"), include_prefix).expect("");
 
     let header_dir = header_dir.as_ref().join(include_prefix);
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
@@ -576,7 +577,7 @@ impl CxxQtBuilder {
         // Wrap the File in a block scope so the file is closed before the compiler is run.
         // Otherwise MSVC fails to open cxx.h because the process for this build script already has it open.
         {
-            std::fs::write(h_path, cxx_gen::HEADER).expect("Failed to write cxx.h");
+            out::write_file(h_path, cxx_gen::HEADER).expect("Failed to write cxx.h");
         }
     }
 
@@ -837,7 +838,7 @@ impl CxxQtBuilder {
         std::fs::create_dir_all(&initializers_path).expect("Failed to create initializers path!");
 
         let initializers_path = initializers_path.join(format!("{}.cpp", crate_name()));
-        std::fs::write(&initializers_path, self.generate_init_code(initializers))
+        out::write_file(&initializers_path, self.generate_init_code(initializers))
             .expect("Could not write initializers file");
         Self::build_object_file(
             init_builder,
@@ -895,7 +896,7 @@ impl CxxQtBuilder {
             let manifest_path = dir::crate_target().join("manifest.json");
             let manifest_json = serde_json::to_string_pretty(&manifest)
                 .expect("Failed to convert Manifest to JSON!");
-            std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
+            out::write_file(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
             println!(
                 "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
                 manifest_path.to_string_lossy()
