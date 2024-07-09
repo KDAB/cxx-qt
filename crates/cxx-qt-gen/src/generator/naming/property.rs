@@ -83,6 +83,7 @@ pub mod tests {
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,
+            flags: Default::default(),
         };
         QPropertyNames::from(&property)
     }
