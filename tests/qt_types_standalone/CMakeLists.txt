@@ -87,6 +87,10 @@ add_executable(${APP_NAME}
     cpp/qvector3d.h
     cpp/qvector4d.h
 )
+if(NOT USE_QT5)
+    target_sources(${APP_NAME} PRIVATE
+        cpp/qanystringview.h)
+endif()
 target_include_directories(${APP_NAME} PRIVATE cpp)
 
 target_link_libraries(${APP_NAME} PRIVATE
