@@ -88,12 +88,18 @@ if(BUILD_TESTING)
             NAME ${APP_TEST_NAME}
             COMMAND ${TEST_CMD}
         )
-
+        # Unfortunately due to the static linking in our CI on macOS we can't load the
+        # offscreen plugin, so just leave it at the default.
+        if (NOT APPLE)
+            set_tests_properties(${APP_TEST_NAME} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+        endif()
         # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
         set_tests_properties(
-            ${APP_NAME}_${TEST_NAME}_test PROPERTIES ENVIRONMENT_MODIFICATION
-                                                    "${RUNTIME_ENV}"
+            ${APP_NAME}_${TEST_NAME}_test
+            PROPERTIES
+            ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
         )
+
         if (COMMAND add_valgrind_test)
             add_valgrind_test(
                 ${APP_TEST_NAME} "${TEST_CMD}" ${CMAKE_CURRENT_BINARY_DIR}

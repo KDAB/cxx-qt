@@ -15,8 +15,19 @@ function(add_acceptance_tests TEST_NAME)
     set(CPP_TEST_NAME ${NAME_WITH_PREFIX}_cpp_tests)
     add_test(NAME ${CPP_TEST_NAME} COMMAND $<TARGET_FILE:${TARGET_NAME}>)
 
+    # Unfortunately due to the static linking in our CI we can't load the
+    # offscreen plugin, so just leave it at the default.
+    if (NOT APPLE)
+       set_tests_properties(
+          ${CPP_TEST_NAME}
+          PROPERTIES
+          ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+          )
+    endif()
     set_tests_properties(
-        ${CPP_TEST_NAME} PROPERTIES ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
+       ${CPP_TEST_NAME}
+       PROPERTIES
+       ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
     )
 
     if (NOT WIN32)
