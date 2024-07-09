@@ -15,11 +15,12 @@ import QtQuick.Window 2.12
 import com.kdab.cxx_qt.demo 1.0
 // ANCHOR_END: book_qml_import
 
-Window {
+ApplicationWindow {
     height: 480
     title: qsTr("Hello World")
     visible: true
     width: 640
+    color: palette.window
 
     MyObject {
         id: myObject
@@ -34,10 +35,12 @@ Window {
 
         Label {
             text: qsTr("Number: %1").arg(myObject.number)
+            color: palette.text
         }
 
         Label {
             text: qsTr("String: %1").arg(myObject.string)
+            color: palette.text
         }
 
         Button {
