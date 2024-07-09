@@ -69,6 +69,9 @@ fn write_headers() {
 }
 
 fn main() {
+    let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
+        .expect("Could not find Qt installation");
+
     write_headers();
 
     let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
@@ -201,6 +204,10 @@ fn main() {
         "core/qvector/qvector_u64",
     ];
 
+    if qtbuild.version().major > 5 {
+        rust_bridges.extend(["core/qanystringview"]);
+    }
+
     if qt_gui_enabled() {
         rust_bridges.extend([
             "core/qlist/qlist_qcolor",
@@ -268,6 +275,10 @@ fn main() {
         "core/qvariant/qvariant",
         "core/qvector/qvector",
     ];
+
+    if qtbuild.version().major > 5 {
+        cpp_files.extend(["core/qanystringview"]);
+    }
 
     if qt_gui_enabled() {
         cpp_files.extend([

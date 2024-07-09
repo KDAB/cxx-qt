@@ -6,7 +6,10 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    CxxQtBuilder::new()
+    let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
+        .expect("Could not find Qt installation");
+
+    let mut builder = CxxQtBuilder::new()
         .file("src/qbytearray.rs")
         .file("src/qcolor.rs")
         .file("src/qcoreapplication.rs")
@@ -45,6 +48,11 @@ fn main() {
         .file("src/qvector.rs")
         .file("src/qvector2d.rs")
         .file("src/qvector3d.rs")
-        .file("src/qvector4d.rs")
-        .build();
+        .file("src/qvector4d.rs");
+
+    if qtbuild.version().major > 5 {
+        builder = builder.file("src/qanystringview.rs");
+    }
+
+    builder.build();
 }

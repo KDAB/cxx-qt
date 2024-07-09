@@ -20,3 +20,4 @@ cxx-qt-lib = { workspace = true, features = ["full"] }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
+qt-build-utils.workspace = true
