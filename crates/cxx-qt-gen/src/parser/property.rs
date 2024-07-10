@@ -9,20 +9,20 @@ use syn::{
     parse::{Error, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    Attribute, Ident, Lit, Meta, MetaNameValue, Path, Result, Token, Type,
+    Attribute, Expr, Ident, Meta, MetaNameValue, Path, Result, Token, Type,
 };
 
 /// Enum type for optional flags in qproperty macro
 /// Can contain a string identifier of a custom getter, setter or notifier
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum QPropertyFlag {
-    Read(Option<String>),
-    Write(Option<String>),
-    Notify(Option<String>),
+    Read(Option<Ident>),
+    Write(Option<Ident>),
+    Notify(Option<Ident>),
 }
 
 impl QPropertyFlag {
-    fn from_string(identifier: Ident, value: Option<String>) -> Result<Self> {
+    fn from_ident(identifier: Ident, value: Option<Ident>) -> Result<Self> {
         return match identifier.to_string().as_str() {
             "read" => Ok(QPropertyFlag::Read(value)),
             "write" => Ok(QPropertyFlag::Write(value)),
@@ -36,10 +36,10 @@ impl QPropertyFlag {
 
     fn from_meta(meta_value: Meta) -> Result<Self> {
         match meta_value {
-            Meta::Path(path) => Ok(Self::from_string(parse_path_to_ident(&path), None)?),
+            Meta::Path(path) => Ok(Self::from_ident(parse_path_to_ident(&path), None)?),
             Meta::NameValue(name_value) => {
                 let kv_pair = parse_meta_name_value(&name_value)?;
-                Ok(Self::from_string(kv_pair.0, Some(kv_pair.1))?)
+                Ok(Self::from_ident(kv_pair.0, Some(kv_pair.1))?)
             }
             _ => Err(Error::new(
                 meta_value.span(),
@@ -63,29 +63,21 @@ fn parse_path_to_ident(path: &Path) -> Ident {
     path.segments[0].ident.clone()
 }
 
-fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, String)> {
+fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
     let ident = parse_path_to_ident(&name_value.path);
     let expr = &name_value.value;
-    let mut str_value: String = String::from("");
-    match expr {
-        syn::Expr::Lit(literal) => match &literal.lit {
-            Lit::Str(str_lit) => str_value = str_lit.value(),
-            _ => {
-                return Err(Error::new(
-                    expr.span(),
-                    "Expression must be a string literal",
-                ))
-            }
-        },
-        _ => {
-            return Err(Error::new(
-                expr.span(),
-                "Expression must be a string literal",
-            ))
-        }
+    let func_signature: Ident;
+
+    if let Expr::Path(path_expr) = expr {
+        func_signature = parse_path_to_ident(&path_expr.path);
+    } else {
+        return Err(Error::new(
+            expr.span(),
+            "Function signature must be an identifier",
+        ));
     }
 
-    return Ok((ident, str_value));
+    Ok((ident, func_signature))
 }
 
 impl ParsedQProperty {
@@ -120,6 +112,8 @@ impl ParsedQProperty {
             // TODO: later we'll need to parse setters and getters here
             // which are key-value, hence this not being parsed as a list
 
+            println!("{:?}", flag_set);
+
             Ok(Self {
                 ident,
                 ty,
@@ -135,6 +129,16 @@ mod tests {
 
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
+
+    #[test]
+    fn test_debug_structs() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, read = my_getter, write, notify = my_notifier)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        println!("{:?}", property.flags)
+    }
 
     #[test]
     fn test_parse_property() {
@@ -176,7 +180,7 @@ mod tests {
     #[test]
     fn test_parse_kwargs() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = "blah", write, notify = "blahblah")]
+            #[qproperty(T, name, read = blah, write, notify = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -184,27 +188,17 @@ mod tests {
         assert_eq!(property.ty, parse_quote! { T });
         assert!(property
             .flags
-            .contains(&QPropertyFlag::Read(Some(String::from("blah")))));
+            .contains(&QPropertyFlag::Read(Some(format_ident!("blah")))));
         assert!(property.flags.contains(&QPropertyFlag::Write(None)));
         assert!(property
             .flags
-            .contains(&QPropertyFlag::Notify(Some(String::from("blahblah")))));
+            .contains(&QPropertyFlag::Notify(Some(format_ident!("blahblah")))));
     }
 
     #[test]
     fn test_parse_invalid_flag() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = "blah", a, notify = "blahblah")]
-            struct MyStruct;
-        };
-        let property = ParsedQProperty::parse(input.attrs.remove(0));
-        assert!(property.is_err())
-    }
-
-    #[test]
-    fn test_parse_invalid_flag_value() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = blah, write, notify = "blahblah")]
+            #[qproperty(T, name, read = blah, a, notify = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -214,13 +208,13 @@ mod tests {
     #[test]
     fn test_parse_missing_flags() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, notify = "blahblah")]
+            #[qproperty(T, name, notify = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
         assert!(property
             .flags
-            .contains(&QPropertyFlag::Notify(Some(String::from("blahblah")))))
+            .contains(&QPropertyFlag::Notify(Some(format_ident!("blahblah")))))
     }
 
     #[test]
