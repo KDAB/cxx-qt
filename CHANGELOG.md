@@ -38,10 +38,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[qobject]` attribute is now optional on types in `extern "RustQt"`
 - `#[qobject]` attribute is now required on types in `extern "C++Qt"`
 - `#[qenum]`s now resolve their namespace independently from their associated QObject
+- Reworked cxx-qt-build and the integration with CMake
+  - Dependencies are now automatically detected and configured by cxx-qt-build
+  - Libraries can pass build information to cxx-qt-build in the form of a `cxx_qt_build::Interface`
+  - Add CMake wrappers around corrosion to simplify importing crates and qml modules that were built with cxx-qt-build
 
 ### Removed
 
 - `qt_gui` and `qt_qml` features from `cxx-qt-build` they are only used in `cxx-qt-lib(-headers)` now
+- `cxx-qt-lib-headers` and `cxx-qt-lib-extras-headers` are now merged into their respective base crates
+- `BuildOpts` are replaced by the `Interface` type which does not need to be reiterated by downstream dependencies
 
 ## [0.6.1](https://github.com/KDAB/cxx-qt/compare/v0.6.0...v0.6.1) - 2024-04-19
 
