@@ -10,7 +10,7 @@ pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> C
     CppFragment::Pair {
         header: format!(
             "Q_SLOT void {ident_setter}({cxx_ty} const& value);",
-            ident_setter = idents.setter.cxx_unqualified(),
+            ident_setter = idents.setter.clone().expect("Setter was empty").cxx_unqualified(),
         ),
         source: formatdoc! {
             r#"
@@ -21,8 +21,8 @@ pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> C
                 {ident_setter_wrapper}(value);
             }}
             "#,
-            ident_setter = idents.setter.cxx_unqualified(),
-            ident_setter_wrapper = idents.setter_wrapper.cxx_unqualified(),
+            ident_setter = idents.setter.clone().expect("Setter was empty").cxx_unqualified(),
+            ident_setter_wrapper = idents.setter_wrapper.clone().expect("Setter was empty").cxx_unqualified(),
         },
     }
 }
@@ -32,6 +32,6 @@ pub fn generate_wrapper(idents: &QPropertyNames, cxx_ty: &str) -> CppFragment {
         // Note that we pass T not const T& to Rust so that it is by-value
         // https://github.com/KDAB/cxx-qt/issues/463
         "void {ident_setter_wrapper}({cxx_ty} value) noexcept;",
-        ident_setter_wrapper = idents.setter_wrapper.cxx_unqualified()
+        ident_setter_wrapper = idents.setter_wrapper.clone().expect("Setter was empty").cxx_unqualified()
     ))
 }

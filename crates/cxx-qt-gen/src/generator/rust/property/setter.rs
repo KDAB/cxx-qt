@@ -21,8 +21,9 @@ pub fn generate(
     type_names: &TypeNames,
 ) -> Result<RustFragmentPair> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
-    let setter_wrapper_cpp = idents.setter_wrapper.cxx_unqualified();
-    let setter_rust = &idents.setter.rust_unqualified();
+    let setter_wrapper_cpp = idents.setter_wrapper.clone().expect("Setter was empty").cxx_unqualified();
+    let setter_binding = idents.setter.clone().expect("Setter was empty");
+    let setter_rust = setter_binding.rust_unqualified();
     let ident = &idents.name.rust_unqualified();
     let ident_str = ident.to_string();
     let notify_ident = &idents.notify.rust_unqualified();

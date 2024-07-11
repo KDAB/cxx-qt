@@ -8,9 +8,12 @@ use crate::generator::{
     naming::{property::QPropertyNames, qobject::QObjectNames},
 };
 use crate::{
-    naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
+    naming::cpp::syn_type_to_cpp_type,
+    naming::TypeNames,
+    parser::property::{ParsedQProperty, QPropertyFlag},
 };
-use syn::Result;
+use std::collections::HashSet;
+use syn::{Error, Result};
 
 mod getter;
 mod meta;
@@ -27,24 +30,48 @@ pub fn generate_cpp_properties(
     let qobject_ident = qobject_idents.name.cxx_unqualified();
 
     for property in properties {
-        // Cache the idents as they are used in multiple places
+
+        // Cache the idents and flags as they are used in multiple places
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
+
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .private_methods
-            .push(getter::generate_wrapper(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .private_methods
-            .push(setter::generate_wrapper(&idents, &cxx_ty));
-        signals.push(signal::generate(&idents, qobject_idents));
+
+        let mut includes_read = false; // If the HashSet includes entries read must be specified otherwise it is an error
+
+        for flag in &property.flags {
+            match flag {
+                QPropertyFlag::Write(ref signature) => {
+                    // Gen setters
+                    generated
+                        .methods
+                        .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+                    generated
+                        .private_methods
+                        .push(setter::generate_wrapper(&idents, &cxx_ty));
+                }
+                QPropertyFlag::Read(ref signature) => {
+                    includes_read = true;
+                    // Gen Getters
+                    generated
+                        .methods
+                        .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+                    generated
+                        .private_methods
+                        .push(getter::generate_wrapper(&idents, &cxx_ty));
+                }
+                QPropertyFlag::Notify(ref signature) => {
+                    // Gen signal
+                    signals.push(signal::generate(&idents, qobject_idents));
+                }
+            }
+        }
+
+        if !includes_read {
+            // TODO: Change to throwing an error, but no syn types present in this function
+            panic!("If flags are specified, read cannot be inferred and so must be specified")
+        }
     }
 
     generated.append(&mut generate_cpp_signals(
@@ -65,7 +92,27 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
-    use syn::parse_quote;
+    use syn::{parse_quote, ItemStruct};
+
+    #[test]
+    fn test_optional_write() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, read)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        let mut type_names = TypeNames::mock();
+        type_names.mock_insert("i32", None, None, None);
+        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+
+        println!("generated code: \n{:?}", generated.metaobjects);
+        println!("generated methods: \n{:?}", generated.methods);
+    }
 
     #[test]
     fn test_generate_cpp_properties() {
@@ -81,6 +128,7 @@ mod tests {
                 flags: Default::default(),
             },
         ];
+
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();

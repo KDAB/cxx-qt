@@ -87,38 +87,42 @@ impl ParsedQProperty {
             let _comma = input.parse::<Token![,]>()?;
             let ident = input.parse()?;
 
+            let mut flag_set = HashSet::new();
+
             if input.is_empty() {
-                // No flags so return with empty HashSet
+                flag_set.insert(QPropertyFlag::Read(None));
+                flag_set.insert(QPropertyFlag::Write(None));
+                flag_set.insert(QPropertyFlag::Notify(None));
+                
+                // No flags so fill with default options
                 return Ok(Self {
                     ident,
                     ty,
-                    flags: Default::default(),
+                    flags: flag_set,
                 });
             }
 
-            let _comma = input.parse::<Token![,]>()?; // Start of final identifiers
-
-            let punctuated_flags: Punctuated<Meta, Token![,]> =
-                Punctuated::parse_terminated(input)?;
-
-            let flags: Vec<Meta> = punctuated_flags.into_iter().collect(); // Removes the commas while collecting into Vec
-
-            let mut flag_set: HashSet<QPropertyFlag> = HashSet::new();
-
-            for flag in flags {
-                flag_set.insert(QPropertyFlag::from_meta(flag)?);
+            else {
+                let _comma = input.parse::<Token![,]>()?; // Start of final identifiers
+    
+                let punctuated_flags: Punctuated<Meta, Token![,]> =
+                    Punctuated::parse_terminated(input)?;
+    
+                let flags: Vec<Meta> = punctuated_flags.into_iter().collect(); // Removes the commas while collecting into Vec
+    
+                let mut flag_set: HashSet<QPropertyFlag> = HashSet::new();
+    
+                for flag in flags {
+                    flag_set.insert(QPropertyFlag::from_meta(flag)?);
+                }
+    
+                Ok(Self {
+                    ident,
+                    ty,
+                    flags: flag_set,
+                })
             }
 
-            // TODO: later we'll need to parse setters and getters here
-            // which are key-value, hence this not being parsed as a list
-
-            println!("{:?}", flag_set);
-
-            Ok(Self {
-                ident,
-                ty,
-                flags: flag_set,
-            })
         })
     }
 }
@@ -129,16 +133,6 @@ mod tests {
 
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
-
-    #[test]
-    fn test_debug_structs() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = my_getter, write, notify = my_notifier)]
-            struct MyStruct;
-        };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
-        println!("{:?}", property.flags)
-    }
 
     #[test]
     fn test_parse_property() {
