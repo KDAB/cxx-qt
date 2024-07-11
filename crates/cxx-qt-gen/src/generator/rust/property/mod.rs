@@ -70,6 +70,7 @@ mod tests {
     use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use quote::format_ident;
     use syn::parse_quote;
+    use crate::parser::property::QPropertyFlags;
 
     #[test]
     fn test_generate_rust_properties() {
@@ -77,17 +78,17 @@ mod tests {
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
                 ty: parse_quote! { i32 },
-                flags: Default::default(),
+                flags: QPropertyFlags::new(),
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: parse_quote! { UniquePtr<QColor> },
-                flags: Default::default(),
+                flags: QPropertyFlags::new(),
             },
             ParsedQProperty {
                 ident: format_ident!("unsafe_property"),
                 ty: parse_quote! { *mut T },
-                flags: Default::default(),
+                flags: QPropertyFlags::new(),
             },
         ];
         let qobject_idents = create_qobjectname();

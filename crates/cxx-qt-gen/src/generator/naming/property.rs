@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
     naming::Name,
-    parser::property::{ParsedQProperty, QPropertyFlag},
+    parser::property::{ParsedQProperty, QPropertyFlags},
 };
 use convert_case::{Case, Casing};
 use quote::format_ident;
@@ -28,32 +28,32 @@ impl From<&ParsedQProperty> for QPropertyNames {
         let mut setter: Option<Name> = None;
         let mut notify: Option<Name> = None;
 
-        for flag in &property.flags {
-            match flag {
-                QPropertyFlag::Write(ref signature) => {
-                    // TODO: remove if let blocks (passing custom func should not change name of getter, only its contents)
-                    if let Some(ident) = signature {
-                        setter = Some(Name::new(ident.clone()))
-                    } else {
-                        setter = Some(setter_name_from_property(&property_name))
-                    }
-                }
-                QPropertyFlag::Read(ref signature) => {
-                    if let Some(ident) = signature {
-                        getter = Name::new(ident.clone())
-                    } else {
-                        getter = getter_name_from_property(&property_name)
-                    }
-                }
-                QPropertyFlag::Notify(ref signature) => {
-                    if let Some(ident) = signature {
-                        notify = Some(Name::new(ident.clone()))
-                    } else {
-                        notify = Some(notify_name_from_property(&property_name))
-                    }
-                }
-            }
-        }
+        // for flag in &property.flags {
+        //     match flag {
+        //         QPropertyFlag::Write(ref signature) => {
+        //             // TODO: remove if let blocks (passing custom func should not change name of getter, only its contents)
+        //             if let Some(ident) = signature {
+        //                 setter = Some(Name::new(ident.clone()))
+        //             } else {
+        //                 setter = Some(setter_name_from_property(&property_name))
+        //             }
+        //         }
+        //         QPropertyFlag::Read(ref signature) => {
+        //             if let Some(ident) = signature {
+        //                 getter = Name::new(ident.clone())
+        //             } else {
+        //                 getter = getter_name_from_property(&property_name)
+        //             }
+        //         }
+        //         QPropertyFlag::Notify(ref signature) => {
+        //             if let Some(ident) = signature {
+        //                 notify = Some(Name::new(ident.clone()))
+        //             } else {
+        //                 notify = Some(notify_name_from_property(&property_name))
+        //             }
+        //         }
+        //     }
+        // }
         let setter_wrapper: Option<Name>;
         if let Some(name) = &setter {
             setter_wrapper = Some(wrapper_name_from_function_name(name));
@@ -122,7 +122,7 @@ pub mod tests {
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,
-            flags: Default::default(),
+            flags: QPropertyFlags::new(),
         };
         QPropertyNames::from(&property) // Doesn't account for emtpy flags, maybe change this to the quote macro
     }

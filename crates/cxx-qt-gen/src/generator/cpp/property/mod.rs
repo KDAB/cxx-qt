@@ -10,7 +10,7 @@ use crate::generator::{
 use crate::{
     naming::cpp::syn_type_to_cpp_type,
     naming::TypeNames,
-    parser::property::{ParsedQProperty, QPropertyFlag},
+    parser::property::{ParsedQProperty, QPropertyFlags},
 };
 use syn::{Error, Result};
 
@@ -37,33 +37,33 @@ pub fn generate_cpp_properties(
 
         let mut includes_read = false; // If the HashSet includes entries read must be specified otherwise it is an error
 
-        for flag in property.flags.iter() {
-            match flag {
-                QPropertyFlag::Read(_) => {
-                    includes_read = true;
-                    // Gen Getters
-                    generated
-                        .methods
-                        .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-                    generated
-                        .private_methods
-                        .push(getter::generate_wrapper(&idents, &cxx_ty));
-                }
-                QPropertyFlag::Write(_) => {
-                    // Gen setters
-                    generated
-                        .methods
-                        .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-                    generated
-                        .private_methods
-                        .push(setter::generate_wrapper(&idents, &cxx_ty));
-                }
-                QPropertyFlag::Notify(_) => {
-                    // Gen signal
-                    signals.push(signal::generate(&idents, qobject_idents));
-                }
-            }
-        }
+        // for flag in property.flags.iter() {
+        //     match flag {
+        //         QPropertyFlag::Read(_) => {
+        //             includes_read = true;
+        //             // Gen Getters
+        //             generated
+        //                 .methods
+        //                 .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+        //             generated
+        //                 .private_methods
+        //                 .push(getter::generate_wrapper(&idents, &cxx_ty));
+        //         }
+        //         QPropertyFlag::Write(_) => {
+        //             // Gen setters
+        //             generated
+        //                 .methods
+        //                 .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+        //             generated
+        //                 .private_methods
+        //                 .push(setter::generate_wrapper(&idents, &cxx_ty));
+        //         }
+        //         QPropertyFlag::Notify(_) => {
+        //             // Gen signal
+        //             signals.push(signal::generate(&idents, qobject_idents));
+        //         }
+        //     }
+        // }
 
         if !includes_read {
             return Err(Error::new(
@@ -425,7 +425,7 @@ mod tests {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
             ty: parse_quote! { A },
-            flags: Default::default(),
+            flags: QPropertyFlags::new(),
         }];
         let qobject_idents = create_qobjectname();
 
