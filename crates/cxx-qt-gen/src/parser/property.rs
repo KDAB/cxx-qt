@@ -93,36 +93,33 @@ impl ParsedQProperty {
                 flag_set.insert(QPropertyFlag::Read(None));
                 flag_set.insert(QPropertyFlag::Write(None));
                 flag_set.insert(QPropertyFlag::Notify(None));
-                
+
                 // No flags so fill with default options
-                return Ok(Self {
+                Ok(Self {
                     ident,
                     ty,
                     flags: flag_set,
-                });
-            }
-
-            else {
+                })
+            } else {
                 let _comma = input.parse::<Token![,]>()?; // Start of final identifiers
-    
+
                 let punctuated_flags: Punctuated<Meta, Token![,]> =
                     Punctuated::parse_terminated(input)?;
-    
+
                 let flags: Vec<Meta> = punctuated_flags.into_iter().collect(); // Removes the commas while collecting into Vec
-    
+
                 let mut flag_set: HashSet<QPropertyFlag> = HashSet::new();
-    
+
                 for flag in flags {
                     flag_set.insert(QPropertyFlag::from_meta(flag)?);
                 }
-    
+
                 Ok(Self {
                     ident,
                     ty,
                     flags: flag_set,
                 })
             }
-
         })
     }
 }

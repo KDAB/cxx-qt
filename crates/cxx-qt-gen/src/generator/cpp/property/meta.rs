@@ -13,22 +13,16 @@ pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
         ident = idents.name.cxx_unqualified(),
         ident_getter = idents.getter.cxx_unqualified()
     );
-    // Write 
+    // Write
     if let Some(name) = &idents.setter {
         output += format!("WRITE {} ", name.cxx_unqualified()).as_str();
-    } 
+    }
     // Notify
-    output += format!("NOTIFY {}", idents.notify.cxx_unqualified()).as_str();
-     
+    if let Some(name) = &idents.notify {
+        output += format!("NOTIFY {} ", name.cxx_unqualified()).as_str();
+    }
 
-    // format!(
-    //     "Q_PROPERTY({ty} {ident} READ {ident_getter} WRITE {ident_setter} NOTIFY {ident_notify})",
-    //     ty = cxx_ty,
-    //     ident = idents.name.cxx_unqualified(),
-    //     ident_setter = ident_setter_value,
-    //     ident_getter = idents.getter.cxx_unqualified(),
-    //     ident_notify = idents.notify.cxx_unqualified()
-    // )
+    output += ")";
 
-    return output
+    output
 }

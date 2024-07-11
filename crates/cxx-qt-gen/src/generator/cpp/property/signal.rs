@@ -14,8 +14,9 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify_cpp = &idents.notify.cxx_unqualified();
-    let notify_rust = idents.notify.rust_unqualified();
+    let notify = &idents.notify.clone().expect("Notify was empty!");
+    let notify_cpp = notify.cxx_unqualified();
+    let notify_rust = notify.rust_unqualified();
     let method: ForeignItemFn = syn::parse_quote! {
         #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = #notify_cpp]
@@ -23,7 +24,7 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     };
     ParsedSignal::from_property_method(
         method,
-        idents.notify.clone(),
+        idents.notify.clone().expect("Notify was empty!"),
         qobject_idents.name.rust_unqualified().clone(),
     )
 }

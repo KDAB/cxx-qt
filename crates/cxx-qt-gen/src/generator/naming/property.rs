@@ -2,7 +2,10 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{naming::Name, parser::property::{ParsedQProperty, QPropertyFlag}};
+use crate::{
+    naming::Name,
+    parser::property::{ParsedQProperty, QPropertyFlag},
+};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
@@ -14,7 +17,7 @@ pub struct QPropertyNames {
     pub getter_wrapper: Name,
     pub setter: Option<Name>,
     pub setter_wrapper: Option<Name>,
-    pub notify: Name,
+    pub notify: Option<Name>,
 }
 
 impl From<&ParsedQProperty> for QPropertyNames {
@@ -23,41 +26,38 @@ impl From<&ParsedQProperty> for QPropertyNames {
 
         let mut getter: Name = Name::new(format_ident!("test_ident"));
         let mut setter: Option<Name> = None;
-        let mut notify: Name = Name::new(format_ident!("test_ident"));
+        let mut notify: Option<Name> = None;
 
         for flag in &property.flags {
             match flag {
-                QPropertyFlag::Write(ref signature) => { // TODO: remove if let blocks (passing custom func should not change name of getter, only its contents)
+                QPropertyFlag::Write(ref signature) => {
+                    // TODO: remove if let blocks (passing custom func should not change name of getter, only its contents)
                     if let Some(ident) = signature {
                         setter = Some(Name::new(ident.clone()))
-                    }
-                    else {
+                    } else {
                         setter = Some(setter_name_from_property(&property_name))
                     }
-                },
+                }
                 QPropertyFlag::Read(ref signature) => {
                     if let Some(ident) = signature {
                         getter = Name::new(ident.clone())
-                    }
-                    else {
+                    } else {
                         getter = getter_name_from_property(&property_name)
                     }
-                },
+                }
                 QPropertyFlag::Notify(ref signature) => {
                     if let Some(ident) = signature {
-                        notify = Name::new(ident.clone())
+                        notify = Some(Name::new(ident.clone()))
+                    } else {
+                        notify = Some(notify_name_from_property(&property_name))
                     }
-                    else {
-                        notify = notify_name_from_property(&property_name)
-                    }
-                },
+                }
             }
         }
         let setter_wrapper: Option<Name>;
         if let Some(name) = &setter {
-            setter_wrapper = Some(wrapper_name_from_function_name(&name));
-        }
-        else {
+            setter_wrapper = Some(wrapper_name_from_function_name(name));
+        } else {
             setter_wrapper = None;
         }
 
@@ -137,14 +137,36 @@ pub mod tests {
             names.getter.rust_unqualified(),
             &format_ident!("my_property")
         );
-        assert_eq!(names.setter.clone().expect("Setter was empty").cxx_unqualified(), "setMyProperty");
         assert_eq!(
-            names.setter.clone().expect("Setter was empty").rust_unqualified(),
+            names
+                .setter
+                .clone()
+                .expect("Setter was empty")
+                .cxx_unqualified(),
+            "setMyProperty"
+        );
+        assert_eq!(
+            names
+                .setter
+                .clone()
+                .expect("Setter was empty")
+                .rust_unqualified(),
             &format_ident!("set_my_property")
         );
-        assert_eq!(names.notify.cxx_unqualified(), "myPropertyChanged");
         assert_eq!(
-            names.notify.rust_unqualified(),
+            names
+                .notify
+                .clone()
+                .expect("Notify was empty")
+                .cxx_unqualified(),
+            "myPropertyChanged"
+        );
+        assert_eq!(
+            names
+                .notify
+                .clone()
+                .expect("Notify was empty")
+                .rust_unqualified(),
             &format_ident!("my_property_changed")
         );
     }

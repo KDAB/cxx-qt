@@ -12,8 +12,7 @@ use crate::{
     naming::TypeNames,
     parser::property::{ParsedQProperty, QPropertyFlag},
 };
-use std::collections::HashSet;
-use syn::{Error, Result};
+use syn::Result;
 
 mod getter;
 mod meta;
@@ -30,11 +29,9 @@ pub fn generate_cpp_properties(
     let qobject_ident = qobject_idents.name.cxx_unqualified();
 
     for property in properties {
-
         // Cache the idents and flags as they are used in multiple places
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
-
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
 
@@ -42,7 +39,7 @@ pub fn generate_cpp_properties(
 
         for flag in &property.flags {
             match flag {
-                QPropertyFlag::Write(ref signature) => {
+                QPropertyFlag::Write(_) => {
                     // Gen setters
                     generated
                         .methods
@@ -51,7 +48,7 @@ pub fn generate_cpp_properties(
                         .private_methods
                         .push(setter::generate_wrapper(&idents, &cxx_ty));
                 }
-                QPropertyFlag::Read(ref signature) => {
+                QPropertyFlag::Read(_) => {
                     includes_read = true;
                     // Gen Getters
                     generated
@@ -61,7 +58,7 @@ pub fn generate_cpp_properties(
                         .private_methods
                         .push(getter::generate_wrapper(&idents, &cxx_ty));
                 }
-                QPropertyFlag::Notify(ref signature) => {
+                QPropertyFlag::Notify(_) => {
                     // Gen signal
                     signals.push(signal::generate(&idents, qobject_idents));
                 }
@@ -97,7 +94,7 @@ mod tests {
     #[test]
     fn test_optional_write() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read)]
+            #[qproperty(i32, num, read, write, notify)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
