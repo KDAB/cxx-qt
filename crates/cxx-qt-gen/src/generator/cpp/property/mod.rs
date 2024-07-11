@@ -37,17 +37,8 @@ pub fn generate_cpp_properties(
 
         let mut includes_read = false; // If the HashSet includes entries read must be specified otherwise it is an error
 
-        for flag in &property.flags {
+        for flag in property.flags.iter() {
             match flag {
-                QPropertyFlag::Write(_) => {
-                    // Gen setters
-                    generated
-                        .methods
-                        .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-                    generated
-                        .private_methods
-                        .push(setter::generate_wrapper(&idents, &cxx_ty));
-                }
                 QPropertyFlag::Read(_) => {
                     includes_read = true;
                     // Gen Getters
@@ -57,6 +48,15 @@ pub fn generate_cpp_properties(
                     generated
                         .private_methods
                         .push(getter::generate_wrapper(&idents, &cxx_ty));
+                }
+                QPropertyFlag::Write(_) => {
+                    // Gen setters
+                    generated
+                        .methods
+                        .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
+                    generated
+                        .private_methods
+                        .push(setter::generate_wrapper(&idents, &cxx_ty));
                 }
                 QPropertyFlag::Notify(_) => {
                     // Gen signal
@@ -109,23 +109,37 @@ mod tests {
         type_names.mock_insert("i32", None, None, None);
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
 
-        println!("generated code: \n{:?}", generated.metaobjects);
-        println!("generated methods: \n{:?}", generated.methods);
+        println!("generated code: \n{:?}\n", generated.metaobjects);
+        println!("generated methods: \n{:?}\n\n", generated.methods);
     }
 
     #[test]
     fn test_generate_cpp_properties() {
+        // let properties = vec![
+        //     ParsedQProperty {
+        //         ident: format_ident!("trivial_property"),
+        //         ty: parse_quote! { i32 },
+        //         flags: Default::default(),
+        //     },
+        //     ParsedQProperty {
+        //         ident: format_ident!("opaque_property"),
+        //         ty: parse_quote! { UniquePtr<QColor> },
+        //         flags: Default::default(),
+        //     },
+        // ];
+        let mut input1: ItemStruct = parse_quote! {
+            #[qproperty(i32, trivial_property, read, write, notify)]
+            struct MyStruct;
+        };
+
+        let mut input2: ItemStruct = parse_quote! {
+            #[qproperty(UniquePtr<QColor>, opaque_property)]
+            struct MyStruct;
+        };
+
         let properties = vec![
-            ParsedQProperty {
-                ident: format_ident!("trivial_property"),
-                ty: parse_quote! { i32 },
-                flags: Default::default(),
-            },
-            ParsedQProperty {
-                ident: format_ident!("opaque_property"),
-                ty: parse_quote! { UniquePtr<QColor> },
-                flags: Default::default(),
-            },
+            ParsedQProperty::parse(input1.attrs.remove(0)).unwrap(),
+            ParsedQProperty::parse(input2.attrs.remove(0)).unwrap(),
         ];
 
         let qobject_idents = create_qobjectname();
@@ -133,6 +147,8 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+
+        println!("\ngenerated meta: {:?}\n\ngenerated methods: {:?}\n\n", generated.metaobjects, generated.methods);
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -146,6 +162,7 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
+
         assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
         assert_str_eq!(
             source,
@@ -185,6 +202,7 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
+
         assert_str_eq!(
             header,
             "::std::unique_ptr<QColor> const& getOpaqueProperty() const;"

@@ -19,7 +19,7 @@ pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
     }
     // Notify
     if let Some(name) = &idents.notify {
-        output += format!("NOTIFY {} ", name.cxx_unqualified()).as_str();
+        output += format!("NOTIFY {}", name.cxx_unqualified()).as_str();
     }
 
     output += ")";
