@@ -29,8 +29,8 @@ if(NOT Qt6_FOUND)
 endif()
 
 set(CRATE qml_features)
-cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-cxxqt_import_qml_module(${CRATE}_qml
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
 

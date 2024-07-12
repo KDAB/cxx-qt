@@ -16,12 +16,12 @@ if(NOT Corrosion_FOUND)
     FetchContent_MakeAvailable(Corrosion)
 endif()
 
-function(cxxqt_import_crate)
+function(cxx_qt_import_crate)
   cmake_parse_arguments(IMPORT_CRATE "" "CXX_QT_EXPORT_DIR;QMAKE" "" ${ARGN})
 
-  corrosion_import_crate(IMPORTED_CRATES __cxxqt_imported_crates ${IMPORT_CRATE_UNPARSED_ARGUMENTS})
+  corrosion_import_crate(IMPORTED_CRATES __cxx_qt_imported_crates ${IMPORT_CRATE_UNPARSED_ARGUMENTS})
 
-  message(STATUS "CXX-Qt Found crate(s): ${__cxxqt_imported_crates}")
+  message(STATUS "CXX-Qt Found crate(s): ${__cxx_qt_imported_crates}")
 
   if (NOT DEFINED IMPORT_CRATE_CXX_QT_EXPORT_DIR)
     set(IMPORT_CRATE_CXX_QT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt/")
@@ -33,11 +33,11 @@ function(cxxqt_import_crate)
     if (NOT QMAKE STREQUAL "QMAKE-NOTFOUND")
       set(IMPORT_CRATE_QMAKE "${QMAKE}")
     else()
-      message(FATAL_ERROR "cxxqt_import_crate: QMAKE is not defined and could not be queried from the Qt::qmake target!\nPlease use the QMAKE argument to specify the path to the qmake executable or use find_package(Qt) before calling this function.")
+      message(FATAL_ERROR "cxx_qt_import_crate: QMAKE is not defined and could not be queried from the Qt::qmake target!\nPlease use the QMAKE argument to specify the path to the qmake executable or use find_package(Qt) before calling this function.")
     endif()
   endif()
 
-  foreach(CRATE ${__cxxqt_imported_crates})
+  foreach(CRATE ${__cxx_qt_imported_crates})
     corrosion_set_env_vars(${CRATE}
       "CXX_QT_EXPORT_DIR=${IMPORT_CRATE_CXX_QT_EXPORT_DIR}"
       "QMAKE=${IMPORT_CRATE_QMAKE}"
@@ -77,22 +77,22 @@ function(cxxqt_import_crate)
 endfunction()
 
 
-function(cxxqt_import_qml_module target)
+function(cxx_qt_import_qml_module target)
   cmake_parse_arguments(QML_MODULE "" "URI;SOURCE_CRATE" "" ${ARGN})
 
   if (NOT DEFINED QML_MODULE_URI)
-    message(FATAL_ERROR "cxxqt_import_qml_module: URI must be specified!")
+    message(FATAL_ERROR "cxx_qt_import_qml_module: URI must be specified!")
   endif()
 
   if (NOT DEFINED QML_MODULE_SOURCE_CRATE)
-    message(FATAL_ERROR "cxxqt_import_qml_module: SOURCE_CRATE must be specified!")
+    message(FATAL_ERROR "cxx_qt_import_qml_module: SOURCE_CRATE must be specified!")
   endif()
 
   get_target_property(QML_MODULE_EXPORT_DIR ${QML_MODULE_SOURCE_CRATE} CXX_QT_EXPORT_DIR)
   get_target_property(QML_MODULE_CRATE_TYPE ${QML_MODULE_SOURCE_CRATE} TYPE)
 
   if (${QML_MODULE_EXPORT_DIR} STREQUAL "QML_MODULE_EXPORT_DIR-NOTFOUND")
-    message(FATAL_ERROR "cxxqt_import_qml_module: SOURCE_CRATE must be a valid target that has been imported with cxxqt_import_crate!")
+    message(FATAL_ERROR "cxx_qt_import_qml_module: SOURCE_CRATE must be a valid target that has been imported with cxx_qt_import_crate!")
   endif()
 
   # Note: This needs to match the URI conversion in cxx-qt-build

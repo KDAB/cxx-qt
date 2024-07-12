@@ -43,10 +43,10 @@ endif()
 # ANCHOR: book_cmake_use_corrosion
 set(CRATE qml_minimal)
 # Corrosion (through CXX-Qt) creates a CMake target with the same name as the crate.
-cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 target_link_libraries(${CRATE} INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
 
-cxxqt_import_qml_module(${CRATE}_qml
+cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
 # ANCHOR_END: book_cmake_use_corrosion
