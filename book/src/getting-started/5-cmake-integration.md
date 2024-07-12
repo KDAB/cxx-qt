@@ -156,7 +156,8 @@ This provides you with a few wrappers around [Corrosion](https://github.com/corr
 This will create two new CMake targets:
 
 1. `qml_minimal` - The static library exported by our crate
-2. `qml_minimal_qml` - The QML Module exported by our crate
+2. `qml_minimal_qml_module` - The QML Module exported by our crate
+    - The `_qml_module` target will automatically link to the `qml_minimal` target, so linking to the `_qml_module` is sufficient for our executable target
 
 Finally, we can create the CMake executable target and link it to our crate:
 
