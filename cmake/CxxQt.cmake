@@ -17,16 +17,16 @@ if(NOT Corrosion_FOUND)
 endif()
 
 function(cxxqt_import_crate)
-  cmake_parse_arguments(IMPORT_CRATE "" "CXXQT_EXPORT_DIR;QMAKE" "" ${ARGN})
+  cmake_parse_arguments(IMPORT_CRATE "" "CXX_QT_EXPORT_DIR;QMAKE" "" ${ARGN})
 
   corrosion_import_crate(IMPORTED_CRATES __cxxqt_imported_crates ${IMPORT_CRATE_UNPARSED_ARGUMENTS})
 
   message(STATUS "CXX-Qt Found crate(s): ${__cxxqt_imported_crates}")
 
-  if (NOT DEFINED IMPORT_CRATE_CXXQT_EXPORT_DIR)
-    set(IMPORT_CRATE_CXXQT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt/")
+  if (NOT DEFINED IMPORT_CRATE_CXX_QT_EXPORT_DIR)
+    set(IMPORT_CRATE_CXX_QT_EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cxxqt/")
   endif()
-  message(VERBOSE "CXX-Qt EXPORT_DIR: ${IMPORT_CRATE_CXXQT_EXPORT_DIR}")
+  message(VERBOSE "CXX-Qt EXPORT_DIR: ${IMPORT_CRATE_CXX_QT_EXPORT_DIR}")
 
   if (NOT DEFINED IMPORT_CRATE_QMAKE)
     get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
@@ -39,21 +39,21 @@ function(cxxqt_import_crate)
 
   foreach(CRATE ${__cxxqt_imported_crates})
     corrosion_set_env_vars(${CRATE}
-      "CXXQT_EXPORT_DIR=${IMPORT_CRATE_CXXQT_EXPORT_DIR}"
+      "CXX_QT_EXPORT_DIR=${IMPORT_CRATE_CXX_QT_EXPORT_DIR}"
       "QMAKE=${IMPORT_CRATE_QMAKE}"
       $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>)
 
-    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/include/")
-    target_include_directories(${CRATE} INTERFACE "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/include/")
+    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}/crates/${CRATE}/include/")
+    target_include_directories(${CRATE} INTERFACE "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}/crates/${CRATE}/include/")
 
     set_target_properties(${CRATE}
       PROPERTIES
-      CXXQT_EXPORT_DIR "${IMPORT_CRATE_CXXQT_EXPORT_DIR}")
+      CXX_QT_EXPORT_DIR "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}")
 
     # cxx-qt-build generates object files that need to be linked to the final target.
     # These are the static initializers that would be removed as an optimization if they're not referenced.
     # So add them to an object library instead.
-    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/")
+    file(MAKE_DIRECTORY "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}/crates/${CRATE}/")
     # When using the Ninja generator, we need to provide **some** way to generate the object file
     # Unfortunately I'm not able to tell corrosion that this obj file is indeed a byproduct, so
     # create a fake target for it.
@@ -61,12 +61,12 @@ function(cxxqt_import_crate)
     add_custom_target(${CRATE}_mock_initializers
       COMMAND ${CMAKE_COMMAND} -E true
       DEPENDS ${CRATE}
-      BYPRODUCTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
+      BYPRODUCTS "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
 
     add_library(${CRATE}_initializers OBJECT IMPORTED)
     set_target_properties(${CRATE}_initializers
       PROPERTIES
-      IMPORTED_OBJECTS "${IMPORT_CRATE_CXXQT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
+      IMPORTED_OBJECTS "${IMPORT_CRATE_CXX_QT_EXPORT_DIR}/crates/${CRATE}/initializers.o")
     # Note that we need to link using TARGET_OBJECTS, so that the object files are included **transitively**, otherwise
     # Only the linker flags from the object library would be included, but not the actual object files.
     # See also the "Linking Object Libraries" and "Linking Object Libraries via $<TARGET_OBJECTS>" sections:
@@ -88,7 +88,7 @@ function(cxxqt_import_qml_module target)
     message(FATAL_ERROR "cxxqt_import_qml_module: SOURCE_CRATE must be specified!")
   endif()
 
-  get_target_property(QML_MODULE_EXPORT_DIR ${QML_MODULE_SOURCE_CRATE} CXXQT_EXPORT_DIR)
+  get_target_property(QML_MODULE_EXPORT_DIR ${QML_MODULE_SOURCE_CRATE} CXX_QT_EXPORT_DIR)
   get_target_property(QML_MODULE_CRATE_TYPE ${QML_MODULE_SOURCE_CRATE} TYPE)
 
   if (${QML_MODULE_EXPORT_DIR} STREQUAL "QML_MODULE_EXPORT_DIR-NOTFOUND")

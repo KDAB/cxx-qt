@@ -61,7 +61,7 @@ pub(crate) fn target() -> PathBuf {
 /// The export directory, if one was specified through the environment.
 /// Note that this is not namspaced by crate.
 pub(crate) fn export() -> Option<PathBuf> {
-    env::var("CXXQT_EXPORT_DIR").ok().map(PathBuf::from)
+    env::var("CXX_QT_EXPORT_DIR").ok().map(PathBuf::from)
 }
 
 /// The include directory is namespaced by crate name when exporting for a C++ build system,
