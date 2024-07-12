@@ -24,5 +24,4 @@ syn.workspace = true
 
 [dev-dependencies]
 cxx.workspace = true
-cxx-qt-lib.workspace = true
 cxx-qt.workspace = true
