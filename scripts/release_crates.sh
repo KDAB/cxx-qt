@@ -64,8 +64,5 @@ release_crate "cxx-qt-build"
 # Requires cxx-qt, cxx-qt-build
 release_crate "cxx-qt-lib"
 
-# Requires cxx-qt-build
-release_crate "cxx-qt-lib-extras-headers"
-
-# Requires cxx-qt, cxx-qt-build, cxx-qt-lib, cxx-qt-lib-extras-headers
+# Requires cxx-qt, cxx-qt-build, and cxx-qt-lib
 release_crate "cxx-qt-lib-extras"
