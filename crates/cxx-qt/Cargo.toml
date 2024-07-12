@@ -28,4 +28,3 @@ qt-build-utils.workspace = true
 
 [dev-dependencies]
 cxx.workspace = true
-cxx-qt-lib.workspace = true
