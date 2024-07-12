@@ -45,23 +45,26 @@ pub(crate) fn target() -> PathBuf {
         return export;
     }
 
-    // The CARGO_TARGET_DIR is only set by users that want to configure cargo.
-    // So it's unlikely that it is indeed set.
-    // However, if it is, it's the easiest way to get the target dir.
-    let cargo_target_dir = env::var("CARGO_TARGET_DIR").ok().map(PathBuf::from);
-    if let Some(cargo_target_dir) = cargo_target_dir {
-        if cargo_target_dir.exists() && cargo_target_dir.is_absolute() {
-            return cargo_target_dir.join("cxxqtbridge");
-        }
-    }
-
-    scratch::path("cxxqtbridge")
+    out().join("cxx-qt-build").join("target")
 }
 
 /// The export directory, if one was specified through the environment.
 /// Note that this is not namspaced by crate.
 pub(crate) fn export() -> Option<PathBuf> {
-    env::var("CXX_QT_EXPORT_DIR").ok().map(PathBuf::from)
+    // Make sure to synchronize the naming of these variables with CMake!
+    let export_flag = format!("CXX_QT_EXPORT_CRATE_{}", crate_name());
+    // We only want to export this crate if it is the specific crate that CMake is looking for and
+    // not any of that crates dependencies.
+    // This should avoid issues where multiple configurations of the same crate are being built in
+    // parallel by Cargo.
+    // CMake should usually only have a single configuration in the same build directory (and therefore
+    // export directory) so there should never be more than one configuration writing to that same
+    // export directory.
+    if env::var(export_flag).is_ok() {
+        env::var("CXX_QT_EXPORT_DIR").ok().map(PathBuf::from)
+    } else {
+        None
+    }
 }
 
 /// The include directory is namespaced by crate name when exporting for a C++ build system,

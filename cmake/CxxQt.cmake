@@ -39,7 +39,10 @@ function(cxx_qt_import_crate)
 
   foreach(CRATE ${__cxx_qt_imported_crates})
     corrosion_set_env_vars(${CRATE}
+      # Tell cxx-qt-build where to export the data
       "CXX_QT_EXPORT_DIR=${IMPORT_CRATE_CXX_QT_EXPORT_DIR}"
+      # Tell cxx-qt-build which crate to export
+      "CXX_QT_EXPORT_CRATE_${CRATE}=1"
       "QMAKE=${IMPORT_CRATE_QMAKE}"
       $<$<BOOL:${CMAKE_RUSTC_WRAPPER}>:RUSTC_WRAPPER=${CMAKE_RUSTC_WRAPPER}>)
 
