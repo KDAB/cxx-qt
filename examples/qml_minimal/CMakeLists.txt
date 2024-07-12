@@ -36,11 +36,11 @@ endif()
 # TODO: This has been removed, document it
 # ANCHOR_END: book_cmake_find_qmake
 
-# ANCHOR: book_cmake_find_corrosion
+# ANCHOR: book_cmake_find_cxx_qt
 # TODO: Replace with fetch-content co cxx-qt-cmake
-# ANCHOR_END: book_cmake_find_corrosion
+# ANCHOR_END: book_cmake_find_cxx_qt
 
-# ANCHOR: book_cmake_use_corrosion
+# ANCHOR: book_cmake_use_cxx_qt
 set(CRATE qml_minimal)
 # Corrosion (through CXX-Qt) creates a CMake target with the same name as the crate.
 cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
@@ -49,7 +49,7 @@ target_link_libraries(${CRATE} INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickContr
 cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
-# ANCHOR_END: book_cmake_use_corrosion
+# ANCHOR_END: book_cmake_use_cxx_qt
 
 # ANCHOR: book_cmake_executable
 # Define the executable with the C++ source

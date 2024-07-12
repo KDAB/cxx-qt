@@ -33,7 +33,7 @@ function(cxx_qt_import_crate)
     if (NOT QMAKE STREQUAL "QMAKE-NOTFOUND")
       set(IMPORT_CRATE_QMAKE "${QMAKE}")
     else()
-      message(FATAL_ERROR "cxx_qt_import_crate: QMAKE is not defined and could not be queried from the Qt::qmake target!\nPlease use the QMAKE argument to specify the path to the qmake executable or use find_package(Qt) before calling this function.")
+      message(FATAL_ERROR "cxx_qt_import_crate: QMAKE is not defined and could not be queried from the Qt::qmake target!\nPlease use the QMAKE argument to specify the path to the qmake executable or use find_package(Qt) before calling cxx_qt_import_crate.")
     endif()
   endif()
 

@@ -10,8 +10,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 As with all things Rust, we'll want to create a cargo project, run the following command inside the `tutorial` folder to initialize the Rust part of the project.
 
 ```shell
-$ cargo new cxx-qt-tutorial
-$ cd cxx-qt-tutorial
+$ cargo new qml_minimal
+$ cd qml_minimal
 ```
 
 > If you want to skip building with Cargo and try building with CMake directly

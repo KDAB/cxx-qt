@@ -37,20 +37,20 @@ You can add as much C++ code as you want in addition to this.
 ## Using Rust QObjects in C++
 
 For every `#[cxx_qt::bridge]` that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
-They will always be in the `cxx-qt-gen/` include path and use the snake_case naming convention.
+To include any of the generated files, use the crates name as the include directory.
 The name of the header file will be the name of the Rust module of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
-So in our case: `#include cxx-qt-gen/qobject.cxxqt.h`
+So in our case: `#include <qml_minimal/qobject.cxxqt.h>`
 
 > Note that the [`cxx_file_stem`](../bridge/index.md#cxx_file_stem) option can be specified in the bridge macro to choose the file name.
 
-Including the generated header allows accessing the `MyObject` C++ class, just like any other C++ class.
+Including the generated header allows us to access the `MyObject` C++ class, just like any other C++ class.
 Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
 That's the power of CXX-Qt.
 
 ## Cargo setup
 
 Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
-If you've generated your project with the `cargo new --lib` or `cargo init --lib [folder]` command, your `Cargo.toml` should look something like this:
+If you've generated your project with e.g. `cargo new --lib qml_minimal` or `cargo init --lib [folder]` command, your `Cargo.toml` should look something like this:
 
 ```toml,ignore
 [package]
@@ -107,7 +107,9 @@ The files and resources in the module are then exposed in the same way as the [q
 
 > Note that in order for CXX-Qt to work, the `qmake` executable must be located. This is because CXX-Qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
 >
-> This will be done in the `CMakeLists.txt` file by setting the `QMAKE` environment variable from CMake, ensuring that CMake and Cargo use the same Qt binaries.
+> Usually, the CMake code that CXX-Qt provides you to import a crate should already take care of this.
+>
+> To overwrite the path to qmake, you may pass the `QMAKE` option to cxx_qt_import_crate, ensuring that CMake and Cargo use the same Qt binaries.
 
 We'll also need to remove the `src/main.rs` and replace it with a `src/lib.rs` file.
 This file only needs to include a single line:
@@ -130,27 +132,33 @@ For this example, we are [supporting both Qt5 and Qt6 with CMake](https://doc.qt
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup}}
 ```
 
-Locate [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake.
-If Corrosion is not installed, automatically download it:
+Download CXX-Qts CMake code with FetchContent:
 
 ```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_corrosion}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt}}
 ```
 
-To ensure that cxx-qt-build uses the same version of Qt as your CMake targets, use the `Qt` CMake target to locate the qmake executable. Then, pass `qmake` executable path to `build.rs` with the environment variable `QMAKE` using `corrosion_set_env_vars`.
+This provides you with a few wrappers around [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake:
+
+1. `cxx_qt_import_crate` - A wrapper around [corrosion_import_crate](https://corrosion-rs.github.io/corrosion/usage.html). It supports the same arguments as corrosion_import_crate, with two new optional arguments:
+    - `CXX_QT_EXPORT_DIR` - Manually specify the path where CXX-Qt artifacts will be exported to.
+        - This is usually not necessary. However, if you're importing the same crate with different feature sets in the same CMake build configuration, you will need to specify seperate `CXX_QT_EXPORT_DIR`s to avoid multiple versions of the crate exporting to the same directory.
+    - `QMAKE` - Override the path to the QMAKE executable
+2. `cxx_qt_import_qml_module` - This function imports a QML modules as a new target. It requires the following arguments:
+    - TARGET_NAME - Specify the name of the CMake target that this function will create
+    - `URI` - The URI of the qml module to import - this needs to exactly match the URI in the `CxxQtBuilder::qml_module` call in your build script.
+    - `SOURCE_CRATE` The crate that exports the QML module (this crate must have been imported with `cxx_qt_import_crate`).
 
 ```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_qmake}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_use_cxx_qt}}
 ```
 
-Use Corrosion to create a CMake library target for the Rust library. CXX-Qt requires a few more steps beyond using
-a typical Rust library with Corrosion:
+This will create two new CMake targets:
 
-```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_use_corrosion}}
-```
+1. `qml_minimal` - The static library exported by our crate
+2. `qml_minimal_qml` - The QML Module exported by our crate
 
-Finally, create the CMake executable target and link it to the Rust library:
+Finally, we can create the CMake executable target and link it to our crate:
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_executable}}
@@ -189,7 +197,7 @@ This should now configure and compile our project.
 If this was successful, you can now run our little project.
 
 ```shell
-$ build/examples/qml_minimal/example_qml_minimal
+$ ./build/examples/qml_minimal/example_qml_minimal
 ```
 
 You should now see the two Labels that display the state of our `MyObject`, as well as the two buttons to call our two Rust functions.
