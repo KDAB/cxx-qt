@@ -43,7 +43,7 @@ impl QPropertyFlag {
             }
             _ => Err(Error::new(
                 meta_value.span(),
-                "Invalid syntax, flags must be specified as either `read` or `read = 'my_getter'`",
+                "Invalid syntax, flags must be specified as either `read` or `read = my_getter`",
             )),
         }
     }

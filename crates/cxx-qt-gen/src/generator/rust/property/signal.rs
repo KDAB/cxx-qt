@@ -14,7 +14,7 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify = &idents.notify.clone().expect("Notify was empty!");
+    let notify = &idents.notify.clone().expect("Notify was empty!"); //TODO: Throw error instead
     let notify_rust = notify.rust_unqualified();
     let notify_cpp_str = notify.cxx_unqualified();
     let method: ForeignItemFn = syn::parse_quote! {
@@ -24,7 +24,7 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     };
     ParsedSignal::from_property_method(
         method,
-        idents.notify.clone().expect("Notify was empty"),
+        notify.clone(),
         qobject_idents.name.rust_unqualified().clone(),
     )
 }

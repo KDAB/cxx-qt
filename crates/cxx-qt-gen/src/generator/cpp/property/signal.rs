@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::ForeignItemFn;
+use syn::{spanned::Spanned, Error, ForeignItemFn};
 
 use crate::{
     generator::naming::{property::QPropertyNames, qobject::QObjectNames},
@@ -14,9 +14,15 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Parse
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify = &idents.notify.clone().expect("Notify was empty!");
-    let notify_cpp = notify.cxx_unqualified();
-    let notify_rust = notify.rust_unqualified();
+    let notify_binding = &idents.notify.clone().expect("Notify was empty!");
+    // TODO: modify the func to return result
+    // let notify_binding = match &idents.notify {
+    //     Some(notify) => notift,
+    //     _ => return Err(Error::new(cxx_ty.span(), "Property did not include a notify field"))
+    // };
+
+    let notify_cpp = notify_binding.cxx_unqualified();
+    let notify_rust = notify_binding.rust_unqualified();
     let method: ForeignItemFn = syn::parse_quote! {
         #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = #notify_cpp]

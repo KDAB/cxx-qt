@@ -12,7 +12,7 @@ use crate::{
     naming::TypeNames,
     parser::property::{ParsedQProperty, QPropertyFlag},
 };
-use syn::Result;
+use syn::{Error, Result};
 
 mod getter;
 mod meta;
@@ -66,8 +66,10 @@ pub fn generate_cpp_properties(
         }
 
         if !includes_read {
-            // TODO: Change to throwing an error, but no syn types present in this function
-            panic!("If flags are specified, read cannot be inferred and so must be specified")
+            return Err(Error::new(
+                property.ident.span(),
+                "If other flags are specified, read must also be specified",
+            ));
         }
     }
 

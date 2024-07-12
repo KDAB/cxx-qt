@@ -24,7 +24,7 @@ impl From<&ParsedQProperty> for QPropertyNames {
     fn from(property: &ParsedQProperty) -> Self {
         let property_name = property_name_from_rust_name(property.ident.clone());
 
-        let mut getter: Name = Name::new(format_ident!("test_ident"));
+        let mut getter: Name = getter_name_from_property(&property_name); //TODO: potentially declaring this twice, might be fixed when tackling other todo in this file
         let mut setter: Option<Name> = None;
         let mut notify: Option<Name> = None;
 
@@ -124,7 +124,7 @@ pub mod tests {
             ty,
             flags: Default::default(),
         };
-        QPropertyNames::from(&property)
+        QPropertyNames::from(&property) // Doesn't account for emtpy flags, maybe change this to the quote macro
     }
 
     #[test]

@@ -12,7 +12,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Result, Type};
+use syn::{spanned::Spanned, Error, Result, Type};
 
 pub fn generate(
     idents: &QPropertyNames,
@@ -21,17 +21,42 @@ pub fn generate(
     type_names: &TypeNames,
 ) -> Result<RustFragmentPair> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
-    let setter_wrapper_cpp = idents
-        .setter_wrapper
-        .clone()
-        .expect("Setter was empty")
-        .cxx_unqualified();
-    let setter_binding = idents.setter.clone().expect("Setter was empty");
+
+    let setter_wrapper_cpp = match &idents.setter_wrapper {
+        Some(wrapper) => wrapper.cxx_unqualified(),
+        _ => {
+            return Err(Error::new(
+                cxx_ty.span(),
+                "Property did not include a setter wrapper",
+            ))
+        }
+    };
+
+    let setter_binding = match &idents.setter {
+        Some(setter) => setter,
+        _ => {
+            return Err(Error::new(
+                cxx_ty.span(),
+                "Property did not include a setter",
+            ))
+        }
+    };
+
     let setter_rust = setter_binding.rust_unqualified();
     let ident = &idents.name.rust_unqualified();
     let ident_str = ident.to_string();
-    let notify = &idents.notify.clone().expect("Notify was empty!");
-    let notify_ident = notify.rust_unqualified();
+
+    let notify_binding = match &idents.notify {
+        Some(notify) => notify,
+        _ => {
+            return Err(Error::new(
+                cxx_ty.span(),
+                "Property did not include a notify field",
+            ))
+        }
+    };
+
+    let notify_ident = notify_binding.rust_unqualified();
     let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
     let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 

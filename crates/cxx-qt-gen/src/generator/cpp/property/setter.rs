@@ -6,6 +6,7 @@
 use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyNames};
 use indoc::formatdoc;
 
+// TODO: modify func to return result for proper erroring
 pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> CppFragment {
     CppFragment::Pair {
         header: format!(
