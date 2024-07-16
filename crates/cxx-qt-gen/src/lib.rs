@@ -113,9 +113,9 @@ mod tests {
         //
         // In the simplest case this can be achieved by running:
         //
-        //      CXXQT_UPDATE_EXPECTED=$(pwd) cargo test
+        //      CXX_QT_UPDATE_EXPECTED=$(pwd) cargo test
         //
-        if let Ok(path) = env::var("CXXQT_UPDATE_EXPECTED") {
+        if let Ok(path) = env::var("CXX_QT_UPDATE_EXPECTED") {
             let output_folder = Path::new(&path);
             let output_folder = output_folder.join("test_outputs");
 

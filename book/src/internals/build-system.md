@@ -39,38 +39,33 @@ Somehow, all of this should be compatible with both CMake, and Cargo-only builds
 
 ## The plan (for now)
 
-After many rounds of refactoring this, we believe the best way to go is to not rely on cargos OUT_DIR exclusivly.
-Not being able to share artifacts between crates is very limiting.
+After many rounds of refactoring this, we believe that we need to be able to share data between build scripts for this to work halfway ergonomically.
 
-We want to use a similar approach to CXX, which stores its data within either:
+We want to use a similar approach to CXX, which uses Cargos `links` key to ensure a correct build order (see the documentation [here](https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key)).
+When building with cxx-qt-build, you may simply specify that your code depends on another crate.
+Cargo will then make sure that the build scripts of the dependencies have run **before** the build script of this crate.
 
-- Cargos `target/` directory under the `cxxbridge` subfolder.
-- A custom `scratch` directory
+We can additionally pass metadata between build scripts, which we use to find the `manifest.json` of each crate and the path to their "target" directory.
 
-See: [https://github.com/dtolnay/cxx/blob/afd4aa3f3d4e5d5e9a3a41d09df3408f5f86a469/gen/build/src/target.rs#L10](https://github.com/dtolnay/cxx/blob/afd4aa3f3d4e5d5e9a3a41d09df3408f5f86a469/gen/build/src/target.rs#L10) \
-and: [https://github.com/dtolnay/cxx/blob/afd4aa3f3d4e5d5e9a3a41d09df3408f5f86a469/gen/build/src/lib.rs#L178](https://github.com/dtolnay/cxx/blob/afd4aa3f3d4e5d5e9a3a41d09df3408f5f86a469/gen/build/src/lib.rs#L178).
+## The "target" directory
 
-We will likely mirror this and use the `cxxqtbridge` naming.
+Each build script can export artifacts into a folder with a well-known layout.
+It is also required to export a `manifest.json` file that tells downstream dependencies which of these artifacts to include and how to configure their own build.
 
-## Contents of `cxxqtbridge`
+This "target" directory is usually in the OUT_DIR, but can be exported using `CXX_QT_EXPORT_DIR` and `CXX_QT_EXPORT_CRATE_[crate-name]` environment variables.
+Which is used by CMake to import the artifacts. (See: [Integration with CMake](#integration-with-cmake))
 
 ### `crates` directory
 
-Inside cxxqtbridge, there should be a `crates` folder with one subfolder per crate.
+Inside the target directory, there should be a `crates` folder with one subfolder per crate.
 Each crates subfolder should contain the following:
 
 - `include/`
   - `crate-name` - A folder for all headers that are exported by this crate
-  - `cxx-qt-lib -> ../../cxx-qt-lib/include` - Symbolic links for every dependency
+  - `cxx-qt-lib -> <path-to-dependency>/include/cxx-qt-lib` - Symbolic links for every dependency
 - `manifest.json` - This file describes which headers this library makes available, if it needs any Qt modules, etc.
 - `initializers.o` - The initializers of this crate + all it's dependencies to be linked in by CMake
 
-When building with cxx-qt-build, you may simply specify that your code depends on another crate.
-However, we also need to make sure that the order in which the build scripts are run works out, as e.g. the build script of cxx-qt-lib needs to run **before** any dependents build scripts run.
-
-For this use-case, Cargo has the `links` key (see the documentation [here](https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key)).
-It allows us to ensure the correct order, and also to pass metadata between build scripts.
-We specifically use this to let downstream dependents know where to find our manifest.json.
 Via the `manifest.json`, we are then able to figure out which header paths of this dependency to include, which Qt modules to link, etc.
 
 To make sure the correct data ends up in the manifest.json, we provide the `cxx_qt_build::Interface` struct which uses the builder pattern to specify all the necessary data.
@@ -83,14 +78,14 @@ Each module should include a `plugin_init.o`, `.qmltypes`, `qmldir`, and any oth
 
 ## Integration with CMake
 
-Via the `CXXQT_EXPORT_DIR` environment variable CMake should be able to change the location of the `cxxqtbridge` directory.
+Via the `CXXQT_EXPORT_DIR` environment variable CMake should be able to change the location of the "target" directory.
 CMake can then expect required artifacts to exist at pre-defined locations, which can be added as dependency, include directories, objects, etc. to the Crate target.
 
 We will rely on Corrosion to import the crate and provide targets for it.
 
 However, we also want to provide some custom functions that wrap corrosion and set up the import of our own artifacts.
 
-Currently we plan to provide two functions:
+Currently we provide two functions:
 
 - cxxqt_import_crate
   - A wrapper over corrosion_import_crate that defines the `CXXQT_EXPORT_DIR`, imports the initializers object files, etc.

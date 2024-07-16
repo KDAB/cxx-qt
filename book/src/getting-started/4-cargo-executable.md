@@ -27,6 +27,7 @@ Add the dependencies to the `Cargo.toml` file.
 We'll need `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build`:
 
 ```toml,ignore
+{{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_package_name}}
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 cxx = "1.0.95"
 cxx-qt = "0.6"

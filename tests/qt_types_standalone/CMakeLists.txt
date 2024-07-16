@@ -31,7 +31,7 @@ if(NOT Qt6_FOUND)
 endif()
 
 set(CRATE qt_types_standalone)
-cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 
 add_executable(${APP_NAME}
     cpp/main.cpp

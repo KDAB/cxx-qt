@@ -8,7 +8,6 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(example_qml_minimal)
-set(APP_NAME ${PROJECT_NAME})
 
 # Rust always links against non-debug Windows runtime on *-msvc targets
 # Note it is best to set this on the command line to ensure all targets are consistent
@@ -36,30 +35,29 @@ endif()
 # TODO: This has been removed, document it
 # ANCHOR_END: book_cmake_find_qmake
 
-# ANCHOR: book_cmake_find_corrosion
+# ANCHOR: book_cmake_find_cxx_qt
 # TODO: Replace with fetch-content co cxx-qt-cmake
-# ANCHOR_END: book_cmake_find_corrosion
+# ANCHOR_END: book_cmake_find_cxx_qt
 
-# ANCHOR: book_cmake_use_corrosion
-set(CRATE qml_minimal)
-# Corrosion (through CXX-Qt) creates a CMake target with the same name as the crate.
-cxxqt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
-target_link_libraries(${CRATE} INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
+# ANCHOR: book_cmake_use_cxx_qt
+# CXX-Qt (using Corrosion) creates a CMake target with the same name as the crate.
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES qml_minimal)
+target_link_libraries(qml_minimal INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
 
-cxxqt_import_qml_module(${CRATE}_qml
+cxx_qt_import_qml_module(qml_minimal_qml_module
     URI "com.kdab.cxx_qt.demo"
-    SOURCE_CRATE ${CRATE})
-# ANCHOR_END: book_cmake_use_corrosion
+    SOURCE_CRATE qml_minimal)
+# ANCHOR_END: book_cmake_use_cxx_qt
 
 # ANCHOR: book_cmake_executable
 # Define the executable with the C++ source
-add_executable(${APP_NAME} cpp/main.cpp)
+add_executable(example_qml_minimal cpp/main.cpp)
 
-# Link to the qml module, which in turn links to the Rust ${CRATE} library
-target_link_libraries(${APP_NAME} PRIVATE ${CRATE}_qml)
+# Link to the qml module, which in turn links to the Rust qml_minimal library
+target_link_libraries(example_qml_minimal PRIVATE qml_minimal_qml_module)
 
 # If we are using a statically linked Qt then we need to import any qml plugins
-qt_import_qml_plugins(${APP_NAME})
+qt_import_qml_plugins(example_qml_minimal)
 # ANCHOR_END: book_cmake_executable
 
 if(BUILD_TESTING)
@@ -74,9 +72,9 @@ if(BUILD_TESTING)
     endif()
 
     function(add_qml_test TEST_NAME)
-        set(APP_TEST_NAME ${APP_NAME}_${TEST_NAME}_test)
+        set(APP_TEST_NAME example_qml_minimal_${TEST_NAME}_test)
         add_executable(${APP_TEST_NAME} tests/${TEST_NAME}/tst_${TEST_NAME}.cpp)
-        target_link_libraries(${APP_TEST_NAME} PRIVATE ${CRATE}_qml Qt::QuickTest)
+        target_link_libraries(${APP_TEST_NAME} PRIVATE qml_minimal_qml_module Qt::QuickTest)
         qt_import_qml_plugins(${APP_TEST_NAME})
 
         set(TEST_CMD
@@ -95,7 +93,7 @@ if(BUILD_TESTING)
         endif()
         # RUNTIME_ENV comes from the CMakeLists.txt at the root of this repository.
         set_tests_properties(
-            ${APP_NAME}_${TEST_NAME}_test
+            example_qml_minimal_${TEST_NAME}_test
             PROPERTIES
             ENVIRONMENT_MODIFICATION "${RUNTIME_ENV}"
         )
