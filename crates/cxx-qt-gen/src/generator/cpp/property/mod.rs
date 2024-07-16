@@ -8,11 +8,9 @@ use crate::generator::{
     naming::{property::QPropertyNames, qobject::QObjectNames},
 };
 use crate::{
-    naming::cpp::syn_type_to_cpp_type,
-    naming::TypeNames,
-    parser::property::{ParsedQProperty, QPropertyFlags},
+    naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
 };
-use syn::{Error, Result};
+use syn::Result;
 
 mod getter;
 mod meta;
@@ -33,43 +31,44 @@ pub fn generate_cpp_properties(
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
+        let flags = &property.flags;
+
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
 
-        let mut includes_read = false; // If the HashSet includes entries read must be specified otherwise it is an error
+        // None indicates no custom identifier was provided
+        if flags.read.is_none() {
+            generated
+                .methods
+                .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+            generated
+                .private_methods
+                .push(getter::generate_wrapper(&idents, &cxx_ty));
+        }
 
-        // for flag in property.flags.iter() {
-        //     match flag {
-        //         QPropertyFlag::Read(_) => {
-        //             includes_read = true;
-        //             // Gen Getters
-        //             generated
-        //                 .methods
-        //                 .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        //             generated
-        //                 .private_methods
-        //                 .push(getter::generate_wrapper(&idents, &cxx_ty));
-        //         }
-        //         QPropertyFlag::Write(_) => {
-        //             // Gen setters
-        //             generated
-        //                 .methods
-        //                 .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-        //             generated
-        //                 .private_methods
-        //                 .push(setter::generate_wrapper(&idents, &cxx_ty));
-        //         }
-        //         QPropertyFlag::Notify(_) => {
-        //             // Gen signal
-        //             signals.push(signal::generate(&idents, qobject_idents));
-        //         }
-        //     }
-        // }
+        // Checking custom setter wasn't provided
+        if flags
+            .write
+            .clone()
+            .is_some_and(|ident_option| ident_option.is_none())
+        {
+            if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
+                generated.methods.push(setter)
+            }
 
-        if !includes_read {
-            return Err(Error::new(
-                property.ident.span(),
-                "If other flags are specified, read must also be specified",
-            ));
+            if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
+                generated.private_methods.push(setter_wrapper)
+            }
+        }
+
+        // Checking custom notifier wasn't provided
+        if flags
+            .notify
+            .clone()
+            .is_some_and(|ident_option| ident_option.is_none())
+        {
+            if let Some(notify) = signal::generate(&idents, qobject_idents) {
+                signals.push(notify)
+            }
         }
     }
 
@@ -85,6 +84,8 @@ pub fn generate_cpp_properties(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::parser::property::QPropertyFlags;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::CppFragment;
@@ -105,28 +106,13 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        let mut type_names = TypeNames::mock();
-        type_names.mock_insert("i32", None, None, None);
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
-
-        println!("generated code: \n{:?}\n", generated.metaobjects);
-        println!("generated methods: \n{:?}\n\n", generated.methods);
+        let type_names = TypeNames::mock();
+        let _generated =
+            generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
     }
 
     #[test]
     fn test_generate_cpp_properties() {
-        // let properties = vec![
-        //     ParsedQProperty {
-        //         ident: format_ident!("trivial_property"),
-        //         ty: parse_quote! { i32 },
-        //         flags: Default::default(),
-        //     },
-        //     ParsedQProperty {
-        //         ident: format_ident!("opaque_property"),
-        //         ty: parse_quote! { UniquePtr<QColor> },
-        //         flags: Default::default(),
-        //     },
-        // ];
         let mut input1: ItemStruct = parse_quote! {
             #[qproperty(i32, trivial_property, read, write, notify)]
             struct MyStruct;
@@ -147,8 +133,6 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
-
-        println!("\ngenerated meta: {:?}\n\ngenerated methods: {:?}\n\n", generated.metaobjects, generated.methods);
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -425,7 +409,7 @@ mod tests {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
             ty: parse_quote! { A },
-            flags: QPropertyFlags::new(),
+            flags: QPropertyFlags::default(),
         }];
         let qobject_idents = create_qobjectname();
 

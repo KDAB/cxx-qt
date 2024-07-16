@@ -10,21 +10,26 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> ParsedSignal {
+pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Option<ParsedSignal> {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify = &idents.notify.clone().expect("Notify was empty!"); //TODO: Throw error instead
-    let notify_rust = notify.rust_unqualified();
-    let notify_cpp_str = notify.cxx_unqualified();
-    let method: ForeignItemFn = syn::parse_quote! {
-        #[doc = "Notify for the Q_PROPERTY"]
-        #[cxx_name = #notify_cpp_str]
-        fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
-    };
-    ParsedSignal::from_property_method(
-        method,
-        notify.clone(),
-        qobject_idents.name.rust_unqualified().clone(),
-    )
+    if let Some(notify) = &idents.notify {
+        let notify_rust = notify.rust_unqualified();
+        let notify_cpp_str = notify.cxx_unqualified();
+
+        let method: ForeignItemFn = syn::parse_quote! {
+            #[doc = "Notify for the Q_PROPERTY"]
+            #[cxx_name = #notify_cpp_str]
+            fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
+        };
+
+        Some(ParsedSignal::from_property_method(
+            method,
+            notify.clone(),
+            qobject_idents.name.rust_unqualified().clone(),
+        ))
+    } else {
+        None
+    }
 }

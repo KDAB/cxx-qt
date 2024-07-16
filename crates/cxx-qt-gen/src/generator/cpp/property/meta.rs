@@ -7,22 +7,23 @@ use crate::generator::naming::property::QPropertyNames;
 
 /// Generate the metaobject line for a given property
 pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
-    let mut output: String = format!(
-        "Q_PROPERTY({ty} {ident} READ {ident_getter} ",
-        ty = cxx_ty,
-        ident = idents.name.cxx_unqualified(),
+    let mut parts = vec![format!(
+        "READ {ident_getter}",
         ident_getter = idents.getter.cxx_unqualified()
-    );
+    )];
     // Write
     if let Some(name) = &idents.setter {
-        output += format!("WRITE {} ", name.cxx_unqualified()).as_str();
+        parts.push(format!("WRITE {}", name.cxx_unqualified()));
     }
     // Notify
     if let Some(name) = &idents.notify {
-        output += format!("NOTIFY {}", name.cxx_unqualified()).as_str();
+        parts.push(format!("NOTIFY {}", name.cxx_unqualified()));
     }
 
-    output += ")";
-
-    output
+    format!(
+        "Q_PROPERTY({ty} {ident} {meta_parts})",
+        ty = cxx_ty,
+        ident = idents.name.cxx_unqualified(),
+        meta_parts = parts.join(" ")
+    )
 }

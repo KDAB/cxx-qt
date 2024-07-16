@@ -11,6 +11,7 @@ mod ffi {
         #[derive(Default)]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]
+        #[qproperty(i32, test_name, read = my_getter, write = my_setter, notify)]
         type MyObject = super::MyObjectRust;
     }
 }

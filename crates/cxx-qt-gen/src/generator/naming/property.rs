@@ -2,10 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{
-    naming::Name,
-    parser::property::{ParsedQProperty, QPropertyFlags},
-};
+use crate::{naming::Name, parser::property::ParsedQProperty};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
@@ -24,42 +21,33 @@ impl From<&ParsedQProperty> for QPropertyNames {
     fn from(property: &ParsedQProperty) -> Self {
         let property_name = property_name_from_rust_name(property.ident.clone());
 
-        let mut getter: Name = getter_name_from_property(&property_name); //TODO: potentially declaring this twice, might be fixed when tackling other todo in this file
-        let mut setter: Option<Name> = None;
-        let mut notify: Option<Name> = None;
+        let flags = &property.flags;
 
-        // for flag in &property.flags {
-        //     match flag {
-        //         QPropertyFlag::Write(ref signature) => {
-        //             // TODO: remove if let blocks (passing custom func should not change name of getter, only its contents)
-        //             if let Some(ident) = signature {
-        //                 setter = Some(Name::new(ident.clone()))
-        //             } else {
-        //                 setter = Some(setter_name_from_property(&property_name))
-        //             }
-        //         }
-        //         QPropertyFlag::Read(ref signature) => {
-        //             if let Some(ident) = signature {
-        //                 getter = Name::new(ident.clone())
-        //             } else {
-        //                 getter = getter_name_from_property(&property_name)
-        //             }
-        //         }
-        //         QPropertyFlag::Notify(ref signature) => {
-        //             if let Some(ident) = signature {
-        //                 notify = Some(Name::new(ident.clone()))
-        //             } else {
-        //                 notify = Some(notify_name_from_property(&property_name))
-        //             }
-        //         }
-        //     }
-        // }
-        let setter_wrapper: Option<Name>;
-        if let Some(name) = &setter {
-            setter_wrapper = Some(wrapper_name_from_function_name(name));
-        } else {
-            setter_wrapper = None;
-        }
+        // Match for custom name or autogenerate one
+        let getter = match &flags.read {
+            Some(ident) => Name::new(ident.clone()),
+            None => getter_name_from_property(&property_name),
+        };
+
+        // Match for custom name, autogenerate, or None
+        // TODO: Refactor to use an enum type to represent these 3 states better
+        let setter = match &flags.write {
+            Some(ident_option) => match ident_option {
+                Some(ident) => Some(Name::new(ident.clone())),
+                None => Some(setter_name_from_property(&property_name)),
+            },
+            None => None,
+        };
+
+        let notify = match &flags.notify {
+            Some(ident_option) => match ident_option {
+                Some(ident) => Some(Name::new(ident.clone())),
+                None => Some(notify_name_from_property(&property_name)),
+            },
+            None => None,
+        };
+
+        let setter_wrapper = setter.as_ref().map(wrapper_name_from_function_name);
 
         Self {
             getter_wrapper: wrapper_name_from_function_name(&getter),
@@ -116,15 +104,16 @@ pub mod tests {
     use syn::parse_quote;
 
     use super::*;
+    use crate::parser::property::QPropertyFlags;
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
         let ty: syn::Type = parse_quote! { i32 };
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
             ty,
-            flags: QPropertyFlags::new(),
+            flags: QPropertyFlags::default(),
         };
-        QPropertyNames::from(&property) // Doesn't account for emtpy flags, maybe change this to the quote macro
+        QPropertyNames::from(&property)
     }
 
     #[test]
@@ -138,35 +127,19 @@ pub mod tests {
             &format_ident!("my_property")
         );
         assert_eq!(
-            names
-                .setter
-                .clone()
-                .expect("Setter was empty")
-                .cxx_unqualified(),
+            names.setter.clone().unwrap().cxx_unqualified(),
             "setMyProperty"
         );
         assert_eq!(
-            names
-                .setter
-                .clone()
-                .expect("Setter was empty")
-                .rust_unqualified(),
+            names.setter.clone().unwrap().rust_unqualified(),
             &format_ident!("set_my_property")
         );
         assert_eq!(
-            names
-                .notify
-                .clone()
-                .expect("Notify was empty")
-                .cxx_unqualified(),
+            names.notify.clone().unwrap().cxx_unqualified(),
             "myPropertyChanged"
         );
         assert_eq!(
-            names
-                .notify
-                .clone()
-                .expect("Notify was empty")
-                .rust_unqualified(),
+            names.notify.clone().unwrap().rust_unqualified(),
             &format_ident!("my_property_changed")
         );
     }

@@ -113,6 +113,38 @@ mod ffi {
             self_value: Pin<&mut MyObject>,
         );
     }
+    unsafe extern "C++" {
+        #[doc = "Notify for the Q_PROPERTY"]
+        #[cxx_name = "testNameChanged"]
+        fn test_name_changed(self: Pin<&mut MyObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlertestNameChanged = cxx_qt::signalhandler::CxxQtSignalHandler<
+            super::MyObjectCxxQtSignalClosuretestNameChanged,
+        >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_testNameChangedConnect"]
+        fn MyObject_connect_test_name_changed(
+            self_value: Pin<&mut MyObject>,
+            signal_handler: MyObjectCxxQtSignalHandlertestNameChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_testNameChanged(
+            handler: MyObjectCxxQtSignalHandlertestNameChanged,
+        );
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_testNameChanged(
+            handler: &mut MyObjectCxxQtSignalHandlertestNameChanged,
+            self_value: Pin<&mut MyObject>,
+        );
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -283,6 +315,74 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretrivialChanged>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "testNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_test_name_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_test_name_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosuretestNameChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "testNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_test_name_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_test_name_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosuretestNameChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosuretestNameChanged {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for MyObjectCxxQtSignalClosuretestNameChanged
+{
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertestNameChanged"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+}
+use core::mem::drop as drop_MyObject_signal_handler_testNameChanged;
+fn call_MyObject_signal_handler_testNameChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosuretestNameChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::MyObject>,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretestNameChanged>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretestNameChanged>,
     [usize; 2]
 );
 impl cxx_qt::Locking for ffi::MyObject {}

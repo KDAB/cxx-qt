@@ -21,6 +21,11 @@ using MyObjectCxxQtSignalHandlertrivialChanged = ::rust::cxxqt1::SignalHandler<
   struct MyObjectCxxQtSignalParamstrivialChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using MyObjectCxxQtSignalHandlertestNameChanged = ::rust::cxxqt1::SignalHandler<
+  struct MyObjectCxxQtSignalParamstestNameChanged*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 #include "cxx-qt-gen/ffi.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
@@ -41,6 +46,15 @@ MyObject_trivialChangedConnect(
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_testNameChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalHandlertestNameChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
@@ -53,6 +67,8 @@ public:
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
+  Q_PROPERTY(::std::int32_t testName READ my_getter WRITE my_setter NOTIFY
+               testNameChanged)
 
   virtual ~MyObject() = default;
 
@@ -63,6 +79,7 @@ public:
   Q_SLOT void setTrivial(QPoint const& value);
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
+  Q_SIGNAL void testNameChanged();
   explicit MyObject(QObject* parent = nullptr);
 
 private:

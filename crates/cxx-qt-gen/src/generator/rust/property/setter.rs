@@ -12,84 +12,70 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{spanned::Spanned, Error, Result, Type};
+use syn::{Result, Type};
 
 pub fn generate(
     idents: &QPropertyNames,
     qobject_idents: &QObjectNames,
     cxx_ty: &Type,
     type_names: &TypeNames,
-) -> Result<RustFragmentPair> {
+) -> Result<Option<RustFragmentPair>> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
-    let setter_wrapper_cpp = match &idents.setter_wrapper {
-        Some(wrapper) => wrapper.cxx_unqualified(),
-        _ => {
-            return Err(Error::new(
-                cxx_ty.span(),
-                "Property did not include a setter wrapper",
-            ))
-        }
-    };
+    if let (Some(setter), Some(setter_wrapper)) = (&idents.setter, &idents.setter_wrapper) {
+        let setter_wrapper_cpp = setter_wrapper.cxx_unqualified();
 
-    let setter_binding = match &idents.setter {
-        Some(setter) => setter,
-        _ => {
-            return Err(Error::new(
-                cxx_ty.span(),
-                "Property did not include a setter",
-            ))
-        }
-    };
+        let setter_rust = setter.rust_unqualified();
+        let ident = &idents.name.rust_unqualified();
+        let ident_str = ident.to_string();
 
-    let setter_rust = setter_binding.rust_unqualified();
-    let ident = &idents.name.rust_unqualified();
-    let ident_str = ident.to_string();
-
-    let notify_binding = match &idents.notify {
-        Some(notify) => notify,
-        _ => {
-            return Err(Error::new(
-                cxx_ty.span(),
-                "Property did not include a notify field",
-            ))
-        }
-    };
-
-    let notify_ident = notify_binding.rust_unqualified();
-    let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
-    let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
-
-    // Determine if unsafe is required due to an unsafe type
-    let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {
-        quote! { unsafe }
-    } else {
-        quote! {}
-    };
-
-    Ok(RustFragmentPair {
-        cxx_bridge: vec![quote! {
-            extern "Rust" {
-                #[cxx_name = #setter_wrapper_cpp]
-                // TODO: Add #[namespace] of the QObject to the declaration
-                #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #cxx_ty);
+        // Generate a notify name if it was provided, otherwise return empty
+        let notify_binding = match &idents.notify {
+            Some(notify) => {
+                let notify_ident = notify.rust_unqualified();
+                quote! {self.as_mut().#notify_ident();}
             }
-        }],
-        implementation: vec![quote! {
-            impl #qualified_impl {
-                #[doc = "Setter for the Q_PROPERTY "]
-                #[doc = #ident_str]
-                pub fn #setter_rust(mut self: core::pin::Pin<&mut Self>, value: #qualified_ty) {
-                    use cxx_qt::CxxQtType;
-                    if self.#ident == value {
-                        // don't want to set the value again and reemit the signal,
-                        // as this can cause binding loops
-                        return;
-                    }
-                    self.as_mut().rust_mut().#ident = value;
-                    self.as_mut().#notify_ident();
+            None => quote! {},
+        };
+
+        let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
+        let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
+
+        // Determine if unsafe is required due to an unsafe type
+        let has_unsafe = if syn_type_is_cxx_bridge_unsafe(cxx_ty) {
+            quote! { unsafe }
+        } else {
+            quote! {}
+        };
+
+        Ok(Some(RustFragmentPair {
+            cxx_bridge: vec![quote! {
+                extern "Rust" {
+                    #[cxx_name = #setter_wrapper_cpp]
+                    // TODO: Add #[namespace] of the QObject to the declaration
+                    #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #cxx_ty);
                 }
-            }
-        }],
-    })
+            }],
+            implementation: vec![quote! {
+                impl #qualified_impl {
+                    #[doc = "Setter for the Q_PROPERTY "]
+                    #[doc = #ident_str]
+                    pub fn #setter_rust(mut self: core::pin::Pin<&mut Self>, value: #qualified_ty) {
+                        use cxx_qt::CxxQtType;
+                        //TODO: could be optimised to remove this condition?
+                        if self.#ident == value {
+                            // don't want to set the value again and reemit the signal,
+                            // as this can cause binding loops
+                            return;
+                        }
+                        self.as_mut().rust_mut().#ident = value;
+                        // self.as_mut().#notify_ident();
+                        #notify_binding
+                    }
+                }
+            }],
+        }))
+    } else {
+        Ok(None)
+    }
 }
