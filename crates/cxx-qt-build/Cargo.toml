@@ -22,7 +22,6 @@ quote.workspace = true
 qt-build-utils.workspace = true
 codespan-reporting = "0.11"
 version_check = "0.9"
-scratch = "1.0"
 serde = { version = "1.0", features = ["default", "derive"] }
 serde_json = "1.0"
 

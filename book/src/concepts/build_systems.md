@@ -12,8 +12,9 @@ CXX-Qt can be integrated into existing CMake projects or built with only cargo. 
 - [Cargo Integration](../getting-started/4-cargo-executable.md)
 - [CMake Integration](../getting-started/5-cmake-integration.md)
 
-CXX-Qt could work with any C++ build system so long as the `QMAKE` and `CXXQT_EXPORT_DIR` environment variables are set before calling Cargo,
-as documented in [CMake integration](../getting-started/5-cmake-integration.md). However, using C++ build systems besides CMake with CXX-Qt is untested.
+CXX-Qt could work with any C++ build system so long as the `QMAKE`, `CXX_QT_EXPORT_DIR` and `CXX_QT_EXPORT_CRATE_<CRATE-NAME>` environment variables are set before calling Cargo.
+Take a look at our CMake code for how this can be used.
+However, using C++ build systems besides Cargo or CMake with CXX-Qt is untested and the use of these environment variables is SemVer-exempt!
 
 ## `CxxQtBuilder`
 

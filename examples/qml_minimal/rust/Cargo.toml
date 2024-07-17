@@ -5,8 +5,10 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 # ANCHOR: book_all
 # ANCHOR: book_static_lib
+# ANCHOR: book_package_name
 [package]
 name = "qml_minimal"
+# ANCHOR_END: book_package_name
 version = "0.1.0"
 authors = [
   "Andrew Hayzen <andrew.hayzen@kdab.com>",
