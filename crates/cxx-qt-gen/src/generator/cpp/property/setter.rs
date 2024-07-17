@@ -3,12 +3,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::{cpp::fragment::CppFragment, naming::property::QPropertyNames};
+use crate::generator::{
+    cpp::fragment::CppFragment,
+    naming::property::{NameState, QPropertyNames},
+};
 use indoc::formatdoc;
 
 pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> Option<CppFragment> {
     // Checking whether a setter should be generated based off if it has a name
-    if let (Some(setter), Some(setter_wrapper)) = (&idents.setter, &idents.setter_wrapper) {
+    if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
+        (&idents.setter, &idents.setter_wrapper)
+    {
         Some(CppFragment::Pair {
             header: format!(
                 "Q_SLOT void {ident_setter}({cxx_ty} const& value);",

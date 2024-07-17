@@ -10,14 +10,42 @@ use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
 
+use std::ops::Deref;
+
+#[derive(Debug)]
+pub enum NameState {
+    Auto(Name),
+    Custom(Name),
+}
+
+impl Deref for NameState {
+    type Target = Name;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Auto(name) => name,
+            Self::Custom(name) => name,
+        }
+    }
+}
+
+impl NameState {
+    pub fn from_flag_with_auto_fn(state: &FlagState, auto_fn: impl Fn() -> Name) -> Self {
+        match state {
+            FlagState::Auto => Self::Auto(auto_fn()),
+            FlagState::Custom(ident) => Self::Custom(Name::new(ident.clone())),
+        }
+    }
+}
+
 /// Names for parts of a Q_PROPERTY
 pub struct QPropertyNames {
     pub name: Name,
-    pub getter: Name,
+    pub getter: NameState,
     pub getter_wrapper: Name,
-    pub setter: Option<Name>,
+    pub setter: Option<NameState>,
     pub setter_wrapper: Option<Name>,
-    pub notify: Option<Name>,
+    pub notify: Option<NameState>,
 }
 
 impl From<&ParsedQProperty> for QPropertyNames {
@@ -26,28 +54,48 @@ impl From<&ParsedQProperty> for QPropertyNames {
 
         let flags = &property.flags;
 
-        let getter = match &flags.read {
-            FlagState::Auto => getter_name_from_property(&property_name),
-            FlagState::Custom(ident) => Name::new(ident.clone()),
-        };
+        // let getter = match &flags.read {
+        //     FlagState::Auto => getter_name_from_property(&property_name),
+        //     FlagState::Custom(ident) => Name::new(ident.clone()),
+        // };
 
-        let setter = match &flags.write {
-            Some(state) => match state {
-                FlagState::Auto => Some(setter_name_from_property(&property_name)),
-                FlagState::Custom(ident) => Some(Name::new(ident.clone())),
-            },
-            None => None,
-        };
+        // let setter = match &flags.write {
+        //     Some(state) => match state {
+        //         FlagState::Auto => Some(setter_name_from_property(&property_name)),
+        //         FlagState::Custom(ident) => Some(Name::new(ident.clone())),
+        //     },
+        //     None => None,
+        // };
 
-        let notify = match &flags.notify {
-            Some(state) => match state {
-                FlagState::Auto => Some(notify_name_from_property(&property_name)),
-                FlagState::Custom(ident) => Some(Name::new(ident.clone())),
-            },
-            None => None,
-        };
+        // let notify = match &flags.notify {
+        //     Some(state) => match state {
+        //         FlagState::Auto => Some(notify_name_from_property(&property_name)),
+        //         FlagState::Custom(ident) => Some(Name::new(ident.clone())),
+        //     },
+        //     None => None,
+        // };
 
-        let setter_wrapper = setter.as_ref().map(wrapper_name_from_function_name);
+        let getter = NameState::from_flag_with_auto_fn(&flags.read, || {
+            getter_name_from_property(&property_name)
+        });
+
+        let setter = flags.write.as_ref().map(|setter| {
+            NameState::from_flag_with_auto_fn(setter, || setter_name_from_property(&property_name))
+        });
+
+        let notify = flags.notify.as_ref().map(|notify| {
+            NameState::from_flag_with_auto_fn(notify, || notify_name_from_property(&property_name))
+        });
+
+        // let setter_wrapper = setter
+        //     .as_ref()
+        //     .map(|state| wrapper_name_from_function_name(state));
+
+        let setter_wrapper = if let Some(NameState::Auto(ref setter)) = setter {
+            Some(wrapper_name_from_function_name(setter))
+        } else {
+            None
+        };
 
         Self {
             getter_wrapper: wrapper_name_from_function_name(&getter),

@@ -12,12 +12,12 @@ pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
         ident_getter = idents.getter.cxx_unqualified()
     )];
     // Write
-    if let Some(name) = &idents.setter {
-        parts.push(format!("WRITE {}", name.cxx_unqualified()));
+    if let Some(setter) = &idents.setter {
+        parts.push(format!("WRITE {}", setter.cxx_unqualified()));
     }
     // Notify
-    if let Some(name) = &idents.notify {
-        parts.push(format!("NOTIFY {}", name.cxx_unqualified()));
+    if let Some(notify) = &idents.notify {
+        parts.push(format!("NOTIFY {}", notify.cxx_unqualified()));
     }
 
     format!(

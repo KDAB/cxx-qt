@@ -5,7 +5,10 @@
 
 use crate::{
     generator::{
-        naming::{property::QPropertyNames, qobject::QObjectNames},
+        naming::{
+            property::{NameState, QPropertyNames},
+            qobject::QObjectNames,
+        },
         rust::fragment::RustFragmentPair,
     },
     naming::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
@@ -22,7 +25,9 @@ pub fn generate(
 ) -> Result<Option<RustFragmentPair>> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
-    if let (Some(setter), Some(setter_wrapper)) = (&idents.setter, &idents.setter_wrapper) {
+    if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
+        (&idents.setter, &idents.setter_wrapper)
+    {
         let setter_wrapper_cpp = setter_wrapper.cxx_unqualified();
 
         let setter_rust = setter.rust_unqualified();

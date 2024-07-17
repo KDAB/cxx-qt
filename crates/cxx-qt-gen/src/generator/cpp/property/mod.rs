@@ -31,36 +31,56 @@ pub fn generate_cpp_properties(
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
-        let flags = &property.flags;
-
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
 
+        // let flags = &property.flags;
+
         // None indicates no custom identifier was provided
-        if flags.read.is_auto() {
-            generated
-                .methods
-                .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+        // if flags.read.is_auto() {
+        //     generated
+        //         .methods
+        //         .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
+        //     generated
+        //         .private_methods
+        //         .push(getter::generate_wrapper(&idents, &cxx_ty));
+        // }
+
+        // // Checking custom setter wasn't provided
+        // if flags.write.clone().is_some_and(|state| state.is_auto()) {
+        //     if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
+        //         generated.methods.push(setter)
+        //     }
+
+        //     if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
+        //         generated.private_methods.push(setter_wrapper)
+        //     }
+        // }
+
+        // // Checking custom notifier wasn't provided
+        // if flags.notify.clone().is_some_and(|state| state.is_auto()) {
+        //     if let Some(notify) = signal::generate(&idents, qobject_idents) {
+        //         signals.push(notify)
+        //     }
+        // }
+
+        if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
+            generated.methods.push(getter);
             generated
                 .private_methods
                 .push(getter::generate_wrapper(&idents, &cxx_ty));
         }
 
         // Checking custom setter wasn't provided
-        if flags.write.clone().is_some_and(|state| state.is_auto()) {
-            if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
-                generated.methods.push(setter)
-            }
-
-            if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
-                generated.private_methods.push(setter_wrapper)
-            }
+        if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
+            generated.methods.push(setter)
         }
 
-        // Checking custom notifier wasn't provided
-        if flags.notify.clone().is_some_and(|state| state.is_auto()) {
-            if let Some(notify) = signal::generate(&idents, qobject_idents) {
-                signals.push(notify)
-            }
+        if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
+            generated.private_methods.push(setter_wrapper)
+        }
+
+        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+            signals.push(notify)
         }
     }
 
