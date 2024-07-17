@@ -2,7 +2,10 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{naming::Name, parser::property::ParsedQProperty};
+use crate::{
+    naming::Name,
+    parser::property::{FlagState, ParsedQProperty},
+};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
@@ -23,26 +26,23 @@ impl From<&ParsedQProperty> for QPropertyNames {
 
         let flags = &property.flags;
 
-        // Match for custom name or autogenerate one
         let getter = match &flags.read {
-            Some(ident) => Name::new(ident.clone()),
-            None => getter_name_from_property(&property_name),
+            FlagState::Auto => getter_name_from_property(&property_name),
+            FlagState::Custom(ident) => Name::new(ident.clone()),
         };
 
-        // Match for custom name, autogenerate, or None
-        // TODO: Refactor to use an enum type to represent these 3 states better
         let setter = match &flags.write {
-            Some(ident_option) => match ident_option {
-                Some(ident) => Some(Name::new(ident.clone())),
-                None => Some(setter_name_from_property(&property_name)),
+            Some(state) => match state {
+                FlagState::Auto => Some(setter_name_from_property(&property_name)),
+                FlagState::Custom(ident) => Some(Name::new(ident.clone())),
             },
             None => None,
         };
 
         let notify = match &flags.notify {
-            Some(ident_option) => match ident_option {
-                Some(ident) => Some(Name::new(ident.clone())),
-                None => Some(notify_name_from_property(&property_name)),
+            Some(state) => match state {
+                FlagState::Auto => Some(notify_name_from_property(&property_name)),
+                FlagState::Custom(ident) => Some(Name::new(ident.clone())),
             },
             None => None,
         };
@@ -127,19 +127,19 @@ pub mod tests {
             &format_ident!("my_property")
         );
         assert_eq!(
-            names.setter.clone().unwrap().cxx_unqualified(),
+            names.setter.as_ref().unwrap().cxx_unqualified(),
             "setMyProperty"
         );
         assert_eq!(
-            names.setter.clone().unwrap().rust_unqualified(),
+            names.setter.as_ref().unwrap().rust_unqualified(),
             &format_ident!("set_my_property")
         );
         assert_eq!(
-            names.notify.clone().unwrap().cxx_unqualified(),
+            names.notify.as_ref().unwrap().cxx_unqualified(),
             "myPropertyChanged"
         );
         assert_eq!(
-            names.notify.clone().unwrap().rust_unqualified(),
+            names.notify.as_ref().unwrap().rust_unqualified(),
             &format_ident!("my_property_changed")
         );
     }

@@ -7,30 +7,37 @@ use syn::{
     parse::{Error, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    Attribute, Expr, Ident, Meta, MetaNameValue, Path, Result, Token, Type,
+    Attribute, Expr, Ident, Meta, MetaNameValue, Result, Token, Type,
 };
 
-/// An optional identifier of the functions passed with flags
-/// e.g. read = my_getter, IdentFlag would be used to store my_getter
-type IdentFlag = Option<Ident>;
 
-/// Struct for storing the flags provided for a QProperty and their optional identifiers ([IdentFlag])
+#[derive(Debug, Clone)]
+pub enum FlagState {
+    Auto, // Might need to refactor to also store the generated ident here
+    Custom(Ident),
+}
+
+impl FlagState {
+    pub fn is_auto(&self) -> bool {
+        matches!(self, Self::Auto)
+    }
+}
+
+/// Struct for storing the flags provided for a QProperty
 #[derive(Debug)]
 pub struct QPropertyFlags {
-    // TODO: Refactor to use an enum type for representing all 3 states of write and notify
-    // Or use an enum for {Auto, Custom(Ident)}, this is optional for write and notify, but not read
-    pub(crate) read: IdentFlag,
-    pub(crate) write: Option<IdentFlag>,
-    pub(crate) notify: Option<IdentFlag>,
+    pub(crate) read: FlagState,
+    pub(crate) write: Option<FlagState>,
+    pub(crate) notify: Option<FlagState>,
 }
 
 impl Default for QPropertyFlags {
-    // Default represents the flags of the desugared version of #[qproperty(T, ident)]
+    /// Default represents the flags of the desugared version of ```#[qproperty(T, ident)]```
     fn default() -> Self {
         Self {
-            read: None,
-            write: Some(None),
-            notify: Some(None),
+            read: FlagState::Auto,
+            write: Some(FlagState::Auto),
+            notify: Some(FlagState::Auto),
         }
     }
 }
@@ -39,41 +46,9 @@ impl QPropertyFlags {
     // Doesn't really represent a realistic state, just used for collecting in the parser
     pub fn new() -> Self {
         Self {
-            read: None,
+            read: FlagState::Auto,
             write: None,
             notify: None,
-        }
-    }
-
-    /// Takes an [Ident] and matches it to the valid flags, setting fields if a match is found, otherwise will error
-    fn set_field_by_ident(&mut self, key: Ident, value: IdentFlag) -> Result<String> {
-        match key.to_string().as_str() {
-            "read" => self.read = value,
-            "write" => self.write = Some(value),
-            "notify" => self.notify = Some(value),
-            _ => {
-                return Err(Error::new(
-                    key.span(), // TODO: check if this is an acceptable form of erroring for non Syn functions
-                    "Invalid flag passed, must be one of read, write, notify",
-                ));
-            }
-        };
-        Ok(key.to_string()) // Return the string back up for checking which flags were set
-    }
-
-    fn add_from_meta(&mut self, meta_value: Meta) -> Result<String> {
-        match meta_value {
-            Meta::Path(path) => Ok(self.set_field_by_ident(parse_path_to_ident(&path), None)?),
-            Meta::NameValue(name_value) => {
-                let kv_pair = parse_meta_name_value(&name_value)?;
-                let value: IdentFlag = Some(kv_pair.1);
-
-                Ok(self.set_field_by_ident(kv_pair.0, value)?)
-            }
-            _ => Err(Error::new(
-                meta_value.span(),
-                "Invalid syntax, flags must be specified as either `read` or `read = my_getter`",
-            )),
         }
     }
 }
@@ -88,19 +63,14 @@ pub struct ParsedQProperty {
     pub flags: QPropertyFlags,
 }
 
-fn parse_path_to_ident(path: &Path) -> Ident {
-    // when used, should only ever contain 1 path segment
-    path.segments[0].ident.clone()
-}
-
 // TODO: Returning struct instead of tuple might be more descriptive
 fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
-    let ident = parse_path_to_ident(&name_value.path);
+    let ident = name_value.path.require_ident()?.clone();
     let expr = &name_value.value;
     let func_signature: Ident;
 
     if let Expr::Path(path_expr) = expr {
-        func_signature = parse_path_to_ident(&path_expr.path);
+        func_signature = path_expr.path.require_ident()?.clone();
     } else {
         return Err(Error::new(
             expr.span(),
@@ -134,29 +104,67 @@ impl ParsedQProperty {
                 // Remove the commas and collect the individual meta items
                 let flags: Vec<Meta> = punctuated_flags.clone().into_iter().collect();
 
-                let mut passed_flags = QPropertyFlags::new();
+                let mut read = None;
+                let mut write = None;
+                let mut notify = None;
 
-                // Used to check that if flags are specified, read is included
-                // Can be removed in lieu of checking fields if the enum approach is used
-                let mut flag_strings: Vec<String> = Vec::new();
+                // Create mutable closure to capture the variables for setting with the Meta values
+                let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
+                    let variable = match ident.to_string().as_str() {
+                        "read" => &mut read,
+                        "write" => &mut write,
+                        "notify" => &mut notify,
+                        _ => {
+                            return Err(Error::new(
+                                ident.span(),
+                                "Invalid flag passed, must be one of read, write, notify",
+                            ));
+                        }
+                    };
+                    *variable = Some(value.map_or(FlagState::Auto, FlagState::Custom));
+                
+                    Ok(())
+                };
 
                 for flag in flags {
-                    let flag_string: String = passed_flags.add_from_meta(flag)?;
-                    flag_strings.push(flag_string);
+                    // Could maybe refactor parse_meta_name_value to parse_meta, 
+                    // which would return an (Ident, Option<Ident>) and extract the logic below to a new fn
+                    match flag {
+                        Meta::Path(path) => {
+                            // Set flag as auto
+                            update_fields(path.require_ident()?, None)?;
+                        },
+                        Meta::NameValue(name_value) => {
+                            let kv_pair = parse_meta_name_value(&name_value)?;
+                            let value = Some(kv_pair.1);
+
+                            // Set Flags with Custom value
+                            update_fields(&kv_pair.0, value)?;
+                        },
+                        _ => return Err(Error::new(
+                            flag.span(),
+                            "Invalid syntax, flags must be specified as either `read` or `read = my_getter`",
+                        )),
+                    };
                 }
 
-                if !flag_strings.contains(&String::from("read")) {
-                    return Err(Error::new(
+                if let Some(read) = read {
+                    Ok(Self {
+                        ident,
+                        ty,
+                        flags: QPropertyFlags {
+                            read,
+                            write,
+                            notify,
+                        },
+                    })
+                }
+                else {
+                    Err(Error::new(
                         punctuated_flags.span(),
                         "If flags are passed, read must be explicitly specified",
-                    ));
+                    ))
                 }
-
-                Ok(Self {
-                    ident,
-                    ty,
-                    flags: passed_flags,
-                })
             }
         })
     }
@@ -200,29 +208,43 @@ mod tests {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
         assert_eq!(property.ident, format_ident!("name"));
         assert_eq!(property.ty, parse_quote! { T });
+
+        assert!(property.flags.read.is_auto());
+
         assert!(property.flags.write.is_some());
         assert!(property.flags.notify.is_some());
+
+        assert!(property.flags.write.unwrap().is_auto());
+        assert!(property.flags.notify.unwrap().is_auto());
     }
 
     #[test]
     fn test_parse_flags_kw() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = blah, write, notify = blahblah)]
+            #[qproperty(T, name, read = my_getter, write, notify = my_notifier)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
         assert_eq!(property.ident, format_ident!("name"));
         assert_eq!(property.ty, parse_quote! { T });
 
-        assert!(property.flags.read.is_some());
-        assert_eq!(property.flags.read.unwrap(), format_ident!("blah"));
+        // Can use  assert_matches! when https://github.com/rust-lang/rust/issues/82775 gets stabilised
+        let expected_read = format_ident!("my_getter");
+        assert!(matches!(
+            property.flags.read,
+            FlagState::Custom(ident) if ident == expected_read
+        ));
 
         assert!(property.flags.write.is_some());
+        assert!(property.flags.write.unwrap().is_auto());
 
         assert!(property.flags.notify.is_some());
-        let notify = property.flags.notify.unwrap();
-        assert!(notify.is_some());
-        assert_eq!(notify.unwrap(), format_ident!("blahblah"));
+
+        let expected_notify = format_ident!("my_notifier");
+        assert!(matches!(
+            property.flags.notify,
+            Some(FlagState::Custom(ident)) if ident == expected_notify
+        ));
     }
 
     #[test]
@@ -236,7 +258,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_missing_flags() {
+    fn test_parse_flags_missing_read() {
         let mut input: ItemStruct = parse_quote! {
             #[qproperty(T, name, notify = blahblah)]
             struct MyStruct;
@@ -246,7 +268,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_invalid_literal() {
+    fn test_parse_flags_invalid_literal() {
         let mut input: ItemStruct = parse_quote! {
             #[qproperty(T, name, notify = 3)]
             struct MyStruct;
@@ -286,9 +308,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_property_no_type() {
+    fn test_parse_property_no_params() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(num)]
+            #[qproperty()]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));

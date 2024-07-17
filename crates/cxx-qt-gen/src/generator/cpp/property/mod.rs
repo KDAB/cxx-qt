@@ -36,7 +36,7 @@ pub fn generate_cpp_properties(
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
 
         // None indicates no custom identifier was provided
-        if flags.read.is_none() {
+        if flags.read.is_auto() {
             generated
                 .methods
                 .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
@@ -46,11 +46,7 @@ pub fn generate_cpp_properties(
         }
 
         // Checking custom setter wasn't provided
-        if flags
-            .write
-            .clone()
-            .is_some_and(|ident_option| ident_option.is_none())
-        {
+        if flags.write.clone().is_some_and(|state| state.is_auto()) {
             if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
                 generated.methods.push(setter)
             }
@@ -61,11 +57,7 @@ pub fn generate_cpp_properties(
         }
 
         // Checking custom notifier wasn't provided
-        if flags
-            .notify
-            .clone()
-            .is_some_and(|ident_option| ident_option.is_none())
-        {
+        if flags.notify.clone().is_some_and(|state| state.is_auto()) {
             if let Some(notify) = signal::generate(&idents, qobject_idents) {
                 signals.push(notify)
             }
@@ -95,9 +87,9 @@ mod tests {
     use syn::{parse_quote, ItemStruct};
 
     #[test]
-    fn test_optional_write() {
+    fn test_custom_setter() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, write, notify)]
+            #[qproperty(i32, num, read, write = mySetter)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -107,8 +99,39 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let type_names = TypeNames::mock();
-        let _generated =
-            generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        // TODO: write better tests using the string comparisons
+
+        // Meta
+        println!("Generated meta: {:?}\n\n", generated.metaobjects);
+        println!("Generated methods: {:?}\n\n", generated.methods);
+
+        assert_eq!(generated.metaobjects.len(), 1);
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter)"
+        );
+
+        // Methods
+        assert_eq!(generated.methods.len(), 1);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+
+        assert_str_eq!(header, "::std::int32_t const& getNum() const;");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            ::std::int32_t const&
+            MyObject::getNum() const
+            {
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+                return getNumWrapper();
+            }
+            "#}
+        );
     }
 
     #[test]

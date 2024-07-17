@@ -33,7 +33,7 @@ pub fn generate_rust_properties(
 
         let flags = &property.flags;
 
-        if flags.read.is_none() {
+        if flags.read.is_auto() {
             //gen getter and wrapper
             let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names)?;
             generated
@@ -45,11 +45,7 @@ pub fn generate_rust_properties(
         }
 
         // Checking that write flag was provided but no custom identifier
-        if flags
-            .write
-            .clone()
-            .is_some_and(|ident_option| ident_option.is_none())
-        {
+        if flags.write.clone().is_some_and(|state| state.is_auto()) {
             // gen setter and wrapper
             if let Some(setter) =
                 setter::generate(&idents, qobject_idents, &property.ty, type_names)?
@@ -63,11 +59,7 @@ pub fn generate_rust_properties(
             }
         }
 
-        if flags
-            .notify
-            .clone()
-            .is_some_and(|ident_option| ident_option.is_none())
-        {
+        if flags.notify.clone().is_some_and(|state| state.is_auto()) {
             if let Some(notify) = signal::generate(&idents, qobject_idents) {
                 signals.push(notify)
             }
