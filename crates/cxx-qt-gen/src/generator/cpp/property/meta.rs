@@ -11,11 +11,11 @@ pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
         "READ {ident_getter}",
         ident_getter = idents.getter.cxx_unqualified()
     )];
-    // Write
+
     if let Some(setter) = &idents.setter {
         parts.push(format!("WRITE {}", setter.cxx_unqualified()));
     }
-    // Notify
+
     if let Some(notify) = &idents.notify {
         parts.push(format!("NOTIFY {}", notify.cxx_unqualified()));
     }

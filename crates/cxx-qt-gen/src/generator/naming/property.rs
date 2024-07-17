@@ -33,7 +33,7 @@ impl NameState {
     pub fn from_flag_with_auto_fn(state: &FlagState, auto_fn: impl Fn() -> Name) -> Self {
         match state {
             FlagState::Auto => Self::Auto(auto_fn()),
-            FlagState::Custom(ident) => Self::Custom(Name::new(ident.clone())),
+            FlagState::Custom(ident) => Self::Custom(Name::new(ident.clone())), // TODO: replace this with some sort of type / method name lookup
         }
     }
 }
@@ -52,28 +52,8 @@ impl From<&ParsedQProperty> for QPropertyNames {
     fn from(property: &ParsedQProperty) -> Self {
         let property_name = property_name_from_rust_name(property.ident.clone());
 
+        // Cache flags as they are accessed multiple times
         let flags = &property.flags;
-
-        // let getter = match &flags.read {
-        //     FlagState::Auto => getter_name_from_property(&property_name),
-        //     FlagState::Custom(ident) => Name::new(ident.clone()),
-        // };
-
-        // let setter = match &flags.write {
-        //     Some(state) => match state {
-        //         FlagState::Auto => Some(setter_name_from_property(&property_name)),
-        //         FlagState::Custom(ident) => Some(Name::new(ident.clone())),
-        //     },
-        //     None => None,
-        // };
-
-        // let notify = match &flags.notify {
-        //     Some(state) => match state {
-        //         FlagState::Auto => Some(notify_name_from_property(&property_name)),
-        //         FlagState::Custom(ident) => Some(Name::new(ident.clone())),
-        //     },
-        //     None => None,
-        // };
 
         let getter = NameState::from_flag_with_auto_fn(&flags.read, || {
             getter_name_from_property(&property_name)
@@ -86,10 +66,6 @@ impl From<&ParsedQProperty> for QPropertyNames {
         let notify = flags.notify.as_ref().map(|notify| {
             NameState::from_flag_with_auto_fn(notify, || notify_name_from_property(&property_name))
         });
-
-        // let setter_wrapper = setter
-        //     .as_ref()
-        //     .map(|state| wrapper_name_from_function_name(state));
 
         let setter_wrapper = if let Some(NameState::Auto(ref setter)) = setter {
             Some(wrapper_name_from_function_name(setter))

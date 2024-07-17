@@ -27,41 +27,11 @@ pub fn generate_cpp_properties(
     let qobject_ident = qobject_idents.name.cxx_unqualified();
 
     for property in properties {
-        // Cache the idents and flags as they are used in multiple places
+        // Cache the idents as they are used in multiple places
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-
-        // let flags = &property.flags;
-
-        // None indicates no custom identifier was provided
-        // if flags.read.is_auto() {
-        //     generated
-        //         .methods
-        //         .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        //     generated
-        //         .private_methods
-        //         .push(getter::generate_wrapper(&idents, &cxx_ty));
-        // }
-
-        // // Checking custom setter wasn't provided
-        // if flags.write.clone().is_some_and(|state| state.is_auto()) {
-        //     if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
-        //         generated.methods.push(setter)
-        //     }
-
-        //     if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
-        //         generated.private_methods.push(setter_wrapper)
-        //     }
-        // }
-
-        // // Checking custom notifier wasn't provided
-        // if flags.notify.clone().is_some_and(|state| state.is_auto()) {
-        //     if let Some(notify) = signal::generate(&idents, qobject_idents) {
-        //         signals.push(notify)
-        //     }
-        // }
 
         if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(getter);
@@ -70,7 +40,8 @@ pub fn generate_cpp_properties(
                 .push(getter::generate_wrapper(&idents, &cxx_ty));
         }
 
-        // Checking custom setter wasn't provided
+        // Optional generations, returning None if flags specified not to generate anything
+
         if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(setter)
         }
@@ -120,11 +91,6 @@ mod tests {
 
         let type_names = TypeNames::mock();
         let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
-        // TODO: write better tests using the string comparisons
-
-        // Meta
-        println!("Generated meta: {:?}\n\n", generated.metaobjects);
-        println!("Generated methods: {:?}\n\n", generated.methods);
 
         assert_eq!(generated.metaobjects.len(), 1);
         assert_str_eq!(

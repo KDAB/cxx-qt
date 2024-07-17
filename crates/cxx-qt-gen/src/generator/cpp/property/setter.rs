@@ -10,7 +10,7 @@ use crate::generator::{
 use indoc::formatdoc;
 
 pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> Option<CppFragment> {
-    // Checking whether a setter should be generated based off if it has a name
+    // Only generates setter code if the state provided is Auto (not custom provided by user)
     if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
         (&idents.setter, &idents.setter_wrapper)
     {

@@ -31,40 +31,6 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::from(property);
 
-        // let flags = &property.flags;
-
-        // if flags.read.is_auto() {
-        //     //gen getter and wrapper
-        //     let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names)?;
-        //     generated
-        //         .cxx_mod_contents
-        //         .append(&mut getter.cxx_bridge_as_items()?);
-        //     generated
-        //         .cxx_qt_mod_contents
-        //         .append(&mut getter.implementation_as_items()?);
-        // }
-
-        // // Checking that write flag was provided but no custom identifier
-        // if flags.write.clone().is_some_and(|state| state.is_auto()) {
-        //     // gen setter and wrapper
-        //     if let Some(setter) =
-        //         setter::generate(&idents, qobject_idents, &property.ty, type_names)?
-        //     {
-        //         generated
-        //             .cxx_mod_contents
-        //             .append(&mut setter.cxx_bridge_as_items()?);
-        //         generated
-        //             .cxx_qt_mod_contents
-        //             .append(&mut setter.implementation_as_items()?);
-        //     }
-        // }
-
-        // if flags.notify.clone().is_some_and(|state| state.is_auto()) {
-        //     if let Some(notify) = signal::generate(&idents, qobject_idents) {
-        //         signals.push(notify)
-        //     }
-        // }
-
         if let Some(getter) = getter::generate(&idents, qobject_idents, &property.ty, type_names)? {
             generated
                 .cxx_mod_contents

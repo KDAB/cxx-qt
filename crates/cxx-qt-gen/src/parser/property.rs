@@ -10,7 +10,6 @@ use syn::{
     Attribute, Expr, Ident, Meta, MetaNameValue, Result, Token, Type,
 };
 
-
 #[derive(Debug, Clone)]
 pub enum FlagState {
     Auto, // Might need to refactor to also store the generated ident here
@@ -44,7 +43,7 @@ impl Default for QPropertyFlags {
 
 impl QPropertyFlags {
     // Doesn't really represent a realistic state, just used for collecting in the parser
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             read: FlagState::Auto,
             write: None,
@@ -89,7 +88,7 @@ impl ParsedQProperty {
             let ident = input.parse()?;
 
             if input.is_empty() {
-                // No flags passed so desugar: #[qproperty(T, ident)] -> #[qproperty(T, ident, read, write, notify)]
+                // No flags passed so desugar: ```#[qproperty(T, ident)]``` -> ```#[qproperty(T, ident, read, write, notify)]```
                 Ok(Self {
                     ident,
                     ty,
@@ -122,12 +121,12 @@ impl ParsedQProperty {
                         }
                     };
                     *variable = Some(value.map_or(FlagState::Auto, FlagState::Custom));
-                
+
                     Ok(())
                 };
 
                 for flag in flags {
-                    // Could maybe refactor parse_meta_name_value to parse_meta, 
+                    // Could maybe refactor parse_meta_name_value to parse_meta,
                     // which would return an (Ident, Option<Ident>) and extract the logic below to a new fn
                     match flag {
                         Meta::Path(path) => {
@@ -180,7 +179,7 @@ mod tests {
     #[test]
     fn test_parse_property() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name)]
+            #[qproperty(T, name, read, write = myGetter,)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
