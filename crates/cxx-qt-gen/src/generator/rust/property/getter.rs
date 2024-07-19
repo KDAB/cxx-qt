@@ -23,9 +23,11 @@ pub fn generate(
     cxx_ty: &Type,
     type_names: &TypeNames,
 ) -> Result<Option<RustFragmentPair>> {
-    if let NameState::Auto(getter) = &idents.getter {
+    if let (NameState::Auto(getter), Some(getter_wrapper)) =
+        (&idents.getter, &idents.getter_wrapper)
+    {
         let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
-        let getter_wrapper_cpp = idents.getter_wrapper.cxx_unqualified();
+        let getter_wrapper_cpp = getter_wrapper.cxx_unqualified();
         let getter_rust = getter.rust_unqualified();
         let ident = idents.name.rust_unqualified();
         let ident_str = ident.to_string();

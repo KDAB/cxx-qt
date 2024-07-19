@@ -35,12 +35,11 @@ pub fn generate_cpp_properties(
 
         if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(getter);
-            generated
-                .private_methods
-                .push(getter::generate_wrapper(&idents, &cxx_ty));
         }
 
-        // Optional generations, returning None if flags specified not to generate anything
+        if let Some(getter_wrapper) = getter::generate_wrapper(&idents, &cxx_ty) {
+            generated.private_methods.push(getter_wrapper);
+        }
 
         if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(setter)

@@ -16,8 +16,8 @@ use crate::{
 pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Option<ParsedSignal> {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
-    let cpp_class_rust = &qobject_idents.name.rust_unqualified();
     if let Some(NameState::Auto(notify)) = &idents.notify {
+        let cpp_class_rust = &qobject_idents.name.rust_unqualified();
         let notify_cpp = notify.cxx_unqualified();
         let notify_rust = notify.rust_unqualified();
         let method: ForeignItemFn = syn::parse_quote! {

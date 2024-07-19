@@ -42,7 +42,7 @@ impl NameState {
 pub struct QPropertyNames {
     pub name: Name,
     pub getter: NameState,
-    pub getter_wrapper: Name,
+    pub getter_wrapper: Option<Name>,
     pub setter: Option<NameState>,
     pub setter_wrapper: Option<Name>,
     pub notify: Option<NameState>,
@@ -73,8 +73,14 @@ impl From<&ParsedQProperty> for QPropertyNames {
             None
         };
 
+        let getter_wrapper = if let NameState::Auto(ref getter) = getter {
+            Some(wrapper_name_from_function_name(getter))
+        } else {
+            None
+        };
+
         Self {
-            getter_wrapper: wrapper_name_from_function_name(&getter),
+            getter_wrapper,
             getter,
             setter_wrapper,
             setter,
