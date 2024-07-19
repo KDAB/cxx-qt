@@ -138,12 +138,13 @@ It is also possible to specify custom getters, setters and on-changed functions,
 
 It is also possible to use any combination of custom functions or omitting entirely, but if flags are specified, read must be one of them as all properties need to be able to be read.
 
-### Examples:
+### Examples
+
 - `#[qproperty(TYPE, NAME, read)]` A read only prop
 - `#[qproperty(TYPE, NAME, read = myGetter, write, notify)]` custom getter provided but will generate setter and on-changed
+
 - `#[qproperty(TYPE, NAME)]` is syntactic sugar for `#[qproperty(TYPE, NAME, read, write, notify)]`
 - `#[qproperty(TYPE, NAME, write)]` is an error as read was not passed
-
 
 ## Methods
 
