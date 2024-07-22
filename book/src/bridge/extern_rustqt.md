@@ -131,20 +131,23 @@ Where `<Property>` is the name of the property.
 
 These setters and getters assure that the changed signal is emitted every time the property is edited.
 
-It is also possible to specify custom getters, setters and on-changed functions, using flags passed like so:
+It is also possible to specify custom getters, setters and notify signals, using flags passed like so:
 `#[qproperty(TYPE, NAME, read = myGetter, write = mySetter, notify = myOnChanged)]`
 
-> Note: currently TypeName lookups are not currently supported, so either the name must be camel case or specified like `#[cxx_name = "my_getter"]`
+> Note: currently the rust name must be in camel case or specified like `#[cxx_name = "my_getter"]` if not
 
-It is also possible to use any combination of custom functions or omitting entirely, but if flags are specified, read must be one of them as all properties need to be able to be read.
+It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
+
+Using the read flag will cause cxx_qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, read)]` will have a getter function generated called get_num in Rust, and getNum in C++.
+
+If a custom function is specified, an implementation both in qobject::MyObject and and export in the bridge is expected.
 
 ### Examples
 
 - `#[qproperty(TYPE, NAME, read)]` A read only prop
 - `#[qproperty(TYPE, NAME, read = myGetter, write, notify)]` custom getter provided but will generate setter and on-changed
-
 - `#[qproperty(TYPE, NAME)]` is syntactic sugar for `#[qproperty(TYPE, NAME, read, write, notify)]`
-- `#[qproperty(TYPE, NAME, write)]` is an error as read was not passed
+- `#[qproperty(TYPE, NAME, write)]` is an error as read was not explicitly passed
 
 ## Methods
 

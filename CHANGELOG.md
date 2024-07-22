@@ -17,8 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.6.1...HEAD)
 
-- Add support for specifying read write and notify in qproperty macro, including support for custom user defined functions
-
 ### Added
 
 - Support for further types: `QLine`, `QLineF`, `QImage`, `QPainter`, `QFont`, `QPen`, `QPolygon`, `QPolygonF`, `QRegion`
@@ -28,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add cxx-qt-lib-extras crate which contains: `QCommandLineOption`, `QCommandLineParser`, `QElapsedTimer`, `QApplication`
 - Serde support for `QString` (requires "serde" feature on cxx-qt-lib)
 - A new QuickControls module, which exposes `QQuickStyle`. This module is enabled by default and is behind the `qt_quickcontrols` feature.
+- Add support for specifying read write and notify in qproperty macro, including support for custom user defined functions
 
 ### Changed
 

@@ -212,12 +212,6 @@ mod tests {
         assert_eq!(property.ident, format_ident!("name"));
         assert_eq!(property.ty, parse_quote! { T });
 
-        // Can use  assert_matches! when https://github.com/rust-lang/rust/issues/82775 gets stabilised
-        // let expected_read = format_ident!("my_getter");
-        // assert!(matches!(
-        //     property.flags.read,
-        //     FlagState::Custom(ident) if ident == expected_read
-        // ));
         assert_eq!(
             property.flags.read,
             FlagState::Custom(format_ident!("my_getter"))
@@ -227,11 +221,6 @@ mod tests {
 
         assert!(property.flags.notify.is_some());
 
-        // let expected_notify = format_ident!("my_notifier");
-        // assert!(matches!(
-        //     property.flags.notify,
-        //     Some(FlagState::Custom(ident)) if ident == expected_notify
-        // ));
         assert_eq!(
             property.flags.notify,
             Some(FlagState::Custom(format_ident!("my_notifier")))
