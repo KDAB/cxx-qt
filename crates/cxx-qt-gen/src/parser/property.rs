@@ -193,13 +193,10 @@ mod tests {
         assert_eq!(property.ident, format_ident!("name"));
         assert_eq!(property.ty, parse_quote! { T });
 
-        assert!(property.flags.read.is_auto());
+        assert_eq!(property.flags.read, FlagState::Auto);
 
-        assert!(property.flags.write.is_some());
-        assert!(property.flags.notify.is_some());
-
-        assert!(property.flags.write.unwrap().is_auto());
-        assert!(property.flags.notify.unwrap().is_auto());
+        assert_eq!(property.flags.notify, Some(FlagState::Auto));
+        assert_eq!(property.flags.write, Some(FlagState::Auto));
     }
 
     #[test]
@@ -218,8 +215,6 @@ mod tests {
         );
 
         assert_eq!(property.flags.write, Some(FlagState::Auto));
-
-        assert!(property.flags.notify.is_some());
 
         assert_eq!(
             property.flags.notify,
