@@ -138,7 +138,7 @@ It is also possible to specify custom getters, setters and notify signals, using
 
 It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
 
-Using the read flag will cause cxx_qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, read)]` will have a getter function generated called get_num in Rust, and getNum in C++.
+Using the read flag will cause CXX-Qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, read)]` will have a getter function generated called get_num in Rust, and getNum in C++.
 
 If a custom function is specified, an implementation both in qobject::MyObject and and export in the bridge is expected.
 
