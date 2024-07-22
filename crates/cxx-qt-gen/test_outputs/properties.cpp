@@ -116,6 +116,66 @@ MyObject_trivialChangedConnect(
 }
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust::cxxqt1 {
+template<>
+SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                MyObjectCxxQtSignalParamscustomFunctionPropChanged*>::
+  ~SignalHandler() noexcept
+{
+  if (data[0] == nullptr && data[1] == nullptr) {
+    return;
+  }
+
+  drop_MyObject_signal_handler_customFunctionPropChanged(::std::move(*this));
+}
+
+template<>
+template<>
+void
+SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                MyObjectCxxQtSignalParamscustomFunctionPropChanged*>::
+operator()<cxx_qt::my_object::MyObject&>(cxx_qt::my_object::MyObject& self)
+{
+  call_MyObject_signal_handler_customFunctionPropChanged(*this, self);
+}
+
+static_assert(
+  alignof(
+    SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                    MyObjectCxxQtSignalParamscustomFunctionPropChanged*>) <=
+    alignof(::std::size_t),
+  "unexpected aligment");
+static_assert(
+  sizeof(
+    SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                    MyObjectCxxQtSignalParamscustomFunctionPropChanged*>) ==
+    sizeof(::std::size_t[2]),
+  "unexpected size");
+} // namespace rust::cxxqt1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_customFunctionPropChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalHandlercustomFunctionPropChanged closure,
+  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    &self,
+    &cxx_qt::my_object::MyObject::customFunctionPropChanged,
+    &self,
+    [&, closure = ::std::move(closure)]() mutable {
+      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
+        self);
+      closure.template operator()<cxx_qt::my_object::MyObject&>(self);
+    },
+    type);
+}
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 namespace cxx_qt::my_object {
 ::std::int32_t const&
 MyObject::getPrimitive() const
@@ -143,6 +203,27 @@ MyObject::setTrivial(QPoint const& value)
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
   setTrivialWrapper(value);
+}
+
+::std::int32_t const&
+MyObject::getReadonlyProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getReadonlyPropWrapper();
+}
+
+::std::int32_t const&
+MyObject::getCustomOnChanged() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getCustomOnChangedWrapper();
+}
+
+void
+MyObject::setCustomOnChanged(::std::int32_t const& value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  setCustomOnChangedWrapper(value);
 }
 
 MyObject::MyObject(QObject* parent)

@@ -32,19 +32,26 @@ pub fn generate_cpp_properties(
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
         generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(getter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .private_methods
-            .push(getter::generate_wrapper(&idents, &cxx_ty));
-        generated
-            .methods
-            .push(setter::generate(&idents, &qobject_ident, &cxx_ty));
-        generated
-            .private_methods
-            .push(setter::generate_wrapper(&idents, &cxx_ty));
-        signals.push(signal::generate(&idents, qobject_idents));
+
+        if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
+            generated.methods.push(getter);
+        }
+
+        if let Some(getter_wrapper) = getter::generate_wrapper(&idents, &cxx_ty) {
+            generated.private_methods.push(getter_wrapper);
+        }
+
+        if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
+            generated.methods.push(setter)
+        }
+
+        if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
+            generated.private_methods.push(setter_wrapper)
+        }
+
+        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+            signals.push(notify)
+        }
     }
 
     generated.append(&mut generate_cpp_signals(
@@ -60,25 +67,75 @@ pub fn generate_cpp_properties(
 mod tests {
     use super::*;
 
+    use crate::parser::property::QPropertyFlags;
+
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::CppFragment;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
-    use syn::parse_quote;
+    use syn::{parse_quote, ItemStruct};
+
+    #[test]
+    fn test_custom_setter() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, read, write = mySetter)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        let type_names = TypeNames::mock();
+        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+
+        assert_eq!(generated.metaobjects.len(), 1);
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter)"
+        );
+
+        // Methods
+        assert_eq!(generated.methods.len(), 1);
+        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
+            (header, source)
+        } else {
+            panic!("Expected pair!")
+        };
+
+        assert_str_eq!(header, "::std::int32_t const& getNum() const;");
+        assert_str_eq!(
+            source,
+            indoc! {r#"
+            ::std::int32_t const&
+            MyObject::getNum() const
+            {
+                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+                return getNumWrapper();
+            }
+            "#}
+        );
+    }
 
     #[test]
     fn test_generate_cpp_properties() {
+        let mut input1: ItemStruct = parse_quote! {
+            #[qproperty(i32, trivial_property, read, write, notify)]
+            struct MyStruct;
+        };
+
+        let mut input2: ItemStruct = parse_quote! {
+            #[qproperty(UniquePtr<QColor>, opaque_property)]
+            struct MyStruct;
+        };
+
         let properties = vec![
-            ParsedQProperty {
-                ident: format_ident!("trivial_property"),
-                ty: parse_quote! { i32 },
-            },
-            ParsedQProperty {
-                ident: format_ident!("opaque_property"),
-                ty: parse_quote! { UniquePtr<QColor> },
-            },
+            ParsedQProperty::parse(input1.attrs.remove(0)).unwrap(),
+            ParsedQProperty::parse(input2.attrs.remove(0)).unwrap(),
         ];
+
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -97,6 +154,7 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
+
         assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
         assert_str_eq!(
             source,
@@ -136,6 +194,7 @@ mod tests {
         } else {
             panic!("Expected pair!")
         };
+
         assert_str_eq!(
             header,
             "::std::unique_ptr<QColor> const& getOpaqueProperty() const;"
@@ -358,6 +417,7 @@ mod tests {
         let properties = vec![ParsedQProperty {
             ident: format_ident!("mapped_property"),
             ty: parse_quote! { A },
+            flags: QPropertyFlags::default(),
         }];
         let qobject_idents = create_qobjectname();
 

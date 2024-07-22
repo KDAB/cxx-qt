@@ -21,6 +21,12 @@ using MyObjectCxxQtSignalHandlertrivialChanged = ::rust::cxxqt1::SignalHandler<
   struct MyObjectCxxQtSignalParamstrivialChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using MyObjectCxxQtSignalHandlercustomFunctionPropChanged =
+  ::rust::cxxqt1::SignalHandler<
+    struct MyObjectCxxQtSignalParamscustomFunctionPropChanged*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 #include "cxx-qt-gen/ffi.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
@@ -41,6 +47,15 @@ MyObject_trivialChangedConnect(
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_customFunctionPropChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalHandlercustomFunctionPropChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
@@ -53,6 +68,11 @@ public:
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
+  Q_PROPERTY(::std::int32_t customFunctionProp READ my_getter WRITE my_setter
+               NOTIFY customFunctionPropChanged)
+  Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
+  Q_PROPERTY(::std::int32_t customOnChanged READ getCustomOnChanged WRITE
+               setCustomOnChanged NOTIFY myOnChanged)
 
   virtual ~MyObject() = default;
 
@@ -61,8 +81,12 @@ public:
   Q_SLOT void setPrimitive(::std::int32_t const& value);
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
+  ::std::int32_t const& getReadonlyProp() const;
+  ::std::int32_t const& getCustomOnChanged() const;
+  Q_SLOT void setCustomOnChanged(::std::int32_t const& value);
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
+  Q_SIGNAL void customFunctionPropChanged();
   explicit MyObject(QObject* parent = nullptr);
 
 private:
@@ -70,6 +94,9 @@ private:
   void setPrimitiveWrapper(::std::int32_t value) noexcept;
   QPoint const& getTrivialWrapper() const noexcept;
   void setTrivialWrapper(QPoint value) noexcept;
+  ::std::int32_t const& getReadonlyPropWrapper() const noexcept;
+  ::std::int32_t const& getCustomOnChangedWrapper() const noexcept;
+  void setCustomOnChangedWrapper(::std::int32_t value) noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

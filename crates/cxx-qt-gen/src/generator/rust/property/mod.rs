@@ -31,26 +31,27 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::from(property);
 
-        // Getters
-        let getter = getter::generate(&idents, qobject_idents, &property.ty, type_names)?;
-        generated
-            .cxx_mod_contents
-            .append(&mut getter.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut getter.implementation_as_items()?);
+        if let Some(getter) = getter::generate(&idents, qobject_idents, &property.ty, type_names)? {
+            generated
+                .cxx_mod_contents
+                .append(&mut getter.cxx_bridge_as_items()?);
+            generated
+                .cxx_qt_mod_contents
+                .append(&mut getter.implementation_as_items()?);
+        };
 
-        // Setters
-        let setter = setter::generate(&idents, qobject_idents, &property.ty, type_names)?;
-        generated
-            .cxx_mod_contents
-            .append(&mut setter.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut setter.implementation_as_items()?);
+        if let Some(setter) = setter::generate(&idents, qobject_idents, &property.ty, type_names)? {
+            generated
+                .cxx_mod_contents
+                .append(&mut setter.cxx_bridge_as_items()?);
+            generated
+                .cxx_qt_mod_contents
+                .append(&mut setter.implementation_as_items()?);
+        }
 
-        // Signals
-        signals.push(signal::generate(&idents, qobject_idents));
+        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+            signals.push(notify)
+        }
     }
 
     generated.append(&mut generate_rust_signals(
@@ -67,6 +68,7 @@ pub fn generate_rust_properties(
 mod tests {
     use super::*;
 
+    use crate::parser::property::QPropertyFlags;
     use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use quote::format_ident;
     use syn::parse_quote;
@@ -77,14 +79,17 @@ mod tests {
             ParsedQProperty {
                 ident: format_ident!("trivial_property"),
                 ty: parse_quote! { i32 },
+                flags: QPropertyFlags::default(),
             },
             ParsedQProperty {
                 ident: format_ident!("opaque_property"),
                 ty: parse_quote! { UniquePtr<QColor> },
+                flags: QPropertyFlags::default(),
             },
             ParsedQProperty {
                 ident: format_ident!("unsafe_property"),
                 ty: parse_quote! { *mut T },
+                flags: QPropertyFlags::default(),
             },
         ];
         let qobject_idents = create_qobjectname();

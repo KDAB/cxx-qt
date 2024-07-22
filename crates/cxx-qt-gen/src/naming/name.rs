@@ -177,7 +177,7 @@ impl Name {
     /// Get the unqualified name of the type in Rust.
     /// This is either;
     /// - The rust_name attribute value, if one is provided
-    /// - The original ident, of no rust_name was provided
+    /// - The original ident, if no rust_name was provided
     pub fn rust_unqualified(&self) -> &Ident {
         &self.rust
     }

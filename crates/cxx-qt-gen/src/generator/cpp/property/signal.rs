@@ -6,24 +6,32 @@
 use syn::ForeignItemFn;
 
 use crate::{
-    generator::naming::{property::QPropertyNames, qobject::QObjectNames},
+    generator::naming::{
+        property::{NameState, QPropertyNames},
+        qobject::QObjectNames,
+    },
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> ParsedSignal {
+pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Option<ParsedSignal> {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
-    let cpp_class_rust = &qobject_idents.name.rust_unqualified();
-    let notify_cpp = &idents.notify.cxx_unqualified();
-    let notify_rust = idents.notify.rust_unqualified();
-    let method: ForeignItemFn = syn::parse_quote! {
-        #[doc = "Notify for the Q_PROPERTY"]
-        #[cxx_name = #notify_cpp]
-        fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
-    };
-    ParsedSignal::from_property_method(
-        method,
-        idents.notify.clone(),
-        qobject_idents.name.rust_unqualified().clone(),
-    )
+    if let Some(NameState::Auto(notify)) = &idents.notify {
+        let cpp_class_rust = &qobject_idents.name.rust_unqualified();
+        let notify_cpp = notify.cxx_unqualified();
+        let notify_rust = notify.rust_unqualified();
+        let method: ForeignItemFn = syn::parse_quote! {
+            #[doc = "Notify for the Q_PROPERTY"]
+            #[cxx_name = #notify_cpp]
+            fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
+        };
+
+        Some(ParsedSignal::from_property_method(
+            method,
+            notify.clone(),
+            qobject_idents.name.rust_unqualified().clone(),
+        ))
+    } else {
+        None
+    }
 }

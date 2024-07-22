@@ -49,6 +49,18 @@ mod ffi {
         #[cxx_name = "setTrivialWrapper"]
         fn set_trivial(self: Pin<&mut MyObject>, value: QPoint);
     }
+    extern "Rust" {
+        #[cxx_name = "getReadonlyPropWrapper"]
+        unsafe fn readonly_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "getCustomOnChangedWrapper"]
+        unsafe fn custom_on_changed<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setCustomOnChangedWrapper"]
+        fn set_custom_on_changed(self: Pin<&mut MyObject>, value: i32);
+    }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "primitiveChanged"]
@@ -113,6 +125,39 @@ mod ffi {
             self_value: Pin<&mut MyObject>,
         );
     }
+    unsafe extern "C++" {
+        #[doc = "Notify for the Q_PROPERTY"]
+        #[cxx_name = "customFunctionPropChanged"]
+        fn custom_function_prop_changed(self: Pin<&mut MyObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlercustomFunctionPropChanged =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
+            >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_customFunctionPropChangedConnect"]
+        fn MyObject_connect_custom_function_prop_changed(
+            self_value: Pin<&mut MyObject>,
+            signal_handler: MyObjectCxxQtSignalHandlercustomFunctionPropChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_customFunctionPropChanged(
+            handler: MyObjectCxxQtSignalHandlercustomFunctionPropChanged,
+        );
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_customFunctionPropChanged(
+            handler: &mut MyObjectCxxQtSignalHandlercustomFunctionPropChanged,
+            self_value: Pin<&mut MyObject>,
+        );
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -165,6 +210,32 @@ impl ffi::MyObject {
         }
         self.as_mut().rust_mut().trivial = value;
         self.as_mut().trivial_changed();
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "readonly_prop"]
+    pub fn readonly_prop(&self) -> &i32 {
+        &self.readonly_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "custom_on_changed"]
+    pub fn custom_on_changed(&self) -> &i32 {
+        &self.custom_on_changed
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "custom_on_changed"]
+    pub fn set_custom_on_changed(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.custom_on_changed == value {
+            return;
+        }
+        self.as_mut().rust_mut().custom_on_changed = value;
+        self.as_mut().myOnChanged();
     }
 }
 impl ffi::MyObject {
@@ -283,6 +354,78 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretrivialChanged>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "customFunctionPropChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_custom_function_prop_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_custom_function_prop_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "customFunctionPropChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_custom_function_prop_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::MyObject_connect_custom_function_prop_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosurecustomFunctionPropChanged {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for MyObjectCxxQtSignalClosurecustomFunctionPropChanged
+{
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlercustomFunctionPropChanged"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+}
+use core::mem::drop as drop_MyObject_signal_handler_customFunctionPropChanged;
+fn call_MyObject_signal_handler_customFunctionPropChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::MyObject>,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurecustomFunctionPropChanged>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurecustomFunctionPropChanged>,
     [usize; 2]
 );
 impl cxx_qt::Locking for ffi::MyObject {}
