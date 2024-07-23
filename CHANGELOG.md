@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Serde support for `QString` (requires "serde" feature on cxx-qt-lib)
 - A new QuickControls module, which exposes `QQuickStyle`. This module is enabled by default and is behind the `qt_quickcontrols` feature.
 - Add support for specifying read write and notify in qproperty macro, including support for custom user defined functions
-- Add support for the constant, required, reset and final flags
+- Add support for the constant, required, reset and final flags in the qproperty macro
 
 ### Changed
 
