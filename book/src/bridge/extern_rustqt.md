@@ -133,7 +133,7 @@ These setters and getters assure that the changed signal is emitted every time t
 
 It is also possible to specify custom getters, setters and notify signals, using flags passed like so:
 `#[qproperty(TYPE, NAME, READ = myGetter, WRITE = mySetter, NOTIFY = myOnChanged)]`
-Which must be in all capitals.
+> Note: the key for the flags use all capitals like in the Qt version of qproperty
 
 > Note: currently the rust name must be in camel case or specified like `#[cxx_name = "my_getter"]` if not
 
@@ -159,8 +159,8 @@ If a custom function is specified, an implementation both in qobject::MyObject a
 - `NOTIFY` or `NOTIFY = my_on_changed`
   - Specifies that the property should emit a notify signal on change, with optional user defined signal name
 - `CONSTANT`
-  - Specifies that the property should be constant (implication is that the getter returns the same value every time for that particular instance, but this is not yet enforced)
-  - __`CONSTANT` is not available for QProperties which use `WRITE` or `NOTIFY` and will not compile__
+  - Specifies that the property should be constant (implication is that the getter returns the same value every time for that particular instance)
+  - __`CONSTANT` is not available for properties which use `WRITE` or `NOTIFY` and will not compile__
 - `REQUIRED`
   - Specifies that the property must be set by a user of the class, useful in QML as the class cannot be instantiated unless the property has been set
 - `FINAL`

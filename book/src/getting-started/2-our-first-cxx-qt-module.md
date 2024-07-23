@@ -176,7 +176,9 @@ Also, we can't move the `QObject`, which is why it is behind a Rust [`Pin`](http
 
 CXX-Qt will generate getters and setters for all properties of our `struct`.
 That's where the `number()` and `set_number()` functions used by `increment_number()` come from.
-For more details on what you can do with the `QObject` from Rust and what functions CXX-Qt will generate for you, take a look at the [`QObject` page](../concepts/generated_qobject.md). For details on how to provide user defined methods for the `QObject`, take a look at the [`QProperty` section](../bridge/extern_rustqt.md#properties) and the [Available Flags](../bridge/extern_rustqt.md#available-flags)
+See the [`QProperty` section](../bridge/extern_rustqt.md#properties) for details on user defined properties.
+
+For more details on what you can do with the `QObject` from Rust and what functions CXX-Qt will generate for you, take a look at the [`QObject` page](../concepts/generated_qobject.md).
 
 And that's it. We've defined our first `QObject` subclass in Rust. That wasn't so hard, was it?
 

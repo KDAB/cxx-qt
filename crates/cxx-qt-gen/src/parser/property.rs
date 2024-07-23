@@ -123,6 +123,11 @@ impl ParsedQProperty {
                     *variable = Some(value.as_ref().map_or(FlagState::Auto, |ident| FlagState::Custom(ident.clone())));
                 };
 
+                let invalid_flag_error = || Error::new(
+                    ident.span(),
+                    "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
+                );
+
                 // Create mutable closure to capture the variables for setting with the Meta values
                 let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
                     match ident.to_string().as_str() {
@@ -133,9 +138,9 @@ impl ParsedQProperty {
                         "REQUIRED" => required = true,
                         "FINAL" => is_final = true,
                         "RESET" => reset = Some(
-                                value.ok_or(Error::new(
+                                value.ok_or_else(|| Error::new(
                                     ident.span(),
-                                    "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
+                                    "Reset flag must be given a user defined reset function, like `RESET = my_reset`",
                                 ))?
                             ),
                         _ => {
