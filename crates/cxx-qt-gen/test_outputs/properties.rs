@@ -54,12 +54,40 @@ mod ffi {
         unsafe fn readonly_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "getCustomOnChangedWrapper"]
-        unsafe fn custom_on_changed<'a>(self: &'a MyObject) -> &'a i32;
+        #[cxx_name = "getCustomOnChangedPropWrapper"]
+        unsafe fn custom_on_changed_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setCustomOnChangedWrapper"]
-        fn set_custom_on_changed(self: Pin<&mut MyObject>, value: i32);
+        #[cxx_name = "setCustomOnChangedPropWrapper"]
+        fn set_custom_on_changed_prop(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
+        #[cxx_name = "getConstPropWrapper"]
+        unsafe fn const_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "getResettablePropWrapper"]
+        unsafe fn resettable_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setResettablePropWrapper"]
+        fn set_resettable_prop(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
+        #[cxx_name = "getRequiredPropWrapper"]
+        unsafe fn required_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setRequiredPropWrapper"]
+        fn set_required_prop(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
+        #[cxx_name = "getFinalPropWrapper"]
+        unsafe fn final_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setFinalPropWrapper"]
+        fn set_final_prop(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
@@ -221,21 +249,82 @@ impl ffi::MyObject {
 }
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
-    #[doc = "custom_on_changed"]
-    pub fn custom_on_changed(&self) -> &i32 {
-        &self.custom_on_changed
+    #[doc = "custom_on_changed_prop"]
+    pub fn custom_on_changed_prop(&self) -> &i32 {
+        &self.custom_on_changed_prop
     }
 }
 impl ffi::MyObject {
     #[doc = "Setter for the Q_PROPERTY "]
-    #[doc = "custom_on_changed"]
-    pub fn set_custom_on_changed(mut self: core::pin::Pin<&mut Self>, value: i32) {
+    #[doc = "custom_on_changed_prop"]
+    pub fn set_custom_on_changed_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
         use cxx_qt::CxxQtType;
-        if self.custom_on_changed == value {
+        if self.custom_on_changed_prop == value {
             return;
         }
-        self.as_mut().rust_mut().custom_on_changed = value;
+        self.as_mut().rust_mut().custom_on_changed_prop = value;
         self.as_mut().myOnChanged();
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "const_prop"]
+    pub fn const_prop(&self) -> &i32 {
+        &self.const_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "resettable_prop"]
+    pub fn resettable_prop(&self) -> &i32 {
+        &self.resettable_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "resettable_prop"]
+    pub fn set_resettable_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.resettable_prop == value {
+            return;
+        }
+        self.as_mut().rust_mut().resettable_prop = value;
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "required_prop"]
+    pub fn required_prop(&self) -> &i32 {
+        &self.required_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "required_prop"]
+    pub fn set_required_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.required_prop == value {
+            return;
+        }
+        self.as_mut().rust_mut().required_prop = value;
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "final_prop"]
+    pub fn final_prop(&self) -> &i32 {
+        &self.final_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "final_prop"]
+    pub fn set_final_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.final_prop == value {
+            return;
+        }
+        self.as_mut().rust_mut().final_prop = value;
     }
 }
 impl ffi::MyObject {

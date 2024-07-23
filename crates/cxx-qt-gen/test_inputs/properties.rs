@@ -11,9 +11,13 @@ mod ffi {
         #[derive(Default)]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]
-        #[qproperty(i32, custom_function_prop, read = my_getter, write = my_setter, notify)]
-        #[qproperty(i32, readonly_prop, read)]
-        #[qproperty(i32, custom_on_changed, read, write, notify = myOnChanged)]
+        #[qproperty(i32, custom_function_prop, READ = my_getter, WRITE = my_setter, NOTIFY)]
+        #[qproperty(i32, readonly_prop, READ)]
+        #[qproperty(i32, custom_on_changed_prop, READ, WRITE, NOTIFY = myOnChanged)]
+        #[qproperty(i32, const_prop, READ, CONSTANT)]
+        #[qproperty(i32, resettable_prop, READ, WRITE, RESET = myResetFn)]
+        #[qproperty(i32, required_prop, READ, WRITE, REQUIRED)]
+        #[qproperty(i32, final_prop, READ, WRITE, FINAL)]
         type MyObject = super::MyObjectRust;
     }
 }

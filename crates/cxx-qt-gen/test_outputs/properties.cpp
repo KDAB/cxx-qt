@@ -213,17 +213,66 @@ MyObject::getReadonlyProp() const
 }
 
 ::std::int32_t const&
-MyObject::getCustomOnChanged() const
+MyObject::getCustomOnChangedProp() const
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getCustomOnChangedWrapper();
+  return getCustomOnChangedPropWrapper();
 }
 
 void
-MyObject::setCustomOnChanged(::std::int32_t const& value)
+MyObject::setCustomOnChangedProp(::std::int32_t const& value)
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setCustomOnChangedWrapper(value);
+  setCustomOnChangedPropWrapper(value);
+}
+
+::std::int32_t const&
+MyObject::getConstProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getConstPropWrapper();
+}
+
+::std::int32_t const&
+MyObject::getResettableProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getResettablePropWrapper();
+}
+
+void
+MyObject::setResettableProp(::std::int32_t const& value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  setResettablePropWrapper(value);
+}
+
+::std::int32_t const&
+MyObject::getRequiredProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getRequiredPropWrapper();
+}
+
+void
+MyObject::setRequiredProp(::std::int32_t const& value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  setRequiredPropWrapper(value);
+}
+
+::std::int32_t const&
+MyObject::getFinalProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getFinalPropWrapper();
+}
+
+void
+MyObject::setFinalProp(::std::int32_t const& value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  setFinalPropWrapper(value);
 }
 
 MyObject::MyObject(QObject* parent)

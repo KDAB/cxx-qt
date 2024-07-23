@@ -31,7 +31,9 @@ pub fn generate_cpp_properties(
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
-        generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
+        generated
+            .metaobjects
+            .push(meta::generate(&idents, &property.flags, &cxx_ty));
 
         if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(getter);
@@ -76,12 +78,7 @@ mod tests {
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
 
-    #[test]
-    fn test_custom_setter() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, write = mySetter)]
-            struct MyStruct;
-        };
+    fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
         let properties = vec![property];
@@ -89,7 +86,17 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let type_names = TypeNames::mock();
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        generate_cpp_properties(&properties, &qobject_idents, &type_names)
+    }
+
+    #[test]
+    fn test_custom_setter() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, READ, WRITE = mySetter)]
+            struct MyStruct;
+        };
+
+        let generated = setup_generated(&mut input).unwrap();
 
         assert_eq!(generated.metaobjects.len(), 1);
         assert_str_eq!(
@@ -120,9 +127,38 @@ mod tests {
     }
 
     #[test]
+    fn test_reset() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, READ, WRITE = mySetter, RESET = my_resetter)]
+            struct MyStruct;
+        };
+
+        let generated = setup_generated(&mut input).unwrap();
+
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter RESET my_resetter)"
+        );
+    }
+
+    #[test]
+    fn test_constant_and_required() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, READ, CONSTANT, REQUIRED)]
+            struct MyStruct;
+        };
+        let generated = setup_generated(&mut input).unwrap();
+
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum CONSTANT REQUIRED)"
+        );
+    }
+
+    #[test]
     fn test_generate_cpp_properties() {
         let mut input1: ItemStruct = parse_quote! {
-            #[qproperty(i32, trivial_property, read, write, notify)]
+            #[qproperty(i32, trivial_property, READ, WRITE, NOTIFY)]
             struct MyStruct;
         };
 

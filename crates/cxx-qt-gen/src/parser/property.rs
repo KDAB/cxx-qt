@@ -11,16 +11,12 @@ use syn::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Enum representing the possible states of a flag passed to a QProperty
+/// Auto is the state where a user passed for example `read` but no custom function
+/// Custom(Ident) is the state where a user passed for example `read = my_getter` and the ident stored in this case would be `my_getter`
 pub enum FlagState {
-    Auto, // Might need to refactor to also store the generated ident here
+    Auto,
     Custom(Ident),
-}
-
-impl FlagState {
-    #[cfg(test)]
-    pub fn is_auto(&self) -> bool {
-        matches!(self, Self::Auto)
-    }
 }
 
 /// Struct for storing the flags provided for a QProperty
@@ -29,6 +25,10 @@ pub struct QPropertyFlags {
     pub(crate) read: FlagState,
     pub(crate) write: Option<FlagState>,
     pub(crate) notify: Option<FlagState>,
+    pub(crate) reset: Option<Ident>, // TODO: in future might be able to generate the function if T has a default
+    pub(crate) is_final: bool,
+    pub(crate) constant: bool,
+    pub(crate) required: bool,
 }
 
 impl Default for QPropertyFlags {
@@ -38,6 +38,10 @@ impl Default for QPropertyFlags {
             read: FlagState::Auto,
             write: Some(FlagState::Auto),
             notify: Some(FlagState::Auto),
+            reset: None,
+            is_final: false,
+            constant: false,
+            required: false,
         }
     }
 }
@@ -110,20 +114,37 @@ impl ParsedQProperty {
                 let mut write = None;
                 let mut notify = None;
 
+                let mut constant = false;
+                let mut required = false;
+                let mut is_final = false;
+                let mut reset = None;
+
+                let map_auto_or_custom = |variable: &mut Option<FlagState>, value: &Option<Ident>| {
+                    *variable = Some(value.as_ref().map_or(FlagState::Auto, |ident| FlagState::Custom(ident.clone())));
+                };
+
                 // Create mutable closure to capture the variables for setting with the Meta values
                 let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
-                    let variable = match ident.to_string().as_str() {
-                        "read" => &mut read,
-                        "write" => &mut write,
-                        "notify" => &mut notify,
+                    match ident.to_string().as_str() {
+                        "READ" => map_auto_or_custom(&mut read, &value),
+                        "WRITE" => map_auto_or_custom(&mut write, &value),
+                        "NOTIFY" => map_auto_or_custom(&mut notify, &value),
+                        "CONSTANT" => constant = true,
+                        "REQUIRED" => required = true,
+                        "FINAL" => is_final = true,
+                        "RESET" => reset = Some(
+                                value.ok_or_else(|| Error::new(
+                                    ident.span(),
+                                    "Reset flag must be given a user defined reset function, like `RESET = my_reset`",
+                                ))?
+                            ),
                         _ => {
                             return Err(Error::new(
                                 ident.span(),
-                                "Invalid flag passed, must be one of read, write, notify",
+                                "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
                             ));
                         }
                     };
-                    *variable = Some(value.map_or(FlagState::Auto, FlagState::Custom));
 
                     Ok(())
                 };
@@ -131,6 +152,14 @@ impl ParsedQProperty {
                 for flag in flags {
                     let (field, maybe_value) = parse_meta(flag)?;
                     update_fields(&field, maybe_value)?;
+                }
+
+                // Constance check
+                if constant && (write.is_some() || notify.is_some()) {
+                    return Err(Error::new(
+                        punctuated_flags.span(),
+                        "constant properties cannot have a setter or notify signal",
+                    ))
                 }
 
                 if let Some(read) = read {
@@ -141,6 +170,10 @@ impl ParsedQProperty {
                             read,
                             write,
                             notify,
+                            reset,
+                            is_final,
+                            constant,
+                            required,
                         },
                     })
                 } else {
@@ -162,9 +195,39 @@ mod tests {
     use syn::{parse_quote, ItemStruct};
 
     #[test]
+    fn test_parse_constant_incorrect() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, READ, WRITE, NOTIFY, CONSTANT)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
+    }
+
+    #[test]
+    fn test_parse_constant() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, READ, CONSTANT)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        assert!(property.flags.constant);
+    }
+
+    #[test]
+    fn test_parse_reset_incorrect() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, READ, RESET)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
+    }
+
+    #[test]
     fn test_parse_property() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write = myGetter,)]
+            #[qproperty(T, name, READ, WRITE = myGetter,)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -175,7 +238,7 @@ mod tests {
     #[test]
     fn test_parse_flags_read() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read)]
+            #[qproperty(T, name, READ)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -186,7 +249,7 @@ mod tests {
     #[test]
     fn test_parse_flags_all() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write, notify)]
+            #[qproperty(T, name, READ, WRITE, NOTIFY, REQUIRED, RESET = my_reset, FINAL)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -194,7 +257,15 @@ mod tests {
         assert_eq!(property.ty, parse_quote! { T });
 
         assert_eq!(property.flags.read, FlagState::Auto);
+        assert_eq!(property.flags.read, FlagState::Auto);
 
+        assert_eq!(property.flags.write, Some(FlagState::Auto));
+        assert_eq!(property.flags.notify, Some(FlagState::Auto));
+
+        assert!(property.flags.required);
+        assert!(property.flags.is_final);
+
+        assert_eq!(property.flags.reset, Some(format_ident!("my_reset")));
         assert_eq!(property.flags.notify, Some(FlagState::Auto));
         assert_eq!(property.flags.write, Some(FlagState::Auto));
     }
@@ -202,7 +273,7 @@ mod tests {
     #[test]
     fn test_parse_flags_kw() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = my_getter, write, notify = my_notifier)]
+            #[qproperty(T, name, READ = my_getter, WRITE, NOTIFY = my_notifier)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -225,7 +296,7 @@ mod tests {
     #[test]
     fn test_parse_flags_invalid() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = blah, a, notify = blahblah)]
+            #[qproperty(T, name, READ = blah, a, NOTIFY = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -235,7 +306,7 @@ mod tests {
     #[test]
     fn test_parse_flags_missing_read() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, notify = blahblah)]
+            #[qproperty(T, name, NOTIFY = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -245,7 +316,7 @@ mod tests {
     #[test]
     fn test_parse_flags_invalid_literal() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, notify = 3)]
+            #[qproperty(T, name, NOTIFY = 3)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));

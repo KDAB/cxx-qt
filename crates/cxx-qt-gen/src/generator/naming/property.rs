@@ -46,6 +46,7 @@ pub struct QPropertyNames {
     pub setter: Option<NameState>,
     pub setter_wrapper: Option<Name>,
     pub notify: Option<NameState>,
+    pub reset: Option<Name>,
 }
 
 impl From<&ParsedQProperty> for QPropertyNames {
@@ -79,12 +80,15 @@ impl From<&ParsedQProperty> for QPropertyNames {
             None
         };
 
+        let reset = flags.reset.as_ref().map(|ident| Name::new(ident.clone()));
+
         Self {
             getter_wrapper,
             getter,
             setter_wrapper,
             setter,
             notify,
+            reset,
             name: property_name,
         }
     }

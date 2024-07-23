@@ -71,8 +71,15 @@ public:
   Q_PROPERTY(::std::int32_t customFunctionProp READ my_getter WRITE my_setter
                NOTIFY customFunctionPropChanged)
   Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
-  Q_PROPERTY(::std::int32_t customOnChanged READ getCustomOnChanged WRITE
-               setCustomOnChanged NOTIFY myOnChanged)
+  Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
+               WRITE setCustomOnChangedProp NOTIFY myOnChanged)
+  Q_PROPERTY(::std::int32_t constProp READ getConstProp CONSTANT)
+  Q_PROPERTY(::std::int32_t resettableProp READ getResettableProp WRITE
+               setResettableProp RESET myResetFn)
+  Q_PROPERTY(::std::int32_t requiredProp READ getRequiredProp WRITE
+               setRequiredProp REQUIRED)
+  Q_PROPERTY(
+    ::std::int32_t finalProp READ getFinalProp WRITE setFinalProp FINAL)
 
   virtual ~MyObject() = default;
 
@@ -82,8 +89,15 @@ public:
   QPoint const& getTrivial() const;
   Q_SLOT void setTrivial(QPoint const& value);
   ::std::int32_t const& getReadonlyProp() const;
-  ::std::int32_t const& getCustomOnChanged() const;
-  Q_SLOT void setCustomOnChanged(::std::int32_t const& value);
+  ::std::int32_t const& getCustomOnChangedProp() const;
+  Q_SLOT void setCustomOnChangedProp(::std::int32_t const& value);
+  ::std::int32_t const& getConstProp() const;
+  ::std::int32_t const& getResettableProp() const;
+  Q_SLOT void setResettableProp(::std::int32_t const& value);
+  ::std::int32_t const& getRequiredProp() const;
+  Q_SLOT void setRequiredProp(::std::int32_t const& value);
+  ::std::int32_t const& getFinalProp() const;
+  Q_SLOT void setFinalProp(::std::int32_t const& value);
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
@@ -95,8 +109,15 @@ private:
   QPoint const& getTrivialWrapper() const noexcept;
   void setTrivialWrapper(QPoint value) noexcept;
   ::std::int32_t const& getReadonlyPropWrapper() const noexcept;
-  ::std::int32_t const& getCustomOnChangedWrapper() const noexcept;
-  void setCustomOnChangedWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t const& getCustomOnChangedPropWrapper() const noexcept;
+  void setCustomOnChangedPropWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t const& getConstPropWrapper() const noexcept;
+  ::std::int32_t const& getResettablePropWrapper() const noexcept;
+  void setResettablePropWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t const& getRequiredPropWrapper() const noexcept;
+  void setRequiredPropWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t const& getFinalPropWrapper() const noexcept;
+  void setFinalPropWrapper(::std::int32_t value) noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

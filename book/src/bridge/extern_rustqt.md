@@ -132,22 +132,41 @@ Where `<Property>` is the name of the property.
 These setters and getters assure that the changed signal is emitted every time the property is edited.
 
 It is also possible to specify custom getters, setters and notify signals, using flags passed like so:
-`#[qproperty(TYPE, NAME, read = myGetter, write = mySetter, notify = myOnChanged)]`
+`#[qproperty(TYPE, NAME, READ = myGetter, WRITE = mySetter, NOTIFY = myOnChanged)]`
+> Note: the key for the flags use all capitals like in the Qt version of qproperty
 
 > Note: currently the rust name must be in camel case or specified like `#[cxx_name = "my_getter"]` if not
 
 It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
 
-Using the read flag will cause CXX-Qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, read)]` will have a getter function generated called get_num in Rust, and getNum in C++.
+Using the read flag will cause CXX-Qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, READ)]` will have a getter function generated called get_num in Rust, and getNum in C++.
 
 If a custom function is specified, an implementation both in qobject::MyObject and and export in the bridge is expected.
 
 ### Examples
 
-- `#[qproperty(TYPE, NAME, read)]` A read only prop
-- `#[qproperty(TYPE, NAME, read = myGetter, write, notify)]` custom getter provided but will generate setter and on-changed
-- `#[qproperty(TYPE, NAME)]` is syntactic sugar for `#[qproperty(TYPE, NAME, read, write, notify)]`
-- `#[qproperty(TYPE, NAME, write)]` is an error as read was not explicitly passed
+- `#[qproperty(TYPE, NAME, READ)]` A read only property
+- `#[qproperty(TYPE, NAME, READ = myGetter, WRITE, NOTIFY)]` custom getter provided, but will generate setter and on-changed
+- `#[qproperty(TYPE, NAME)]` is shorthand for `#[qproperty(TYPE, NAME, READ, WRITE, NOTIFY)]`
+- `#[qproperty(TYPE, NAME, WRITE)]` is an error as read was not explicitly passed
+
+### Available Flags
+
+- `READ` or `READ = my_getter`
+  - Specifies that the property should be readable (*always required if flags are passed*), with optional user defined getter
+- `WRITE` or `WRITE = my_setter`
+  - Specifies that the property should be writeable, with optional user defined setter
+- `NOTIFY` or `NOTIFY = my_on_changed`
+  - Specifies that the property should emit a notify signal on change, with optional user defined signal name
+- `CONSTANT`
+  - Specifies that the property should be constant (implication is that the getter returns the same value every time for that particular instance)
+  - __`CONSTANT` is not available for properties which use `WRITE` or `NOTIFY` and will not compile__
+- `REQUIRED`
+  - Specifies that the property must be set by a user of the class, useful in QML as the class cannot be instantiated unless the property has been set
+- `FINAL`
+  - Specifies that the property will not be overriden by a derived class
+- `RESET = my_reset`
+  - Specifies a function to reset the property to a default value, user function __must__ be provided or it will not compile
 
 ## Methods
 
