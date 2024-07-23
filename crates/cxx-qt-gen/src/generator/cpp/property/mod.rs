@@ -78,12 +78,7 @@ mod tests {
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
 
-    #[test]
-    fn test_custom_setter() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, write = mySetter)]
-            struct MyStruct;
-        };
+    fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
         let properties = vec![property];
@@ -91,7 +86,17 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let type_names = TypeNames::mock();
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        generate_cpp_properties(&properties, &qobject_idents, &type_names)
+    }
+
+    #[test]
+    fn test_custom_setter() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, read, write = mySetter)]
+            struct MyStruct;
+        };
+
+        let generated = setup_generated(&mut input).unwrap();
 
         assert_eq!(generated.metaobjects.len(), 1);
         assert_str_eq!(
@@ -123,21 +128,31 @@ mod tests {
 
     #[test]
     fn test_reset() {
-        // TODO WRITE PROPER TESTS
         let mut input: ItemStruct = parse_quote! {
             #[qproperty(i32, num, read, write = mySetter, reset = my_resetter)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
-        let properties = vec![property];
+        let generated = setup_generated(&mut input).unwrap();
 
-        let qobject_idents = create_qobjectname();
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter RESET my_resetter)"
+        );
+    }
 
-        let type_names = TypeNames::mock();
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+    #[test]
+    fn test_constant_and_required() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, read, constant, required)]
+            struct MyStruct;
+        };
+        let generated = setup_generated(&mut input).unwrap();
 
-        println!("meta: {:?}", generated.metaobjects);
+        assert_str_eq!(
+            generated.metaobjects[0],
+            "Q_PROPERTY(::std::int32_t num READ getNum CONSTANT REQUIRED)"
+        );
     }
 
     #[test]

@@ -19,13 +19,6 @@ pub enum FlagState {
     Custom(Ident),
 }
 
-impl FlagState {
-    #[cfg(test)]
-    pub fn is_auto(&self) -> bool {
-        matches!(self, Self::Auto)
-    }
-}
-
 /// Struct for storing the flags provided for a QProperty
 #[derive(Debug)]
 pub struct QPropertyFlags {
@@ -125,12 +118,16 @@ impl ParsedQProperty {
                 let mut required = false;
                 let mut reset = None;
 
+                let map_auto_or_custom = |variable: &mut Option<FlagState>, value: &Option<Ident>| {
+                    *variable = Some(value.as_ref().map_or(FlagState::Auto, |ident| FlagState::Custom(ident.clone())));
+                };
+
                 // Create mutable closure to capture the variables for setting with the Meta values
                 let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
                     match ident.to_string().as_str() {
-                        "read" => read = Some(value.map_or(FlagState::Auto, FlagState::Custom)), // Might be able to use DRY here
-                        "write" => write = Some(value.map_or(FlagState::Auto, FlagState::Custom)),
-                        "notify" => notify = Some(value.map_or(FlagState::Auto, FlagState::Custom)),
+                        "read" => map_auto_or_custom(&mut read, &value),
+                        "write" => map_auto_or_custom(&mut write, &value),
+                        "notify" => map_auto_or_custom(&mut notify, &value),
                         "constant" => constant = true,
                         "required" => required = true,
                         "reset" => {
@@ -208,6 +205,16 @@ mod tests {
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
         assert!(property.is_err());
+    }
+
+    #[test]
+    fn test_parse_constant() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, read, constant)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        assert!(property.flags.constant);
     }
 
     #[test]

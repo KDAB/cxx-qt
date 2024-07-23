@@ -33,6 +33,10 @@ pub fn generate(idents: &QPropertyNames, flags: &QPropertyFlags, cxx_ty: &str) -
         parts.push(String::from("REQUIRED"))
     }
 
+    if flags.is_final {
+        parts.push(String::from("FINAL"))
+    }
+
     format!(
         "Q_PROPERTY({ty} {ident} {meta_parts})",
         ty = cxx_ty,
