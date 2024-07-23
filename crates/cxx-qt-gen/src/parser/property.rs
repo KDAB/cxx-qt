@@ -26,7 +26,7 @@ pub struct QPropertyFlags {
     pub(crate) write: Option<FlagState>,
     pub(crate) notify: Option<FlagState>,
     pub(crate) reset: Option<Ident>, // TODO: in future might be able to generate the function if T has a default
-    pub(crate) is_final: bool, // TODO: `final` is a keyword, see https://github.com/KDAB/cxx-qt/issues/1002
+    pub(crate) is_final: bool,
     pub(crate) constant: bool,
     pub(crate) required: bool,
 }
@@ -132,17 +132,12 @@ impl ParsedQProperty {
                         "CONSTANT" => constant = true,
                         "REQUIRED" => required = true,
                         "FINAL" => is_final = true,
-                        "RESET" => {
-                            // Might be refactorable to be simpler
-                            if let Some(ident) = value {
-                                reset = Some(ident);
-                            } else {
-                                return Err(Error::new(
+                        "RESET" => reset = Some(
+                                value.ok_or(Error::new(
                                     ident.span(),
-                                    "The identifier of a reset function must be provided explicitly",
-                                ));
-                            }
-                        }
+                                    "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
+                                ))?
+                            ),
                         _ => {
                             return Err(Error::new(
                                 ident.span(),
