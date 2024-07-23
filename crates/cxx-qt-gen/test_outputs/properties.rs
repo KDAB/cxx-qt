@@ -81,6 +81,14 @@ mod ffi {
         #[cxx_name = "setRequiredPropWrapper"]
         fn set_required_prop(self: Pin<&mut MyObject>, value: i32);
     }
+    extern "Rust" {
+        #[cxx_name = "getFinalPropWrapper"]
+        unsafe fn final_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setFinalPropWrapper"]
+        fn set_final_prop(self: Pin<&mut MyObject>, value: i32);
+    }
     unsafe extern "C++" {
         #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "primitiveChanged"]
@@ -299,6 +307,24 @@ impl ffi::MyObject {
             return;
         }
         self.as_mut().rust_mut().required_prop = value;
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "final_prop"]
+    pub fn final_prop(&self) -> &i32 {
+        &self.final_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "final_prop"]
+    pub fn set_final_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.final_prop == value {
+            return;
+        }
+        self.as_mut().rust_mut().final_prop = value;
     }
 }
 impl ffi::MyObject {

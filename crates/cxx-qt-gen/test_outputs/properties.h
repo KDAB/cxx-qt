@@ -78,6 +78,8 @@ public:
                setResettableProp RESET myResetFn)
   Q_PROPERTY(::std::int32_t requiredProp READ getRequiredProp WRITE
                setRequiredProp REQUIRED)
+  Q_PROPERTY(
+    ::std::int32_t finalProp READ getFinalProp WRITE setFinalProp FINAL)
 
   virtual ~MyObject() = default;
 
@@ -94,6 +96,8 @@ public:
   Q_SLOT void setResettableProp(::std::int32_t const& value);
   ::std::int32_t const& getRequiredProp() const;
   Q_SLOT void setRequiredProp(::std::int32_t const& value);
+  ::std::int32_t const& getFinalProp() const;
+  Q_SLOT void setFinalProp(::std::int32_t const& value);
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
@@ -112,6 +116,8 @@ private:
   void setResettablePropWrapper(::std::int32_t value) noexcept;
   ::std::int32_t const& getRequiredPropWrapper() const noexcept;
   void setRequiredPropWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t const& getFinalPropWrapper() const noexcept;
+  void setFinalPropWrapper(::std::int32_t value) noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

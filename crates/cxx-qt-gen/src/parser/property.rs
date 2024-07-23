@@ -116,6 +116,7 @@ impl ParsedQProperty {
 
                 let mut constant = false;
                 let mut required = false;
+                let mut is_final = false;
                 let mut reset = None;
 
                 let map_auto_or_custom = |variable: &mut Option<FlagState>, value: &Option<Ident>| {
@@ -125,12 +126,13 @@ impl ParsedQProperty {
                 // Create mutable closure to capture the variables for setting with the Meta values
                 let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
                     match ident.to_string().as_str() {
-                        "read" => map_auto_or_custom(&mut read, &value),
-                        "write" => map_auto_or_custom(&mut write, &value),
-                        "notify" => map_auto_or_custom(&mut notify, &value),
-                        "constant" => constant = true,
-                        "required" => required = true,
-                        "reset" => {
+                        "READ" => map_auto_or_custom(&mut read, &value),
+                        "WRITE" => map_auto_or_custom(&mut write, &value),
+                        "NOTIFY" => map_auto_or_custom(&mut notify, &value),
+                        "CONSTANT" => constant = true,
+                        "REQUIRED" => required = true,
+                        "FINAL" => is_final = true,
+                        "RESET" => {
                             // Might be refactorable to be simpler
                             if let Some(ident) = value {
                                 reset = Some(ident);
@@ -144,7 +146,7 @@ impl ParsedQProperty {
                         _ => {
                             return Err(Error::new(
                                 ident.span(),
-                                "Invalid flag passed, must be one of read, write, notify",
+                                "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
                             ));
                         }
                     };
@@ -174,7 +176,7 @@ impl ParsedQProperty {
                             write,
                             notify,
                             reset,
-                            is_final: false,
+                            is_final,
                             constant,
                             required,
                         },
@@ -200,7 +202,7 @@ mod tests {
     #[test]
     fn test_parse_constant_incorrect() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write, notify, constant)]
+            #[qproperty(T, name, READ, WRITE, NOTIFY, CONSTANT)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -210,7 +212,7 @@ mod tests {
     #[test]
     fn test_parse_constant() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, constant)]
+            #[qproperty(T, name, READ, CONSTANT)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -220,7 +222,7 @@ mod tests {
     #[test]
     fn test_parse_reset_incorrect() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, reset)]
+            #[qproperty(T, name, READ, RESET)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -230,7 +232,7 @@ mod tests {
     #[test]
     fn test_parse_property() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write = myGetter,)]
+            #[qproperty(T, name, READ, WRITE = myGetter,)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -241,7 +243,7 @@ mod tests {
     #[test]
     fn test_parse_flags_read() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read)]
+            #[qproperty(T, name, READ)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -252,7 +254,7 @@ mod tests {
     #[test]
     fn test_parse_flags_all() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write, notify, required, reset = my_reset)]
+            #[qproperty(T, name, READ, WRITE, NOTIFY, REQUIRED, RESET = my_reset, FINAL)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -264,7 +266,10 @@ mod tests {
 
         assert_eq!(property.flags.write, Some(FlagState::Auto));
         assert_eq!(property.flags.notify, Some(FlagState::Auto));
+
         assert!(property.flags.required);
+        assert!(property.flags.is_final);
+
         assert_eq!(property.flags.reset, Some(format_ident!("my_reset")));
         assert_eq!(property.flags.notify, Some(FlagState::Auto));
         assert_eq!(property.flags.write, Some(FlagState::Auto));
@@ -273,7 +278,7 @@ mod tests {
     #[test]
     fn test_parse_flags_kw() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = my_getter, write, notify = my_notifier)]
+            #[qproperty(T, name, READ = my_getter, WRITE, NOTIFY = my_notifier)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -296,7 +301,7 @@ mod tests {
     #[test]
     fn test_parse_flags_invalid() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read = blah, a, notify = blahblah)]
+            #[qproperty(T, name, READ = blah, a, NOTIFY = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -306,7 +311,7 @@ mod tests {
     #[test]
     fn test_parse_flags_missing_read() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, notify = blahblah)]
+            #[qproperty(T, name, NOTIFY = blahblah)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
@@ -316,7 +321,7 @@ mod tests {
     #[test]
     fn test_parse_flags_invalid_literal() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, notify = 3)]
+            #[qproperty(T, name, NOTIFY = 3)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));

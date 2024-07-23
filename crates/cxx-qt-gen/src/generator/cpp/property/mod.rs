@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn test_custom_setter() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, write = mySetter)]
+            #[qproperty(i32, num, READ, WRITE = mySetter)]
             struct MyStruct;
         };
 
@@ -129,7 +129,7 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, write = mySetter, reset = my_resetter)]
+            #[qproperty(i32, num, READ, WRITE = mySetter, RESET = my_resetter)]
             struct MyStruct;
         };
 
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn test_constant_and_required() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(i32, num, read, constant, required)]
+            #[qproperty(i32, num, READ, CONSTANT, REQUIRED)]
             struct MyStruct;
         };
         let generated = setup_generated(&mut input).unwrap();
@@ -158,7 +158,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_properties() {
         let mut input1: ItemStruct = parse_quote! {
-            #[qproperty(i32, trivial_property, read, write, notify)]
+            #[qproperty(i32, trivial_property, READ, WRITE, NOTIFY)]
             struct MyStruct;
         };
 

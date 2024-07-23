@@ -261,6 +261,20 @@ MyObject::setRequiredProp(::std::int32_t const& value)
   setRequiredPropWrapper(value);
 }
 
+::std::int32_t const&
+MyObject::getFinalProp() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return getFinalPropWrapper();
+}
+
+void
+MyObject::setFinalProp(::std::int32_t const& value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  setFinalPropWrapper(value);
+}
+
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
