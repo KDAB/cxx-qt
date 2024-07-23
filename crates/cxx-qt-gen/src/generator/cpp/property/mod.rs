@@ -31,7 +31,9 @@ pub fn generate_cpp_properties(
         let idents = QPropertyNames::from(property);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
-        generated.metaobjects.push(meta::generate(&idents, &cxx_ty));
+        generated
+            .metaobjects
+            .push(meta::generate(&idents, &property.flags, &cxx_ty));
 
         if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
             generated.methods.push(getter);
@@ -117,6 +119,25 @@ mod tests {
             }
             "#}
         );
+    }
+
+    #[test]
+    fn test_reset() {
+        // TODO WRITE PROPER TESTS
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, read, write = mySetter, reset = my_resetter)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        let type_names = TypeNames::mock();
+        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+
+        println!("meta: {:?}", generated.metaobjects);
     }
 
     #[test]

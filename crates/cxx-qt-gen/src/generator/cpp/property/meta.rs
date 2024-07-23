@@ -4,9 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::naming::property::QPropertyNames;
+use crate::parser::property::QPropertyFlags;
 
 /// Generate the metaobject line for a given property
-pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
+pub fn generate(idents: &QPropertyNames, flags: &QPropertyFlags, cxx_ty: &str) -> String {
     let mut parts = vec![format!(
         "READ {ident_getter}",
         ident_getter = idents.getter.cxx_unqualified()
@@ -18,6 +19,18 @@ pub fn generate(idents: &QPropertyNames, cxx_ty: &str) -> String {
 
     if let Some(notify) = &idents.notify {
         parts.push(format!("NOTIFY {}", notify.cxx_unqualified()));
+    }
+
+    if let Some(reset) = &idents.reset {
+        parts.push(format!("RESET {}", reset.cxx_unqualified()));
+    }
+
+    if flags.constant {
+        parts.push(String::from("CONSTANT"))
+    }
+
+    if flags.required {
+        parts.push(String::from("REQUIRED"))
     }
 
     format!(

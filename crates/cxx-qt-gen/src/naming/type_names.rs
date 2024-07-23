@@ -574,7 +574,6 @@ mod tests {
 
     #[test]
     fn test_cxx_items_cxx_name() {
-        // TODO
         let item: Item = parse_quote! {
             unsafe extern "C++" {
                 #[cxx_name = "B"]

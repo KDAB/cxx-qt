@@ -11,8 +11,11 @@ use syn::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Enum representing the possible states of a flag passed to a QProperty
+/// Auto is the state where a user passed for example `read` but no custom function
+/// Custom(Ident) is the state where a user passed for example `read = my_getter` and the ident stored in this case would be `my_getter`
 pub enum FlagState {
-    Auto, // Might need to refactor to also store the generated ident here
+    Auto,
     Custom(Ident),
 }
 
@@ -29,6 +32,10 @@ pub struct QPropertyFlags {
     pub(crate) read: FlagState,
     pub(crate) write: Option<FlagState>,
     pub(crate) notify: Option<FlagState>,
+    pub(crate) reset: Option<Ident>, // TODO: in future might be able to generate the function if T has a default
+    pub(crate) is_final: bool, // TODO: `final` is a keyword, see https://github.com/KDAB/cxx-qt/issues/1002
+    pub(crate) constant: bool,
+    pub(crate) required: bool,
 }
 
 impl Default for QPropertyFlags {
@@ -38,6 +45,10 @@ impl Default for QPropertyFlags {
             read: FlagState::Auto,
             write: Some(FlagState::Auto),
             notify: Some(FlagState::Auto),
+            reset: None,
+            is_final: false,
+            constant: false,
+            required: false,
         }
     }
 }
@@ -110,12 +121,29 @@ impl ParsedQProperty {
                 let mut write = None;
                 let mut notify = None;
 
+                let mut constant = false;
+                let mut required = false;
+                let mut reset = None;
+
                 // Create mutable closure to capture the variables for setting with the Meta values
                 let mut update_fields = |ident: &Ident, value: Option<Ident>| -> Result<()> {
-                    let variable = match ident.to_string().as_str() {
-                        "read" => &mut read,
-                        "write" => &mut write,
-                        "notify" => &mut notify,
+                    match ident.to_string().as_str() {
+                        "read" => read = Some(value.map_or(FlagState::Auto, FlagState::Custom)), // Might be able to use DRY here
+                        "write" => write = Some(value.map_or(FlagState::Auto, FlagState::Custom)),
+                        "notify" => notify = Some(value.map_or(FlagState::Auto, FlagState::Custom)),
+                        "constant" => constant = true,
+                        "required" => required = true,
+                        "reset" => {
+                            // Might be refactorable to be simpler
+                            if let Some(ident) = value {
+                                reset = Some(ident);
+                            } else {
+                                return Err(Error::new(
+                                    ident.span(),
+                                    "The identifier of a reset function must be provided explicitly",
+                                ));
+                            }
+                        }
                         _ => {
                             return Err(Error::new(
                                 ident.span(),
@@ -123,7 +151,6 @@ impl ParsedQProperty {
                             ));
                         }
                     };
-                    *variable = Some(value.map_or(FlagState::Auto, FlagState::Custom));
 
                     Ok(())
                 };
@@ -131,6 +158,14 @@ impl ParsedQProperty {
                 for flag in flags {
                     let (field, maybe_value) = parse_meta(flag)?;
                     update_fields(&field, maybe_value)?;
+                }
+
+                // Constance check
+                if constant && (write.is_some() || notify.is_some()) {
+                    return Err(Error::new(
+                        punctuated_flags.span(),
+                        "constant properties cannot have a setter or notify signal",
+                    ))
                 }
 
                 if let Some(read) = read {
@@ -141,6 +176,10 @@ impl ParsedQProperty {
                             read,
                             write,
                             notify,
+                            reset,
+                            is_final: false,
+                            constant,
+                            required,
                         },
                     })
                 } else {
@@ -160,6 +199,26 @@ mod tests {
 
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
+
+    #[test]
+    fn test_parse_constant_incorrect() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, read, write, notify, constant)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
+    }
+
+    #[test]
+    fn test_parse_reset_incorrect() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, read, reset)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
+    }
 
     #[test]
     fn test_parse_property() {
@@ -186,7 +245,7 @@ mod tests {
     #[test]
     fn test_parse_flags_all() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, read, write, notify)]
+            #[qproperty(T, name, read, write, notify, required, reset = my_reset)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -194,7 +253,12 @@ mod tests {
         assert_eq!(property.ty, parse_quote! { T });
 
         assert_eq!(property.flags.read, FlagState::Auto);
+        assert_eq!(property.flags.read, FlagState::Auto);
 
+        assert_eq!(property.flags.write, Some(FlagState::Auto));
+        assert_eq!(property.flags.notify, Some(FlagState::Auto));
+        assert!(property.flags.required);
+        assert_eq!(property.flags.reset, Some(format_ident!("my_reset")));
         assert_eq!(property.flags.notify, Some(FlagState::Auto));
         assert_eq!(property.flags.write, Some(FlagState::Auto));
     }
