@@ -35,7 +35,7 @@ pub fn generate(
                   return {base_class}::{func_ident}(args...);
               }}"#,
         mutability = if method.mutable { "" } else { " const" },
-        func_ident = method.ident.cpp,
+        func_ident = method.ident.cxx_unqualified(),
         wrapper_ident = method.wrapper_ident(),
         return_type = return_type.unwrap_or_else(|| "void".to_string()),
         base_class = base_class

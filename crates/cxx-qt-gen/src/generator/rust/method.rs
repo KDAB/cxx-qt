@@ -23,8 +23,8 @@ pub fn generate_rust_methods(
 
     for invokable in invokables {
         let idents = QMethodName::from(invokable);
-        let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
-        let invokable_ident_rust = &idents.name.rust;
+        let wrapper_ident_cpp = idents.wrapper.cxx_unqualified();
+        let invokable_ident_rust = &idents.name.rust_unqualified();
 
         // TODO: once we aren't using qobject::T in the extern "RustQt"
         // we can just pass through the original ExternFn block and add the attribute?

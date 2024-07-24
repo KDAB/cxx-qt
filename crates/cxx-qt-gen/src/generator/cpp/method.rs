@@ -63,7 +63,7 @@ pub fn generate_cpp_methods(
 
         let body = format!(
             "{ident}({parameter_names})",
-            ident = idents.wrapper.cpp,
+            ident = idents.wrapper.cxx_unqualified(),
             parameter_names = parameters
                 .iter()
                 .map(|parameter| parameter.ident.as_str())
@@ -85,7 +85,7 @@ pub fn generate_cpp_methods(
                 } else {
                     "void"
                 },
-                ident = idents.name.cpp,
+                ident = idents.name.cxx_unqualified(),
                 parameter_types = parameter_types,
                 is_qinvokable = if invokable.is_qinvokable {
                     "Q_INVOKABLE "
@@ -122,7 +122,7 @@ pub fn generate_cpp_methods(
                 } else {
                     "void"
                 },
-                ident = idents.name.cpp,
+                ident = idents.name.cxx_unqualified(),
                 body = if return_cxx_ty.is_some() {
                     format!("return {body}", body = body)
                 } else {
@@ -143,7 +143,7 @@ pub fn generate_cpp_methods(
             } else {
                 "void"
             },
-            ident = idents.wrapper.cpp,
+            ident = idents.wrapper.cxx_unqualified(),
         )));
     }
 

@@ -2,15 +2,16 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{generator::naming::CombinedIdent, parser::method::ParsedMethod};
+use crate::naming::Name;
+use crate::parser::method::ParsedMethod;
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{ForeignItemFn, Ident};
 
 /// Names for parts of a method (which could be a Q_INVOKABLE)
 pub struct QMethodName {
-    pub name: CombinedIdent,
-    pub wrapper: CombinedIdent,
+    pub name: Name,
+    pub wrapper: Name,
 }
 
 impl From<&ParsedMethod> for QMethodName {
@@ -22,20 +23,15 @@ impl From<&ParsedMethod> for QMethodName {
 impl From<&ForeignItemFn> for QMethodName {
     fn from(method: &ForeignItemFn) -> Self {
         let ident = &method.sig.ident;
-        Self {
-            name: CombinedIdent::from_rust_function(ident.clone()),
-            wrapper: CombinedIdent::wrapper_from_invokable(ident),
-        }
-    }
-}
+        let method_name =
+            Name::from_rust_ident_and_attrs(&ident, &method.attrs, None, None).unwrap(); // Might need to add a way to get the namespace and module in here
 
-impl CombinedIdent {
-    /// For a given ident generate the Rust and C++ wrapper names
-    fn wrapper_from_invokable(ident: &Ident) -> Self {
-        let ident = format_ident!("{ident}_wrapper");
+        let wrapper = Name::wrapper_from(method_name.clone());
+
         Self {
-            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-            rust: ident,
+            // TODO: URGENT add error propagation here
+            name: method_name,
+            wrapper,
         }
     }
 }
@@ -63,12 +59,21 @@ mod tests {
         };
 
         let invokable = QMethodName::from(&parsed);
-        assert_eq!(invokable.name.cpp, format_ident!("myInvokable"));
-        assert_eq!(invokable.name.rust, format_ident!("my_invokable"));
-        assert_eq!(invokable.wrapper.cpp, format_ident!("myInvokableWrapper"));
         assert_eq!(
-            invokable.wrapper.rust,
-            format_ident!("my_invokable_wrapper")
+            invokable.name.cxx_unqualified(),
+            String::from("myInvokable")
+        );
+        assert_eq!(
+            invokable.name.rust_unqualified().to_string(),
+            String::from("my_invokable")
+        );
+        assert_eq!(
+            invokable.wrapper.cxx_unqualified(),
+            String::from("myInvokableWrapper")
+        );
+        assert_eq!(
+            invokable.wrapper.rust_unqualified().to_string(),
+            String::from("my_invokable_wrapper")
         );
     }
 }

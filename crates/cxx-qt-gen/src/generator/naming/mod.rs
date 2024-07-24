@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-pub mod functions;
 pub mod method;
 pub mod namespace;
 pub mod property;
@@ -10,12 +9,3 @@ pub mod qobject;
 pub mod signals;
 
 use syn::Ident;
-
-/// Describes an ident which potentially has a different name in C++ and Rust
-#[derive(Clone, Debug, PartialEq)]
-pub struct CombinedIdent {
-    /// The ident for C++
-    pub cpp: Ident,
-    /// The ident for rust
-    pub rust: Ident,
-}
