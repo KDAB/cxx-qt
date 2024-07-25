@@ -22,9 +22,9 @@ pub fn generate_rust_methods(
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
     for invokable in invokables {
-        let idents = QMethodName::from(invokable);
-        let wrapper_ident_cpp = idents.wrapper.cpp.to_string();
-        let invokable_ident_rust = &idents.name.rust;
+        let idents = QMethodName::try_from(invokable)?;
+        let wrapper_ident_cpp = idents.wrapper.cxx_unqualified();
+        let invokable_ident_rust = &idents.name.rust_unqualified();
 
         // TODO: once we aren't using qobject::T in the extern "RustQt"
         // we can just pass through the original ExternFn block and add the attribute?
@@ -89,26 +89,40 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::naming::Name;
     use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
     use quote::format_ident;
     use std::collections::HashSet;
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     #[test]
     fn test_generate_rust_invokables() {
+        let method1: ForeignItemFn = parse_quote! { fn void_invokable(self: &MyObject); };
+        let method2: ForeignItemFn =
+            parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; };
+        let method3: ForeignItemFn = parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; };
+        let method4: ForeignItemFn =
+            parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; };
         let invokables = vec![
             ParsedMethod {
-                method: parse_quote! { fn void_invokable(self: &MyObject); },
+                method: method1.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method1.sig.ident,
+                    &method1.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
+                method: method2.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -118,9 +132,16 @@ mod tests {
                 }],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method2.sig.ident,
+                    &method2.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                method: method3.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
                 safe: true,
@@ -130,9 +151,16 @@ mod tests {
                 }],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method3.sig.ident,
+                    &method3.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; },
+                method: method4.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: false,
@@ -142,6 +170,13 @@ mod tests {
                 }],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method4.sig.ident,
+                    &method4.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
         ];
         let qobject_idents = create_qobjectname();

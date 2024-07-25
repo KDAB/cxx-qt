@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
+    naming::Name,
     parser::parameter::ParsedFunctionParameter,
     syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
 };
@@ -44,6 +45,8 @@ pub struct ParsedMethod {
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
     /// Whether the method is qinvokable
     pub is_qinvokable: bool,
+    /// The rust and cxx name of the function
+    pub name: Name,
 }
 
 impl ParsedMethod {
@@ -79,6 +82,8 @@ impl ParsedMethod {
 
         let safe = method.sig.unsafety.is_none();
 
+        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+
         Ok(ParsedMethod {
             method,
             qobject_ident,
@@ -87,6 +92,7 @@ impl ParsedMethod {
             specifiers,
             safe,
             is_qinvokable,
+            name,
         })
     }
 }

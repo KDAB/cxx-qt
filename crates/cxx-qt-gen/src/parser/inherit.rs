@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::naming::CombinedIdent,
+    naming::Name,
     parser::parameter::ParsedFunctionParameter,
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod, safety::Safety, types,
@@ -26,7 +26,7 @@ pub struct ParsedInheritedMethod {
     /// the parameters of the method, without the `self` argument
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
-    pub ident: CombinedIdent,
+    pub ident: Name,
 }
 
 impl ParsedInheritedMethod {
@@ -44,13 +44,11 @@ impl ParsedInheritedMethod {
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
 
-        let mut ident = CombinedIdent::from_rust_function(method.sig.ident.clone());
+        let mut ident =
+            Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
         if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
-            ident.cpp = format_ident!(
-                "{}",
-                expr_to_string(&attr.meta.require_name_value()?.value)?
-            );
+            ident = ident.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
         }
 
         let safe = method.sig.unsafety.is_none();
@@ -67,7 +65,7 @@ impl ParsedInheritedMethod {
 
     /// the name of the wrapper function in C++
     pub fn wrapper_ident(&self) -> Ident {
-        format_ident!("{}CxxQtInherit", self.ident.cpp)
+        format_ident!("{}CxxQtInherit", self.ident.cxx_unqualified())
     }
 }
 
@@ -147,8 +145,11 @@ mod tests {
 
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
         assert_eq!(parsed.parameters.len(), 2);
-        assert_eq!(parsed.ident.rust, format_ident!("test"));
-        assert_eq!(parsed.ident.cpp, format_ident!("testFunction"));
+        assert_eq!(
+            parsed.ident.rust_unqualified().to_string(),
+            String::from("test")
+        );
+        assert_eq!(parsed.ident.cxx_unqualified(), String::from("testFunction"));
         assert_eq!(
             parsed.wrapper_ident(),
             format_ident!("testFunctionCxxQtInherit")

@@ -28,7 +28,7 @@ pub fn generate_cpp_methods(
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.name.cxx_unqualified();
     for invokable in invokables {
-        let idents = QMethodName::from(invokable);
+        let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
         let parameters: Vec<CppNamedType> = invokable
@@ -63,7 +63,7 @@ pub fn generate_cpp_methods(
 
         let body = format!(
             "{ident}({parameter_names})",
-            ident = idents.wrapper.cpp,
+            ident = idents.wrapper.cxx_unqualified(),
             parameter_names = parameters
                 .iter()
                 .map(|parameter| parameter.ident.as_str())
@@ -85,7 +85,7 @@ pub fn generate_cpp_methods(
                 } else {
                     "void"
                 },
-                ident = idents.name.cpp,
+                ident = idents.name.cxx_unqualified(),
                 parameter_types = parameter_types,
                 is_qinvokable = if invokable.is_qinvokable {
                     "Q_INVOKABLE "
@@ -122,7 +122,7 @@ pub fn generate_cpp_methods(
                 } else {
                     "void"
                 },
-                ident = idents.name.cpp,
+                ident = idents.name.cxx_unqualified(),
                 body = if return_cxx_ty.is_some() {
                     format!("return {body}", body = body)
                 } else {
@@ -143,7 +143,7 @@ pub fn generate_cpp_methods(
             } else {
                 "void"
             },
-            ident = idents.wrapper.cpp,
+            ident = idents.wrapper.cxx_unqualified(),
         )));
     }
 
@@ -155,27 +155,42 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::naming::Name;
     use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
     use std::collections::HashSet;
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     #[test]
     fn test_generate_cpp_invokables() {
+        let method1: ForeignItemFn = parse_quote! { fn void_invokable(self: &MyObject); };
+        let method2: ForeignItemFn =
+            parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; };
+        let method3: ForeignItemFn = parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; };
+        let method4: ForeignItemFn =
+            parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; };
+        let method5: ForeignItemFn = parse_quote! { fn cpp_method(self: &MyObject); };
         let invokables = vec![
             ParsedMethod {
-                method: parse_quote! { fn void_invokable(self: &MyObject); },
+                method: method1.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method1.sig.ident,
+                    &method1.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; },
+                method: method2.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -185,9 +200,16 @@ mod tests {
                 }],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method2.sig.ident,
+                    &method2.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; },
+                method: method3.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: true,
                 safe: true,
@@ -197,9 +219,16 @@ mod tests {
                 }],
                 specifiers: HashSet::new(),
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method3.sig.ident,
+                    &method3.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; },
+                method: method4.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
@@ -215,15 +244,29 @@ mod tests {
                     specifiers
                 },
                 is_qinvokable: true,
+                name: Name::from_rust_ident_and_attrs(
+                    &method4.sig.ident,
+                    &method4.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
             ParsedMethod {
-                method: parse_quote! { fn cpp_method(self: &MyObject); },
+                method: method5.clone(),
                 qobject_ident: format_ident!("MyObject"),
                 mutable: false,
                 safe: true,
                 parameters: vec![],
                 specifiers: HashSet::new(),
                 is_qinvokable: false,
+                name: Name::from_rust_ident_and_attrs(
+                    &method5.sig.ident,
+                    &method5.attrs,
+                    None,
+                    None,
+                )
+                .unwrap(),
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -385,8 +428,10 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
+        let method: ForeignItemFn =
+            parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
         let invokables = vec![ParsedMethod {
-            method: parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,
@@ -396,6 +441,8 @@ mod tests {
             }],
             specifiers: HashSet::new(),
             is_qinvokable: true,
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
         }];
         let qobject_idents = create_qobjectname();
 

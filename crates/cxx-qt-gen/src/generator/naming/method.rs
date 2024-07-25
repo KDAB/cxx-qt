@@ -2,73 +2,81 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{generator::naming::CombinedIdent, parser::method::ParsedMethod};
-use convert_case::{Case, Casing};
-use quote::format_ident;
-use syn::{ForeignItemFn, Ident};
+use crate::naming::Name;
+use crate::parser::method::ParsedMethod;
+use syn::ForeignItemFn;
 
 /// Names for parts of a method (which could be a Q_INVOKABLE)
 pub struct QMethodName {
-    pub name: CombinedIdent,
-    pub wrapper: CombinedIdent,
+    pub name: Name,
+    pub wrapper: Name,
 }
 
-impl From<&ParsedMethod> for QMethodName {
-    fn from(invokable: &ParsedMethod) -> Self {
-        Self::from(&invokable.method)
+impl TryFrom<&ParsedMethod> for QMethodName {
+    type Error = syn::Error;
+
+    fn try_from(invokable: &ParsedMethod) -> Result<Self, Self::Error> {
+        Self::try_from(&invokable.method)
     }
 }
 
-impl From<&ForeignItemFn> for QMethodName {
-    fn from(method: &ForeignItemFn) -> Self {
-        let ident = &method.sig.ident;
-        Self {
-            name: CombinedIdent::from_rust_function(ident.clone()),
-            wrapper: CombinedIdent::wrapper_from_invokable(ident),
-        }
-    }
-}
+impl TryFrom<&ForeignItemFn> for QMethodName {
+    type Error = syn::Error;
 
-impl CombinedIdent {
-    /// For a given ident generate the Rust and C++ wrapper names
-    fn wrapper_from_invokable(ident: &Ident) -> Self {
-        let ident = format_ident!("{ident}_wrapper");
-        Self {
-            cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-            rust: ident,
-        }
+    fn try_from(method: &ForeignItemFn) -> Result<Self, Self::Error> {
+        let method_name =
+            Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?; // Might need to add a way to get the namespace and module in here
+        let wrapper = Name::wrapper_from(&method_name);
+
+        Ok(Self {
+            name: method_name,
+            wrapper,
+        })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
+    use quote::format_ident;
 
     use std::collections::HashSet;
 
     #[test]
     fn test_from_impl_method() {
+        let method: ForeignItemFn = parse_quote! {
+            fn my_invokable(self: &MyObject);
+        };
         let parsed = ParsedMethod {
-            method: parse_quote! {
-                fn my_invokable(self: &MyObject);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,
             parameters: vec![],
             specifiers: HashSet::new(),
             is_qinvokable: true,
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
         };
 
-        let invokable = QMethodName::from(&parsed);
-        assert_eq!(invokable.name.cpp, format_ident!("myInvokable"));
-        assert_eq!(invokable.name.rust, format_ident!("my_invokable"));
-        assert_eq!(invokable.wrapper.cpp, format_ident!("myInvokableWrapper"));
+        let invokable = QMethodName::try_from(&parsed).unwrap();
         assert_eq!(
-            invokable.wrapper.rust,
-            format_ident!("my_invokable_wrapper")
+            invokable.name.cxx_unqualified(),
+            String::from("myInvokable")
+        );
+        assert_eq!(
+            invokable.name.rust_unqualified().to_string(),
+            String::from("my_invokable")
+        );
+        assert_eq!(
+            invokable.wrapper.cxx_unqualified(),
+            String::from("myInvokableWrapper")
+        );
+        assert_eq!(
+            invokable.wrapper.rust_unqualified().to_string(),
+            String::from("my_invokable_wrapper")
         );
     }
 }

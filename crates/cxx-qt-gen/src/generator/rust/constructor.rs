@@ -5,11 +5,14 @@
 
 use crate::{
     generator::{
-        naming::{namespace::NamespaceName, qobject::QObjectNames, CombinedIdent},
+        naming::{namespace::NamespaceName, qobject::QObjectNames},
         rust::fragment::GeneratedRustFragment,
     },
-    naming::rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
     naming::TypeNames,
+    naming::{
+        rust::{syn_type_cxx_bridge_to_qualified, syn_type_is_cxx_bridge_unsafe},
+        Name,
+    },
     parser::constructor::Constructor,
     syntax::lifetimes,
 };
@@ -93,7 +96,7 @@ fn generate_default_constructor(
 
 fn generate_arguments_struct(
     namespace_internals: &str,
-    struct_name: &CombinedIdent,
+    struct_name: &Name,
     lifetime: &Option<TokenStream>,
     argument_list: &[Type],
 ) -> Item {
@@ -103,9 +106,9 @@ fn generate_arguments_struct(
     } else {
         None
     };
-    let rust_name = &struct_name.rust;
+    let rust_name = &struct_name.rust_unqualified();
     // use to_string here, as the cxx_name needs to be in quotes for the attribute macro.
-    let cxx_name = &struct_name.cpp.to_string();
+    let cxx_name = &struct_name.cxx_unqualified();
     parse_quote! {
         #[namespace = #namespace_internals]
         #[cxx_name = #cxx_name]
@@ -348,18 +351,9 @@ pub fn generate(
                     initialize: #initialize_arguments_rust #initialize_lifetime,
                 }
             },
-            generate_arguments_struct(&namespace.internal, &CombinedIdent {
-                cpp: base_arguments_cxx.clone(),
-                rust: base_arguments_rust.clone(),
-            }, &base_lifetime, &constructor.base_arguments),
-            generate_arguments_struct(&namespace.internal, &CombinedIdent {
-                cpp: new_arguments_cxx.clone(),
-                rust: new_arguments_rust.clone(),
-            }, &new_lifetime, &constructor.new_arguments),
-            generate_arguments_struct(&namespace.internal, &CombinedIdent {
-                cpp: initialize_arguments_cxx.clone(),
-                rust: initialize_arguments_rust.clone(),
-            }, &initialize_lifetime, &constructor.initialize_arguments),
+            generate_arguments_struct(&namespace.internal, &Name::new(base_arguments_rust.clone()).with_cxx_name(base_arguments_cxx.to_string()), &base_lifetime, &constructor.base_arguments),
+            generate_arguments_struct(&namespace.internal, &Name::new(new_arguments_rust.clone()).with_cxx_name(new_arguments_cxx.to_string()), &new_lifetime, &constructor.new_arguments),
+            generate_arguments_struct(&namespace.internal, &Name::new(initialize_arguments_rust.clone()).with_cxx_name(initialize_arguments_cxx.to_string()), &initialize_lifetime, &constructor.initialize_arguments),
             parse_quote_spanned! {
                 constructor.imp.span() =>
                 #[allow(clippy::needless_lifetimes)]
