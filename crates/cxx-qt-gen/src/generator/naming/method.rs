@@ -40,6 +40,7 @@ mod tests {
     use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
+    use quote::format_ident;
 
     use std::collections::HashSet;
 
