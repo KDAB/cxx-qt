@@ -354,7 +354,6 @@ pub fn generate(
             generate_arguments_struct(&namespace.internal, &Name::new(base_arguments_rust.clone()).with_cxx_name(base_arguments_cxx.to_string()), &base_lifetime, &constructor.base_arguments),
             generate_arguments_struct(&namespace.internal, &Name::new(new_arguments_rust.clone()).with_cxx_name(new_arguments_cxx.to_string()), &new_lifetime, &constructor.new_arguments),
             generate_arguments_struct(&namespace.internal, &Name::new(initialize_arguments_rust.clone()).with_cxx_name(initialize_arguments_cxx.to_string()), &initialize_lifetime, &constructor.initialize_arguments),
-            
             parse_quote_spanned! {
                 constructor.imp.span() =>
                 #[allow(clippy::needless_lifetimes)]
