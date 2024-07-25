@@ -7,5 +7,3 @@ pub mod namespace;
 pub mod property;
 pub mod qobject;
 pub mod signals;
-
-use syn::Ident;

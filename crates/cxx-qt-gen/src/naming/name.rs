@@ -85,7 +85,9 @@ impl Name {
     }
 
     /// For a given Name generate the Rust and C++ wrapper names
-    pub fn wrapper_from(self) -> Self {
+    ///
+    /// Note: If no cxx_name is set explicitly, this will ause a camel-case version of the rust name
+    pub fn wrapper_from(&self) -> Self {
         const CXX_WRAPPER_SUFFIX: &str = "Wrapper";
         const RUST_WRAPPER_SUFFIX: &str = "_wrapper";
 
@@ -102,7 +104,7 @@ impl Name {
         Self {
             rust: format_ident!("{rust_name}{RUST_WRAPPER_SUFFIX}"),
             cxx: Some(cxx_name),
-            ..self
+            ..self.clone()
         }
     }
 

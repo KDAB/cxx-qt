@@ -4,9 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
 use crate::parser::method::ParsedMethod;
-use convert_case::{Case, Casing};
-use quote::format_ident;
-use syn::{ForeignItemFn, Ident};
+use syn::ForeignItemFn;
 
 /// Names for parts of a method (which could be a Q_INVOKABLE)
 pub struct QMethodName {
@@ -26,10 +24,9 @@ impl TryFrom<&ForeignItemFn> for QMethodName {
     type Error = syn::Error;
 
     fn try_from(method: &ForeignItemFn) -> Result<Self, Self::Error> {
-        let ident = &method.sig.ident;
-        let method_name = Name::from_rust_ident_and_attrs(&ident, &method.attrs, None, None)?; // Might need to add a way to get the namespace and module in here
-
-        let wrapper = Name::wrapper_from(method_name.clone());
+        let method_name =
+            Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?; // Might need to add a way to get the namespace and module in here
+        let wrapper = Name::wrapper_from(&method_name);
 
         Ok(Self {
             name: method_name,
