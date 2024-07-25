@@ -14,25 +14,27 @@ pub struct QMethodName {
     pub wrapper: Name,
 }
 
-impl From<&ParsedMethod> for QMethodName {
-    fn from(invokable: &ParsedMethod) -> Self {
-        Self::from(&invokable.method)
+impl TryFrom<&ParsedMethod> for QMethodName {
+    type Error = syn::Error;
+
+    fn try_from(invokable: &ParsedMethod) -> Result<Self, Self::Error> {
+        Self::try_from(&invokable.method)
     }
 }
 
-impl From<&ForeignItemFn> for QMethodName {
-    fn from(method: &ForeignItemFn) -> Self {
+impl TryFrom<&ForeignItemFn> for QMethodName {
+    type Error = syn::Error;
+
+    fn try_from(method: &ForeignItemFn) -> Result<Self, Self::Error> {
         let ident = &method.sig.ident;
-        let method_name =
-            Name::from_rust_ident_and_attrs(&ident, &method.attrs, None, None).unwrap(); // Might need to add a way to get the namespace and module in here
+        let method_name = Name::from_rust_ident_and_attrs(&ident, &method.attrs, None, None)?; // Might need to add a way to get the namespace and module in here
 
         let wrapper = Name::wrapper_from(method_name.clone());
 
-        Self {
-            // TODO: URGENT add error propagation here
+        Ok(Self {
             name: method_name,
             wrapper,
-        }
+        })
     }
 }
 
@@ -61,7 +63,7 @@ mod tests {
                 .unwrap(),
         };
 
-        let invokable = QMethodName::from(&parsed);
+        let invokable = QMethodName::try_from(&parsed).unwrap();
         assert_eq!(
             invokable.name.cxx_unqualified(),
             String::from("myInvokable")

@@ -22,7 +22,7 @@ pub fn generate_rust_methods(
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
     for invokable in invokables {
-        let idents = QMethodName::from(invokable);
+        let idents = QMethodName::try_from(invokable)?;
         let wrapper_ident_cpp = idents.wrapper.cxx_unqualified();
         let invokable_ident_rust = &idents.name.rust_unqualified();
 

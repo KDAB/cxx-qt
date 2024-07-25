@@ -178,7 +178,6 @@ fn unsafe_if(condition: bool) -> Option<TokenStream> {
     }
 }
 
-// TODO: refactor this gigantic function
 pub fn generate(
     constructors: &[Constructor],
     qobject_idents: &QObjectNames,

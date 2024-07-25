@@ -106,15 +106,6 @@ impl Name {
         }
     }
 
-    // Old implementation for reference
-    // fn wrapper_from_invokable(ident: &Ident) -> Self {
-    //     let ident = format_ident!("{ident}_wrapper");
-    //     Self {
-    //         cpp: format_ident!("{}", ident.to_string().to_case(Case::Camel)),
-    //         rust: ident,
-    //     }
-    // }
-
     /// Parse a name from an an identifier and a list of attributes.
     ///
     /// This variant assumes that the name is contained in an `extern "Rust"` block.
