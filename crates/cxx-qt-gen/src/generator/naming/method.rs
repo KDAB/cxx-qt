@@ -38,7 +38,7 @@ impl From<&ForeignItemFn> for QMethodName {
 
 #[cfg(test)]
 mod tests {
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
 
@@ -46,16 +46,19 @@ mod tests {
 
     #[test]
     fn test_from_impl_method() {
+        let method: ForeignItemFn = parse_quote! {
+            fn my_invokable(self: &MyObject);
+        };
         let parsed = ParsedMethod {
-            method: parse_quote! {
-                fn my_invokable(self: &MyObject);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,
             parameters: vec![],
             specifiers: HashSet::new(),
             is_qinvokable: true,
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
         };
 
         let invokable = QMethodName::from(&parsed);
