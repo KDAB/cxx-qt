@@ -6,7 +6,7 @@
 use crate::syntax::path::path_compare_str;
 use syn::Attribute;
 
-/// Returns the index of the first [syn::Attribute] that matches a given path
+/// Returns the index of the first [Attribute] that matches a given path
 pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> {
     for (i, attr) in attrs.iter().enumerate() {
         if path_compare_str(attr.meta.path(), path) {
@@ -17,7 +17,7 @@ pub fn attribute_find_path(attrs: &[Attribute], path: &[&str]) -> Option<usize> 
     None
 }
 
-/// Takes and returns the first [syn::Attribute] that matches a given path
+/// Takes and returns the first [Attribute] that matches a given path
 pub fn attribute_take_path(attrs: &mut Vec<Attribute>, path: &[&str]) -> Option<Attribute> {
     attribute_find_path(attrs, path).map(|index| attrs.remove(index))
 }

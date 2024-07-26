@@ -11,7 +11,7 @@ use syn::{spanned::Spanned, Attribute, Error, ForeignItem, ItemForeignMod, Resul
 
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
-// TODO: BEN might need to add a vec of methods, confirm with Leon
+// might need to add a vec of methods, confirm with Leon
 pub struct ParsedExternCxxQt {
     /// Attributes for the extern "C++Qt" block
     pub attrs: Vec<Attribute>,
