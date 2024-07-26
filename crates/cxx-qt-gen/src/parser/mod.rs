@@ -176,6 +176,12 @@ mod tests {
                     #[qinvokable]
                     fn test_fn(self: Pin<&mut MyObject>);
 
+                    #[qinvokable]
+                    fn test_fn_two(self: Pin<&mut MyObject>);
+
+                    #[qinvokable]
+                    fn test_fn_again(self: Pin<&mut MyOtherObject>);
+
                     #[qsignal]
                     fn ready(self: Pin<&mut MyOtherObject>);
                 }
@@ -187,6 +193,13 @@ mod tests {
         };
         let parser = Parser::from(module.clone()).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+        for obj in structures.qobjects {
+            println!(
+                "[i] Object with name: {:?} \nAnd methods:     {:?}\n",
+                obj.declaration.name.clone(),
+                obj.methods.keys()
+            );
+        }
     }
 
     #[test]

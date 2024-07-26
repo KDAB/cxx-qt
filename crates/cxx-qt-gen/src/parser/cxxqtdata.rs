@@ -221,9 +221,9 @@ impl ParsedCxxQtData {
                     self.with_qobject(&parsed_signal_method.qobject_ident)?
                         .signals
                         .push(parsed_signal_method);
-                // Test if the function is an inheritance method
-                //
-                // Note that we need to test for qsignal first as qsignals have their own inherit meaning
+                    // Test if the function is an inheritance method
+                    //
+                    // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                 } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
                     let parsed_inherited_method =
                         ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
@@ -245,22 +245,6 @@ impl ParsedCxxQtData {
                 }
             }
         }
-
-        // TODO: DEBUG, could be useful to derive Debug on some of the other structs to get debug info while refactoring
-        let method_names: Vec<(Name, Ident)> = self
-            .methods
-            .iter()
-            .map(|method| (method.name.clone(), method.qobject_ident.clone()))
-            .collect();
-        println!("Methods vec (Name, Object): {:?}", method_names);
-
-        let signal_names: Vec<(Name, Ident)> = self
-            .signals
-            .iter()
-            .map(|signal| (signal.name.clone(), signal.qobject_ident.clone()))
-            .collect();
-        println!("signals vec (Name, Object): {:?}", signal_names);
-
         Ok(())
     }
 

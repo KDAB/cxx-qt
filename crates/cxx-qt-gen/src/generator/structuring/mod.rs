@@ -17,9 +17,7 @@ pub mod qobject;
 pub use qobject::StructuredQObject;
 use std::collections::HashMap;
 
-use crate::naming::Name;
 use crate::parser::cxxqtdata::ParsedCxxQtData;
-use crate::parser::method::ParsedMethod;
 use syn::{Error, Result};
 
 /// The list of all structures that could be associated from the parsed data.
@@ -33,6 +31,19 @@ impl<'a> Structures<'a> {
     /// Create a new `Structures` object from the given `ParsedCxxQtData`
     /// Returns an error, if any references could not be resolved.
     pub fn new(cxxqtdata: &'a ParsedCxxQtData) -> Result<Self> {
+        let methods_found: Vec<_> = cxxqtdata
+            .methods
+            .iter()
+            .map(|method| (method.name.clone(), method.qobject_ident.clone()))
+            .collect();
+        for method_pair in methods_found {
+            println!(
+                "Found Method: {:?} associated with {:?}",
+                method_pair.0, method_pair.1
+            );
+        }
+
+        // Methods in cxxqtdata need to be parsed and associated with their objects
         let mut qobjects: Vec<_> = cxxqtdata
             .qobjects
             .values()
@@ -43,6 +54,7 @@ impl<'a> Structures<'a> {
             })
             .collect();
 
+        // Could use a similar strategy to apply the methods to the qobjects structure
         for qenum in &cxxqtdata.qenums {
             if let Some(qobject_ident) = &qenum.qobject {
                 if let Some(qobject) = qobjects
@@ -56,6 +68,30 @@ impl<'a> Structures<'a> {
                         format!("Unknown QObject: {qobject_ident}"),
                     ));
                 }
+            }
+        }
+
+        for method in &cxxqtdata.methods {
+            println!(
+                "Looking for QObject match for method: {:?}",
+                method.name.clone()
+            );
+            if let Some(qobject_ident) = qobjects.iter_mut().find(|qobject| {
+                qobject.declaration.name.rust_unqualified() == &method.qobject_ident
+            }) {
+                println!(
+                    "Found match: \nMethod: {:?}\nQObject: {:?}",
+                    method.name.clone(),
+                    qobject_ident.declaration.name.clone()
+                );
+                qobject_ident
+                    .methods
+                    .insert(method.name.rust_unqualified().clone(), method);
+            } else {
+                panic!(
+                    "ERROR Unknown QObject for method with name {:?}",
+                    method.name.clone()
+                )
             }
         }
 

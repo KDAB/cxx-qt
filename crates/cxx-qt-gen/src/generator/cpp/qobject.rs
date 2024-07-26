@@ -139,7 +139,7 @@ impl GeneratedCppQObject {
             .append(&mut cxxqttype::generate(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
-        // TODO: BEN refactor this to use the methods and signals inside StructuredQObject (Potentially a HashMap)
+        // TODO: BEN refactor this to use the methods and signals inside StructuredQObject
         generated.blocks.append(&mut generate_cpp_properties(
             &qobject.properties,
             &qobject_idents,
@@ -177,7 +177,7 @@ impl GeneratedCppQObject {
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
-        // If this type has locking enabled then add generation
+            // If this type has locking enabled then add generation
         } else if qobject.locking {
             let (initializer, mut blocks) = locking::generate()?;
             generated.blocks.append(&mut blocks);
