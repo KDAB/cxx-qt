@@ -26,12 +26,12 @@ use syn::{
     Result, Token,
 };
 
-/// A struct representing a module block with CXX-Qt relevant [Item]'s
+/// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
 ///
-/// [Item]'s that are not handled specially by CXX-Qt are passed through for CXX to process.
+/// [syn::Item]'s that are not handled specially by CXX-Qt are passed through for CXX to process.
 pub struct Parser {
-    /// The module which unknown (e.g. CXX) blocks are stored into
+    /// The module which unknown (eg CXX) blocks are stored into
     pub(crate) passthrough_module: ItemMod,
     /// Any CXX-Qt data that needs generation later
     pub(crate) cxx_qt_data: ParsedCxxQtData,
@@ -93,7 +93,7 @@ impl Parser {
             // Loop through items and load into qobject or others and populate mappings
             for item in items.1.drain(..) {
                 // Try to find any CXX-Qt items, if found add them to the relevant
-                // qobject or extern C++Qt block. Otherwise, return them to be added to other
+                // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {
                     // Unknown item so add to the other list
                     others.push(other);
@@ -120,7 +120,7 @@ impl Parser {
         )
     }
 
-    /// Constructs a Parser object from a given [ItemMod] block
+    /// Constructs a Parser object from a given [syn::ItemMod] block
     pub fn from(mut module: ItemMod) -> Result<Self> {
         let (namespace, cxx_file_stem) = Self::parse_mod_attributes(&mut module)?;
         let (mut cxx_qt_data, module) = Self::parse_module_contents(module, namespace)?;
@@ -153,7 +153,7 @@ mod tests {
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, Type};
 
-    /// Helper which returns a f64 as a [Type]
+    /// Helper which returns a f64 as a [syn::Type]
     pub fn f64_type() -> Type {
         parse_quote! { f64 }
     }

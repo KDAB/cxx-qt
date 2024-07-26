@@ -15,7 +15,7 @@ use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
-    /// The original [ForeignItemFn] of the inherited method declaration
+    /// The original [syn::ForeignItemFn] of the inherited method declaration
     pub method: ForeignItemFn,
     /// The type of the self argument
     pub qobject_ident: Ident,

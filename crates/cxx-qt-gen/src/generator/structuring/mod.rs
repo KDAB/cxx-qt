@@ -9,7 +9,7 @@
 /// cxx-qt-gen, especially to simplify parsing.
 /// This module is responsible for structuring the parsed data into a form that is easier to work
 /// with when generating C++ code.
-/// This mostly means grouping QObjects with their QEnums, QSignals, etc...
+/// This mostly means grouping QObjects with their QEnums, QSignals, etc..
 ///
 /// All resulting structures are listed in the `Structures` struct.
 pub mod qobject;
@@ -24,7 +24,7 @@ use syn::{Error, Result};
 /// Most importantly, this includes the list of qobjects.
 pub struct Structures<'a> {
     /// The list of qobjects
-    pub qobjects: Vec<StructuredQObject<'a>>,
+    pub qobjects: Vec<qobject::StructuredQObject<'a>>,
 }
 
 impl<'a> Structures<'a> {
@@ -50,7 +50,7 @@ impl<'a> Structures<'a> {
             .map(|qobject| StructuredQObject {
                 declaration: qobject,
                 qenums: Vec::new(),
-                methods: HashMap::new(),
+                methods: HashMap::new(), // TODO: Add in hashed method pairs
             })
             .collect();
 

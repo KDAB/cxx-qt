@@ -40,7 +40,7 @@ impl GeneratedRustFragment {
         )?);
 
         // Generate methods for the properties, invokables, signals
-        // TODO: Eventually these can be removed once Structure is fully finished
+        // TODO: BEN refactor using methods and signals inside structured (might need to pass structured QObject instead of ParsedQObject
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,

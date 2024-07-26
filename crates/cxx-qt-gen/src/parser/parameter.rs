@@ -14,7 +14,7 @@ use syn::{
 pub struct ParsedFunctionParameter {
     /// The [syn::Ident] of the parameter
     pub ident: Ident,
-    /// The [Type] of the parameter
+    /// The [syn::Type] of the parameter
     pub ty: Type,
 }
 

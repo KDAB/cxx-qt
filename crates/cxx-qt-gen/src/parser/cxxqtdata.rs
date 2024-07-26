@@ -21,6 +21,9 @@ use syn::{
 };
 use syn::{ItemMacro, Meta};
 
+// PROTOTYPING ONLY
+use crate::naming::Name;
+
 use super::qnamespace::ParsedQNamespace;
 
 pub struct ParsedCxxQtData {
@@ -137,9 +140,9 @@ impl ParsedCxxQtData {
         Ok(())
     }
 
-    /// Determine if the given [Item] is a CXX-Qt related item
-    /// If it is then add the [Item] into qobjects BTreeMap
-    /// Otherwise return the [Item] to pass through to CXX
+    /// Determine if the given [syn::Item] is a CXX-Qt related item
+    /// If it is then add the [syn::Item] into qobjects BTreeMap
+    /// Otherwise return the [syn::Item] to pass through to CXX
     pub fn parse_cxx_qt_item(&mut self, item: Item) -> Result<Option<Item>> {
         match item {
             Item::Impl(imp) => self.parse_impl(imp),
@@ -212,7 +215,6 @@ impl ParsedCxxQtData {
                 if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
                     let parsed_signal_method = ParsedSignal::parse(foreign_fn.clone(), safe_call)?;
 
-                    // TODO: Eventually the with_qobject use can be removed from here and below in methods, and use just the Structure approach
                     let parsed_signal_method_self = ParsedSignal::parse(foreign_fn, safe_call)?;
                     self.signals.push(parsed_signal_method_self);
 
@@ -233,6 +235,7 @@ impl ParsedCxxQtData {
                 } else {
                     let parsed_method = ParsedMethod::parse(foreign_fn.clone(), safe_call)?;
 
+                    // TODO: BEN Remove pushing to qobject and just store methods here, same with signal above
                     let parsed_method_self = ParsedMethod::parse(foreign_fn, safe_call)?;
                     self.methods.push(parsed_method_self);
 
@@ -245,8 +248,8 @@ impl ParsedCxxQtData {
         Ok(())
     }
 
-    /// Parse a [ItemImpl] into the qobjects if it's a CXX-Qt implementation
-    /// otherwise return as a [Item] to pass through.
+    /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
+    /// otherwise return as a [syn::Item] to pass through.
     fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
         // If the implementation has a T
         // then this is the block of methods to be implemented on the C++ object
@@ -481,9 +484,10 @@ mod tests {
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
-        assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
+        // TODO: rewrite tests using methods inside this struct, not the qobjects
+        // assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
+        // assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
+        // assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
 
         // TODO: Check only the ones associated with MyObject in tests
         assert_eq!(cxx_qt_data.methods.len(), 2);

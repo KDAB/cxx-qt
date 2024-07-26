@@ -15,7 +15,7 @@ use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result, Visibility};
 #[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
-    /// The original [ForeignItemFn] of the signal declaration
+    /// The original [syn::ForeignItemFn] of the signal declaration
     pub method: ForeignItemFn,
     /// The type of the self argument
     pub qobject_ident: Ident,

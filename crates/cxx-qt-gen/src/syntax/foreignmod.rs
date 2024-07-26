@@ -12,7 +12,7 @@ use syn::{
     Result, Signature, Token, Visibility,
 };
 
-/// For a given [ForeignItem] return the [ForeignItemType] if there is one
+/// For a given [syn::ForeignItem] return the [syn::ForeignItemType] if there is one
 ///
 /// And ignore any extra syntax after the = in type A = ...
 fn foreign_item_to_type(foreign_item: &ForeignItem) -> Result<Option<ForeignItemType>> {
@@ -25,7 +25,7 @@ fn foreign_item_to_type(foreign_item: &ForeignItem) -> Result<Option<ForeignItem
     }
 }
 
-/// For a given [ItemForeignMod] return a vector of the [ForeignItemType] if there are any
+/// For a given [syn::ItemForeignMod] return a vector of the [syn::ForeignItemType] if there are any
 ///
 /// And ignore any extra syntax after the = in type A = ...
 pub(crate) fn foreign_mod_to_foreign_item_types(
@@ -42,7 +42,7 @@ pub(crate) fn foreign_mod_to_foreign_item_types(
         .collect::<Result<Vec<ForeignItemType>>>()
 }
 
-/// For a given verbatim [TokenStream] return the [ForeignItemType] if there is one
+/// For a given verbatim [proc_macro2::TokenStream] return the [syn::ForeignItemType] if there is one
 ///
 /// And ignore any extra syntax after the = in type A = ...
 fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemType>> {
@@ -53,7 +53,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
             let type_token: Token![type] = input.parse()?;
             let ident: Ident = input.parse()?;
 
-            // Read until the next semicolon
+            // Read until the next semi colon
             input.step(|cursor| {
                 let mut rest = *cursor;
                 while let Some((tt, next)) = rest.token_tree() {

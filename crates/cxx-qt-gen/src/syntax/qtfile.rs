@@ -11,7 +11,7 @@ use syn::{AttrStyle, Attribute, Result};
 
 /// Representation of a CxxQtFile as Syn items
 pub struct CxxQtFile {
-    /// A vector of [Attribute] in the file
+    /// A vector of [syn::Attribute] in the file
     pub attrs: Vec<Attribute>,
     /// A vector of [CxxQtItem] items in the file
     pub items: Vec<CxxQtItem>,

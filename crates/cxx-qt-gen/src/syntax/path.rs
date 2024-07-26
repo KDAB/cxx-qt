@@ -5,7 +5,7 @@
 
 use syn::Path;
 
-/// Returns whether the [Path] matches a given string slice
+/// Returns whether the [syn::Path] matches a given string slice
 pub fn path_compare_str(path: &Path, string: &[&str]) -> bool {
     // Check if the following is true
     // - the lengths are the same

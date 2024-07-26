@@ -50,7 +50,7 @@ impl Default for QPropertyFlags {
 pub struct ParsedQProperty {
     /// The [syn::Ident] of the property
     pub ident: Ident,
-    /// The [Type] of the property
+    /// The [syn::Type] of the property
     pub ty: Type,
     /// Property flag collection
     pub flags: QPropertyFlags,

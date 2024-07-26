@@ -5,7 +5,7 @@
 
 use syn::{spanned::Spanned, Error, Expr, ExprLit, Lit, Result};
 
-/// Convert a given [Expr] to a String
+/// Convert a given [syn::Expr] to a String
 pub fn expr_to_string(expr: &Expr) -> Result<String> {
     if let Expr::Lit(ExprLit {
         lit: Lit::Str(lit_str),
