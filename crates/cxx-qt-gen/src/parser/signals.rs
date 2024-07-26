@@ -70,6 +70,7 @@ impl ParsedSignal {
 
         let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
+        // TODO: Add this to ParsedMethod too
         if name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,

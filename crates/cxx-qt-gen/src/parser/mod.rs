@@ -58,7 +58,7 @@ impl Parser {
                             // Parse any namespace in the cxx_qt::bridge macro
                             if name_value.path.is_ident("namespace") {
                                 namespace = Some(expr_to_string(&name_value.value)?);
-                            // Parse any custom file stem
+                                // Parse any custom file stem
                             } else if name_value.path.is_ident("cxx_file_stem") {
                                 cxx_file_stem = expr_to_string(&name_value.value)?;
                             }
@@ -148,6 +148,7 @@ impl Parser {
 mod tests {
     use super::*;
 
+    use crate::generator::structuring::Structures;
     use pretty_assertions::assert_eq;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, Type};
@@ -155,6 +156,37 @@ mod tests {
     /// Helper which returns a f64 as a [syn::Type]
     pub fn f64_type() -> Type {
         parse_quote! { f64 }
+    }
+
+    // PROTOTYPING ONLY REMOVE ME
+    #[test]
+    fn test_debug_in_cxx_qt_data() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+
+                    #[qobject]
+                    type MyOtherObject = super::MyOtherObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    #[qinvokable]
+                    fn test_fn(self: Pin<&mut MyObject>);
+
+                    #[qsignal]
+                    fn ready(self: Pin<&mut MyOtherObject>);
+                }
+
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        };
+        let parser = Parser::from(module.clone()).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
     }
 
     #[test]

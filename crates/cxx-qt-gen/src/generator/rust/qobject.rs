@@ -23,6 +23,7 @@ use quote::quote;
 use syn::{Ident, Result};
 
 impl GeneratedRustFragment {
+    // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
         qobject: &ParsedQObject,
         type_names: &TypeNames,
@@ -39,6 +40,7 @@ impl GeneratedRustFragment {
         )?);
 
         // Generate methods for the properties, invokables, signals
+        // TODO: BEN refactor using methods and signals inside structured (might need to pass structured QObject instead of ParsedQObject
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
             &qobject_idents,

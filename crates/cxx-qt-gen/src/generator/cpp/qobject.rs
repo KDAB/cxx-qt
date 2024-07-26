@@ -139,11 +139,13 @@ impl GeneratedCppQObject {
             .append(&mut cxxqttype::generate(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
+        // TODO: BEN refactor this to use the methods and signals inside StructuredQObject (Potentially a HashMap)
         generated.blocks.append(&mut generate_cpp_properties(
             &qobject.properties,
             &qobject_idents,
             type_names,
         )?);
+        // TODO: BEN Add methods and signals from StructureQObject
         generated.blocks.append(&mut generate_cpp_methods(
             &qobject.methods,
             &qobject_idents,

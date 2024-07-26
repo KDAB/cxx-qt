@@ -13,9 +13,13 @@
 ///
 /// All resulting structures are listed in the `Structures` struct.
 pub mod qobject;
-pub use qobject::StructuredQObject;
 
+pub use qobject::StructuredQObject;
+use std::collections::HashMap;
+
+use crate::naming::Name;
 use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::parser::method::ParsedMethod;
 use syn::{Error, Result};
 
 /// The list of all structures that could be associated from the parsed data.
@@ -35,6 +39,7 @@ impl<'a> Structures<'a> {
             .map(|qobject| StructuredQObject {
                 declaration: qobject,
                 qenums: Vec::new(),
+                methods: HashMap::new(), // TODO: Add in hashed method pairs
             })
             .collect();
 
