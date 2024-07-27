@@ -1,0 +1,109 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "common",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true
+            }
+        },
+        {
+            "name": "qt6",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_QT5": false
+            }
+        },
+        {
+            "name": "qt5",
+            "hidden": true,
+            "cacheVariables": {
+                "USE_QT5": true
+            }
+        },
+        {
+            "name": "ninja",
+            "hidden": true,
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "ninja-multi",
+            "displayName": "Ninja",
+            "description": "Default build using Ninja Multi-Config generator",
+            "generator": "Ninja Multi-Config",
+            "inherits": ["common", "ninja", "qt6"]
+        },
+        {
+            "name": "msvc",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL"
+            }
+        },
+        {
+            "name": "msvc-17",
+            "inherits": ["common", "msvc", "qt6"],
+            "displayName": "Visual Studio 2022",
+            "generator": "Visual Studio 17 2022",
+            "description": "Configure using Visual Studio 17 2022 generator"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-debug",
+            "configuration": "Debug",
+            "hidden": true
+        },
+        {
+            "name": "build-relwithdebinfo",
+            "configuration": "RelWithDebInfo",
+            "hidden": true
+        },
+        {
+            "name": "build-release",
+            "configuration": "Release",
+            "hidden": true
+        },
+        {
+            "name": "ninja-multi-debug",
+            "configurePreset": "ninja-multi",
+            "inherits": "build-debug"
+        },
+        {
+            "name": "ninja-multi-relwithdebinfo",
+            "configurePreset": "ninja-multi",
+            "inherits": "build-relwithdebinfo"
+        },
+        {
+            "name": "ninja-multi-release",
+            "configurePreset": "ninja-multi",
+            "inherits": "build-release"
+        },
+        {
+            "name": "msvc-17-debug",
+            "configurePreset": "msvc-17",
+            "inherits": "build-debug"
+        },
+        {
+            "name": "msvc-17-relwithdebinfo",
+            "configurePreset": "msvc-17",
+            "inherits": "build-relwithdebinfo"
+        },
+        {
+            "name": "msvc-17-release",
+            "configurePreset": "msvc-17",
+            "inherits": "build-release"
+        }
+    ]
+}
