@@ -521,7 +521,7 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, None, None);
         let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
-        let generated = generate_cpp_signal(&signal, &qobject_name, &type_names).unwrap();
+        let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 

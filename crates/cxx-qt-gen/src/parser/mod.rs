@@ -148,7 +148,6 @@ impl Parser {
 mod tests {
     use super::*;
 
-    use crate::generator::structuring::Structures;
     use pretty_assertions::assert_eq;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, Type};
@@ -157,44 +156,6 @@ mod tests {
     pub fn f64_type() -> Type {
         parse_quote! { f64 }
     }
-
-    // PROTOTYPING ONLY REMOVE ME
-    #[test]
-    fn test_debug_in_cxx_qt_data() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-
-                    #[qobject]
-                    type MyOtherObject = super::MyOtherObjectRust;
-                }
-
-                unsafe extern "RustQt" {
-                    #[qinvokable]
-                    fn test_fn(self: Pin<&mut MyObject>);
-
-                    #[qinvokable]
-                    fn test_fn_two(self: Pin<&mut MyObject>);
-
-                    #[qinvokable]
-                    fn test_fn_again(self: Pin<&mut MyOtherObject>);
-
-                    #[qsignal]
-                    fn ready(self: Pin<&mut MyOtherObject>);
-                }
-
-                extern "Rust" {
-                    fn test();
-                }
-            }
-        };
-        let parser = Parser::from(module.clone()).unwrap();
-        let _structures = Structures::new(&parser.cxx_qt_data).unwrap();
-    }
-
     #[test]
     fn test_parser_from_empty_module() {
         let module: ItemMod = parse_quote! {
