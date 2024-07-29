@@ -21,9 +21,6 @@ use syn::{
 };
 use syn::{ItemMacro, Meta};
 
-// PROTOTYPING ONLY
-use crate::naming::Name;
-
 use super::qnamespace::ParsedQNamespace;
 
 pub struct ParsedCxxQtData {
@@ -221,6 +218,7 @@ impl ParsedCxxQtData {
                     self.with_qobject(&parsed_signal_method.qobject_ident)?
                         .signals
                         .push(parsed_signal_method);
+
                     // Test if the function is an inheritance method
                     //
                     // Note that we need to test for qsignal first as qsignals have their own inherit meaning
@@ -235,7 +233,7 @@ impl ParsedCxxQtData {
                 } else {
                     let parsed_method = ParsedMethod::parse(foreign_fn.clone(), safe_call)?;
 
-                    // TODO: BEN Remove pushing to qobject and just store methods here, same with signal above
+                    // TODO: Remove pushing to qobject and just store methods here, same with signal above
                     let parsed_method_self = ParsedMethod::parse(foreign_fn, safe_call)?;
                     self.methods.push(parsed_method_self);
 
@@ -484,12 +482,7 @@ mod tests {
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        // TODO: rewrite tests using methods inside this struct, not the qobjects
-        // assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
-        // assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
-        // assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
 
-        // TODO: Check only the ones associated with MyObject in tests
         assert_eq!(cxx_qt_data.methods.len(), 2);
         assert!(cxx_qt_data.methods[0].is_qinvokable);
         assert!(!cxx_qt_data.methods[1].is_qinvokable)
@@ -645,11 +638,6 @@ mod tests {
             }
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
-
-        // let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-
-        // let signals = &qobject.signals;
-        // TODO: check only the signals associated with MyObject
         let signals = &cxxqtdata.signals;
         assert_eq!(signals.len(), 2);
         assert!(signals[0].mutable);
@@ -692,10 +680,6 @@ mod tests {
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
 
-        // let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-
-        // let signals = &qobject.signals;
-        // TODO: ensure signals are only checked if associated with MyObject
         let signals = &cxxqtdata.signals;
         assert_eq!(signals.len(), 1);
         assert!(signals[0].mutable);
