@@ -154,6 +154,7 @@ impl GeneratedCppQObject {
             &qobject_idents,
             type_names,
         )?);
+
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,
             &qobject.base_class,
@@ -175,7 +176,7 @@ impl GeneratedCppQObject {
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
-        // If this type has locking enabled then add generation
+            // If this type has locking enabled then add generation
         } else if qobject.locking {
             let (initializer, mut blocks) = locking::generate()?;
             generated.blocks.append(&mut blocks);

@@ -31,6 +31,10 @@ pub struct ParsedCxxQtData {
     pub qobjects: BTreeMap<Ident, ParsedQObject>,
     /// List of QEnums defined in the module, that aren't associated with a QObject
     pub qenums: Vec<ParsedQEnum>,
+    /// List of methods and Q_INVOKABLES found
+    pub methods: Vec<ParsedMethod>,
+    /// List of the Q_SIGNALS found
+    pub signals: Vec<ParsedSignal>,
     /// List of QNamespace declarations
     pub qnamespaces: Vec<ParsedQNamespace>,
     /// Blocks of extern "C++Qt"
@@ -47,6 +51,8 @@ impl ParsedCxxQtData {
         Self {
             qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
             qenums: vec![],
+            methods: vec![],
+            signals: vec![],
             qnamespaces: vec![],
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
@@ -204,14 +210,18 @@ impl ParsedCxxQtData {
             if let ForeignItem::Fn(mut foreign_fn) = item {
                 // Test if the function is a signal
                 if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
-                    let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
+                    let parsed_signal_method = ParsedSignal::parse(foreign_fn.clone(), safe_call)?;
+
+                    let parsed_signal_method_self = ParsedSignal::parse(foreign_fn, safe_call)?;
+                    self.signals.push(parsed_signal_method_self);
 
                     self.with_qobject(&parsed_signal_method.qobject_ident)?
                         .signals
                         .push(parsed_signal_method);
-                // Test if the function is an inheritance method
-                //
-                // Note that we need to test for qsignal first as qsignals have their own inherit meaning
+
+                    // Test if the function is an inheritance method
+                    //
+                    // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                 } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
                     let parsed_inherited_method =
                         ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
@@ -219,16 +229,19 @@ impl ParsedCxxQtData {
                     self.with_qobject(&parsed_inherited_method.qobject_ident)?
                         .inherited_methods
                         .push(parsed_inherited_method);
-                // Remaining methods are either C++ methods or invokables
+                    // Remaining methods are either C++ methods or invokables
                 } else {
-                    let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
+                    let parsed_method = ParsedMethod::parse(foreign_fn.clone(), safe_call)?;
+
+                    let parsed_method_self = ParsedMethod::parse(foreign_fn, safe_call)?;
+                    self.methods.push(parsed_method_self);
+
                     self.with_qobject(&parsed_method.qobject_ident)?
                         .methods
                         .push(parsed_method);
                 }
             }
         }
-
         Ok(())
     }
 
@@ -468,9 +481,10 @@ mod tests {
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
-        assert_eq!(cxx_qt_data.qobjects[&qobject_ident()].methods.len(), 2);
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].methods[0].is_qinvokable);
-        assert!(!cxx_qt_data.qobjects[&qobject_ident()].methods[1].is_qinvokable);
+
+        assert_eq!(cxx_qt_data.methods.len(), 2);
+        assert!(cxx_qt_data.methods[0].is_qinvokable);
+        assert!(!cxx_qt_data.methods[1].is_qinvokable)
     }
 
     #[test]
@@ -623,10 +637,7 @@ mod tests {
             }
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
-
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-
-        let signals = &qobject.signals;
+        let signals = &cxxqtdata.signals;
         assert_eq!(signals.len(), 2);
         assert!(signals[0].mutable);
         assert!(signals[1].mutable);
@@ -653,7 +664,8 @@ mod tests {
                 fn ready(self: Pin<&mut UnknownObj>);
             }
         };
-        assert!(cxxqtdata.parse_cxx_qt_item(block).is_err());
+        let parsed_block = cxxqtdata.parse_cxx_qt_item(block);
+        assert!(parsed_block.is_err());
     }
 
     #[test]
@@ -667,9 +679,7 @@ mod tests {
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
 
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-
-        let signals = &qobject.signals;
+        let signals = &cxxqtdata.signals;
         assert_eq!(signals.len(), 1);
         assert!(signals[0].mutable);
         assert!(!signals[0].safe);

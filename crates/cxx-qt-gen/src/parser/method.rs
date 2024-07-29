@@ -84,6 +84,13 @@ impl ParsedMethod {
 
         let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
+        if name.namespace().is_some() {
+            return Err(Error::new_spanned(
+                method.sig.ident,
+                "Methods / QInvokables cannot have a namespace attribute",
+            ));
+        }
+
         Ok(ParsedMethod {
             method,
             qobject_ident,

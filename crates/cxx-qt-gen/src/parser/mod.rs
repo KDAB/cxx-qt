@@ -58,7 +58,7 @@ impl Parser {
                             // Parse any namespace in the cxx_qt::bridge macro
                             if name_value.path.is_ident("namespace") {
                                 namespace = Some(expr_to_string(&name_value.value)?);
-                            // Parse any custom file stem
+                                // Parse any custom file stem
                             } else if name_value.path.is_ident("cxx_file_stem") {
                                 cxx_file_stem = expr_to_string(&name_value.value)?;
                             }
@@ -156,7 +156,6 @@ mod tests {
     pub fn f64_type() -> Type {
         parse_quote! { f64 }
     }
-
     #[test]
     fn test_parser_from_empty_module() {
         let module: ItemMod = parse_quote! {
