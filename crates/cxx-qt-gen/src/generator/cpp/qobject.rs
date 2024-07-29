@@ -139,13 +139,11 @@ impl GeneratedCppQObject {
             .append(&mut cxxqttype::generate(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
-        // TODO: refactor this to use the methods and signals inside StructuredQObject
         generated.blocks.append(&mut generate_cpp_properties(
             &qobject.properties,
             &qobject_idents,
             type_names,
         )?);
-        // TODO: Add methods and signals from StructureQObject
         generated.blocks.append(&mut generate_cpp_methods(
             &qobject.methods,
             &qobject_idents,
@@ -156,6 +154,7 @@ impl GeneratedCppQObject {
             &qobject_idents,
             type_names,
         )?);
+
         generated.blocks.append(&mut inherit::generate(
             &qobject.inherited_methods,
             &qobject.base_class,

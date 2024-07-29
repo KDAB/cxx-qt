@@ -233,7 +233,6 @@ impl ParsedCxxQtData {
                 } else {
                     let parsed_method = ParsedMethod::parse(foreign_fn.clone(), safe_call)?;
 
-                    // TODO: Remove pushing to qobject and just store methods here, same with signal above
                     let parsed_method_self = ParsedMethod::parse(foreign_fn, safe_call)?;
                     self.methods.push(parsed_method_self);
 

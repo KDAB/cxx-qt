@@ -36,7 +36,7 @@ pub struct ParsedQObject {
     /// The ident of the inner type of the QObject
     pub rust_type: Ident,
     /// Representation of the Q_SIGNALS for the QObject
-    pub signals: Vec<ParsedSignal>, //TODO: This along with methods needs to be removed eventually
+    pub signals: Vec<ParsedSignal>,
     /// List of methods that need to be implemented on the C++ object in Rust
     ///
     /// These could also be exposed as Q_INVOKABLE on the C++ object
