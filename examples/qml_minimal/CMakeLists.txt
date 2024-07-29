@@ -29,15 +29,21 @@ if(NOT Qt6_FOUND)
 endif()
 # ANCHOR_END: book_cmake_setup
 
-# ANCHOR: book_cmake_find_qmake
-# The path to the qmake executable path needs to be passed to the Rust
-# library's build script to ensure it uses the same installation of Qt as CMake.
-# TODO: This has been removed, document it
-# ANCHOR_END: book_cmake_find_qmake
+# ANCHOR: book_cmake_find_cxx_qt_start
+find_package(CxxQt QUIET)
+if(NOT CxxQt_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        CxxQt
+        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        # ANCHOR_END: book_cmake_find_cxx_qt_start
+        GIT_TAG main
+        # ANCHOR: book_cmake_find_cxx_qt_end
+    )
 
-# ANCHOR: book_cmake_find_cxx_qt
-# TODO: Replace with fetch-content co cxx-qt-cmake
-# ANCHOR_END: book_cmake_find_cxx_qt
+    FetchContent_MakeAvailable(CxxQt)
+endif()
+# ANCHOR_END: book_cmake_find_cxx_qt_end
 
 # ANCHOR: book_cmake_use_cxx_qt
 # CXX-Qt (using Corrosion) creates a CMake target with the same name as the crate.

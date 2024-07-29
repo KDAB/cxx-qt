@@ -28,6 +28,18 @@ if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
 endif()
 
+find_package(CxxQt QUIET)
+if(NOT CxxQt_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        CxxQt
+        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        GIT_TAG main
+    )
+
+    FetchContent_MakeAvailable(CxxQt)
+endif()
+
 set(CRATE cxx_qt_demo_threading)
 cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
 cxx_qt_import_qml_module(${CRATE}_qml
