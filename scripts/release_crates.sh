@@ -46,6 +46,9 @@ function release_crate() {
 # Remind about cargo login
 question_yesno "Have you run cargo login before and setup credentials"
 
+# cxx-qt-cmake (no dependencies)
+question_yesno "Have you created a new tag in the cxx-qt-cmake repo"
+
 # No other dependencies
 release_crate "qt-build-utils"
 

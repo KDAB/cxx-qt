@@ -107,7 +107,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CompilerCaching)
-include(CxxQt)
 
 # Enable extra Qt definitions for all projects
 add_compile_definitions(
