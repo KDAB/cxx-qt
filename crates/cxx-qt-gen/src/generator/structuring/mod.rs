@@ -37,48 +37,45 @@ impl<'a> Structures<'a> {
 
         for qenum in &cxxqtdata.qenums {
             if let Some(qobject_ident) = &qenum.qobject {
-                if let Some(qobject) = qobjects
+                let qobject = qobjects
                     .iter_mut()
                     .find(|qobject| qobject.has_qobject_name(qobject_ident))
-                {
-                    qobject.qenums.push(qenum);
-                } else {
-                    return Err(Error::new_spanned(
-                        qobject_ident,
-                        format!("Unknown QObject: {qobject_ident}"),
-                    ));
-                }
+                    .ok_or_else(|| {
+                        Error::new_spanned(
+                            qobject_ident,
+                            format!("Unknown QObject: {qobject_ident}"),
+                        )
+                    })?;
+                qobject.qenums.push(qenum);
             }
         }
 
         // Associate each method parsed with its appropriate qobject
         for method in &cxxqtdata.methods {
-            if let Some(qobject) = qobjects
+            let qobject = qobjects
                 .iter_mut()
                 .find(|qobject| qobject.has_qobject_name(&method.qobject_ident))
-            {
-                qobject.methods.push(method);
-            } else {
-                return Err(Error::new_spanned(
-                    &method.qobject_ident,
-                    format!("Unknown QObject: {:?}", &method.qobject_ident),
-                ));
-            }
+                .ok_or_else(|| {
+                    Error::new_spanned(
+                        &method.qobject_ident,
+                        format!("Unknown QObject: {:?}", &method.qobject_ident),
+                    )
+                })?;
+            qobject.methods.push(method);
         }
 
         // Associate each signal parsed with its appropriate qobject
         for signal in &cxxqtdata.signals {
-            if let Some(qobject) = qobjects
+            let qobject = qobjects
                 .iter_mut()
                 .find(|qobject| qobject.has_qobject_name(&signal.qobject_ident))
-            {
-                qobject.signals.push(signal);
-            } else {
-                return Err(Error::new_spanned(
-                    &signal.qobject_ident,
-                    format!("Unknown QObject: {:?}", &signal.qobject_ident),
-                ));
-            }
+                .ok_or_else(|| {
+                    Error::new_spanned(
+                        &signal.qobject_ident,
+                        format!("Unknown QObject: {:?}", &signal.qobject_ident),
+                    )
+                })?;
+            qobject.signals.push(signal);
         }
         Ok(Structures { qobjects })
     }
