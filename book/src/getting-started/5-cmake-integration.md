@@ -135,7 +135,9 @@ For this example, we are [supporting both Qt5 and Qt6 with CMake](https://doc.qt
 Download CXX-Qts CMake code with FetchContent:
 
 ```cmake,ignore
-{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_start}}
+        GIT_TAG v0.7.0
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_end}}
 ```
 
 This provides you with a few wrappers around [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake:

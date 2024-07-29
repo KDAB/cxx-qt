@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dependencies are now automatically detected and configured by cxx-qt-build
   - Libraries can pass build information to cxx-qt-build in the form of a `cxx_qt_build::Interface`
   - Add CMake wrappers around corrosion to simplify importing crates and qml modules that were built with cxx-qt-build
+  - CMake code has been extracted into a separate repository for faster downloads (kdab/cxx-qt-cmake)
 
 ### Removed
 
