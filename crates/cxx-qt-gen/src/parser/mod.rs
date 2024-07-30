@@ -268,26 +268,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parser_from_error() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-
-                unsafe extern "RustQt" {
-                    #[qsignal]
-                    fn ready(self: Pin<&mut UnknownObject>);
-                }
-            }
-        };
-        let parser = Parser::from(module);
-        assert!(parser.is_err());
-    }
-
-    #[test]
     fn test_parser_from_error_no_attribute() {
         let module: ItemMod = parse_quote! {
             mod ffi {

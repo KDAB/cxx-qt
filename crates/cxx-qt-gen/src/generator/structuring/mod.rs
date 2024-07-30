@@ -89,6 +89,28 @@ mod tests {
     use syn::{parse_quote, ItemMod};
 
     #[test]
+    fn test_structuring_unknown_qobject() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    #[qsignal]
+                    fn ready(self: Pin<&mut UnknownObject>);
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data);
+
+        assert!(structures.is_err());
+    }
+
+    #[test]
     fn test_structures() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]

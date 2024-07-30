@@ -5,10 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{
-        constructor::Constructor, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        property::ParsedQProperty, signals::ParsedSignal,
-    },
+    parser::{constructor::Constructor, inherit::ParsedInheritedMethod, property::ParsedQProperty},
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
@@ -35,12 +32,6 @@ pub struct ParsedQObject {
     pub name: Name,
     /// The ident of the inner type of the QObject
     pub rust_type: Ident,
-    /// Representation of the Q_SIGNALS for the QObject
-    pub signals: Vec<ParsedSignal>,
-    /// List of methods that need to be implemented on the C++ object in Rust
-    ///
-    /// These could also be exposed as Q_INVOKABLE on the C++ object
-    pub methods: Vec<ParsedMethod>,
     /// List of inherited methods
     pub inherited_methods: Vec<ParsedInheritedMethod>,
     /// Any user-defined constructors
@@ -95,8 +86,6 @@ impl ParsedQObject {
             declaration,
             name,
             rust_type: inner,
-            signals: vec![],
-            methods: vec![],
             inherited_methods: vec![],
             constructors: vec![],
             properties,
