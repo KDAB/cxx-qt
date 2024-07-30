@@ -21,13 +21,13 @@ use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 
 pub fn generate_cpp_methods(
-    invokables: &Vec<ParsedMethod>,
+    invokables: &Vec<&ParsedMethod>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.name.cxx_unqualified();
-    for invokable in invokables {
+    for &invokable in invokables {
         let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
@@ -274,7 +274,9 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
 
-        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
+        let generated =
+            generate_cpp_methods(&invokables.iter().collect(), &qobject_idents, &type_names)
+                .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -428,10 +430,11 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
-        let method: ForeignItemFn =
+        let method_declaration: ForeignItemFn =
             parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
-        let invokables = vec![ParsedMethod {
-            method: method.clone(),
+
+        let method = ParsedMethod {
+            method: method_declaration.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,
@@ -441,9 +444,15 @@ mod tests {
             }],
             specifiers: HashSet::new(),
             is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-        }];
+            name: Name::from_rust_ident_and_attrs(
+                &method_declaration.sig.ident,
+                &method_declaration.attrs,
+                None,
+                None,
+            )
+            .unwrap(),
+        };
+        let invokables = vec![&method];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();

@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::structuring::StructuredQObject;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
@@ -17,7 +18,6 @@ use crate::{
         },
     },
     naming::TypeNames,
-    parser::qobject::ParsedQObject,
 };
 use quote::quote;
 use syn::{Ident, Result};
@@ -25,10 +25,11 @@ use syn::{Ident, Result};
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
-        qobject: &ParsedQObject,
+        structured_qobject: &StructuredQObject,
         type_names: &TypeNames,
         module_ident: &Ident,
     ) -> Result<Self> {
+        let qobject = structured_qobject.declaration;
         // Create the base object
         let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
@@ -47,7 +48,7 @@ impl GeneratedRustFragment {
             module_ident,
         )?);
         generated.append(&mut generate_rust_methods(
-            &qobject.methods,
+            &structured_qobject.methods,
             &qobject_idents,
         )?);
         generated.append(&mut inherit::generate(
@@ -55,7 +56,7 @@ impl GeneratedRustFragment {
             &qobject.inherited_methods,
         )?);
         generated.append(&mut generate_rust_signals(
-            &qobject.signals,
+            &structured_qobject.signals,
             &qobject_idents,
             type_names,
             module_ident,
@@ -176,6 +177,7 @@ fn generate_qobject_definitions(
 mod tests {
     use super::*;
 
+    use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
     use quote::format_ident;
@@ -195,9 +197,10 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let rust = GeneratedRustFragment::from_qobject(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &structures.qobjects.get(0).unwrap(),
             &parser.type_names,
             &format_ident!("ffi"),
         )

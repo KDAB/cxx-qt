@@ -16,6 +16,7 @@ pub mod signals;
 pub mod threading;
 
 use crate::generator::rust::fragment::GeneratedRustFragment;
+use crate::generator::structuring;
 use crate::parser::Parser;
 use crate::writer;
 use quote::quote;
@@ -36,12 +37,13 @@ pub struct GeneratedRustBlocks {
 impl GeneratedRustBlocks {
     /// Create a [GeneratedRustBlocks] from the given [Parser] object
     pub fn from(parser: &Parser) -> Result<GeneratedRustBlocks> {
+        let structures = structuring::Structures::new(&parser.cxx_qt_data)?;
+
         let mut fragments = vec![];
         fragments.extend(
-            parser
-                .cxx_qt_data
+            structures
                 .qobjects
-                .values()
+                .iter()
                 .map(|qobject| {
                     GeneratedRustFragment::from_qobject(
                         qobject,

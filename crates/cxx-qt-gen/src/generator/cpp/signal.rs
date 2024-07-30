@@ -190,13 +190,13 @@ pub fn generate_cpp_signal(
 }
 
 pub fn generate_cpp_signals(
-    signals: &Vec<ParsedSignal>,
+    signals: &Vec<&ParsedSignal>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
 
-    for signal in signals {
+    for &signal in signals {
         let mut block = GeneratedCppQObjectBlocks::default();
         let data = generate_cpp_signal(signal, &qobject_idents.name, type_names)?;
         block.includes = data.includes;
@@ -222,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
             },
@@ -242,7 +242,8 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -325,7 +326,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_mapped_cxx_name() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 fn data_changed(self: Pin<&mut MyObject>, mapped: A);
             },
@@ -339,7 +340,8 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -420,7 +422,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_existing_cxx_name() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 #[cxx_name = "baseName"]
                 fn existing_signal(self: Pin<&mut MyObject>);
@@ -432,7 +434,8 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
         let generated =
             generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();

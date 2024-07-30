@@ -57,7 +57,7 @@ pub fn generate_cpp_properties(
     }
 
     generated.append(&mut generate_cpp_signals(
-        &signals,
+        &signals.iter().collect(),
         qobject_idents,
         type_names,
     )?);
