@@ -222,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
             },
@@ -242,17 +242,13 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated = generate_cpp_signals(
-            &signals.iter().map(|signal| signal).collect(),
-            &qobject_idents,
-            &type_names,
-        )
-        .unwrap();
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -330,7 +326,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_mapped_cxx_name() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 fn data_changed(self: Pin<&mut MyObject>, mapped: A);
             },
@@ -344,18 +340,14 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);
 
-        let generated = generate_cpp_signals(
-            &signals.iter().map(|signal| signal).collect(),
-            &qobject_idents,
-            &type_names,
-        )
-        .unwrap();
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -430,7 +422,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_existing_cxx_name() {
-        let signals = vec![ParsedSignal {
+        let signal = ParsedSignal {
             method: parse_quote! {
                 #[cxx_name = "baseName"]
                 fn existing_signal(self: Pin<&mut MyObject>);
@@ -442,14 +434,11 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
-        }];
+        };
+        let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
-        let generated = generate_cpp_signals(
-            &signals.iter().map(|signal| signal).collect(),
-            &qobject_idents,
-            &TypeNames::mock(),
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);

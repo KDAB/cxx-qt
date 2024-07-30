@@ -274,12 +274,9 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
 
-        let generated = generate_cpp_methods(
-            &invokables.iter().map(|method| method).collect(),
-            &qobject_idents,
-            &type_names,
-        )
-        .unwrap();
+        let generated =
+            generate_cpp_methods(&invokables.iter().collect(), &qobject_idents, &type_names)
+                .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -433,10 +430,11 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
-        let method: ForeignItemFn =
+        let method_declaration: ForeignItemFn =
             parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
-        let invokables = vec![ParsedMethod {
-            method: method.clone(),
+
+        let method = ParsedMethod {
+            method: method_declaration.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: false,
             safe: true,
@@ -446,21 +444,22 @@ mod tests {
             }],
             specifiers: HashSet::new(),
             is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-        }];
+            name: Name::from_rust_ident_and_attrs(
+                &method_declaration.sig.ident,
+                &method_declaration.attrs,
+                None,
+                None,
+            )
+            .unwrap(),
+        };
+        let invokables = vec![&method];
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), None);
         type_names.mock_insert("B", None, Some("B2"), None);
 
-        let generated = generate_cpp_methods(
-            &invokables.iter().map(|method| method).collect(),
-            &qobject_idents,
-            &type_names,
-        )
-        .unwrap();
+        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);

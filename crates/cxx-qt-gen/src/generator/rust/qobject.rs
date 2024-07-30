@@ -18,7 +18,6 @@ use crate::{
         },
     },
     naming::TypeNames,
-    parser::qobject::ParsedQObject,
 };
 use quote::quote;
 use syn::{Ident, Result};

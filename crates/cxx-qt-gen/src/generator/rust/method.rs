@@ -181,11 +181,8 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_methods(
-            &invokables.iter().map(|method| method).collect(),
-            &qobject_idents,
-        )
-        .unwrap();
+        let generated =
+            generate_rust_methods(&invokables.iter().collect(), &qobject_idents).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

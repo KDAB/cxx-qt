@@ -55,7 +55,7 @@ pub fn generate_rust_properties(
     }
 
     generated.append(&mut generate_rust_signals(
-        &signals.iter().map(|signal| signal).collect(),
+        &signals.iter().collect(), // Converts Vec<T> to Vec<&T>
         qobject_idents,
         type_names,
         module_ident,
