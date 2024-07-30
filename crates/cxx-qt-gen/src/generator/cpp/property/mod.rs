@@ -57,7 +57,7 @@ pub fn generate_cpp_properties(
     }
 
     generated.append(&mut generate_cpp_signals(
-        &signals.iter().collect(), // Converting Vec<ParsedSignal> to Vec<&ParsedSignal>
+        &signals.iter().collect(),
         qobject_idents,
         type_names,
     )?);

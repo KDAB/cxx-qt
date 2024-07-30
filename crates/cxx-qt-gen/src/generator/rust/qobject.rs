@@ -200,7 +200,7 @@ mod tests {
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let rust = GeneratedRustFragment::from_qobject(
-            &structures.qobjects[0],
+            &structures.qobjects.get(0).unwrap(),
             &parser.type_names,
             &format_ident!("ffi"),
         )
