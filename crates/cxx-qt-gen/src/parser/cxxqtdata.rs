@@ -210,14 +210,8 @@ impl ParsedCxxQtData {
             if let ForeignItem::Fn(mut foreign_fn) = item {
                 // Test if the function is a signal
                 if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
-                    let parsed_signal_method = ParsedSignal::parse(foreign_fn.clone(), safe_call)?;
-
-                    let parsed_signal_method_self = ParsedSignal::parse(foreign_fn, safe_call)?;
-                    self.signals.push(parsed_signal_method_self);
-
-                    self.with_qobject(&parsed_signal_method.qobject_ident)?
-                        .signals
-                        .push(parsed_signal_method);
+                    let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
+                    self.signals.push(parsed_signal_method);
 
                     // Test if the function is an inheritance method
                     //
@@ -231,14 +225,8 @@ impl ParsedCxxQtData {
                         .push(parsed_inherited_method);
                     // Remaining methods are either C++ methods or invokables
                 } else {
-                    let parsed_method = ParsedMethod::parse(foreign_fn.clone(), safe_call)?;
-
-                    let parsed_method_self = ParsedMethod::parse(foreign_fn, safe_call)?;
-                    self.methods.push(parsed_method_self);
-
-                    self.with_qobject(&parsed_method.qobject_ident)?
-                        .methods
-                        .push(parsed_method);
+                    let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
+                    self.methods.push(parsed_method);
                 }
             }
         }
@@ -653,19 +641,6 @@ mod tests {
         );
         assert!(!signals[0].inherit);
         assert!(signals[1].inherit);
-    }
-
-    #[test]
-    fn test_parse_qsignals_unknown_obj() {
-        let mut cxxqtdata = create_parsed_cxx_qt_data();
-        let block: Item = parse_quote! {
-            unsafe extern "RustQt" {
-                #[qsignal]
-                fn ready(self: Pin<&mut UnknownObj>);
-            }
-        };
-        let parsed_block = cxxqtdata.parse_cxx_qt_item(block);
-        assert!(parsed_block.is_err());
     }
 
     #[test]
