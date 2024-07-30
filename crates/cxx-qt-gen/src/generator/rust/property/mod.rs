@@ -276,8 +276,8 @@ mod tests {
             &generated.cxx_mod_contents[6],
             parse_quote! {
                 unsafe extern "C++" {
-                    #[doc = "Notify for the Q_PROPERTY"]
                     #[cxx_name = "trivialPropertyChanged"]
+                    #[doc = "Notify for the Q_PROPERTY"]
                     fn trivial_property_changed(self: Pin<&mut MyObject>);
                 }
             },
@@ -401,8 +401,8 @@ mod tests {
             &generated.cxx_mod_contents[9],
             parse_quote! {
                 unsafe extern "C++" {
-                    #[doc = "Notify for the Q_PROPERTY"]
                     #[cxx_name = "opaquePropertyChanged"]
+                    #[doc = "Notify for the Q_PROPERTY"]
                     fn opaque_property_changed(self: Pin<&mut MyObject>);
                 }
             },
@@ -526,8 +526,8 @@ mod tests {
             &generated.cxx_mod_contents[12],
             parse_quote! {
                 unsafe extern "C++" {
-                    #[doc = "Notify for the Q_PROPERTY"]
                     #[cxx_name = "unsafePropertyChanged"]
+                    #[doc = "Notify for the Q_PROPERTY"]
                     fn unsafe_property_changed(self: Pin<&mut MyObject>);
                 }
             },

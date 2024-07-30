@@ -242,6 +242,7 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
@@ -340,6 +341,7 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
@@ -434,6 +436,7 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
+            docs: vec![],
         };
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
@@ -519,6 +522,7 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
+            docs: vec![],
         };
 
         let mut type_names = TypeNames::default();
@@ -608,6 +612,7 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
+            docs: vec![],
         };
 
         let mut type_names = TypeNames::default();

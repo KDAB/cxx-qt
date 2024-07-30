@@ -10,7 +10,7 @@ use crate::{
         attribute::attribute_take_path, foreignmod, path::path_compare_str, safety::Safety, types,
     },
 };
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result, Visibility};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -31,11 +31,18 @@ pub struct ParsedSignal {
     pub inherit: bool,
     /// Whether the signal is private
     pub private: bool,
+    /// All the doc attributes (each line) of the Signal
+    pub docs: Vec<Attribute>,
 }
 
 impl ParsedSignal {
     /// Builds a signal from a given property method
-    pub fn from_property_method(method: ForeignItemFn, name: Name, qobject_ident: Ident) -> Self {
+    pub fn from_property_method(
+        method: ForeignItemFn,
+        name: Name,
+        qobject_ident: Ident,
+        docs: Vec<Attribute>,
+    ) -> Self {
         Self {
             method,
             qobject_ident,
@@ -45,6 +52,7 @@ impl ParsedSignal {
             name,
             inherit: false,
             private: false,
+            docs,
         }
     }
 
@@ -77,6 +85,11 @@ impl ParsedSignal {
             ));
         }
 
+        let mut docs = vec![];
+        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+            docs.push(doc);
+        }
+
         let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
         let safe = method.sig.unsafety.is_none();
         let private = if let Visibility::Restricted(vis_restricted) = &method.vis {
@@ -94,6 +107,7 @@ impl ParsedSignal {
             safe,
             inherit,
             private,
+            docs,
         })
     }
 }
