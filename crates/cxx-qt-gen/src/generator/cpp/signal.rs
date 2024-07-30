@@ -190,13 +190,13 @@ pub fn generate_cpp_signal(
 }
 
 pub fn generate_cpp_signals(
-    signals: &Vec<ParsedSignal>,
+    signals: &Vec<&ParsedSignal>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
 
-    for signal in signals {
+    for &signal in signals {
         let mut block = GeneratedCppQObjectBlocks::default();
         let data = generate_cpp_signal(signal, &qobject_idents.name, type_names)?;
         block.includes = data.includes;
@@ -247,7 +247,12 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_signals(
+            &signals.iter().map(|signal| signal).collect(),
+            &qobject_idents,
+            &type_names,
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -345,7 +350,12 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_signals(
+            &signals.iter().map(|signal| signal).collect(),
+            &qobject_idents,
+            &type_names,
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = if let CppFragment::Header(header) = &generated.methods[0] {
@@ -434,8 +444,12 @@ mod tests {
             private: false,
         }];
         let qobject_idents = create_qobjectname();
-        let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
+        let generated = generate_cpp_signals(
+            &signals.iter().map(|signal| signal).collect(),
+            &qobject_idents,
+            &TypeNames::mock(),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);

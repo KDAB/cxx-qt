@@ -57,7 +57,7 @@ impl GeneratedRustFragment {
             &qobject.inherited_methods,
         )?);
         generated.append(&mut generate_rust_signals(
-            &qobject.signals,
+            &structured_qobject.signals,
             &qobject_idents,
             type_names,
             module_ident,
@@ -178,6 +178,7 @@ fn generate_qobject_definitions(
 mod tests {
     use super::*;
 
+    use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
     use quote::format_ident;
@@ -197,9 +198,10 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let rust = GeneratedRustFragment::from_qobject(
-            parser.cxx_qt_data.qobjects.values().next().unwrap(),
+            &structures.qobjects[0],
             &parser.type_names,
             &format_ident!("ffi"),
         )

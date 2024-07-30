@@ -204,7 +204,7 @@ pub fn generate_rust_signal(
 }
 
 pub fn generate_rust_signals(
-    signals: &Vec<ParsedSignal>,
+    signals: &Vec<&ParsedSignal>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
     module_ident: &Ident,
@@ -214,7 +214,8 @@ pub fn generate_rust_signals(
     // Create the methods for the other signals
     for signal in signals {
         let signal = {
-            let mut signal = signal.clone();
+            // Hacky fix, this block should be removed when naming fixes are in place
+            let mut signal = (*signal).clone();
 
             // Inject a cxx_name if there isn't any custom naming as we automatically rename RustQt signals
             if attribute_find_path(&signal.method.attrs, &["cxx_name"]).is_none()
@@ -269,7 +270,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated = generate_rust_signals(
-            &vec![qsignal],
+            &vec![&qsignal],
             &qobject_idents,
             &TypeNames::mock(),
             &format_ident!("ffi"),
@@ -431,7 +432,7 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
         let generated = generate_rust_signals(
-            &vec![qsignal],
+            &vec![&qsignal],
             &qobject_idents,
             &type_names,
             &format_ident!("ffi"),
@@ -590,7 +591,7 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);
         let generated = generate_rust_signals(
-            &vec![qsignal],
+            &vec![&qsignal],
             &qobject_idents,
             &type_names,
             &format_ident!("ffi"),
@@ -742,7 +743,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         let generated = generate_rust_signals(
-            &vec![qsignal],
+            &vec![&qsignal],
             &qobject_idents,
             &TypeNames::mock(),
             &format_ident!("ffi"),
