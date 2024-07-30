@@ -91,8 +91,8 @@ pub mod ffi {
         fn set_property_name(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
-        #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "propertyNameChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
         fn property_name_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -224,8 +224,8 @@ pub mod ffi {
         fn set_property_name(self: Pin<&mut SecondObject>, value: i32);
     }
     unsafe extern "C++" {
-        #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "propertyNameChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
         fn property_name_changed(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
@@ -262,7 +262,6 @@ pub mod ffi {
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
-        #[my_attribute]
         #[cxx_name = "ready"]
         fn ready(self: Pin<&mut SecondObject>);
     }
@@ -313,6 +312,7 @@ pub mod ffi {
         type ExternObject;
     }
     unsafe extern "C++" {
+        #[cxx_name = "clicked"]
         fn clicked(self: Pin<&mut QPushButton>, checked: bool);
     }
     unsafe extern "C++" {
@@ -372,8 +372,8 @@ pub mod ffi {
         );
     }
     unsafe extern "C++" {
-        #[rust_name = "error_occurred"]
-        fn errorOccurred(self: Pin<&mut ExternObject>);
+        #[cxx_name = "errorOccurred"]
+        fn error_occurred(self: Pin<&mut ExternObject>);
     }
     unsafe extern "C++" {
         #[doc(hidden)]

@@ -90,8 +90,8 @@ mod ffi {
         fn set_final_prop(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
-        #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "primitiveChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
         fn primitive_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -122,8 +122,8 @@ mod ffi {
         );
     }
     unsafe extern "C++" {
-        #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "trivialChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
         fn trivial_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -154,8 +154,8 @@ mod ffi {
         );
     }
     unsafe extern "C++" {
-        #[doc = "Notify for the Q_PROPERTY"]
         #[cxx_name = "customFunctionPropChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
         fn custom_function_prop_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {

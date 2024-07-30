@@ -118,6 +118,7 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
 
         let names = QSignalNames::from(&qsignal);
@@ -148,6 +149,7 @@ mod tests {
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
 
         let names = QSignalNames::from(&qsignal);

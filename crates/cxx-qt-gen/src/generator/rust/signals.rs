@@ -13,8 +13,8 @@ use crate::{
     },
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
-    syntax::attribute::attribute_find_path,
 };
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, FnArg, Ident, Result, Type};
 
@@ -32,7 +32,6 @@ pub fn generate_rust_signal(
     let signal_name_cpp = idents.name.cxx_unqualified();
     let connect_ident_rust = idents.connect_name.rust_unqualified();
     let on_ident_rust = idents.on_name;
-    let original_method = &signal.method;
 
     let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();
     let free_connect_ident_rust = idents_helper.connect_name.rust_unqualified();
@@ -86,11 +85,43 @@ pub fn generate_rust_signal(
 
     let mut cxx_bridge = vec![];
 
+    let rust_class_name = qobject_name.rust_unqualified();
+
+    let struct_sig = if signal.mutable {
+        quote! { Pin<&mut #rust_class_name> }
+    } else {
+        quote! { &#rust_class_name }
+    };
+
+    let cpp_ident = idents.name.cxx_unqualified();
+
+    let doc_comments = &signal.docs;
+
+    let signal_ident_cpp = idents.name.rust_unqualified();
+    let parameter_signatures = if signal.parameters.is_empty() {
+        quote! { self: #struct_sig }
+    } else {
+        let parameters = signal
+            .parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                let ty = &parameter.ty;
+                quote! { #ident: #ty }
+            })
+            .collect::<Vec<TokenStream>>();
+        quote! { self: #struct_sig, #(#parameters),* }
+    };
+
+    let return_type = &signal.method.sig.output;
+
     // TODO: what happens with RustQt signals, can they be private yet?
     if !signal.private {
         cxx_bridge.push(quote! {
             #unsafe_block extern "C++" {
-                #original_method
+                #[cxx_name = #cpp_ident]
+                #(#doc_comments)*
+                #unsafe_call fn #signal_ident_cpp(#parameter_signatures) #return_type;
             }
         });
     }
@@ -213,27 +244,8 @@ pub fn generate_rust_signals(
 
     // Create the methods for the other signals
     for signal in signals {
-        let signal = {
-            // Hacky fix, this block should be removed when naming fixes are in place
-            let mut signal = (*signal).clone();
-
-            // Inject a cxx_name if there isn't any custom naming as we automatically rename RustQt signals
-            if attribute_find_path(&signal.method.attrs, &["cxx_name"]).is_none()
-                && attribute_find_path(&signal.method.attrs, &["rust_name"]).is_none()
-            {
-                let idents = QSignalNames::from(&signal);
-                let signal_name_cpp = idents.name.cxx_unqualified();
-                signal
-                    .method
-                    .attrs
-                    .push(parse_quote!(#[cxx_name = #signal_name_cpp]));
-                signal
-            } else {
-                signal
-            }
-        };
         generated.append(&mut generate_rust_signal(
-            &signal,
+            signal,
             &qobject_idents.name,
             type_names,
             module_ident,
@@ -251,21 +263,24 @@ mod tests {
     use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     #[test]
     fn test_generate_rust_signal() {
+        let method: ForeignItemFn = parse_quote! {
+            fn ready(self: Pin<&mut MyObject>);
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                fn ready(self: Pin<&mut MyObject>);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: Name::new(format_ident!("ready")),
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
         let qobject_idents = create_qobjectname();
 
@@ -405,11 +420,12 @@ mod tests {
 
     #[test]
     fn test_generate_rust_signal_parameters() {
+        let method: ForeignItemFn = parse_quote! {
+            #[attribute]
+            fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                #[attribute]
-                fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![
@@ -422,10 +438,12 @@ mod tests {
                     ty: parse_quote! { UniquePtr<QColor> },
                 },
             ],
-            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
         let qobject_idents = create_qobjectname();
 
@@ -446,7 +464,6 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[attribute]
                     #[cxx_name = "dataChanged"]
                     fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
@@ -585,6 +602,7 @@ mod tests {
             safe: false,
             inherit: false,
             private: false,
+            docs: vec![],
         };
         let qobject_idents = create_qobjectname();
 
@@ -739,6 +757,7 @@ mod tests {
             safe: true,
             inherit: true,
             private: false,
+            docs: vec![],
         };
         let qobject_idents = create_qobjectname();
 
@@ -757,9 +776,8 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
-                    #[inherit]
                     #[cxx_name = "baseName"]
-                    fn existing_signal(self: Pin<&mut MyObject>, );
+                    fn existing_signal(self: Pin<&mut MyObject>);
                 }
             },
         );
@@ -879,17 +897,20 @@ mod tests {
 
     #[test]
     fn test_generate_rust_signal_free() {
+        let method: ForeignItemFn = parse_quote! {
+            fn ready(self: Pin<&mut MyObject>);
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                fn ready(self: Pin<&mut MyObject>);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
-            name: Name::new(format_ident!("ready")),
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
             safe: true,
             inherit: false,
             private: false,
+            docs: vec![],
         };
 
         let qobject_name = TypeNames::mock()
@@ -911,6 +932,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
+                    #[cxx_name = "ready"]
                     fn ready(self: Pin<&mut MyObject>);
                 }
             },
@@ -1042,6 +1064,7 @@ mod tests {
             safe: true,
             inherit: false,
             private: true,
+            docs: vec![],
         };
 
         let qobject_name = TypeNames::mock()

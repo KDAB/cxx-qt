@@ -5,6 +5,7 @@
 
 use syn::ForeignItemFn;
 
+use crate::syntax::attribute::attribute_take_path;
 use crate::{
     generator::naming::{
         property::{NameState, QPropertyNames},
@@ -21,16 +22,22 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Optio
         let notify_rust = notify.rust_unqualified();
         let notify_cpp_str = notify.cxx_unqualified();
 
-        let method: ForeignItemFn = syn::parse_quote! {
+        let mut method: ForeignItemFn = syn::parse_quote! {
             #[doc = "Notify for the Q_PROPERTY"]
             #[cxx_name = #notify_cpp_str]
             fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
         };
 
+        let mut docs = vec![];
+        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+            docs.push(doc);
+        }
+
         Some(ParsedSignal::from_property_method(
             method,
             notify.clone(),
             qobject_idents.name.rust_unqualified().clone(),
+            docs,
         ))
     } else {
         None
