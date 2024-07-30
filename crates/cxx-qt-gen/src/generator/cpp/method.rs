@@ -21,13 +21,13 @@ use indoc::formatdoc;
 use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
 
 pub fn generate_cpp_methods(
-    invokables: &Vec<ParsedMethod>,
+    invokables: &Vec<&ParsedMethod>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let qobject_ident = qobject_idents.name.cxx_unqualified();
-    for invokable in invokables {
+    for &invokable in invokables {
         let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
@@ -274,7 +274,12 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
 
-        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_methods(
+            &invokables.iter().map(|method| method).collect(),
+            &qobject_idents,
+            &type_names,
+        )
+        .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -450,7 +455,12 @@ mod tests {
         type_names.mock_insert("A", None, Some("A1"), None);
         type_names.mock_insert("B", None, Some("B2"), None);
 
-        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_methods(
+            &invokables.iter().map(|method| method).collect(),
+            &qobject_idents,
+            &type_names,
+        )
+        .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);

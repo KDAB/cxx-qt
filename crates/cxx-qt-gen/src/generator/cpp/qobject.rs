@@ -145,12 +145,12 @@ impl GeneratedCppQObject {
             type_names,
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
-            &qobject.methods,
+            &structured_qobject.methods,
             &qobject_idents,
             type_names,
         )?);
         generated.blocks.append(&mut generate_cpp_signals(
-            &qobject.signals,
+            &structured_qobject.signals,
             &qobject_idents,
             type_names,
         )?);

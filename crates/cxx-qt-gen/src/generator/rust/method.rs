@@ -15,13 +15,13 @@ use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
-    invokables: &Vec<ParsedMethod>,
+    invokables: &Vec<&ParsedMethod>,
     qobject_idents: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
-    for invokable in invokables {
+    for &invokable in invokables {
         let idents = QMethodName::try_from(invokable)?;
         let wrapper_ident_cpp = idents.wrapper.cxx_unqualified();
         let invokable_ident_rust = &idents.name.rust_unqualified();
@@ -181,7 +181,11 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let generated = generate_rust_methods(&invokables, &qobject_idents).unwrap();
+        let generated = generate_rust_methods(
+            &invokables.iter().map(|method| method).collect(),
+            &qobject_idents,
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

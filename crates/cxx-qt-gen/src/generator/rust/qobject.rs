@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::structuring::StructuredQObject;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
@@ -25,10 +26,11 @@ use syn::{Ident, Result};
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
-        qobject: &ParsedQObject,
+        structured_qobject: &StructuredQObject,
         type_names: &TypeNames,
         module_ident: &Ident,
     ) -> Result<Self> {
+        let qobject = structured_qobject.declaration;
         // Create the base object
         let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
@@ -47,7 +49,7 @@ impl GeneratedRustFragment {
             module_ident,
         )?);
         generated.append(&mut generate_rust_methods(
-            &qobject.methods,
+            &structured_qobject.methods,
             &qobject_idents,
         )?);
         generated.append(&mut inherit::generate(
