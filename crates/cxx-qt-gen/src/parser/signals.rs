@@ -10,6 +10,8 @@ use crate::{
         attribute::attribute_take_path, foreignmod, path::path_compare_str, safety::Safety, types,
     },
 };
+use proc_macro2::TokenStream;
+use quote::quote;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
 #[derive(Clone)]
@@ -109,6 +111,30 @@ impl ParsedSignal {
             private,
             docs,
         })
+    }
+
+    /// Returns a [TokenStream] of the signals parameters, which can be used in generation stage
+    /// class_name is the rust class name which this method is defined for
+    pub fn get_params_tokens(&self, class_name: &Ident) -> TokenStream {
+        let struct_sig = if self.mutable {
+            quote! { Pin<&mut #class_name> }
+        } else {
+            quote! { &#class_name }
+        };
+        if self.parameters.is_empty() {
+            quote! { self: #struct_sig }
+        } else {
+            let parameters = self
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let ident = &parameter.ident;
+                    let ty = &parameter.ty;
+                    quote! { #ident: #ty }
+                })
+                .collect::<Vec<TokenStream>>();
+            quote! { self: #struct_sig, #(#parameters),* }
+        }
     }
 }
 

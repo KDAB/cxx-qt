@@ -11,14 +11,12 @@ use crate::{
         },
         naming::{method::QMethodName, qobject::QObjectNames},
     },
-    naming::cpp::{
-        syn_return_type_to_cpp_except, syn_type_to_cpp_return_type, syn_type_to_cpp_type,
-    },
+    naming::cpp::{syn_return_type_to_cpp_except, syn_type_to_cpp_return_type},
     naming::TypeNames,
     parser::method::{ParsedMethod, ParsedQInvokableSpecifiers},
 };
 use indoc::formatdoc;
-use syn::{spanned::Spanned, Error, FnArg, Pat, PatIdent, PatType, Result};
+use syn::Result;
 
 pub fn generate_cpp_methods(
     invokables: &Vec<&ParsedMethod>,
@@ -31,35 +29,7 @@ pub fn generate_cpp_methods(
         let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
-        let parameters: Vec<CppNamedType> = invokable
-            .method
-            .sig
-            .inputs
-            .iter()
-            .map(|input| {
-                if let FnArg::Typed(PatType { pat, ty, .. }) = input {
-                    let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                        ident
-                    } else {
-                        return Err(Error::new(input.span(), "Unknown pattern for type"));
-                    };
-
-                    // If the name of the argument is self then ignore,
-                    // as this is likely the self: Pin<T>
-                    if ident == "self" {
-                        Ok(None)
-                    } else {
-                        Ok(Some(CppNamedType {
-                            ident: ident.to_string(),
-                            ty: syn_type_to_cpp_type(ty, type_names)?,
-                        }))
-                    }
-                } else {
-                    Ok(None)
-                }
-            })
-            .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
-            .collect::<Result<Vec<CppNamedType>>>()?;
+        let parameters: Vec<CppNamedType> = invokable.get_cpp_params(type_names)?;
 
         let body = format!(
             "{ident}({parameter_names})",
@@ -77,14 +47,31 @@ pub fn generate_cpp_methods(
             .join(", ");
         let is_const = if !invokable.mutable { " const" } else { "" };
 
+        let mut is_final = "";
+        let mut is_override = "";
+        let mut is_virtual = "";
+
+        // Set specifiers into string values
+        invokable
+            .specifiers
+            .iter()
+            .for_each(|specifier| match specifier {
+                ParsedQInvokableSpecifiers::Final => is_final = " final",
+                ParsedQInvokableSpecifiers::Override => is_override = " override",
+                ParsedQInvokableSpecifiers::Virtual => is_virtual = "virtual ",
+            });
+
+        // Matching return type or void
+        let return_type = if let Some(return_cxx_ty) = &return_cxx_ty {
+            return_cxx_ty
+        } else {
+            "void"
+        };
+
         generated.methods.push(CppFragment::Pair {
             header: format!(
                 "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
-                return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                    return_cxx_ty
-                } else {
-                    "void"
-                },
+                return_cxx_ty = return_type,
                 ident = idents.name.cxx_unqualified(),
                 parameter_types = parameter_types,
                 is_qinvokable = if invokable.is_qinvokable {
@@ -92,21 +79,9 @@ pub fn generate_cpp_methods(
                 } else {
                     ""
                 },
-                is_final = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Final) {
-                    " final"
-                } else {
-                    ""
-                },
-                is_override = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Override) {
-                    " override"
-                } else {
-                    ""
-                },
-                is_virtual = if invokable.specifiers.contains(&ParsedQInvokableSpecifiers::Virtual) {
-                    "virtual "
-                } else {
-                    ""
-                },
+                is_final = is_final,
+                is_override = is_override,
+                is_virtual = is_virtual,
             ),
             source: formatdoc! {
                 r#"
