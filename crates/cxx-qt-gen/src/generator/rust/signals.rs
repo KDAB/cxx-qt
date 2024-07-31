@@ -250,18 +250,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
-        };
+        let qsignal = ParsedSignal::from_method(&method);
         let qobject_idents = create_qobjectname();
 
         let generated = generate_rust_signals(
@@ -880,18 +869,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
-        };
+        let qsignal = ParsedSignal::from_method(&method);
 
         let qobject_name = TypeNames::mock()
             .lookup(&qsignal.qobject_ident)
@@ -1033,10 +1011,11 @@ mod tests {
 
     #[test]
     fn test_generate_rust_signal_free_private() {
+        let method: ForeignItemFn = parse_quote! {
+            fn ready(self: Pin<&mut MyObject>);
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                fn ready(self: Pin<&mut MyObject>);
-            },
+            method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
             mutable: true,
             parameters: vec![],
