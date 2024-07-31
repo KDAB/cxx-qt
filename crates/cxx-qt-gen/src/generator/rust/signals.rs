@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::get_params_tokens;
 use crate::{
     generator::{
         naming::{
@@ -91,7 +92,8 @@ pub fn generate_rust_signal(
     let doc_comments = &signal.docs;
 
     let signal_ident_cpp = idents.name.rust_unqualified();
-    let parameter_signatures = signal.get_params_tokens(rust_class_name);
+    let parameter_signatures =
+        get_params_tokens(signal.mutable, &signal.parameters, rust_class_name);
 
     let return_type = &signal.method.sig.output;
 

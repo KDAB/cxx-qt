@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::get_cpp_params;
 use crate::{
     generator::{
         cpp::{
@@ -29,7 +30,7 @@ pub fn generate_cpp_methods(
         let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
-        let parameters: Vec<CppNamedType> = invokable.get_cpp_params(type_names)?;
+        let parameters: Vec<CppNamedType> = get_cpp_params(&invokable.method, type_names)?;
 
         let body = format!(
             "{ident}({parameter_names})",

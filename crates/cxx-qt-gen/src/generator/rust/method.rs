@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::get_params_tokens;
 use crate::{
     generator::{
         naming::{method::QMethodName, qobject::QObjectNames},
@@ -28,7 +29,11 @@ pub fn generate_rust_methods(
         // TODO: once we aren't using qobject::T in the extern "RustQt"
         // we can just pass through the original ExternFn block and add the attribute?
 
-        let parameter_signatures = invokable.get_params_tokens(cpp_class_name_rust);
+        let parameter_signatures = get_params_tokens(
+            invokable.mutable,
+            &invokable.parameters,
+            cpp_class_name_rust,
+        );
 
         let return_type = &invokable.method.sig.output;
 
