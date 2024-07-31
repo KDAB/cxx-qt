@@ -10,7 +10,6 @@ use crate::{
     },
     parser::method::ParsedMethod,
 };
-use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Result};
 
@@ -28,25 +27,8 @@ pub fn generate_rust_methods(
 
         // TODO: once we aren't using qobject::T in the extern "RustQt"
         // we can just pass through the original ExternFn block and add the attribute?
-        let cpp_struct = if invokable.mutable {
-            quote! { Pin<&mut #cpp_class_name_rust> }
-        } else {
-            quote! { &#cpp_class_name_rust }
-        };
-        let parameter_signatures = if invokable.parameters.is_empty() {
-            quote! { self: #cpp_struct }
-        } else {
-            let parameters = invokable
-                .parameters
-                .iter()
-                .map(|parameter| {
-                    let ident = &parameter.ident;
-                    let ty = &parameter.ty;
-                    quote! { #ident: #ty }
-                })
-                .collect::<Vec<TokenStream>>();
-            quote! { self: #cpp_struct, #(#parameters),* }
-        };
+
+        let parameter_signatures = invokable.get_params_tokens(cpp_class_name_rust);
 
         let return_type = &invokable.method.sig.output;
 

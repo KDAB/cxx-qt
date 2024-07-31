@@ -14,7 +14,6 @@ use crate::{
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
 };
-use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, FnArg, Ident, Result, Type};
 
@@ -87,31 +86,12 @@ pub fn generate_rust_signal(
 
     let rust_class_name = qobject_name.rust_unqualified();
 
-    let struct_sig = if signal.mutable {
-        quote! { Pin<&mut #rust_class_name> }
-    } else {
-        quote! { &#rust_class_name }
-    };
-
     let cpp_ident = idents.name.cxx_unqualified();
 
     let doc_comments = &signal.docs;
 
     let signal_ident_cpp = idents.name.rust_unqualified();
-    let parameter_signatures = if signal.parameters.is_empty() {
-        quote! { self: #struct_sig }
-    } else {
-        let parameters = signal
-            .parameters
-            .iter()
-            .map(|parameter| {
-                let ident = &parameter.ident;
-                let ty = &parameter.ty;
-                quote! { #ident: #ty }
-            })
-            .collect::<Vec<TokenStream>>();
-        quote! { self: #struct_sig, #(#parameters),* }
-    };
+    let parameter_signatures = signal.get_params_tokens(rust_class_name);
 
     let return_type = &signal.method.sig.output;
 

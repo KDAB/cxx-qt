@@ -3,13 +3,18 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::cpp::fragment::CppNamedType;
+use crate::naming::cpp::syn_type_to_cpp_type;
+use crate::naming::TypeNames;
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
     syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
 };
+use proc_macro2::TokenStream;
+use quote::quote;
 use std::collections::HashSet;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Error, FnArg, ForeignItemFn, Ident, Pat, PatIdent, PatType, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -101,5 +106,62 @@ impl ParsedMethod {
             is_qinvokable,
             name,
         })
+    }
+
+    /// Returns a [TokenStream] of the methods parameters, which can be used in generation stage
+    /// class_name is the rust class name which this method is defined for
+    pub fn get_params_tokens(&self, class_name: &Ident) -> TokenStream {
+        let struct_sig = if self.mutable {
+            quote! { Pin<&mut #class_name> }
+        } else {
+            quote! { &#class_name }
+        };
+        if self.parameters.is_empty() {
+            quote! { self: #struct_sig }
+        } else {
+            let parameters = self
+                .parameters
+                .iter()
+                .map(|parameter| {
+                    let ident = &parameter.ident;
+                    let ty = &parameter.ty;
+                    quote! { #ident: #ty }
+                })
+                .collect::<Vec<TokenStream>>();
+            quote! { self: #struct_sig, #(#parameters),* }
+        }
+    }
+
+    /// Returns a vector of the names and types ([CppNamedType] of the parameters of this method, used in cpp generation step
+    pub fn get_cpp_params(&self, type_names: &TypeNames) -> Result<Vec<CppNamedType>> {
+        self.method
+            .sig
+            .inputs
+            .iter()
+            .map(|input| {
+                // Match parameters to extract their idents
+                if let FnArg::Typed(PatType { pat, ty, .. }) = input {
+                    let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                        ident
+                    } else {
+                        return Err(Error::new(input.span(), "Unknown pattern for type"));
+                    };
+
+                    // If the name of the argument is self then ignore,
+                    // as this is likely the self: Pin<T>
+                    if ident == "self" {
+                        Ok(None)
+                    } else {
+                        Ok(Some(CppNamedType {
+                            ident: ident.to_string(),
+                            ty: syn_type_to_cpp_type(ty, type_names)?,
+                        }))
+                    }
+                } else {
+                    Ok(None)
+                }
+            })
+            .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+            .collect()
     }
 }
