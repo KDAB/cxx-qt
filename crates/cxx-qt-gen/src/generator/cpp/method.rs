@@ -148,69 +148,22 @@ mod tests {
             parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; };
         let method5: ForeignItemFn = parse_quote! { fn cpp_method(self: &MyObject); };
         let invokables = vec![
-            ParsedMethod {
-                method: method1.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method1.sig.ident,
-                    &method1.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
-            ParsedMethod {
-                method: method2.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![ParsedFunctionParameter {
+            ParsedMethod::from_method_and_params(&method1, vec![]),
+            ParsedMethod::from_method_and_params(
+                &method2,
+                vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
                 }],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method2.sig.ident,
-                    &method2.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
-            ParsedMethod {
-                method: method3.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: true,
-                safe: true,
-                parameters: vec![ParsedFunctionParameter {
+            ),
+            ParsedMethod::mut_from_method_and_params(
+                &method3,
+                vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
                 }],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method3.sig.ident,
-                    &method3.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
+            ),
             ParsedMethod {
-                method: method4.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { i32 },
-                }],
                 specifiers: {
                     let mut specifiers = HashSet::new();
                     specifiers.insert(ParsedQInvokableSpecifiers::Final);
@@ -218,30 +171,17 @@ mod tests {
                     specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
                     specifiers
                 },
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method4.sig.ident,
-                    &method4.attrs,
-                    None,
-                    None,
+                ..ParsedMethod::from_method_and_params(
+                    &method4,
+                    vec![ParsedFunctionParameter {
+                        ident: format_ident!("param"),
+                        ty: parse_quote! { i32 },
+                    }],
                 )
-                .unwrap(),
             },
             ParsedMethod {
-                method: method5.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![],
-                specifiers: HashSet::new(),
                 is_qinvokable: false,
-                name: Name::from_rust_ident_and_attrs(
-                    &method5.sig.ident,
-                    &method5.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
+                ..ParsedMethod::from_method_and_params(&method5, vec![])
             },
         ];
         let qobject_idents = create_qobjectname();

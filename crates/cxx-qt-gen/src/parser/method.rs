@@ -16,6 +16,9 @@ use quote::quote;
 use std::collections::HashSet;
 use syn::{spanned::Spanned, Error, FnArg, ForeignItemFn, Ident, Pat, PatIdent, PatType, Result};
 
+#[cfg(test)]
+use quote::format_ident;
+
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
 pub enum ParsedQInvokableSpecifiers {
@@ -163,5 +166,34 @@ impl ParsedMethod {
             })
             .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
             .collect()
+    }
+
+    #[cfg(test)]
+    pub fn from_method_and_params(
+        method: &ForeignItemFn,
+        parameters: Vec<ParsedFunctionParameter>,
+    ) -> Self {
+        ParsedMethod {
+            method: method.clone(),
+            qobject_ident: format_ident!("MyObject"),
+            mutable: false,
+            safe: true,
+            parameters,
+            specifiers: HashSet::new(),
+            is_qinvokable: true,
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn mut_from_method_and_params(
+        method: &ForeignItemFn,
+        parameters: Vec<ParsedFunctionParameter>,
+    ) -> Self {
+        ParsedMethod {
+            mutable: true,
+            ..ParsedMethod::from_method_and_params(method, parameters)
+        }
     }
 }
