@@ -27,6 +27,11 @@ using MyObjectCxxQtSignalHandlercustomFunctionPropChanged =
     struct MyObjectCxxQtSignalParamscustomFunctionPropChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using MyObjectCxxQtSignalHandlermyOnChanged =
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsmyOnChanged*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 #include "cxx-qt-gen/ffi.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
@@ -56,6 +61,15 @@ MyObject_customFunctionPropChangedConnect(
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_myOnChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermyOnChanged
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
@@ -68,8 +82,8 @@ public:
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
-  Q_PROPERTY(::std::int32_t customFunctionProp READ myGetter WRITE mySetter
-               NOTIFY customFunctionPropChanged)
+  Q_PROPERTY(::std::int32_t customFunctionProp READ myGetter WRITE
+               MyCustomSetter NOTIFY customFunctionPropChanged)
   Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
   Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
                WRITE setCustomOnChangedProp NOTIFY myOnChanged)
@@ -102,9 +116,9 @@ public:
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
   ::std::int32_t myGetter() const;
-  void mySetter(::std::int32_t value);
-  void myOnChanged();
+  void MyCustomSetter(::std::int32_t value);
   void myResetFn();
+  Q_SIGNAL void myOnChanged();
   explicit MyObject(QObject* parent = nullptr);
 
 private:
@@ -123,8 +137,7 @@ private:
   ::std::int32_t const& getFinalPropWrapper() const noexcept;
   void setFinalPropWrapper(::std::int32_t value) noexcept;
   ::std::int32_t myGetterWrapper() const noexcept;
-  void mySetterWrapper(::std::int32_t value) noexcept;
-  void myOnChangedWrapper() noexcept;
+  void MyCustomSetterWrapper(::std::int32_t value) noexcept;
   void myResetFnWrapper() noexcept;
 };
 

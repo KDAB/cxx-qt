@@ -35,11 +35,17 @@ impl NameState {
         state: &FlagState,
         auto_fn: impl Fn() -> Name,
         structured_qobject: &StructuredQObject,
+        signal: bool,
     ) -> Result<Self> {
-        match state {
-            FlagState::Auto => Ok(Self::Auto(auto_fn())),
-            FlagState::Custom(ident) => Ok(Self::Custom(structured_qobject.method_lookup(ident)?)),
-        }
+        let lookup_fn = if signal {
+            StructuredQObject::signal_lookup
+        } else {
+            StructuredQObject::method_lookup
+        };
+        Ok(match state {
+            FlagState::Auto => Self::Auto(auto_fn()),
+            FlagState::Custom(ident) => Self::Custom(lookup_fn(structured_qobject, ident)?),
+        })
     }
 }
 
@@ -68,27 +74,34 @@ impl QPropertyNames {
             &flags.read,
             || getter_name_from_property(&property_name),
             structured_qobject,
+            false,
         )?;
 
-        let setter = if let Some(setter) = &flags.write {
-            Some(NameState::from_flag_with_auto_fn(
-                setter,
-                || setter_name_from_property(&property_name),
-                structured_qobject,
-            )?)
-        } else {
-            None
-        };
+        let setter = flags
+            .write
+            .clone()
+            .map(|setter| {
+                NameState::from_flag_with_auto_fn(
+                    &setter,
+                    || setter_name_from_property(&property_name),
+                    structured_qobject,
+                    false,
+                )
+            })
+            .transpose()?;
 
-        let notify = if let Some(notify) = &flags.notify {
-            Some(NameState::from_flag_with_auto_fn(
-                notify,
-                || notify_name_from_property(&property_name),
-                structured_qobject,
-            )?)
-        } else {
-            None
-        };
+        let notify = flags
+            .notify
+            .clone()
+            .map(|notify| {
+                NameState::from_flag_with_auto_fn(
+                    &notify,
+                    || notify_name_from_property(&property_name),
+                    structured_qobject,
+                    true,
+                )
+            })
+            .transpose()?;
 
         let setter_wrapper = if let Some(NameState::Auto(ref setter)) = setter {
             Some(wrapper_name_from_function_name(setter))
@@ -171,9 +184,9 @@ pub mod tests {
             flags: QPropertyFlags::default(),
         };
 
-        let obj = ParsedQObject::mock_parsed_qobject();
+        let obj = ParsedQObject::mock();
 
-        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock(&obj);
         QPropertyNames::try_from_property(&property, &structured_qobject)
             .expect("Failed to create QPropertyNames")
     }

@@ -89,9 +89,9 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        let obj = ParsedQObject::mock_parsed_qobject();
+        let obj = ParsedQObject::mock();
 
-        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock(&obj);
 
         let type_names = TypeNames::mock();
         generate_cpp_properties(
@@ -145,8 +145,6 @@ mod tests {
             struct MyStruct;
         };
 
-        // let generated = setup_generated(&mut input).unwrap();
-
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
         let properties = vec![property];
@@ -157,14 +155,14 @@ mod tests {
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let structured_qobject = structures.qobjects.get(0).unwrap();
+        let structured_qobject = structures.qobjects.first().unwrap();
 
         let type_names = TypeNames::mock();
         let generated = generate_cpp_properties(
             &properties,
             &qobject_idents,
             &type_names,
-            &structured_qobject,
+            structured_qobject,
         )
         .unwrap();
 
@@ -203,8 +201,6 @@ mod tests {
             struct MyStruct;
         };
 
-        // let generated = setup_generated(&mut input).unwrap();
-
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
         let properties = vec![property];
@@ -216,14 +212,14 @@ mod tests {
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
-        let structured_qobject = structures.qobjects.get(0).unwrap();
+        let structured_qobject = structures.qobjects.first().unwrap();
 
         let type_names = TypeNames::mock();
         let generated = generate_cpp_properties(
             &properties,
             &qobject_idents,
             &type_names,
-            &structured_qobject,
+            structured_qobject,
         )
         .unwrap();
 
@@ -266,9 +262,9 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        let obj = ParsedQObject::mock_parsed_qobject();
+        let obj = ParsedQObject::mock();
 
-        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock(&obj);
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
@@ -559,9 +555,9 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        let obj = ParsedQObject::mock_parsed_qobject();
+        let obj = ParsedQObject::mock();
 
-        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock(&obj);
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);

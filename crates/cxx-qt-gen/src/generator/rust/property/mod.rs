@@ -96,9 +96,9 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
-        let obj = ParsedQObject::mock_parsed_qobject();
+        let obj = ParsedQObject::mock();
 
-        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock(&obj);
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);

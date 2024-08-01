@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::Name;
-use crate::parser::method::ParsedMethod;
 use crate::parser::inherit::ParsedInheritedMethod;
+use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
@@ -38,23 +38,26 @@ impl<'a> StructuredQObject<'a> {
     }
 
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
-        let method = self
-            .methods
+        // TODO account for inherited methods too since those are in a different vector
+        self.methods
             .iter()
-            .find(|method| method.name.rust_unqualified() == id);
+            .map(|method| &method.name)
+            .find(|name| name.rust_unqualified() == id)
+            .cloned()
+            .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
+    }
 
-        if let Some(method) = method {
-            Ok(method.name.clone())
-        } else {
-            Err(Error::new_spanned(
-                id,
-                format!("Method with name '{id}' not found!"),
-            ))
-        }
+    pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
+        self.signals
+            .iter()
+            .map(|signal| &signal.name)
+            .find(|name| name.rust_unqualified() == id)
+            .cloned()
+            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
     }
 
     #[cfg(test)]
-    pub fn mock_structured_qobject(obj: &'a ParsedQObject) -> Self {
-        Self::from_qobject(&obj)
+    pub fn mock(obj: &'a ParsedQObject) -> Self {
+        Self::from_qobject(obj)
     }
 }

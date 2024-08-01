@@ -57,11 +57,11 @@ pub struct ParsedQObject {
 
 impl ParsedQObject {
     #[cfg(test)]
-    pub fn mock_parsed_qobject() -> Self {
+    pub fn mock() -> Self {
         ParsedQObject {
             base_class: None,
-            name: Name::new(format_ident!("my_property")),
-            rust_type: format_ident!("i32"),
+            name: Name::new(format_ident!("MyObject")),
+            rust_type: format_ident!("MyObjectRust"),
             inherited_methods: vec![],
             constructors: vec![],
             properties: vec![],

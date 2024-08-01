@@ -176,6 +176,62 @@ MyObject_customFunctionPropChangedConnect(
 }
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust::cxxqt1 {
+template<>
+SignalHandler<
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmyOnChanged*>::
+  ~SignalHandler() noexcept
+{
+  if (data[0] == nullptr && data[1] == nullptr) {
+    return;
+  }
+
+  drop_MyObject_signal_handler_myOnChanged(::std::move(*this));
+}
+
+template<>
+template<>
+void
+SignalHandler<
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsmyOnChanged*>::
+operator()<cxx_qt::my_object::MyObject&>(cxx_qt::my_object::MyObject& self)
+{
+  call_MyObject_signal_handler_myOnChanged(*this, self);
+}
+
+static_assert(alignof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                                      MyObjectCxxQtSignalParamsmyOnChanged*>) <=
+                alignof(::std::size_t),
+              "unexpected aligment");
+static_assert(sizeof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                                     MyObjectCxxQtSignalParamsmyOnChanged*>) ==
+                sizeof(::std::size_t[2]),
+              "unexpected size");
+} // namespace rust::cxxqt1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_myOnChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermyOnChanged
+    closure,
+  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    &self,
+    &cxx_qt::my_object::MyObject::myOnChanged,
+    &self,
+    [&, closure = ::std::move(closure)]() mutable {
+      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
+        self);
+      closure.template operator()<cxx_qt::my_object::MyObject&>(self);
+    },
+    type);
+}
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 namespace cxx_qt::my_object {
 ::std::int32_t const&
 MyObject::getPrimitive() const
@@ -283,17 +339,10 @@ MyObject::myGetter() const
 }
 
 void
-MyObject::mySetter(::std::int32_t value)
+MyObject::MyCustomSetter(::std::int32_t value)
 {
   const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  mySetterWrapper(value);
-}
-
-void
-MyObject::myOnChanged()
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  myOnChangedWrapper();
+  MyCustomSetterWrapper(value);
 }
 
 void

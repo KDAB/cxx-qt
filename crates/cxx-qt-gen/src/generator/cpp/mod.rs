@@ -17,6 +17,8 @@ pub mod qobject;
 pub mod signal;
 pub mod threading;
 
+mod utils;
+
 use std::collections::BTreeSet;
 
 use crate::generator::cpp::fragment::CppNamedType;
@@ -79,7 +81,38 @@ impl GeneratedCppBlocks {
     }
 }
 
-mod utils;
+/// Returns a vector of the names and types ([CppNamedType] of the parameters of this method, used in cpp generation step
+pub fn get_cpp_params(method: &ForeignItemFn, type_names: &TypeNames) -> Result<Vec<CppNamedType>> {
+    method
+        .sig
+        .inputs
+        .iter()
+        .map(|input| {
+            // Match parameters to extract their idents
+            if let FnArg::Typed(PatType { pat, ty, .. }) = input {
+                let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
+                    ident
+                } else {
+                    return Err(Error::new(input.span(), "Unknown pattern for type"));
+                };
+
+                // If the name of the argument is self then ignore,
+                // as this is likely the self: Pin<T>
+                if ident == "self" {
+                    Ok(None)
+                } else {
+                    Ok(Some(CppNamedType {
+                        ident: ident.to_string(),
+                        ty: syn_type_to_cpp_type(ty, type_names)?,
+                    }))
+                }
+            } else {
+                Ok(None)
+            }
+        })
+        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
+        .collect()
+}
 
 #[cfg(test)]
 mod tests {
@@ -142,37 +175,4 @@ mod tests {
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
         assert_eq!(cpp.qobjects[0].name.namespace(), Some("cxx_qt"));
     }
-}
-
-/// Returns a vector of the names and types ([CppNamedType] of the parameters of this method, used in cpp generation step
-pub fn get_cpp_params(method: &ForeignItemFn, type_names: &TypeNames) -> Result<Vec<CppNamedType>> {
-    method
-        .sig
-        .inputs
-        .iter()
-        .map(|input| {
-            // Match parameters to extract their idents
-            if let FnArg::Typed(PatType { pat, ty, .. }) = input {
-                let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                    ident
-                } else {
-                    return Err(Error::new(input.span(), "Unknown pattern for type"));
-                };
-
-                // If the name of the argument is self then ignore,
-                // as this is likely the self: Pin<T>
-                if ident == "self" {
-                    Ok(None)
-                } else {
-                    Ok(Some(CppNamedType {
-                        ident: ident.to_string(),
-                        ty: syn_type_to_cpp_type(ty, type_names)?,
-                    }))
-                }
-            } else {
-                Ok(None)
-            }
-        })
-        .filter_map(|result| result.map_or_else(|e| Some(Err(e)), |v| v.map(Ok)))
-        .collect()
 }
