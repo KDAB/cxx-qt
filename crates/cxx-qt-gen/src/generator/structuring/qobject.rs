@@ -52,4 +52,9 @@ impl<'a> StructuredQObject<'a> {
             ))
         }
     }
+
+    #[cfg(test)]
+    pub fn mock_structured_qobject(obj: &'a ParsedQObject) -> Self {
+        Self::from_qobject(&obj)
+    }
 }

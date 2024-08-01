@@ -162,7 +162,6 @@ pub mod tests {
     use super::*;
     use crate::parser::property::QPropertyFlags;
     use crate::parser::qobject::ParsedQObject;
-    use crate::syntax::foreignmod::ForeignTypeIdentAlias;
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
         let ty: syn::Type = parse_quote! { i32 };
@@ -171,26 +170,10 @@ pub mod tests {
             ty,
             flags: QPropertyFlags::default(),
         };
-        // PROTO, only for allowing code to compile
-        let obj = ParsedQObject {
-            base_class: None,
-            name: Name::new(format_ident!("my_property")),
-            rust_type: format_ident!("i32"),
-            inherited_methods: vec![],
-            constructors: vec![],
-            properties: vec![],
-            qml_metadata: None,
-            locking: false,
-            threading: false,
-            has_qobject_macro: false,
-            declaration: ForeignTypeIdentAlias {
-                attrs: vec![],
-                ident_left: format_ident!("MyObject"),
-                ident_right: format_ident!("MyObjectRust"),
-            },
-        };
 
-        let structured_qobject = StructuredQObject::from_qobject(&obj);
+        let obj = ParsedQObject::mock_parsed_qobject();
+
+        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
         QPropertyNames::try_from_property(&property, &structured_qobject)
             .expect("Failed to create QPropertyNames")
     }

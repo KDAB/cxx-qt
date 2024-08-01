@@ -75,9 +75,7 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::generator::structuring::Structures;
-    use crate::naming::Name;
     use crate::parser::qobject::ParsedQObject;
-    use crate::syntax::foreignmod::ForeignTypeIdentAlias;
     use crate::{CppFragment, Parser};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
@@ -91,27 +89,9 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        // PROTO for mocking only (these need to be replaced by parsing a real module in order to pick up methods)
-        // This should also include a new test or two, as this new code should ensure that custom methods passed actually exist
-        let obj = ParsedQObject {
-            base_class: None,
-            name: Name::new(format_ident!("my_property")),
-            rust_type: format_ident!("i32"),
-            inherited_methods: vec![],
-            constructors: vec![],
-            properties: vec![],
-            qml_metadata: None,
-            locking: false,
-            threading: false,
-            has_qobject_macro: false,
-            declaration: ForeignTypeIdentAlias {
-                attrs: vec![],
-                ident_left: format_ident!("MyObject"),
-                ident_right: format_ident!("MyObjectRust"),
-            },
-        };
+        let obj = ParsedQObject::mock_parsed_qobject();
 
-        let structured_qobject = StructuredQObject::from_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
 
         let type_names = TypeNames::mock();
         generate_cpp_properties(
@@ -278,26 +258,9 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        // PROTO mocking only
-        let obj = ParsedQObject {
-            base_class: None,
-            name: Name::new(format_ident!("my_property")),
-            rust_type: format_ident!("i32"),
-            inherited_methods: vec![],
-            constructors: vec![],
-            properties: vec![],
-            qml_metadata: None,
-            locking: false,
-            threading: false,
-            has_qobject_macro: false,
-            declaration: ForeignTypeIdentAlias {
-                attrs: vec![],
-                ident_left: format_ident!("MyObject"),
-                ident_right: format_ident!("MyObjectRust"),
-            },
-        };
+        let obj = ParsedQObject::mock_parsed_qobject();
 
-        let structured_qobject = StructuredQObject::from_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
@@ -588,26 +551,9 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
-        // PROTO mocking only
-        let obj = ParsedQObject {
-            base_class: None,
-            name: Name::new(format_ident!("my_property")),
-            rust_type: format_ident!("i32"),
-            inherited_methods: vec![],
-            constructors: vec![],
-            properties: vec![],
-            qml_metadata: None,
-            locking: false,
-            threading: false,
-            has_qobject_macro: false,
-            declaration: ForeignTypeIdentAlias {
-                attrs: vec![],
-                ident_left: format_ident!("MyObject"),
-                ident_right: format_ident!("MyObjectRust"),
-            },
-        };
+        let obj = ParsedQObject::mock_parsed_qobject();
 
-        let structured_qobject = StructuredQObject::from_qobject(&obj);
+        let structured_qobject = StructuredQObject::mock_structured_qobject(&obj);
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);

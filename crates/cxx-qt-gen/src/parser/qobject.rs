@@ -11,6 +11,9 @@ use crate::{
         path::path_compare_str,
     },
 };
+#[cfg(test)]
+use quote::format_ident;
+
 use syn::{Attribute, Error, Ident, ItemImpl, Meta, Result};
 
 /// Metadata for registering QML element
@@ -20,7 +23,6 @@ pub struct QmlElementMetadata {
     pub uncreatable: bool,
     pub singleton: bool,
 }
-
 /// A representation of a QObject within a CXX-Qt [syn::ItemMod]
 ///
 /// This has initial splitting of [syn::Item]'s into relevant blocks, other phases will
@@ -54,6 +56,27 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
+    #[cfg(test)]
+    pub fn mock_parsed_qobject() -> Self {
+        ParsedQObject {
+            base_class: None,
+            name: Name::new(format_ident!("my_property")),
+            rust_type: format_ident!("i32"),
+            inherited_methods: vec![],
+            constructors: vec![],
+            properties: vec![],
+            qml_metadata: None,
+            locking: false,
+            threading: false,
+            has_qobject_macro: false,
+            declaration: ForeignTypeIdentAlias {
+                attrs: vec![],
+                ident_left: format_ident!("MyObject"),
+                ident_right: format_ident!("MyObjectRust"),
+            },
+        }
+    }
+
     /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
     pub fn parse(
         mut declaration: ForeignTypeIdentAlias,
