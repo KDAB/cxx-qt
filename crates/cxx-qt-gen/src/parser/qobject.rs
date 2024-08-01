@@ -5,7 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{constructor::Constructor, inherit::ParsedInheritedMethod, property::ParsedQProperty},
+    parser::{constructor::Constructor, property::ParsedQProperty},
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
@@ -34,8 +34,6 @@ pub struct ParsedQObject {
     pub name: Name,
     /// The ident of the inner type of the QObject
     pub rust_type: Ident,
-    /// List of inherited methods
-    pub inherited_methods: Vec<ParsedInheritedMethod>,
     /// Any user-defined constructors
     pub constructors: Vec<Constructor>,
     /// List of properties that need to be implemented on the C++ object
@@ -62,7 +60,6 @@ impl ParsedQObject {
             base_class: None,
             name: Name::new(format_ident!("MyObject")),
             rust_type: format_ident!("MyObjectRust"),
-            inherited_methods: vec![],
             constructors: vec![],
             properties: vec![],
             qml_metadata: None,
@@ -109,7 +106,6 @@ impl ParsedQObject {
             declaration,
             name,
             rust_type: inner,
-            inherited_methods: vec![],
             constructors: vec![],
             properties,
             qml_metadata,

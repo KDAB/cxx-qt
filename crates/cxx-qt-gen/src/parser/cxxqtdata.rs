@@ -220,17 +220,10 @@ impl ParsedCxxQtData {
                     //
                     // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                 } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
-                    let parsed_inherited_method_self =
-                        ParsedInheritedMethod::parse(foreign_fn.clone(), safe_call)?;
-
                     let parsed_inherited_method =
                         ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
 
-                    self.inherited_methods.push(parsed_inherited_method_self);
-
-                    self.with_qobject(&parsed_inherited_method.qobject_ident)?
-                        .inherited_methods
-                        .push(parsed_inherited_method);
+                    self.inherited_methods.push(parsed_inherited_method);
                     // Remaining methods are either C++ methods or invokables
                 } else {
                     let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
@@ -262,23 +255,13 @@ impl ParsedCxxQtData {
 
         Ok(Some(Item::Impl(imp)))
     }
-
-    fn with_qobject(&mut self, qobject_ident: &Ident) -> Result<&mut ParsedQObject> {
-        if let Some(qobject) = self.qobjects.get_mut(qobject_ident) {
-            Ok(qobject)
-        } else {
-            Err(Error::new_spanned(
-                qobject_ident,
-                "No QObject with this name found.",
-            ))
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    use crate::generator::structuring::Structures;
     use crate::{naming::Name, parser::qobject::tests::create_parsed_qobject};
     use quote::format_ident;
     use syn::{parse_quote, ItemMod};
@@ -601,7 +584,9 @@ mod tests {
         cxxqtdata.parse_cxx_qt_item(unsafe_block).unwrap();
         cxxqtdata.parse_cxx_qt_item(safe_block).unwrap();
 
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
+        let structures = Structures::new(&cxxqtdata).unwrap();
+
+        let qobject = structures.qobjects.first().unwrap();
 
         let inherited = &qobject.inherited_methods;
         assert_eq!(inherited.len(), 3);
