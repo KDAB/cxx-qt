@@ -35,6 +35,8 @@ pub struct ParsedCxxQtData {
     pub methods: Vec<ParsedMethod>,
     /// List of the Q_SIGNALS found
     pub signals: Vec<ParsedSignal>,
+    /// List of the inherited methods found
+    pub inherited_methods: Vec<ParsedInheritedMethod>,
     /// List of QNamespace declarations
     pub qnamespaces: Vec<ParsedQNamespace>,
     /// Blocks of extern "C++Qt"
@@ -53,6 +55,7 @@ impl ParsedCxxQtData {
             qenums: vec![],
             methods: vec![],
             signals: vec![],
+            inherited_methods: vec![],
             qnamespaces: vec![],
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
@@ -217,8 +220,13 @@ impl ParsedCxxQtData {
                     //
                     // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                 } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
+                    let parsed_inherited_method_self =
+                        ParsedInheritedMethod::parse(foreign_fn.clone(), safe_call)?;
+
                     let parsed_inherited_method =
                         ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
+
+                    self.inherited_methods.push(parsed_inherited_method_self);
 
                     self.with_qobject(&parsed_inherited_method.qobject_ident)?
                         .inherited_methods

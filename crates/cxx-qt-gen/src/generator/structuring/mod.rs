@@ -64,6 +64,20 @@ impl<'a> Structures<'a> {
             qobject.methods.push(method);
         }
 
+        // Associate each inherited method parsed with its appropriate qobject
+        for inherited_method in &cxxqtdata.inherited_methods {
+            let qobject = qobjects
+                .iter_mut()
+                .find(|qobject| qobject.has_qobject_name(&inherited_method.qobject_ident))
+                .ok_or_else(|| {
+                    Error::new_spanned(
+                        &inherited_method.qobject_ident,
+                        format!("Unknown QObject: {:?}", &inherited_method.qobject_ident),
+                    )
+                })?;
+            qobject.inherited_methods.push(inherited_method);
+        }
+
         // Associate each signal parsed with its appropriate qobject
         for signal in &cxxqtdata.signals {
             let qobject = qobjects
