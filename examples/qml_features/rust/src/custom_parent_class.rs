@@ -28,10 +28,6 @@ pub mod qobject {
 
     // Define the API from QtQuick that we need
     unsafe extern "C++" {
-        /// Define QQuickItem as a type
-        type QQuickItem;
-        include!(<QtQuick/QQuickItem>);
-
         include!(<QtQuick/QQuickPaintedItem>);
     }
 
