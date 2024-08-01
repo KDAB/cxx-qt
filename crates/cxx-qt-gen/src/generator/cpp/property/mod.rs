@@ -102,6 +102,42 @@ mod tests {
         )
     }
 
+    // Might be a cleaner way than using functions but not sure a const / static is possible due to parse_quote!()
+    fn mock_module_custom_setter() -> ItemMod {
+        parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
+                }
+            }
+        }
+    }
+
+    fn mock_module_custom_setter_and_reset() -> ItemMod {
+        parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
+
+                    fn my_resetter(self: Pin<&mut MyObject>);
+
+                }
+            }
+        }
+    }
+
     #[test]
     fn test_custom_setter() {
         let mut input: ItemStruct = parse_quote! {
@@ -117,20 +153,7 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
-        // Prototyping, this test need properly rewriting
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-
-                unsafe extern "RustQt" {
-                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
-                }
-            }
-        };
+        let module = mock_module_custom_setter();
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
@@ -189,22 +212,7 @@ mod tests {
         let qobject_idents = create_qobjectname();
 
         // Prototyping, this test need properly rewriting
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-
-                unsafe extern "RustQt" {
-                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
-
-                    fn my_resetter(self: Pin<&mut MyObject>);
-
-                }
-            }
-        };
+        let module = mock_module_custom_setter_and_reset();
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
