@@ -17,8 +17,10 @@ pub mod threading;
 
 use crate::generator::rust::fragment::GeneratedRustFragment;
 use crate::generator::structuring;
+use crate::parser::parameter::ParsedFunctionParameter;
 use crate::parser::Parser;
 use crate::writer;
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{Item, ItemMod, Result};
 
@@ -177,5 +179,30 @@ mod tests {
         );
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 1);
+    }
+}
+
+pub fn get_params_tokens(
+    mutable: bool,
+    parameters: &[ParsedFunctionParameter],
+    class_name: &Ident,
+) -> TokenStream {
+    let struct_sig = if mutable {
+        quote! { Pin<&mut #class_name> }
+    } else {
+        quote! { &#class_name }
+    };
+    if parameters.is_empty() {
+        quote! { self: #struct_sig }
+    } else {
+        let parameters = parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                let ty = &parameter.ty;
+                quote! { #ident: #ty }
+            })
+            .collect::<Vec<TokenStream>>();
+        quote! { self: #struct_sig, #(#parameters),* }
     }
 }

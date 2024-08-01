@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::get_params_tokens;
+use crate::generator::rust::get_params_tokens;
 use crate::{
     generator::{
         naming::{method::QMethodName, qobject::QObjectNames},

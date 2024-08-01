@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::get_cpp_params;
+use crate::generator::cpp::get_cpp_params;
 use crate::{
     generator::{
         cpp::{
