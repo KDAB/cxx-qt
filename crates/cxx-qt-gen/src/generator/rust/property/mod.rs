@@ -30,7 +30,7 @@ pub fn generate_rust_properties(
     let mut signals = vec![];
 
     for property in properties {
-        let idents = QPropertyNames::from_property(property, structured_qobject);
+        let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
         if let Some(getter) = getter::generate(&idents, qobject_idents, &property.ty, type_names)? {
             generated

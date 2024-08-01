@@ -30,7 +30,7 @@ pub fn generate_cpp_properties(
 
     for property in properties {
         // Cache the idents as they are used in multiple places
-        let idents = QPropertyNames::from_property(property, structured_qobject);
+        let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
         generated

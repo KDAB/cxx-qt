@@ -9,6 +9,7 @@ use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
+use syn::{Error, Result};
 
 /// The StructuredQObject contains the parsed QObject and all members.
 /// This includes QEnums, QSignals, methods, etc.
@@ -36,21 +37,19 @@ impl<'a> StructuredQObject<'a> {
         }
     }
 
-    pub fn method_lookup(&self, id: &Ident) -> Name {
-        println!("Doing method lookup for Ident: {:?}", id);
-        println!(
-            "Method names: {:?}",
-            self.methods
-                .iter()
-                .map(|method| method.name.clone())
-                .collect::<Vec<_>>()
-        );
+    pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
         let method = self
             .methods
             .iter()
-            .find(|method| method.name.rust_unqualified() == id)
-            .expect("Method not found");
+            .find(|method| method.name.rust_unqualified() == id);
 
-        method.name.clone()
+        if let Some(method) = method {
+            Ok(method.name.clone())
+        } else {
+            Err(Error::new_spanned(
+                id,
+                format!("Method with name '{id}' not found!"),
+            ))
+        }
     }
 }
