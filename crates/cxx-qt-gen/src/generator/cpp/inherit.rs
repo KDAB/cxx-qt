@@ -14,13 +14,13 @@ use crate::{
 use syn::Result;
 
 pub fn generate(
-    inherited_methods: &[ParsedInheritedMethod],
+    inherited_methods: &[&ParsedInheritedMethod],
     base_class: &Option<String>,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
-    for method in inherited_methods {
+    for &method in inherited_methods {
         let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, type_names)?;
         // Note that no qobject macro with no base class is an error
         //
@@ -58,7 +58,8 @@ mod tests {
         method: ForeignItemFn,
         base_class: Option<&str>,
     ) -> Result<GeneratedCppQObjectBlocks> {
-        let inherited_methods = vec![ParsedInheritedMethod::parse(method, Safety::Safe).unwrap()];
+        let method = ParsedInheritedMethod::parse(method, Safety::Safe).unwrap();
+        let inherited_methods = vec![&method];
         let base_class = base_class.map(|s| s.to_owned());
         generate(&inherited_methods, &base_class, &TypeNames::default())
     }

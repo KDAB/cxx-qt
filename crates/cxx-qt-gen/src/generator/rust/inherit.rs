@@ -13,7 +13,7 @@ use syn::{spanned::Spanned, Item, Result};
 
 pub fn generate(
     qobject_ident: &QObjectNames,
-    methods: &[ParsedInheritedMethod],
+    methods: &[&ParsedInheritedMethod],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
     let qobject_name = qobject_ident.name.rust_unqualified();
@@ -73,7 +73,8 @@ mod tests {
         method: ForeignItemFn,
         safety: Safety,
     ) -> Result<GeneratedRustFragment> {
-        let inherited_methods = vec![ParsedInheritedMethod::parse(method, safety).unwrap()];
+        let method = ParsedInheritedMethod::parse(method, safety).unwrap();
+        let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }
 

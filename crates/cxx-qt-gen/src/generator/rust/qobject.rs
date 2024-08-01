@@ -54,7 +54,7 @@ impl GeneratedRustFragment {
         )?);
         generated.append(&mut inherit::generate(
             &qobject_idents,
-            &qobject.inherited_methods,
+            &structured_qobject.inherited_methods,
         )?);
         generated.append(&mut generate_rust_signals(
             &structured_qobject.signals,
