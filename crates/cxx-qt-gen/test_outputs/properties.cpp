@@ -275,6 +275,34 @@ MyObject::setFinalProp(::std::int32_t const& value)
   setFinalPropWrapper(value);
 }
 
+::std::int32_t
+MyObject::myGetter() const
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  return myGetterWrapper();
+}
+
+void
+MyObject::mySetter(::std::int32_t value)
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  mySetterWrapper(value);
+}
+
+void
+MyObject::myOnChanged()
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  myOnChangedWrapper();
+}
+
+void
+MyObject::myResetFn()
+{
+  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
+  myResetFnWrapper();
+}
+
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(

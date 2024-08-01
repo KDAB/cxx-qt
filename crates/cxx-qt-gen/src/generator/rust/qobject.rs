@@ -46,6 +46,7 @@ impl GeneratedRustFragment {
             &qobject_idents,
             type_names,
             module_ident,
+            structured_qobject,
         )?);
         generated.append(&mut generate_rust_methods(
             &structured_qobject.methods,

@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::inherit::ParsedInheritedMethod;
+use crate::naming::Name;
 use crate::parser::method::ParsedMethod;
+use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
@@ -33,5 +34,23 @@ impl<'a> StructuredQObject<'a> {
             inherited_methods: vec![],
             signals: vec![],
         }
+    }
+
+    pub fn method_lookup(&self, id: &Ident) -> Name {
+        println!("Doing method lookup for Ident: {:?}", id);
+        println!(
+            "Method names: {:?}",
+            self.methods
+                .iter()
+                .map(|method| method.name.clone())
+                .collect::<Vec<_>>()
+        );
+        let method = self
+            .methods
+            .iter()
+            .find(|method| method.name.rust_unqualified() == id)
+            .expect("Method not found");
+
+        method.name.clone()
     }
 }

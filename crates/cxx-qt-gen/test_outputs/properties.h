@@ -68,7 +68,7 @@ public:
                NOTIFY primitiveChanged)
   Q_PROPERTY(
     QPoint trivial READ getTrivial WRITE setTrivial NOTIFY trivialChanged)
-  Q_PROPERTY(::std::int32_t customFunctionProp READ my_getter WRITE my_setter
+  Q_PROPERTY(::std::int32_t customFunctionProp READ myGetter WRITE mySetter
                NOTIFY customFunctionPropChanged)
   Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
   Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
@@ -101,6 +101,10 @@ public:
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
+  ::std::int32_t myGetter() const;
+  void mySetter(::std::int32_t value);
+  void myOnChanged();
+  void myResetFn();
   explicit MyObject(QObject* parent = nullptr);
 
 private:
@@ -118,6 +122,10 @@ private:
   void setRequiredPropWrapper(::std::int32_t value) noexcept;
   ::std::int32_t const& getFinalPropWrapper() const noexcept;
   void setFinalPropWrapper(::std::int32_t value) noexcept;
+  ::std::int32_t myGetterWrapper() const noexcept;
+  void mySetterWrapper(::std::int32_t value) noexcept;
+  void myOnChangedWrapper() noexcept;
+  void myResetFnWrapper() noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

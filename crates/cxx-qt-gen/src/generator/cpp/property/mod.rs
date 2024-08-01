@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::structuring::StructuredQObject;
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
     naming::{property::QPropertyNames, qobject::QObjectNames},
@@ -21,6 +22,7 @@ pub fn generate_cpp_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
+    structured_qobject: &StructuredQObject,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
@@ -28,7 +30,7 @@ pub fn generate_cpp_properties(
 
     for property in properties {
         // Cache the idents as they are used in multiple places
-        let idents = QPropertyNames::from(property);
+        let idents = QPropertyNames::from_property(property, structured_qobject);
         let cxx_ty = syn_type_to_cpp_type(&property.ty, type_names)?;
 
         generated
@@ -72,11 +74,15 @@ mod tests {
     use crate::parser::property::QPropertyFlags;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::CppFragment;
+    use crate::generator::structuring::Structures;
+    use crate::naming::Name;
+    use crate::parser::qobject::ParsedQObject;
+    use crate::syntax::foreignmod::ForeignTypeIdentAlias;
+    use crate::{CppFragment, Parser};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
-    use syn::{parse_quote, ItemStruct};
+    use syn::{parse_quote, ItemMod, ItemStruct};
 
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -85,8 +91,35 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
+        // PROTO for mocking only (these need to be replaced by parsing a real module in order to pick up methods)
+        // This should also include a new test or two, as this new code should ensure that custom methods passed actually exist
+        let obj = ParsedQObject {
+            base_class: None,
+            name: Name::new(format_ident!("my_property")),
+            rust_type: format_ident!("i32"),
+            inherited_methods: vec![],
+            constructors: vec![],
+            properties: vec![],
+            qml_metadata: None,
+            locking: false,
+            threading: false,
+            has_qobject_macro: false,
+            declaration: ForeignTypeIdentAlias {
+                attrs: vec![],
+                ident_left: format_ident!("MyObject"),
+                ident_right: format_ident!("MyObjectRust"),
+            },
+        };
+
+        let structured_qobject = StructuredQObject::from_qobject(&obj);
+
         let type_names = TypeNames::mock();
-        generate_cpp_properties(&properties, &qobject_idents, &type_names)
+        generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            &structured_qobject,
+        )
     }
 
     #[test]
@@ -96,7 +129,41 @@ mod tests {
             struct MyStruct;
         };
 
-        let generated = setup_generated(&mut input).unwrap();
+        // let generated = setup_generated(&mut input).unwrap();
+
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        // Prototyping, this test need properly rewriting
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let structured_qobject = structures.qobjects.get(0).unwrap();
+
+        let type_names = TypeNames::mock();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            &structured_qobject,
+        )
+        .unwrap();
 
         assert_eq!(generated.metaobjects.len(), 1);
         assert_str_eq!(
@@ -133,7 +200,44 @@ mod tests {
             struct MyStruct;
         };
 
-        let generated = setup_generated(&mut input).unwrap();
+        // let generated = setup_generated(&mut input).unwrap();
+
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        // Prototyping, this test need properly rewriting
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    fn mySetter(self: Pin<&mut MyObject>, value: i32);
+
+                    fn my_resetter(self: Pin<&mut MyObject>);
+
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let structured_qobject = structures.qobjects.get(0).unwrap();
+
+        let type_names = TypeNames::mock();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            &structured_qobject,
+        )
+        .unwrap();
 
         assert_str_eq!(
             generated.metaobjects[0],
@@ -174,9 +278,36 @@ mod tests {
 
         let qobject_idents = create_qobjectname();
 
+        // PROTO mocking only
+        let obj = ParsedQObject {
+            base_class: None,
+            name: Name::new(format_ident!("my_property")),
+            rust_type: format_ident!("i32"),
+            inherited_methods: vec![],
+            constructors: vec![],
+            properties: vec![],
+            qml_metadata: None,
+            locking: false,
+            threading: false,
+            has_qobject_macro: false,
+            declaration: ForeignTypeIdentAlias {
+                attrs: vec![],
+                ident_left: format_ident!("MyObject"),
+                ident_right: format_ident!("MyObjectRust"),
+            },
+        };
+
+        let structured_qobject = StructuredQObject::from_qobject(&obj);
+
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            &structured_qobject,
+        )
+        .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 2);
@@ -457,10 +588,37 @@ mod tests {
         }];
         let qobject_idents = create_qobjectname();
 
+        // PROTO mocking only
+        let obj = ParsedQObject {
+            base_class: None,
+            name: Name::new(format_ident!("my_property")),
+            rust_type: format_ident!("i32"),
+            inherited_methods: vec![],
+            constructors: vec![],
+            properties: vec![],
+            qml_metadata: None,
+            locking: false,
+            threading: false,
+            has_qobject_macro: false,
+            declaration: ForeignTypeIdentAlias {
+                attrs: vec![],
+                ident_left: format_ident!("MyObject"),
+                ident_right: format_ident!("MyObjectRust"),
+            },
+        };
+
+        let structured_qobject = StructuredQObject::from_qobject(&obj);
+
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);
 
-        let generated = generate_cpp_properties(&properties, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            &structured_qobject,
+        )
+        .unwrap();
 
         // metaobjects
         assert_eq!(generated.metaobjects.len(), 1);

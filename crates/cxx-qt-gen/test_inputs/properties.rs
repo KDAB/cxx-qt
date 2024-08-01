@@ -20,4 +20,14 @@ mod ffi {
         #[qproperty(i32, final_prop, READ, WRITE, FINAL)]
         type MyObject = super::MyObjectRust;
     }
+
+    unsafe extern "RustQt" {
+        fn my_getter(self: &MyObject) -> i32;
+
+        fn my_setter(self: Pin<&mut MyObject>, value: i32);
+
+        fn myOnChanged(self: Pin<&mut MyObject>);
+
+        fn myResetFn(self: Pin<&mut MyObject>);
+    }
 }

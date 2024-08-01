@@ -143,6 +143,7 @@ impl GeneratedCppQObject {
             &qobject.properties,
             &qobject_idents,
             type_names,
+            structured_qobject,
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
             &structured_qobject.methods,

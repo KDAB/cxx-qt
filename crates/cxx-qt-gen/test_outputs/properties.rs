@@ -187,6 +187,26 @@ mod ffi {
         );
     }
     extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "myGetterWrapper"]
+        fn my_getter(self: &MyObject) -> i32;
+    }
+    extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "mySetterWrapper"]
+        fn my_setter(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "myOnChangedWrapper"]
+        fn myOnChanged(self: Pin<&mut MyObject>);
+    }
+    extern "Rust" {
+        #[doc(hidden)]
+        #[cxx_name = "myResetFnWrapper"]
+        fn myResetFn(self: Pin<&mut MyObject>);
+    }
+    extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
         fn create_rs_my_object_rust() -> Box<MyObjectRust>;
