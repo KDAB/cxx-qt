@@ -6,6 +6,7 @@
 
 .vscode/
 **/target/
+**/coverage/
 Cargo.lock
 **/build*/
 cargo/*
