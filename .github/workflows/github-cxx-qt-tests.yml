@@ -58,7 +58,7 @@ jobs:
 
   build:
     # Run after pre checks
-    needs: [clang_format, license_check, rust_format_check, markdown_lint]
+    needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
     strategy:
       fail-fast: false
       matrix:
