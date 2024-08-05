@@ -46,6 +46,16 @@ jobs:
         with:
           globs: '**/*.md'
 
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Shellcheck is likely already installed but lets ensure it is
+      - name: install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+
   build:
     # Run after pre checks
     needs: [clang_format, license_check, rust_format_check, markdown_lint]
