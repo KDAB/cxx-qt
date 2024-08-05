@@ -7,6 +7,8 @@ pub mod getter;
 pub mod setter;
 pub mod signal;
 
+use super::signals::generate_rust_signals;
+use crate::generator::structuring::StructuredQObject;
 use crate::{
     generator::{
         naming::{property::QPropertyNames, qobject::QObjectNames},
@@ -17,19 +19,18 @@ use crate::{
 };
 use syn::{Ident, Result};
 
-use super::signals::generate_rust_signals;
-
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
     module_ident: &Ident,
+    structured_qobject: &StructuredQObject,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let mut signals = vec![];
 
     for property in properties {
-        let idents = QPropertyNames::from(property);
+        let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
         if let Some(getter) = getter::generate(&idents, qobject_idents, &property.ty, type_names)? {
             generated
@@ -69,6 +70,7 @@ mod tests {
     use super::*;
 
     use crate::parser::property::QPropertyFlags;
+    use crate::parser::qobject::ParsedQObject;
     use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use quote::format_ident;
     use syn::parse_quote;
@@ -94,6 +96,10 @@ mod tests {
         ];
         let qobject_idents = create_qobjectname();
 
+        let obj = ParsedQObject::mock();
+
+        let structured_qobject = StructuredQObject::mock(&obj);
+
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);
         type_names.mock_insert("QColor", None, None, None);
@@ -102,6 +108,7 @@ mod tests {
             &qobject_idents,
             &type_names,
             &format_ident!("ffi"),
+            &structured_qobject,
         )
         .unwrap();
 

@@ -3,11 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::naming::Name;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
+use syn::{Error, Result};
 
 /// The StructuredQObject contains the parsed QObject and all members.
 /// This includes QEnums, QSignals, methods, etc.
@@ -33,5 +35,29 @@ impl<'a> StructuredQObject<'a> {
             inherited_methods: vec![],
             signals: vec![],
         }
+    }
+
+    pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
+        // TODO account for inherited methods too since those are in a different vector
+        self.methods
+            .iter()
+            .map(|method| &method.name)
+            .find(|name| name.rust_unqualified() == id)
+            .cloned()
+            .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
+    }
+
+    pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
+        self.signals
+            .iter()
+            .map(|signal| &signal.name)
+            .find(|name| name.rust_unqualified() == id)
+            .cloned()
+            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
+    }
+
+    #[cfg(test)]
+    pub fn mock(obj: &'a ParsedQObject) -> Self {
+        Self::from_qobject(obj)
     }
 }

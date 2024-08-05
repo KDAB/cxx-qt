@@ -8,8 +8,9 @@ use crate::{
 };
 use convert_case::{Case, Casing};
 use quote::format_ident;
-use syn::Ident;
+use syn::{Ident, Result};
 
+use crate::generator::structuring::StructuredQObject;
 use std::ops::Deref;
 
 #[derive(Debug)]
@@ -30,11 +31,21 @@ impl Deref for NameState {
 }
 
 impl NameState {
-    pub fn from_flag_with_auto_fn(state: &FlagState, auto_fn: impl Fn() -> Name) -> Self {
-        match state {
+    pub fn from_flag_with_auto_fn(
+        state: &FlagState,
+        auto_fn: impl Fn() -> Name,
+        structured_qobject: &StructuredQObject,
+        signal: bool,
+    ) -> Result<Self> {
+        let lookup_fn = if signal {
+            StructuredQObject::signal_lookup
+        } else {
+            StructuredQObject::method_lookup
+        };
+        Ok(match state {
             FlagState::Auto => Self::Auto(auto_fn()),
-            FlagState::Custom(ident) => Self::Custom(Name::new(ident.clone())), // TODO: replace this with some sort of type / method name lookup
-        }
+            FlagState::Custom(ident) => Self::Custom(lookup_fn(structured_qobject, ident)?),
+        })
     }
 }
 
@@ -49,24 +60,48 @@ pub struct QPropertyNames {
     pub reset: Option<Name>,
 }
 
-impl From<&ParsedQProperty> for QPropertyNames {
-    fn from(property: &ParsedQProperty) -> Self {
+impl QPropertyNames {
+    pub(crate) fn try_from_property(
+        property: &ParsedQProperty,
+        structured_qobject: &StructuredQObject,
+    ) -> Result<Self> {
         let property_name = property_name_from_rust_name(property.ident.clone());
 
         // Cache flags as they are accessed multiple times
         let flags = &property.flags;
 
-        let getter = NameState::from_flag_with_auto_fn(&flags.read, || {
-            getter_name_from_property(&property_name)
-        });
+        let getter = NameState::from_flag_with_auto_fn(
+            &flags.read,
+            || getter_name_from_property(&property_name),
+            structured_qobject,
+            false,
+        )?;
 
-        let setter = flags.write.as_ref().map(|setter| {
-            NameState::from_flag_with_auto_fn(setter, || setter_name_from_property(&property_name))
-        });
+        let setter = flags
+            .write
+            .clone()
+            .map(|setter| {
+                NameState::from_flag_with_auto_fn(
+                    &setter,
+                    || setter_name_from_property(&property_name),
+                    structured_qobject,
+                    false,
+                )
+            })
+            .transpose()?;
 
-        let notify = flags.notify.as_ref().map(|notify| {
-            NameState::from_flag_with_auto_fn(notify, || notify_name_from_property(&property_name))
-        });
+        let notify = flags
+            .notify
+            .clone()
+            .map(|notify| {
+                NameState::from_flag_with_auto_fn(
+                    &notify,
+                    || notify_name_from_property(&property_name),
+                    structured_qobject,
+                    true,
+                )
+            })
+            .transpose()?;
 
         let setter_wrapper = if let Some(NameState::Auto(ref setter)) = setter {
             Some(wrapper_name_from_function_name(setter))
@@ -82,7 +117,7 @@ impl From<&ParsedQProperty> for QPropertyNames {
 
         let reset = flags.reset.as_ref().map(|ident| Name::new(ident.clone()));
 
-        Self {
+        Ok(Self {
             getter_wrapper,
             getter,
             setter_wrapper,
@@ -90,7 +125,7 @@ impl From<&ParsedQProperty> for QPropertyNames {
             notify,
             reset,
             name: property_name,
-        }
+        })
     }
 }
 
@@ -139,6 +174,7 @@ pub mod tests {
 
     use super::*;
     use crate::parser::property::QPropertyFlags;
+    use crate::parser::qobject::ParsedQObject;
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
         let ty: syn::Type = parse_quote! { i32 };
@@ -147,7 +183,12 @@ pub mod tests {
             ty,
             flags: QPropertyFlags::default(),
         };
-        QPropertyNames::from(&property)
+
+        let obj = ParsedQObject::mock();
+
+        let structured_qobject = StructuredQObject::mock(&obj);
+        QPropertyNames::try_from_property(&property, &structured_qobject)
+            .expect("Failed to create QPropertyNames")
     }
 
     #[test]
