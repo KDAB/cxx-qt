@@ -1,13 +1,5 @@
 #!/usr/bin/
-// Test for qtfile
-#[cxx_qt::bridge]
-mod ffi {
-    extern "RustQt" {
-        #[qobject]
-        type MyObject = super::MyObjectRust;
-    }
+// Test for qtitem and qtfile, for code coverage
 
-    unsafe extern "RustQt" {
-        fn my_fn(self: &MyObject);
-    }
-}
+#[cxx_qt::bridge]
+mod ffi {}
