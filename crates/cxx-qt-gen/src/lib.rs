@@ -95,6 +95,7 @@ mod tests {
         code
     }
 
+    // CODECOV_EXCLUDE_START
     fn update_expected_file(path: PathBuf, source: &str) {
         println!("Updating expected file: {:?}", path);
 
@@ -105,6 +106,7 @@ mod tests {
             .unwrap();
         file.write_all(source.as_bytes()).unwrap();
     }
+    // CODECOV_EXCLUDE_STOP
 
     fn update_expected(test_name: &str, rust: &str, header: &str, source: &str) -> bool {
         // Ideally we'd be able to get the path from `file!()`, but that unfortunately only
@@ -116,6 +118,7 @@ mod tests {
         //      CXX_QT_UPDATE_EXPECTED=$(pwd) cargo test
         //
         if let Ok(path) = env::var("CXX_QT_UPDATE_EXPECTED") {
+            // CODECOV_EXCLUDE_START
             let output_folder = Path::new(&path);
             let output_folder = output_folder.join("test_outputs");
 
@@ -130,6 +133,7 @@ mod tests {
             update("cpp", source);
 
             true
+            // CODECOV_EXCLUDE_STOP
         } else {
             false
         }

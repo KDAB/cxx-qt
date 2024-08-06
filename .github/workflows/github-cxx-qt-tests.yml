@@ -78,7 +78,7 @@ jobs:
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo test --lib --package cxx-qt-gen
       - name: generate-report
-        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./target/debug/lcov.info
+        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
       - name: upload-report
         uses: codecov/codecov-action@v4
         with:
