@@ -109,6 +109,8 @@ mod tests {
         assert_no_lifetimes! { [T] };
         assert_no_lifetimes! { [T;4] };
         assert_no_lifetimes! { (X, Y) };
+        assert_no_lifetimes! { (Y) };
+        assert_no_lifetimes! { std::collections::Vec<i32> };
     }
 
     macro_rules! assert_lifetimes {
@@ -148,5 +150,6 @@ mod tests {
         assert_unsupported_type! { &dyn Foo };
         assert_unsupported_type! { fn(A) };
         assert_unsupported_type! { fn(i64) -> i32 };
+        assert_unsupported_type! { fn(i64, i64) -> i32 };
     }
 }
