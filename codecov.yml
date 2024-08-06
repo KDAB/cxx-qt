@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Ben Ford <ben.ford@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 2%
+    patch: true
+
+
+ignore:
+  - "./tests/" # This got included for some reason in either build or test and is not relevant to unit tests
