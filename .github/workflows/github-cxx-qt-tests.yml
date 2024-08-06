@@ -57,6 +57,8 @@ jobs:
         run: shellcheck scripts/*.sh
 
   coverage:
+    # Run after pre checks
+    needs: [ clang_format, license_check, rust_format_check, markdown_lint, shellcheck ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -69,16 +71,12 @@ jobs:
         env:
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
-        run: |
-          cd crates/cxx-qt-gen
-          cargo build
+        run: cargo build --package cxx-qt-gen
       - name: test
         env:
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
-        run: |
-          cd crates/cxx-qt-gen 
-          cargo test --lib
+        run: cargo test --lib --package cxx-qt-gen
       - name: generate-report
         run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./target/debug/lcov.info
       - name: upload-report
