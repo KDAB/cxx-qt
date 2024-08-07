@@ -32,3 +32,19 @@ pub struct CppNamedType {
     pub ident: String,
     pub ty: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_creation() {
+        assert_eq!(
+            CppFragment::default(),
+            CppFragment::Pair {
+                header: String::new(),
+                source: String::new()
+            }
+        )
+    }
+}

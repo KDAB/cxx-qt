@@ -802,7 +802,7 @@ mod tests {
             }],
             &mock_name(),
             &mock_namespace(),
-            &TypeNames::default(),
+            &TypeNames::mock(),
             &format_ident!("ffi"),
         );
 
