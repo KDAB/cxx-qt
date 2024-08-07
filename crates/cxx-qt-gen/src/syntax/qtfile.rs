@@ -58,3 +58,89 @@ pub fn parse_qt_file(path: impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
         syn::parse_str(&source)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::assert_tokens_eq;
+    use crate::CxxQtItem::CxxQt;
+    use quote::quote;
+    use std::env;
+    use std::path::PathBuf;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_parse_qt_file() {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let qt_file = parse_qt_file(manifest_dir.join("test_inputs/properties.rs")).unwrap();
+
+        assert!(qt_file.attrs.is_empty());
+        assert_eq!(qt_file.items.len(), 1);
+        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))))
+    }
+
+    #[test]
+    fn test_parse_qt_file_shebang_strip() {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let qt_file = parse_qt_file(manifest_dir.join("test_inputs/shebang.rs")).unwrap();
+
+        assert!(qt_file.attrs.is_empty());
+        assert_eq!(qt_file.items.len(), 1);
+        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))))
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_parse_invalid_qt_file() {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let _ = parse_qt_file(manifest_dir.join("not/real"));
+    }
+
+    #[test]
+    fn test_parse() {
+        let file: CxxQtFile = parse_quote! {
+           #[cxx_qt::bridge]
+           mod ffi {
+                //! inner doc comment
+                type MyNumType = i32;
+            }
+
+            #[cxx::bridge]
+            mod ffi {}
+
+            /// Outer doc comment
+            struct MyStruct {
+                name: &str
+            }
+        };
+        assert_tokens_eq(
+            &file,
+            quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                 #![doc = r" inner doc comment"]
+                 type MyNumType = i32;
+             }
+
+             #[cxx::bridge]
+             mod ffi {}
+
+             #[doc = r" Outer doc comment"]
+             struct MyStruct {
+                 name: &str
+             }
+            },
+        )
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_parse_invalid_mod() {
+        let _file: CxxQtFile = parse_quote! {
+           item: T
+        };
+    }
+}

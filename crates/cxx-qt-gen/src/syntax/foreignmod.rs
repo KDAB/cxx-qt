@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream, Parser},
@@ -53,18 +53,13 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
             let type_token: Token![type] = input.parse()?;
             let ident: Ident = input.parse()?;
 
-            // Read until the next semi colon
+            // Read until the end of the cursor
             input.step(|cursor| {
                 let mut rest = *cursor;
-                while let Some((tt, next)) = rest.token_tree() {
-                    match &tt {
-                        TokenTree::Punct(punct) if punct.as_char() == ';' => {
-                            return Ok(((), next));
-                        }
-                        _ => rest = next,
-                    }
+                while let Some((_, next)) = rest.token_tree() {
+                    rest = next;
                 }
-                Err(cursor.error("no `;` was found after this point"))
+                Ok(((), rest))
             })?;
 
             Ok(Some(syn::parse2(
@@ -229,6 +224,17 @@ mod tests {
 
         assert_eq!(result[1].attrs.len(), 1);
         assert_eq!(result[1].ident, "B");
+    }
+
+    #[test]
+    fn test_foreign_mod_to_foreign_item_types_invalid() {
+        let item: ItemForeignMod = parse_quote! {
+            extern "RustQt" {
+                fn my_function() {}
+            }
+        };
+        let result = foreign_mod_to_foreign_item_types(&item);
+        assert!(result.is_err())
     }
 
     #[test]
