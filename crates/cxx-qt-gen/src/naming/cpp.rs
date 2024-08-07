@@ -333,6 +333,64 @@ mod tests {
     }
 
     #[test]
+    fn test_syn_type_invalid() {
+        let ty = parse_quote! { (A) };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Option<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Result<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Pin<> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_templates() {
+        let ty = parse_quote! { SharedPtr<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert_eq!(
+            syn_type_to_cpp_type(&ty, &type_names).unwrap(),
+            "::std::shared_ptr<A1>"
+        );
+
+        let ty = parse_quote! { WeakPtr<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert_eq!(
+            syn_type_to_cpp_type(&ty, &type_names).unwrap(),
+            "::std::weak_ptr<A1>"
+        );
+
+        let ty = parse_quote! { CxxVector<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert_eq!(
+            syn_type_to_cpp_type(&ty, &type_names).unwrap(),
+            "::std::vector<A1>"
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_no_template() {
+        let ty = parse_quote! { NotATemplate<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err(),);
+    }
+
+    #[test]
     fn test_syn_type_to_cpp_type_mapped() {
         let ty = parse_quote! { A };
         let mut type_names = TypeNames::default();
