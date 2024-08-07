@@ -264,9 +264,10 @@ impl Name {
         Self {
             rust: format_ident!("{ident}"),
             cxx: None,
-            module: Some(Path::from(format_ident!("qobject"))),
+            module: None,
             namespace: None,
         }
+        .with_module(Path::from(format_ident!("qobject")))
     }
 
     #[cfg(test)]
@@ -274,8 +275,24 @@ impl Name {
         Self {
             rust: format_ident!("{ident}"),
             cxx: None,
-            module: Some(Path::from(format_ident!("qobject"))),
-            namespace: Some(namespace.to_owned()),
+            module: None,
+            namespace: None,
         }
+        .with_namespace(namespace.into())
+        .with_module(Path::from(format_ident!("qobject")))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clear_namespace() {
+        let mut name = Name::mock_namespaced("my_object", "my_namespace");
+        let old_namespace = name.set_namespace(None);
+
+        assert_eq!(old_namespace, Some("my_namespace".into()));
+        assert!(name.namespace.is_none())
     }
 }

@@ -328,8 +328,42 @@ mod tests {
             { &*mut T } => "T* const&",
             { &mut QPoint } => "QPoint&",
             { &QPoint } => "QPoint const&",
-            { QPoint} => "QPoint"
+            { QPoint } => "QPoint",
+            { SharedPtr<T> } => "::std::shared_ptr<T>",
+            { WeakPtr<T> } => "::std::weak_ptr<T>",
+            { CxxVector<T> } => "::std::vector<T>"
         ];
+    }
+
+    #[test]
+    fn test_syn_type_invalid() {
+        let ty = parse_quote! { (A) };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Option<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Result<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Pin<> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_no_template() {
+        let ty = parse_quote! { NotATemplate<A> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err(),);
     }
 
     #[test]
