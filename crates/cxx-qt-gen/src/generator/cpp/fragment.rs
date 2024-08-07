@@ -39,11 +39,12 @@ mod tests {
 
     #[test]
     fn test_default_creation() {
-        if let CppFragment::Pair { header, source } = CppFragment::default() {
-            assert!(header.is_empty());
-            assert!(source.is_empty());
-        } else {
-            panic!("Expected a CppFragment::Pair");
-        }
+        assert_eq!(
+            CppFragment::default(),
+            CppFragment::Pair {
+                header: String::new(),
+                source: String::new()
+            }
+        )
     }
 }
