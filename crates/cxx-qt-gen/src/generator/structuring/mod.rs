@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_module_invalid_qobject() {
+    fn test_module_invalid_qobject_qenum() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
@@ -138,7 +138,10 @@ mod tests {
 
         let parser = Parser::from(module.clone()).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
+    }
 
+    #[test]
+    fn test_module_invalid_qobject_method() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
@@ -151,7 +154,10 @@ mod tests {
 
         let parser = Parser::from(module.clone()).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
+    }
 
+    #[test]
+    fn test_module_invalid_qobject_signal() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
@@ -164,7 +170,10 @@ mod tests {
 
         let parser = Parser::from(module.clone()).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
+    }
 
+    #[test]
+    fn test_module_invalid_qobject_inherited() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
