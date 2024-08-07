@@ -37,7 +37,7 @@ pub(crate) fn foreign_mod_to_foreign_item_types(
         .filter_map(|item| match foreign_item_to_type(item) {
             Ok(Some(value)) => Some(Ok(value)),
             Ok(None) => None,
-            Err(err) => Some(Err(err)), // Hard to cover since foreign_item_to_type never returns error
+            Err(err) => Some(Err(err)),
         })
         .collect::<Result<Vec<ForeignItemType>>>()
 }
