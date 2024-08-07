@@ -232,6 +232,17 @@ mod tests {
     }
 
     #[test]
+    fn test_foreign_mod_to_foreign_item_types_invalid() {
+        let item: ItemForeignMod = parse_quote! {
+            extern "RustQt" {
+                fn my_function() {}
+            }
+        };
+        let result = foreign_mod_to_foreign_item_types(&item);
+        assert!(result.is_err())
+    }
+
+    #[test]
     fn test_foreign_fn_self() {
         let foreign_fn: ForeignItemFn = parse_quote! {
             fn foo(self: &T, a: A) -> B;

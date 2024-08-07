@@ -150,6 +150,6 @@ mod tests {
         assert_unsupported_type! { &dyn Foo };
         assert_unsupported_type! { fn(A) };
         assert_unsupported_type! { fn(i64) -> i32 };
-        assert_unsupported_type! { fn(i64, i64) -> i32 };
+        assert_unsupported_type! { Vec<T = A> };
     }
 }
