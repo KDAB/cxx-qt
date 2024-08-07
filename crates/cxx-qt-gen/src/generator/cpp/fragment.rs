@@ -32,3 +32,21 @@ pub struct CppNamedType {
     pub ident: String,
     pub ty: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_creation() {
+        let default_fragment = CppFragment::default();
+        // This feels like there should be a better way to test the default
+        assert_eq!(
+            default_fragment,
+            CppFragment::Pair {
+                header: String::new(),
+                source: String::new()
+            }
+        )
+    }
+}
