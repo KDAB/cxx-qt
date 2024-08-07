@@ -125,6 +125,83 @@ mod tests {
     }
 
     #[test]
+    fn test_module_invalid_qobject() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                #[qenum(MyObject)]
+                enum MyEnum {
+                    A,
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
+
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                unsafe extern "RustQt" {
+                    #[qinvokable]
+                    fn test_fn(self: Pin<&mut MyObject>);
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
+
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                unsafe extern "RustQt" {
+                    #[qsignal]
+                    fn test_fn(self: Pin<&mut MyObject>);
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
+
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                unsafe extern "RustQt" {
+                    #[inherit]
+                    fn test_fn(self: Pin<&mut MyObject>);
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
+    }
+
+    #[test]
+    fn test_invalid_lookup() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let qobject = structures.qobjects.first().unwrap();
+        assert!(qobject.method_lookup(&format_ident!("NotReal")).is_err());
+        assert!(qobject
+            .signal_lookup(&format_ident!("NotRealEither"))
+            .is_err());
+    }
+
+    #[test]
     fn test_structures() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
