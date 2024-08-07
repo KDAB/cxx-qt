@@ -84,7 +84,6 @@ jobs:
         with:
           directory: ./target/debug/
           files: lcov.info
-          functionalities: fixes
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
