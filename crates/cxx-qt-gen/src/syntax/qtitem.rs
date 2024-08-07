@@ -82,3 +82,39 @@ impl ToTokens for CxxQtItem {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+    #[test]
+    fn test_format_cxx() {
+        let cxx: CxxQtItem = parse_quote! {
+          #[cxx::bridge]
+          mod ffi {}
+        };
+        let debug_formatted = format!("{:?}", cxx);
+        assert!(debug_formatted.starts_with("Cxx(ItemMod"))
+    }
+
+    #[test]
+    fn test_format_cxx_qt() {
+        let cxx_qt: CxxQtItem = parse_quote! {
+          #[cxx_qt::bridge]
+          mod ffi {}
+        };
+        let debug_formatted = format!("{:?}", cxx_qt);
+        assert!(debug_formatted.starts_with("CxxQt(ItemMod"))
+    }
+
+    #[test]
+    fn test_format_rust_item() {
+        let rust: CxxQtItem = parse_quote! {
+          struct MyStruct {
+                name: &str
+          }
+        };
+        let debug_formatted = format!("{:?}", rust);
+        assert!(debug_formatted.starts_with("Item(Item::Struct"))
+    }
+}

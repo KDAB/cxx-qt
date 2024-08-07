@@ -86,11 +86,9 @@ mod tests {
 
         let qt_file = parse_qt_file(manifest_dir.join("test_inputs/shebang.rs")).unwrap();
 
-        assert_eq!(qt_file.items.len(), 3);
-        // Testing the debug formatter
-        for item in qt_file.items {
-            println!("[Debug] item: {:?}", item);
-        }
+        assert!(qt_file.attrs.is_empty());
+        assert_eq!(qt_file.items.len(), 1);
+        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))))
     }
 
     #[test]
@@ -98,7 +96,7 @@ mod tests {
     fn test_parse_invalid_qt_file() {
         let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
-        let _qt_file = parse_qt_file(manifest_dir.join("not/real"));
+        let _ = parse_qt_file(manifest_dir.join("not/real"));
     }
 
     #[test]
