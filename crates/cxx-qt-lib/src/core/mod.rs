@@ -65,6 +65,11 @@ pub use qsizef::QSizeF;
 mod qstring;
 pub use qstring::QString;
 
+#[cfg(cxxqt_qt_version_major = "6")]
+mod qanystringview;
+#[cfg(cxxqt_qt_version_major = "6")]
+pub use qanystringview::QAnyStringView;
+
 mod qstringlist;
 pub use qstringlist::QStringList;
 

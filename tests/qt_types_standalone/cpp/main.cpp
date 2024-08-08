@@ -7,6 +7,10 @@
 #include <QtCore/QScopedPointer>
 #include <QtTest/QTest>
 
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
+#include "qanystringview.h"
+#endif
+
 #include "qbytearray.h"
 #include "qcolor.h"
 #include "qcoreapplication.h"
@@ -59,6 +63,9 @@ main(int argc, char* argv[])
     }
   };
 
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
+  runTest(QScopedPointer<QObject>(new QAnyStringViewTest));
+#endif
   runTest(QScopedPointer<QObject>(new QByteArrayTest));
   runTest(QScopedPointer<QObject>(new QColorTest));
   runTest(QScopedPointer<QObject>(new QCoreApplicationTest));
