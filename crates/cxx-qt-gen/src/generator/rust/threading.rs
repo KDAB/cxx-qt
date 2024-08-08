@@ -32,6 +32,7 @@ pub fn generate(
     let cxx_qt_thread_queue_fn = qobject_ident.cxx_qt_thread_method("queue_boxed_fn");
     let cxx_qt_thread_clone = qobject_ident.cxx_qt_thread_method("threading_clone");
     let cxx_qt_thread_drop = qobject_ident.cxx_qt_thread_method("threading_drop");
+    let cxx_qt_thread_is_alive = qobject_ident.cxx_qt_thread_method("is_alive");
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
@@ -70,6 +71,11 @@ pub fn generate(
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqt1"]
+                    #[cxx_name = "cxxQtThreadIsAlive"]
+                    fn #cxx_qt_thread_is_alive(cxx_qt_thread: &#cxx_qt_thread_ident) -> bool;
+
+                    #[doc(hidden)]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "cxxQtThreadClone"]
                     fn #cxx_qt_thread_clone(cxx_qt_thread: &#cxx_qt_thread_ident) -> #cxx_qt_thread_ident;
 
@@ -97,7 +103,6 @@ pub fn generate(
                         self.cxx_qt_ffi_qt_thread()
                     }
 
-                    #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(core::pin::Pin<&mut #qualified_impl>),
@@ -116,6 +121,11 @@ pub fn generate(
                         }
                         let arg = #cxx_qt_thread_queued_fn_ident { inner: std::boxed::Box::new(f) };
                         #module_ident::#cxx_qt_thread_queue_fn(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                    }
+
+                    fn is_alive(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident) -> bool
+                    {
+                        #module_ident::#cxx_qt_thread_is_alive(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
