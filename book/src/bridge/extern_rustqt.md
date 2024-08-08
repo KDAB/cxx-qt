@@ -135,8 +135,6 @@ It is also possible to specify custom getters, setters and notify signals, using
 `#[qproperty(TYPE, NAME, READ = myGetter, WRITE = mySetter, NOTIFY = myOnChanged)]`
 > Note: the key for the flags use all capitals like in the Qt version of qproperty
 
-> Note: currently the rust name must be in camel case or specified like `#[cxx_name = "my_getter"]` if not
-
 It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
 
 Using the read flag will cause CXX-Qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, READ)]` will have a getter function generated called get_num in Rust, and getNum in C++.
