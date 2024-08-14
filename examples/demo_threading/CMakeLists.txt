@@ -17,9 +17,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(BUILD_WASM)
-    # When building under emscripten tell CMake how to link using whole archive
-    set(CMAKE_LINK_LIBRARY_USING_WHOLE_ARCHIVE "-Wl,--whole-archive" "<LINK_ITEM>" "-Wl,--no-whole-archive")
-    set(CMAKE_LINK_LIBRARY_USING_WHOLE_ARCHIVE_SUPPORTED True)
     # Ensure Rust build for the correct target
     set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
