@@ -31,11 +31,16 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2)
+if(NOT BUILD_WASM)
+    set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+endif()
+
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+    find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
 endif()
 
 find_package(CxxQt QUIET)

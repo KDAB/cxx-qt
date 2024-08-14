@@ -31,11 +31,16 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2 QuickTest Test)
+if(NOT BUILD_WASM)
+    set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+endif()
+
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 QmlImportScanner QuickTest Test)
+    find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml Quick QuickControls2 QmlImportScanner QuickTest Test REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
 endif()
 
 find_package(CxxQt QUIET)
@@ -56,9 +61,17 @@ cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE ${CRATE})
 
-add_executable(${APP_NAME}
-    cpp/main.cpp
-)
+if(BUILD_WASM)
+    # Currently need to use qt_add_executable
+    # for WASM builds, otherwise there is no
+    # HTML output.
+    #
+    # TODO: Figure out how to configure such that
+    #       we can use add_executable for WASM
+    qt_add_executable(${APP_NAME} cpp/main.cpp)
+else()
+    add_executable(${APP_NAME} cpp/main.cpp)
+endif()
 
 target_include_directories(${APP_NAME} PRIVATE cpp)
 target_link_libraries(${APP_NAME}

@@ -13,7 +13,7 @@ license = "MIT OR Apache-2.0"
 crate-type = ["staticlib"]
 
 [dependencies]
-async-std = { git = "https://github.com/async-rs/async-std.git", default-features = false, features = ["std"] }
+async-std = "1.10"
 cxx.workspace = true
 cxx-qt.workspace = true
 cxx-qt-lib = { workspace = true, features = ["full"] }

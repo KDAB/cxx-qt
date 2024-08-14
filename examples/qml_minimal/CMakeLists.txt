@@ -31,11 +31,16 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2 QuickTest Test)
+if(NOT BUILD_WASM)
+    set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+endif()
+
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+    find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
 endif()
 # ANCHOR_END: book_cmake_setup
 
@@ -67,7 +72,17 @@ cxx_qt_import_qml_module(qml_minimal_qml_module
 
 # ANCHOR: book_cmake_executable
 # Define the executable with the C++ source
-add_executable(example_qml_minimal cpp/main.cpp)
+if(BUILD_WASM)
+    # Currently need to use qt_add_executable
+    # for WASM builds, otherwise there is no
+    # HTML output.
+    #
+    # TODO: Figure out how to configure such that
+    #       we can use add_executable for WASM
+    qt_add_executable(example_qml_minimal cpp/main.cpp)
+else()
+    add_executable(example_qml_minimal cpp/main.cpp)
+endif()
 
 # Link to the qml module, which in turn links to the Rust qml_minimal library
 target_link_libraries(example_qml_minimal PRIVATE qml_minimal_qml_module)

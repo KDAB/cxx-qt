@@ -125,7 +125,7 @@ if(BUILD_WASM)
     # TODO: fix wasm test failures
     set(BUILD_TESTING OFF)
     # Ensure Rust build for the correct target
-    set(Rust_CARGO_TARGET wasm32-unknown-unknown)
+    set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
 endif()
