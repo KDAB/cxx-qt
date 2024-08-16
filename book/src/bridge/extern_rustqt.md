@@ -99,13 +99,13 @@ For further documentation see the [traits page](./traits.md).
 The `#[qproperty(TYPE, NAME, ...)]` attribute can be specified on a [`#[qobject]` marked type](#qobjects) to expose a [`Q_PROPERTY`](https://doc.qt.io/qt-6/properties.html) on the generated `QObject`.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_signature}}
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct_signature}}
 ```
 
 The type and name of the
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_struct}}
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
