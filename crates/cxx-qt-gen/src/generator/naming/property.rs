@@ -115,7 +115,11 @@ impl QPropertyNames {
             None
         };
 
-        let reset = flags.reset.as_ref().map(|ident| structured_qobject.method_lookup(ident)).transpose()?;
+        let reset = flags
+            .reset
+            .as_ref()
+            .map(|ident| structured_qobject.method_lookup(ident))
+            .transpose()?;
 
         Ok(Self {
             getter_wrapper,
