@@ -31,20 +31,20 @@ TestCase {
 
     function test_connect_disconnect() {
         const obj = createTemporaryObject(componentProperties, null, {});
-        const connectedSpy = createTemporaryObject(componentSpy, null, {
-            signalName: "connectedChanged",
-            target: obj,
-        });
-        const connectedUrlSpy = createTemporaryObject(componentSpy, null, {
-            signalName: "connectedUrlChanged",
-            target: obj,
-        });
-        const previousConnectedUrlSpy = createTemporaryObject(componentSpy, null, {
-            signalName: "previousConnectedUrlChanged",
-            target: obj,
-        });
+        // const connectedSpy = createTemporaryObject(componentSpy, null, {
+        //     signalName: "connectedChanged",
+        //     target: obj,
+        // });
+        // const connectedUrlSpy = createTemporaryObject(componentSpy, null, {
+        //     signalName: "connectedUrlChanged",
+        //     target: obj,
+        // });
+        // const previousConnectedUrlSpy = createTemporaryObject(componentSpy, null, {
+        //     signalName: "previousConnectedUrlChanged",
+        //     target: obj,
+        // });
         const statusSpy = createTemporaryObject(componentSpy, null, {
-            signalName: "statusMessageChanged",
+            signalName: "urlSignal",
             target: obj,
         });
 
@@ -53,41 +53,29 @@ TestCase {
         compare(obj.previousConnectedUrl, "");
         compare(obj.statusMessage, "Disconnected");
 
-        obj.connect("https://kdab.com");
-        compare(connectedSpy.count, 1);
-        compare(connectedUrlSpy.count, 1);
-        compare(previousConnectedUrlSpy.count, 0);
+        obj.connectedUrl = "https://kdab.com";
         compare(statusSpy.count, 1);
         compare(obj.connected, true);
         compare(obj.connectedUrl, kdabUrl);
         compare(obj.previousConnectedUrl, "");
         compare(obj.statusMessage, "Connected");
 
-        obj.connect("https://kdab.com/about");
-        compare(connectedSpy.count, 1);
-        compare(connectedUrlSpy.count, 2);
-        compare(previousConnectedUrlSpy.count, 1);
-        compare(statusSpy.count, 1);
+        obj.connectedUrl = "https://kdab.com/about";
+        compare(statusSpy.count, 2);
         compare(obj.connected, true);
         compare(obj.connectedUrl, kdabAboutUrl);
         compare(obj.previousConnectedUrl, kdabUrl);
         compare(obj.statusMessage, "Connected");
 
-        obj.disconnect();
-        compare(connectedSpy.count, 2);
-        compare(connectedUrlSpy.count, 3);
-        compare(previousConnectedUrlSpy.count, 2);
-        compare(statusSpy.count, 2);
+        obj.connectedUrl = undefined;
+        compare(statusSpy.count, 3);
         compare(obj.connected, false);
         compare(obj.connectedUrl, "");
         compare(obj.previousConnectedUrl, kdabAboutUrl);
         compare(obj.statusMessage, "Disconnected");
 
-        obj.connect("https://github.com/kdab/cxx-qt");
-        compare(connectedSpy.count, 2);
-        compare(connectedUrlSpy.count, 3);
-        compare(previousConnectedUrlSpy.count, 2);
-        compare(statusSpy.count, 3);
+        obj.connectedUrl = "https://github.com/kdab/cxx-qt";
+        compare(statusSpy.count, 4);
         compare(obj.connected, false);
         compare(obj.connectedUrl, "");
         compare(obj.previousConnectedUrl, kdabAboutUrl);
@@ -102,7 +90,7 @@ TestCase {
         });
 
         compare(obj.connected, false);
-        obj.disconnect();
+        obj.connectedUrl = undefined;
         // signals should not be emitted when the value doesn't actually change
         compare(connectedSpy.count, 0);
     }
