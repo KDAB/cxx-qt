@@ -124,7 +124,8 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 let first = ty_strings.first().unwrap();
                 Ok(first.to_owned())
             } else {
-                Ok(ty_strings.join("::"))
+                Ok(ty_strings.join("::")) // Errors out before getting here because of path_segment_to_string
+                                          // This means something like std::collections::HashMap causes the fn to error out before this block
             }
         }
         Type::Ptr(TypePtr {
@@ -358,6 +359,11 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), None);
         assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Vec<'a,T> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
     }
 
     #[test]
@@ -393,6 +399,12 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_type_array_length_invalid() {
         let ty = parse_quote! { [i32; String] };
+        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_array_length_non_integer() {
+        let ty = parse_quote! { [i32; 1.5] };
         assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 

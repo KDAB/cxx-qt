@@ -3,11 +3,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::{
-    GenericArgument, PathArguments, PathSegment, Result, ReturnType, Type, TypePath, TypeReference,
-};
-
 use crate::naming::TypeNames;
+use syn::spanned::Spanned;
+use syn::{
+    Error, GenericArgument, PathArguments, PathSegment, Result, ReturnType, Type, TypePath,
+    TypeReference,
+};
 
 macro_rules! convert_elem {
     ($id:ident, $variant:path, $type_names:ident) => {{
@@ -26,6 +27,8 @@ fn qualify_type_path(ty_path: &TypePath, type_names: &TypeNames) -> Result<Type>
             for arg in angled.args.iter_mut() {
                 if let GenericArgument::Type(ty) = arg {
                     *ty = syn_type_cxx_bridge_to_qualified(ty, type_names)?;
+                } else {
+                    return Err(Error::new(arg.span(), "Unsupported GenericArgument type"));
                 }
             }
         }
@@ -178,6 +181,19 @@ mod tests {
     }
 
     #[test]
+    fn test_syn_type_cxx_bridge_invalid() {
+        let ty = parse_quote! { Vec<'a,T> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, None, None);
+        assert!(syn_type_cxx_bridge_to_qualified(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { (T) };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, None, None);
+        assert!(syn_type_cxx_bridge_to_qualified(&ty, &type_names).is_err());
+    }
+
+    #[test]
     fn test_syn_type_is_cxx_bridge_unsafe_path() {
         assert!(!syn_type_is_cxx_bridge_unsafe(&parse_quote! { i32 }));
     }
@@ -186,6 +202,9 @@ mod tests {
     fn test_syn_type_is_cxx_bridge_unsafe_path_template() {
         assert!(!syn_type_is_cxx_bridge_unsafe(
             &parse_quote! { Vector<i32> }
+        ));
+        assert!(!syn_type_is_cxx_bridge_unsafe(
+            &parse_quote! { Vector<'a,i32> }
         ));
         assert!(syn_type_is_cxx_bridge_unsafe(
             &parse_quote! { Vector<*mut T> }
