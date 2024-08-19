@@ -82,7 +82,7 @@ fn parse_meta(meta: Meta) -> Result<(Ident, Option<Ident>)> {
         }
         _ => Err(Error::new(
             meta.span(),
-            "Invalid syntax, flags must be specified as either `read` or `read = my_getter`",
+            "Invalid syntax, flags must be specified as either `READ` or `READ = my_getter`",
         )),
     }
 }
@@ -300,7 +300,14 @@ mod tests {
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
-        assert!(property.is_err())
+        assert!(property.is_err());
+
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, READ(my_getter))]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
     }
 
     #[test]
