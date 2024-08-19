@@ -243,9 +243,37 @@ mod tests {
         // Not a tuple, missing `,`
         assert_parse_error(
             parse_quote! {
+                impl cxx_qt::Constructor<> for X {}
+            },
+            "cxx_qt::Constructor expects a tuple as the first generic argument",
+        );
+
+        assert_parse_error(
+            parse_quote! {
                 impl cxx_qt::Constructor<(i32)> for X {}
             },
             "type argument is not a tuple",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<(i32,String),'a> for X {}
+            },
+            "Expected associated type as a generic argument!",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                impl cxx_qt::Constructor<(T,S)> for X where S: Debug, T: Clone {}
+            },
+            "Where clauses are not allowed on cxx_qt::Constructor impls!",
+        );
+
+        assert_parse_error(
+            parse_quote! {
+                unsafe impl cxx_qt::Constructor<(i32,String)> for X {}
+            },
+            "Unnecessary unsafe around constructor impl.",
         );
     }
 

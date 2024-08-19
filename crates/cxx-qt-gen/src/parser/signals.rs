@@ -213,6 +213,16 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_signal_namespace_err() {
+        let method: ForeignItemFn = parse_quote! {
+            #[namespace = "disallowed_namespace"]
+            fn ready(self: Pin<&mut MyObject>);
+        };
+        // Can't have a namespace attr
+        assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
+    }
+
+    #[test]
     fn test_parse_signal_parameters() {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>, x: f64, y: f64);

@@ -330,10 +330,30 @@ pub mod tests {
 
         // must be a known trait
         let item: ItemImpl = parse_quote! {
-            #[attr]
             impl cxx_qt::ABC for T {}
         };
         assert!(qobject.parse_trait_impl(item).is_err());
+
+        // locking unsafe impl
+        let item: ItemImpl = parse_quote! {
+            impl cxx_qt::Locking for T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
+
+        // locking can only be negated
+        let item: ItemImpl = parse_quote! {
+            unsafe impl cxx_qt::Locking for T {}
+        };
+        assert!(qobject.parse_trait_impl(item).is_err());
+
+        // locking must be enabled if threading is enabled
+        let mut non_lock_qobject = create_parsed_qobject();
+        non_lock_qobject.locking = false;
+
+        let item: ItemImpl = parse_quote! {
+            impl cxx_qt::Threading for T {}
+        };
+        assert!(non_lock_qobject.parse_trait_impl(item).is_err());
     }
 
     #[test]
