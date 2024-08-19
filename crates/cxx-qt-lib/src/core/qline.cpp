@@ -15,8 +15,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qline.h?h=v5.15.6-lts-lgpl#n90
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qline.h?h=v6.2.4#n90
-assert_alignment_and_size(QLine,
-                          alignof(::std::int32_t),
-                          sizeof(::std::int32_t[4]));
+constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t) };
+assert_alignment_and_size(QLine, alignof(::std::int32_t), arr);
 
 static_assert(::std::is_trivially_copyable<QLine>::value);

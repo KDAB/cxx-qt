@@ -13,7 +13,11 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v5.15.6-lts-lgpl#n621
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qrect.h?h=v6.2.4#n623
-assert_alignment_and_size(QRectF, alignof(double), sizeof(double[4]));
+constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(double),
+                                                     sizeof(double),
+                                                     sizeof(double),
+                                                     sizeof(double) };
+assert_alignment_and_size(QRectF, alignof(double), arr);
 
 static_assert(::std::is_trivially_copyable<QRectF>::value,
               "QRectF must be trivially copyable");

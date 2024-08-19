@@ -15,8 +15,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v5.15.6-lts-lgpl#n79
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v6.2.4#n79
-assert_alignment_and_size(QMargins,
-                          alignof(::std::int32_t),
-                          sizeof(::std::int32_t[4]));
+constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t),
+                                                     sizeof(::std::int32_t) };
+assert_alignment_and_size(QMargins, alignof(::std::int32_t), arr);
 
 static_assert(::std::is_trivially_copyable<QMargins>::value);

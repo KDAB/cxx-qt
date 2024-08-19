@@ -18,13 +18,13 @@
 // DataPointer is then a QArrayDataPointer<QPoint>
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-assert_alignment_and_size(QPolygon,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t[3]));
+constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(::std::size_t),
+                                                     sizeof(::std::size_t),
+                                                     sizeof(::std::size_t) };
+assert_alignment_and_size(QPolygon, alignof(::std::size_t), arr);
 #else
-assert_alignment_and_size(QPolygon,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t));
+constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
+assert_alignment_and_size(QPolygon, alignof(::std::size_t), arr);
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QPolygon>::value);

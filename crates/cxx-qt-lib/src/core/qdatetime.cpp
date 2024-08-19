@@ -16,9 +16,8 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n394
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n255
-assert_alignment_and_size(QDateTime,
-                          alignof(::std::size_t),
-                          sizeof(::std::size_t));
+constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
+assert_alignment_and_size(QDateTime, alignof(::std::size_t), arr);
 
 static_assert(!::std::is_trivially_copy_assignable<QDateTime>::value);
 static_assert(!::std::is_trivially_copy_constructible<QDateTime>::value);
