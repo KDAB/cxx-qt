@@ -15,8 +15,8 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qelapsedtimer.h#n57
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qelapsedtimer.h?h=v6.2.4#n89
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::int64_t,
-                                                            ::std::int64_t) };
+constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::int64_t),
+                                                     sizeof(::std::int64_t) };
 assert_alignment_and_size(QElapsedTimer, alignof(::std::int64_t), arr);
 
 static_assert(::std::is_trivially_copyable<QElapsedTimer>::value,
