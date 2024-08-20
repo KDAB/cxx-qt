@@ -22,10 +22,10 @@
 constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(::std::size_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t) };
-assert_alignment_and_size(QString, alignof(::std::size_t), arr);
+assert_alignment_and_size(QString, alignof(::std::size_t), arr, arr.size());
 #else
 constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QString, alignof(::std::size_t), arr);
+assert_alignment_and_size(QString, alignof(::std::size_t), arr, arr.size());
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QString>::value);

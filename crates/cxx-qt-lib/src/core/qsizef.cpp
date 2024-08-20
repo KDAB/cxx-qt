@@ -15,7 +15,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v6.2.4#n302
 constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(double),
                                                      sizeof(double) };
-assert_alignment_and_size(QSizeF, alignof(double), arr);
+assert_alignment_and_size(QSizeF, alignof(double), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QSizeF>::value,
               "QSizeF must be trivially copyable!");

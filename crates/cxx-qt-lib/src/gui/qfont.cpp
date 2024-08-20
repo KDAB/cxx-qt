@@ -13,7 +13,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v6.2.4#n323
 constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::size_t),
                                                      sizeof(uint) };
-assert_alignment_and_size(QFont, alignof(::std::size_t), arr);
+assert_alignment_and_size(QFont, alignof(::std::size_t), arr, arr.size());
 
 static_assert(!::std::is_trivially_copy_assignable<QFont>::value);
 static_assert(!::std::is_trivially_copy_constructible<QFont>::value);

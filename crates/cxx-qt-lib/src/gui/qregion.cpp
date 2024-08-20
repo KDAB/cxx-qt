@@ -12,7 +12,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qregion.h?h=v5.15.6-lts-lgpl#n178
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qregion.h?h=v6.2.4#n161
 constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QRegion, alignof(::std::size_t), arr);
+assert_alignment_and_size(QRegion, alignof(::std::size_t), arr, arr.size());
 
 static_assert(!::std::is_trivially_copy_assignable<QRegion>::value);
 static_assert(!::std::is_trivially_copy_constructible<QRegion>::value);

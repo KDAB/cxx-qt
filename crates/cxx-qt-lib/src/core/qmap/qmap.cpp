@@ -11,8 +11,10 @@
 #define CXX_QT_QMAP_ASSERTS(keyTypeName, valueTypeName, combinedName)          \
   constexpr static ::std::array<::std::size_t, 1> arr_##combinedName{ sizeof(  \
     ::std::size_t) };                                                          \
-  assert_alignment_and_size(                                                   \
-    QMap_##combinedName, alignof(::std::size_t), arr_##combinedName);          \
+  assert_alignment_and_size(QMap_##combinedName,                               \
+                            alignof(::std::size_t),                            \
+                            arr_##combinedName,                                \
+                            arr_##combinedName.size());                        \
                                                                                \
   static_assert(                                                               \
     !::std::is_trivially_copy_assignable<QMap_##combinedName>::value);         \

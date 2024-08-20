@@ -28,13 +28,13 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::size_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(double) };
-assert_alignment_and_size(QVariant, alignof(double), arr);
+assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
 #else
 constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::uint16_t),
                                                      sizeof(::std::uint16_t),
                                                      sizeof(::std::uint16_t),
                                                      sizeof(double) };
-assert_alignment_and_size(QVariant, alignof(double), arr);
+assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QVariant>::value);

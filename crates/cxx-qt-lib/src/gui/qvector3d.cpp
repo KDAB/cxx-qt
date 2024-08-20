@@ -16,7 +16,7 @@
 constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(float),
                                                      sizeof(float),
                                                      sizeof(float) };
-assert_alignment_and_size(QVector3D, alignof(float), arr);
+assert_alignment_and_size(QVector3D, alignof(float), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QVector3D>::value,
               "QVector3D should be trivially copyable");

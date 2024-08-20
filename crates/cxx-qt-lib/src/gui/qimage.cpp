@@ -24,14 +24,14 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(ushort),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t) };
-assert_alignment_and_size(QImage, alignof(::std::size_t), arr);
+assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());
 #else
 // In Qt6 the QPaintDevice doesn't contain the `reserved` pointer, making it 1
 // pointer smaller
 constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(ushort),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t) };
-assert_alignment_and_size(QImage, alignof(::std::size_t), arr);
+assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());
 #endif
 
 namespace rust {

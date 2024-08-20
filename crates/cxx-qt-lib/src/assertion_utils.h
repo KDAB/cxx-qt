@@ -12,13 +12,13 @@
 #include <cstdint>
 
 namespace assertion_util {
+template<typename iter>
 constexpr static ::std::size_t
-calc_align_size(const ::std::reverse_iterator<const ::std::size_t*> rbegin,
-                const ::std::reverse_iterator<const ::std::size_t*> rend,
+calc_align_size(const iter rbegin,
+                const iter rend,
                 const ::std::size_t actual_alignment)
 {
   ::std::size_t rows = 0;
-
   ::std::size_t accum = 0;
 
   for (auto it = rbegin; it != rend; ++it) {
@@ -46,8 +46,9 @@ calc_align_size(const ::std::reverse_iterator<const ::std::size_t*> rbegin,
 }
 } // namespace assertion_util
 
-#define assert_alignment_and_size(TYPE, ALIGNMENT, ARR)                        \
-  static_assert(ALIGNMENT == alignof(TYPE));                                   \
-  static_assert(assertion_util::calc_align_size(                               \
-                  ::std::rbegin(ARR), ::std::rend(ARR), alignof(TYPE)) ==      \
-                sizeof(TYPE));
+#define assert_alignment_and_size(TYPE, EXP_ALIGN, ARR, ARR_SZ)                \
+  static_assert(EXP_ALIGN == alignof(TYPE));                                   \
+  static_assert(                                                               \
+    assertion_util::calc_align_size<                                           \
+      ::std::array<::std::size_t, ARR_SZ>::const_reverse_iterator>(            \
+      ::std::rbegin(ARR), ::std::rend(ARR), alignof(TYPE)) == sizeof(TYPE));

@@ -13,7 +13,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qcommandlineparser.h?h=v5.15.6-lts-lgpl#n107
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qcommandlineparser.h?h=v6.2.4#n109
 constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QCommandLineParser, alignof(::std::size_t), arr);
+assert_alignment_and_size(QCommandLineParser,
+                          alignof(::std::size_t),
+                          arr,
+                          arr.size());
 
 static_assert(!::std::is_trivially_copy_assignable<QCommandLineParser>::value);
 

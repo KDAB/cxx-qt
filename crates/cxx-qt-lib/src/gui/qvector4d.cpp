@@ -17,7 +17,7 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(float),
                                                      sizeof(float),
                                                      sizeof(float),
                                                      sizeof(float) };
-assert_alignment_and_size(QVector4D, alignof(float), arr);
+assert_alignment_and_size(QVector4D, alignof(float), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QVector4D>::value,
               "QVector4D should be trivially copyable");

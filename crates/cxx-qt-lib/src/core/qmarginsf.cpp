@@ -18,6 +18,6 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(double),
                                                      sizeof(double),
                                                      sizeof(double),
                                                      sizeof(double) };
-assert_alignment_and_size(QMarginsF, alignof(double), arr);
+assert_alignment_and_size(QMarginsF, alignof(double), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QMarginsF>::value);

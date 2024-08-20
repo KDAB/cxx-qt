@@ -19,6 +19,6 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::int32_t),
                                                      sizeof(::std::int32_t),
                                                      sizeof(::std::int32_t),
                                                      sizeof(::std::int32_t) };
-assert_alignment_and_size(QLine, alignof(::std::int32_t), arr);
+assert_alignment_and_size(QLine, alignof(::std::int32_t), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QLine>::value);

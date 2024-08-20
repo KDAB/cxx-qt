@@ -15,7 +15,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/math3d/qvectornd.h?h=v6.2.4#n176
 constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(float),
                                                      sizeof(float) };
-assert_alignment_and_size(QVector2D, alignof(float), arr);
+assert_alignment_and_size(QVector2D, alignof(float), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QVector2D>::value,
               "QVector2D should be trivially copyable");

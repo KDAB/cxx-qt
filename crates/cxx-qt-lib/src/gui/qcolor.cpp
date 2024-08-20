@@ -20,7 +20,7 @@ constexpr static ::std::array<::std::size_t, 6> arr{
   sizeof(::std::int32_t),  sizeof(::std::uint16_t), sizeof(::std::uint16_t),
   sizeof(::std::uint16_t), sizeof(::std::uint16_t), sizeof(::std::uint16_t)
 };
-assert_alignment_and_size(QColor, alignof(::std::int32_t), arr);
+assert_alignment_and_size(QColor, alignof(::std::int32_t), arr, arr.size());
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.

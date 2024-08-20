@@ -15,7 +15,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v5.15.6-lts-lgpl#n367
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/io/qurl.h?h=v6.2.4#n294
 constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QUrl, alignof(::std::size_t), arr);
+assert_alignment_and_size(QUrl, alignof(::std::size_t), arr, arr.size());
 
 static_assert(!::std::is_trivially_copy_assignable<QUrl>::value);
 static_assert(!::std::is_trivially_copy_constructible<QUrl>::value);
