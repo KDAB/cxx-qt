@@ -120,13 +120,8 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 .iter()
                 .map(|generic| path_segment_to_string(generic, type_names))
                 .collect::<Result<Vec<String>>>()?;
-            if ty_strings.len() == 1 {
-                let first = ty_strings.first().unwrap();
-                Ok(first.to_owned())
-            } else {
-                Ok(ty_strings.join("::")) // Errors out before getting here because of path_segment_to_string
-                                          // This means something like std::collections::HashMap causes the fn to error out before this block
-            }
+            let first = ty_strings.first().unwrap();
+            Ok(first.to_owned())
         }
         Type::Ptr(TypePtr {
             const_token, elem, ..
@@ -404,7 +399,7 @@ mod tests {
 
     #[test]
     fn test_syn_type_to_cpp_type_array_length_non_integer() {
-        let ty = parse_quote! { [i32; 1.5] };
+        let ty = parse_quote! { [i32; 1.5f32] };
         assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
