@@ -8,8 +8,8 @@
 #pragma once
 
 #include <array>
-#include <cstdint>
 #include <cassert>
+#include <cstdint>
 
 namespace assertion_util {
 constexpr static ::std::size_t
