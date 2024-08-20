@@ -16,6 +16,7 @@ project(example_qml_minimal)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
+# ANCHOR_END: book_cmake_setup
 
 if(BUILD_WASM)
     # Ensure Rust build for the correct target
@@ -23,23 +24,28 @@ if(BUILD_WASM)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
 endif()
+# ANCHOR: book_cmake_setup-2
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2 QuickTest Test)
+# ANCHOR_END: book_cmake_setup-2
 if(NOT BUILD_WASM)
+    # ANCHOR: book_cmake_setup-3
     set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+    # ANCHOR_END: book_cmake_setup-3
 endif()
 
+# ANCHOR: book_cmake_setup-4
 if(NOT USE_QT5)
     find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
 endif()
-# ANCHOR_END: book_cmake_setup
+# ANCHOR_END: book_cmake_setup-4
 
 # ANCHOR: book_cmake_find_cxx_qt_start
 find_package(CxxQt QUIET)
@@ -67,7 +73,6 @@ cxx_qt_import_qml_module(qml_minimal_qml_module
     SOURCE_CRATE qml_minimal)
 # ANCHOR_END: book_cmake_use_cxx_qt
 
-# ANCHOR: book_cmake_executable
 # Define the executable with the C++ source
 if(BUILD_WASM)
     # Currently need to use qt_add_executable
@@ -78,8 +83,11 @@ if(BUILD_WASM)
     #       we can use add_executable for WASM
     qt_add_executable(example_qml_minimal cpp/main.cpp)
 else()
+    #ANCHOR: book_cmake_executable-2
     add_executable(example_qml_minimal cpp/main.cpp)
+    # ANCHOR_END: book_cmake_executable-2
 endif()
+# ANCHOR: book_cmake_executable
 
 # Link to the qml module, which in turn links to the Rust qml_minimal library
 target_link_libraries(example_qml_minimal PRIVATE qml_minimal_qml_module)

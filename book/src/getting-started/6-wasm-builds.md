@@ -94,6 +94,26 @@ Example|Working
 `qml_features`|✅ working
 `qml_minimal`|✅ working
 
+## Compiling CXX-Qt Projects for WebAssembly
+
+When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads.
+
+```cmake
+set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+```
+
+Using CMake, `add_executable` will not output an HTML file when targeting wasm. In order to render an HTML file, one must use `qt_add_executable` in its place. Assuming a project has a CMake flag `BUILD_WASM` to toggle wasm and native builds, one could write the following:
+
+```cmake
+if(BUILD_WASM)
+    qt_add_executable(${APP_NAME} ${SOURCE_FILES})
+else()
+    add_executable(${APP_NAME} ${SOURCE_FILES})
+endif()
+```
+
 ## Issues
 
 - CXX-Qt will currently not build with `wasm_multithread` versions of Qt:
