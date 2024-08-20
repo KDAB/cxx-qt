@@ -21,20 +21,22 @@ pub mod qobject {
         // ANCHOR: book_properties_signature
         #[qobject]
         #[qml_element]
-        #[qproperty(bool, connected)]
-        #[qproperty(QUrl, connected_url)]
-        #[qproperty(QUrl, previous_connected_url)]
-        #[qproperty(QString, status_message)]
+        #[qproperty(bool, connected, READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QUrl, connected_url, READ, WRITE = set_url, NOTIFY = connected_state_changed, RESET = reset_url)]
+        #[qproperty(QUrl, previous_connected_url, READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QString, status_message, READ, NOTIFY = connected_state_changed)]
         type RustProperties = super::RustPropertiesRust;
         // ANCHOR_END: book_properties_signature
 
-        /// Connect to the given url
-        #[qinvokable]
-        fn connect(self: Pin<&mut RustProperties>, mut url: QUrl);
+        /// Custom on changed signal, used for all the properties
+        #[qsignal]
+        fn connected_state_changed(self: Pin<&mut RustProperties>);
 
-        /// Disconnect from the stored url
-        #[qinvokable]
-        fn disconnect(self: Pin<&mut RustProperties>);
+        /// Custom setter for connected_url, which also handles setting the other qproperties
+        fn set_url(self: Pin<&mut RustProperties>, url: QUrl);
+
+        /// Resets value of connected_url to empty, as well as calling the other disconnected logic
+        fn reset_url(self: Pin<&mut RustProperties>);
     }
 
     impl cxx_qt::Constructor<()> for RustProperties {}
@@ -86,35 +88,37 @@ impl Default for RustPropertiesRust {
 // ANCHOR_END: book_properties_default
 
 impl qobject::RustProperties {
-    /// Connect to the given url
-    pub fn connect(mut self: Pin<&mut Self>, mut url: QUrl) {
+    /// Custom setter for RustProperties.connected_url
+    pub fn set_url(mut self: Pin<&mut Self>, mut url: QUrl) {
         // Check that the url starts with kdab
         if url.to_string().starts_with("https://kdab.com") {
-            self.as_mut().set_connected(true);
-            self.as_mut().set_status_message(QString::from("Connected"));
+            self.as_mut().rust_mut().connected = true;
+            self.as_mut().rust_mut().status_message = QString::from("Connected");
 
-            // We are directly modifying the Rust struct to avoid creating an extra QUrl.
-            // So we need to manually call the notify signal for the property ourselves.
             std::mem::swap(&mut self.as_mut().rust_mut().connected_url, &mut url);
-            self.as_mut().connected_url_changed();
 
             // Then we can store the old url without having to temporarily store it
-            self.set_previous_connected_url(url);
+            self.as_mut().rust_mut().previous_connected_url = url;
         } else {
-            self.as_mut().set_connected(false);
-            self.set_status_message(QString::from("URL does not start with https://kdab.com"));
+            self.as_mut().rust_mut().connected = false;
+            self.as_mut().rust_mut().status_message =
+                QString::from("URL does not start with https://kdab.com")
         }
+        self.as_mut().connected_state_changed();
     }
 
-    /// Disconnect from the stored url
-    pub fn disconnect(mut self: Pin<&mut Self>) {
-        self.as_mut().set_connected(false);
-        self.as_mut()
-            .set_status_message(QString::from("Disconnected"));
-        // Here we show how data can be cloned instead of using the unsafe API to swap the values
-        let previous_url = self.as_ref().connected_url().clone();
-        self.as_mut().set_previous_connected_url(previous_url);
-        self.set_connected_url(QUrl::default());
+    /// Reset the url to an empty state
+    pub fn reset_url(mut self: Pin<&mut Self>) {
+        self.as_mut().rust_mut().connected = false;
+        self.as_mut().rust_mut().status_message = QString::from("Disconnected");
+        let previous_url = self.as_ref().connected_url.clone();
+        self.as_mut().rust_mut().previous_connected_url = previous_url;
+
+        std::mem::swap(
+            &mut self.as_mut().rust_mut().connected_url,
+            &mut QUrl::default(),
+        );
+        self.as_mut().connected_state_changed();
     }
 }
 

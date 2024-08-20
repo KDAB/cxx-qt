@@ -17,14 +17,14 @@ Page {
                 enabled: rustProperties.connected
                 text: qsTr("Disconnect")
 
-                onClicked: rustProperties.disconnect()
+                onClicked: rustProperties.connectedUrl = undefined
             }
 
             ToolButton {
                 enabled: !rustProperties.connected
                 text: qsTr("Connect")
 
-                onClicked: rustProperties.connect(urlTextField.text)
+                onClicked: rustProperties.connectedUrl = urlTextField.text
             }
 
             Item {
