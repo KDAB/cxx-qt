@@ -11,6 +11,7 @@ use crate::generator::{
 use crate::{
     naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
 };
+
 use syn::Result;
 
 mod getter;
@@ -68,7 +69,7 @@ pub fn generate_cpp_properties(
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     use crate::parser::property::QPropertyFlags;
@@ -82,26 +83,35 @@ mod tests {
     use quote::format_ident;
     use syn::{parse_quote, Error, ItemMod, ItemStruct};
 
-    fn get_header_and_src(fragment: &CppFragment) -> Result<(String, String)> {
+    pub fn require_pair(fragment: &CppFragment) -> Result<(String, String)> {
         match fragment {
             CppFragment::Pair { header, source } => Ok((header.clone(), source.clone())),
-            CppFragment::Header(inner) | CppFragment::Source(inner) => {
-                Err(Error::new_spanned(inner, "Expected Pair!"))
+            _ => {
+                let fragment_string: String = fragment.clone().into();
+                Err(Error::new_spanned(fragment_string, "Expected Pair!"))
             }
         }
     }
 
-    fn get_header(fragment: &CppFragment) -> Result<String> {
+    pub fn require_header(fragment: &CppFragment) -> Result<String> {
         match fragment {
-            CppFragment::Pair { header, source } => Err(Error::new_spanned(
-                format!("{header} + {source}"),
-                "Expected Header!",
-            )),
-            CppFragment::Source(source) => Err(Error::new_spanned(source, "Expected Header!")),
             CppFragment::Header(header) => Ok(header.clone()),
+            _ => {
+                let tokens: String = fragment.clone().into();
+                Err(Error::new_spanned(tokens, "Expected Header!"))
+            }
         }
     }
 
+    pub fn require_source(fragment: &CppFragment) -> Result<String> {
+        match fragment {
+            CppFragment::Source(source) => Ok(source.clone()),
+            _ => {
+                let tokens: String = fragment.clone().into();
+                Err(Error::new_spanned(tokens, "Expected Source!"))
+            }
+        }
+    }
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
@@ -187,10 +197,13 @@ mod tests {
         .unwrap();
 
         // should be a pair
-        let result = get_header(&generated.methods[0]);
+        let result = require_header(&generated.methods[0]);
         assert!(result.is_err());
 
-        let result = get_header_and_src(&generated.private_methods[0]);
+        let result = require_pair(&generated.private_methods[0]);
+        assert!(result.is_err());
+
+        let result = require_source(&generated.methods[0]);
         assert!(result.is_err());
     }
 
@@ -230,7 +243,7 @@ mod tests {
 
         // Methods
         assert_eq!(generated.methods.len(), 1);
-        let (header, source) = get_header_and_src(&generated.methods[0]).unwrap();
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
 
         assert_str_eq!(header, "::std::int32_t const& getNum() const;");
         assert_str_eq!(
@@ -336,7 +349,7 @@ mod tests {
         // methods
         assert_eq!(generated.methods.len(), 6);
 
-        let (header, source) = get_header_and_src(&generated.methods[0]).unwrap();
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
         assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
         assert_str_eq!(
             source,
@@ -350,7 +363,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = get_header_and_src(&generated.methods[1]).unwrap();
+        let (header, source) = require_pair(&generated.methods[1]).unwrap();
         assert_str_eq!(
             header,
             "Q_SLOT void setTrivialProperty(::std::int32_t const& value);"
@@ -367,7 +380,7 @@ mod tests {
                 "#}
         );
 
-        let (header, source) = get_header_and_src(&generated.methods[2]).unwrap();
+        let (header, source) = require_pair(&generated.methods[2]).unwrap();
 
         assert_str_eq!(
             header,
@@ -385,7 +398,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = get_header_and_src(&generated.methods[3]).unwrap();
+        let (header, source) = require_pair(&generated.methods[3]).unwrap();
         assert_str_eq!(
             header,
             "Q_SLOT void setOpaqueProperty(::std::unique_ptr<QColor> const& value);"
@@ -402,14 +415,14 @@ mod tests {
             "#}
         );
 
-        let header = get_header(&generated.methods[4]).unwrap();
+        let header = require_header(&generated.methods[4]).unwrap();
         assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
 
-        let header = get_header(&generated.methods[5]).unwrap();
+        let header = require_header(&generated.methods[5]).unwrap();
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
 
         assert_eq!(generated.fragments.len(), 2);
-        let (header, source) = get_header_and_src(&generated.fragments[0]).unwrap();
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
 
         assert_str_eq!(
             header,
@@ -466,7 +479,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = get_header_and_src(&generated.fragments[1]).unwrap();
+        let (header, source) = require_pair(&generated.fragments[1]).unwrap();
 
         assert_str_eq!(
             header,
@@ -525,26 +538,26 @@ mod tests {
 
         // private methods
         assert_eq!(generated.private_methods.len(), 4);
-        let header = get_header(&generated.private_methods[0]).unwrap();
+        let header = require_header(&generated.private_methods[0]).unwrap();
         assert_str_eq!(
             header,
             "::std::int32_t const& getTrivialPropertyWrapper() const noexcept;"
         );
 
-        let header = get_header(&generated.private_methods[1]).unwrap();
+        let header = require_header(&generated.private_methods[1]).unwrap();
         assert_str_eq!(
             header,
             "void setTrivialPropertyWrapper(::std::int32_t value) noexcept;"
         );
 
-        let header = get_header(&generated.private_methods[2]).unwrap();
+        let header = require_header(&generated.private_methods[2]).unwrap();
 
         assert_str_eq!(
             header,
             "::std::unique_ptr<QColor> const& getOpaquePropertyWrapper() const noexcept;"
         );
 
-        let header = get_header(&generated.private_methods[3]).unwrap();
+        let header = require_header(&generated.private_methods[3]).unwrap();
 
         assert_str_eq!(
             header,
@@ -582,7 +595,7 @@ mod tests {
 
         // methods
         assert_eq!(generated.methods.len(), 3);
-        let (header, source) = get_header_and_src(&generated.methods[0]).unwrap();
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
 
         assert_str_eq!(header, "A1 const& getMappedProperty() const;");
         assert_str_eq!(
@@ -596,7 +609,7 @@ mod tests {
             }
             "#}
         );
-        let (header, source) = get_header_and_src(&generated.methods[1]).unwrap();
+        let (header, source) = require_pair(&generated.methods[1]).unwrap();
 
         assert_str_eq!(header, "Q_SLOT void setMappedProperty(A1 const& value);");
         assert_str_eq!(
@@ -610,13 +623,13 @@ mod tests {
                 }
                 "#}
         );
-        let header = get_header(&generated.methods[2]).unwrap();
+        let header = require_header(&generated.methods[2]).unwrap();
 
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
 
         assert_eq!(generated.fragments.len(), 1);
 
-        let (header, source) = get_header_and_src(&generated.fragments[0]).unwrap();
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
 
         assert_str_eq!(
             header,
@@ -675,14 +688,14 @@ mod tests {
 
         // private methods
         assert_eq!(generated.private_methods.len(), 2);
-        let header = get_header(&generated.private_methods[0]).unwrap();
+        let header = require_header(&generated.private_methods[0]).unwrap();
 
         assert_str_eq!(
             header,
             "A1 const& getMappedPropertyWrapper() const noexcept;"
         );
 
-        let header = get_header(&generated.private_methods[1]).unwrap();
+        let header = require_header(&generated.private_methods[1]).unwrap();
         assert_str_eq!(header, "void setMappedPropertyWrapper(A1 value) noexcept;");
     }
 }

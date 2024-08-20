@@ -50,9 +50,9 @@ mod tests {
     use pretty_assertions::assert_str_eq;
     use syn::{parse_quote, ForeignItemFn};
 
-    use crate::{parser::inherit::ParsedInheritedMethod, syntax::safety::Safety};
-
     use super::*;
+    use crate::generator::cpp::property::tests::require_header;
+    use crate::{parser::inherit::ParsedInheritedMethod, syntax::safety::Safety};
 
     fn generate_from_foreign(
         method: ForeignItemFn,
@@ -66,11 +66,8 @@ mod tests {
 
     fn assert_generated_eq(expected: &str, generated: &GeneratedCppQObjectBlocks) {
         assert_eq!(generated.methods.len(), 1);
-        if let CppFragment::Header(header) = &generated.methods[0] {
-            assert_str_eq!(header, expected);
-        } else {
-            panic!("Expected header fragment");
-        }
+        let header = require_header(&generated.methods[0]).unwrap();
+        assert_str_eq!(header, expected);
     }
 
     #[test]

@@ -65,14 +65,18 @@ pub fn generate_rust_signal(
         .cloned()
         .map(|parameter| match parameter {
             FnArg::Typed(pat_type) => syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names),
-            _ => unreachable!("should only have typed no receiver"),
+            _ => {
+                // CODECOV_EXCLUDE_START
+                unreachable!("should only have typed no receiver")
+                // CODECOV_EXCLUDE_STOP
+            }
         })
         .collect::<Result<_>>()?;
 
     let self_type_cxx = if signal.mutable {
         parse_quote! { Pin<&mut #qobject_name_rust> }
     } else {
-        parse_quote! { &#qobject_name_rust }
+        parse_quote! { &#qobject_name_rust } // Signals cannot be mutable
     };
     let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
     let qualified_impl = qobject_name.rust_qualified();

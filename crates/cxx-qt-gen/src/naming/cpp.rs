@@ -54,7 +54,9 @@ pub(crate) fn syn_type_to_cpp_return_type(
 
                         return Ok(Some(arg));
                     } else {
+                        // CODECOV_EXCLUDE_START
                         unreachable!("Args should be of length 1");
+                        // CODECOV_EXCLUDE_STOP
                     }
                 }
             }

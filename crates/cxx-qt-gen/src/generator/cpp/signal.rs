@@ -213,6 +213,7 @@ pub fn generate_cpp_signals(
 mod tests {
     use super::*;
 
+    use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
@@ -252,23 +253,16 @@ mod tests {
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
-        let header = if let CppFragment::Header(header) = &generated.methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.methods[0]).unwrap();
+
         assert_str_eq!(
             header,
             "Q_SIGNAL void dataChanged(::std::int32_t trivial, ::std::unique_ptr<QColor> opaque);"
         );
 
         assert_eq!(generated.fragments.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
+
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -352,20 +346,12 @@ mod tests {
         let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
 
         assert_eq!(generated.methods.len(), 1);
-        let header = if let CppFragment::Header(header) = &generated.methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.methods[0]).unwrap();
         assert_str_eq!(header, "Q_SIGNAL void dataChanged(A1 mapped);");
 
         assert_eq!(generated.fragments.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
+
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -446,12 +432,7 @@ mod tests {
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -533,12 +514,7 @@ mod tests {
         assert_eq!(generated.methods.len(), 0);
 
         assert_eq!(generated.fragments.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
 
         assert_str_eq!(
             header,
@@ -623,12 +599,7 @@ mod tests {
         assert_eq!(generated.methods.len(), 0);
 
         assert_eq!(generated.fragments.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
 
         assert_str_eq!(
             header,
