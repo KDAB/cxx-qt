@@ -30,9 +30,7 @@ constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::size_t),
                                                      sizeof(double) };
 assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
 #else
-constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::uint16_t),
-                                                     sizeof(::std::uint16_t),
-                                                     sizeof(::std::uint16_t),
+constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::uint32_t),
                                                      sizeof(double) };
 assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
 #endif

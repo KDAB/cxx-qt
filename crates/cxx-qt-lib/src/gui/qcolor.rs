@@ -276,7 +276,6 @@ pub use ffi::{QColorNameFormat, QColorSpec};
 pub struct QColor {
     _cspec: MaybeUninit<i32>,
     _ct: MaybeUninit<[u16; 5]>,
-    _padding: MaybeUninit<u16>,
 }
 
 impl QColor {
