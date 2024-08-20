@@ -54,6 +54,10 @@ fn qualify_type_path(ty_path: &TypePath, type_names: &TypeNames) -> Result<Type>
                 ty_path.path.segments.insert(0, segment);
             }
         }
+    } else {
+        // CODECOV_EXCLUDE_START
+        unreachable!("Path cannot be empty!")
+        // CODECOV_EXCLUDE_STOP
     }
 
     // If the path matches a known ident then used the qualified mapping
@@ -196,6 +200,13 @@ mod tests {
     #[test]
     fn test_syn_type_is_cxx_bridge_unsafe_path() {
         assert!(!syn_type_is_cxx_bridge_unsafe(&parse_quote! { i32 }));
+    }
+
+    #[test]
+    fn test_syn_type_is_cxx_bridge_unsafe_path_other() {
+        assert!(!syn_type_is_cxx_bridge_unsafe(
+            &parse_quote! { impl MyTrait }
+        ));
     }
 
     #[test]

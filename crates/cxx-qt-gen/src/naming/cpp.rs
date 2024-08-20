@@ -18,6 +18,10 @@ pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
                 if segment.ident == "Result" {
                     return "";
                 }
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!("Path cannot be empty!")
+                // CODECOV_EXCLUDE_STOP
             }
         }
     }
@@ -59,6 +63,10 @@ pub(crate) fn syn_type_to_cpp_return_type(
                         // CODECOV_EXCLUDE_STOP
                     }
                 }
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!("Path cannot be empty!")
+                // CODECOV_EXCLUDE_STOP
             }
         }
 
@@ -274,6 +282,12 @@ mod tests {
     #[test]
     fn test_syn_return_type_to_cpp_except_type() {
         let ty = parse_quote! { -> T };
+        assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
+    }
+
+    #[test]
+    fn test_syn_return_type_to_cpp_except_type_ptr() {
+        let ty = parse_quote! { -> *mut T };
         assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
     }
 
