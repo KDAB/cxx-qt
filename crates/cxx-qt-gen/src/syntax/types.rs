@@ -61,10 +61,10 @@ fn extract_qobject_ident_from_ref(ty: &TypeReference) -> Result<(Ident, Option<M
             ty.mutability,
         ))
     } else {
-        Err(Error::new_spanned(
-            ty,
-            "Expected type to be a `&T` reference!",
-        ))
+        // CODECOV_EXCLUDE_START
+        // If using parse_quote and not using a &T reference, parse quote will fail to parse as TypeReference
+        unreachable!("Expected type to be a `&T` reference!")
+        // CODECOV_EXCLUDE_STOP
     }
 }
 
