@@ -31,20 +31,8 @@ TestCase {
 
     function test_connect_disconnect() {
         const obj = createTemporaryObject(componentProperties, null, {});
-        // const connectedSpy = createTemporaryObject(componentSpy, null, {
-        //     signalName: "connectedChanged",
-        //     target: obj,
-        // });
-        // const connectedUrlSpy = createTemporaryObject(componentSpy, null, {
-        //     signalName: "connectedUrlChanged",
-        //     target: obj,
-        // });
-        // const previousConnectedUrlSpy = createTemporaryObject(componentSpy, null, {
-        //     signalName: "previousConnectedUrlChanged",
-        //     target: obj,
-        // });
         const statusSpy = createTemporaryObject(componentSpy, null, {
-            signalName: "urlSignal",
+            signalName: "connectedStateChanged",
             target: obj,
         });
 

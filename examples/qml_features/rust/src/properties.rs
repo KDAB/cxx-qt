@@ -21,16 +21,16 @@ pub mod qobject {
         // ANCHOR: book_properties_signature
         #[qobject]
         #[qml_element]
-        #[qproperty(bool, connected, READ, NOTIFY = url_signal)]
-        #[qproperty(QUrl, connected_url, READ, WRITE = set_url, NOTIFY = url_signal, RESET = reset_url)]
-        #[qproperty(QUrl, previous_connected_url, READ, NOTIFY = url_signal)]
-        #[qproperty(QString, status_message, READ, NOTIFY = url_signal)]
+        #[qproperty(bool, connected, READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QUrl, connected_url, READ, WRITE = set_url, NOTIFY = connected_state_changed, RESET = reset_url)]
+        #[qproperty(QUrl, previous_connected_url, READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QString, status_message, READ, NOTIFY = connected_state_changed)]
         type RustProperties = super::RustPropertiesRust;
         // ANCHOR_END: book_properties_signature
 
         /// Custom on changed signal, used for all the properties
         #[qsignal]
-        fn url_signal(self: Pin<&mut RustProperties>);
+        fn connected_state_changed(self: Pin<&mut RustProperties>);
 
         /// Custom setter for connected_url, which also handles setting the other qproperties
         fn set_url(self: Pin<&mut RustProperties>, url: QUrl);
@@ -104,7 +104,7 @@ impl qobject::RustProperties {
             self.as_mut().rust_mut().status_message =
                 QString::from("URL does not start with https://kdab.com")
         }
-        self.as_mut().url_signal();
+        self.as_mut().connected_state_changed();
     }
 
     /// Reset the url to an empty state
@@ -118,7 +118,7 @@ impl qobject::RustProperties {
             &mut self.as_mut().rust_mut().connected_url,
             &mut QUrl::default(),
         );
-        self.as_mut().url_signal();
+        self.as_mut().connected_state_changed();
     }
 }
 
